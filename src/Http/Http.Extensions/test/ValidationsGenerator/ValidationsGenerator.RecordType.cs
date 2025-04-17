@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Http.ValidationsGenerator.Tests;
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
     [Fact]
-    public async Task CanValidateComplexTypes()
+    public async Task CanValidateRecordTypes()
     {
         // Arrange
         var source = """
@@ -26,64 +26,34 @@ builder.Services.AddValidation();
 
 var app = builder.Build();
 
-app.MapPost("/complex-type", (ComplexType complexType) => Results.Ok("Passed"!));
+app.MapPost("/validatable-record", (ValidatableRecord validatableRecord) => Results.Ok("Passed"!));
 
 app.Run();
-
-public class ComplexType
-{
-    [Range(10, 100)]
-    public int IntegerWithRange { get; set; } = 10;
-
-    [Range(10, 100), Display(Name = "Valid identifier")]
-    public int IntegerWithRangeAndDisplayName { get; set; } = 50;
-
-    [Required]
-    public SubType PropertyWithMemberAttributes { get; set; } = new SubType("some-value", default);
-
-    public SubType PropertyWithoutMemberAttributes { get; set; } = new SubType("some-value", default);
-
-    public SubTypeWithInheritance PropertyWithInheritance { get; set; } = new SubTypeWithInheritance("some-value", default);
-
-    public List<SubType> ListOfSubTypes { get; set; } = [];
-
-    [DerivedValidation(ErrorMessage = "Value must be an even number")]
-    public int IntegerWithDerivedValidationAttribute { get; set; }
-
-    [CustomValidation(typeof(CustomValidators), nameof(CustomValidators.Validate))]
-    public int IntegerWithCustomValidation { get; set; } = 0;
-
-    [DerivedValidation, Range(10, 100)]
-    public int PropertyWithMultipleAttributes { get; set; } = 10;
-}
 
 public class DerivedValidationAttribute : ValidationAttribute
 {
     public override bool IsValid(object? value) => value is int number && number % 2 == 0;
 }
 
-public class SubType(string? requiredProperty, string? stringWithLength)
+public record SubType([Required] string RequiredProperty = "some-value", [StringLength(10)] string? StringWithLength = default);
+
+public record SubTypeWithInheritance([EmailAddress] string? EmailString, string RequiredProperty, string? StringWithLength) : SubType(RequiredProperty, StringWithLength);
+
+public record SubTypeWithoutConstructor
 {
     [Required]
-    public string RequiredProperty { get; } = requiredProperty;
+    public string RequiredProperty { get; set; } = "some-value";
 
     [StringLength(10)]
-    public string? StringWithLength { get; } = stringWithLength;
-}
-
-public class SubTypeWithInheritance(string? requiredProperty, string? stringWithLength) : SubType(requiredProperty, stringWithLength)
-{
-    [EmailAddress]
-    public string? EmailString { get; set; }
+    public string? StringWithLength { get; set; }
 }
 
 public static class CustomValidators
 {
     public static ValidationResult Validate(int number, ValidationContext validationContext)
     {
-        var parent = (ComplexType)validationContext.ObjectInstance;
-
-        if (parent.IntegerWithRange == number)
+        var parent = (ValidatableRecord)validationContext.ObjectInstance;
+        if (number == parent.IntegerWithRange)
         {
             return new ValidationResult(
                 "Can't use the same number value in two properties on the same class.",
@@ -93,29 +63,47 @@ public static class CustomValidators
         return ValidationResult.Success;
     }
 }
+
+public record ValidatableRecord(
+    [Range(10, 100)]
+    int IntegerWithRange = 10,
+    [Range(10, 100), Display(Name = "Valid identifier")]
+    int IntegerWithRangeAndDisplayName = 50,
+    SubType PropertyWithMemberAttributes = default,
+    SubType PropertyWithoutMemberAttributes = default,
+    SubTypeWithInheritance PropertyWithInheritance = default,
+    SubTypeWithoutConstructor PropertyOfSubtypeWithoutConstructor = default,
+    List<SubType> ListOfSubTypes = default,
+    [DerivedValidation(ErrorMessage = "Value must be an even number")]
+    int IntegerWithDerivedValidationAttribute = 0,
+    [CustomValidation(typeof(CustomValidators), nameof(CustomValidators.Validate))]
+    int IntegerWithCustomValidation = 0,
+    [DerivedValidation, Range(10, 100)]
+    int PropertyWithMultipleAttributes = 10
+);
 """;
         await Verify(source, out var compilation);
-        await VerifyEndpoint(compilation, "/complex-type", async (endpoint, serviceProvider) =>
+        await VerifyEndpoint(compilation, "/validatable-record", async (endpoint, serviceProvider) =>
         {
             await InvalidIntegerWithRangeProducesError(endpoint);
             await InvalidIntegerWithRangeAndDisplayNameProducesError(endpoint);
-            await MissingRequiredSubtypePropertyProducesError(endpoint);
             await InvalidRequiredSubtypePropertyProducesError(endpoint);
             await InvalidSubTypeWithInheritancePropertyProducesError(endpoint);
             await InvalidListOfSubTypesProducesError(endpoint);
             await InvalidPropertyWithDerivedValidationAttributeProducesError(endpoint);
             await InvalidPropertyWithMultipleAttributesProducesError(endpoint);
             await InvalidPropertyWithCustomValidationProducesError(endpoint);
+            await InvalidPropertyOfSubtypeWithoutConstructorProducesError(endpoint);
             await ValidInputProducesNoWarnings(endpoint);
 
             async Task InvalidIntegerWithRangeProducesError(Endpoint endpoint)
             {
 
                 var payload = """
-                {
-                    "IntegerWithRange": 5
-                }
-                """;
+                    {
+                        "IntegerWithRange": 5
+                    }
+                    """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
 
                 await endpoint.RequestDelegate(context);
@@ -131,10 +119,10 @@ public static class CustomValidators
             async Task InvalidIntegerWithRangeAndDisplayNameProducesError(Endpoint endpoint)
             {
                 var payload = """
-                {
-                    "IntegerWithRangeAndDisplayName": 5
-                }
-                """;
+                    {
+                        "IntegerWithRangeAndDisplayName": 5
+                    }
+                    """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
 
                 await endpoint.RequestDelegate(context);
@@ -147,35 +135,16 @@ public static class CustomValidators
                 });
             }
 
-            async Task MissingRequiredSubtypePropertyProducesError(Endpoint endpoint)
-            {
-                var payload = """
-                {
-                    "PropertyWithMemberAttributes": null
-                }
-                """;
-                var context = CreateHttpContextWithPayload(payload, serviceProvider);
-
-                await endpoint.RequestDelegate(context);
-
-                var problemDetails = await AssertBadRequest(context);
-                Assert.Collection(problemDetails.Errors, kvp =>
-                {
-                    Assert.Equal("PropertyWithMemberAttributes", kvp.Key);
-                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.Single());
-                });
-            }
-
             async Task InvalidRequiredSubtypePropertyProducesError(Endpoint endpoint)
             {
                 var payload = """
-                {
-                    "PropertyWithMemberAttributes": {
-                        "RequiredProperty": "",
-                        "StringWithLength": "way-too-long"
+                    {
+                        "PropertyWithMemberAttributes": {
+                            "RequiredProperty": "",
+                            "StringWithLength": "way-too-long"
+                        }
                     }
-                }
-                """;
+                    """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
 
                 await endpoint.RequestDelegate(context);
@@ -197,14 +166,14 @@ public static class CustomValidators
             async Task InvalidSubTypeWithInheritancePropertyProducesError(Endpoint endpoint)
             {
                 var payload = """
-                {
-                    "PropertyWithInheritance": {
-                        "RequiredProperty": "",
-                        "StringWithLength": "way-too-long",
-                        "EmailString": "not-an-email"
+                    {
+                        "PropertyWithInheritance": {
+                            "RequiredProperty": "",
+                            "StringWithLength": "way-too-long",
+                            "EmailString": "not-an-email"
+                        }
                     }
-                }
-                """;
+                    """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
 
                 await endpoint.RequestDelegate(context);
@@ -231,23 +200,23 @@ public static class CustomValidators
             async Task InvalidListOfSubTypesProducesError(Endpoint endpoint)
             {
                 var payload = """
-                {
-                    "ListOfSubTypes": [
-                        {
-                            "RequiredProperty": "",
-                            "StringWithLength": "way-too-long"
-                        },
-                        {
-                            "RequiredProperty": "valid",
-                            "StringWithLength": "way-too-long"
-                        },
-                        {
-                            "RequiredProperty": "valid",
-                            "StringWithLength": "valid"
-                        }
-                    ]
-                }
-                """;
+                    {
+                        "ListOfSubTypes": [
+                            {
+                                "RequiredProperty": "",
+                                "StringWithLength": "way-too-long"
+                            },
+                            {
+                                "RequiredProperty": "valid",
+                                "StringWithLength": "way-too-long"
+                            },
+                            {
+                                "RequiredProperty": "valid",
+                                "StringWithLength": "valid"
+                            }
+                        ]
+                    }
+                    """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
 
                 await endpoint.RequestDelegate(context);
@@ -274,10 +243,10 @@ public static class CustomValidators
             async Task InvalidPropertyWithDerivedValidationAttributeProducesError(Endpoint endpoint)
             {
                 var payload = """
-                {
-                    "IntegerWithDerivedValidationAttribute": 5
-                }
-                """;
+                    {
+                        "IntegerWithDerivedValidationAttribute": 5
+                    }
+                    """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
 
                 await endpoint.RequestDelegate(context);
@@ -293,10 +262,10 @@ public static class CustomValidators
             async Task InvalidPropertyWithMultipleAttributesProducesError(Endpoint endpoint)
             {
                 var payload = """
-                {
-                    "PropertyWithMultipleAttributes": 5
-                }
-                """;
+                    {
+                        "PropertyWithMultipleAttributes": 5
+                    }
+                    """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
 
                 await endpoint.RequestDelegate(context);
@@ -320,11 +289,11 @@ public static class CustomValidators
             async Task InvalidPropertyWithCustomValidationProducesError(Endpoint endpoint)
             {
                 var payload = """
-                {
-                    "IntegerWithRange": 42,
-                    "IntegerWithCustomValidation": 42
-                }
-                """;
+                    {
+                        "IntegerWithRange": 42,
+                        "IntegerWithCustomValidation": 42
+                    }
+                    """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
 
                 await endpoint.RequestDelegate(context);
@@ -338,36 +307,65 @@ public static class CustomValidators
                 });
             }
 
+            async Task InvalidPropertyOfSubtypeWithoutConstructorProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                    {
+                        "PropertyOfSubtypeWithoutConstructor": {
+                            "RequiredProperty": "",
+                            "StringWithLength": "way-too-long"
+                        }
+                    }
+                    """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors,
+                kvp =>
+                {
+                    Assert.Equal("PropertyOfSubtypeWithoutConstructor.RequiredProperty", kvp.Key);
+                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("PropertyOfSubtypeWithoutConstructor.StringWithLength", kvp.Key);
+                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                });
+            }
+
             async Task ValidInputProducesNoWarnings(Endpoint endpoint)
             {
                 var payload = """
-                {
-                    "IntegerWithRange": 50,
-                    "IntegerWithRangeAndDisplayName": 50,
-                    "PropertyWithMemberAttributes": {
-                        "RequiredProperty": "valid",
-                        "StringWithLength": "valid"
-                    },
-                    "PropertyWithoutMemberAttributes": {
-                        "RequiredProperty": "valid",
-                        "StringWithLength": "valid"
-                    },
-                    "PropertyWithInheritance": {
-                        "RequiredProperty": "valid",
-                        "StringWithLength": "valid",
-                        "EmailString": "test@example.com"
-                    },
-                    "ListOfSubTypes": [],
-                    "IntegerWithDerivedValidationAttribute": 2,
-                    "IntegerWithCustomValidation": 0,
-                    "PropertyWithMultipleAttributes": 12
-                }
-                """;
+                    {
+                        "IntegerWithRange": 50,
+                        "IntegerWithRangeAndDisplayName": 50,
+                        "PropertyWithMemberAttributes": {
+                            "RequiredProperty": "valid",
+                            "StringWithLength": "valid"
+                        },
+                        "PropertyWithoutMemberAttributes": {
+                            "RequiredProperty": "valid",
+                            "StringWithLength": "valid"
+                        },
+                        "PropertyWithInheritance": {
+                            "RequiredProperty": "valid",
+                            "StringWithLength": "valid",
+                            "EmailString": "test@example.com"
+                        },
+                        "ListOfSubTypes": [],
+                        "IntegerWithDerivedValidationAttribute": 2,
+                        "IntegerWithCustomValidation": 0,
+                        "PropertyWithMultipleAttributes": 12
+                    }
+                    """;
                 var context = CreateHttpContextWithPayload(payload, serviceProvider);
                 await endpoint.RequestDelegate(context);
 
                 Assert.Equal(200, context.Response.StatusCode);
             }
         });
+
     }
 }
