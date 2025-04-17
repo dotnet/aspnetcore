@@ -83,10 +83,12 @@ public class InteropTests
 
     private async Task InteropTestCase(string name)
     {
+        _output.WriteLine($"Starting {nameof(WebsiteProcess)}.");
         using (var serverProcess = new WebsiteProcess(_serverPath, _output))
         {
             try
             {
+                _output.WriteLine($"Waiting for {nameof(WebsiteProcess)} to be ready.");
                 await serverProcess.WaitForReady().TimeoutAfter(DefaultTimeout);
             }
             catch (Exception ex)
@@ -102,12 +104,15 @@ Server process output:
                 throw new InvalidOperationException(errorMessage, ex);
             }
 
+            _output.WriteLine($"Starting {nameof(ClientProcess)}.");
             using (var clientProcess = new ClientProcess(_output, _clientPath, serverProcess.ServerPort, name))
             {
                 try
                 {
+                    _output.WriteLine($"Waiting for {nameof(ClientProcess)} to be ready.");
                     await clientProcess.WaitForReadyAsync().TimeoutAfter(DefaultTimeout);
 
+                    _output.WriteLine($"Waiting for {nameof(ClientProcess)} to exit.");
                     await clientProcess.WaitForExitAsync().TimeoutAfter(DefaultTimeout);
 
                     Assert.Equal(0, clientProcess.ExitCode);
