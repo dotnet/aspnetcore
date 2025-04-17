@@ -18,6 +18,8 @@ internal sealed class RenderingMetrics : IDisposable
 
     public RenderingMetrics(IMeterFactory meterFactory)
     {
+        Debug.Assert(meterFactory != null);
+
         _meter = meterFactory.Create(MeterName);
 
         _renderTotalCounter = _meter.CreateCounter<long>(

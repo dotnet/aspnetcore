@@ -19,6 +19,8 @@ internal sealed class CircuitMetrics : IDisposable
 
     public CircuitMetrics(IMeterFactory meterFactory)
     {
+        Debug.Assert(meterFactory != null);
+
         _meter = meterFactory.Create(MeterName);
 
         _circuitTotalCounter = _meter.CreateCounter<long>(

@@ -7,6 +7,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -14,6 +15,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
+
     <Compile Include="$(SignalRTestBase)HubMessageHelpers.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)MessagePackHubProtocolTestBase.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)TestBinder.cs" LinkBase="BlazorPack" />

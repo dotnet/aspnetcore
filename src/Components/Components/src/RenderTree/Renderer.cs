@@ -932,7 +932,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         var componentState = renderQueueEntry.ComponentState;
         Log.RenderingComponent(_logger, componentState);
-        var startTime = ((bool)_renderingMetrics?.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
+        var startTime = (_renderingMetrics != null && _renderingMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
         _renderingMetrics?.RenderStart(componentState.Component.GetType().FullName);
         componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment, out var renderFragmentException);
         if (renderFragmentException != null)

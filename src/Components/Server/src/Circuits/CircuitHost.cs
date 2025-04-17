@@ -50,7 +50,7 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
-        CircuitMetrics circuitMetrics,
+        CircuitMetrics? circuitMetrics,
         ILogger logger)
     {
         CircuitId = circuitId;
@@ -235,7 +235,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task OnCircuitOpenedAsync(CancellationToken cancellationToken)
     {
         Log.CircuitOpened(_logger, CircuitId);
-        _startTime = ((bool)_circuitMetrics?.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
+        _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
         _circuitMetrics?.OnCircuitOpened();
 
         Renderer.Dispatcher.AssertAccess();
