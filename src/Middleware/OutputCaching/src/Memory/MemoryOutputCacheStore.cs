@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Memory;
 internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 {
     private readonly MemoryCache _cache;
-    private readonly Dictionary<string, HashSet<ValueTuple<string,Guid>>> _taggedEntries = [];
+    private readonly Dictionary<string, HashSet<(string key, Guid entryId)>> _taggedEntries = [];
     private readonly object _tagsLock = new();
 
     internal MemoryOutputCacheStore(MemoryCache cache)
@@ -21,7 +21,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     }
 
     // For testing
-    internal Dictionary<string, HashSet<string>> TaggedEntries => _taggedEntries.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(t => t.Item1).ToHashSet());
+    internal Dictionary<string, HashSet<string>> TaggedEntries => _taggedEntries.ToDictionary(kvp => kvp.Key, kvp => kvp.Value.Select(t => t.key).ToHashSet());
 
     public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken)
     {
@@ -43,7 +43,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
                         var oldCount = keys.Count;
                         foreach (var tuple in keys)
                         {
-                            _cache.Remove(tuple.Item1);
+                            _cache.Remove(tuple.key);
                             i--;
                             if (oldCount != keys.Count)
                             {
@@ -93,7 +93,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
                     if (!_taggedEntries.TryGetValue(tag, out var keys))
                     {
-                        keys = new HashSet<ValueTuple<string, Guid>>();
+                        keys = new HashSet<(string, Guid)>();
                         _taggedEntries[tag] = keys;
                     }
 
@@ -123,7 +123,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             Size = value.Length
         };
 
-        if (tags != null && tags.Length > 0)
+        if (tags is { Length: > 0 })
         {
             // Remove cache keys from tag lists when the entry is evicted
             options.RegisterPostEvictionCallback(RemoveFromTags, ValueTuple.Create(tags, entryId));
@@ -136,9 +136,9 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
     {
         Debug.Assert(state != null);
 
-        var stateTuple = (ValueTuple<string[], Guid>) state;
-        string[] tags = stateTuple.Item1;
-        Guid entryId = stateTuple.Item2;
+        var stateTuple = ((string[] tags, Guid entryId))state;
+        var tags = stateTuple.tags;
+        var entryId = stateTuple.entryId;
 
         Debug.Assert(tags != null);
         Debug.Assert(tags.Length > 0);
@@ -150,7 +150,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 if (_taggedEntries.TryGetValue(tag, out var tagged))
                 {
-                    tagged.Remove(ValueTuple.Create((string) key, entryId));
+                    tagged.Remove((key: (string)key, entryId));
 
                     // Remove the collection if there is no more keys in it
                     if (tagged.Count == 0)
