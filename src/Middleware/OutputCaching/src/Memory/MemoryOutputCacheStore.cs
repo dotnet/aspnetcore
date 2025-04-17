@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Memory;
 internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 {
     private readonly MemoryCache _cache;
-    private readonly Dictionary<string, HashSet<Tuple<string,string>>> _taggedEntries = new();
+    private readonly Dictionary<string, HashSet<ValueTuple<string,Guid>>> _taggedEntries = new();
     private readonly object _tagsLock = new();
 
     internal MemoryOutputCacheStore(MemoryCache cache)
@@ -75,7 +75,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(value);
 
-        var entryId = Guid.NewGuid().ToString();
+        var entryId = Guid.NewGuid();
 
         if (tags != null)
         {
@@ -93,13 +93,13 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
                     if (!_taggedEntries.TryGetValue(tag, out var keys))
                     {
-                        keys = new HashSet<Tuple<string, string>>();
+                        keys = new HashSet<ValueTuple<string, Guid>>();
                         _taggedEntries[tag] = keys;
                     }
 
                     Debug.Assert(keys != null);
 
-                    keys.Add(Tuple.Create(key, entryId));
+                    keys.Add(ValueTuple.Create(key, entryId));
                 }
 
                 SetEntry(key, value, tags, validFor, entryId);
@@ -113,7 +113,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         return ValueTask.CompletedTask;
     }
 
-    private void SetEntry(string key, byte[] value, string[]? tags, TimeSpan validFor, string entryId)
+    private void SetEntry(string key, byte[] value, string[]? tags, TimeSpan validFor, Guid entryId)
     {
         Debug.Assert(key != null);
 
@@ -126,7 +126,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
         if (tags != null && tags.Length > 0)
         {
             // Remove cache keys from tag lists when the entry is evicted
-            options.RegisterPostEvictionCallback(RemoveFromTags, Tuple.Create(tags, entryId));
+            options.RegisterPostEvictionCallback(RemoveFromTags, ValueTuple.Create(tags, entryId));
         }
 
         _cache.Set(key, value, options);
@@ -134,14 +134,15 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
     void RemoveFromTags(object key, object? value, EvictionReason reason, object? state)
     {
-        var stateTuple = state as Tuple<string[], string>;
-        string[]? tags = stateTuple?.Item1;
-        string? entryId = stateTuple?.Item2;
+        Debug.Assert(state != null);
+
+        var stateTuple = (ValueTuple<string[], Guid>) state;
+        string[] tags = stateTuple.Item1;
+        Guid entryId = stateTuple.Item2;
 
         Debug.Assert(tags != null);
         Debug.Assert(tags.Length > 0);
         Debug.Assert(key is string);
-        Debug.Assert(entryId != null);
 
         lock (_tagsLock)
         {
@@ -149,7 +150,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 if (_taggedEntries.TryGetValue(tag, out var tagged))
                 {
-                    tagged.Remove(Tuple.Create((string) key, entryId));
+                    tagged.Remove(ValueTuple.Create((string) key, entryId));
 
                     // Remove the collection if there is no more keys in it
                     if (tagged.Count == 0)
