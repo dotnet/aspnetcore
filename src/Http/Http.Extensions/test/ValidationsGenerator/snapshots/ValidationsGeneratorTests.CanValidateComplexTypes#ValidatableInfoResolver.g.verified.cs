@@ -228,8 +228,8 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                     results.AddRange(propertyAttributes);
                 }
 
-                // Check constructors for parameters that match the property name to handle
-                // record scenarios
+                // Check constructors for parameters that match the property name
+                // to handle record scenarios
                 foreach (var constructor in k.ContainingType.GetConstructors())
                 {
                     // Look for parameter with matching name (case insensitive)

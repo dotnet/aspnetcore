@@ -39,6 +39,15 @@ public record SubType([Required] string RequiredProperty = "some-value", [String
 
 public record SubTypeWithInheritance([EmailAddress] string? EmailString, string RequiredProperty, string? StringWithLength) : SubType(RequiredProperty, StringWithLength);
 
+public record SubTypeWithoutConstructor
+{
+    [Required]
+    public string RequiredProperty { get; set; } = "some-value";
+
+    [StringLength(10)]
+    public string? StringWithLength { get; set; }
+}
+
 public static class CustomValidators
 {
     public static ValidationResult Validate(int number, ValidationContext validationContext)
@@ -63,6 +72,7 @@ public record ValidatableRecord(
     SubType PropertyWithMemberAttributes = default,
     SubType PropertyWithoutMemberAttributes = default,
     SubTypeWithInheritance PropertyWithInheritance = default,
+    SubTypeWithoutConstructor PropertyOfSubtypeWithoutConstructor = default,
     List<SubType> ListOfSubTypes = default,
     [DerivedValidation(ErrorMessage = "Value must be an even number")]
     int IntegerWithDerivedValidationAttribute = 0,
@@ -83,6 +93,7 @@ public record ValidatableRecord(
             await InvalidPropertyWithDerivedValidationAttributeProducesError(endpoint);
             await InvalidPropertyWithMultipleAttributesProducesError(endpoint);
             await InvalidPropertyWithCustomValidationProducesError(endpoint);
+            await InvalidPropertyOfSubtypeWithoutConstructorProducesError(endpoint);
             await ValidInputProducesNoWarnings(endpoint);
 
             async Task InvalidIntegerWithRangeProducesError(Endpoint endpoint)
@@ -293,6 +304,34 @@ public record ValidatableRecord(
                     Assert.Equal("IntegerWithCustomValidation", kvp.Key);
                     var error = Assert.Single(kvp.Value);
                     Assert.Equal("Can't use the same number value in two properties on the same class.", error);
+                });
+            }
+
+            async Task InvalidPropertyOfSubtypeWithoutConstructorProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                    {
+                        "PropertyOfSubtypeWithoutConstructor": {
+                            "RequiredProperty": "",
+                            "StringWithLength": "way-too-long"
+                        }
+                    }
+                    """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors,
+                kvp =>
+                {
+                    Assert.Equal("PropertyOfSubtypeWithoutConstructor.RequiredProperty", kvp.Key);
+                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("PropertyOfSubtypeWithoutConstructor.StringWithLength", kvp.Key);
+                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                 });
             }
 

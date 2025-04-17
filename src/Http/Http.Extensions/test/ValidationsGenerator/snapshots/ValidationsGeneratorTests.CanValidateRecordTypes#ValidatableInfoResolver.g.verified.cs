@@ -70,6 +70,11 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 validatableInfo = CreateSubTypeWithInheritance();
                 return true;
             }
+            if (type == typeof(global::SubTypeWithoutConstructor))
+            {
+                validatableInfo = CreateSubTypeWithoutConstructor();
+                return true;
+            }
             if (type == typeof(global::ValidatableRecord))
             {
                 validatableInfo = CreateValidatableRecord();
@@ -120,6 +125,26 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                 ]
             );
         }
+        private ValidatableTypeInfo CreateSubTypeWithoutConstructor()
+        {
+            return new GeneratedValidatableTypeInfo(
+                type: typeof(global::SubTypeWithoutConstructor),
+                members: [
+                    new GeneratedValidatablePropertyInfo(
+                        containingType: typeof(global::SubTypeWithoutConstructor),
+                        propertyType: typeof(string),
+                        name: "RequiredProperty",
+                        displayName: "RequiredProperty"
+                    ),
+                    new GeneratedValidatablePropertyInfo(
+                        containingType: typeof(global::SubTypeWithoutConstructor),
+                        propertyType: typeof(string),
+                        name: "StringWithLength",
+                        displayName: "StringWithLength"
+                    ),
+                ]
+            );
+        }
         private ValidatableTypeInfo CreateValidatableRecord()
         {
             return new GeneratedValidatableTypeInfo(
@@ -154,6 +179,12 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                         propertyType: typeof(global::SubTypeWithInheritance),
                         name: "PropertyWithInheritance",
                         displayName: "PropertyWithInheritance"
+                    ),
+                    new GeneratedValidatablePropertyInfo(
+                        containingType: typeof(global::ValidatableRecord),
+                        propertyType: typeof(global::SubTypeWithoutConstructor),
+                        name: "PropertyOfSubtypeWithoutConstructor",
+                        displayName: "PropertyOfSubtypeWithoutConstructor"
                     ),
                     new GeneratedValidatablePropertyInfo(
                         containingType: typeof(global::ValidatableRecord),
@@ -228,8 +259,8 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                     results.AddRange(propertyAttributes);
                 }
 
-                // Check constructors for parameters that match the property name to handle
-                // record scenarios
+                // Check constructors for parameters that match the property name
+                // to handle record scenarios
                 foreach (var constructor in k.ContainingType.GetConstructors())
                 {
                     // Look for parameter with matching name (case insensitive)

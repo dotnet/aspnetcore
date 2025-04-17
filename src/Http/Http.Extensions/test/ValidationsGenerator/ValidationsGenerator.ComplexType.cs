@@ -39,11 +39,11 @@ public class ComplexType
     public int IntegerWithRangeAndDisplayName { get; set; } = 50;
 
     [Required]
-    public SubType PropertyWithMemberAttributes { get; set; } = new SubType();
+    public SubType PropertyWithMemberAttributes { get; set; } = new SubType("some-value", default);
 
-    public SubType PropertyWithoutMemberAttributes { get; set; } = new SubType();
+    public SubType PropertyWithoutMemberAttributes { get; set; } = new SubType("some-value", default);
 
-    public SubTypeWithInheritance PropertyWithInheritance { get; set; } = new SubTypeWithInheritance();
+    public SubTypeWithInheritance PropertyWithInheritance { get; set; } = new SubTypeWithInheritance("some-value", default);
 
     public List<SubType> ListOfSubTypes { get; set; } = [];
 
@@ -62,16 +62,16 @@ public class DerivedValidationAttribute : ValidationAttribute
     public override bool IsValid(object? value) => value is int number && number % 2 == 0;
 }
 
-public class SubType
+public class SubType(string? requiredProperty, string? stringWithLength)
 {
     [Required]
-    public string RequiredProperty { get; set; } = "some-value";
+    public string RequiredProperty { get; } = requiredProperty;
 
     [StringLength(10)]
-    public string? StringWithLength { get; set; }
+    public string? StringWithLength { get; } = stringWithLength;
 }
 
-public class SubTypeWithInheritance : SubType
+public class SubTypeWithInheritance(string? requiredProperty, string? stringWithLength) : SubType(requiredProperty, stringWithLength)
 {
     [EmailAddress]
     public string? EmailString { get; set; }
