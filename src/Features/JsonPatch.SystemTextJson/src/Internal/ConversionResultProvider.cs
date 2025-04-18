@@ -56,7 +56,7 @@ internal static class ConversionResultProvider
         // Workaround for the https://github.com/dotnet/runtime/issues/113926
         if (targetType.Name == "JsonValuePrimitive`1")
         {
-            targetType = typeof(JsonNode);
+            targetType = typeof(JsonElement);
         }
 
         try
@@ -84,6 +84,12 @@ internal static class ConversionResultProvider
 
     private static object ConvertToTargetType(object value, Type targetType, JsonSerializerOptions serializerOptions)
     {
-        return JsonSerializer.Deserialize(JsonSerializer.Serialize(value, serializerOptions), targetType, serializerOptions);
+        if (value is JsonElement jsonElement)
+        {
+            return JsonSerializer.Deserialize(jsonElement, targetType, serializerOptions);
+        }
+
+        using JsonDocument doc = JsonSerializer.SerializeToDocument(value, serializerOptions);
+        return JsonSerializer.Deserialize(doc.RootElement, targetType, serializerOptions);
     }
 }

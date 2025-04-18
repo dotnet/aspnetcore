@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -10,8 +11,41 @@ internal static class JsonUtilities
 {
     public static bool DeepEquals(object a, object b, JsonSerializerOptions serializerOptions)
     {
-        return JsonObject.DeepEquals(
-            JsonSerializer.SerializeToNode(a, serializerOptions),
-            JsonSerializer.SerializeToNode(b, serializerOptions));
+        if (a == null && b == null)
+        {
+            return true;
+        }
+
+        if (a == null || b == null)
+        {
+            return false;
+        }
+
+        if (a.GetType() == typeof(JsonNode) && b.GetType() == typeof(JsonNode))
+        {
+            return JsonNode.DeepEquals((JsonNode)a, (JsonNode)b);
+        }
+
+        using var docA = TryGetJsonElement(a, serializerOptions, out var elementA);
+        using var docB = TryGetJsonElement(b, serializerOptions, out var elementB);
+
+        return JsonElement.DeepEquals(elementA, elementB);
+    }
+
+    private static IDisposable TryGetJsonElement(object item, JsonSerializerOptions serializerOptions, out JsonElement element)
+    {
+        IDisposable result = null;
+        if (item is JsonElement jsonElement)
+        {
+            element = jsonElement;
+        }
+        else
+        {
+            var docA = JsonSerializer.SerializeToDocument(item, serializerOptions);
+            element = docA.RootElement;
+            result = docA;
+        }
+
+        return result;
     }
 }

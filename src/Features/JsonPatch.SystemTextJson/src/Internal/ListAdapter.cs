@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Helpers;
 using Microsoft.Extensions.Internal;
 
@@ -257,10 +256,6 @@ internal class ListAdapter : IAdapter
         }
     }
 
-    /// <summary>
-    /// This API supports infrastructure and is not intended to be used
-    /// directly from your code. This API may change or be removed in future releases.
-    /// </summary>
     protected readonly struct PositionInfo
     {
         public PositionInfo(PositionType type, int index)
@@ -273,10 +268,6 @@ internal class ListAdapter : IAdapter
         public int Index { get; }
     }
 
-    /// <summary>
-    /// This API supports infrastructure and is not intended to be used
-    /// directly from your code. This API may change or be removed in future releases.
-    /// </summary>
     protected enum PositionType
     {
         Index, // valid index
@@ -285,10 +276,6 @@ internal class ListAdapter : IAdapter
         OutOfBounds
     }
 
-    /// <summary>
-    /// This API supports infrastructure and is not intended to be used
-    /// directly from your code. This API may change or be removed in future releases.
-    /// </summary>
     protected enum OperationType
     {
         Add,

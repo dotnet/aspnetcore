@@ -713,19 +713,14 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
 
     private string GetPropertyNameFromMemberExpression(MemberExpression memberExpression)
     {
-        var jsonObjectContract = SerializerOptions.GetTypeInfo(memberExpression.Expression.Type);
-        if (jsonObjectContract != null)
+        var jsonTypeInfo = SerializerOptions.GetTypeInfo(memberExpression.Expression.Type);
+        if (jsonTypeInfo != null)
         {
-            var jsonName = memberExpression.Member.Name;
-            var propNameAttribute = memberExpression.Member.GetCustomAttribute<JsonPropertyNameAttribute>();
-            if (propNameAttribute is not null)
-            {
-                jsonName = propNameAttribute.Name;
-            }
-
-            return jsonObjectContract.Properties
-                .First(jsonProperty => jsonProperty.Name == jsonName)
-                .Name;
+            var memberInfo = memberExpression.Member;
+            var matchingProp = jsonTypeInfo
+                .Properties
+                .First(jsonProp => jsonProp.AttributeProvider is MemberInfo mi && mi == memberInfo);
+            return matchingProp.Name;
         }
 
         return null;
