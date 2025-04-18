@@ -145,8 +145,8 @@
     <SystemNumericsTensorsVersion>10.0.0-preview.4.25211.19</SystemNumericsTensorsVersion>
     <SystemRuntimeCachingVersion>10.0.0-preview.4.25211.19</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/extensions -->
-    <MicrosoftExtensionsDiagnosticsTestingVersion>9.5.0-preview.1.25211.2</MicrosoftExtensionsDiagnosticsTestingVersion>
-    <MicrosoftExtensionsTimeProviderTestingVersion>9.5.0-preview.1.25211.2</MicrosoftExtensionsTimeProviderTestingVersion>
+    <MicrosoftExtensionsDiagnosticsTestingVersion>9.5.0-preview.1.25217.1</MicrosoftExtensionsDiagnosticsTestingVersion>
+    <MicrosoftExtensionsTimeProviderTestingVersion>9.5.0-preview.1.25217.1</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>10.0.0-preview.4.25214.1</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>10.0.0-preview.4.25214.1</MicrosoftEntityFrameworkCoreInMemoryVersion>
