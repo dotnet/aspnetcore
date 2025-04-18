@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
@@ -196,5 +198,61 @@ public class JsonPatchDocumentTest
 
         // Assert
         Assert.Equal("The JSON patch document was malformed and could not be parsed.", exception.Message);
+    }
+
+    [Fact]
+    public void Deserialization_RespectsNamingPolicy()
+    {
+        // Arrange
+        var childToAdd = new SimpleObject
+        {
+            GuidValue = Guid.NewGuid(),
+            StringProperty = "some test data"
+        };
+
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        options.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault;
+
+        var json = GeneratePatchDocumentJson(childToAdd, options);
+
+        var getTestObject = () => new SimpleObject() { SimpleObjectList = new() };
+
+        //Act
+        var docSuccess = DeserializePatchDocumentWithNamingPolicy(json, JsonNamingPolicy.CamelCase);
+        var docFail = DeserializePatchDocumentWithNamingPolicy(json, JsonNamingPolicy.KebabCaseLower);
+
+        // Assert
+
+        // The following call should succeed
+        docSuccess.ApplyTo(getTestObject());
+
+        // The following call should fail
+        Assert.Throws<JsonPatchException>(() =>
+        {
+            docFail.ApplyTo(getTestObject());
+        });
+    }
+
+    private static JsonPatchDocument<SimpleObject> DeserializePatchDocumentWithNamingPolicy(string json, JsonNamingPolicy policy)
+    {
+        var compatibleSerializerOption = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        compatibleSerializerOption.PropertyNamingPolicy = policy;
+        var docSuccess = JsonSerializer.Deserialize<JsonPatchDocument<SimpleObject>>(json, compatibleSerializerOption);
+        return docSuccess;
+    }
+
+    private string GeneratePatchDocumentJson(SimpleObject toAdd, JsonSerializerOptions jsonSerializerOptions)
+    {
+        var document = new JsonPatchDocument<SimpleObject>();
+        var operation = new Operation<SimpleObject>
+        {
+            op = "add",
+            path = "/simpleObjectList/-",
+            value = toAdd
+        };
+        document.Operations.Add(operation);
+
+        return JsonSerializer.Serialize<JsonPatchDocument<SimpleObject>>(document, jsonSerializerOptions);
     }
 }
