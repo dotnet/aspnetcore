@@ -508,7 +508,7 @@ T", null, null, false, null, null, null));
             }
             else
             {
-                throw new InvalidOperationException("The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+                throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
             }
         }
     }

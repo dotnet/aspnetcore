@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             }
             else
             {
-                throw new InvalidOperationException("The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+                throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
             }
         }
     }

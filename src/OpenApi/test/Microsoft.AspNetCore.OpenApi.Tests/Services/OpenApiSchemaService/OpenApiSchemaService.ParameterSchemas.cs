@@ -339,7 +339,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [([Length(4, 8)] int[] id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinItems); Assert.Equal(8, schema.MaxItems); }],
         [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal("4", schema.Minimum); Assert.Equal("8", schema.Maximum); }],
         [([Range(1234, 5678)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal("1234", schema.Minimum); Assert.Equal("5678", schema.Maximum); }],
-         [([Range(1234.56, 7891.1)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal("1234.56", schema.Minimum); Assert.Equal("7891.1", schema.Maximum); }],
+        [([Range(1234.56, 7891.1)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal("1234.56", schema.Minimum); Assert.Equal("7891.1", schema.Maximum); }],
         [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
         [([StringLength(10)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(0, schema.MinLength); }],
         [([StringLength(10, MinimumLength = 5)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(5, schema.MinLength); }],
