@@ -1,11 +1,9 @@
 #nullable enable
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IAdapterFactory
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapterWithTest
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.JsonPatchException() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.JsonPatchDocument() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>.JsonPatchDocument() -> void
@@ -25,7 +23,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Move = 3 
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Remove = 1 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Replace = 2 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Test = 5 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IAdapterFactory.Create(object target) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter.Add(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter.Copy(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter.Move(Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation operation, object objectToApplyTo) -> void
@@ -40,12 +37,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Test = 5 
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument.GetOperations() -> System.Collections.Generic.IList<Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation>
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument.SerializerOptions.set -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryAdd(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryGet(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object value, out string errorMessage) -> bool
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryRemove(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out string errorMessage) -> bool
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryReplace(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryTest(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, object value, out string errorMessage) -> bool
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal.IAdapter.TryTraverse(object target, string segment, System.Text.Json.JsonSerializerOptions serializerOptions, out object nextTarget, out string errorMessage) -> bool
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.Add(string path, object value) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.ApplyTo(object objectToApplyTo) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.ApplyTo(object objectToApplyTo, Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter adapter) -> void

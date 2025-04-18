@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 /// <summary>
 /// Defines the operations used for loading an <see cref="IAdapter"/> based on the current object and ContractResolver.
 /// </summary>
-public interface IAdapterFactory
+internal interface IAdapterFactory
 {
     /// <summary>
     /// Creates an <see cref="IAdapter"/> for the current object

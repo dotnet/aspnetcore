@@ -12,32 +12,37 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 internal sealed class JsonConverterForJsonPatchDocumentOfT<T> : JsonConverter<JsonPatchDocument<T>>
     where T : class
 {
-    public override bool CanConvert(Type typeToConvert)
-    {
-        var result = base.CanConvert(typeToConvert);
-        return result;
-    }
+    private static JsonConverter<Operation<T>> GetConverter(JsonSerializerOptions options) =>
+            (JsonConverter<Operation<T>>)options.GetConverter(typeof(Operation<T>));
 
     public override JsonPatchDocument<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        // Parse root object
+        if (typeToConvert != typeof(JsonPatchDocument<T>))
+        {
+            throw new ArgumentException(Resources.FormatParameterMustMatchType(nameof(typeToConvert), nameof(JsonPatchDocument<T>)), nameof(typeToConvert));
+        }
+
+        if (reader.TokenType != JsonTokenType.StartArray)
+        {
+            throw new JsonException(Resources.InvalidJsonPatchDocument);
+        }
+
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return null;
+        }
+
+        List<Operation<T>> ops = [];
         try
         {
-            using var document = JsonDocument.ParseValue(ref reader);
-            var operationsElement = document.RootElement;
-            if (operationsElement.ValueKind != JsonValueKind.Array)
+            JsonConverter<Operation<T>> operationConverter = GetConverter(options);
+            while (reader.Read() && reader.TokenType is not JsonTokenType.EndArray)
             {
-                throw new JsonException("Expected 'Operations' array property in JsonPatchDocument.");
+                var op = operationConverter.Read(ref reader, typeof(Operation<T>), options);
+                ops.Add(op);
             }
 
-            // Clone options with Operation<T> converter
-            var effectiveOptions = CloneWithOperationConverter(options);
-
-            // Deserialize the operations array
-            var operations = JsonSerializer.Deserialize<List<Operation<T>>>(operationsElement.GetRawText(), effectiveOptions);
-
-            return new JsonPatchDocument<T>(operations, options);
-
+            return new JsonPatchDocument<T>(ops, options);
         }
         catch (Exception ex)
         {
@@ -47,34 +52,18 @@ internal sealed class JsonConverterForJsonPatchDocumentOfT<T> : JsonConverter<Js
 
     public override void Write(Utf8JsonWriter writer, JsonPatchDocument<T> value, JsonSerializerOptions options)
     {
-        JsonSerializer.Serialize(writer, value.Operations, CloneWithOperationConverter(options));
-    }
-
-    private static JsonSerializerOptions CloneWithOperationConverter(JsonSerializerOptions baseOptions)
-    {
-        var options = baseOptions;
-
-        var converterRegistered = IsOperationConverterRegistered(options);
-        if (!converterRegistered)
+        if (value == null)
         {
-            options = new JsonSerializerOptions(baseOptions);
-            options.Converters.Add(new OperationConverterFactory());
+            writer.WriteNullValue();
+            return;
         }
 
-        return options;
-    }
-
-    private static bool IsOperationConverterRegistered(JsonSerializerOptions options)
-    {
-        for (var i = 0; i < options.Converters.Count; i++)
+        JsonConverter<Operation<T>> operationConverter = GetConverter(options);
+        writer.WriteStartArray();
+        foreach (var operation in value.Operations)
         {
-            var converter = options.Converters[i];
-            if (converter is OperationConverterFactory || converter.GetType().IsGenericType && converter.GetType().GetGenericTypeDefinition() == typeof(OperationConverter<>))
-            {
-                return true;
-            }
+            operationConverter.Write(writer, operation, options);
         }
-
-        return false;
+        writer.WriteEndArray();
     }
 }

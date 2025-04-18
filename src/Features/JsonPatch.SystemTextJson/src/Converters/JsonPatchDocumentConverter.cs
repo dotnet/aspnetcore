@@ -14,33 +14,38 @@ internal class JsonPatchDocumentConverter : JsonConverter<JsonPatchDocument>
 {
     internal static JsonSerializerOptions DefaultSerializerOptions { get; } = JsonSerializerOptions.Default;
 
+    private static JsonConverter<Operation> GetConverter(JsonSerializerOptions options) =>
+            (JsonConverter<Operation>)options.GetConverter(typeof(Operation));
+
     public override JsonPatchDocument Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (typeToConvert != typeof(JsonPatchDocument))
         {
-            throw new ArgumentException(Resources.FormatParameterMustMatchType(nameof(typeToConvert), "JsonPatchDocument"), nameof(typeToConvert));
+            throw new ArgumentException(Resources.FormatParameterMustMatchType(nameof(typeToConvert), nameof(JsonPatchDocument)), nameof(typeToConvert));
         }
+
+        if (reader.TokenType != JsonTokenType.StartArray)
+        {
+            throw new JsonException(Resources.InvalidJsonPatchDocument);
+        }
+
+        if (reader.TokenType == JsonTokenType.Null)
+        {
+            return null;
+        }
+
+        List<Operation> ops = [];
 
         try
         {
-            if (reader.TokenType == JsonTokenType.Null)
+            JsonConverter<Operation> operationConverter = GetConverter(options);
+            while (reader.Read() && reader.TokenType is not JsonTokenType.EndArray)
             {
-                return null;
+                var op = operationConverter.Read(ref reader, typeof(Operation), options);
+                ops.Add(op);
             }
 
-            var operations = new List<Operation>();
-
-            JsonNode node = JsonArray.Parse(ref reader, new JsonNodeOptions { PropertyNameCaseInsensitive = options.PropertyNameCaseInsensitive });
-            JsonArray operationsArray = node.AsArray();
-            foreach (var item in operationsArray)
-            {
-                operations.Add(item.Deserialize<Operation>(options));
-            }
-
-            // container target: the JsonPatchDocument.
-            var container = new JsonPatchDocument(operations, DefaultSerializerOptions);
-
-            return container;
+            return new JsonPatchDocument(ops, options);
         }
         catch (Exception ex)
         {
@@ -50,10 +55,18 @@ internal class JsonPatchDocumentConverter : JsonConverter<JsonPatchDocument>
 
     public override void Write(Utf8JsonWriter writer, JsonPatchDocument value, JsonSerializerOptions options)
     {
+        if (value == null)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
+        JsonConverter<Operation> operationConverter = GetConverter(options);
+
         writer.WriteStartArray();
         foreach (var operation in value.Operations)
         {
-            JsonSerializer.Serialize(writer, operation, options);
+            operationConverter.Write(writer, operation, options);
         }
 
         writer.WriteEndArray();
