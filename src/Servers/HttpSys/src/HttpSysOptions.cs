@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Security.AccessControl;
 using System.Text;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -166,6 +167,14 @@ public class HttpSysOptions
             _requestQueueLength = value;
         }
     }
+
+    /// <summary>
+    /// Gets or sets the security descriptor for the request queue.
+    /// </summary>
+    /// <remarks>
+    /// Only applies when creating a new request queue, see <see cref="RequestQueueMode" />.
+    /// </remarks>
+    public GenericSecurityDescriptor? RequestQueueSecurityDescriptor { get; set; }
 
     /// <summary>
     /// Gets or sets the maximum allowed size of any request body in bytes.
