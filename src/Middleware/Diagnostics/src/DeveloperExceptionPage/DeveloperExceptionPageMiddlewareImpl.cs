@@ -115,6 +115,8 @@ internal class DeveloperExceptionPageMiddlewareImpl
         }
         catch (Exception ex)
         {
+            DiagnosticsTelemetry.AddMetricsTags(context, ex);
+
             var exceptionName = ex.GetType().FullName!;
 
             if ((ex is OperationCanceledException || ex is IOException) && context.RequestAborted.IsCancellationRequested)
@@ -135,7 +137,7 @@ internal class DeveloperExceptionPageMiddlewareImpl
                 return;
             }
 
-            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, ex);
+            _logger.UnhandledException(ex);
 
             if (context.Response.HasStarted)
             {
