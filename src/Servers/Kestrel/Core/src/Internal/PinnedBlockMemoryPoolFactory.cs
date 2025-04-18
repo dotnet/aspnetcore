@@ -24,12 +24,13 @@ internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, I
     public MemoryPool<byte> Create()
     {
         var pool = new PinnedBlockMemoryPool(_meterFactory);
+
+        _pools.TryAdd(pool, pool);
+
         pool.DisposeCallback = (self) =>
         {
             _pools.TryRemove(self, out _);
         };
-
-        _pools.TryAdd(pool, pool);
 
         return pool;
     }

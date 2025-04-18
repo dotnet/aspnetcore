@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Connections;
 
 namespace System.Buffers;
 
+#nullable enable
+
 internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IDisposable
 {
     private readonly IMeterFactory _meterFactory;
@@ -40,12 +42,13 @@ internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IDisp
     public MemoryPool<byte> Create()
     {
         var pool = new PinnedBlockMemoryPool(_meterFactory);
+
+        _pools.TryAdd(pool, pool);
+
         pool.DisposeCallback = (self) =>
         {
             _pools.TryRemove(self, out _);
         };
-
-        _pools.TryAdd(pool, pool);
 
         return pool;
     }
