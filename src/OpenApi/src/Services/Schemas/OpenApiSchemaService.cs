@@ -148,7 +148,7 @@ internal sealed class OpenApiSchemaService(
         var schema = UnwrapOpenApiSchema(inputSchema);
 
         if (schema.Metadata is not null &&
-                schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var resolvedBaseSchemaId))
+            schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var resolvedBaseSchemaId))
         {
             if (schema.AnyOf is { Count: > 0 })
             {
@@ -241,7 +241,7 @@ internal sealed class OpenApiSchemaService(
             }
             else
             {
-                throw new InvalidOperationException("The input schema must be an OpenApiSchema or OpenApiSchemaReference.");
+                throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiSchema)} or {nameof(OpenApiSchemaReference)}.");
             }
         }
         else if (sourceSchema is OpenApiSchema directSchema)
@@ -250,7 +250,7 @@ internal sealed class OpenApiSchemaService(
         }
         else
         {
-            throw new InvalidOperationException("The input schema must be an OpenApiSchema or OpenApiSchemaReference.");
+            throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiSchema)} or {nameof(OpenApiSchemaReference)}.");
         }
     }
 
