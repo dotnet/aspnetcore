@@ -3,7 +3,6 @@
 
 using System;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 
@@ -22,21 +21,7 @@ internal static class ConversionResultProvider
             return new ConversionResult(true, value);
         }
 
-        // Workaround for the https://github.com/dotnet/runtime/issues/113926
-        if (typeToConvertTo.Name == "JsonValuePrimitive`1")
-        {
-            typeToConvertTo = typeof(JsonNode);
-        }
-
-        try
-        {
-            var deserialized = ConvertToTargetType(value, typeToConvertTo, serializerOptions);
-            return new ConversionResult(true, deserialized);
-        }
-        catch
-        {
-            return new ConversionResult(canBeConverted: false, convertedInstance: null);
-        }
+        return GetConvertedValue(value, serializerOptions, ref typeToConvertTo);
     }
 
     internal static ConversionResult CopyTo(object value, Type typeToConvertTo, JsonSerializerOptions serializerOptions)
@@ -53,6 +38,11 @@ internal static class ConversionResultProvider
             targetType = value.GetType();
         }
 
+        return GetConvertedValue(value, serializerOptions, ref targetType);
+    }
+
+    private static ConversionResult GetConvertedValue(object value, JsonSerializerOptions serializerOptions, ref Type targetType)
+    {
         // Workaround for the https://github.com/dotnet/runtime/issues/113926
         if (targetType.Name == "JsonValuePrimitive`1")
         {

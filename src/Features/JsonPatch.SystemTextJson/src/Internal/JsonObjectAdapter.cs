@@ -73,13 +73,14 @@ internal class JsonObjectAdapter : IAdapter
     {
         var obj = (JsonObject)target;
 
-        if (!obj.ContainsKey(segment))
+        int index = obj.IndexOf(segment);
+        if (index == -1)
         {
             errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
             return false;
         }
 
-        obj[segment] = value != null ? JsonSerializer.SerializeToNode(value) : GetJsonNull();
+        obj[index] = value != null ? JsonSerializer.SerializeToNode(value, serializerOptions) : GetJsonNull();
 
         errorMessage = null;
         return true;

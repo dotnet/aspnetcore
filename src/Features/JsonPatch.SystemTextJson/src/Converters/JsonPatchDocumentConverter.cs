@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
 
@@ -12,8 +11,6 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 
 internal class JsonPatchDocumentConverter : JsonConverter<JsonPatchDocument>
 {
-    internal static JsonSerializerOptions DefaultSerializerOptions { get; } = JsonSerializerOptions.Default;
-
     private static JsonConverter<Operation> GetConverter(JsonSerializerOptions options) =>
             (JsonConverter<Operation>)options.GetConverter(typeof(Operation));
 

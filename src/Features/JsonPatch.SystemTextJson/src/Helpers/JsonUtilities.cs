@@ -21,9 +21,9 @@ internal static class JsonUtilities
             return false;
         }
 
-        if (a.GetType() == typeof(JsonNode) && b.GetType() == typeof(JsonNode))
+        if (a is JsonNode nodeA && b is JsonNode nodeB)
         {
-            return JsonNode.DeepEquals((JsonNode)a, (JsonNode)b);
+            return JsonNode.DeepEquals(nodeA, nodeB);
         }
 
         using var docA = TryGetJsonElement(a, serializerOptions, out var elementA);
