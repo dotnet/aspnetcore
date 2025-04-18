@@ -232,6 +232,11 @@ while [[ $# -gt 0 ]]; do
         -excludeCIBinarylog|-nobl)
             exclude_ci_binary_log=true
             ;;
+        -verbosity|-v)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --verbosity" && __usage
+            verbosity="${1:-}"
+            ;;
         -dotnet-runtime-source-feed|-dotnetruntimesourcefeed|-runtime-source-feed|-runtimesourcefeed)
             shift
             [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed" && __usage
