@@ -499,7 +499,7 @@ T", null, null, false, null, null, null));
                 }
                 else
                 {
-                    throw new InvalidOperationException("The input schema must be an OpenApiSchema or OpenApiSchemaReference.");
+                    throw new InvalidOperationException("The input schema must be an OpenApiParameter or OpenApiParameterReference.");
                 }
             }
             else if (sourceParameter is OpenApiParameter directParameter)
@@ -508,7 +508,7 @@ T", null, null, false, null, null, null));
             }
             else
             {
-                throw new InvalidOperationException("The input schema must be an OpenApiSchema or OpenApiSchemaReference.");
+                throw new InvalidOperationException("The input schema must be an OpenApiParameter or OpenApiParameterReference.");
             }
         }
     }
