@@ -65,11 +65,4 @@ public class Operation : OperationBase
                 break;
         }
     }
-
-    public bool ShouldSerializevalue()
-    {
-        return (OperationType == OperationType.Add
-            || OperationType == OperationType.Replace
-            || OperationType == OperationType.Test);
-    }
 }

@@ -12,7 +12,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>.JsonPatc
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation.Operation() -> void
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation.ShouldSerializevalue() -> bool
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation<TModel>.Operation() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.OperationBase() -> void

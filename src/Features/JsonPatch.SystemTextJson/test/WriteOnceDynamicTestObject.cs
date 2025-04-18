@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson.Internal;
 /// "add" and "remove" operations applied sequentially using the same path.
 /// </para>
 /// <para>
-/// This is done by asserting that  no value exists for a particular key before setting its value. To replace the
+/// This is done by asserting that no value exists for a particular key before setting its value. To replace the
 /// value for a key, the key must first be removed, and then re-added with the new value.
 /// </para>
 /// <para>
-/// See JsonPatch#110 for further details.
+/// See https://github.com/dotnet/aspnetcore/issues/3623 for further details.
 /// </para>
 /// </remarks>
 public class WriteOnceDynamicTestObject : DynamicObject
