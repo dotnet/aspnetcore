@@ -211,6 +211,10 @@
     <Project Path="src/DefaultBuilder/test/Microsoft.AspNetCore.Tests/Microsoft.AspNetCore.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Features/" Id="e81caa0a-8d6a-e3b6-28b3-ab416e1657a7" />
+  <Folder Name="/src/Features/JsonPatch.SystemTextJson/" Id="02ea681e-c7d8-13c7-8484-4ac65e1b71e8">
+    <Project Path="src/Features/JsonPatch.SystemTextJson/src/Microsoft.AspNetCore.JsonPatch.SystemTextJson.csproj" />
+    <Project Path="src/Features/JsonPatch.SystemTextJson/test/Microsoft.AspNetCore.JsonPatch.SystemTextJson.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Features/JsonPatch/" Id="077a40ee-d664-9e06-acde-21ca54b47638">
     <Project Path="src/Features/JsonPatch/src/Microsoft.AspNetCore.JsonPatch.csproj" />
     <Project Path="src/Features/JsonPatch/test/Microsoft.AspNetCore.JsonPatch.Tests.csproj" />
