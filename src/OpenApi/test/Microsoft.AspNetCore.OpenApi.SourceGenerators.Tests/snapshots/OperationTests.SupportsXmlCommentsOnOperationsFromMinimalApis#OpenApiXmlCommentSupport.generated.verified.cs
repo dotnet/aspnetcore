@@ -402,7 +402,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
                 else
                 {
-                    throw new InvalidOperationException("The input schema must be an OpenApiParameter or OpenApiParameterReference.");
+                    throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
                 }
             }
             else if (sourceParameter is OpenApiParameter directParameter)
@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             }
             else
             {
-                throw new InvalidOperationException("The input schema must be an OpenApiParameter or OpenApiParameterReference.");
+                throw new InvalidOperationException("The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
             }
         }
     }
