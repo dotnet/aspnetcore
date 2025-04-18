@@ -60,3 +60,6 @@ HttpSetUrlGroupProperty
 SetFileCompletionNotificationModes
 SOCKADDR_IN
 SOCKADDR_IN6
+GetSecurityInfo
+GetSecurityDescriptorLength
+LocalFree
