@@ -21,6 +21,8 @@
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersion)" />
     <PackageReference Include="NuGet.Packaging" Version="$(NuGetPackagingVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelVersion)" />
+
+    <Reference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net472'">
