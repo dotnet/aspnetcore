@@ -179,7 +179,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // This is about correcting storage, not trust.
     }
 
-    protected override bool IsExportable(X509Certificate2 c) => true;
+    internal override bool IsExportable(X509Certificate2 c) => true;
 
     protected override TrustLevel TrustCertificateCore(X509Certificate2 certificate)
     {

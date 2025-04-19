@@ -27,7 +27,7 @@ internal sealed class WindowsCertificateManager : CertificateManager
     {
     }
 
-    protected override bool IsExportable(X509Certificate2 c)
+    internal override bool IsExportable(X509Certificate2 c)
     {
 #if XPLAT
         // For the first run experience we don't need to know if the certificate can be exported.
