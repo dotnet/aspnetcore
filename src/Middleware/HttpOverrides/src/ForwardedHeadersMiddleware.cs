@@ -220,19 +220,19 @@ public class ForwardedHeadersMiddleware
         for (; entriesConsumed < sets.Length; entriesConsumed++)
         {
             var set = sets[entriesConsumed];
+            // For the first instance, allow remoteIp to be null for servers that don't support it natively.
+            if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+            {
+                // Stop at the first unknown remote IP, but still apply changes processed so far.
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
+                }
+                break;
+            }
+
             if (checkFor)
             {
-                // For the first instance, allow remoteIp to be null for servers that don't support it natively.
-                if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
-                {
-                    // Stop at the first unknown remote IP, but still apply changes processed so far.
-                    if (_logger.IsEnabled(LogLevel.Debug))
-                    {
-                        _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
-                    }
-                    break;
-                }
-
                 if (IPEndPoint.TryParse(set.IpAndPortText, out var parsedEndPoint))
                 {
                     applyChanges = true;
