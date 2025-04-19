@@ -19,7 +19,4 @@
       <_Parameter2>true</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
-  <PropertyGroup>
-    <WasmInlineBootConfig>false</WasmInlineBootConfig>
-  </PropertyGroup>
 </Project>
