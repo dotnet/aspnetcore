@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using Microsoft.AspNetCore.Mvc.Controllers;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OpenApi.Models;
+    using Microsoft.OpenApi.Models.Interfaces;
     using Microsoft.OpenApi.Models.References;
     using Microsoft.OpenApi.Any;
 
@@ -327,9 +328,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         var operationParameter = operation.Parameters?.SingleOrDefault(parameter => parameter.Name == parameterComment.Name);
                         if (operationParameter is not null)
                         {
-                            var targetOperationParameter = operationParameter is OpenApiParameterReference reference
-                                ? reference.Target
-                                : (OpenApiParameter)operationParameter;
+                            var targetOperationParameter = UnwrapOpenApiParameter(operationParameter);
                             targetOperationParameter.Description = parameterComment.Description;
                             if (parameterComment.Example is { } jsonString)
                             {
@@ -345,7 +344,12 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                 requestBody.Description = parameterComment.Description;
                                 if (parameterComment.Example is { } jsonString)
                                 {
-                                    foreach (var mediaType in requestBody.Content.Values)
+                                    var content = requestBody?.Content?.Values;
+                                    if (content is null)
+                                    {
+                                        continue;
+                                    }
+                                    foreach (var mediaType in content)
                                     {
                                         mediaType.Example = jsonString.Parse();
                                     }
@@ -368,6 +372,29 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             }
 
             return Task.CompletedTask;
+        }
+
+        private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
+        {
+            if (sourceParameter is OpenApiParameterReference parameterReference)
+            {
+                if (parameterReference.Target is OpenApiParameter target)
+                {
+                    return target;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+                }
+            }
+            else if (sourceParameter is OpenApiParameter directParameter)
+            {
+                return directParameter;
+            }
+            else
+            {
+                throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+            }
         }
     }
 

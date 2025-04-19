@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -9,6 +10,7 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Models.Interfaces;
+using Microsoft.OpenApi.Models.References;
 using OpenApiConstants = Microsoft.AspNetCore.OpenApi.OpenApiConstants;
 
 internal sealed partial class OpenApiJsonSchema
@@ -256,12 +258,12 @@ internal sealed partial class OpenApiJsonSchema
             case OpenApiSchemaKeywords.MinimumKeyword:
                 reader.Read();
                 var minimum = reader.GetDecimal();
-                schema.Minimum = minimum;
+                schema.Minimum = minimum.ToString(CultureInfo.InvariantCulture);
                 break;
             case OpenApiSchemaKeywords.MaximumKeyword:
                 reader.Read();
                 var maximum = reader.GetDecimal();
-                schema.Maximum = maximum;
+                schema.Maximum = maximum.ToString(CultureInfo.InvariantCulture);
                 break;
             case OpenApiSchemaKeywords.PatternKeyword:
                 reader.Read();
@@ -302,25 +304,30 @@ internal sealed partial class OpenApiJsonSchema
                 var mappings = ReadDictionary<string>(ref reader);
                 if (mappings is not null)
                 {
-                    schema.Discriminator.Mapping = mappings;
+                    schema.Discriminator ??= new OpenApiDiscriminator();
+                    foreach (var kvp in mappings)
+                    {
+                        schema.Discriminator.Mapping ??= [];
+                        schema.Discriminator.Mapping[kvp.Key] = new OpenApiSchemaReference(kvp.Value);
+                    }
                 }
                 break;
             case OpenApiConstants.SchemaId:
                 reader.Read();
-                schema.Annotations ??= new Dictionary<string, object>();
-                schema.Annotations.Add(OpenApiConstants.SchemaId, reader.GetString());
+                schema.Metadata ??= [];
+                schema.Metadata.Add(OpenApiConstants.SchemaId, reader.GetString() ?? string.Empty);
                 break;
             // OpenAPI does not support the `const` keyword in its schema implementation, so
             // we map it to its closest approximation, an enum with a single value, here.
             case OpenApiSchemaKeywords.ConstKeyword:
                 reader.Read();
-                schema.Enum = [ReadJsonNode(ref reader, out var constType)];
+                schema.Enum = ReadJsonNode(ref reader, out var constType) is { } jsonNode ? [jsonNode] : [];
                 schema.Type = constType;
                 break;
             case OpenApiSchemaKeywords.RefKeyword:
                 reader.Read();
-                schema.Annotations ??= new Dictionary<string, object>();
-                schema.Annotations[OpenApiConstants.RefId] = reader.GetString();
+                schema.Metadata ??= [];
+                schema.Metadata[OpenApiConstants.RefId] = reader.GetString() ?? string.Empty;
                 break;
             default:
                 reader.Skip();

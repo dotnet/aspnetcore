@@ -4,30 +4,30 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.OpenApi.Models;
 
 internal static class ApiDescriptionExtensions
 {
     /// <summary>
-    /// Maps the HTTP method of the ApiDescription to the OpenAPI <see cref="OperationType"/> .
+    /// Maps the HTTP method of the ApiDescription to the HttpMethod.
     /// </summary>
-    /// <param name="apiDescription">The ApiDescription to resolve an operation type from.</param>
-    /// <returns>The <see cref="OperationType"/> associated with the given <paramref name="apiDescription"/>.</returns>
-    public static OperationType GetOperationType(this ApiDescription apiDescription) =>
+    /// <param name="apiDescription">The ApiDescription to resolve an HttpMethod from.</param>
+    /// <returns>The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>.</returns>
+    public static HttpMethod GetHttpMethod(this ApiDescription apiDescription) =>
         apiDescription.HttpMethod?.ToUpperInvariant() switch
         {
-            "GET" => OperationType.Get,
-            "POST" => OperationType.Post,
-            "PUT" => OperationType.Put,
-            "DELETE" => OperationType.Delete,
-            "PATCH" => OperationType.Patch,
-            "HEAD" => OperationType.Head,
-            "OPTIONS" => OperationType.Options,
-            "TRACE" => OperationType.Trace,
+            "GET" => HttpMethod.Get,
+            "POST" => HttpMethod.Post,
+            "PUT" => HttpMethod.Put,
+            "DELETE" => HttpMethod.Delete,
+            "PATCH" => HttpMethod.Patch,
+            "HEAD" => HttpMethod.Head,
+            "OPTIONS" => HttpMethod.Options,
+            "TRACE" => HttpMethod.Trace,
             _ => throw new InvalidOperationException($"Unsupported HTTP method: {apiDescription.HttpMethod}"),
         };
 

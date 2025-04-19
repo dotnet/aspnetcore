@@ -348,6 +348,7 @@ public class TypeBasedTransformerLifetimeTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Todo))
             {
+                schema.Extensions ??= [];
                 schema.Extensions["x-my-extension"] = new OpenApiAny("1");
             }
             return Task.CompletedTask;

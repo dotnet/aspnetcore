@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.OpenApi.Models;
+using System.Net.Http;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -14,19 +14,19 @@ internal static class OpenApiConstants
     internal const string SchemaId = "x-schema-id";
     internal const string RefId = "x-ref-id";
     internal const string DefaultOpenApiResponseKey = "default";
-    // Since there's a finite set of operation types that can be included in a given
-    // OpenApiPaths, we can pre-allocate an array of these types and use a direct
+    // Since there's a finite set of HTTP methods that can be included in a given
+    // OpenApiPaths, we can pre-allocate an array of these methods and use a direct
     // lookup on the OpenApiPaths dictionary to avoid allocating an enumerator
     // over the KeyValuePairs in OpenApiPaths.
-    internal static readonly OperationType[] OperationTypes = [
-        OperationType.Get,
-        OperationType.Post,
-        OperationType.Put,
-        OperationType.Delete,
-        OperationType.Options,
-        OperationType.Head,
-        OperationType.Patch,
-        OperationType.Trace
+    internal static readonly HttpMethod[] HttpMethods = [
+        HttpMethod.Get,
+        HttpMethod.Post,
+        HttpMethod.Put,
+        HttpMethod.Delete,
+        HttpMethod.Options,
+        HttpMethod.Head,
+        HttpMethod.Patch,
+        HttpMethod.Trace
     ];
     // Represents primitive types that should never be represented as
     // a schema reference and always inlined.
