@@ -1399,4 +1399,16 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("restored 2", () => Browser.FindElement(By.Id("auto-2")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto-2")).Text);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void NavigatesWithInteractivityByRequestRedirection(bool controlFlowByException)
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException", isEnabled: controlFlowByException);
+        Navigate($"{ServerPathBase}/routing/ssr-navigate-to");
+        Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);
+        Browser.Click(By.Id("redirectButton"));
+        Browser.Equal("Routing test cases", () => Browser.Exists(By.Id("test-info")).Text);
+    }
 }
