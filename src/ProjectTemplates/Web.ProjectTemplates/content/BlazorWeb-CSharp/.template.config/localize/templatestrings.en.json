@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "Blazor Web App",
-  "description": "A project template for creating a Blazor web app that supports both server-side rendering and client interactivity. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "description": "A website that loads fast and feels like an app, with both server and browser code.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/UserSecretsId/description": "The ID to use for secrets (use with Individual auth).",

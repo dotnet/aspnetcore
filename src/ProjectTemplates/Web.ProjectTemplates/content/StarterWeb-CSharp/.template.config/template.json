@@ -7,7 +7,7 @@
   ],
   "name": "ASP.NET Core Web App (Model-View-Controller)",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core MVC Views and Controllers. This template can also be used for RESTful HTTP services.",
+  "description": "A .NET web app with a clear separation of UI, logic, and data handling using the Model-View Controller (MVC).",
   "groupIdentity": "Microsoft.Web.Mvc",
   "precedence": "10000",
   "identity": "Microsoft.Web.Mvc.CSharp.10.0",

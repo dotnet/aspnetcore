@@ -9,7 +9,7 @@
   ],
   "name": "Blazor WebAssembly Standalone App",
   "defaultName": "BlazorApp",
-  "description": "A project template for creating a Blazor app that runs on WebAssembly. This template can be used for web apps with rich dynamic user interfaces (UIs).",
+  "description": "An interactive single-page web apps that run on WebAssembly, no server needed.",
   "groupIdentity": "Microsoft.Web.Blazor.Wasm",
   "precedence": "10000",
   "guids": [

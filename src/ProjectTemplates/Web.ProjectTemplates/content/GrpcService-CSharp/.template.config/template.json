@@ -9,7 +9,7 @@
   ],
   "name": "ASP.NET Core gRPC Service",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating a gRPC service using ASP.NET Core, with optional support for publishing as native AOT.",
+  "description": "A fast connection point for apps to exchange data and requests.",
   "groupIdentity": "Microsoft.Web.Grpc",
   "precedence": "10000",
   "identity": "Microsoft.Grpc.Service.CSharp.10.0",
