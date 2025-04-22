@@ -6,7 +6,7 @@
     protected override async Task OnInitializedAsync()
     {
         // Simulate some delay before triggering NotFound to start streaming response
-        await Task.Delay(1000);
+        await Task.Yield();
         NavigationManager.NotFound();
     }
 }
