@@ -211,7 +211,7 @@
                           $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Caching\**\src\*.csproj;
                           $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
-                          $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
+                          $(RepoRoot)src\Features\**\src\*.csproj;
                           $(RepoRoot)src\DataProtection\**\src\*.csproj;
                           $(RepoRoot)src\Antiforgery\**\src\*.csproj;
                           $(RepoRoot)src\Hosting\**\src\*.csproj;
