@@ -4,4 +4,7 @@
     <!-- Avoid source build issues with WebAssembly -->
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
+  <PropertyGroup>
+    <WasmInlineBootConfig>false</WasmInlineBootConfig>
+  </PropertyGroup>
 </Project>

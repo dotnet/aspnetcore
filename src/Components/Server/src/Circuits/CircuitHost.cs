@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -23,11 +24,13 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
+    private readonly CircuitMetrics? _circuitMetrics;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
     private bool _disposed;
+    private long _startTime;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
     // it need so be torn down. The registry listens to this even so that the circuit can
@@ -47,6 +50,7 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
+        CircuitMetrics? circuitMetrics,
         ILogger logger)
     {
         CircuitId = circuitId;
@@ -64,6 +68,7 @@ internal partial class CircuitHost : IAsyncDisposable
         JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
+        _circuitMetrics = circuitMetrics;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         Services = scope.ServiceProvider;
@@ -230,6 +235,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task OnCircuitOpenedAsync(CancellationToken cancellationToken)
     {
         Log.CircuitOpened(_logger, CircuitId);
+        _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
+        _circuitMetrics?.OnCircuitOpened();
 
         Renderer.Dispatcher.AssertAccess();
 
@@ -259,6 +266,7 @@ internal partial class CircuitHost : IAsyncDisposable
     public async Task OnConnectionUpAsync(CancellationToken cancellationToken)
     {
         Log.ConnectionUp(_logger, CircuitId, Client.ConnectionId);
+        _circuitMetrics?.OnConnectionUp();
 
         Renderer.Dispatcher.AssertAccess();
 
@@ -288,6 +296,7 @@ internal partial class CircuitHost : IAsyncDisposable
     public async Task OnConnectionDownAsync(CancellationToken cancellationToken)
     {
         Log.ConnectionDown(_logger, CircuitId, Client.ConnectionId);
+        _circuitMetrics?.OnConnectionDown();
 
         Renderer.Dispatcher.AssertAccess();
 
@@ -317,6 +326,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task OnCircuitDownAsync(CancellationToken cancellationToken)
     {
         Log.CircuitClosed(_logger, CircuitId);
+        _circuitMetrics?.OnCircuitDown(_startTime, Stopwatch.GetTimestamp());
 
         List<Exception> exceptions = null;
 

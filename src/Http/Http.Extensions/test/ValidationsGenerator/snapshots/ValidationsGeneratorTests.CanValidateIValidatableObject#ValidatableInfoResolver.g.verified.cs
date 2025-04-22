@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     file static class GeneratedServiceCollectionExtensions
     {
         [InterceptsLocation]
-        public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddValidation(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action<ValidationOptions>? configureOptions = null)
+        public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddValidation(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action<global::Microsoft.AspNetCore.Http.Validation.ValidationOptions>? configureOptions = null)
         {
             // Use non-extension method to avoid infinite recursion.
             return global::Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(services, options =>
@@ -167,13 +167,39 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             var key = new CacheKey(containingType, propertyName);
             return _cache.GetOrAdd(key, static k =>
             {
+                var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
+
+                // Get attributes from the property
                 var property = k.ContainingType.GetProperty(k.PropertyName);
-                if (property == null)
+                if (property != null)
                 {
-                    return [];
+                    var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true);
+
+                    results.AddRange(propertyAttributes);
                 }
 
-                return [.. global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true)];
+                // Check constructors for parameters that match the property name
+                // to handle record scenarios
+                foreach (var constructor in k.ContainingType.GetConstructors())
+                {
+                    // Look for parameter with matching name (case insensitive)
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+
+                    if (parameter != null)
+                    {
+                        var paramAttributes = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameter, inherit: true);
+
+                        results.AddRange(paramAttributes);
+
+                        break;
+                    }
+                }
+
+                return results.ToArray();
             });
         }
     }

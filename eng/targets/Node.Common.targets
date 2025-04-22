@@ -1,0 +1,7 @@
+<Project>
+
+  <!-- Add an empty ComputeRunArguments target which is defined by the Microsoft.NET.Sdk.
+       Necessary as called by Arcade's Test infra. -->
+  <Target Name="ComputeRunArguments" />
+
+</Project>

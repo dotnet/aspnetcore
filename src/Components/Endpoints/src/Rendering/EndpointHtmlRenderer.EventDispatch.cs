@@ -96,6 +96,23 @@ internal partial class EndpointHtmlRenderer
         SignalRendererToFinishRendering();
     }
 
+    private async Task OnNavigateTo(string uri)
+    {
+        if (_httpContext.Response.HasStarted)
+        {
+            var defaultBufferSize = 16 * 1024;
+            await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            using var bufferWriter = new BufferedTextWriter(writer);
+            HandleNavigationAfterResponseStarted(bufferWriter, _httpContext, uri);
+            await bufferWriter.FlushAsync();
+        }
+        else
+        {
+            await HandleNavigationBeforeResponseStarted(_httpContext, uri);
+        }
+        SignalRendererToFinishRendering();
+    }
+
     private void UpdateNamedSubmitEvents(in RenderBatch renderBatch)
     {
         if (renderBatch.NamedEventChanges is { } changes)

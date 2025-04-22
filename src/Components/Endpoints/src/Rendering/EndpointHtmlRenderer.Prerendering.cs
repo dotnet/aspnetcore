@@ -250,7 +250,15 @@ internal partial class EndpointHtmlRenderer
                 "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
                 navigationException);
         }
-        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location)
+        else
+        {
+            return HandleNavigationBeforeResponseStarted(httpContext, navigationException.Location);
+        }
+    }
+
+    private static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationBeforeResponseStarted(HttpContext httpContext, string destinationLocation)
+    {
+        if (IsPossibleExternalDestination(httpContext.Request, destinationLocation)
             && IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             // For progressively-enhanced nav, we prefer to use opaque redirections for external URLs rather than
@@ -258,12 +266,12 @@ internal partial class EndpointHtmlRenderer
             // duplicated request. The client can't rely on receiving this header, though, since non-Blazor endpoints
             // wouldn't return it.
             httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location",
-                OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, navigationException.Location));
+                OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, destinationLocation));
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
         else
         {
-            httpContext.Response.Redirect(navigationException.Location);
+            httpContext.Response.Redirect(destinationLocation);
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
     }

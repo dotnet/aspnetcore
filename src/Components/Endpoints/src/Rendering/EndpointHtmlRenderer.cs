@@ -81,7 +81,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         IFormCollection? form = null)
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
-        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
+        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request), OnNavigateTo);
 
         if (navigationManager != null)
         {
@@ -183,21 +183,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
-    private void SignalRendererToFinishRendering()
+    protected override void SignalRendererToFinishRendering()
     {
         _rendererIsStopped = true;
-    }
-
-    protected override void ProcessPendingRender()
-    {
-        if (_rendererIsStopped)
-        {
-            // When the application triggers a NotFound event, we continue rendering the current batch.
-            // However, after completing this batch, we do not want to process any further UI updates,
-            // as we are going to return a 404 status and discard the UI updates generated so far.
-            return;
-        }
-        base.ProcessPendingRender();
+        base.SignalRendererToFinishRendering();
     }
 
     // For tests only

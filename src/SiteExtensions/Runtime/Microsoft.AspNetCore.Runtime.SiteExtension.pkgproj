@@ -15,8 +15,6 @@
     <IsPackable>true</IsPackable>
     <NoSemVer20>true</NoSemVer20>
     <CrossArchitectureInstallerBasePathNormalized>$([MSBuild]::NormalizeDirectory('$(CrossArchitectureInstallerBasePath)', 'aspnetcore', 'Runtime'))</CrossArchitectureInstallerBasePathNormalized>
-    <MicrosoftWebXdtExtensionsPath>$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\net462\Microsoft.Web.Xdt.Extensions.dll</MicrosoftWebXdtExtensionsPath>
-    <MicrosoftWebXdtExtensionsPath Condition="'$(DotNetBuildPass)' == '2'">$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Platform)\$(Configuration)\net462\Microsoft.Web.Xdt.Extensions.dll</MicrosoftWebXdtExtensionsPath>
   </PropertyGroup>
 
   <Import Project="..\..\..\src\Servers\IIS\build\assets.props" />

@@ -22,23 +22,18 @@ public class GlobalInteractivityTest(
 {
 
     [Theory]
-    [InlineData("server", true, false)]
-    [InlineData("webassembly", true, false)]
-    [InlineData("server", true, true)]
-    [InlineData("webassembly", true, true)]
-    [InlineData("ssr", false, true)]
-    [InlineData("ssr", false, false)]
-    public void CanRenderNotFoundPage(string renderingMode, bool isInteractive, bool useCustomNotFoundPage)
+    [InlineData("server", false)]
+    [InlineData("webassembly", false)]
+    [InlineData("server", true)]
+    [InlineData("webassembly", true)]
+    public void CanRenderNotFoundInteractive(string renderingMode, bool useCustomNotFoundPage)
     {
         string query = useCustomNotFoundPage ? "?useCustomNotFoundPage=true" : "";
         Navigate($"{ServerPathBase}/render-not-found-{renderingMode}{query}");
 
-        if (isInteractive)
-        {
-            var buttonId = "trigger-not-found";
-            Browser.WaitForElementToBeVisible(By.Id(buttonId));
-            Browser.Exists(By.Id(buttonId)).Click();
-        }
+        var buttonId = "trigger-not-found";
+        Browser.WaitForElementToBeVisible(By.Id(buttonId));
+        Browser.Exists(By.Id(buttonId)).Click();
 
         if (useCustomNotFoundPage)
         {

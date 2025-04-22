@@ -190,6 +190,7 @@
   <Import Project="eng\targets\CSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.csproj'" />
   <Import Project="eng\targets\FSharp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.fsproj'" />
   <Import Project="eng\targets\Wix.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.wixproj'" />
+  <Import Project="eng\targets\Node.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.nodeproj'" />
   <Import Project="eng\targets\Java.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.javaproj'" />
   <Import Project="eng\targets\Sfx.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.sfxproj'" />
   <Import Project="eng\testing\linker\trimmingTests.targets" Condition="'$(IsPublishedAppTestProject)' == 'true'" />
