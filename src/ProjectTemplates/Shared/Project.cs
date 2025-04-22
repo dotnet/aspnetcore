@@ -45,10 +45,6 @@ public class Project : IDisposable
             .Value
         : Environment.GetEnvironmentVariable("DotNetEfFullPath");
 
-    private static bool ContinuousIntegrationBuild => (string.Equals(typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(attribute => attribute.Key == "ContinuousIntegrationBuild")
-            .Value), "true", StringComparison.OrdinalIgnoreCase);
-
     public string ProjectName { get; set; }
     public string ProjectArguments { get; set; }
     public string ProjectGuid { get; set; }
@@ -430,7 +426,10 @@ public class Project : IDisposable
 
     public void Dispose()
     {
-        if (ContinuousIntegrationBuild)
+        var continuousIntegrationBuild = typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(attribute => attribute.Key == "ContinuousIntegrationBuild")
+            .Value;
+        if (string.Equals(continuousIntegrationBuild, "true", StringComparison.OrdinalIgnoreCase))
         {
             DeleteOutputDirectory();
         }
