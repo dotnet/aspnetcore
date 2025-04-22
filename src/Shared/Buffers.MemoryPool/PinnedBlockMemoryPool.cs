@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 
 #nullable enable
@@ -31,11 +32,6 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     public static int BlockSize => _blockSize;
 
     /// <summary>
-    /// Optional callback to call when pool is being disposed.
-    /// </summary>
-    public Action<PinnedBlockMemoryPool>? DisposeCallback { get; set; }
-
-    /// <summary>
     /// Thread-safe collection of blocks which are currently in the pool. A slab will pre-allocate all of the block tracking objects
     /// and add them to this collection. When memory is requested it is taken from here first, and when it is returned it is re-added.
     /// </summary>
@@ -57,6 +53,9 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
 
     private readonly object _disposeSync = new object();
 
+    private Action<object?, PinnedBlockMemoryPool>? _onPoolDisposed;
+    private object? _onPoolDisposedState;
+
     /// <summary>
     /// This default value passed in to Rent to use the default value for the pool.
     /// </summary>
@@ -70,6 +69,15 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     public PinnedBlockMemoryPool(IMeterFactory meterFactory)
     {
         _metrics = new(meterFactory);
+    }
+
+    /// <summary>
+    /// Register a callback to call when the pool is being disposed.
+    /// </summary>
+    public void OnPoolDisposed(Action<object?, PinnedBlockMemoryPool> onPoolDisposed, object? state = null)
+    {
+        _onPoolDisposed = onPoolDisposed;
+        _onPoolDisposedState = state;
     }
 
     public override IMemoryOwner<byte> Rent(int size = AnySize)
@@ -214,7 +222,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
         {
             _isDisposed = true;
 
-            DisposeCallback?.Invoke(this);
+            _onPoolDisposed?.Invoke(_onPoolDisposedState, this);
 
             if (disposing)
             {

@@ -10,17 +10,18 @@ namespace System.Buffers;
 
 #nullable enable
 
-internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IDisposable
+internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyncDisposable
 {
     private readonly IMeterFactory _meterFactory;
     private readonly ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool> _pools = new();
     private readonly PeriodicTimer _timer;
+    private readonly Task _timerTask;
 
     public DefaultMemoryPoolFactory(IMeterFactory? meterFactory = null)
     {
         _meterFactory = meterFactory ?? NoopMeterFactory.Instance;
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
-        _ = Task.Run(async () =>
+        _timerTask = Task.Run(async () =>
         {
             try
             {
@@ -45,17 +46,18 @@ internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IDisp
 
         _pools.TryAdd(pool, pool);
 
-        pool.DisposeCallback = (self) =>
+        pool.OnPoolDisposed(static (state, self) =>
         {
-            _pools.TryRemove(self, out _);
-        };
+            ((ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool>)state!).TryRemove(self, out _);
+        }, _pools);
 
         return pool;
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         _timer.Dispose();
+        await _timerTask;
     }
 
     private sealed class NoopMeterFactory : IMeterFactory

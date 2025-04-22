@@ -27,10 +27,10 @@ internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, I
 
         _pools.TryAdd(pool, pool);
 
-        pool.DisposeCallback = (self) =>
+        pool.OnPoolDisposed(static (state, self) =>
         {
-            _pools.TryRemove(self, out _);
-        };
+            ((ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool>)state!).TryRemove(self, out _);
+        }, _pools);
 
         return pool;
     }
