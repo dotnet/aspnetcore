@@ -46,6 +46,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private bool _rendererIsDisposed;
 
     private bool _hotReloadInitialized;
+    private bool _rendererIsStopped;
 
     /// <summary>
     /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -664,6 +665,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         Dispatcher.AssertAccess();
 
+        if (_rendererIsStopped)
+        {
+            // Once we're stopped, we'll disregard further attempts to queue anything
+            return;
+        }
+
         var componentState = GetOptionalComponentState(componentId);
         if (componentState == null)
         {
@@ -731,13 +738,21 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
+    /// Stop adding render requests to the render queue.
+    /// </summary>
+    protected virtual void SignalRendererToFinishRendering()
+    {
+        _rendererIsStopped = true;
+    }
+
+    /// <summary>
     /// Processes pending renders requests from components if there are any.
     /// </summary>
     protected virtual void ProcessPendingRender()
     {
-        if (_rendererIsDisposed)
+        if (_rendererIsDisposed || _rendererIsStopped)
         {
-            // Once we're disposed, we'll disregard further attempts to render anything
+            // Once we're disposed or stopped, we'll disregard further attempts to render anything
             return;
         }
 
