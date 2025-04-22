@@ -7,11 +7,40 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmentNavigationManager
 {
+    private const string _enableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException";
+
+    private static bool _throwNavigationException =>
+        AppContext.TryGetSwitch(_enableThrowNavigationException, out var switchValue) && switchValue;
+
+    private Func<string, Task>? _onNavigateTo;
+
     void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri) => Initialize(baseUri, uri);
+
+    void IHostEnvironmentNavigationManager.Initialize(string baseUri, string uri, Func<string, Task> onNavigateTo)
+    {
+        _onNavigateTo = onNavigateTo;
+        Initialize(baseUri, uri);
+    }
 
     protected override void NavigateToCore(string uri, NavigationOptions options)
     {
         var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
-        throw new NavigationException(absoluteUriString);
+        if (_throwNavigationException)
+        {
+            throw new NavigationException(absoluteUriString);
+        }
+        else
+        {
+            _ = PerformNavigationAsync();
+        }
+
+        async Task PerformNavigationAsync()
+        {
+            if (_onNavigateTo == null)
+            {
+                throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
+            }
+            await _onNavigateTo(absoluteUriString);
+        }
     }
 }

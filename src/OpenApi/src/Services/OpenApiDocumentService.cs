@@ -38,7 +38,7 @@ internal sealed class OpenApiDocumentService(
     IHostEnvironment hostEnvironment,
     IOptionsMonitor<OpenApiOptions> optionsMonitor,
     IServiceProvider serviceProvider,
-    IServer? server = null)
+    IServer? server = null) : IOpenApiDocumentProvider
 {
     private readonly OpenApiOptions _options = optionsMonitor.Get(documentName);
     private readonly OpenApiSchemaService _componentService = serviceProvider.GetRequiredKeyedService<OpenApiSchemaService>(documentName);
@@ -743,5 +743,12 @@ internal sealed class OpenApiDocumentService(
             : parameter.Type;
         targetType ??= typeof(string);
         return targetType;
+    }
+
+    /// <inheritdoc />
+    public Task<OpenApiDocument> GetOpenApiDocumentAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return GetOpenApiDocumentAsync(serviceProvider, httpRequest: null, cancellationToken);
     }
 }

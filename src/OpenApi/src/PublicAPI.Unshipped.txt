@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider
+Microsoft.AspNetCore.OpenApi.IOpenApiDocumentProvider.GetOpenApiDocumentAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.OpenApi.Models.OpenApiDocument!>!
 static Microsoft.AspNetCore.Builder.OpenApiEndpointConventionBuilderExtensions.AddOpenApiOperationTransformer<TBuilder>(this TBuilder builder, System.Func<Microsoft.OpenApi.Models.OpenApiOperation!, Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> TBuilder
 Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.GetOrCreateSchemaAsync(System.Type! type, Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription? parameterDescription = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.OpenApi.Models.OpenApiSchema!>!
 Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.Document.get -> Microsoft.OpenApi.Models.OpenApiDocument?

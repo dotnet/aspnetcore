@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Endpoints.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System.Buffers;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -81,6 +84,23 @@ internal partial class EndpointHtmlRenderer
             throw new InvalidOperationException("Cannot set a NotFound response after the response has already started.");
         }
         _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
+        SignalRendererToFinishRendering();
+    }
+
+    private async Task OnNavigateTo(string uri)
+    {
+        if (_httpContext.Response.HasStarted)
+        {
+            var defaultBufferSize = 16 * 1024;
+            await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            using var bufferWriter = new BufferedTextWriter(writer);
+            HandleNavigationAfterResponseStarted(bufferWriter, _httpContext, uri);
+            await bufferWriter.FlushAsync();
+        }
+        else
+        {
+            await HandleNavigationBeforeResponseStarted(_httpContext, uri);
+        }
         SignalRendererToFinishRendering();
     }
 
