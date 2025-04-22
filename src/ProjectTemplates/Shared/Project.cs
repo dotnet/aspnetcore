@@ -45,7 +45,7 @@ public class Project : IDisposable
             .Value
         : Environment.GetEnvironmentVariable("DotNetEfFullPath");
 
-    private bool ContinuousIntegrationBuild => (string.Equals(typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+    private static bool ContinuousIntegrationBuild => (string.Equals(typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(attribute => attribute.Key == "ContinuousIntegrationBuild")
             .Value), "true", StringComparison.OrdinalIgnoreCase);
 
