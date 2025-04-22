@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Microsoft.AspNetCore.JsonPatch.SystemTextJson.csproj" />
+    <Reference Include="Microsoft.AspNetCore.JsonPatch.SystemTextJson" />
   </ItemGroup>
 
 </Project>
