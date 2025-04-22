@@ -162,7 +162,7 @@
                           $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Caching\**\*.*proj;
                           $(RepoRoot)src\DefaultBuilder\**\*.*proj;
-                          $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
+                          $(RepoRoot)src\Features\**\*.*proj;
                           $(RepoRoot)src\DataProtection\**\*.*proj;
                           $(RepoRoot)src\Antiforgery\**\*.*proj;
                           $(RepoRoot)src\Hosting\**\*.*proj;
