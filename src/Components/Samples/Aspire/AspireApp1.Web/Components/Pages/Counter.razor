@@ -1,0 +1,23 @@
+﻿@page "/counter"
+@rendermode InteractiveServer
+@using System.Diagnostics.Metrics
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+    private static readonly Meter s_meter = new("AspireApp1.Web.Counter", "1.0.0");
+    private static readonly Counter<int> s_counterIncrements = s_meter.CreateCounter<int>("counter.increments", "Increments", "Number of counter increments");
+
+    private void IncrementCount()
+    {
+        currentCount++;
+        s_counterIncrements.Add(1, new KeyValuePair<string, object?>("current_value", currentCount));
+    }
+}

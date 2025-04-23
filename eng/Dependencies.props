@@ -13,6 +13,22 @@ and are generated based on the last package release.
   </PropertyGroup>
 
   <ItemGroup Label=".NET team dependencies">
+    <LatestPackageReference Include="Microsoft.AspNetCore.OpenApi" />
+    <LatestPackageReference Include="Microsoft.Extensions.Http.Resilience"/>
+    <LatestPackageReference Include="Microsoft.Extensions.ServiceDiscovery"/>
+
+    <LatestPackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol"/>
+    <LatestPackageReference Include="OpenTelemetry.Extensions.Hosting"/>
+    <LatestPackageReference Include="OpenTelemetry.Instrumentation.AspNetCore"/>
+    <LatestPackageReference Include="OpenTelemetry.Instrumentation.Http"/>
+    <LatestPackageReference Include="OpenTelemetry.Instrumentation.Runtime"/>
+
+    <LatestPackageReference Include="Aspire.Hosting.AppHost" />
+    <LatestPackageReference Include="Aspire.Hosting.Redis" />
+    <LatestPackageReference Include="Aspire.Dashboard.Sdk.win-x64"/>
+    <LatestPackageReference Include="Aspire.Hosting.Orchestration.win-x64"/>
+    <LatestPackageReference Include="Aspire.StackExchange.Redis.OutputCaching"/>
+
     <LatestPackageReference Include="Microsoft.AspNetCore.Razor.Language" />
     <LatestPackageReference Include="Microsoft.AspNetCore.Mvc.Razor.Extensions" />
     <LatestPackageReference Include="Microsoft.Azure.SignalR" />

@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>305cc722-e514-4d8f-878b-a656f87e31d7</UserSecretsId>
+    <SkipAddAspireDefaultReferences>true</SkipAddAspireDefaultReferences>
+    <DisableTransitiveFrameworkReferences>true</DisableTransitiveFrameworkReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AspireApp1.ApiService\AspireApp1.ApiService.csproj" />
+    <ProjectReference Include="..\AspireApp1.Web\AspireApp1.Web.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <Reference Include="Aspire.Hosting.AppHost" Version="9.0.0" />
+    <Reference Include="Aspire.Hosting.Redis" Version="9.0.0" />
+
+    <PackageReference Include="Aspire.Dashboard.Sdk.win-x64" Version="9.0.0" IsImplicitlyDefined="true">
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+    <PackageReference Include="Aspire.Hosting.Orchestration.win-x64" Version="9.0.0" IsImplicitlyDefined="true">
+      <AllowExplicitReference>true</AllowExplicitReference>
+    </PackageReference>
+
+<!--
+    <Reference Include="Aspire.Dashboard.Sdk.win-x64" Version="9.0.0" IsImplicitlyDefined="true" />
+    <Reference Include="Aspire.Hosting.Orchestration.win-x64" Version="9.0.0" IsImplicitlyDefined="true" />
+    -->
+  </ItemGroup>
+
+</Project>

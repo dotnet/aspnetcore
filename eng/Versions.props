@@ -206,6 +206,20 @@
     <MicrosoftNETCoreAppRuntimeVersion>$(MicrosoftNETCoreAppRuntimewinx64Version)</MicrosoftNETCoreAppRuntimeVersion>
   </PropertyGroup>
   <PropertyGroup Label="Manual">
+
+    <OpenTelemetryExporterOpenTelemetryProtocolVersion>1.9.0</OpenTelemetryExporterOpenTelemetryProtocolVersion>
+    <OpenTelemetryExtensionsHostingVersion>1.9.0</OpenTelemetryExtensionsHostingVersion>
+    <OpenTelemetryInstrumentationAspNetCoreVersion>1.9.0</OpenTelemetryInstrumentationAspNetCoreVersion>
+    <OpenTelemetryInstrumentationHttpVersion>1.9.0</OpenTelemetryInstrumentationHttpVersion>
+    <OpenTelemetryInstrumentationRuntimeVersion>1.9.0</OpenTelemetryInstrumentationRuntimeVersion>
+    <MicrosoftExtensionsHttpResilienceVersion>9.0.0</MicrosoftExtensionsHttpResilienceVersion>
+    <MicrosoftExtensionsServiceDiscoveryVersion>9.0.0</MicrosoftExtensionsServiceDiscoveryVersion>
+    <AspireHostingOrchestrationwinx64Version>9.0.0</AspireHostingOrchestrationwinx64Version>
+    <AspireDashboardSdkwinx64Version>9.0.0</AspireDashboardSdkwinx64Version>
+    <AspireHostingRedisVersion>9.0.0</AspireHostingRedisVersion>
+    <AspireHostingAppHostVersion>9.0.0</AspireHostingAppHostVersion>
+    <AspireStackExchangeRedisOutputCachingVersion>9.1.0</AspireStackExchangeRedisOutputCachingVersion>
+
     <!-- Dependencies from maintenance-packages -->
     <MicrosoftBCLHashCodeVersion>6.0.0</MicrosoftBCLHashCodeVersion>
     <MicrosoftIoRedistVersion>6.1.3</MicrosoftIoRedistVersion>

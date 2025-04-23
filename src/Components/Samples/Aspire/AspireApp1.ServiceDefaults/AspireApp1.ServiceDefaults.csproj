@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireSharedProject>true</IsAspireSharedProject>
+    <OutputType>Library</OutputType>
+    <!--
+    -->
+    <DisableTransitiveFrameworkReferences>true</DisableTransitiveFrameworkReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+
+    <Reference Include="Microsoft.Extensions.Http.Resilience" Version="9.0.0" />
+    <Reference Include="Microsoft.Extensions.ServiceDiscovery" Version="9.0.0" />
+    <Reference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
+    <Reference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
+    <Reference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
+    <Reference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
+    <Reference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
+  </ItemGroup>
+
+</Project>

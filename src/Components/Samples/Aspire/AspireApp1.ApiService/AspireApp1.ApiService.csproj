@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <DisableTransitiveFrameworkReferences>true</DisableTransitiveFrameworkReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AspireApp1.ServiceDefaults\AspireApp1.ServiceDefaults.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Http" />
+    <Reference Include="Microsoft.AspNetCore.Components.Server" />
+    <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
+    <Reference Include="Aspire.StackExchange.Redis.OutputCaching" Version="9.0.0" />
+    <Reference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>
