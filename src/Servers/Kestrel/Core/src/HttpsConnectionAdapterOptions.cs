@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
@@ -95,6 +96,12 @@ public class HttpsConnectionAdapterOptions
     /// This is called after all of the other settings have already been applied.
     /// </summary>
     public Action<ConnectionContext, SslServerAuthenticationOptions>? OnAuthenticate { get; set; }
+
+    /// <summary>
+    /// A callback to be invoked to get the TLS client hello bytes.
+    /// Null by default.
+    /// </summary>
+    public Action<ConnectionContext, ReadOnlySequence<byte>>? TlsClientHelloBytesCallback { get; set; }
 
     /// <summary>
     /// Specifies the maximum amount of time allowed for the TLS/SSL handshake. This must be positive

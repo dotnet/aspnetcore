@@ -1,0 +1,125 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Buffers;
+using Microsoft.AspNetCore.Connections;
+
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Middleware;
+
+internal sealed class TlsListenerMiddleware
+{
+    private readonly ConnectionDelegate _next;
+    private readonly Action<ConnectionContext, ReadOnlySequence<byte>> _tlsClientHelloBytesCallback;
+
+    public TlsListenerMiddleware(ConnectionDelegate next, Action<ConnectionContext, ReadOnlySequence<byte>> tlsClientHelloBytesCallback)
+    {
+        _next = next;
+        _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
+    }
+
+    /// <summary>
+    /// Sniffs the TLS Client Hello message, and invokes a callback if found.
+    /// </summary>
+    internal async Task OnTlsClientHelloAsync(ConnectionContext connection)
+    {
+        var input = connection.Transport.Input;
+
+        while (true)
+        {
+            var result = await input.ReadAsync();
+            var buffer = result.Buffer;
+
+            // If the buffer length is less than 6 bytes (handshake + version + length + client-hello byte)
+            // and no more data is coming, we can't block in a loop here because we will not get more data
+            if (buffer.Length < 6 && result.IsCompleted)
+            {
+                break;
+            }
+
+            var parseState = TryParseClientHello(buffer, out var clientHelloBytes);
+
+            // no data is consumed, it will be processed by the follow-up middlewares
+            input.AdvanceTo(buffer.Start);
+
+            switch (parseState)
+            {
+                case ClientHelloParseState.NotEnoughData:
+                    continue;
+
+                case ClientHelloParseState.NotTlsClientHello:
+                    await _next(connection);
+                    return;
+
+                case ClientHelloParseState.ValidTlsClientHello:
+                    _tlsClientHelloBytesCallback(connection, clientHelloBytes);
+                    await _next(connection);
+                    return;
+            }
+        }
+
+        await _next(connection);
+    }
+
+    private static ClientHelloParseState TryParseClientHello(ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> clientHelloBytes)
+    {
+        clientHelloBytes = default;
+
+        if (buffer.Length < 6)
+        {
+            return ClientHelloParseState.NotEnoughData;
+        }
+
+        var reader = new SequenceReader<byte>(buffer);
+
+        // Content type must be 0x16 for TLS Handshake
+        if (!reader.TryRead(out byte contentType) || contentType != 0x16)
+        {
+            return ClientHelloParseState.NotTlsClientHello;
+        }
+
+        // Protocol version
+        if (!reader.TryReadBigEndian(out short version) || IsValidProtocolVersion(version) == false)
+        {
+            return ClientHelloParseState.NotTlsClientHello;
+        }
+
+        // Record length
+        if (!reader.TryReadBigEndian(out short recordLength))
+        {
+            return ClientHelloParseState.NotTlsClientHello;
+        }
+
+        // 5 bytes are
+        // 1) Handshake (1 byte)
+        // 2) Protocol version (2 bytes)
+        // 3) Record length (2 bytes)
+        if (buffer.Length < 5 + recordLength)
+        {
+            return ClientHelloParseState.NotEnoughData;
+        }
+
+        // byte 6: handshake message type (must be 0x01 for ClientHello)
+        if (!reader.TryRead(out byte handshakeType) || handshakeType != 0x01)
+        {
+            return ClientHelloParseState.NotTlsClientHello;
+        }
+
+        clientHelloBytes = buffer.Slice(0, 5 + recordLength);
+        return ClientHelloParseState.ValidTlsClientHello;
+    }
+
+    private static bool IsValidProtocolVersion(short version)
+        => version == 0x0002  // SSL 2.0 (0x0002)
+        || version == 0x0300  // SSL 3.0 (0x0300)
+        || version == 0x0301  // TLS 1.0 (0x0301)
+        || version == 0x0302  // TLS 1.1 (0x0302)
+        || version == 0x0303  // TLS 1.2 (0x0303)
+        || version == 0x0304; // TLS 1.3 (0x0304)
+
+    private enum ClientHelloParseState
+    {
+        NotEnoughData,
+        NotTlsClientHello,
+        ValidTlsClientHello
+    }
+}
