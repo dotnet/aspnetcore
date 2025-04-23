@@ -426,10 +426,10 @@ public class Project : IDisposable
 
     public void Dispose()
     {
-        var continuousIntegrationBuild = typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(attribute => attribute.Key == "ContinuousIntegrationBuild")
+        var doNotCleanUpTemplates = typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(attribute => attribute.Key == "DoNotCleanUpTemplates")
             .Value;
-        if (string.Equals(continuousIntegrationBuild, "true", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(doNotCleanUpTemplates, "false", StringComparison.OrdinalIgnoreCase))
         {
             DeleteOutputDirectory();
         }
