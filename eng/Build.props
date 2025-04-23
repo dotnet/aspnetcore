@@ -162,7 +162,7 @@
                           $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Caching\**\*.*proj;
                           $(RepoRoot)src\DefaultBuilder\**\*.*proj;
-                          $(RepoRoot)src\Features\JsonPatch\**\*.*proj;
+                          $(RepoRoot)src\Features\**\*.*proj;
                           $(RepoRoot)src\DataProtection\**\*.*proj;
                           $(RepoRoot)src\Antiforgery\**\*.*proj;
                           $(RepoRoot)src\Hosting\**\*.*proj;
@@ -211,7 +211,7 @@
                           $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Caching\**\src\*.csproj;
                           $(RepoRoot)src\DefaultBuilder\**\src\*.csproj;
-                          $(RepoRoot)src\Features\JsonPatch\**\src\*.csproj;
+                          $(RepoRoot)src\Features\**\src\*.csproj;
                           $(RepoRoot)src\DataProtection\**\src\*.csproj;
                           $(RepoRoot)src\Antiforgery\**\src\*.csproj;
                           $(RepoRoot)src\Hosting\**\src\*.csproj;
