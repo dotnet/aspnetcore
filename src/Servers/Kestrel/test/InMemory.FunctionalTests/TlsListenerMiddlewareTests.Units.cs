@@ -145,7 +145,7 @@ public partial class TlsListenerMiddlewareTests
     public static IEnumerable<object[]> ValidClientHelloData()
     {
         int id = 0;
-        foreach (var clientHello in new List<byte[]>() { valid_clientHelloHeader, valid_ClientHelloStandard, valid_Tls12ClientHello, valid_Tls13ClientHello, valid_TlsClientHelloNoExtensions })
+        foreach (var clientHello in valid_collection)
         {
             yield return new object[] { id++, clientHello, true /* invokes next middleware */ };
         }
@@ -154,7 +154,7 @@ public partial class TlsListenerMiddlewareTests
     public static IEnumerable<object[]> InvalidClientHelloData()
     {
         int id = 0;
-        foreach (byte[] clientHello in new List<byte[]>() { invalid_TlsClientHelloHeader, invalid_3BytesMessage, invalid_UnknownProtocolVersion1, invalid_UnknownProtocolVersion2, invalid_IncorrectHandshakeMessageType })
+        foreach (byte[] clientHello in invalid_collection)
         {
             yield return new object[] { id++, clientHello, true /* invokes next middleware */ };
         }
@@ -163,7 +163,7 @@ public partial class TlsListenerMiddlewareTests
     public static IEnumerable<object[]> ValidClientHelloData_Segmented()
     {
         int id = 0;
-        foreach (var clientHello in new List<byte[]>() { valid_clientHelloHeader, valid_ClientHelloStandard, valid_Tls12ClientHello, valid_Tls13ClientHello, valid_TlsClientHelloNoExtensions })
+        foreach (var clientHello in valid_collection)
         {
             var clientHelloSegments = new List<byte[]>
             {
@@ -181,8 +181,30 @@ public partial class TlsListenerMiddlewareTests
     public static IEnumerable<object[]> InvalidClientHelloData_Segmented()
     {
         int id = 0;
-        foreach (List<byte[]> clientHelloSegments in new List<List<byte[]>>() { invalidSegmented_TlsClientHelloHeader })
+        foreach (var clientHello in invalid_collection)
         {
+            var clientHelloSegments = new List<byte[]>();
+            if (clientHello.Length >= 1)
+            {
+                clientHelloSegments.Add(clientHello.Take(1).ToArray());
+            }
+            if (clientHello.Length >= 3)
+            {
+                clientHelloSegments.Add(clientHello.Skip(1).Take(2).ToArray());
+            }
+            if (clientHello.Length >= 5)
+            {
+                clientHelloSegments.Add(clientHello.Skip(3).Take(2).ToArray());
+            }
+            if (clientHello.Length >= 6)
+            {
+                clientHelloSegments.Add(clientHello.Skip(5).Take(1).ToArray());
+            }
+            if (clientHello.Length >= 7)
+            {
+                clientHelloSegments.Add(clientHello.Skip(6).Take(clientHello.Length - 6).ToArray());
+            }
+
             yield return new object[] { id++, clientHelloSegments, true /* invokes next middleware */ };
         }
     }
@@ -500,11 +522,13 @@ public partial class TlsListenerMiddlewareTests
         0x00, 0x00, 0xC7,
     };
 
-    private static List<byte[]> invalidSegmented_TlsClientHelloHeader = new()
+    private static List<byte[]> valid_collection = new List<byte[]>()
     {
-        new byte[] { 0x01, 0x03, 0x04 },
-        new byte[] { 0x00, 0xCB },
-        new byte[] { 0x01 },
-        new byte[] { 0x00, 0x00, 0xC7 },
+        valid_clientHelloHeader, valid_ClientHelloStandard, valid_Tls12ClientHello, valid_Tls13ClientHello, valid_TlsClientHelloNoExtensions
+    };
+
+    private static List<byte[]> invalid_collection = new List<byte[]>()
+    {
+        invalid_TlsClientHelloHeader, invalid_3BytesMessage, invalid_UnknownProtocolVersion1, invalid_UnknownProtocolVersion2, invalid_IncorrectHandshakeMessageType
     };
 }
