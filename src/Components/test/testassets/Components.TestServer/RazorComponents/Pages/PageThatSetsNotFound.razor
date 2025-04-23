@@ -10,11 +10,12 @@
 @code{
     [Parameter]
     [SupplyParameterFromQuery(Name = "shouldSet")]
-    public bool ShouldSet { get; set; } = true;
+    public bool? ShouldSet { get; set; }
 
     protected override void OnInitialized()
     {
-        if (ShouldSet)
+        bool shouldSet = ShouldSet ?? true;
+        if (shouldSet)
         {
             NavigationManager.NotFound();
         }

@@ -106,4 +106,17 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
             Assert.Contains("There's nothing here", bodyText);
         }
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanRenderNotFoundPageWithStreaming(bool useCustomNotFoundPage)
+    {
+        // when streaming started, we always render page under "not-found" path
+        string query = useCustomNotFoundPage ? "?useCustomNotFoundPage=true" : "";
+        Navigate($"{ServerPathBase}/streaming-set-not-found{query}");
+
+        string expectedTitle = "Default Not Found Page";
+        Browser.Equal(expectedTitle, () => Browser.Title);
+    }
 }

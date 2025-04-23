@@ -22,21 +22,18 @@ public class StatusCodePagesTest(BrowserFixture browserFixture, BasicTestAppServ
 {
 
     [Theory]
-    [InlineData(false, true)]
-    [InlineData(true, false)]
     [InlineData(false, false)]
-    public void StatusCodePagesWithReExecution(bool setNotFound, bool streaming)
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void StatusCodePagesWithReExecution(bool streaming, bool responseStarted)
     {
         string streamingPath = streaming ? "streaming-" : "";
-        Navigate($"{ServerPathBase}/reexecution/{streamingPath}set-not-found?shouldSet={setNotFound}");
+        Navigate($"{ServerPathBase}/reexecution/{streamingPath}set-not-found?responseStarted={responseStarted}");
 
         // streaming when response started does not re-execute
-        string expectedTitle = streaming
+        string expectedTitle = responseStarted
             ? "Default Not Found Page"
-            : setNotFound
-                ? "Re-executed page"
-                : "Original page";
+            : "Re-executed page";
         Browser.Equal(expectedTitle, () => Browser.Title);
     }
-
 }
