@@ -208,7 +208,7 @@ public abstract class NavigationManager
         if (_notFound == null)
         {
             // global router doesn't exist, no events were registered
-            throw new InvalidOperationException("No handler is subscribed to the OnNotFound event. Ensure that the application has a global router or manually subscribe to the OnNotFound event.");
+            return;
         }
         else
         {
