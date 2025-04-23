@@ -52,10 +52,8 @@ internal sealed class TlsListenerMiddleware
                 _tlsClientHelloBytesCallback(connection, clientHelloBytes);
             }
 
-            // Here either it's a valid TLS client hello or definitely not a TLS client hello.
-            // Anyway we can continue with the middleware pipeline
             Debug.Assert(parseState is ClientHelloParseState.ValidTlsClientHello or ClientHelloParseState.NotTlsClientHello);
-            break;
+            break; // We can continue with the middleware pipeline
         }
 
         await _next(connection);
