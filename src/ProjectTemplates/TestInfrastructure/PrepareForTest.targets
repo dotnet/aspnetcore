@@ -97,6 +97,8 @@
          get cached results and changes show up.
     -->
 
+    <Message Importance="high" Text="ContinuousIntegrationBuild: $(ContinuousIntegrationBuild)" />
+
     <ItemGroup>
       <_ExistingFilesFromLastRun Include="$(TestTemplateCreationFolder)**\*" />
     </ItemGroup>
