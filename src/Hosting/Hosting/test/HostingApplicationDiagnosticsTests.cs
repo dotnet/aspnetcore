@@ -740,13 +740,13 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         {
             Headers = new HeaderDictionary()
             {
-                {"Request-Id", "ParentId1"},
+                {"Request-Id", "ParentId1"}, // non-standard header, won't apply to Activity
                 {"baggage", "Key1=value1, Key2=value2"}
             }
         });
         hostingApplication.CreateContext(features);
         Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
-        Assert.Equal("ParentId1", Activity.Current.ParentId);
+        Assert.Null(Activity.Current.ParentId);
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1");
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
     }
