@@ -30,6 +30,8 @@
     <FileSignInfo Include="ancm.mof" CertificateName="None" />
     <!-- Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it. -->
     <FileSignInfo Include="apphost.exe" CertificateName="None" />
+    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+    <FileExtensionSignInfo Update=".js" CertificateName="None" />
 
     <!--
       These files should already be signed by the .NET Core team. They have to be listed again here because we recreate a redistributable which includes the Microsoft.NETCore.App runtime.
