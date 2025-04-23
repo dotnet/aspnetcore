@@ -270,6 +270,15 @@ public static class ListenOptionsHttpsExtensions
         listenOptions.IsTls = true;
         listenOptions.HttpsCallbackOptions = callbackOptions;
 
+        if (listenOptions.HttpsOptions?.TlsClientHelloBytesCallback is not null)
+        {
+            listenOptions.Use(next =>
+            {
+                var middleware = new TlsListenerMiddleware(next, listenOptions.HttpsOptions.TlsClientHelloBytesCallback);
+                return middleware.OnTlsClientHelloAsync;
+            });
+        }
+
         listenOptions.Use(next =>
         {
             // Set the list of protocols from listen options.

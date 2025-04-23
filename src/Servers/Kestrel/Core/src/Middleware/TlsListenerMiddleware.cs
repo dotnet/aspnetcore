@@ -30,35 +30,46 @@ internal sealed class TlsListenerMiddleware
             var result = await input.ReadAsync();
             var buffer = result.Buffer;
 
-            // If the buffer length is less than 6 bytes (handshake + version + length + client-hello byte)
-            // and no more data is coming, we can't block in a loop here because we will not get more data
-            if (buffer.Length < 6 && result.IsCompleted)
+            try
             {
-                break;
+                // If the buffer length is less than 6 bytes (handshake + version + length + client-hello byte)
+                // and no more data is coming, we can't block in a loop here because we will not get more data
+                if (buffer.Length < 6 && result.IsCompleted)
+                {
+                    break;
+                }
+
+                var parseState = TryParseClientHello(buffer, out var clientHelloBytes);
+
+                if (parseState == ClientHelloParseState.NotEnoughData)
+                {
+                    continue;
+                }
+
+                if (parseState == ClientHelloParseState.ValidTlsClientHello)
+                {
+                    _tlsClientHelloBytesCallback(connection, clientHelloBytes);
+                }
+
+                Debug.Assert(parseState is ClientHelloParseState.ValidTlsClientHello or ClientHelloParseState.NotTlsClientHello);
+                break; // We can continue with the middleware pipeline
             }
-
-            var parseState = TryParseClientHello(buffer, out var clientHelloBytes);
-
-            // no data is consumed, it will be processed by the follow-up middlewares
-            input.AdvanceTo(buffer.Start);
-
-            if (parseState == ClientHelloParseState.NotEnoughData)
+            finally
             {
-                continue;
+                input.AdvanceTo(buffer.Start);
             }
-
-            if (parseState == ClientHelloParseState.ValidTlsClientHello)
-            {
-                _tlsClientHelloBytesCallback(connection, clientHelloBytes);
-            }
-
-            Debug.Assert(parseState is ClientHelloParseState.ValidTlsClientHello or ClientHelloParseState.NotTlsClientHello);
-            break; // We can continue with the middleware pipeline
         }
 
         await _next(connection);
     }
 
+    /// <summary>
+    /// RFCs
+    /// ----
+    /// TLS 1.1: https://datatracker.ietf.org/doc/html/rfc4346#section-6.2
+    /// TLS 1.2: https://datatracker.ietf.org/doc/html/rfc5246#section-6.2
+    /// TLS 1.3: https://datatracker.ietf.org/doc/html/rfc8446#section-5.1
+    /// </summary>
     private static ClientHelloParseState TryParseClientHello(ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> clientHelloBytes)
     {
         clientHelloBytes = default;
