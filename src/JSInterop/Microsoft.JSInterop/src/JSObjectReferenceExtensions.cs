@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -166,5 +168,19 @@ public static class JSObjectReferenceExtensions
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
         return jsObjectReference.InvokeNewAsync(identifier, cancellationToken, args);
+    }
+
+    /// <summary>
+    /// TODO(OR): Document this.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="jsObjectReference"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public static T AsFunction<T>(this IJSObjectReference jsObjectReference) where T : Delegate
+    {
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
+
+        return JSFunctionReference.CreateInvocationDelegate<T>(jsObjectReference);
     }
 }
