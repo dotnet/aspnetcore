@@ -34,7 +34,7 @@ internal sealed class TlsListenerMiddleware
             {
                 // If the buffer length is less than 6 bytes (handshake + version + length + client-hello byte)
                 // and no more data is coming, we can't block in a loop here because we will not get more data
-                if (buffer.Length < 6 && result.IsCompleted)
+                if (result.IsCompleted && buffer.Length < 6)
                 {
                     break;
                 }
@@ -43,6 +43,13 @@ internal sealed class TlsListenerMiddleware
 
                 if (parseState == ClientHelloParseState.NotEnoughData)
                 {
+                    // if no data will be added, and we still lack enough bytes
+                    // we can't block in a loop, so just exit
+                    if (result.IsCompleted)
+                    {
+                        break;
+                    }
+
                     continue;
                 }
 

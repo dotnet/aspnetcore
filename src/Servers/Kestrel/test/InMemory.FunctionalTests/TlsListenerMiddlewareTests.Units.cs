@@ -480,6 +480,21 @@ public partial class TlsListenerMiddlewareTests
         // not enough data - so incorrect
     };
 
+    private static byte[] invalid_9BytesMessage =
+    {
+        // 0x16 = Handshake
+        0x16,
+        // 0x0301 = TLS 1.0
+        0x03, 0x01,
+        // length = 0x0020 (32 bytes)
+        0x00, 0x20,
+        // Handshake.msg_type (client hello)
+        0x01,
+        // should have 31 bytes (zeros for simplicity)
+        0, 0, 0
+        // no other data here - incorrect
+    };
+
     private static byte[] invalid_UnknownProtocolVersion1 =
     {
         // Handshake
@@ -529,6 +544,7 @@ public partial class TlsListenerMiddlewareTests
 
     private static List<byte[]> invalid_collection = new List<byte[]>()
     {
-        invalid_TlsClientHelloHeader, invalid_3BytesMessage, invalid_UnknownProtocolVersion1, invalid_UnknownProtocolVersion2, invalid_IncorrectHandshakeMessageType
+        invalid_TlsClientHelloHeader, invalid_3BytesMessage, invalid_9BytesMessage,
+        invalid_UnknownProtocolVersion1, invalid_UnknownProtocolVersion2, invalid_IncorrectHandshakeMessageType
     };
 }
