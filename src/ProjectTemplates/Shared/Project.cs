@@ -429,7 +429,7 @@ public class Project : IDisposable
         var continuousIntegrationBuild = typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .Single(attribute => attribute.Key == "ContinuousIntegrationBuild")
             .Value;
-        if (string.Equals(continuousIntegrationBuild, "false", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(continuousIntegrationBuild, "true", StringComparison.OrdinalIgnoreCase))
         {
             DeleteOutputDirectory();
         }
