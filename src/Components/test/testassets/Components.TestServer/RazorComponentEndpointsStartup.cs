@@ -49,10 +49,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddScoped<InteractiveServerService>();
         services.AddScoped<InteractiveAutoService>();
 
-        
-        
-        
-
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
         services.AddCascadingAuthenticationState();
@@ -77,57 +73,74 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
-            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
-
-            if (!env.IsDevelopment())
+            app.Map("/reexecution", reexecutionApp =>
             {
-                app.UseExceptionHandler("/Error", createScopeForErrors: true);
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
+
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                reexecutionApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorComponents<TRootComponent>();
+                });
+            });
+
+            ConfigureSubdirPipeline(app, env);
+        });
+    }
+
+    protected virtual void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
+
+        if (!env.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Error", createScopeForErrors: true);
+        }
+
+        app.UseRouting();
+        UseFakeAuthState(app);
+        app.UseAntiforgery();
+
+        app.Use((ctx, nxt) =>
+        {
+            if (ctx.Request.Query.ContainsKey("add-csp"))
+            {
+                 ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+            }
+            return nxt();
+        });
+
+        _ = app.UseEndpoints(endpoints =>
+        {
+            var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
+            if (File.Exists(contentRootStaticAssetsPath))
+            {
+                endpoints.MapStaticAssets(contentRootStaticAssetsPath);
+            }
+            else
+            {
+                endpoints.MapStaticAssets();
             }
 
-            app.UseRouting();
-            UseFakeAuthState(app);
-            app.UseAntiforgery();
-
-            app.Use((ctx, nxt) =>
-            {
-                if (ctx.Request.Query.ContainsKey("add-csp"))
+            _ = endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
+                .AddInteractiveServerRenderMode(options =>
                 {
-                    ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
-                }
-                return nxt();
-            });
+                    var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
+                    options.DisableWebSocketCompression = config.IsCompressionDisabled;
 
-            _ = app.UseEndpoints(endpoints =>
-            {
-                var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
-                if (File.Exists(contentRootStaticAssetsPath))
-                {
-                    endpoints.MapStaticAssets(contentRootStaticAssetsPath);
-                }
-                else
-                {
-                    endpoints.MapStaticAssets();
-                }
+                    options.ContentSecurityFrameAncestorsPolicy = config.CspPolicy;
 
-                _ = endpoints.MapRazorComponents<TRootComponent>()
-                    .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
-                    .AddInteractiveServerRenderMode(options =>
-                    {
-                        var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
-                        options.DisableWebSocketCompression = config.IsCompressionDisabled;
+                    options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
+                })
+                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
-                        options.ContentSecurityFrameAncestorsPolicy = config.CspPolicy;
+            NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
+            StreamingRenderingForm.MapEndpoints(endpoints);
+            InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
 
-                        options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
-                    })
-                    .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
-
-                NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
-                StreamingRenderingForm.MapEndpoints(endpoints);
-                InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
-
-                MapEnhancedNavigationEndpoints(endpoints);
-            });
+            MapEnhancedNavigationEndpoints(endpoints);
         });
     }
 

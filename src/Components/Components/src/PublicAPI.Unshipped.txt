@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type!
+Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
 Microsoft.AspNetCore.Components.Infrastructure.RenderingMetricsServiceCollectionExtensions
 Microsoft.AspNetCore.Components.NavigationManager.OnNotFound -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs!>!
 Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void

@@ -44,6 +44,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
     private ResourceAssetCollection? _resourceCollection;
     private bool _rendererIsStopped;
+    private readonly ILogger _logger;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -56,6 +57,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         _services = serviceProvider;
         _options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>().Value;
+        _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
     }
 
     internal HttpContext? HttpContext => _httpContext;
@@ -83,7 +85,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         if (navigationManager != null)
         {
-            navigationManager.OnNotFound += SetNotFoundResponse;
+            navigationManager.OnNotFound += async (sender, args) => await SetNotFoundResponseAsync(navigationManager.BaseUri);
         }
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
@@ -163,6 +165,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override void AddPendingTask(ComponentState? componentState, Task task)
     {
+        if (_isReExecuted)
+        {
+            return;
+        }
+
         var streamRendering = componentState is null
             ? false
             : ((EndpointComponentState)componentState).StreamRendering;
@@ -176,10 +183,26 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
+    private void SignalRendererToFinishRenderingAfterCurrentBatch()
+    {
+        // sets a deferred stop on the renderer, which will have an effect after the current batch is completed
+        _rendererIsStopped = true;
+    }
+
     protected override void SignalRendererToFinishRendering()
     {
-        _rendererIsStopped = true;
+        SignalRendererToFinishRenderingAfterCurrentBatch();
+        // sets a hard stop on the renderer, which will have an effect immediately
         base.SignalRendererToFinishRendering();
+    }
+
+    protected override void ProcessPendingRender()
+    {
+        if (_rendererIsStopped)
+        {
+            return;
+        }
+        base.ProcessPendingRender();
     }
 
     // For tests only

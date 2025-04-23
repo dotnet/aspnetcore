@@ -22,18 +22,29 @@ public class GlobalInteractivityTest(
 {
 
     [Theory]
-    [InlineData("server")]
-    [InlineData("webassembly")]
-    public void CanRenderNotFoundInteractive(string renderingMode)
+    [InlineData("server", false)]
+    [InlineData("webassembly", false)]
+    [InlineData("server", true)]
+    [InlineData("webassembly", true)]
+    public void CanRenderNotFoundInteractive(string renderingMode, bool useCustomNotFoundPage)
     {
-        Navigate($"/subdir/render-not-found-{renderingMode}");
+        string query = useCustomNotFoundPage ? "?useCustomNotFoundPage=true" : "";
+        Navigate($"{ServerPathBase}/render-not-found-{renderingMode}{query}");
 
         var buttonId = "trigger-not-found";
         Browser.WaitForElementToBeVisible(By.Id(buttonId));
         Browser.Exists(By.Id(buttonId)).Click();
 
-        var bodyText = Browser.FindElement(By.TagName("body")).Text;
-        Assert.Contains("There's nothing here", bodyText);
+        if (useCustomNotFoundPage)
+        {
+            var infoText = Browser.FindElement(By.Id("test-info")).Text;
+            Assert.Contains("Welcome On Custom Not Found Page", infoText);
+        }
+        else
+        {
+            var bodyText = Browser.FindElement(By.TagName("body")).Text;
+            Assert.Contains("There's nothing here", bodyText);
+        }
     }
 
     [Fact]
