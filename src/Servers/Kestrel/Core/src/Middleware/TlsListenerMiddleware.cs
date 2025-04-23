@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Middleware;
@@ -53,6 +54,7 @@ internal sealed class TlsListenerMiddleware
 
             // Here either it's a valid TLS client hello or definitely not a TLS client hello.
             // Anyway we can continue with the middleware pipeline
+            Debug.Assert(parseState is ClientHelloParseState.ValidTlsClientHello or ClientHelloParseState.NotTlsClientHello);
             break;
         }
 
