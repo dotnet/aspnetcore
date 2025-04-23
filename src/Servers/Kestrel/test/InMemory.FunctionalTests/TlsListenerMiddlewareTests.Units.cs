@@ -25,6 +25,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Moq;
+using static Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport.InMemoryTransportConnection;
 
 namespace InMemory.FunctionalTests;
 
@@ -49,6 +50,59 @@ public partial class TlsListenerMiddlewareTests
     [MemberData(nameof(InvalidClientHelloData_Segmented))]
     public Task OnTlsClientHelloAsync_InvalidData_MultipleSegments(int id, List<byte[]> packets, bool nextMiddlewareInvoked)
         => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, nextMiddlewareInvoked, tlsClientHelloCallbackExpected: false);
+
+    [Fact]
+    public async Task RunTlsClientHelloCallbackTest_DeterministinglyReads()
+    {
+        var serviceContext = new TestServiceContext(LoggerFactory);
+        var logger = LoggerFactory.CreateLogger<InMemoryTransportConnection>();
+        var memoryPool = serviceContext.MemoryPoolFactory();
+        var transportConnection = new InMemoryTransportConnection(memoryPool, logger);
+
+        var nextMiddlewareInvoked = false;
+        var tlsClientHelloCallbackInvoked = false;
+
+        var middleware = new TlsListenerMiddleware(
+            next: ctx =>
+            {
+                nextMiddlewareInvoked = true;
+                var readResult = ctx.Transport.Input.ReadAsync();
+                Assert.Equal(6, readResult.Result.Buffer.Length);
+
+                return Task.CompletedTask;
+            },
+            tlsClientHelloBytesCallback: (ctx, data) =>
+            {
+                tlsClientHelloCallbackInvoked = true;
+            }
+        );
+
+        await transportConnection.Input.WriteAsync(new byte[1] { 0x16 });
+        var middlewareTask = Task.Run(() => middleware.OnTlsClientHelloAsync(transportConnection));
+        await Task.Delay(TimeSpan.FromMilliseconds(25));
+
+        await transportConnection.Input.WriteAsync(new byte[2] { 0x03, 0x01 });
+        await Task.Delay(TimeSpan.FromMilliseconds(25));
+
+        await transportConnection.Input.WriteAsync(new byte[2] { 0x00, 0x20 });
+        await Task.Delay(TimeSpan.FromMilliseconds(25));
+
+        // not correct TLS client hello byte;
+        // meaning we will not invoke the callback and advance request processing
+        await transportConnection.Input.WriteAsync(new byte[1] { 0x15 });
+        await Task.Delay(TimeSpan.FromMilliseconds(25));
+
+        await transportConnection.Input.CompleteAsync();
+
+        // ensuring that we have read only 5 times (ReadAsync() is called 5 times)
+        var observableTransport = transportConnection.Transport as ObservableDuplexPipe;
+        Assert.NotNull(observableTransport);
+        Assert.Equal(5, observableTransport.ReadAsyncCounter);
+
+        await middlewareTask;
+        Assert.True(nextMiddlewareInvoked);
+        Assert.False(tlsClientHelloCallbackInvoked);
+    }
 
     private async Task RunTlsClientHelloCallbackTest_WithMultipleSegments(
         int id,

@@ -91,7 +91,7 @@ internal class InMemoryTransportConnection : TransportConnection
     // This piece of code allows us to wait until the PipeReader has been awaited on.
     // We need to wrap lots of layers (including the ValueTask) to gain visiblity into when
     // the machinery for the await happens
-    private class ObservableDuplexPipe : IDuplexPipe
+    internal class ObservableDuplexPipe : IDuplexPipe
     {
         private readonly ObservablePipeReader _reader;
 
@@ -110,11 +110,14 @@ internal class InMemoryTransportConnection : TransportConnection
 
         public PipeWriter Output { get; }
 
+        public int ReadAsyncCounter => _reader.ReadAsyncCounter;
+
         private class ObservablePipeReader : PipeReader
         {
             private readonly PipeReader _reader;
             private readonly TaskCompletionSource _tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+            public int ReadAsyncCounter { get; private set; } = 0;
             public Task WaitForReadTask => _tcs.Task;
 
             public ObservablePipeReader(PipeReader reader)
@@ -144,6 +147,7 @@ internal class InMemoryTransportConnection : TransportConnection
 
             public override ValueTask<ReadResult> ReadAsync(CancellationToken cancellationToken = default)
             {
+                ReadAsyncCounter++;
                 var task = _reader.ReadAsync(cancellationToken);
 
                 if (_tcs.Task.IsCompleted)
@@ -152,7 +156,7 @@ internal class InMemoryTransportConnection : TransportConnection
                 }
 
                 return new ValueTask<ReadResult>(new ObservableValueTask<ReadResult>(task, _tcs), 0);
-            }
+             }
 
             public override bool TryRead(out ReadResult result)
             {

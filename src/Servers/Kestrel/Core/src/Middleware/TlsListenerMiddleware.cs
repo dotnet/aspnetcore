@@ -24,6 +24,7 @@ internal sealed class TlsListenerMiddleware
     internal async Task OnTlsClientHelloAsync(ConnectionContext connection)
     {
         var input = connection.Transport.Input;
+        ClientHelloParseState parseState = ClientHelloParseState.NotEnoughData;
 
         while (true)
         {
@@ -39,8 +40,7 @@ internal sealed class TlsListenerMiddleware
                     break;
                 }
 
-                var parseState = TryParseClientHello(buffer, out var clientHelloBytes);
-
+                parseState = TryParseClientHello(buffer, out var clientHelloBytes);
                 if (parseState == ClientHelloParseState.NotEnoughData)
                 {
                     // if no data will be added, and we still lack enough bytes
@@ -63,7 +63,15 @@ internal sealed class TlsListenerMiddleware
             }
             finally
             {
-                input.AdvanceTo(buffer.Start);
+                if (parseState is ClientHelloParseState.NotEnoughData)
+                {
+                    input.AdvanceTo(buffer.Start, buffer.End);
+                }
+                else
+                {
+                    // ready to continue middleware pipeline, reset the buffer to initial state
+                    input.AdvanceTo(buffer.Start);
+                }
             }
         }
 
