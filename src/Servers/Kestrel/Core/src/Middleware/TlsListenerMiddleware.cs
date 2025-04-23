@@ -41,20 +41,20 @@ internal sealed class TlsListenerMiddleware
             // no data is consumed, it will be processed by the follow-up middlewares
             input.AdvanceTo(buffer.Start);
 
-            switch (parseState)
+            if (parseState == ClientHelloParseState.NotEnoughData)
             {
-                case ClientHelloParseState.NotEnoughData:
-                    continue;
-
-                case ClientHelloParseState.NotTlsClientHello:
-                    await _next(connection);
-                    return;
-
-                case ClientHelloParseState.ValidTlsClientHello:
-                    _tlsClientHelloBytesCallback(connection, clientHelloBytes);
-                    await _next(connection);
-                    return;
+                continue;
             }
+
+            if (parseState == ClientHelloParseState.ValidTlsClientHello)
+            {
+                _tlsClientHelloBytesCallback(connection, clientHelloBytes);
+            }
+
+            // Here either it's a valid TLS client hello or definitely not a TLS client hello.
+            // Anyway we can continue with the middleware pipeline
+            await _next(connection);
+            break;
         }
 
         await _next(connection);
@@ -78,7 +78,7 @@ internal sealed class TlsListenerMiddleware
         }
 
         // Protocol version
-        if (!reader.TryReadBigEndian(out short version) || IsValidProtocolVersion(version) == false)
+        if (!reader.TryReadBigEndian(out short version) || !IsValidProtocolVersion(version))
         {
             return ClientHelloParseState.NotTlsClientHello;
         }
@@ -109,14 +109,14 @@ internal sealed class TlsListenerMiddleware
     }
 
     private static bool IsValidProtocolVersion(short version)
-        => version == 0x0002  // SSL 2.0 (0x0002)
-        || version == 0x0300  // SSL 3.0 (0x0300)
-        || version == 0x0301  // TLS 1.0 (0x0301)
-        || version == 0x0302  // TLS 1.1 (0x0302)
-        || version == 0x0303  // TLS 1.2 (0x0303)
-        || version == 0x0304; // TLS 1.3 (0x0304)
+        => version is 0x0002  // SSL 2.0 (0x0002)
+                   or 0x0300  // SSL 3.0 (0x0300)
+                   or 0x0301  // TLS 1.0 (0x0301)
+                   or 0x0302  // TLS 1.1 (0x0302)
+                   or 0x0303  // TLS 1.2 (0x0303)
+                   or 0x0304; // TLS 1.3 (0x0304)
 
-    private enum ClientHelloParseState
+    private enum ClientHelloParseState : byte
     {
         NotEnoughData,
         NotTlsClientHello,
