@@ -101,8 +101,6 @@
          get cached results and changes show up.
     -->
 
-    <Message Importance="high" Text="DoNotCleanUpTemplates: $(DoNotCleanUpTemplates)" />
-
     <ItemGroup>
       <_ExistingFilesFromLastRun Include="$(TestTemplateCreationFolder)**\*" />
     </ItemGroup>
