@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <!-- Use fixed version instead of $(DefaultNetCoreTargetFramework) to avoid needing workarounds set up here. -->
-    <TargetFramework>$(NetMinimum)</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ExcludeFromSourceOnlyBuild>false</ExcludeFromSourceOnlyBuild>
 
     <ConfigDirectory>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', '.config'))</ConfigDirectory>
