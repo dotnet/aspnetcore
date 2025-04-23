@@ -95,7 +95,7 @@ public class CircuitMetricsTest
     }
 
     [Fact]
-    public void OnCircuitDown_UpdatesCountersAndRecordsDuration()
+    public async Task OnCircuitDown_UpdatesCountersAndRecordsDuration()
     {
         // Arrange
         var circuitMetrics = new CircuitMetrics(_meterFactory);
@@ -108,7 +108,7 @@ public class CircuitMetricsTest
 
         // Act
         var startTime = Stopwatch.GetTimestamp();
-        Thread.Sleep(10); // Add a small delay to ensure a measurable duration
+        await Task.Delay(10); // Add a small delay to ensure a measurable duration
         var endTime = Stopwatch.GetTimestamp();
         circuitMetrics.OnCircuitDown(startTime, endTime);
 

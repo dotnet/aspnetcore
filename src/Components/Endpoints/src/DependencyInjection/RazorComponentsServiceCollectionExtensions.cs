@@ -76,6 +76,8 @@ public static class RazorComponentsServiceCollectionExtensions
 
         services.TryAddScoped<ResourceCollectionProvider>();
 
+        RenderingMetricsServiceCollectionExtensions.AddRenderingMetrics(services);
+
         // Form handling
         services.AddSupplyValueFromFormProvider();
         services.TryAddScoped<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();

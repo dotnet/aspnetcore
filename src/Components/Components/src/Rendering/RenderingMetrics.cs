@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
 
@@ -10,97 +11,273 @@ namespace Microsoft.AspNetCore.Components.Rendering;
 internal sealed class RenderingMetrics : IDisposable
 {
     public const string MeterName = "Microsoft.AspNetCore.Components.Rendering";
-
     private readonly Meter _meter;
-    private readonly Counter<long> _renderTotalCounter;
-    private readonly UpDownCounter<long> _renderActiveCounter;
-    private readonly Histogram<double> _renderDuration;
+
+    private readonly Histogram<double> _eventSyncDuration;
+    private readonly Histogram<double> _eventAsyncDuration;
+    private readonly Counter<long> _eventException;
+
+    private readonly Histogram<double> _parametersSyncDuration;
+    private readonly Histogram<double> _parametersAsyncDuration;
+    private readonly Counter<long> _parametersException;
+
+    private readonly Histogram<double> _diffDuration;
+
+    private readonly Histogram<double> _batchDuration;
+    private readonly Counter<long> _batchException;
+
+    [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
+    public static bool IsMetricsSupported { get; } = InitializeIsMetricsSupported();
+    private static bool InitializeIsMetricsSupported() => AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out bool isSupported) ? isSupported : true;
+
+    public bool IsEventDurationEnabled => IsMetricsSupported && (_eventSyncDuration.Enabled || _eventAsyncDuration.Enabled);
+    public bool IsEventExceptionEnabled => IsMetricsSupported && _eventException.Enabled;
+
+    public bool IsStateDurationEnabled => IsMetricsSupported && (_parametersSyncDuration.Enabled || _parametersAsyncDuration.Enabled);
+    public bool IsStateExceptionEnabled => IsMetricsSupported && _parametersException.Enabled;
+
+    public bool IsDiffDurationEnabled => IsMetricsSupported && _diffDuration.Enabled;
+
+    public bool IsBatchDurationEnabled => IsMetricsSupported && _batchDuration.Enabled;
+    public bool IsBatchExceptionEnabled => IsMetricsSupported && _batchException.Enabled;
 
     public RenderingMetrics(IMeterFactory meterFactory)
     {
+        if (!IsMetricsSupported)
+        {
+            // TryAddSingleton prevents trimming constructors, so we trim constructor this way
+            throw new NotSupportedException("Metrics are not supported in this environment.");
+        }
+
         Debug.Assert(meterFactory != null);
 
         _meter = meterFactory.Create(MeterName);
 
-        _renderTotalCounter = _meter.CreateCounter<long>(
-            "aspnetcore.components.rendering.count",
-            unit: "{renders}",
-            description: "Number of component renders performed.");
-
-        _renderActiveCounter = _meter.CreateUpDownCounter<long>(
-            "aspnetcore.components.rendering.active_renders",
-            unit: "{renders}",
-            description: "Number of component renders performed.");
-
-        _renderDuration = _meter.CreateHistogram<double>(
-            "aspnetcore.components.rendering.duration",
-            unit: "ms",
-            description: "Duration of component rendering operations per component.",
+        _eventSyncDuration = _meter.CreateHistogram(
+            "aspnetcore.components.rendering.event.synchronous.duration",
+            unit: "s",
+            description: "Duration of processing browser event synchronously.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+
+        _eventAsyncDuration = _meter.CreateHistogram(
+            "aspnetcore.components.rendering.event.asynchronous.duration",
+            unit: "s",
+            description: "Duration of processing browser event asynchronously.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+
+        _eventException = _meter.CreateCounter<long>(
+            "aspnetcore.components.rendering.event.exception",
+            unit: "{exceptions}",
+            description: "Total number of exceptions during browser event processing.");
+
+        _parametersSyncDuration = _meter.CreateHistogram(
+            "aspnetcore.components.rendering.parameters.synchronous.duration",
+            unit: "s",
+            description: "Duration of processing component parameters synchronously.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+
+        _parametersAsyncDuration = _meter.CreateHistogram(
+            "aspnetcore.components.rendering.parameters.asynchronous.duration",
+            unit: "s",
+            description: "Duration of processing component parameters asynchronously.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+
+        _parametersException = _meter.CreateCounter<long>(
+            "aspnetcore.components.rendering.parameters.exception",
+            unit: "{exceptions}",
+            description: "Total number of exceptions during processing component parameters.");
+
+        _diffDuration = _meter.CreateHistogram(
+            "aspnetcore.components.rendering.diff.duration",
+            unit: "s",
+            description: "Duration of rendering component HTML diff.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+
+        _batchDuration = _meter.CreateHistogram(
+            "aspnetcore.components.rendering.batch.duration",
+            unit: "s",
+            description: "Duration of rendering batch.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+
+        _batchException = _meter.CreateCounter<long>(
+            "aspnetcore.components.rendering.batch.exception",
+            unit: "{exceptions}",
+            description: "Total number of exceptions during batch rendering.");
     }
 
-    public void RenderStart(string componentType)
+    public void EventDurationSync(long startTimestamp, string? componentType, string? attributeName)
     {
-        var tags = new TagList();
-        tags = InitializeRequestTags(componentType, tags);
+        var tags = new TagList
+        {
+            { "component.type", componentType ?? "unknown" },
+            { "attribute.name", attributeName ?? "unknown"}
+        };
 
-        if (_renderActiveCounter.Enabled)
-        {
-            _renderActiveCounter.Add(1, tags);
-        }
-        if (_renderTotalCounter.Enabled)
-        {
-            _renderTotalCounter.Add(1, tags);
-        }
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        _eventSyncDuration.Record(duration.TotalSeconds, tags);
     }
 
-    public void RenderEnd(string componentType, Exception? exception, long startTimestamp, long currentTimestamp)
+    public async Task CaptureEventDurationAsync(Task task, long startTimestamp, string? componentType, string? attributeName)
     {
-        // Tags must match request start.
-        var tags = new TagList();
-        tags = InitializeRequestTags(componentType, tags);
-
-        if (_renderActiveCounter.Enabled)
+        try
         {
-            _renderActiveCounter.Add(-1, tags);
-        }
+            await task;
 
-        if (_renderDuration.Enabled)
-        {
-            if (exception != null)
+            var tags = new TagList
             {
-                TryAddTag(ref tags, "error.type", exception.GetType().FullName);
-            }
+                { "component.type", componentType ?? "unknown" },
+                { "attribute.name", attributeName ?? "unknown" }
+            };
 
-            var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
-            _renderDuration.Record(duration.TotalMilliseconds, tags);
+            var duration = Stopwatch.GetElapsedTime(startTimestamp);
+            _eventAsyncDuration.Record(duration.TotalSeconds, tags);
+        }
+        catch
+        {
+            // none
         }
     }
 
-    private static TagList InitializeRequestTags(string componentType, TagList tags)
+    public void ParametersDurationSync(long startTimestamp, string? componentType)
     {
-        tags.Add("component.type", componentType);
-        return tags;
+        var tags = new TagList
+        {
+            { "component.type", componentType ?? "unknown" },
+        };
+
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        _parametersSyncDuration.Record(duration.TotalSeconds, tags);
     }
 
-    public bool IsDurationEnabled() => _renderDuration.Enabled;
+    public async Task CaptureParametersDurationAsync(Task task, long startTimestamp, string? componentType)
+    {
+        try
+        {
+            await task;
+
+            var tags = new TagList
+            {
+                { "component.type", componentType ?? "unknown" },
+            };
+
+            var duration = Stopwatch.GetElapsedTime(startTimestamp);
+            _parametersAsyncDuration.Record(duration.TotalSeconds, tags);
+        }
+        catch
+        {
+            // none
+        }
+    }
+
+    public void DiffDuration(long startTimestamp, string? componentType, int diffLength)
+    {
+        var tags = new TagList
+        {
+            { "component.type", componentType ?? "unknown" },
+            { "diff.length.bucket", BucketEditLength(diffLength) }
+        };
+
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        _diffDuration.Record(duration.TotalSeconds, tags);
+    }
+
+    public void BatchDuration(long startTimestamp, int diffLength)
+    {
+        var tags = new TagList
+        {
+            { "diff.length.bucket", BucketEditLength(diffLength) }
+        };
+
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        _batchDuration.Record(duration.TotalSeconds, tags);
+    }
+
+    public void EventFailed(string? exceptionType, EventCallback callback, string? attributeName)
+    {
+        var receiverName = (callback.Receiver?.GetType() ?? callback.Delegate?.Target?.GetType())?.FullName;
+        var tags = new TagList
+        {
+            { "component.type", receiverName ?? "unknown" },
+            { "attribute.name", attributeName  ?? "unknown"},
+            { "error.type", exceptionType ?? "unknown"}
+        };
+        _eventException.Add(1, tags);
+    }
+
+    public async Task CaptureEventFailedAsync(Task task, EventCallback callback, string? attributeName)
+    {
+        try
+        {
+            await task;
+        }
+        catch (Exception ex)
+        {
+            EventFailed(ex.GetType().Name, callback, attributeName);
+        }
+    }
+
+    public void PropertiesFailed(string? exceptionType, string? componentType)
+    {
+        var tags = new TagList
+        {
+            { "component.type", componentType ?? "unknown" },
+            { "error.type", exceptionType ?? "unknown"}
+        };
+        _parametersException.Add(1, tags);
+    }
+
+    public async Task CapturePropertiesFailedAsync(Task task, string? componentType)
+    {
+        try
+        {
+            await task;
+        }
+        catch (Exception ex)
+        {
+            PropertiesFailed(ex.GetType().Name, componentType);
+        }
+    }
+
+    public void BatchFailed(string? exceptionType)
+    {
+        var tags = new TagList
+        {
+            { "error.type", exceptionType ?? "unknown"}
+        };
+        _batchException.Add(1, tags);
+    }
+
+    public async Task CaptureBatchFailedAsync(Task task)
+    {
+        try
+        {
+            await task;
+        }
+        catch (Exception ex)
+        {
+            BatchFailed(ex.GetType().Name);
+        }
+    }
+
+    private static int BucketEditLength(int batchLength)
+    {
+        return batchLength switch
+        {
+            <= 1 => 1,
+            <= 2 => 2,
+            <= 5 => 5,
+            <= 10 => 10,
+            <= 50 => 50,
+            <= 100 => 100,
+            <= 500 => 500,
+            <= 1000 => 1000,
+            <= 10000 => 10000,
+            _ => 10001,
+        };
+    }
 
     public void Dispose()
     {
         _meter.Dispose();
-    }
-
-    private static bool TryAddTag(ref TagList tags, string name, object? value)
-    {
-        for (var i = 0; i < tags.Count; i++)
-        {
-            if (tags[i].Key == name)
-            {
-                return false;
-            }
-        }
-
-        tags.Add(new KeyValuePair<string, object?>(name, value));
-        return true;
     }
 }

@@ -26,7 +26,7 @@ internal sealed class CircuitMetrics : IDisposable
         _circuitTotalCounter = _meter.CreateCounter<long>(
             "aspnetcore.components.circuits.count",
             unit: "{circuits}",
-            description: "Number of active circuits.");
+            description: "Total number of circuits.");
 
         _circuitActiveCounter = _meter.CreateUpDownCounter<long>(
             "aspnetcore.components.circuits.active_circuits",
@@ -47,57 +47,48 @@ internal sealed class CircuitMetrics : IDisposable
 
     public void OnCircuitOpened()
     {
-        var tags = new TagList();
-
         if (_circuitActiveCounter.Enabled)
         {
-            _circuitActiveCounter.Add(1, tags);
+            _circuitActiveCounter.Add(1);
         }
         if (_circuitTotalCounter.Enabled)
         {
-            _circuitTotalCounter.Add(1, tags);
+            _circuitTotalCounter.Add(1);
         }
     }
 
     public void OnConnectionUp()
     {
-        var tags = new TagList();
-
         if (_circuitConnectedCounter.Enabled)
         {
-            _circuitConnectedCounter.Add(1, tags);
+            _circuitConnectedCounter.Add(1);
         }
     }
 
     public void OnConnectionDown()
     {
-        var tags = new TagList();
-
         if (_circuitConnectedCounter.Enabled)
         {
-            _circuitConnectedCounter.Add(-1, tags);
+            _circuitConnectedCounter.Add(-1);
         }
     }
 
     public void OnCircuitDown(long startTimestamp, long currentTimestamp)
     {
-        // Tags must match request start.
-        var tags = new TagList();
-
         if (_circuitActiveCounter.Enabled)
         {
-            _circuitActiveCounter.Add(-1, tags);
+            _circuitActiveCounter.Add(-1);
         }
 
         if (_circuitConnectedCounter.Enabled)
         {
-            _circuitConnectedCounter.Add(-1, tags);
+            _circuitConnectedCounter.Add(-1);
         }
 
         if (_circuitDuration.Enabled)
         {
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
-            _circuitDuration.Record(duration.TotalSeconds, tags);
+            _circuitDuration.Record(duration.TotalSeconds);
         }
     }
 
