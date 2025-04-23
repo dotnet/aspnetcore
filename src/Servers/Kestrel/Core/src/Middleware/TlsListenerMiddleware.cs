@@ -53,7 +53,6 @@ internal sealed class TlsListenerMiddleware
 
             // Here either it's a valid TLS client hello or definitely not a TLS client hello.
             // Anyway we can continue with the middleware pipeline
-            await _next(connection);
             break;
         }
 
