@@ -227,16 +227,17 @@ namespace Microsoft.AspNetCore.HttpOverrides
             for ( ; entriesConsumed < sets.Length; entriesConsumed++)
             {
                 var set = sets[entriesConsumed];
+
+                // For the first instance, allow remoteIp to be null for servers that don't support it natively.
+                if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+                {
+                    // Stop at the first unknown remote IP, but still apply changes processed so far.
+                    _logger.LogDebug(1, $"Unknown proxy: {currentValues.RemoteIpAndPort}");
+                    break;
+                }
+
                 if (checkFor)
                 {
-                    // For the first instance, allow remoteIp to be null for servers that don't support it natively.
-                    if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
-                    {
-                        // Stop at the first unknown remote IP, but still apply changes processed so far.
-                        _logger.LogDebug(1, $"Unknown proxy: {currentValues.RemoteIpAndPort}");
-                        break;
-                    }
-
                     IPEndPoint parsedEndPoint;
                     if (IPEndPointParser.TryParse(set.IpAndPortText, out parsedEndPoint))
                     {
