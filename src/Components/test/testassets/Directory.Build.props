@@ -21,6 +21,5 @@
   </ItemGroup>
   <PropertyGroup>
     <WasmPreloadAssets>false</WasmPreloadAssets>
-    <WasmInlineBootConfig>false</WasmInlineBootConfig>
   </PropertyGroup>
 </Project>
