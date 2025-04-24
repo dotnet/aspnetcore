@@ -13,14 +13,12 @@ namespace Microsoft.JSInterop.Infrastructure;
 /// </summary>
 internal readonly struct JSFunctionReference
 {
-    private static readonly ConcurrentDictionary<Type, MethodInfo> _methodInfoCache = new();
-
-    private readonly IJSObjectReference _jsObjectReference;
-
     /// <summary>
     /// Caches previously constructed MethodInfo instances for various delegate types.
     /// </summary>
-    public static ConcurrentDictionary<Type, MethodInfo> MethodInfoCache => _methodInfoCache;
+    private static readonly ConcurrentDictionary<Type, MethodInfo> _methodInfoCache = new();
+
+    private readonly IJSObjectReference _jsObjectReference;
 
     public JSFunctionReference(IJSObjectReference jsObjectReference)
     {
@@ -34,7 +32,7 @@ internal readonly struct JSFunctionReference
     {
         Type delegateType = typeof(T);
 
-        if (MethodInfoCache.TryGetValue(delegateType, out var wrapperMethod))
+        if (_methodInfoCache.TryGetValue(delegateType, out var wrapperMethod))
         {
             var wrapper = new JSFunctionReference(jsObjectReference);
             return (T)Delegate.CreateDelegate(delegateType, wrapper, wrapperMethod);
@@ -42,48 +40,45 @@ internal readonly struct JSFunctionReference
 
         if (!delegateType.IsGenericType)
         {
-            throw new ArgumentException("The delegate type must be a Func.");
+            throw CreateInvalidTypeParameterException(delegateType);
         }
 
         var returnTypeCandidate = delegateType.GenericTypeArguments[^1];
 
         if (returnTypeCandidate == typeof(ValueTask))
         {
-            var methodName = GetVoidMethodName(delegateType.GetGenericTypeDefinition());
+            var methodName = GetVoidMethodName(delegateType);
             return CreateVoidDelegate<T>(delegateType, jsObjectReference, methodName);
         }
         else if (returnTypeCandidate == typeof(Task))
         {
-            var methodName = GetVoidTaskMethodName(delegateType.GetGenericTypeDefinition());
+            var methodName = GetVoidTaskMethodName(delegateType);
             return CreateVoidDelegate<T>(delegateType, jsObjectReference, methodName);
         }
-        else
+        else if (returnTypeCandidate.IsGenericType)
         {
             var returnTypeGenericTypeDefinition = returnTypeCandidate.GetGenericTypeDefinition();
 
             if (returnTypeGenericTypeDefinition == typeof(ValueTask<>))
             {
-                var methodName = GetMethodName(delegateType.GetGenericTypeDefinition());
+                var methodName = GetMethodName(delegateType);
                 var innerReturnType = returnTypeCandidate.GenericTypeArguments[0];
                 return CreateDelegate<T>(delegateType, innerReturnType, jsObjectReference, methodName);
             }
 
             else if (returnTypeGenericTypeDefinition == typeof(Task<>))
             {
-                var methodName = GetTaskMethodName(delegateType.GetGenericTypeDefinition());
+                var methodName = GetTaskMethodName(delegateType);
                 var innerReturnType = returnTypeCandidate.GenericTypeArguments[0];
                 return CreateDelegate<T>(delegateType, innerReturnType, jsObjectReference, methodName);
             }
-            else
-            {
-                throw new ArgumentException("The delegate return type must be Task<TResult> or ValueTask<TResult>.");
-            }
         }
+
+        throw CreateInvalidTypeParameterException(delegateType);
     }
 
     private static T CreateDelegate<T>(Type delegateType, Type returnType, IJSObjectReference jsObjectReference, string methodName) where T : Delegate
     {
-        var wrapper = new JSFunctionReference(jsObjectReference);
         var wrapperMethod = typeof(JSFunctionReference).GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance)!;
         Type[] genericArguments = [.. delegateType.GenericTypeArguments[..^1], returnType];
 
@@ -91,14 +86,14 @@ internal readonly struct JSFunctionReference
         var concreteWrapperMethod = wrapperMethod.MakeGenericMethod(genericArguments);
 #pragma warning restore IL2060 // Call to 'System.Reflection.MethodInfo.MakeGenericMethod' can not be statically analyzed. It's not possible to guarantee the availability of requirements of the generic method.
 
-        MethodInfoCache.TryAdd(delegateType, concreteWrapperMethod);
+        _methodInfoCache.TryAdd(delegateType, concreteWrapperMethod);
 
+        var wrapper = new JSFunctionReference(jsObjectReference);
         return (T)Delegate.CreateDelegate(delegateType, wrapper, concreteWrapperMethod);
     }
 
     private static T CreateVoidDelegate<T>(Type delegateType, IJSObjectReference jsObjectReference, string methodName) where T : Delegate
     {
-        var wrapper = new JSFunctionReference(jsObjectReference);
         var wrapperMethod = typeof(JSFunctionReference).GetMethod(methodName, BindingFlags.Public | BindingFlags.Instance)!;
         Type[] genericArguments = delegateType.GenericTypeArguments[..^1];
 
@@ -106,12 +101,19 @@ internal readonly struct JSFunctionReference
         var concreteWrapperMethod = wrapperMethod.MakeGenericMethod(genericArguments);
 #pragma warning restore IL2060 // Call to 'System.Reflection.MethodInfo.MakeGenericMethod' can not be statically analyzed. It's not possible to guarantee the availability of requirements of the generic method.
 
-        MethodInfoCache.TryAdd(delegateType, concreteWrapperMethod);
+        _methodInfoCache.TryAdd(delegateType, concreteWrapperMethod);
 
+        var wrapper = new JSFunctionReference(jsObjectReference);
         return (T)Delegate.CreateDelegate(delegateType, wrapper, concreteWrapperMethod);
     }
 
-    private static string GetMethodName(Type genericDelegateTypeDefiniton) => genericDelegateTypeDefiniton switch
+    private static InvalidOperationException CreateInvalidTypeParameterException(Type delegateType)
+    {
+        return new InvalidOperationException(
+            $"The type {delegateType} is not supported as the type parameter of '{nameof(JSObjectReferenceExtensions.AsAsyncFunction)}'. 'T' must be Func with the return type Task<TResult> or ValueTask<TResult>.");
+    }
+
+    private static string GetMethodName(Type delegateType) => delegateType.GetGenericTypeDefinition() switch
     {
         var gd when gd == typeof(Func<>) => nameof(Invoke0),
         var gd when gd == typeof(Func<,>) => nameof(Invoke1),
@@ -120,10 +122,10 @@ internal readonly struct JSFunctionReference
         var gd when gd == typeof(Func<,,,,>) => nameof(Invoke4),
         var gd when gd == typeof(Func<,,,,,>) => nameof(Invoke5),
         var gd when gd == typeof(Func<,,,,,,>) => nameof(Invoke6),
-        _ => throw new NotSupportedException($"The type {genericDelegateTypeDefiniton} is not supported.")
+        _ => throw CreateInvalidTypeParameterException(delegateType)
     };
 
-    private static string GetTaskMethodName(Type genericDelegateTypeDefiniton) => genericDelegateTypeDefiniton switch
+    private static string GetTaskMethodName(Type delegateType) => delegateType.GetGenericTypeDefinition() switch
     {
         var gd when gd == typeof(Func<>) => nameof(InvokeTask0),
         var gd when gd == typeof(Func<,>) => nameof(InvokeTask1),
@@ -132,10 +134,10 @@ internal readonly struct JSFunctionReference
         var gd when gd == typeof(Func<,,,,>) => nameof(InvokeTask4),
         var gd when gd == typeof(Func<,,,,,>) => nameof(InvokeTask5),
         var gd when gd == typeof(Func<,,,,,,>) => nameof(InvokeTask6),
-        _ => throw new NotSupportedException($"The type {genericDelegateTypeDefiniton} is not supported.")
+        _ => throw CreateInvalidTypeParameterException(delegateType)
     };
 
-    private static string GetVoidMethodName(Type genericDelegateTypeDefiniton) => genericDelegateTypeDefiniton switch
+    private static string GetVoidMethodName(Type delegateType) => delegateType.GetGenericTypeDefinition() switch
     {
         var gd when gd == typeof(Func<>) => nameof(InvokeVoid0),
         var gd when gd == typeof(Func<,>) => nameof(InvokeVoid1),
@@ -144,10 +146,10 @@ internal readonly struct JSFunctionReference
         var gd when gd == typeof(Func<,,,,>) => nameof(InvokeVoid4),
         var gd when gd == typeof(Func<,,,,,>) => nameof(InvokeVoid5),
         var gd when gd == typeof(Func<,,,,,,>) => nameof(InvokeVoid6),
-        _ => throw new NotSupportedException($"The type {genericDelegateTypeDefiniton} is not supported.")
+        _ => throw CreateInvalidTypeParameterException(delegateType)
     };
 
-    private static string GetVoidTaskMethodName(Type genericDelegateTypeDefiniton) => genericDelegateTypeDefiniton switch
+    private static string GetVoidTaskMethodName(Type delegateType) => delegateType.GetGenericTypeDefinition() switch
     {
         var gd when gd == typeof(Func<>) => nameof(InvokeVoidTask0),
         var gd when gd == typeof(Func<,>) => nameof(InvokeVoidTask1),
@@ -156,7 +158,7 @@ internal readonly struct JSFunctionReference
         var gd when gd == typeof(Func<,,,,>) => nameof(InvokeVoidTask4),
         var gd when gd == typeof(Func<,,,,,>) => nameof(InvokeVoidTask5),
         var gd when gd == typeof(Func<,,,,,,>) => nameof(InvokeVoidTask6),
-        _ => throw new NotSupportedException($"The type {genericDelegateTypeDefiniton} is not supported.")
+        _ => throw CreateInvalidTypeParameterException(delegateType)
     };
 
     // Variants returning ValueTask<T> using InvokeAsync
