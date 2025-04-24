@@ -108,7 +108,8 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["invokeNewWithClassConstructorAsync.function"] = "6",
             ["invokeNewWithNonConstructorAsync"] = "Success",
             // Function reference tests
-            ["changeFunctionViaObjectReferenceAsync"] = "42"
+            ["changeFunctionViaObjectReferenceAsync"] = "42",
+            ["invokeDelegateFromAsAsyncFunction"] = "42"
         };
 
         var expectedSyncValues = new Dictionary<string, string>
