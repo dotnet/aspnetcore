@@ -1,4 +1,25 @@
 ﻿@using Components.TestServer.RazorComponents.Pages.Forms
+@using Components.WasmMinimal.Pages
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useCustomNotFoundPage")]
+    public string? UseCustomNotFoundPage { get; set; }
+
+    private Type? NotFoundPageType { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (UseCustomNotFoundPage == "true")
+        {
+            NotFoundPageType = typeof(CustomNotFoundPage);
+        }
+        else
+        {
+            NotFoundPageType = null;
+        }
+    }
+}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,7 +29,7 @@
     <HeadOutlet />
 </head>
 <body>
-    <Router AppAssembly="@typeof(App).Assembly">
+    <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="NotFoundPageType">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
             <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
