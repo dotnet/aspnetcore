@@ -122,6 +122,8 @@ internal readonly struct JSFunctionReference
         var gd when gd == typeof(Func<,,,,>) => nameof(Invoke4),
         var gd when gd == typeof(Func<,,,,,>) => nameof(Invoke5),
         var gd when gd == typeof(Func<,,,,,,>) => nameof(Invoke6),
+        var gd when gd == typeof(Func<,,,,,,,>) => nameof(Invoke7),
+        var gd when gd == typeof(Func<,,,,,,,,>) => nameof(Invoke8),
         _ => throw CreateInvalidTypeParameterException(delegateType)
     };
 
@@ -134,6 +136,8 @@ internal readonly struct JSFunctionReference
         var gd when gd == typeof(Func<,,,,>) => nameof(InvokeTask4),
         var gd when gd == typeof(Func<,,,,,>) => nameof(InvokeTask5),
         var gd when gd == typeof(Func<,,,,,,>) => nameof(InvokeTask6),
+        var gd when gd == typeof(Func<,,,,,,,>) => nameof(InvokeTask7),
+        var gd when gd == typeof(Func<,,,,,,,,>) => nameof(InvokeTask8),
         _ => throw CreateInvalidTypeParameterException(delegateType)
     };
 
@@ -146,6 +150,8 @@ internal readonly struct JSFunctionReference
         var gd when gd == typeof(Func<,,,,>) => nameof(InvokeVoid4),
         var gd when gd == typeof(Func<,,,,,>) => nameof(InvokeVoid5),
         var gd when gd == typeof(Func<,,,,,,>) => nameof(InvokeVoid6),
+        var gd when gd == typeof(Func<,,,,,,,>) => nameof(InvokeVoid7),
+        var gd when gd == typeof(Func<,,,,,,,,>) => nameof(InvokeVoid8),
         _ => throw CreateInvalidTypeParameterException(delegateType)
     };
 
@@ -158,6 +164,8 @@ internal readonly struct JSFunctionReference
         var gd when gd == typeof(Func<,,,,>) => nameof(InvokeVoidTask4),
         var gd when gd == typeof(Func<,,,,,>) => nameof(InvokeVoidTask5),
         var gd when gd == typeof(Func<,,,,,,>) => nameof(InvokeVoidTask6),
+        var gd when gd == typeof(Func<,,,,,,,>) => nameof(InvokeVoidTask7),
+        var gd when gd == typeof(Func<,,,,,,,,>) => nameof(InvokeVoidTask8),
         _ => throw CreateInvalidTypeParameterException(delegateType)
     };
 
@@ -169,6 +177,8 @@ internal readonly struct JSFunctionReference
     public ValueTask<TResult> Invoke4<T1, T2, T3, T4, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4]);
     public ValueTask<TResult> Invoke5<T1, T2, T3, T4, T5, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4, arg5]);
     public ValueTask<TResult> Invoke6<T1, T2, T3, T4, T5, T6, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6]);
+    public ValueTask<TResult> Invoke7<T1, T2, T3, T4, T5, T6, T7, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6, arg7]);
+    public ValueTask<TResult> Invoke8<T1, T2, T3, T4, T5, T6, T7, T8, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8]);
 
     // Variants returning ValueTask using InvokeVoidAsync
     public ValueTask InvokeVoid0() => _jsObjectReference.InvokeVoidAsync(string.Empty);
@@ -178,6 +188,8 @@ internal readonly struct JSFunctionReference
     public ValueTask InvokeVoid4<T1, T2, T3, T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4]);
     public ValueTask InvokeVoid5<T1, T2, T3, T4, T5>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4, arg5]);
     public ValueTask InvokeVoid6<T1, T2, T3, T4, T5, T6>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6]);
+    public ValueTask InvokeVoid7<T1, T2, T3, T4, T5, T6, T7>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6, arg7]);
+    public ValueTask InvokeVoid8<T1, T2, T3, T4, T5, T6, T7, T8>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8]);
 
     // Variants returning Task<T> using InvokeAsync
     public Task<TResult> InvokeTask0<[DynamicallyAccessedMembers(JsonSerialized)] TResult>() => _jsObjectReference.InvokeAsync<TResult>(string.Empty, []).AsTask();
@@ -187,6 +199,8 @@ internal readonly struct JSFunctionReference
     public Task<TResult> InvokeTask4<T1, T2, T3, T4, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4]).AsTask();
     public Task<TResult> InvokeTask5<T1, T2, T3, T4, T5, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4, arg5]).AsTask();
     public Task<TResult> InvokeTask6<T1, T2, T3, T4, T5, T6, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6]).AsTask();
+    public Task<TResult> InvokeTask7<T1, T2, T3, T4, T5, T6, T7, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6, arg7]).AsTask();
+    public Task<TResult> InvokeTask8<T1, T2, T3, T4, T5, T6, T7, T8, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8) => _jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8]).AsTask();
 
     // Variants returning Task using InvokeVoidAsync
     public Task InvokeVoidTask0() => _jsObjectReference.InvokeVoidAsync(string.Empty).AsTask();
@@ -196,4 +210,6 @@ internal readonly struct JSFunctionReference
     public Task InvokeVoidTask4<T1, T2, T3, T4>(T1 arg1, T2 arg2, T3 arg3, T4 arg4) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4]).AsTask();
     public Task InvokeVoidTask5<T1, T2, T3, T4, T5>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4, arg5]).AsTask();
     public Task InvokeVoidTask6<T1, T2, T3, T4, T5, T6>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6]).AsTask();
+    public Task InvokeVoidTask7<T1, T2, T3, T4, T5, T6, T7>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6, arg7]).AsTask();
+    public Task InvokeVoidTask8<T1, T2, T3, T4, T5, T6, T7, T8>(T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8) => _jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8]).AsTask();
 }

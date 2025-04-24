@@ -158,7 +158,7 @@ public class JSObjectReferenceExtensionsTest
         var jsObjectReference = new JSObjectReference(jsRuntime, 1);
 
         // Act/Assert
-        Assert.Throws<InvalidOperationException>(jsObjectReference.AsAsyncFunction<Func<int, int, int, int, int, int, int, int, int>>);
+        Assert.Throws<InvalidOperationException>(jsObjectReference.AsAsyncFunction<Func<int, int, int, int, int, int, int, int, int, Task>>);
     }
 
     class TestJSRuntime : JSInProcessRuntime
