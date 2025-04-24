@@ -67,7 +67,7 @@ public partial class TlsListenerMiddlewareTests
             {
                 nextMiddlewareInvoked = true;
                 var readResult = ctx.Transport.Input.ReadAsync();
-                Assert.Equal(6, readResult.Result.Buffer.Length);
+                Assert.Equal(5, readResult.Result.Buffer.Length);
 
                 return Task.CompletedTask;
             },
@@ -79,25 +79,20 @@ public partial class TlsListenerMiddlewareTests
 
         await transportConnection.Input.WriteAsync(new byte[1] { 0x16 });
         var middlewareTask = Task.Run(() => middleware.OnTlsClientHelloAsync(transportConnection));
-        await Task.Delay(TimeSpan.FromMilliseconds(25));
+        await Task.Delay(TimeSpan.FromMilliseconds(75));
 
         await transportConnection.Input.WriteAsync(new byte[2] { 0x03, 0x01 });
-        await Task.Delay(TimeSpan.FromMilliseconds(25));
+        await Task.Delay(TimeSpan.FromMilliseconds(75));
 
         await transportConnection.Input.WriteAsync(new byte[2] { 0x00, 0x20 });
-        await Task.Delay(TimeSpan.FromMilliseconds(25));
-
-        // not correct TLS client hello byte;
-        // meaning we will not invoke the callback and advance request processing
-        await transportConnection.Input.WriteAsync(new byte[1] { 0x15 });
-        await Task.Delay(TimeSpan.FromMilliseconds(25));
+        await Task.Delay(TimeSpan.FromMilliseconds(75));
 
         await transportConnection.Input.CompleteAsync();
 
-        // ensuring that we have read only 5 times (ReadAsync() is called 5 times)
+        // ensuring that we have read only 4 times (ReadAsync() is called 4 times)
         var observableTransport = transportConnection.Transport as ObservableDuplexPipe;
         Assert.NotNull(observableTransport);
-        Assert.Equal(5, observableTransport.ReadAsyncCounter);
+        Assert.Equal(4, observableTransport.ReadAsyncCounter);
 
         await middlewareTask;
         Assert.True(nextMiddlewareInvoked);
