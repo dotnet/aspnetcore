@@ -177,7 +177,7 @@ public static class JSObjectReferenceExtensions
     /// <param name="jsObjectReference"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentException"></exception>
-    public static T AsFunction<T>(this IJSObjectReference jsObjectReference) where T : Delegate
+    public static T AsAsyncFunction<T>(this IJSObjectReference jsObjectReference) where T : Delegate
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
