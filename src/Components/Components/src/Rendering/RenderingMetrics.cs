@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
 
@@ -26,29 +25,19 @@ internal sealed class RenderingMetrics : IDisposable
     private readonly Histogram<double> _batchDuration;
     private readonly Counter<long> _batchException;
 
-    [FeatureSwitchDefinition("System.Diagnostics.Metrics.Meter.IsSupported")]
-    public static bool IsMetricsSupported { get; } = InitializeIsMetricsSupported();
-    private static bool InitializeIsMetricsSupported() => AppContext.TryGetSwitch("System.Diagnostics.Metrics.Meter.IsSupported", out bool isSupported) ? isSupported : true;
+    public bool IsEventDurationEnabled => _eventSyncDuration.Enabled || _eventAsyncDuration.Enabled;
+    public bool IsEventExceptionEnabled => _eventException.Enabled;
 
-    public bool IsEventDurationEnabled => IsMetricsSupported && (_eventSyncDuration.Enabled || _eventAsyncDuration.Enabled);
-    public bool IsEventExceptionEnabled => IsMetricsSupported && _eventException.Enabled;
+    public bool IsStateDurationEnabled => _parametersSyncDuration.Enabled || _parametersAsyncDuration.Enabled;
+    public bool IsStateExceptionEnabled => _parametersException.Enabled;
 
-    public bool IsStateDurationEnabled => IsMetricsSupported && (_parametersSyncDuration.Enabled || _parametersAsyncDuration.Enabled);
-    public bool IsStateExceptionEnabled => IsMetricsSupported && _parametersException.Enabled;
+    public bool IsDiffDurationEnabled => _diffDuration.Enabled;
 
-    public bool IsDiffDurationEnabled => IsMetricsSupported && _diffDuration.Enabled;
-
-    public bool IsBatchDurationEnabled => IsMetricsSupported && _batchDuration.Enabled;
-    public bool IsBatchExceptionEnabled => IsMetricsSupported && _batchException.Enabled;
+    public bool IsBatchDurationEnabled => _batchDuration.Enabled;
+    public bool IsBatchExceptionEnabled => _batchException.Enabled;
 
     public RenderingMetrics(IMeterFactory meterFactory)
     {
-        if (!IsMetricsSupported)
-        {
-            // TryAddSingleton prevents trimming constructors, so we trim constructor this way
-            throw new NotSupportedException("Metrics are not supported in this environment.");
-        }
-
         Debug.Assert(meterFactory != null);
 
         _meter = meterFactory.Create(MeterName);
@@ -105,11 +94,12 @@ internal sealed class RenderingMetrics : IDisposable
             description: "Total number of exceptions during batch rendering.");
     }
 
-    public void EventDurationSync(long startTimestamp, string? componentType, string? attributeName)
+    public void EventDurationSync(long startTimestamp, string? componentType, string? methodName, string? attributeName)
     {
         var tags = new TagList
         {
             { "component.type", componentType ?? "unknown" },
+            { "component.method", methodName ?? "unknown" },
             { "attribute.name", attributeName ?? "unknown"}
         };
 
@@ -117,7 +107,7 @@ internal sealed class RenderingMetrics : IDisposable
         _eventSyncDuration.Record(duration.TotalSeconds, tags);
     }
 
-    public async Task CaptureEventDurationAsync(Task task, long startTimestamp, string? componentType, string? attributeName)
+    public async Task CaptureEventDurationAsync(Task task, long startTimestamp, string? componentType, string? methodName, string? attributeName)
     {
         try
         {
@@ -126,6 +116,7 @@ internal sealed class RenderingMetrics : IDisposable
             var tags = new TagList
             {
                 { "component.type", componentType ?? "unknown" },
+                { "component.method", methodName ?? "unknown" },
                 { "attribute.name", attributeName ?? "unknown" }
             };
 

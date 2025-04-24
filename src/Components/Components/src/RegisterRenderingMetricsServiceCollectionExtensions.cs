@@ -21,15 +21,25 @@ public static class RenderingMetricsServiceCollectionExtensions
     public static IServiceCollection AddRenderingMetrics(
         IServiceCollection services)
     {
-        if (RenderingMetrics.IsMetricsSupported)
+        // do not register IConfigureOptions<StartupValidatorOptions> multiple times
+        if (!IsMeterFactoryRegistered(services))
         {
-            // do not register IConfigureOptions<StartupValidatorOptions> multiple times
-            if (!IsMeterFactoryRegistered(services))
-            {
-                services.AddMetrics();
-            }
-            services.TryAddSingleton<RenderingMetrics>();
+            services.AddMetrics();
         }
+        services.TryAddSingleton<RenderingMetrics>();
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers component rendering traces
+    /// </summary>
+    /// <param name="services">The <see cref="IServiceCollection"/>.</param>
+    /// <returns>The <see cref="IServiceCollection"/>.</returns>
+    public static IServiceCollection AddRenderingTracing(
+        IServiceCollection services)
+    {
+        services.TryAddSingleton<RenderingActivitySource>();
 
         return services;
     }

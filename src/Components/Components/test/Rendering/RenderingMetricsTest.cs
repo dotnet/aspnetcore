@@ -43,7 +43,7 @@ public class RenderingMetricsTest
         // Act
         var startTime = Stopwatch.GetTimestamp();
         Thread.Sleep(10); // Add a small delay to ensure a measurable duration
-        renderingMetrics.EventDurationSync(startTime, "TestComponent", "OnClick");
+        renderingMetrics.EventDurationSync(startTime, "TestComponent", "MyMethod", "OnClick");
 
         // Assert
         var measurements = eventSyncDurationCollector.GetMeasurementSnapshot();
@@ -65,7 +65,7 @@ public class RenderingMetricsTest
         // Act
         var startTime = Stopwatch.GetTimestamp();
         var task = Task.Delay(10); // Create a delay task
-        await renderingMetrics.CaptureEventDurationAsync(task, startTime, "TestComponent", "OnClickAsync");
+        await renderingMetrics.CaptureEventDurationAsync(task, startTime, "TestComponent", "MyMethod", "OnClickAsync");
 
         // Assert
         var measurements = eventAsyncDurationCollector.GetMeasurementSnapshot();
@@ -74,6 +74,7 @@ public class RenderingMetricsTest
         Assert.True(measurements[0].Value > 0);
         Assert.Equal("TestComponent", measurements[0].Tags["component.type"]);
         Assert.Equal("OnClickAsync", measurements[0].Tags["attribute.name"]);
+        Assert.Equal("MyMethod", measurements[0].Tags["component.method"]);
     }
 
     [Fact]
@@ -386,7 +387,7 @@ public class RenderingMetricsTest
         // Try to use the disposed meter - this should not throw since TestMeterFactory
         // doesn't actually dispose the meter in test contexts
         var startTime = Stopwatch.GetTimestamp();
-        renderingMetrics.EventDurationSync(startTime, "TestComponent", "OnClick");
+        renderingMetrics.EventDurationSync(startTime, "TestComponent", "MyMethod", "OnClick");
     }
 
     // Helper class for mock components

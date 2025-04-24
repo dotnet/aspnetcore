@@ -53,7 +53,7 @@ public class ComponentState : IAsyncDisposable
             _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
         }
 
-        if (RenderingMetrics.IsMetricsSupported && _renderer.RenderingMetrics != null && (_renderer.RenderingMetrics.IsDiffDurationEnabled || _renderer.RenderingMetrics.IsStateDurationEnabled || _renderer.RenderingMetrics.IsStateExceptionEnabled))
+        if (_renderer.RenderingMetrics != null && (_renderer.RenderingMetrics.IsDiffDurationEnabled || _renderer.RenderingMetrics.IsStateDurationEnabled || _renderer.RenderingMetrics.IsStateExceptionEnabled))
         {
             _componentTypeName = component.GetType().FullName;
         }
@@ -108,7 +108,7 @@ public class ComponentState : IAsyncDisposable
 
         _nextRenderTree.Clear();
 
-        var diffStartTimestamp = RenderingMetrics.IsMetricsSupported && _renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsDiffDurationEnabled ? Stopwatch.GetTimestamp() : 0;
+        var diffStartTimestamp = _renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsDiffDurationEnabled ? Stopwatch.GetTimestamp() : 0;
         try
         {
             renderFragment(_nextRenderTree);
@@ -139,7 +139,7 @@ public class ComponentState : IAsyncDisposable
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
 
-        if (RenderingMetrics.IsMetricsSupported && _renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsDiffDurationEnabled)
+        if (_renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsDiffDurationEnabled)
         {
             _renderer.RenderingMetrics.DiffDuration(diffStartTimestamp, _componentTypeName, batchBuilder.EditsBuffer.Count - startCount);
         }
@@ -249,24 +249,24 @@ public class ComponentState : IAsyncDisposable
         Task setParametersAsyncTask;
         try
         {
-            var stateStartTimestamp = RenderingMetrics.IsMetricsSupported && _renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsStateDurationEnabled ? Stopwatch.GetTimestamp() : 0;
+            var stateStartTimestamp = _renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsStateDurationEnabled ? Stopwatch.GetTimestamp() : 0;
 
             setParametersAsyncTask = Component.SetParametersAsync(directAndCascadingParameters);
 
             // collect metrics
-            if (RenderingMetrics.IsMetricsSupported && _renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsStateDurationEnabled)
+            if (_renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsStateDurationEnabled)
             {
                 _renderer.RenderingMetrics.ParametersDurationSync(stateStartTimestamp, _componentTypeName);
                 _ = _renderer.RenderingMetrics.CaptureParametersDurationAsync(setParametersAsyncTask, stateStartTimestamp, _componentTypeName);
             }
-            if (RenderingMetrics.IsMetricsSupported && _renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsStateExceptionEnabled)
+            if (_renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsStateExceptionEnabled)
             {
                 _ = _renderer.RenderingMetrics.CapturePropertiesFailedAsync(setParametersAsyncTask, _componentTypeName);
             }
         }
         catch (Exception ex)
         {
-            if (RenderingMetrics.IsMetricsSupported && _renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsStateExceptionEnabled)
+            if (_renderer.RenderingMetrics != null && _renderer.RenderingMetrics.IsStateExceptionEnabled)
             {
                 _renderer.RenderingMetrics.PropertiesFailed(ex.GetType().FullName, _componentTypeName);
             }
