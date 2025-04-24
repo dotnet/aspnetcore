@@ -7,8 +7,11 @@
     <TestGroupName>ProjectTemplates.Blazor.WebAssembly.Tests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
+    <RequiresDelayedBuild>true</RequiresDelayedBuild>
+
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+    <SkipTests Condition="'$(RunTemplateTests)' == 'true'">false</SkipTests>
     <BuildHelixPayload Condition="'$(RunTemplateTests)' != 'true'">false</BuildHelixPayload>
 
     <BaseOutputPath />
