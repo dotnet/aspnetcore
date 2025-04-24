@@ -9,7 +9,7 @@ using static Microsoft.AspNetCore.Internal.LinkerFlags;
 namespace Microsoft.JSInterop.Infrastructure;
 
 /// <summary>
-/// TODO(OR): Document this.
+/// Helper for constructing a Func delegate that wraps interop call to a JavaScript function referenced via <see cref="IJSObjectReference"/>.
 /// </summary>
 internal readonly struct JSFunctionReference
 {
@@ -25,9 +25,6 @@ internal readonly struct JSFunctionReference
         _jsObjectReference = jsObjectReference;
     }
 
-    /// <summary>
-    /// TODO(OR): Document this.
-    /// </summary>
     public static T CreateInvocationDelegate<T>(IJSObjectReference jsObjectReference) where T : Delegate
     {
         Type delegateType = typeof(T);
