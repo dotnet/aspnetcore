@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -22,10 +23,26 @@ public static class RenderingMetricsServiceCollectionExtensions
     {
         if (RenderingMetrics.IsMetricsSupported)
         {
-            services.AddMetrics();
+            // do not register IConfigureOptions<StartupValidatorOptions> multiple times
+            if (!IsMeterFactoryRegistered(services))
+            {
+                services.AddMetrics();
+            }
             services.TryAddSingleton<RenderingMetrics>();
         }
 
         return services;
+    }
+
+    private static bool IsMeterFactoryRegistered(IServiceCollection services)
+    {
+        foreach (var service in services)
+        {
+            if (service.ServiceType == typeof(IMeterFactory))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 }
