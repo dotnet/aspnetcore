@@ -23,6 +23,8 @@ namespace InMemory.FunctionalTests;
 
 public partial class TlsListenerMiddlewareTests : TestApplicationErrorLoggerLoggedTest
 {
+    private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
+
     [Fact]
     public async Task TlsClientHelloBytesCallback_InvokedAndHasTlsMessageBytes()
     {
@@ -33,9 +35,9 @@ public partial class TlsListenerMiddlewareTests : TestApplicationErrorLoggerLogg
             testContext,
             listenOptions =>
             {
-                listenOptions.UseHttps((HttpsConnectionAdapterOptions options) =>
+                listenOptions.UseHttps(_x509Certificate2, httpsOptions =>
                 {
-                    options.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
+                    httpsOptions.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
                     {
                         Logger.LogDebug("[Received TlsClientHelloBytesCallback] Connection: {0}; TLS client hello buffer: {1}", connection.ConnectionId, clientHelloBytes.Length);
                         tlsClientHelloCallbackInvoked = true;

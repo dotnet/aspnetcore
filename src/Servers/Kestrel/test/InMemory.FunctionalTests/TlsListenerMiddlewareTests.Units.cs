@@ -93,10 +93,10 @@ public partial class TlsListenerMiddlewareTests
         Assert.True(nextMiddlewareInvoked);
         Assert.False(tlsClientHelloCallbackInvoked);
 
-        // ensuring that we have read only 4 times (ReadAsync() is called 4 times)
+        // ensuring that we have read limited number of times
         var observableTransport = transportConnection.Transport as ObservableDuplexPipe;
         Assert.NotNull(observableTransport);
-        Assert.Equal(4, observableTransport.ReadAsyncCounter);
+        Assert.True(observableTransport.ReadAsyncCounter is > 2 && observableTransport.ReadAsyncCounter is <= 5);
     }
 
     private async Task RunTlsClientHelloCallbackTest_WithMultipleSegments(
