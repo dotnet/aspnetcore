@@ -22,6 +22,10 @@
     <RequiresDelayedBuild Include="$(RepoRoot)src\Grpc\JsonTranscoding\test\testassets\Sandbox\Sandbox.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\OpenApi\test\Microsoft.AspNetCore.OpenApi.NativeAotTests\Microsoft.AspNetCore.OpenApi.NativeAotTests.proj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\ProjectTemplates\test\Templates.Blazor.Tests\Templates.Blazor.Tests.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\ProjectTemplates\test\Templates.Blazor.WebAssembly.Auth.Tests\Templates.Blazor.WebAssembly.Auth.Tests.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\ProjectTemplates\test\Templates.Blazor.WebAssembly.Tests\Templates.Blazor.WebAssembly.Tests.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\ProjectTemplates\test\Templates.Mvc.Tests\Templates.Mvc.Tests.csproj" />
+    <RequiresDelayedBuild Include="$(RepoRoot)src\ProjectTemplates\test\Templates.Tests\Templates.Tests.csproj" />
     <RequiresDelayedBuild Include="$(RepoRoot)src\SignalR\server\SignalR\test\Microsoft.AspNetCore.SignalR.TrimmingTests\Microsoft.AspNetCore.SignalR.TrimmingTests.proj" />
     <RequiresDelayedBuild Include="$(RepoRoot)eng\Npm.Workspace.FunctionalTests.nodeproj" />
   </ItemGroup>
