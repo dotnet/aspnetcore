@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.OpenApi.Models;
+using System.Net.Http;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
 
@@ -81,18 +81,18 @@ public record Todo(int Id, string Title, bool Completed);
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
         await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
         {
-            var path = document.Paths["/Test"].Operations[OperationType.Get];
+            var path = document.Paths["/Test"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of the action.", path.Summary);
             Assert.Equal("A description of the action.", path.Description);
 
-            var path2 = document.Paths["/Test2"].Operations[OperationType.Get];
+            var path2 = document.Paths["/Test2"].Operations[HttpMethod.Get];
             Assert.Equal("The name of the person.", path2.Parameters[0].Description);
             Assert.Equal("Returns the greeting.", path2.Responses["200"].Description);
 
-            var path2again = document.Paths["/Test2/HelloByInt"].Operations[OperationType.Get];
+            var path2again = document.Paths["/Test2/HelloByInt"].Operations[HttpMethod.Get];
             Assert.Equal("The id associated with the request.", path2again.Parameters[0].Description);
 
-            var path3 = document.Paths["/Test2"].Operations[OperationType.Post];
+            var path3 = document.Paths["/Test2"].Operations[HttpMethod.Post];
             Assert.Equal("The todo to insert into the database.", path3.RequestBody.Description);
         });
     }
