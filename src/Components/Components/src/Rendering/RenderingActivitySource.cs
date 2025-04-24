@@ -11,7 +11,6 @@ internal class RenderingActivitySource
 
     public ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
-
     public Activity? StartEventActivity(string? componentType, string? methodName, string? attributeName, Activity? linkedActivity)
     {
         IEnumerable<KeyValuePair<string, object?>> tags =
