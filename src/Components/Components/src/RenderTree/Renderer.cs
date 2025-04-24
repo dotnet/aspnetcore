@@ -35,8 +35,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
     private readonly ILogger _logger;
     private readonly ComponentFactory _componentFactory;
-    private readonly RenderingMetrics? _renderingMetrics;
-    private readonly RenderingActivitySource? _renderingActivitySource;
+    private readonly ComponentsMetrics? _componentsMetrics;
+    private readonly ComponentsActivitySource? _componentsActivitySource;
+
     private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
     private Task? _ongoingQuiescenceTask;
 
@@ -94,16 +95,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, this);
-        _renderingMetrics = serviceProvider.GetService<RenderingMetrics>();
-        _renderingActivitySource = serviceProvider.GetService<RenderingActivitySource>();
+        _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
+        _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
 
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
             : serviceProvider.GetServices<ICascadingValueSupplier>().ToArray();
     }
 
-    internal RenderingMetrics? RenderingMetrics => _renderingMetrics;
-    internal RenderingActivitySource? RenderingActivitySource => _renderingActivitySource;
+    internal ComponentsMetrics? ComponentMetrics => _componentsMetrics;
+    internal ComponentsActivitySource? ComponentActivitySource => _componentsActivitySource;
 
     internal ICascadingValueSupplier[] ServiceProviderCascadingValueSuppliers { get; }
 
@@ -449,14 +450,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         // collect trace
         Activity? activity = null;
-        if (RenderingActivitySource != null)
+        if (ComponentActivitySource != null)
         {
             var receiverName = (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
             var methodName = callback.Delegate.Method?.Name;
-            activity = RenderingActivitySource.StartEventActivity(receiverName, methodName, attributeName, null);
+            activity = ComponentActivitySource.StartEventActivity(receiverName, methodName, attributeName);
         }
 
-        var eventStartTimestamp = RenderingMetrics != null && RenderingMetrics.IsEventDurationEnabled ? Stopwatch.GetTimestamp() : 0;
+        var eventStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsEventDurationEnabled ? Stopwatch.GetTimestamp() : 0;
 
         // If this event attribute was rendered by a component that's since been disposed, don't dispatch the event at all.
         // This can occur because event handler disposal is deferred, so event handler IDs can outlive their components.
@@ -500,34 +501,34 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             task = callback.InvokeAsync(eventArgs);
 
             // collect metrics
-            if (RenderingMetrics != null && RenderingMetrics.IsEventDurationEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsEventDurationEnabled)
             {
                 var receiverName = (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 var methodName = callback.Delegate.Method?.Name;
-                RenderingMetrics.EventDurationSync(eventStartTimestamp, receiverName, methodName, attributeName);
-                _ = RenderingMetrics.CaptureEventDurationAsync(task, eventStartTimestamp, receiverName, methodName, attributeName);
+                ComponentMetrics.EventDurationSync(eventStartTimestamp, receiverName, methodName, attributeName);
+                _ = ComponentMetrics.CaptureEventDurationAsync(task, eventStartTimestamp, receiverName, methodName, attributeName);
             }
-            if (RenderingMetrics != null && RenderingMetrics.IsEventExceptionEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsEventExceptionEnabled)
             {
-                _ = RenderingMetrics.CaptureEventFailedAsync(task, callback, attributeName);
+                _ = ComponentMetrics.CaptureEventFailedAsync(task, callback, attributeName);
             }
 
             // stop activity/trace
-            if (RenderingActivitySource != null && activity != null)
+            if (ComponentActivitySource != null && activity != null)
             {
-                _ = RenderingActivitySource.CaptureEventStopAsync(task, activity);
+                _ = ComponentsActivitySource.CaptureEventStopAsync(task, activity);
             }
         }
         catch (Exception e)
         {
-            if (RenderingMetrics != null && RenderingMetrics.IsEventExceptionEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsEventExceptionEnabled)
             {
-                RenderingMetrics.EventFailed(e.GetType().FullName, callback, attributeName);
+                ComponentMetrics.EventFailed(e.GetType().FullName, callback, attributeName);
             }
 
-            if (RenderingActivitySource != null && activity != null)
+            if (ComponentActivitySource != null && activity != null)
             {
-                RenderingActivitySource.FailEventActivity(activity, e);
+                ComponentsActivitySource.FailEventActivity(activity, e);
             }
 
             HandleExceptionViaErrorBoundary(e, receiverComponentState);
@@ -817,7 +818,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         _isBatchInProgress = true;
         var updateDisplayTask = Task.CompletedTask;
-        var batchStartTimestamp = RenderingMetrics != null && RenderingMetrics.IsBatchDurationEnabled ? Stopwatch.GetTimestamp() : 0;
+        var batchStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsBatchDurationEnabled ? Stopwatch.GetTimestamp() : 0;
 
         try
         {
@@ -850,20 +851,20 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // if there is async work to be done.
             _ = InvokeRenderCompletedCalls(batch.UpdatedComponents, updateDisplayTask);
 
-            if (RenderingMetrics != null && RenderingMetrics.IsBatchDurationEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsBatchDurationEnabled)
             {
-                _renderingMetrics.BatchDuration(batchStartTimestamp, batch.UpdatedComponents.Count);
+                ComponentMetrics.BatchDuration(batchStartTimestamp, batch.UpdatedComponents.Count);
             }
-            if (RenderingMetrics != null && RenderingMetrics.IsBatchExceptionEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsBatchExceptionEnabled)
             {
-                _ = _renderingMetrics.CaptureBatchFailedAsync(updateDisplayTask);
+                _ = ComponentMetrics.CaptureBatchFailedAsync(updateDisplayTask);
             }
         }
         catch (Exception e)
         {
-            if (RenderingMetrics != null && RenderingMetrics.IsBatchExceptionEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsBatchExceptionEnabled)
             {
-                _renderingMetrics.BatchFailed(e.GetType().Name);
+                ComponentMetrics.BatchFailed(e.GetType().Name);
             }
 
             // Ensure we catch errors while running the render functions of the components.

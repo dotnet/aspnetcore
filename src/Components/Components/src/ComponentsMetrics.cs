@@ -3,14 +3,17 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Components.Rendering;
+namespace Microsoft.AspNetCore.Components;
 
-internal sealed class RenderingMetrics : IDisposable
+internal sealed class ComponentsMetrics : IDisposable
 {
-    public const string MeterName = "Microsoft.AspNetCore.Components.Rendering";
+    public const string MeterName = "Microsoft.AspNetCore.Components";
     private readonly Meter _meter;
+
+    private readonly Counter<long> _navigationCount;
 
     private readonly Histogram<double> _eventSyncDuration;
     private readonly Histogram<double> _eventAsyncDuration;
@@ -25,6 +28,8 @@ internal sealed class RenderingMetrics : IDisposable
     private readonly Histogram<double> _batchDuration;
     private readonly Counter<long> _batchException;
 
+    public bool IsNavigationEnabled => _navigationCount.Enabled;
+
     public bool IsEventDurationEnabled => _eventSyncDuration.Enabled || _eventAsyncDuration.Enabled;
     public bool IsEventExceptionEnabled => _eventException.Enabled;
 
@@ -36,43 +41,48 @@ internal sealed class RenderingMetrics : IDisposable
     public bool IsBatchDurationEnabled => _batchDuration.Enabled;
     public bool IsBatchExceptionEnabled => _batchException.Enabled;
 
-    public RenderingMetrics(IMeterFactory meterFactory)
+    public ComponentsMetrics(IMeterFactory meterFactory)
     {
         Debug.Assert(meterFactory != null);
 
         _meter = meterFactory.Create(MeterName);
 
+        _navigationCount = _meter.CreateCounter<long>(
+            "aspnetcore.components.navigation.count",
+            unit: "{exceptions}",
+            description: "Total number of route changes.");
+
         _eventSyncDuration = _meter.CreateHistogram(
-            "aspnetcore.components.rendering.event.synchronous.duration",
+            "aspnetcore.components.event.synchronous.duration",
             unit: "s",
             description: "Duration of processing browser event synchronously.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _eventAsyncDuration = _meter.CreateHistogram(
-            "aspnetcore.components.rendering.event.asynchronous.duration",
+            "aspnetcore.components.event.asynchronous.duration",
             unit: "s",
             description: "Duration of processing browser event asynchronously.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _eventException = _meter.CreateCounter<long>(
-            "aspnetcore.components.rendering.event.exception",
+            "aspnetcore.components.event.exception",
             unit: "{exceptions}",
             description: "Total number of exceptions during browser event processing.");
 
         _parametersSyncDuration = _meter.CreateHistogram(
-            "aspnetcore.components.rendering.parameters.synchronous.duration",
+            "aspnetcore.components.parameters.synchronous.duration",
             unit: "s",
             description: "Duration of processing component parameters synchronously.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _parametersAsyncDuration = _meter.CreateHistogram(
-            "aspnetcore.components.rendering.parameters.asynchronous.duration",
+            "aspnetcore.components.parameters.asynchronous.duration",
             unit: "s",
             description: "Duration of processing component parameters asynchronously.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _parametersException = _meter.CreateCounter<long>(
-            "aspnetcore.components.rendering.parameters.exception",
+            "aspnetcore.components.parameters.exception",
             unit: "{exceptions}",
             description: "Total number of exceptions during processing component parameters.");
 
@@ -92,6 +102,17 @@ internal sealed class RenderingMetrics : IDisposable
             "aspnetcore.components.rendering.batch.exception",
             unit: "{exceptions}",
             description: "Total number of exceptions during batch rendering.");
+    }
+
+    public void Navigation(string componentType, string route)
+    {
+        var tags = new TagList
+        {
+            { "component.type", componentType ?? "unknown" },
+            { "route", route ?? "unknown" },
+        };
+
+        _navigationCount.Add(1, tags);
     }
 
     public void EventDurationSync(long startTimestamp, string? componentType, string? methodName, string? attributeName)

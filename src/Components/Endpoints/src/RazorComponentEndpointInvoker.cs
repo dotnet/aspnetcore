@@ -30,6 +30,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
     public Task Render(HttpContext context)
     {
+
+
         return _renderer.Dispatcher.InvokeAsync(() => RenderComponentCore(context));
     }
 

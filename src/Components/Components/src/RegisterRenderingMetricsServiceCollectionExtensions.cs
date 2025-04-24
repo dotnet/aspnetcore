@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.Metrics;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -11,14 +10,14 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 /// <summary>
 /// Infrastructure APIs for registering diagnostic metrics.
 /// </summary>
-public static class RenderingMetricsServiceCollectionExtensions
+public static class ComponentsMetricsServiceCollectionExtensions
 {
     /// <summary>
     /// Registers component rendering metrics
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
-    public static IServiceCollection AddRenderingMetrics(
+    public static IServiceCollection AddComponentsMetrics(
         IServiceCollection services)
     {
         // do not register IConfigureOptions<StartupValidatorOptions> multiple times
@@ -26,7 +25,7 @@ public static class RenderingMetricsServiceCollectionExtensions
         {
             services.AddMetrics();
         }
-        services.TryAddSingleton<RenderingMetrics>();
+        services.TryAddSingleton<ComponentsMetrics>();
 
         return services;
     }
@@ -36,10 +35,10 @@ public static class RenderingMetricsServiceCollectionExtensions
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
-    public static IServiceCollection AddRenderingTracing(
+    public static IServiceCollection AddComponentsTracing(
         IServiceCollection services)
     {
-        services.TryAddSingleton<RenderingActivitySource>();
+        services.TryAddScoped<ComponentsActivitySource>();
 
         return services;
     }

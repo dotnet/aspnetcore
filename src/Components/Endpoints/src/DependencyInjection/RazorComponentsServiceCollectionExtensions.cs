@@ -76,8 +76,8 @@ public static class RazorComponentsServiceCollectionExtensions
 
         services.TryAddScoped<ResourceCollectionProvider>();
 
-        RenderingMetricsServiceCollectionExtensions.AddRenderingMetrics(services);
-        RenderingMetricsServiceCollectionExtensions.AddRenderingTracing(services);
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(services);
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
 
         // Form handling
         services.AddSupplyValueFromFormProvider();

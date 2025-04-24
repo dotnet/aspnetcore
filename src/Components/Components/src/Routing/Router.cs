@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
@@ -226,6 +227,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         // In order to avoid routing twice we check for RouteData
         if (RoutingStateProvider?.RouteData is { } endpointRouteData)
         {
+            RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
+
             // Other routers shouldn't provide RouteData, this is specific to our router component
             // and must abide by our syntax and behaviors.
             // Other routers must create their own abstractions to flow data from their SSR routing
@@ -251,6 +254,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 throw new InvalidOperationException($"The type {context.Handler.FullName} " +
                     $"does not implement {typeof(IComponent).FullName}.");
             }
+
+            RecordDiagnostics(context.Handler.FullName, context.Entry.RoutePattern.RawText);
 
             Log.NavigatingToComponent(_logger, context.Handler, locationPath, _baseUri);
 
@@ -283,6 +288,16 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
+        }
+    }
+
+    private void RecordDiagnostics(string componentType, string template)
+    {
+        _renderHandle.ComponentActivitySource?.StartRouteActivity(componentType, template);
+
+        if (_renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
+        {
+            _renderHandle.ComponentMetrics.Navigation(componentType, template);
         }
     }
 
@@ -340,6 +355,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
     {
+        _renderHandle.ComponentActivitySource?.StopRouteActivity();
+
         _locationAbsolute = args.Location;
         if (_renderHandle.IsInitialized && Routes != null)
         {
