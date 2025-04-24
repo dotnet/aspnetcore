@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
