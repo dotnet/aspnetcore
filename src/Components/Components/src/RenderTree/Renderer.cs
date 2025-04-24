@@ -541,10 +541,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // Since the task has yielded - process any queued rendering work before we return control
             // to the caller.
             ProcessPendingRender();
-
-            //callback.Receiver
-            //callback.Delegate.Method.
-
         }
 
         // Task completed synchronously or is still running. We already processed all of the rendering
