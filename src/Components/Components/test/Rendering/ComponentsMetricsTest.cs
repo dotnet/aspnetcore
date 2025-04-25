@@ -33,34 +33,12 @@ public class ComponentsMetricsTest
     }
 
     [Fact]
-    public void EventDurationSync_RecordsDuration()
-    {
-        // Arrange
-        var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var eventSyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.event.synchronous.duration");
-
-        // Act
-        var startTime = Stopwatch.GetTimestamp();
-        Thread.Sleep(10); // Add a small delay to ensure a measurable duration
-        componentsMetrics.EventDurationSync(startTime, "TestComponent", "MyMethod", "OnClick");
-
-        // Assert
-        var measurements = eventSyncDurationCollector.GetMeasurementSnapshot();
-
-        Assert.Single(measurements);
-        Assert.True(measurements[0].Value > 0);
-        Assert.Equal("TestComponent", measurements[0].Tags["component.type"]);
-        Assert.Equal("OnClick", measurements[0].Tags["attribute.name"]);
-    }
-
-    [Fact]
     public async Task CaptureEventDurationAsync_RecordsDuration()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var eventAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.event.asynchronous.duration");
+            ComponentsMetrics.MeterName, "aspnetcore.components.event.duration");
 
         // Act
         var startTime = Stopwatch.GetTimestamp();
@@ -78,33 +56,12 @@ public class ComponentsMetricsTest
     }
 
     [Fact]
-    public void ParametersDurationSync_RecordsDuration()
-    {
-        // Arrange
-        var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var parametersSyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.parameters.synchronous.duration");
-
-        // Act
-        var startTime = Stopwatch.GetTimestamp();
-        Thread.Sleep(10); // Add a small delay to ensure a measurable duration
-        componentsMetrics.ParametersDurationSync(startTime, "TestComponent");
-
-        // Assert
-        var measurements = parametersSyncDurationCollector.GetMeasurementSnapshot();
-
-        Assert.Single(measurements);
-        Assert.True(measurements[0].Value > 0);
-        Assert.Equal("TestComponent", measurements[0].Tags["component.type"]);
-    }
-
-    [Fact]
     public async Task CaptureParametersDurationAsync_RecordsDuration()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.parameters.asynchronous.duration");
+            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.duration");
 
         // Act
         var startTime = Stopwatch.GetTimestamp();
@@ -117,28 +74,6 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
         Assert.Equal("TestComponent", measurements[0].Tags["component.type"]);
-    }
-
-    [Fact]
-    public void DiffDuration_RecordsDuration()
-    {
-        // Arrange
-        var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var diffDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.diff.duration");
-
-        // Act
-        var startTime = Stopwatch.GetTimestamp();
-        Thread.Sleep(10); // Add a small delay to ensure a measurable duration
-        componentsMetrics.DiffDuration(startTime, "TestComponent", 5);
-
-        // Assert
-        var measurements = diffDurationCollector.GetMeasurementSnapshot();
-
-        Assert.Single(measurements);
-        Assert.True(measurements[0].Value > 0);
-        Assert.Equal("TestComponent", measurements[0].Tags["component.type"]);
-        Assert.Equal(5, measurements[0].Tags["diff.length.bucket"]);
     }
 
     [Fact]
@@ -168,7 +103,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.event.exception");
+            ComponentsMetrics.MeterName, "aspnetcore.components.event.exception");
 
         // Create a mock EventCallback
         var callback = new EventCallback(new TestComponent(), (Action)(() => { }));
@@ -192,7 +127,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.event.exception");
+            ComponentsMetrics.MeterName, "aspnetcore.components.event.exception");
 
         // Create a mock EventCallback
         var callback = new EventCallback(new TestComponent(), (Action)(() => { }));
@@ -219,7 +154,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.parameters.exception");
+            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.exception");
 
         // Act
         componentsMetrics.PropertiesFailed("ArgumentException", "TestComponent");
@@ -239,7 +174,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.parameters.exception");
+            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.exception");
 
         // Create a task that throws an exception
         var task = Task.FromException(new InvalidOperationException());
@@ -304,20 +239,14 @@ public class ComponentsMetricsTest
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
 
         // Create collectors to ensure the meters are enabled
-        using var eventSyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.event.synchronous.duration");
         using var eventAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.event.asynchronous.duration");
+            ComponentsMetrics.MeterName, "aspnetcore.components.event.duration");
         using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.event.exception");
-        using var parametersSyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.parameters.synchronous.duration");
+            ComponentsMetrics.MeterName, "aspnetcore.components.event.exception");
         using var parametersAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.parameters.asynchronous.duration");
+            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.duration");
         using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.parameters.exception");
-        using var diffDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.diff.duration");
+            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.exception");
         using var batchDurationCollector = new MetricCollector<double>(_meterFactory,
             ComponentsMetrics.MeterName, "aspnetcore.components.rendering.batch.duration");
         using var batchExceptionCollector = new MetricCollector<long>(_meterFactory,
@@ -326,68 +255,10 @@ public class ComponentsMetricsTest
         // Assert
         Assert.True(componentsMetrics.IsEventDurationEnabled);
         Assert.True(componentsMetrics.IsEventExceptionEnabled);
-        Assert.True(componentsMetrics.IsStateDurationEnabled);
-        Assert.True(componentsMetrics.IsStateExceptionEnabled);
-        Assert.True(componentsMetrics.IsDiffDurationEnabled);
+        Assert.True(componentsMetrics.IsParametersDurationEnabled);
+        Assert.True(componentsMetrics.IsParametersExceptionEnabled);
         Assert.True(componentsMetrics.IsBatchDurationEnabled);
         Assert.True(componentsMetrics.IsBatchExceptionEnabled);
-    }
-
-    [Fact]
-    public void BucketEditLength_ReturnsCorrectBucket()
-    {
-        // Arrange
-        var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var diffDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.diff.duration");
-
-        // Act & Assert - Test different diff lengths
-        var startTime = Stopwatch.GetTimestamp();
-
-        // Test each bucket boundary
-        componentsMetrics.DiffDuration(startTime, "Component", 1);
-        componentsMetrics.DiffDuration(startTime, "Component", 2);
-        componentsMetrics.DiffDuration(startTime, "Component", 5);
-        componentsMetrics.DiffDuration(startTime, "Component", 10);
-        componentsMetrics.DiffDuration(startTime, "Component", 50);
-        componentsMetrics.DiffDuration(startTime, "Component", 100);
-        componentsMetrics.DiffDuration(startTime, "Component", 500);
-        componentsMetrics.DiffDuration(startTime, "Component", 1000);
-        componentsMetrics.DiffDuration(startTime, "Component", 10000);
-        componentsMetrics.DiffDuration(startTime, "Component", 20000); // Should be 10001
-
-        // Assert
-        var measurements = diffDurationCollector.GetMeasurementSnapshot();
-
-        Assert.Equal(10, measurements.Count);
-        Assert.Equal(1, measurements[0].Tags["diff.length.bucket"]);
-        Assert.Equal(2, measurements[1].Tags["diff.length.bucket"]);
-        Assert.Equal(5, measurements[2].Tags["diff.length.bucket"]);
-        Assert.Equal(10, measurements[3].Tags["diff.length.bucket"]);
-        Assert.Equal(50, measurements[4].Tags["diff.length.bucket"]);
-        Assert.Equal(100, measurements[5].Tags["diff.length.bucket"]);
-        Assert.Equal(500, measurements[6].Tags["diff.length.bucket"]);
-        Assert.Equal(1000, measurements[7].Tags["diff.length.bucket"]);
-        Assert.Equal(10000, measurements[8].Tags["diff.length.bucket"]);
-        Assert.Equal(10001, measurements[9].Tags["diff.length.bucket"]);
-    }
-
-    [Fact]
-    public void Dispose_DisposesUnderlyingMeter()
-    {
-        // This test verifies that the meter is disposed when the metrics instance is disposed
-        // This is a bit tricky to test directly, so we'll use an indirect approach
-
-        // Arrange
-        var componentsMetrics = new ComponentsMetrics(_meterFactory);
-
-        // Act
-        componentsMetrics.Dispose();
-
-        // Try to use the disposed meter - this should not throw since TestMeterFactory
-        // doesn't actually dispose the meter in test contexts
-        var startTime = Stopwatch.GetTimestamp();
-        componentsMetrics.EventDurationSync(startTime, "TestComponent", "MyMethod", "OnClick");
     }
 
     // Helper class for mock components

@@ -505,7 +505,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             {
                 var receiverName = (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 var methodName = callback.Delegate.Method?.Name;
-                ComponentMetrics.EventDurationSync(eventStartTimestamp, receiverName, methodName, attributeName);
                 _ = ComponentMetrics.CaptureEventDurationAsync(task, eventStartTimestamp, receiverName, methodName, attributeName);
             }
             if (ComponentMetrics != null && ComponentMetrics.IsEventExceptionEnabled)

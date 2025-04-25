@@ -3,6 +3,7 @@
 
 #nullable disable warnings
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -10,8 +11,8 @@ using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Routing;
 
@@ -222,11 +223,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute.AsSpan());
         var locationPathSpan = TrimQueryOrHash(relativePath);
         var locationPath = $"/{locationPathSpan}";
+        Activity? activity = null;
 
         // In order to avoid routing twice we check for RouteData
         if (RoutingStateProvider?.RouteData is { } endpointRouteData)
         {
-            RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
+            activity = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
 
             // Other routers shouldn't provide RouteData, this is specific to our router component
             // and must abide by our syntax and behaviors.
@@ -238,6 +240,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             // - Convert constrained parameters with (int, double, etc) to the target type.
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
+
+            activity?.Stop();
             return;
         }
 
@@ -254,7 +258,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                     $"does not implement {typeof(IComponent).FullName}.");
             }
 
-            RecordDiagnostics(context.Handler.FullName, context.Entry.RoutePattern.RawText);
+            activity = RecordDiagnostics(context.Handler.FullName, context.Entry.RoutePattern.RawText);
 
             Log.NavigatingToComponent(_logger, context.Handler, locationPath, _baseUri);
 
@@ -275,6 +279,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             if (!isNavigationIntercepted)
             {
+                activity = RecordDiagnostics("NotFound", "NotFound");
+
                 Log.DisplayingNotFound(_logger, locationPath, _baseUri);
 
                 // We did not find a Component that matches the route.
@@ -284,20 +290,30 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             }
             else
             {
+                activity = RecordDiagnostics("External", "External");
+
                 Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
+        activity?.Stop();
+
     }
 
-    private void RecordDiagnostics(string componentType, string template)
+    private Activity? RecordDiagnostics(string componentType, string template)
     {
-        _renderHandle.ComponentActivitySource?.StartRouteActivity(componentType, template);
+        Activity? activity = null;
+        if (_renderHandle.ComponentActivitySource != null)
+        {
+            activity = _renderHandle.ComponentActivitySource.StartRouteActivity(componentType, template);
+        }
 
         if (_renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
         {
             _renderHandle.ComponentMetrics.Navigation(componentType, template);
         }
+
+        return activity;
     }
 
     private static void DefaultNotFoundContent(RenderTreeBuilder builder)
@@ -354,8 +370,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private void OnLocationChanged(object sender, LocationChangedEventArgs args)
     {
-        _renderHandle.ComponentActivitySource?.StopRouteActivity();
-
         _locationAbsolute = args.Location;
         if (_renderHandle.IsInitialized && Routes != null)
         {

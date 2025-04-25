@@ -53,7 +53,7 @@ public class ComponentState : IAsyncDisposable
             _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
         }
 
-        if (_renderer.ComponentMetrics != null && (_renderer.ComponentMetrics.IsDiffDurationEnabled || _renderer.ComponentMetrics.IsStateDurationEnabled || _renderer.ComponentMetrics.IsStateExceptionEnabled))
+        if (_renderer.ComponentMetrics != null && (_renderer.ComponentMetrics.IsParametersDurationEnabled || _renderer.ComponentMetrics.IsParametersExceptionEnabled))
         {
             _componentTypeName = component.GetType().FullName;
         }
@@ -108,7 +108,6 @@ public class ComponentState : IAsyncDisposable
 
         _nextRenderTree.Clear();
 
-        var diffStartTimestamp = _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsDiffDurationEnabled ? Stopwatch.GetTimestamp() : 0;
         try
         {
             renderFragment(_nextRenderTree);
@@ -125,8 +124,6 @@ public class ComponentState : IAsyncDisposable
         // We don't want to make errors from this be recoverable, because there's no legitimate reason for them to happen
         _nextRenderTree.AssertTreeIsValid(Component);
 
-        var startCount = batchBuilder.EditsBuffer.Count;
-
         // Swap the old and new tree builders
         (CurrentRenderTree, _nextRenderTree) = (_nextRenderTree, CurrentRenderTree);
 
@@ -138,11 +135,6 @@ public class ComponentState : IAsyncDisposable
             CurrentRenderTree.GetFrames());
         batchBuilder.UpdatedComponentDiffs.Append(diff);
         batchBuilder.InvalidateParameterViews();
-
-        if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsDiffDurationEnabled)
-        {
-            _renderer.ComponentMetrics.DiffDuration(diffStartTimestamp, _componentTypeName, batchBuilder.EditsBuffer.Count - startCount);
-        }
     }
 
     // Callers expect this method to always return a faulted task.
@@ -249,24 +241,23 @@ public class ComponentState : IAsyncDisposable
         Task setParametersAsyncTask;
         try
         {
-            var stateStartTimestamp = _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsStateDurationEnabled ? Stopwatch.GetTimestamp() : 0;
+            var stateStartTimestamp = _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersDurationEnabled ? Stopwatch.GetTimestamp() : 0;
 
             setParametersAsyncTask = Component.SetParametersAsync(directAndCascadingParameters);
 
             // collect metrics
-            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsStateDurationEnabled)
+            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersDurationEnabled)
             {
-                _renderer.ComponentMetrics.ParametersDurationSync(stateStartTimestamp, _componentTypeName);
                 _ = _renderer.ComponentMetrics.CaptureParametersDurationAsync(setParametersAsyncTask, stateStartTimestamp, _componentTypeName);
             }
-            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsStateExceptionEnabled)
+            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersExceptionEnabled)
             {
                 _ = _renderer.ComponentMetrics.CapturePropertiesFailedAsync(setParametersAsyncTask, _componentTypeName);
             }
         }
         catch (Exception ex)
         {
-            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsStateExceptionEnabled)
+            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersExceptionEnabled)
             {
                 _renderer.ComponentMetrics.PropertiesFailed(ex.GetType().FullName, _componentTypeName);
             }

@@ -15,28 +15,22 @@ internal sealed class ComponentsMetrics : IDisposable
 
     private readonly Counter<long> _navigationCount;
 
-    private readonly Histogram<double> _eventSyncDuration;
-    private readonly Histogram<double> _eventAsyncDuration;
+    private readonly Histogram<double> _eventDuration;
     private readonly Counter<long> _eventException;
 
-    private readonly Histogram<double> _parametersSyncDuration;
-    private readonly Histogram<double> _parametersAsyncDuration;
+    private readonly Histogram<double> _parametersDuration;
     private readonly Counter<long> _parametersException;
-
-    private readonly Histogram<double> _diffDuration;
 
     private readonly Histogram<double> _batchDuration;
     private readonly Counter<long> _batchException;
 
     public bool IsNavigationEnabled => _navigationCount.Enabled;
 
-    public bool IsEventDurationEnabled => _eventSyncDuration.Enabled || _eventAsyncDuration.Enabled;
+    public bool IsEventDurationEnabled => _eventDuration.Enabled;
     public bool IsEventExceptionEnabled => _eventException.Enabled;
 
-    public bool IsStateDurationEnabled => _parametersSyncDuration.Enabled || _parametersAsyncDuration.Enabled;
-    public bool IsStateExceptionEnabled => _parametersException.Enabled;
-
-    public bool IsDiffDurationEnabled => _diffDuration.Enabled;
+    public bool IsParametersDurationEnabled => _parametersDuration.Enabled;
+    public bool IsParametersExceptionEnabled => _parametersException.Enabled;
 
     public bool IsBatchDurationEnabled => _batchDuration.Enabled;
     public bool IsBatchExceptionEnabled => _batchException.Enabled;
@@ -52,16 +46,10 @@ internal sealed class ComponentsMetrics : IDisposable
             unit: "{exceptions}",
             description: "Total number of route changes.");
 
-        _eventSyncDuration = _meter.CreateHistogram(
-            "aspnetcore.components.event.synchronous.duration",
+        _eventDuration = _meter.CreateHistogram(
+            "aspnetcore.components.event.duration",
             unit: "s",
-            description: "Duration of processing browser event synchronously.",
-            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
-
-        _eventAsyncDuration = _meter.CreateHistogram(
-            "aspnetcore.components.event.asynchronous.duration",
-            unit: "s",
-            description: "Duration of processing browser event asynchronously.",
+            description: "Duration of processing browser event.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _eventException = _meter.CreateCounter<long>(
@@ -69,28 +57,16 @@ internal sealed class ComponentsMetrics : IDisposable
             unit: "{exceptions}",
             description: "Total number of exceptions during browser event processing.");
 
-        _parametersSyncDuration = _meter.CreateHistogram(
-            "aspnetcore.components.parameters.synchronous.duration",
+        _parametersDuration = _meter.CreateHistogram(
+            "aspnetcore.components.parameters.duration",
             unit: "s",
-            description: "Duration of processing component parameters synchronously.",
-            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
-
-        _parametersAsyncDuration = _meter.CreateHistogram(
-            "aspnetcore.components.parameters.asynchronous.duration",
-            unit: "s",
-            description: "Duration of processing component parameters asynchronously.",
+            description: "Duration of processing component parameters.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _parametersException = _meter.CreateCounter<long>(
             "aspnetcore.components.parameters.exception",
             unit: "{exceptions}",
             description: "Total number of exceptions during processing component parameters.");
-
-        _diffDuration = _meter.CreateHistogram(
-            "aspnetcore.components.rendering.diff.duration",
-            unit: "s",
-            description: "Duration of rendering component HTML diff.",
-            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _batchDuration = _meter.CreateHistogram(
             "aspnetcore.components.rendering.batch.duration",
@@ -115,19 +91,6 @@ internal sealed class ComponentsMetrics : IDisposable
         _navigationCount.Add(1, tags);
     }
 
-    public void EventDurationSync(long startTimestamp, string? componentType, string? methodName, string? attributeName)
-    {
-        var tags = new TagList
-        {
-            { "component.type", componentType ?? "unknown" },
-            { "component.method", methodName ?? "unknown" },
-            { "attribute.name", attributeName ?? "unknown"}
-        };
-
-        var duration = Stopwatch.GetElapsedTime(startTimestamp);
-        _eventSyncDuration.Record(duration.TotalSeconds, tags);
-    }
-
     public async Task CaptureEventDurationAsync(Task task, long startTimestamp, string? componentType, string? methodName, string? attributeName)
     {
         try
@@ -142,23 +105,12 @@ internal sealed class ComponentsMetrics : IDisposable
             };
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp);
-            _eventAsyncDuration.Record(duration.TotalSeconds, tags);
+            _eventDuration.Record(duration.TotalSeconds, tags);
         }
         catch
         {
             // none
         }
-    }
-
-    public void ParametersDurationSync(long startTimestamp, string? componentType)
-    {
-        var tags = new TagList
-        {
-            { "component.type", componentType ?? "unknown" },
-        };
-
-        var duration = Stopwatch.GetElapsedTime(startTimestamp);
-        _parametersSyncDuration.Record(duration.TotalSeconds, tags);
     }
 
     public async Task CaptureParametersDurationAsync(Task task, long startTimestamp, string? componentType)
@@ -173,24 +125,12 @@ internal sealed class ComponentsMetrics : IDisposable
             };
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp);
-            _parametersAsyncDuration.Record(duration.TotalSeconds, tags);
+            _parametersDuration.Record(duration.TotalSeconds, tags);
         }
         catch
         {
             // none
         }
-    }
-
-    public void DiffDuration(long startTimestamp, string? componentType, int diffLength)
-    {
-        var tags = new TagList
-        {
-            { "component.type", componentType ?? "unknown" },
-            { "diff.length.bucket", BucketEditLength(diffLength) }
-        };
-
-        var duration = Stopwatch.GetElapsedTime(startTimestamp);
-        _diffDuration.Record(duration.TotalSeconds, tags);
     }
 
     public void BatchDuration(long startTimestamp, int diffLength)
