@@ -24,7 +24,7 @@ internal class ComponentsActivitySource
     public static ActivityContext CaptureHttpContext()
     {
         var parentActivity = Activity.Current;
-        if (parentActivity is not null && parentActivity.OperationName == "Microsoft.AspNetCore.Hosting.HttpRequestIn")
+        if (parentActivity is not null && parentActivity.OperationName == "Microsoft.AspNetCore.Hosting.HttpRequestIn" && parentActivity.Recorded)
         {
             return parentActivity.Context;
         }
@@ -34,28 +34,24 @@ internal class ComponentsActivitySource
     public Activity? StartCircuitActivity(string circuitId, ActivityContext httpContext)
     {
         _circuitId = circuitId;
-        IEnumerable<KeyValuePair<string, object?>> tags =
-        [
-            new("circuit.id", _circuitId ?? "unknown"),
-        ];
 
-        var links = new List<ActivityLink>();
-        if (httpContext != default)
-        {
-            _httpContext = httpContext;
-            links.Add(new ActivityLink(httpContext));
-        }
-
-        var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Server, parentId:null, tags, links);
+        var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Server, parentId: null, null, null);
         if (activity is not null)
         {
-            activity.DisplayName = $"CIRCUIT {circuitId ?? "unknown"}";
+            if (activity.IsAllDataRequested)
+            {
+                if (_circuitId != null)
+                {
+                    activity.SetTag("circuit.id", _circuitId);
+                }
+                if (httpContext != default)
+                {
+                    activity.AddLink(new ActivityLink(httpContext));
+                }
+            }
+            activity.DisplayName = $"CIRCUIT {circuitId ?? ""}";
             activity.Start();
             _circuitContext = activity.Context;
-
-            Console.WriteLine($"StartCircuitActivity: {circuitId}");
-            Console.WriteLine($"circuitContext: {_circuitContext.TraceId} {_circuitContext.SpanId} {_circuitContext.TraceState}");
-            Console.WriteLine($"httpContext: {httpContext.TraceId} {httpContext.SpanId} {httpContext.TraceState}");
         }
         return activity;
     }
@@ -73,71 +69,82 @@ internal class ComponentsActivitySource
 
     public Activity? StartRouteActivity(string componentType, string route)
     {
-        IEnumerable<KeyValuePair<string, object?>> tags =
-        [
-            new("circuit.id", _circuitId ?? "unknown"),
-            new("component.type", componentType ?? "unknown"),
-            new("route", route ?? "unknown"),
-        ];
-        var links = new List<ActivityLink>();
         if (_httpContext == default)
         {
             _httpContext = CaptureHttpContext();
         }
-        if (_httpContext != default)
-        {
-            links.Add(new ActivityLink(_httpContext));
-        }
-        if (_circuitContext != default)
-        {
-            links.Add(new ActivityLink(_circuitContext));
-        }
 
-        var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Server, parentId: null, tags, links);
+        var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Server, parentId: null, null, null);
         if (activity is not null)
         {
-            _routeContext = activity.Context;
+            if (activity.IsAllDataRequested)
+            {
+                if (_circuitId != null)
+                {
+                    activity.SetTag("circuit.id", _circuitId);
+                }
+                if (componentType != null)
+                {
+                    activity.SetTag("component.type", componentType);
+                }
+                if (route != null)
+                {
+                    activity.SetTag("route", route);
+                }
+                if (_httpContext != default)
+                {
+                    activity.AddLink(new ActivityLink(_httpContext));
+                }
+                if (_circuitContext != default)
+                {
+                    activity.AddLink(new ActivityLink(_circuitContext));
+                }
+            }
+
             activity.DisplayName = $"ROUTE {route ?? "unknown"} -> {componentType ?? "unknown"}";
             activity.Start();
+            _routeContext = activity.Context;
         }
         return activity;
     }
 
-    public void StopRouteActivity(Activity activity)
-    {
-        _routeContext = default;
-        if (!activity.IsStopped)
-        {
-            activity.Stop();
-        }
-    }
-
     public Activity? StartEventActivity(string? componentType, string? methodName, string? attributeName)
     {
-        IEnumerable<KeyValuePair<string, object?>> tags =
-        [
-            new("circuit.id", _circuitId ?? "unknown"),
-            new("component.type", componentType ?? "unknown"),
-            new("component.method", methodName ?? "unknown"),
-            new("attribute.name", attributeName ?? "unknown"),
-        ];
-        var links = new List<ActivityLink>();
-        if (_httpContext != default)
-        {
-            links.Add(new ActivityLink(_httpContext));
-        }
-        if (_circuitContext != default)
-        {
-            links.Add(new ActivityLink(_circuitContext));
-        }
-        if (_routeContext != default)
-        {
-            links.Add(new ActivityLink(_routeContext));
-        }
-
-        var activity = ActivitySource.CreateActivity(OnEventName, ActivityKind.Server, parentId: null, tags, links);
+        var activity = ActivitySource.CreateActivity(OnEventName, ActivityKind.Server, parentId: null, null, null);
         if (activity is not null)
         {
+            if (activity.IsAllDataRequested)
+            {
+                if (_circuitId != null)
+                {
+                    activity.SetTag("circuit.id", _circuitId);
+                }
+                if (componentType != null)
+                {
+                    activity.SetTag("component.type", componentType);
+                }
+                if (methodName != null)
+                {
+                    activity.SetTag("component.method", methodName);
+                }
+                if (attributeName != null)
+                {
+                    activity.SetTag("attribute.name", attributeName);
+                }
+                if (_httpContext != default)
+                {
+                    activity.AddLink(new ActivityLink(_httpContext));
+                }
+                if (_circuitContext != default)
+                {
+                    activity.AddLink(new ActivityLink(_circuitContext));
+                }
+                if (_routeContext != default)
+                {
+                    activity.AddLink(new ActivityLink(_routeContext));
+                }
+            }
+
             activity.DisplayName = $"EVENT {attributeName ?? "unknown"} -> {componentType ?? "unknown"}.{methodName ?? "unknown"}";
             activity.Start();
         }
