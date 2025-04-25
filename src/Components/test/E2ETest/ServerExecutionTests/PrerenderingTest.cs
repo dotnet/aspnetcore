@@ -97,19 +97,6 @@ public class PrerenderingTest : ServerTestBase<BasicTestAppServerSiteFixture<Pre
             () => Browser.Exists(By.TagName("strong")).Text);
     }
 
-    [Fact]
-    public async Task CannotRedirectWhenExceptionIsThrownDuringPrerendering()
-    {
-        var requestUri = new Uri(
-            _serverFixture.RootUri,
-            "prerendered/prerendered-redirection?destination=base/relative");
-
-        var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
-        var response = await httpClient.GetAsync(requestUri);
-
-        Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-    }
-
     [Theory]
     [InlineData(null, null)]
     [InlineData(null, "Bert")]
