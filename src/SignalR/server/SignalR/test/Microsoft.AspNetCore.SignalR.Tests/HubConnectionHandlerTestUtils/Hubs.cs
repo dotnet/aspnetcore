@@ -1381,6 +1381,11 @@ public class ServicesHub : TestHub
         }
         return total + value;
     }
+    
+    public int ServiceWithStringAttribute([FromService] Service1 service, string value)
+    {
+        return 115;
+    }
 
     public int ServiceWithoutAttribute(Service1 service)
     {

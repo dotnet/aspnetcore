@@ -726,6 +726,11 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         var hubInvocationArgumentPointer = 0;
         for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
         {
+            if (descriptor.IsServiceArgument(parameterPointer))
+            {
+                arguments[parameterPointer] = descriptor.GetService(scope.ServiceProvider, parameterPointer, descriptor.OriginalParameterTypes[parameterPointer]);
+                continue;
+            }
             if (hubMethodInvocationMessage.Arguments?.Length > hubInvocationArgumentPointer &&
                 (hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer] == null ||
                 descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer]?.GetType())))
@@ -740,10 +745,6 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 {
                     cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
                     arguments[parameterPointer] = cts.Token;
-                }
-                else if (descriptor.IsServiceArgument(parameterPointer))
-                {
-                    arguments[parameterPointer] = descriptor.GetService(scope.ServiceProvider, parameterPointer, descriptor.OriginalParameterTypes[parameterPointer]);
                 }
                 else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
                 {

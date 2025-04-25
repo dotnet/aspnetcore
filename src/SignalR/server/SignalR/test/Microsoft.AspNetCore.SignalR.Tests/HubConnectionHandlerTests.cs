@@ -4679,6 +4679,23 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             Assert.True(Assert.IsType<bool>(res.Result));
         }
     }
+    
+    [Fact]
+    public async Task HubMethodCanInjectServiceWithNullParameter()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithStringAttribute),(string)null ).DefaultTimeout();
+            Assert.Equal(115L, res.Result);
+        }
+    }
 
     [Fact]
     public async Task HubMethodCanInjectMultipleServices()
@@ -4764,7 +4781,6 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             Assert.Equal("Failed to invoke 'ServiceWithoutAttribute' due to an error on the server. InvalidDataException: Invocation provides 0 argument(s) but target expects 1.", res.Error);
         }
     }
-
     [Fact]
     public async Task ServiceResolvedWithoutAttribute()
     {
@@ -4785,7 +4801,6 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             Assert.Equal(1L, res.Result);
         }
     }
-
     [Fact]
     public async Task ServiceResolvedForIEnumerableParameter()
     {
