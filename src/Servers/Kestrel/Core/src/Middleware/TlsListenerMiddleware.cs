@@ -134,8 +134,7 @@ internal sealed class TlsListenerMiddleware
     }
 
     private static bool IsValidProtocolVersion(short version)
-        => version is 0x0002  // SSL 2.0 (0x0002)
-                   or 0x0300  // SSL 3.0 (0x0300)
+        => version is 0x0300  // SSL 3.0 (0x0300)
                    or 0x0301  // TLS 1.0 (0x0301)
                    or 0x0302  // TLS 1.1 (0x0302)
                    or 0x0303  // TLS 1.2 (0x0303)
