@@ -53,29 +53,23 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 {
                     var document = await documentService.GetOpenApiDocumentAsync(context.RequestServices, context.Request, context.RequestAborted);
                     var documentOptions = options.Get(lowercasedDocumentName);
-                    using var output = MemoryBufferWriter.Get();
-                    using var writer = Utf8BufferTextWriter.Get(output);
-                    try
-                    {
-                        if (UseYaml(pattern))
-                        {
-                            await document.SerializeAsync(new OpenApiYamlWriter(writer), documentOptions.OpenApiVersion);
-                            context.Response.ContentType = "text/plain+yaml;charset=utf-8";
-                        }
-                        else
-                        {
-                            await document.SerializeAsync(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
-                            context.Response.ContentType = "application/json;charset=utf-8";
-                        }
-                        await context.Response.BodyWriter.WriteAsync(output.ToArray(), context.RequestAborted);
-                        await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
-                    }
-                    finally
-                    {
-                        MemoryBufferWriter.Return(output);
-                        Utf8BufferTextWriter.Return(writer);
-                    }
 
+                    using var writer = new Utf8BufferTextWriter();
+                    writer.SetWriter(context.Response.BodyWriter);
+
+                    if (UseYaml(pattern))
+                    {
+                        context.Response.ContentType = "text/plain+yaml;charset=utf-8";
+                        await context.Response.StartAsync();
+                        await document.SerializeAsync(new OpenApiYamlWriter(writer), documentOptions.OpenApiVersion, context.RequestAborted);
+                    }
+                    else
+                    {
+                        context.Response.ContentType = "application/json;charset=utf-8";
+                        await context.Response.StartAsync();
+                        await document.SerializeAsync(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion, context.RequestAborted);
+                    }
+                    await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
                 }
             }).ExcludeFromDescription();
     }
