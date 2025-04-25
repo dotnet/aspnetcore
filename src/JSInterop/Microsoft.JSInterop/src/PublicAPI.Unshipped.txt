@@ -1,6 +1,9 @@
 #nullable enable
 abstract Microsoft.JSInterop.JSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string?
 abstract Microsoft.JSInterop.JSRuntime.BeginInvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader
+Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.LazyAssemblyLoader(Microsoft.JSInterop.IJSRuntime! jsRuntime) -> void
+Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader.LoadAssembliesAsync(System.Collections.Generic.IEnumerable<string!>! assembliesToLoad) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<System.Reflection.Assembly!>!>!
 Microsoft.JSInterop.IJSInProcessObjectReference.GetValue<TValue>(string! identifier) -> TValue
 Microsoft.JSInterop.IJSInProcessObjectReference.InvokeNew(string! identifier, object?[]? args) -> Microsoft.JSInterop.IJSInProcessObjectReference!
 Microsoft.JSInterop.IJSInProcessObjectReference.SetValue<TValue>(string! identifier, TValue value) -> void
