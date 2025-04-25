@@ -233,7 +233,7 @@ configuration:
           user: dotnet-maestro[bot]
           issueAuthor: False
       - titleContains:
-          pattern: Update dependencies
+          pattern: Source code updates
           isRegex: False
       - targetsBranch:
           branch: main
