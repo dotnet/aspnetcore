@@ -232,9 +232,13 @@ configuration:
       - isActivitySender:
           user: dotnet-maestro[bot]
           issueAuthor: False
-      - titleContains:
-          pattern: Source code updates
-          isRegex: False
+      - or:
+        - titleContains:
+            pattern: Update dependencies
+            isRegex: False
+        - titleContains:
+            pattern: Source code updates
+            isRegex: False
       - targetsBranch:
           branch: main
       then:
