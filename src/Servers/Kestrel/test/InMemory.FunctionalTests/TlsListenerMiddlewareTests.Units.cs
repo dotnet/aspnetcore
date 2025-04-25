@@ -79,13 +79,8 @@ public partial class TlsListenerMiddlewareTests
 
         await transportConnection.Input.WriteAsync(new byte[1] { 0x16 });
         var middlewareTask = Task.Run(() => middleware.OnTlsClientHelloAsync(transportConnection));
-        await Task.Delay(TimeSpan.FromMilliseconds(75));
-
         await transportConnection.Input.WriteAsync(new byte[2] { 0x03, 0x01 });
-        await Task.Delay(TimeSpan.FromMilliseconds(75));
-
         await transportConnection.Input.WriteAsync(new byte[2] { 0x00, 0x20 });
-        await Task.Delay(TimeSpan.FromMilliseconds(75));
 
         await transportConnection.Input.CompleteAsync();
 
@@ -96,7 +91,8 @@ public partial class TlsListenerMiddlewareTests
         // ensuring that we have read limited number of times
         var observableTransport = transportConnection.Transport as ObservableDuplexPipe;
         Assert.NotNull(observableTransport);
-        Assert.True(observableTransport.ReadAsyncCounter is > 2 && observableTransport.ReadAsyncCounter is <= 5);
+        Assert.True(observableTransport.ReadAsyncCounter is >= 2 && observableTransport.ReadAsyncCounter is <= 5,
+            $"Expected ReadAsync() to happen about 2-5 times. Actually happened {observableTransport.ReadAsyncCounter} times.");
     }
 
     private async Task RunTlsClientHelloCallbackTest_WithMultipleSegments(

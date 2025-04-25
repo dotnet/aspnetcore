@@ -114,6 +114,12 @@ internal sealed class TlsListenerMiddleware
             return ClientHelloParseState.NotTlsClientHello;
         }
 
+        // byte 6: handshake message type (must be 0x01 for ClientHello)
+        if (!reader.TryRead(out byte handshakeType) || handshakeType != 0x01)
+        {
+            return ClientHelloParseState.NotTlsClientHello;
+        }
+
         // 5 bytes are
         // 1) Handshake (1 byte)
         // 2) Protocol version (2 bytes)
@@ -121,12 +127,6 @@ internal sealed class TlsListenerMiddleware
         if (buffer.Length < 5 + recordLength)
         {
             return ClientHelloParseState.NotEnoughData;
-        }
-
-        // byte 6: handshake message type (must be 0x01 for ClientHello)
-        if (!reader.TryRead(out byte handshakeType) || handshakeType != 0x01)
-        {
-            return ClientHelloParseState.NotTlsClientHello;
         }
 
         clientHelloBytes = buffer.Slice(0, 5 + recordLength);
