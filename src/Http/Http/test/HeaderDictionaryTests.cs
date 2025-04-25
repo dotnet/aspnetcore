@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
+using Microsoft.AspNetCore.InternalTesting.Tracing;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Http;
@@ -131,5 +133,39 @@ public class HeaderDictionaryTests
 
         IDictionary<string, StringValues> asIDictionary = emptyHeaders;
         Assert.Throws<KeyNotFoundException>(() => asIDictionary["Header1"]);
+    }
+
+    [Fact]
+    public void EnumeratorResetsCorrectly()
+    {
+        var headers = new HeaderDictionary(
+            new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "Header1", "Value1" },
+                { "Header2", "Value2" },
+                { "Header3", "Value3" }
+            });
+
+        var enumerator = headers.GetEnumerator();
+        var initial = enumerator.Current;
+
+        Assert.True(enumerator.MoveNext());
+
+        var first = enumerator.Current;
+        var last = enumerator.Current;
+
+        while (enumerator.MoveNext())
+        {
+            last = enumerator.Current;
+        }
+
+        Assert.NotEqual(first, initial);
+        Assert.NotEqual(first, last);
+
+        ((IEnumerator)enumerator).Reset();
+
+        Assert.Equal(enumerator.Current, initial);
+        Assert.True(enumerator.MoveNext());
+        Assert.Equal(enumerator.Current, first);
     }
 }
