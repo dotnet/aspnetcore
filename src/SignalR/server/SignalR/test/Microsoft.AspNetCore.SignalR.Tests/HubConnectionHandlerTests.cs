@@ -4680,6 +4680,7 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
         }
     }
     
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/61491
     [Fact]
     public async Task HubMethodCanInjectServiceWithNullParameter()
     {

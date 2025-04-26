@@ -726,40 +726,37 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         var hubInvocationArgumentPointer = 0;
         for (var parameterPointer = 0; parameterPointer < arguments.Length; parameterPointer++)
         {
+            // populate the synthetic arguments first
             if (descriptor.IsServiceArgument(parameterPointer))
             {
                 arguments[parameterPointer] = descriptor.GetService(scope.ServiceProvider, parameterPointer, descriptor.OriginalParameterTypes[parameterPointer]);
-                continue;
             }
-            if (hubMethodInvocationMessage.Arguments?.Length > hubInvocationArgumentPointer &&
+            else if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
+            {
+                cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                arguments[parameterPointer] = cts.Token;
+            }
+            else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
+            {
+                Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds![streamPointer]);
+                var itemType = descriptor.StreamingParameters![streamPointer];
+                arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
+                    itemType, descriptor.OriginalParameterTypes[parameterPointer]);
+
+                streamPointer++;
+            }
+           else if (hubMethodInvocationMessage.Arguments?.Length > hubInvocationArgumentPointer &&
                 (hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer] == null ||
                 descriptor.OriginalParameterTypes[parameterPointer].IsAssignableFrom(hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer]?.GetType())))
             {
                 // The types match so it isn't a synthetic argument, just copy it into the arguments array
                 arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
                 hubInvocationArgumentPointer++;
-            }
+            } 
             else
             {
-                if (descriptor.OriginalParameterTypes[parameterPointer] == typeof(CancellationToken))
-                {
-                    cts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
-                    arguments[parameterPointer] = cts.Token;
-                }
-                else if (isStreamCall && ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer], mustBeDirectType: true))
-                {
-                    Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds![streamPointer]);
-                    var itemType = descriptor.StreamingParameters![streamPointer];
-                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
-                        itemType, descriptor.OriginalParameterTypes[parameterPointer]);
-
-                    streamPointer++;
-                }
-                else
-                {
-                    // This should never happen
-                    Debug.Assert(false, $"Failed to bind argument of type '{descriptor.OriginalParameterTypes[parameterPointer].Name}' for hub method '{descriptor.MethodExecutor.MethodInfo.Name}'.");
-                }
+                // This should never happen
+                Debug.Assert(false, $"Failed to bind argument of type '{descriptor.OriginalParameterTypes[parameterPointer].Name}' for hub method '{descriptor.MethodExecutor.MethodInfo.Name}'.");
             }
         }
     }
