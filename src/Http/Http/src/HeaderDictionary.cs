@@ -451,7 +451,9 @@ public class HeaderDictionary : IHeaderDictionary
         {
             if (_notEmpty)
             {
+                var enumerator = _dictionaryEnumerator;
                 ((IEnumerator)_dictionaryEnumerator).Reset();
+                _dictionaryEnumerator = enumerator;
             }
         }
     }
