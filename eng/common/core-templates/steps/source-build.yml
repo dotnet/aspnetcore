@@ -93,7 +93,9 @@ steps:
       $portableBuildArgs \
       /p:DotNetBuildSourceOnly=true \
       /p:DotNetBuildRepo=true \
-      /p:AssetManifestFileName=$assetManifestFileName
+      /p:AssetManifestFileName=$assetManifestFileName \
+      /p:SetUpSourceBuildIntermediateNupkgCache=false \
+      /p:ReportPrebuiltUsage=false
   displayName: Build
 
 # Upload build logs for diagnosis.

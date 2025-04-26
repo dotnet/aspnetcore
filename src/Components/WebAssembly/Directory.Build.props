@@ -5,6 +5,6 @@
     <ExcludeFromSourceOnlyBuild>true</ExcludeFromSourceOnlyBuild>
   </PropertyGroup>
   <PropertyGroup>
-    <WasmInlineBootConfig>false</WasmInlineBootConfig>
+    <WasmPreloadAssets>false</WasmPreloadAssets>
   </PropertyGroup>
 </Project>
