@@ -11,8 +11,9 @@ namespace Microsoft.AspNetCore.Components;
 internal class ComponentsActivitySource
 {
     internal const string Name = "Microsoft.AspNetCore.Components";
-    internal const string OnEventName = $"{Name}.OnEvent";
+    internal const string OnCircuitName = $"{Name}.OnCircuit";
     internal const string OnRouteName = $"{Name}.OnRoute";
+    internal const string OnEventName = $"{Name}.OnEvent";
 
     private ActivityContext _httpContext;
     private ActivityContext _circuitContext;
@@ -35,7 +36,7 @@ internal class ComponentsActivitySource
     {
         _circuitId = circuitId;
 
-        var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Server, parentId: null, null, null);
+        var activity = ActivitySource.CreateActivity(OnCircuitName, ActivityKind.Server, parentId: null, null, null);
         if (activity is not null)
         {
             if (activity.IsAllDataRequested)
@@ -56,10 +57,10 @@ internal class ComponentsActivitySource
         return activity;
     }
 
-    public void FailCircuitActivity(Activity activity, Exception ex)
+    public void FailCircuitActivity(Activity? activity, Exception ex)
     {
         _circuitContext = default;
-        if (!activity.IsStopped)
+        if (activity != null && !activity.IsStopped)
         {
             activity.SetTag("error.type", ex.GetType().FullName);
             activity.SetStatus(ActivityStatusCode.Error);
@@ -151,9 +152,9 @@ internal class ComponentsActivitySource
         return activity;
     }
 
-    public static void FailEventActivity(Activity activity, Exception ex)
+    public static void FailEventActivity(Activity? activity, Exception ex)
     {
-        if (!activity.IsStopped)
+        if (activity != null && !activity.IsStopped)
         {
             activity.SetTag("error.type", ex.GetType().FullName);
             activity.SetStatus(ActivityStatusCode.Error);
@@ -161,12 +162,12 @@ internal class ComponentsActivitySource
         }
     }
 
-    public static async Task CaptureEventStopAsync(Task task, Activity activity)
+    public static async Task CaptureEventStopAsync(Task task, Activity? activity)
     {
         try
         {
             await task;
-            activity.Stop();
+            activity?.Stop();
         }
         catch (Exception ex)
         {

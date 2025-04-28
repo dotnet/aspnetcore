@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.InternalTesting;
 using Moq;
 
-namespace Microsoft.AspNetCore.Components.Rendering;
+namespace Microsoft.AspNetCore.Components;
 
 public class ComponentsMetricsTest
 {
@@ -106,7 +106,7 @@ public class ComponentsMetricsTest
             ComponentsMetrics.MeterName, "aspnetcore.components.event.exception");
 
         // Create a mock EventCallback
-        var callback = new EventCallback(new TestComponent(), (Action)(() => { }));
+        var callback = new EventCallback(new TestComponent(), () => { });
 
         // Act
         componentsMetrics.EventFailed("ArgumentException", callback, "OnClick");
@@ -118,7 +118,7 @@ public class ComponentsMetricsTest
         Assert.Equal(1, measurements[0].Value);
         Assert.Equal("ArgumentException", measurements[0].Tags["error.type"]);
         Assert.Equal("OnClick", measurements[0].Tags["attribute.name"]);
-        Assert.Contains("Microsoft.AspNetCore.Components.Rendering.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["component.type"]);
+        Assert.Contains("Microsoft.AspNetCore.Components.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["component.type"]);
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class ComponentsMetricsTest
             ComponentsMetrics.MeterName, "aspnetcore.components.event.exception");
 
         // Create a mock EventCallback
-        var callback = new EventCallback(new TestComponent(), (Action)(() => { }));
+        var callback = new EventCallback(new TestComponent(), () => { });
 
         // Create a task that throws an exception
         var task = Task.FromException(new InvalidOperationException());
@@ -145,7 +145,7 @@ public class ComponentsMetricsTest
         Assert.Equal(1, measurements[0].Value);
         Assert.Equal("InvalidOperationException", measurements[0].Tags["error.type"]);
         Assert.Equal("OnClickAsync", measurements[0].Tags["attribute.name"]);
-        Assert.Contains("Microsoft.AspNetCore.Components.Rendering.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["component.type"]);
+        Assert.Contains("Microsoft.AspNetCore.Components.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["component.type"]);
     }
 
     [Fact]
