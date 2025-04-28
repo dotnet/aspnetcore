@@ -752,7 +752,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 // The types match so it isn't a synthetic argument, just copy it into the arguments array
                 arguments[parameterPointer] = hubMethodInvocationMessage.Arguments[hubInvocationArgumentPointer];
                 hubInvocationArgumentPointer++;
-            } 
+            }
             else
             {
                 // This should never happen
