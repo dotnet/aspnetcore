@@ -431,13 +431,13 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>58950550c5c2c7a2431595699b38fd0360fd63e9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.5.0-preview.1.25218.1">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.5.0-preview.1.25223.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>efcd30352f1f13e89b8fb7aa56075fdb4303e98d</Sha>
+      <Sha>44eaa2e6b4e0ad36c708d61eb806c93a15ff700f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.5.0-preview.1.25218.1">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.5.0-preview.1.25223.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>efcd30352f1f13e89b8fb7aa56075fdb4303e98d</Sha>
+      <Sha>44eaa2e6b4e0ad36c708d61eb806c93a15ff700f</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
