@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
@@ -25,6 +26,15 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, WebAssemblyEndpointProvider>());
 
+        // Try register LazyAssemblyLoader to prevent crashes during prerendering.
+        // TODO: Remove this once LazyAssemblyLoader is deprecated.
+        var lazyAssemblyLoaderType = GetLazyAssemblyLoaderType();
+
+        if (lazyAssemblyLoaderType != null)
+        {
+            builder.Services.AddScoped(lazyAssemblyLoaderType);
+        }
+
         return builder;
     }
 
@@ -45,5 +55,18 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         }
 
         return builder;
+    }
+
+    private static Type? GetLazyAssemblyLoaderType()
+    {
+        try
+        {
+            var assembly = Assembly.Load("Microsoft.AspNetCore.Components.WebAssembly");
+            return assembly.GetType("Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader", throwOnError: false);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }
