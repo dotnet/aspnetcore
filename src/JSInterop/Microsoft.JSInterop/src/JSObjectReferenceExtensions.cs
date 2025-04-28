@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.Serialization;
+using Microsoft.JSInterop.Implementation;
 using Microsoft.JSInterop.Infrastructure;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
@@ -169,17 +171,77 @@ public static class JSObjectReferenceExtensions
     }
 
     /// <summary>
-    /// Converts a JavaScript function reference into a .NET delegate of the specified type.
+    /// Wraps the interop invocation of the JavaScript function referenced by <paramref name="jsObjectReference"/> as a .NET delegate.
     /// </summary>
-    /// <typeparam name="T">The type of the delegate to create. Must be a Func with the result type <see cref="Task"/>, <see cref="Task{R}"/>, <see cref="ValueTask"/>, or <see cref="ValueTask{R}"/>.</typeparam>
     /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
-    /// <returns>A Func delegate of type <typeparamref name="T"/> that can be used to invoke the JavaScript function.</returns>
+    /// <returns>A delegate that can be used to invoke the JavaScript function.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when <typeparamref name="T"/> is not a valid Func type.</exception>
-    public static T AsAsyncFunction<T>(this IJSObjectReference jsObjectReference) where T : Delegate
+    public static Func<ValueTask> AsFunction(this IJSObjectReference jsObjectReference)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
-        return JSFunctionReference.CreateInvocationDelegate<T>(jsObjectReference);
+        return async () => await jsObjectReference.InvokeVoidAsync(string.Empty);
+    }
+
+    /// <summary>
+    /// Wraps the interop invocation of the JavaScript function referenced by <paramref name="jsObjectReference"/> as a .NET delegate.
+    /// </summary>
+    /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
+    /// <returns>A delegate that can be used to invoke the JavaScript function.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
+    public static Func<ValueTask<TResult>> AsFunction<[DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSObjectReference jsObjectReference)
+    {
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
+
+        return async () => await jsObjectReference.InvokeAsync<TResult>(string.Empty);
+    }
+
+    /// <summary>
+    /// Wraps the interop invocation of the JavaScript function referenced by <paramref name="jsObjectReference"/> as a .NET delegate.
+    /// </summary>
+    /// <typeparam name="T1">The JSON-serializable type of the first argument.</typeparam>
+    /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
+    /// <returns>A delegate that can be used to invoke the JavaScript function.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
+    public static Func<T1, ValueTask<TResult>> AsFunction<T1, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSObjectReference jsObjectReference)
+    {
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
+
+        return async (T1 arg1) => await jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1]);
+    }
+
+    /// <summary>
+    /// Wraps the interop invocation of the JavaScript function referenced by <paramref name="jsObjectReference"/> as a .NET delegate.
+    /// </summary>
+    /// <typeparam name="T1">The JSON-serializable type of the first argument.</typeparam>
+    /// <typeparam name="T2">The JSON-serializable type of the second argument.</typeparam>
+    /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
+    /// <returns>A delegate that can be used to invoke the JavaScript function.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
+    public static Func<T1, T2, ValueTask<TResult>> AsFunction<T1, T2, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSObjectReference jsObjectReference)
+    {
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
+
+        return async (T1 arg1, T2 arg2) => await jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2]);
+    }
+
+    /// <summary>
+    /// Wraps the interop invocation of the JavaScript function referenced by <paramref name="jsObjectReference"/> as a .NET delegate.
+    /// </summary>
+    /// <typeparam name="T1">The JSON-serializable type of the first argument.</typeparam>
+    /// <typeparam name="T2">The JSON-serializable type of the second argument.</typeparam>
+    /// <typeparam name="T3">The JSON-serializable type of the third argument.</typeparam>
+    /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
+    /// <returns>A delegate that can be used to invoke the JavaScript function.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
+    public static Func<T1, T2, T3, ValueTask<TResult>> AsFunction<T1, T2, T3, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSObjectReference jsObjectReference)
+    {
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
+
+        return async (T1 arg1, T2 arg2, T3 arg3) => await jsObjectReference.InvokeAsync<TResult>(string.Empty, [arg1, arg2, arg3]);
     }
 }
