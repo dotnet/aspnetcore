@@ -174,11 +174,59 @@ public static class JSObjectReferenceExtensions
     /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
     /// <returns>A delegate that can be used to invoke the JavaScript function.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
-    public static Func<ValueTask> AsFunction(this IJSObjectReference jsObjectReference)
+    public static Func<ValueTask> AsVoidFunction(this IJSObjectReference jsObjectReference)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
         return async () => await jsObjectReference.InvokeVoidAsync(string.Empty);
+    }
+
+    /// <summary>
+    /// Wraps the interop invocation of the JavaScript function referenced by <paramref name="jsObjectReference"/> as a .NET delegate.
+    /// </summary>
+    /// <typeparam name="T1">The JSON-serializable type of the first argument.</typeparam>
+    /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
+    /// <returns>A delegate that can be used to invoke the JavaScript function.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
+    public static Func<T1, ValueTask> AsVoidFunction<T1, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSObjectReference jsObjectReference)
+    {
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
+
+        return async (T1 arg1) => await jsObjectReference.InvokeVoidAsync(string.Empty, [arg1]);
+    }
+
+    /// <summary>
+    /// Wraps the interop invocation of the JavaScript function referenced by <paramref name="jsObjectReference"/> as a .NET delegate.
+    /// </summary>
+    /// <typeparam name="T1">The JSON-serializable type of the first argument.</typeparam>
+    /// <typeparam name="T2">The JSON-serializable type of the second argument.</typeparam>
+    /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
+    /// <returns>A delegate that can be used to invoke the JavaScript function.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
+    public static Func<T1, T2, ValueTask> AsVoidFunction<T1, T2, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSObjectReference jsObjectReference)
+    {
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
+
+        return async (T1 arg1, T2 arg2) => await jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2]);
+    }
+
+    /// <summary>
+    /// Wraps the interop invocation of the JavaScript function referenced by <paramref name="jsObjectReference"/> as a .NET delegate.
+    /// </summary>
+    /// <typeparam name="T1">The JSON-serializable type of the first argument.</typeparam>
+    /// <typeparam name="T2">The JSON-serializable type of the second argument.</typeparam>
+    /// <typeparam name="T3">The JSON-serializable type of the third argument.</typeparam>
+    /// <typeparam name="TResult">The JSON-serializable return type.</typeparam>
+    /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
+    /// <returns>A delegate that can be used to invoke the JavaScript function.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
+    public static Func<T1, T2, T3, ValueTask> AsVoidFunction<T1, T2, T3, [DynamicallyAccessedMembers(JsonSerialized)] TResult>(this IJSObjectReference jsObjectReference)
+    {
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
+
+        return async (T1 arg1, T2 arg2, T3 arg3) => await jsObjectReference.InvokeVoidAsync(string.Empty, [arg1, arg2, arg3]);
     }
 
     /// <summary>
