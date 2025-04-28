@@ -615,7 +615,7 @@
         await testClassRef.SetValueAsync("getTextLength", funcRef);
         ReturnValues["changeFunctionViaObjectReferenceAsync"] = (await testClassRef.InvokeAsync<int>("getTextLength")).ToString();
 
-        var funcDelegate = funcRef.AsAsyncFunction<Func<Task<int>>>();
+        var funcDelegate = funcRef.AsFunction<int>();
         ReturnValues["invokeDelegateFromAsAsyncFunction"] = (await funcDelegate()).ToString();
     }
 
