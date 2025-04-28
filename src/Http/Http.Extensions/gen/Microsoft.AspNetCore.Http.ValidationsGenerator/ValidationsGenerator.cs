@@ -11,10 +11,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Resolve the symbols that will be required when making comparisons
-        // in future steps.
-        var requiredSymbols = context.CompilationProvider.Select(ExtractRequiredSymbols);
-
         // Find the builder.Services.AddValidation() call in the application.
         var addValidation = context.SyntaxProvider.CreateSyntaxProvider(
             predicate: FindAddValidation,
@@ -34,7 +30,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             .Where(endpoint => endpoint is not null);
         // Extract validatable types from all endpoints.
         var validatableTypesFromEndpoints = endpoints
-            .Combine(requiredSymbols)
             .Select(ExtractValidatableEndpoint);
         // Join all validatable types encountered in the type graph.
         var validatableTypes = validatableTypesWithAttribute
