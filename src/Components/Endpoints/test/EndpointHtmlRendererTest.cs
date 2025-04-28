@@ -828,9 +828,12 @@ public class EndpointHtmlRendererTest
             exception.Message);
     }
 
-    [Fact]
-    public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted(bool expectException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException", isEnabled: expectException);
         // Arrange
         var ctx = new DefaultHttpContext();
         ctx.Request.Scheme = "http";
@@ -838,25 +841,49 @@ public class EndpointHtmlRendererTest
         ctx.Request.PathBase = "/base";
         ctx.Request.Path = "/path";
         ctx.Request.QueryString = new QueryString("?query=value");
+        ctx.Response.Body = new MemoryStream();
         var responseMock = new Mock<IHttpResponseFeature>();
         responseMock.Setup(r => r.HasStarted).Returns(true);
         ctx.Features.Set(responseMock.Object);
         var httpContext = GetHttpContext(ctx);
+        string redirectUri = "http://localhost/redirect";
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
-            httpContext,
-            typeof(RedirectComponent),
-            null,
-            ParameterView.FromDictionary(new Dictionary<string, object>
-            {
-                { "RedirectUri", "http://localhost/redirect" }
-            })));
+        if (expectException)
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
+                httpContext,
+                typeof(RedirectComponent),
+                null,
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { "RedirectUri", redirectUri }
+                })));
 
-        Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
-                        "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                        "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
-            exception.Message);
+            Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
+                            "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                            "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
+                exception.Message);
+        }
+        else
+        {
+            await renderer.PrerenderComponentAsync(
+                httpContext,
+                typeof(RedirectComponent),
+                null,
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { "RedirectUri", redirectUri }
+                }));
+            // read the custom element from the response body
+            httpContext.Response.Body.Position = 0;
+            var reader = new StreamReader(httpContext.Response.Body);
+            var output = await reader.ReadToEndAsync();
+
+            // Assert that the output contains expected navigation instructions.
+            var pattern = "^<blazor-ssr><template type=\"redirection\".*>.*<\\/template><blazor-ssr-end><\\/blazor-ssr-end><\\/blazor-ssr>$";
+            Assert.Matches(pattern, output);
+        }
     }
 
     [Fact]

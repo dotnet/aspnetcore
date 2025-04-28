@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Extensions\\Features\\src\\Microsoft.Extensions.Features.csproj",
       "src\\Hosting\\Abstractions\\src\\Microsoft.AspNetCore.Hosting.Abstractions.csproj",
@@ -17,7 +17,6 @@
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests\\Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests.csproj",
       "src\\OpenApi\\test\\Microsoft.AspNetCore.OpenApi.Tests\\Microsoft.AspNetCore.OpenApi.Tests.csproj",
-      "src\\OpenApi\\sample\\Sample.csproj",
       "src\\OpenApi\\perf\\Microbenchmarks\\Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj"
     ]
   }

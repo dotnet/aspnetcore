@@ -44,6 +44,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
     private ResourceAssetCollection? _resourceCollection;
     private bool _rendererIsStopped;
+    private readonly ILogger _logger;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
     // when everything (regardless of streaming SSR) is fully complete. In this subclass we also track
@@ -56,6 +57,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         _services = serviceProvider;
         _options = serviceProvider.GetRequiredService<IOptions<RazorComponentsServiceOptions>>().Value;
+        _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
     }
 
     internal HttpContext? HttpContext => _httpContext;
@@ -79,11 +81,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         IFormCollection? form = null)
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
-        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request));
+        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request), OnNavigateTo);
 
         if (navigationManager != null)
         {
-            navigationManager.OnNotFound += SetNotFoundResponse;
+            navigationManager.OnNotFound += async (sender, args) => await SetNotFoundResponseAsync(navigationManager.BaseUri);
         }
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
@@ -163,6 +165,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override void AddPendingTask(ComponentState? componentState, Task task)
     {
+        if (_isReExecuted)
+        {
+            return;
+        }
+
         var streamRendering = componentState is null
             ? false
             : ((EndpointComponentState)componentState).StreamRendering;
@@ -176,18 +183,23 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
-    private void SignalRendererToFinishRendering()
+    private void SignalRendererToFinishRenderingAfterCurrentBatch()
     {
+        // sets a deferred stop on the renderer, which will have an effect after the current batch is completed
         _rendererIsStopped = true;
+    }
+
+    protected override void SignalRendererToFinishRendering()
+    {
+        SignalRendererToFinishRenderingAfterCurrentBatch();
+        // sets a hard stop on the renderer, which will have an effect immediately
+        base.SignalRendererToFinishRendering();
     }
 
     protected override void ProcessPendingRender()
     {
         if (_rendererIsStopped)
         {
-            // When the application triggers a NotFound event, we continue rendering the current batch.
-            // However, after completing this batch, we do not want to process any further UI updates,
-            // as we are going to return a 404 status and discard the UI updates generated so far.
             return;
         }
         base.ProcessPendingRender();

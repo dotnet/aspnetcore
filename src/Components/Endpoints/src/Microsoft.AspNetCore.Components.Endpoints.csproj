@@ -40,6 +40,7 @@
     <Reference Include="Microsoft.AspNetCore.Antiforgery" />
     <Reference Include="Microsoft.AspNetCore.Components.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.AspNetCore.Diagnostics" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />

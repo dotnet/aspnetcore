@@ -260,6 +260,7 @@ public class PersistentServicesRegistryTest
     {
         // Arrange
         var serviceProvider = new ServiceCollection()
+            .AddSingleton<RegisteredPersistentServiceRegistrationCollection>()
             .AddSingleton<IPersistentServiceRegistration>(new TestPersistentRegistration { Assembly = "Assembly1", FullTypeName = "Type1" })
             .AddSingleton<IPersistentServiceRegistration>(new TestPersistentRegistration { Assembly = "Assembly1", FullTypeName = "Type1" }) // Duplicate
             .AddSingleton<IPersistentServiceRegistration>(new TestPersistentRegistration { Assembly = "Assembly2", FullTypeName = "Type2" })

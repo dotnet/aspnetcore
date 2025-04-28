@@ -1,6 +1,10 @@
 #nullable enable
+
+Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type!
+Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
 Microsoft.AspNetCore.Components.NavigationManager.OnNotFound -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs!>!
 Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
+Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri, System.Func<string!, System.Threading.Tasks.Task!>! onNavigateTo) -> void
 Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs
 Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs() -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger, System.IServiceProvider! serviceProvider) -> void
@@ -11,3 +15,4 @@ Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateAttri
 Microsoft.Extensions.DependencyInjection.SupplyParameterFromPersistentComponentStateProviderServiceCollectionExtensions
 static Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.IComponentRenderMode! componentRenderMode) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.SupplyParameterFromPersistentComponentStateProviderServiceCollectionExtensions.AddSupplyValueFromPersistentComponentStateProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.SignalRendererToFinishRendering() -> void
