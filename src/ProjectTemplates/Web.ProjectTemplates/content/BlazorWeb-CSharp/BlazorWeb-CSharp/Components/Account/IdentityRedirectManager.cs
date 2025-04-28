@@ -7,6 +7,8 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
 {
     public const string StatusCookieName = "Identity.StatusMessage";
 
+    private const string _enableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException";
+
     [FeatureSwitchDefinition("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException")]
     private static bool _throwNavigationException =>
         AppContext.TryGetSwitch(_enableThrowNavigationException, out var switchValue) && switchValue;
