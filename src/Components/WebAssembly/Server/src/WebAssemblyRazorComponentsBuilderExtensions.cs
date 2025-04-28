@@ -32,7 +32,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
 
         if (lazyAssemblyLoaderType != null)
         {
-            builder.Services.AddScoped(lazyAssemblyLoaderType);
+            builder.Services.TryAddScoped(lazyAssemblyLoaderType);
         }
 
         return builder;
