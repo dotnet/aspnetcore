@@ -665,9 +665,6 @@ configuration:
       - isActivitySender:
           user: app/dependabot
           issueAuthor: False
-      - titleContains:
-          pattern: (deps):
-          isRegex: False
       - targetsBranch:
           branch: main
       then:
