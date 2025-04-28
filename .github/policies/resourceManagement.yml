@@ -646,6 +646,8 @@ configuration:
       - titleContains:
           pattern: Update .NET SDK
           isRegex: False
+      - targetsBranch:
+          branch: main
       then:
       - addLabel:
           label: area-infrastructure
@@ -655,6 +657,28 @@ configuration:
           comment: Auto-approving SDK update.
       - enableAutoMerge:
           mergeMethod: "squash"
-      description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests'
+      description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests & enable auto-merge'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - isActivitySender:
+          user: app/dependabot
+          issueAuthor: False
+      - titleContains:
+          pattern: (deps):
+          isRegex: False
+      - targetsBranch:
+          branch: main
+      then:
+      - addLabel:
+          label: area-infrastructure
+      - addLabel:
+          label: 'Type: Dependency Update :arrow_up_small:'
+      - approvePullRequest:
+          comment: Auto-approving dependabot update.
+      - enableAutoMerge:
+          mergeMethod: "squash"
+      description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
 onFailure: 
 onSuccess: 
