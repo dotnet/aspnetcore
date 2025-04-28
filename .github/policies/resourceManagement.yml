@@ -653,6 +653,8 @@ configuration:
           label: 'Type: Dependency Update :arrow_up_small:'
       - approvePullRequest:
           comment: Auto-approving SDK update.
+      - enableAutoMerge:
+          mergeMethod: "squash"
       description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests'
 onFailure: 
 onSuccess: 
