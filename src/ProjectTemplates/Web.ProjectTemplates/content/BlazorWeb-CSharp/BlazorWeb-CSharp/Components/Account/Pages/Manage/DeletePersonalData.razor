@@ -40,7 +40,7 @@
 
 @code {
     private string? message;
-    private ApplicationUser user = default!;
+    private ApplicationUser? user;
     private bool requirePassword;
 
     [CascadingParameter]
@@ -53,11 +53,19 @@
     {
         Input ??= new();
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        requirePassword = await UserManager.HasPasswordAsync(user);
+        if (user is not null)
+        {
+            requirePassword = await UserManager.HasPasswordAsync(user);
+        }
     }
 
     private async Task OnValidSubmitAsync()
     {
+        if (user is null)
+        {
+            throw new InvalidOperationException("User is not loaded; failed to delete personal data.");
+        }
+
         if (requirePassword && !await UserManager.CheckPasswordAsync(user, Input.Password))
         {
             message = "Error: Incorrect password.";

@@ -66,7 +66,7 @@
 @code {
     public const string LinkLoginCallbackAction = "LinkLoginCallback";
 
-    private ApplicationUser user = default!;
+    private ApplicationUser? user;
     private IList<UserLoginInfo>? currentLogins;
     private IList<AuthenticationScheme>? otherLogins;
     private bool showRemoveButton;
@@ -86,6 +86,11 @@
     protected override async Task OnInitializedAsync()
     {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        if (user is null)
+        {
+            return;
+        }
+
         currentLogins = await UserManager.GetLoginsAsync(user);
         otherLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync())
             .Where(auth => currentLogins.All(ul => auth.Name != ul.LoginProvider))
@@ -107,6 +112,11 @@
 
     private async Task OnSubmitAsync()
     {
+        if (user is null)
+        {
+            throw new InvalidOperationException("User is not loaded; failed to remove external login.");
+        }
+
         var result = await UserManager.RemoveLoginAsync(user, LoginProvider!, ProviderKey!);
         if (!result.Succeeded)
         {
@@ -119,11 +129,17 @@
 
     private async Task OnGetLinkLoginCallbackAsync()
     {
+        if (user is null)
+        {
+            throw new InvalidOperationException("User is not loaded; failed to add external login.");
+        }
+
         var userId = await UserManager.GetUserIdAsync(user);
         var info = await SignInManager.GetExternalLoginInfoAsync(userId);
         if (info is null)
         {
             RedirectManager.RedirectToCurrentPageWithStatus("Error: Could not load external login info.", HttpContext);
+            return;
         }
 
         var result = await UserManager.AddLoginAsync(user, info);
