@@ -328,12 +328,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="10.0.0-preview.4.25222.8">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>31289efa35151a4e60dcd2e6471c51f620f78c28</Sha>
-      <SourceBuild RepoName="runtime" ManagedOnly="false" />
-    </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Runtime.AOT.win-x64.Cross.browser-wasm" Version="10.0.0-preview.5.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
@@ -345,17 +339,6 @@
     <Dependency Name="Microsoft.Web.Xdt" Version="10.0.0-preview.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="10.0.0-preview.25210.1">
-      <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>c49d8039632d608391880555414a1e226c6944ee</Sha>
-      <SourceBuild RepoName="xdt" ManagedOnly="true" />
-    </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="10.0.622102">
-      <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>361d41347b3ef9d19480e09e0b8a7c7a9644ed24</Sha>
-      <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <!-- Not updated automatically -->
     <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.13.0-3.24613.7">
@@ -374,21 +357,9 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="4.13.0-3.24613.7">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
-      <SourceBuild RepoName="roslyn" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="System.Composition" Version="10.0.0-preview.5.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="10.0.621401">
-      <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>d64d8da45618323a39fb77860d1140bdbcd506ad</Sha>
-      <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -400,12 +371,6 @@
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="10.0.0-beta.25223.1">
-      <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>36f91467d150caf4f8ca0008f039d746bc03017b</Sha>
-      <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Archives" Version="10.0.0-beta.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -470,12 +435,6 @@
     <Dependency Name="optimization.linux-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25217.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
       <Sha>bff9b4a349cfa7e3d83264d8953613d98a7b04eb</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.2.0-beta.25207.2">
-      <Uri>https://github.com/dotnet/symreader</Uri>
-      <Sha>d1c0c096d93db9c45001409afbb3dfec4bce89bb</Sha>
-      <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
