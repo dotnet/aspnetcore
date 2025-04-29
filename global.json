@@ -27,9 +27,9 @@
     "jdk": "latest"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25225.102",
-    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25225.102",
-    "Microsoft.DotNet.SharedFramework.Sdk": "10.0.0-beta.25225.102",
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25228.104",
+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25228.104",
+    "Microsoft.DotNet.SharedFramework.Sdk": "10.0.0-beta.25228.104",
     "Microsoft.Build.NoTargets": "3.7.0",
     "Microsoft.Build.Traversal": "3.4.0"
   }
