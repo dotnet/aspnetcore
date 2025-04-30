@@ -28,31 +28,35 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
-public partial class TlsListenerMiddlewareTests
+public class TlsListenerMiddlewareTests
 {
     [Theory]
     [MemberData(nameof(ValidClientHelloData))]
     public Task OnTlsClientHelloAsync_ValidData(int id, byte[] packetBytes)
-        => RunTlsClientHelloCallbackTest(id, packetBytes, nextMiddlewareShouldBeInvoked: true, tlsClientHelloCallbackExpected: true);
+        => RunTlsClientHelloCallbackTest(id, packetBytes, tlsClientHelloCallbackExpected: true);
 
     [Theory]
     [MemberData(nameof(InvalidClientHelloData))]
     public Task OnTlsClientHelloAsync_InvalidData(int id, byte[] packetBytes)
-        => RunTlsClientHelloCallbackTest(id, packetBytes, nextMiddlewareShouldBeInvoked: true, tlsClientHelloCallbackExpected: false);
+        => RunTlsClientHelloCallbackTest(id, packetBytes, tlsClientHelloCallbackExpected: false);
 
     [Theory]
     [MemberData(nameof(ValidClientHelloData_Segmented))]
     public Task OnTlsClientHelloAsync_ValidData_MultipleSegments(int id, List<byte[]> packets)
-        => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, nextMiddlewareShouldBeInvoked: true, tlsClientHelloCallbackExpected: true);
+        => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, tlsClientHelloCallbackExpected: true);
 
     [Theory]
     [MemberData(nameof(InvalidClientHelloData_Segmented))]
     public Task OnTlsClientHelloAsync_InvalidData_MultipleSegments(int id, List<byte[]> packets)
-        => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, nextMiddlewareShouldBeInvoked: true, tlsClientHelloCallbackExpected: false);
+        => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, tlsClientHelloCallbackExpected: false);
 
     [Fact]
-    public async Task RunTlsClientHelloCallbackTest_DeterministinglyReads()
+    public async Task RunTlsClientHelloCallbackTest_DeterministicallyReads()
     {
+        /* Current test ensures that we read the input stream only a limited number of times.
+         * It is a guard against incorrect transport.AdvanceTo() usage leading to infinite loop / more reads than should happen.
+         */
+
         var serviceContext = new TestServiceContext();
 
         var pipe = new Pipe();
@@ -91,16 +95,15 @@ public partial class TlsListenerMiddlewareTests
         Assert.False(tlsClientHelloCallbackInvoked);
 
         // ensuring that we have read limited number of times
-        Assert.True(reader.ReadAsyncCounter is >= 2 && reader.ReadAsyncCounter is <= 3,
-            $"Expected ReadAsync() to happen about 2-3 times. Actually happened {reader.ReadAsyncCounter} times.");
+        Assert.True(reader.ReadAsyncCounter is >= 2 && reader.ReadAsyncCounter is <= 4,
+            $"Expected ReadAsync() to happen about 2-4 times. Actually happened {reader.ReadAsyncCounter} times.");
     }
 
     private async Task RunTlsClientHelloCallbackTest_WithMultipleSegments(
         int id,
         List<byte[]> packets,
-        bool nextMiddlewareShouldBeInvoked,
         bool tlsClientHelloCallbackExpected)
-    {
+    {        
         var pipe = new Pipe();
         var writer = pipe.Writer;
 
@@ -116,6 +119,12 @@ public partial class TlsListenerMiddlewareTests
             next: ctx =>
             {
                 nextMiddlewareInvokedActual = true;
+                if (tlsClientHelloCallbackActual)
+                {
+                    var readResult = ctx.Transport.Input.ReadAsync();
+                    Assert.Equal(fullLength, readResult.Result.Buffer.Length);
+                }
+
                 return Task.CompletedTask;
             },
             tlsClientHelloBytesCallback: (ctx, data) =>
@@ -132,7 +141,14 @@ public partial class TlsListenerMiddlewareTests
         await writer.WriteAsync(packets[0]);
         var middlewareTask = middleware.OnTlsClientHelloAsync(transportConnection);
 
-        // write all next packets
+        
+        /* It is a race condition (middleware's loop and writes here).
+         * We don't know specifically how many packets will be read by middleware's loop
+         * (possibly there are even 2 packets - the first and all others combined).
+         * The goal here is to try simulate multi-segmented approach and test more cases
+         */
+
+        // write all other packets
         foreach (var packet in packets.Skip(1))
         {
             await writer.WriteAsync(packet);
@@ -140,14 +156,13 @@ public partial class TlsListenerMiddlewareTests
         await writer.CompleteAsync();
         await middlewareTask;
 
-        Assert.Equal(nextMiddlewareShouldBeInvoked, nextMiddlewareInvokedActual);
+        Assert.True(nextMiddlewareInvokedActual);
         Assert.Equal(tlsClientHelloCallbackExpected, tlsClientHelloCallbackActual);
     }
 
     private async Task RunTlsClientHelloCallbackTest(
         int id,
         byte[] packetBytes,
-        bool nextMiddlewareShouldBeInvoked,
         bool tlsClientHelloCallbackExpected)
     {
         var pipe = new Pipe();
@@ -184,7 +199,7 @@ public partial class TlsListenerMiddlewareTests
         // call middleware and expect a callback
         await middleware.OnTlsClientHelloAsync(transportConnection);
 
-        Assert.Equal(nextMiddlewareShouldBeInvoked, nextMiddlewareInvokedActual);
+        Assert.True(nextMiddlewareInvokedActual);
         Assert.Equal(tlsClientHelloCallbackExpected, tlsClientHelloCallbackActual);
     }
 
