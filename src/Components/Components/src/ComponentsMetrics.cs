@@ -11,7 +11,9 @@ namespace Microsoft.AspNetCore.Components;
 internal sealed class ComponentsMetrics : IDisposable
 {
     public const string MeterName = "Microsoft.AspNetCore.Components";
+    public const string LifecycleMeterName = "Microsoft.AspNetCore.Components.Lifecycle";
     private readonly Meter _meter;
+    private readonly Meter _lifeCycleMeter;
 
     private readonly Counter<long> _navigationCount;
 
@@ -40,10 +42,11 @@ internal sealed class ComponentsMetrics : IDisposable
         Debug.Assert(meterFactory != null);
 
         _meter = meterFactory.Create(MeterName);
+        _lifeCycleMeter = meterFactory.Create(LifecycleMeterName);
 
         _navigationCount = _meter.CreateCounter<long>(
-            "aspnetcore.components.navigation.count",
-            unit: "{exceptions}",
+            "aspnetcore.components.navigation",
+            unit: "{route}",
             description: "Total number of route changes.");
 
         _eventDuration = _meter.CreateHistogram(
@@ -53,22 +56,22 @@ internal sealed class ComponentsMetrics : IDisposable
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _eventException = _meter.CreateCounter<long>(
-            "aspnetcore.components.event.exception",
+            "aspnetcore.components.event.exceptions",
             unit: "{exception}",
             description: "Total number of exceptions during browser event processing.");
 
-        _parametersDuration = _meter.CreateHistogram(
+        _parametersDuration = _lifeCycleMeter.CreateHistogram(
             "aspnetcore.components.parameters.duration",
             unit: "s",
             description: "Duration of processing component parameters.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
-        _parametersException = _meter.CreateCounter<long>(
-            "aspnetcore.components.parameters.exception",
-            unit: "{exceptions}",
+        _parametersException = _lifeCycleMeter.CreateCounter<long>(
+            "aspnetcore.components.parameters.exceptions",
+            unit: "{exception}",
             description: "Total number of exceptions during processing component parameters.");
 
-        _batchDuration = _meter.CreateHistogram(
+        _batchDuration = _lifeCycleMeter.CreateHistogram(
             "aspnetcore.components.rendering.batch.duration",
             unit: "s",
             description: "Duration of rendering batch.",
@@ -231,5 +234,6 @@ internal sealed class ComponentsMetrics : IDisposable
     public void Dispose()
     {
         _meter.Dispose();
+        _lifeCycleMeter.Dispose();
     }
 }
