@@ -76,7 +76,7 @@ internal sealed class ComponentsMetrics : IDisposable
 
         _batchException = _meter.CreateCounter<long>(
             "aspnetcore.components.rendering.batch.exceptions",
-            unit: "{exceptions}",
+            unit: "{exception}",
             description: "Total number of exceptions during batch rendering.");
     }
 
