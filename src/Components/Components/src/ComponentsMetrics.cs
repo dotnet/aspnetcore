@@ -54,7 +54,7 @@ internal sealed class ComponentsMetrics : IDisposable
 
         _eventException = _meter.CreateCounter<long>(
             "aspnetcore.components.event.exception",
-            unit: "{exceptions}",
+            unit: "{exception}",
             description: "Total number of exceptions during browser event processing.");
 
         _parametersDuration = _meter.CreateHistogram(
