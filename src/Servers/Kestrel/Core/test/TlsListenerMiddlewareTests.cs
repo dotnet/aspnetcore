@@ -103,7 +103,7 @@ public class TlsListenerMiddlewareTests
         int id,
         List<byte[]> packets,
         bool tlsClientHelloCallbackExpected)
-    {        
+    {
         var pipe = new Pipe();
         var writer = pipe.Writer;
 
