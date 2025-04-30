@@ -61,7 +61,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.duration");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
 
         // Act
         var startTime = Stopwatch.GetTimestamp();
@@ -154,7 +154,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.exceptions");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.exceptions");
 
         // Act
         componentsMetrics.PropertiesFailed("ArgumentException", "TestComponent");
@@ -174,7 +174,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.exceptions");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.exceptions");
 
         // Create a task that throws an exception
         var task = Task.FromException(new InvalidOperationException());
@@ -244,9 +244,9 @@ public class ComponentsMetricsTest
         using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
             ComponentsMetrics.MeterName, "aspnetcore.components.event.exceptions");
         using var parametersAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.duration");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
         using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.exceptions");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.exceptions");
         using var batchDurationCollector = new MetricCollector<double>(_meterFactory,
             ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.duration");
         using var batchExceptionCollector = new MetricCollector<long>(_meterFactory,

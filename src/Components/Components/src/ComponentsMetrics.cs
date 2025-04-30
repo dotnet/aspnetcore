@@ -61,13 +61,13 @@ internal sealed class ComponentsMetrics : IDisposable
             description: "Total number of exceptions during browser event processing.");
 
         _parametersDuration = _lifeCycleMeter.CreateHistogram(
-            "aspnetcore.components.parameters.duration",
+            "aspnetcore.components.update_parameters.duration",
             unit: "s",
             description: "Duration of processing component parameters.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _parametersException = _lifeCycleMeter.CreateCounter<long>(
-            "aspnetcore.components.parameters.exceptions",
+            "aspnetcore.components.update_parameters.exceptions",
             unit: "{exception}",
             description: "Total number of exceptions during processing component parameters.");
 
