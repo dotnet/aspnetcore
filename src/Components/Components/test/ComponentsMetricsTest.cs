@@ -28,7 +28,7 @@ public class ComponentsMetricsTest
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
 
         // Assert
-        Assert.Single(_meterFactory.Meters);
+        Assert.Equal(2, _meterFactory.Meters.Count);
         Assert.Equal(ComponentsMetrics.MeterName, _meterFactory.Meters[0].Name);
     }
 
@@ -61,7 +61,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.duration");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.duration");
 
         // Act
         var startTime = Stopwatch.GetTimestamp();
@@ -82,7 +82,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var batchDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.batch.duration");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.duration");
 
         // Act
         var startTime = Stopwatch.GetTimestamp();
@@ -103,7 +103,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event.exception");
+            ComponentsMetrics.MeterName, "aspnetcore.components.event.exceptions");
 
         // Create a mock EventCallback
         var callback = new EventCallback(new TestComponent(), () => { });
@@ -127,7 +127,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event.exception");
+            ComponentsMetrics.MeterName, "aspnetcore.components.event.exceptions");
 
         // Create a mock EventCallback
         var callback = new EventCallback(new TestComponent(), () => { });
@@ -154,7 +154,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.exception");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.exceptions");
 
         // Act
         componentsMetrics.PropertiesFailed("ArgumentException", "TestComponent");
@@ -174,7 +174,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.exception");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.exceptions");
 
         // Create a task that throws an exception
         var task = Task.FromException(new InvalidOperationException());
@@ -197,7 +197,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var batchExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.batch.exception");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.exceptions");
 
         // Act
         componentsMetrics.BatchFailed("ArgumentException");
@@ -216,7 +216,7 @@ public class ComponentsMetricsTest
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
         using var batchExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.batch.exception");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.exceptions");
 
         // Create a task that throws an exception
         var task = Task.FromException(new InvalidOperationException());
@@ -242,15 +242,15 @@ public class ComponentsMetricsTest
         using var eventAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
             ComponentsMetrics.MeterName, "aspnetcore.components.event.duration");
         using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event.exception");
+            ComponentsMetrics.MeterName, "aspnetcore.components.event.exceptions");
         using var parametersAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.duration");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.duration");
         using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.parameters.exception");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.parameters.exceptions");
         using var batchDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.batch.duration");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.duration");
         using var batchExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.rendering.batch.exception");
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.exceptions");
 
         // Assert
         Assert.True(componentsMetrics.IsEventDurationEnabled);

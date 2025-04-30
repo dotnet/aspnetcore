@@ -77,7 +77,7 @@ internal sealed class ComponentsMetrics : IDisposable
             description: "Duration of rendering batch.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
-        _batchException = _meter.CreateCounter<long>(
+        _batchException = _lifeCycleMeter.CreateCounter<long>(
             "aspnetcore.components.rendering.batch.exceptions",
             unit: "{exception}",
             description: "Total number of exceptions during batch rendering.");
