@@ -32,23 +32,23 @@ public partial class TlsListenerMiddlewareTests
 {
     [Theory]
     [MemberData(nameof(ValidClientHelloData))]
-    public Task OnTlsClientHelloAsync_ValidData(int id, byte[] packetBytes, bool nextMiddlewareInvoked)
-        => RunTlsClientHelloCallbackTest(id, packetBytes, nextMiddlewareInvoked, tlsClientHelloCallbackExpected: true);
+    public Task OnTlsClientHelloAsync_ValidData(int id, byte[] packetBytes)
+        => RunTlsClientHelloCallbackTest(id, packetBytes, nextMiddlewareShouldBeInvoked: true, tlsClientHelloCallbackExpected: true);
 
     [Theory]
     [MemberData(nameof(InvalidClientHelloData))]
-    public Task OnTlsClientHelloAsync_InvalidData(int id, byte[] packetBytes, bool nextMiddlewareInvoked)
-        => RunTlsClientHelloCallbackTest(id, packetBytes, nextMiddlewareInvoked, tlsClientHelloCallbackExpected: false);
+    public Task OnTlsClientHelloAsync_InvalidData(int id, byte[] packetBytes)
+        => RunTlsClientHelloCallbackTest(id, packetBytes, nextMiddlewareShouldBeInvoked: true, tlsClientHelloCallbackExpected: false);
 
     [Theory]
     [MemberData(nameof(ValidClientHelloData_Segmented))]
-    public Task OnTlsClientHelloAsync_ValidData_MultipleSegments(int id, List<byte[]> packets, bool nextMiddlewareInvoked)
-        => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, nextMiddlewareInvoked, tlsClientHelloCallbackExpected: true);
+    public Task OnTlsClientHelloAsync_ValidData_MultipleSegments(int id, List<byte[]> packets)
+        => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, nextMiddlewareShouldBeInvoked: true, tlsClientHelloCallbackExpected: true);
 
     [Theory]
     [MemberData(nameof(InvalidClientHelloData_Segmented))]
-    public Task OnTlsClientHelloAsync_InvalidData_MultipleSegments(int id, List<byte[]> packets, bool nextMiddlewareInvoked)
-        => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, nextMiddlewareInvoked, tlsClientHelloCallbackExpected: false);
+    public Task OnTlsClientHelloAsync_InvalidData_MultipleSegments(int id, List<byte[]> packets)
+        => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, nextMiddlewareShouldBeInvoked: true, tlsClientHelloCallbackExpected: false);
 
     [Fact]
     public async Task RunTlsClientHelloCallbackTest_DeterministinglyReads()
@@ -81,7 +81,7 @@ public partial class TlsListenerMiddlewareTests
         );
 
         await writer.WriteAsync(new byte[1] { 0x16 });
-        var middlewareTask = Task.Run(() => middleware.OnTlsClientHelloAsync(transportConnection));
+        var middlewareTask = middleware.OnTlsClientHelloAsync(transportConnection);
         await writer.WriteAsync(new byte[2] { 0x03, 0x01 });
         await writer.WriteAsync(new byte[2] { 0x00, 0x20 });
         await writer.CompleteAsync();
@@ -91,21 +91,20 @@ public partial class TlsListenerMiddlewareTests
         Assert.False(tlsClientHelloCallbackInvoked);
 
         // ensuring that we have read limited number of times
-        Assert.True(reader.ReadAsyncCounter is >= 2 && reader.ReadAsyncCounter is <= 5,
-            $"Expected ReadAsync() to happen about 2-5 times. Actually happened {reader.ReadAsyncCounter} times.");
+        Assert.True(reader.ReadAsyncCounter is >= 2 && reader.ReadAsyncCounter is <= 3,
+            $"Expected ReadAsync() to happen about 2-3 times. Actually happened {reader.ReadAsyncCounter} times.");
     }
 
     private async Task RunTlsClientHelloCallbackTest_WithMultipleSegments(
         int id,
         List<byte[]> packets,
-        bool nextMiddlewareInvokedExpected,
+        bool nextMiddlewareShouldBeInvoked,
         bool tlsClientHelloCallbackExpected)
     {
         var pipe = new Pipe();
         var writer = pipe.Writer;
-        var reader = new ObservablePipeReader(pipe.Reader);
 
-        var transport = new DuplexPipe(reader, writer);
+        var transport = new DuplexPipe(pipe.Reader, writer);
         var transportConnection = new DefaultConnectionContext("test", transport, transport);
 
         var nextMiddlewareInvokedActual = false;
@@ -131,35 +130,30 @@ public partial class TlsListenerMiddlewareTests
 
         // write first packet
         await writer.WriteAsync(packets[0]);
-        var middlewareTask = Task.Run(() => middleware.OnTlsClientHelloAsync(transportConnection));
-
-        var random = new Random();
-        await Task.Delay(millisecondsDelay: random.Next(25, 75));
+        var middlewareTask = middleware.OnTlsClientHelloAsync(transportConnection);
 
         // write all next packets
         foreach (var packet in packets.Skip(1))
         {
             await writer.WriteAsync(packet);
-            await Task.Delay(millisecondsDelay: random.Next(25, 75));
         }
         await writer.CompleteAsync();
         await middlewareTask;
 
-        Assert.Equal(nextMiddlewareInvokedExpected, nextMiddlewareInvokedActual);
+        Assert.Equal(nextMiddlewareShouldBeInvoked, nextMiddlewareInvokedActual);
         Assert.Equal(tlsClientHelloCallbackExpected, tlsClientHelloCallbackActual);
     }
 
     private async Task RunTlsClientHelloCallbackTest(
         int id,
         byte[] packetBytes,
-        bool nextMiddlewareExpected,
+        bool nextMiddlewareShouldBeInvoked,
         bool tlsClientHelloCallbackExpected)
     {
         var pipe = new Pipe();
         var writer = pipe.Writer;
-        var reader = new ObservablePipeReader(pipe.Reader);
 
-        var transport = new DuplexPipe(reader, writer);
+        var transport = new DuplexPipe(pipe.Reader, writer);
         var transportConnection = new DefaultConnectionContext("test", transport, transport);
 
         var nextMiddlewareInvokedActual = false;
@@ -190,32 +184,32 @@ public partial class TlsListenerMiddlewareTests
         // call middleware and expect a callback
         await middleware.OnTlsClientHelloAsync(transportConnection);
 
-        Assert.Equal(nextMiddlewareExpected, nextMiddlewareInvokedActual);
+        Assert.Equal(nextMiddlewareShouldBeInvoked, nextMiddlewareInvokedActual);
         Assert.Equal(tlsClientHelloCallbackExpected, tlsClientHelloCallbackActual);
     }
 
     public static IEnumerable<object[]> ValidClientHelloData()
     {
         int id = 0;
-        foreach (var clientHello in valid_collection)
+        foreach (var clientHello in _validCollection)
         {
-            yield return new object[] { id++, clientHello, true /* invokes next middleware */ };
+            yield return new object[] { id++, clientHello };
         }
     }
 
     public static IEnumerable<object[]> InvalidClientHelloData()
     {
         int id = 0;
-        foreach (byte[] clientHello in invalid_collection)
+        foreach (byte[] clientHello in _invalidCollection)
         {
-            yield return new object[] { id++, clientHello, true /* invokes next middleware */ };
+            yield return new object[] { id++, clientHello };
         }
     }
 
     public static IEnumerable<object[]> ValidClientHelloData_Segmented()
     {
         int id = 0;
-        foreach (var clientHello in valid_collection)
+        foreach (var clientHello in _validCollection)
         {
             var clientHelloSegments = new List<byte[]>
             {
@@ -226,14 +220,14 @@ public partial class TlsListenerMiddlewareTests
                 clientHello.Skip(6).Take(clientHello.Length - 6).ToArray()
             };
 
-            yield return new object[] { id++, clientHelloSegments, true /* invokes next middleware */ };
+            yield return new object[] { id++, clientHelloSegments };
         }
     }
 
     public static IEnumerable<object[]> InvalidClientHelloData_Segmented()
     {
         int id = 0;
-        foreach (var clientHello in invalid_collection)
+        foreach (var clientHello in _invalidCollection)
         {
             var clientHelloSegments = new List<byte[]>();
             if (clientHello.Length >= 1)
@@ -257,11 +251,11 @@ public partial class TlsListenerMiddlewareTests
                 clientHelloSegments.Add(clientHello.Skip(6).Take(clientHello.Length - 6).ToArray());
             }
 
-            yield return new object[] { id++, clientHelloSegments, true /* invokes next middleware */ };
+            yield return new object[] { id++, clientHelloSegments };
         }
     }
 
-    private static byte[] valid_clientHelloHeader =
+    private static byte[] _validClientHelloHeader =
     {
         // 0x16 = Handshake
         0x16,
@@ -278,7 +272,7 @@ public partial class TlsListenerMiddlewareTests
         0
     };
 
-    private static byte[] valid_Ssl3ClientHello =
+    private static byte[] _validSsl3ClientHello =
     {
         0x16, 0x03, 0x00,             // ContentType: Handshake, Version: SSL 3.0
         0x00, 0x2F,                   // Length: 47 bytes
@@ -296,7 +290,7 @@ public partial class TlsListenerMiddlewareTests
         0x01, 0x00                    // Compression Methods: null
     };
 
-    private static byte[] valid_Tls10ClientHello =
+    private static byte[] _validTls10ClientHello =
     {
         0x16, 0x03, 0x01,             // ContentType: Handshake, Version: TLS 1.0
         0x00, 0x2F,                   // Length: 47 bytes
@@ -314,7 +308,7 @@ public partial class TlsListenerMiddlewareTests
         0x01, 0x00                    // Compression Methods: null
     };
 
-    private static byte[] valid_Tls11ClientHello =
+    private static byte[] _validTls11ClientHello =
     {
         0x16, 0x03, 0x02,             // ContentType: Handshake, Version: TLS 1.1
         0x00, 0x2F,                   // Length: 47 bytes
@@ -332,7 +326,7 @@ public partial class TlsListenerMiddlewareTests
         0x01, 0x00                    // Compression Methods: null
     };
 
-    private static byte[] valid_Tls12ClientHello =
+    private static byte[] _validTls12ClientHello =
     {
         // SslPlainText.(ContentType+ProtocolVersion)
         0x16, 0x03, 0x03,
@@ -391,7 +385,7 @@ public partial class TlsListenerMiddlewareTests
         0x2E, 0x31
     };
 
-    private static byte[] valid_Tls13ClientHello =
+    private static byte[] _validTls13ClientHello =
     {
         // SslPlainText.(ContentType+ProtocolVersion)
         0x16, 0x03, 0x04,
@@ -462,7 +456,7 @@ public partial class TlsListenerMiddlewareTests
         0x03, 0x01, 0x03, 0x03, 0x02, 0x01, 0x02, 0x03
     };
 
-    private static byte[] valid_TlsClientHelloNoExtensions =
+    private static byte[] _validTlsClientHelloNoExtensions =
     {
         0x16, 0x03, 0x03, 0x00, 0x39, 0x01, 0x00, 0x00,
         0x35, 0x03, 0x03, 0x62, 0x5d, 0x50, 0x2a, 0x41,
@@ -474,7 +468,7 @@ public partial class TlsListenerMiddlewareTests
         0x00, 0x05, 0x00, 0x04, 0x01, 0x00
     };
 
-    private static byte[] invalid_TlsClientHelloHeader =
+    private static byte[] _invalidTlsClientHelloHeader =
     {
         // Handshake - incorrect
         0x01,
@@ -488,7 +482,7 @@ public partial class TlsListenerMiddlewareTests
         0x00, 0x00, 0xC7,
     };
 
-    private static byte[] invalid_3BytesMessage =
+    private static byte[] _invalid3BytesMessage =
     {
         // Handshake
         0x016,
@@ -497,7 +491,7 @@ public partial class TlsListenerMiddlewareTests
         // not enough data - so incorrect
     };
 
-    private static byte[] invalid_9BytesMessage =
+    private static byte[] _invalid9BytesMessage =
     {
         // 0x16 = Handshake
         0x16,
@@ -512,7 +506,7 @@ public partial class TlsListenerMiddlewareTests
         // no other data here - incorrect
     };
 
-    private static byte[] invalid_UnknownProtocolVersion1 =
+    private static byte[] _invalidUnknownProtocolVersion1 =
     {
         // Handshake
         0x016,
@@ -526,7 +520,7 @@ public partial class TlsListenerMiddlewareTests
         0x00, 0x00, 0xC7,
     };
 
-    private static byte[] invalid_UnknownProtocolVersion2 =
+    private static byte[] _invalidUnknownProtocolVersion2 =
     {
         // Handshake
         0x016,
@@ -540,7 +534,7 @@ public partial class TlsListenerMiddlewareTests
         0x00, 0x00, 0xC7,
     };
 
-    private static byte[] invalid_IncorrectHandshakeMessageType =
+    private static byte[] _invalidIncorrectHandshakeMessageType =
     {
         // Handshake
         0x016,
@@ -554,16 +548,16 @@ public partial class TlsListenerMiddlewareTests
         0x00, 0x00, 0xC7,
     };
 
-    private static List<byte[]> valid_collection = new List<byte[]>()
+    private static List<byte[]> _validCollection = new List<byte[]>()
     {
-        valid_clientHelloHeader, valid_Ssl3ClientHello, valid_Tls10ClientHello,
-        valid_Tls11ClientHello, valid_Tls12ClientHello, valid_Tls13ClientHello,
-        valid_TlsClientHelloNoExtensions
+        _validClientHelloHeader, _validSsl3ClientHello, _validTls10ClientHello,
+        _validTls11ClientHello, _validTls12ClientHello, _validTls13ClientHello,
+        _validTlsClientHelloNoExtensions
     };
 
-    private static List<byte[]> invalid_collection = new List<byte[]>()
+    private static List<byte[]> _invalidCollection = new List<byte[]>()
     {
-        invalid_TlsClientHelloHeader, invalid_3BytesMessage, invalid_9BytesMessage,
-        invalid_UnknownProtocolVersion1, invalid_UnknownProtocolVersion2, invalid_IncorrectHandshakeMessageType
+        _invalidTlsClientHelloHeader, _invalid3BytesMessage, _invalid9BytesMessage,
+        _invalidUnknownProtocolVersion1, _invalidUnknownProtocolVersion2, _invalidIncorrectHandshakeMessageType
     };
 }
