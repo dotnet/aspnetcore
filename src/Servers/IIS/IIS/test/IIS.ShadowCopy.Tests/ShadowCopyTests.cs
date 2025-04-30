@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class ShadowCopyTests : IISFunctionalTestBase
 {
     public ShadowCopyTests(PublishedSitesFixture fixture) : base(fixture)

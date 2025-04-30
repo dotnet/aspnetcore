@@ -21,7 +21,6 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests;
 
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class Http2Tests : LoggedTest
 {
     private const string VersionForReset = "10.0.19529";
