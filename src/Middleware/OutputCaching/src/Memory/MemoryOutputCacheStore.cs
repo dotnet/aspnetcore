@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.OutputCaching.Memory;
 internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 {
     private readonly MemoryCache _cache;
-    private readonly Dictionary<string, HashSet<(string Key, Guid EntryId)>> _taggedEntries = [];
+    private readonly Dictionary<string, HashSet<TaggedEntry>> _taggedEntries = [];
     private readonly object _tagsLock = new();
 
     internal MemoryOutputCacheStore(MemoryCache cache)
@@ -93,13 +93,13 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
 
                     if (!_taggedEntries.TryGetValue(tag, out var keys))
                     {
-                        keys = new HashSet<(string, Guid)>();
+                        keys = new HashSet<TaggedEntry>();
                         _taggedEntries[tag] = keys;
                     }
 
                     Debug.Assert(keys != null);
 
-                    keys.Add((key, entryId));
+                    keys.Add(new TaggedEntry(key, entryId));
                 }
 
                 SetEntry(key, value, tags, validFor, entryId);
@@ -149,7 +149,7 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             {
                 if (_taggedEntries.TryGetValue(tag, out var tagged))
                 {
-                    tagged.Remove((Key: (string)key, entryId));
+                    tagged.Remove(new TaggedEntry((string)key, entryId));
 
                     // Remove the collection if there is no more keys in it
                     if (tagged.Count == 0)
@@ -160,4 +160,6 @@ internal sealed class MemoryOutputCacheStore : IOutputCacheStore
             }
         }
     }
+
+    private record TaggedEntry(string Key, Guid EntryId);
 }
