@@ -210,7 +210,7 @@ public class MemoryOutputCacheStoreTests
 
         testClock.Advance(TimeSpan.FromMilliseconds(10));
 
-        // Background expiration checks are triggered by misc cache activity.
+        // Trigger background expiration by accessing the cache.
         _ = cache.Get("a");
 
         var resulta = await store.GetAsync("a", default);
