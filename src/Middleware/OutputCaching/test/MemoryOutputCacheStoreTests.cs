@@ -219,7 +219,7 @@ public class MemoryOutputCacheStoreTests
 
         HashSet<string> tag1s, tag2s;
 
-        // Wait for the hashset to be removed as it happens on a separate thread
+        // Wait for the tag2 HashSet to be removed by the background expiration thread.
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
 
