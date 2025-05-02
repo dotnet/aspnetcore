@@ -102,7 +102,7 @@ internal class ComponentsActivitySource
                 }
             }
 
-            activity.DisplayName = $"ROUTE {route ?? "unknown"} -> {componentType ?? "unknown"}";
+            activity.DisplayName = $"Route {route ?? "[unknown path]"} -> {componentType ?? "[unknown component]"}";
             activity.Start();
             _routeContext = activity.Context;
         }
