@@ -1,0 +1,35 @@
+# Regularly restore the prediction models from cache to prevent cache eviction
+name: "Labeler: Cache Retention"
+
+# For more information about GitHub's action cache limits and eviction policy, see:
+# https://docs.github.com/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows#usage-limits-and-eviction-policy
+
+on:
+  schedule:
+    - cron: "42 18 * * *" # 18:42 every day (arbitrary time daily)
+
+  workflow_dispatch:
+    inputs:
+      cache_key:
+        description: "The cache key suffix to use for restoring the model from cache. Defaults to 'ACTIVE'."
+        required: true
+        default: "ACTIVE"
+
+env:
+  CACHE_KEY: ${{ inputs.cache_key || 'ACTIVE' }}
+
+jobs:
+  restore-cache:
+    # Do not automatically run the workflow on forks outside the 'dotnet' org
+    if: ${{ github.event_name == 'workflow_dispatch' || github.repository_owner == 'dotnet' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        type: ["issues", "pulls"]
+    steps:
+      - uses: dotnet/issue-labeler/restore@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
+        with:
+          type: ${{ matrix.type }}
+          cache_key: ${{ env.CACHE_KEY }}
+          fail-on-cache-miss: true

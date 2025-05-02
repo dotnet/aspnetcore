@@ -1,0 +1,163 @@
+# Train the Issues and Pull Requests models for label prediction
+name: "Labeler: Training"
+
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: "Issues or Pull Requests"
+        type: choice
+        required: true
+        default: "Both"
+        options:
+          - "Both"
+          - "Issues"
+          - "Pull Requests"
+
+      steps:
+        description: "Training Steps"
+        type: choice
+        required: true
+        default: "All"
+        options:
+          - "All"
+          - "Download Data"
+          - "Train Model"
+          - "Test Model"
+
+      repository:
+        description: "The org/repo to download data from. Defaults to the current repository."
+      limit:
+        description: "Max number of items to download for training/testing the model (newest items are used). Defaults to the max number of pages times the page size."
+        type: number
+      page_size:
+        description: "Number of items per page in GitHub API requests. Defaults to 100 for issues, 25 for pull requests."
+        type: number
+      page_limit:
+        description: "Maximum number of pages to download for training/testing the model. Defaults to 1000 for issues, 4000 for pull requests."
+        type: number
+      cache_key_suffix:
+        description: "The cache key suffix to use for staged data/models (use 'ACTIVE' to bypass staging). Defaults to 'staged'."
+        required: true
+        default: "staged"
+
+env:
+  CACHE_KEY: ${{ inputs.cache_key_suffix }}
+  REPOSITORY: ${{ inputs.repository || github.repository }}
+  LABEL_PREFIX: "area-"
+  THRESHOLD: "0.40"
+  LIMIT: ${{ inputs.limit }}
+  PAGE_SIZE: ${{ inputs.page_size }}
+  PAGE_LIMIT: ${{ inputs.page_limit }}
+  EXCLUDED_AUTHORS: "" # Comma-separated list of authors to exclude from training data
+
+jobs:
+  download-issues:
+    if: ${{ contains(fromJSON('["Both", "Issues"]'), inputs.type) && contains(fromJSON('["All", "Download Data"]'), inputs.steps) }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+    steps:
+      - name: "Download Issues"
+        uses: dotnet/issue-labeler/download@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
+        with:
+          type: "issues"
+          cache_key: ${{ env.CACHE_KEY }}
+          repository: ${{ env.REPOSITORY }}
+          label_prefix: ${{ env.LABEL_PREFIX }}
+          limit: ${{ env.LIMIT }}
+          page_size: ${{ env.PAGE_SIZE }}
+          page_limit: ${{ env.PAGE_LIMIT }}
+          excluded_authors: ${{ env.EXCLUDED_AUTHORS }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  download-pulls:
+    if: ${{ contains(fromJSON('["Both", "Pull Requests"]'), inputs.type) && contains(fromJSON('["All", "Download Data"]'), inputs.steps) }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    steps:
+      - name: "Download Pull Requests"
+        uses: dotnet/issue-labeler/download@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
+        with:
+          type: "pulls"
+          cache_key: ${{ env.CACHE_KEY }}
+          repository: ${{ env.REPOSITORY }}
+          label_prefix: ${{ env.LABEL_PREFIX }}
+          limit: ${{ env.LIMIT }}
+          page_size: ${{ env.PAGE_SIZE }}
+          page_limit: ${{ env.PAGE_LIMIT }}
+          excluded_authors: ${{ env.EXCLUDED_AUTHORS }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  train-issues:
+    if: ${{ always() && contains(fromJSON('["Both", "Issues"]'), inputs.type) && contains(fromJSON('["All", "Train Model"]'), inputs.steps) && contains(fromJSON('["success", "skipped"]'), needs.download-issues.result) }}
+    runs-on: ubuntu-latest
+    permissions: {}
+    needs: download-issues
+    steps:
+      - name: "Train Model for Issues"
+        uses: dotnet/issue-labeler/train@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
+        with:
+          type: "issues"
+          data_cache_key: ${{ env.CACHE_KEY }}
+          model_cache_key: ${{ env.CACHE_KEY }}
+
+  train-pulls:
+    if: ${{ always() && contains(fromJSON('["Both", "Pull Requests"]'), inputs.type) && contains(fromJSON('["All", "Train Model"]'), inputs.steps) && contains(fromJSON('["success", "skipped"]'), needs.download-pulls.result) }}
+    runs-on: ubuntu-latest
+    permissions: {}
+    needs: download-pulls
+    steps:
+      - name: "Train Model for Pull Requests"
+        uses: dotnet/issue-labeler/train@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
+        with:
+          type: "pulls"
+          data_cache_key: ${{ env.CACHE_KEY }}
+          model_cache_key: ${{ env.CACHE_KEY }}
+
+  test-issues:
+    if: ${{ always() && contains(fromJSON('["Both", "Issues"]'), inputs.type) && contains(fromJSON('["All", "Test Model"]'), inputs.steps) && contains(fromJSON('["success", "skipped"]'), needs.train-issues.result) }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: read
+    needs: train-issues
+    steps:
+      - name: "Test Model for Issues"
+        uses: dotnet/issue-labeler/test@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
+        with:
+          type: "issues"
+          cache_key: ${{ env.CACHE_KEY }}
+          repository: ${{ env.REPOSITORY }}
+          label_prefix: ${{ env.LABEL_PREFIX }}
+          threshold: ${{ env.THRESHOLD }}
+          limit: ${{ env.LIMIT }}
+          page_size: ${{ env.PAGE_SIZE }}
+          page_limit: ${{ env.PAGE_LIMIT }}
+          excluded_authors: ${{ env.EXCLUDED_AUTHORS }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+  test-pulls:
+    if: ${{ always() && contains(fromJSON('["Both", "Pull Requests"]'), inputs.type) && contains(fromJSON('["All", "Test Model"]'), inputs.steps) && contains(fromJSON('["success", "skipped"]'), needs.train-pulls.result) }}
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+    needs: train-pulls
+    steps:
+      - name: "Test Model for Pull Requests"
+        uses: dotnet/issue-labeler/test@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
+        with:
+          type: "pulls"
+          cache_key: ${{ env.CACHE_KEY }}
+          repository: ${{ env.REPOSITORY }}
+          label_prefix: ${{ env.LABEL_PREFIX }}
+          threshold: ${{ env.THRESHOLD }}
+          limit: ${{ env.LIMIT }}
+          page_size: ${{ env.PAGE_SIZE }}
+          page_limit: ${{ env.PAGE_LIMIT }}
+          excluded_authors: ${{ env.EXCLUDED_AUTHORS }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}

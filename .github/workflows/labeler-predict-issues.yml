@@ -1,0 +1,57 @@
+# Predict labels for Issues using a trained model
+name: "Labeler: Predict (Issues)"
+
+on:
+  # Only automatically predict area labels when issues are first opened
+  issues:
+    types: opened
+
+  # Allow dispatching the workflow via the Actions UI, specifying ranges of numbers
+  workflow_dispatch:
+    inputs:
+      issues:
+        description: "Issue Numbers (comma-separated list of ranges)."
+        required: true
+      cache_key:
+        description: "The cache key suffix to use for restoring the model. Defaults to 'ACTIVE'."
+        required: true
+        default: "ACTIVE"
+
+env:
+  # Do not allow failure for jobs triggered automatically (as this causes red noise on the workflows list)
+  ALLOW_FAILURE: ${{ github.event_name == 'workflow_dispatch' }}
+
+  LABEL_PREFIX: "area-"
+  THRESHOLD: 0.40
+  DEFAULT_LABEL: "needs-area-label"
+  EXCLUDED_AUTHORS: "" # Comma-separated list of authors to exclude from training data
+
+jobs:
+  predict-issue-label:
+    # Do not automatically run the workflow on forks outside the 'dotnet' org
+    if: ${{ github.event_name == 'workflow_dispatch' || github.repository_owner == 'dotnet' }}
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: "Restore issues model from cache"
+        id: restore-model
+        uses: dotnet/issue-labeler/restore@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
+        with:
+          type: issues
+          fail-on-cache-miss: ${{ env.ALLOW_FAILURE }}
+          quiet: true
+
+      - name: "Predict issue labels"
+        id: prediction
+        if: ${{ steps.restore-model.outputs.cache-hit == 'true' }}
+        uses: dotnet/issue-labeler/predict@46125e85e6a568dc712f358c39f35317366f5eed # v2.0.0
+        with:
+          issues: ${{ inputs.issues || github.event.issue.number }}
+          label_prefix: ${{ env.LABEL_PREFIX }}
+          threshold: ${{ env.THRESHOLD }}
+          default_label: ${{ env.DEFAULT_LABEL }}
+          excluded_authors: ${{ env.EXCLUDED_AUTHORS }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        continue-on-error: ${{ !env.ALLOW_FAILURE }}
