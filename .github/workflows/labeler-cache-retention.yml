@@ -6,7 +6,7 @@ name: "Labeler: Cache Retention"
 
 on:
   schedule:
-    - cron: "42 18 * * *" # 18:42 every day (arbitrary time daily)
+    - cron: "32 16 * * *" # 16:32 every day (arbitrary time daily)
 
   workflow_dispatch:
     inputs:

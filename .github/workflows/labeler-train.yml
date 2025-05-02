@@ -25,8 +25,6 @@ on:
           - "Train Model"
           - "Test Model"
 
-      repository:
-        description: "The org/repo to download data from. Defaults to the current repository."
       limit:
         description: "Max number of items to download for training/testing the model (newest items are used). Defaults to the max number of pages times the page size."
         type: number
@@ -43,13 +41,12 @@ on:
 
 env:
   CACHE_KEY: ${{ inputs.cache_key_suffix }}
-  REPOSITORY: ${{ inputs.repository || github.repository }}
+  REPOSITORY: ${{ github.repository }}
   LABEL_PREFIX: "area-"
   THRESHOLD: "0.40"
   LIMIT: ${{ inputs.limit }}
   PAGE_SIZE: ${{ inputs.page_size }}
   PAGE_LIMIT: ${{ inputs.page_limit }}
-  EXCLUDED_AUTHORS: "" # Comma-separated list of authors to exclude from training data
 
 jobs:
   download-issues:
@@ -68,7 +65,6 @@ jobs:
           limit: ${{ env.LIMIT }}
           page_size: ${{ env.PAGE_SIZE }}
           page_limit: ${{ env.PAGE_LIMIT }}
-          excluded_authors: ${{ env.EXCLUDED_AUTHORS }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -88,7 +84,6 @@ jobs:
           limit: ${{ env.LIMIT }}
           page_size: ${{ env.PAGE_SIZE }}
           page_limit: ${{ env.PAGE_LIMIT }}
-          excluded_authors: ${{ env.EXCLUDED_AUTHORS }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -136,7 +131,6 @@ jobs:
           limit: ${{ env.LIMIT }}
           page_size: ${{ env.PAGE_SIZE }}
           page_limit: ${{ env.PAGE_LIMIT }}
-          excluded_authors: ${{ env.EXCLUDED_AUTHORS }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -158,6 +152,5 @@ jobs:
           limit: ${{ env.LIMIT }}
           page_size: ${{ env.PAGE_SIZE }}
           page_limit: ${{ env.PAGE_LIMIT }}
-          excluded_authors: ${{ env.EXCLUDED_AUTHORS }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
