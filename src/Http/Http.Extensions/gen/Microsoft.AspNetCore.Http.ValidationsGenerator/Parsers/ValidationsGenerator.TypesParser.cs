@@ -29,13 +29,14 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         List<ITypeSymbol> visitedTypes = [];
         foreach (var parameter in parameters)
         {
-            _ = TryExtractValidatableType(parameter.Type.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable)), wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            _ = TryExtractValidatableType(parameter.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes);
         }
         return [.. validatableTypes];
     }
 
-    internal bool TryExtractValidatableType(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
+    internal bool TryExtractValidatableType(ITypeSymbol incomingTypeSymbol, WellKnownTypes wellKnownTypes, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
     {
+        var typeSymbol = incomingTypeSymbol.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable));
         if (typeSymbol.SpecialType != SpecialType.None)
         {
             return false;
@@ -126,7 +127,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                         // Check if the property's type is validatable, this resolves
                         // validatable types in the inheritance hierarchy
                         var hasValidatableType = TryExtractValidatableType(
-                            correspondingProperty.Type.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable)),
+                            correspondingProperty.Type,
                             wellKnownTypes,
                             ref validatableTypes,
                             ref visitedTypes);
@@ -153,7 +154,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
-            var hasValidatableType = TryExtractValidatableType(member.Type.UnwrapType(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Collections_IEnumerable)), wellKnownTypes, ref validatableTypes, ref visitedTypes);
+            var hasValidatableType = TryExtractValidatableType(member.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes);
             var attributes = ExtractValidationAttributes(member, wellKnownTypes, out var isRequired);
 
             // If the member has no validation attributes or validatable types and is not required, skip it.

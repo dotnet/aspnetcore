@@ -39,7 +39,7 @@ public class ComplexTypeWithParsableProperties
     public TimeOnly? TimeOnlyWithRequiredValue { get; set; } = TimeOnly.FromDateTime(DateTime.UtcNow);
 
     [Url(ErrorMessage = "The field Url must be a valid URL.")]
-    public Uri? Url { get; set; } = new Uri("https://example.com");
+    public string? Url { get; set; } = "https://example.com";
 
     [Required]
     [Range(typeof(DateOnly), "2023-01-01", "2025-12-31", ErrorMessage = "Date must be between 2023-01-01 and 2025-12-31")]

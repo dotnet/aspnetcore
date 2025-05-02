@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
                     ),
                     new GeneratedValidatablePropertyInfo(
                         containingType: typeof(global::ComplexTypeWithParsableProperties),
-                        propertyType: typeof(global::System.Uri),
+                        propertyType: typeof(string),
                         name: "Url",
                         displayName: "Url"
                     ),
