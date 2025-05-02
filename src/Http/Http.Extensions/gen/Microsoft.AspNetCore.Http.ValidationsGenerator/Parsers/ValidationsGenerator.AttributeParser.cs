@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -20,8 +21,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     {
         var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
         List<ITypeSymbol> visitedTypes = [];
-        var requiredSymbols = ExtractRequiredSymbols(context.SemanticModel.Compilation, cancellationToken);
-        if (TryExtractValidatableType((ITypeSymbol)context.TargetSymbol, requiredSymbols, ref validatableTypes, ref visitedTypes))
+        var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
+        if (TryExtractValidatableType((ITypeSymbol)context.TargetSymbol, wellKnownTypes, ref validatableTypes, ref visitedTypes))
         {
             return [..validatableTypes];
         }
