@@ -146,7 +146,7 @@ internal class ComponentsActivitySource
                 }
             }
 
-            activity.DisplayName = $"EVENT {attributeName ?? "unknown"} -> {componentType ?? "unknown"}.{methodName ?? "unknown"}";
+            activity.DisplayName = $"Event {attributeName ?? "[unknown]"} -> {componentType ?? "[unknown]"}.{methodName ?? "[unknown]"}";
             activity.Start();
         }
         return activity;
