@@ -50,7 +50,7 @@ internal class ComponentsActivitySource
                     activity.AddLink(new ActivityLink(httpContext));
                 }
             }
-            activity.DisplayName = $"CIRCUIT {circuitId ?? ""}";
+            activity.DisplayName = $"Circuit {circuitId ?? ""}";
             activity.Start();
             _circuitContext = activity.Context;
         }
