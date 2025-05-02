@@ -64,7 +64,7 @@ internal sealed class ComponentsMetrics : IDisposable
             "aspnetcore.components.update_parameters.duration",
             unit: "s",
             description: "Duration of processing component parameters.",
-            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorParametersUpdateSecondsBucketBoundaries });
 
         _parametersException = _lifeCycleMeter.CreateCounter<long>(
             "aspnetcore.components.update_parameters.exceptions",
@@ -75,7 +75,7 @@ internal sealed class ComponentsMetrics : IDisposable
             "aspnetcore.components.rendering.batch.duration",
             unit: "s",
             description: "Duration of rendering batch.",
-            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorBatchDiffSecondsBucketBoundaries });
 
         _batchException = _lifeCycleMeter.CreateCounter<long>(
             "aspnetcore.components.rendering.batch.exceptions",
@@ -140,7 +140,7 @@ internal sealed class ComponentsMetrics : IDisposable
     {
         var tags = new TagList
         {
-            { "diff.length.bucket", BucketEditLength(diffLength) }
+            { "diff.approximate.length", BucketEditLength(diffLength) }
         };
 
         var duration = Stopwatch.GetElapsedTime(startTimestamp);

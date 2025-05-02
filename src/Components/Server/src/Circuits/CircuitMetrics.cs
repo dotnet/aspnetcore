@@ -42,7 +42,7 @@ internal sealed class CircuitMetrics : IDisposable
             "aspnetcore.components.circuits.duration",
             unit: "s",
             description: "Duration of circuit.",
-            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.VeryLongSecondsBucketBoundaries });
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorCircuitSecondsBucketBoundaries });
     }
 
     public void OnCircuitOpened()

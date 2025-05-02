@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Components;
 internal class ComponentsActivitySource
 {
     internal const string Name = "Microsoft.AspNetCore.Components";
-    internal const string OnCircuitName = $"{Name}.OnCircuit";
-    internal const string OnRouteName = $"{Name}.OnRoute";
-    internal const string OnEventName = $"{Name}.OnEvent";
+    internal const string OnCircuitName = $"{Name}.CircuitStart";
+    internal const string OnRouteName = $"{Name}.RouteChange";
+    internal const string OnEventName = $"{Name}.Event";
 
     private ActivityContext _httpContext;
     private ActivityContext _circuitContext;
@@ -146,7 +146,7 @@ internal class ComponentsActivitySource
                 }
             }
 
-            activity.DisplayName = $"Event {attributeName ?? "[unknown]"} -> {componentType ?? "[unknown]"}.{methodName ?? "[unknown]"}";
+            activity.DisplayName = $"Event {attributeName ?? "[unknown attribute]"} -> {componentType ?? "[unknown component]"}.{methodName ?? "[unknown method]"}";
             activity.Start();
         }
         return activity;

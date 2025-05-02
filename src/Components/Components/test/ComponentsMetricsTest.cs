@@ -94,7 +94,7 @@ public class ComponentsMetricsTest
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal(50, measurements[0].Tags["diff.length.bucket"]);
+        Assert.Equal(50, measurements[0].Tags["diff.approximate.length"]);
     }
 
     [Fact]
