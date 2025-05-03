@@ -46,8 +46,9 @@ internal static class ITypeSymbolExtensions
 
         if (type.NullableAnnotation == NullableAnnotation.Annotated)
         {
-            // Extract the underlying type from a reference type
-            type = type.OriginalDefinition;
+            // Remove the nullable annotation but keep any generic arguments, e.g. List<int>? → List<int>
+            // so we can retain them in future steps.
+            type = type.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
         }
 
         if (type is INamedTypeSymbol namedType && namedType.IsEnumerable(enumerable) && namedType.TypeArguments.Length == 1)
