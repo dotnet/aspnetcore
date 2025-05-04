@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// These errors are returned to controllers and are generally used as display messages to end users.
 /// </remarks>
-public class IdentityErrorDescriber
+public partial class IdentityErrorDescriber
 {
     /// <summary>
     /// Returns the default <see cref="IdentityError"/>.
