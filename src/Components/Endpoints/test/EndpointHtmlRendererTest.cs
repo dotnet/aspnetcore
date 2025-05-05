@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -34,6 +33,7 @@ public class EndpointHtmlRendererTest
 {
     private const string MarkerPrefix = "<!--Blazor:";
     private const string PrerenderedComponentPattern = "^<!--Blazor:(?<preamble>.*?)-->(?<content>.+?)<!--Blazor:(?<epilogue>.*?)-->$";
+    private const string WebAssemblyOptionsPattern = "^<!--Blazor-WebAssembly:(.*?)-->";
     private const string ComponentPattern = "^<!--Blazor:(.*?)-->$";
 
     private static readonly IDataProtectionProvider _dataprotectorProvider = new EphemeralDataProtectionProvider();
@@ -57,6 +57,7 @@ public class EndpointHtmlRendererTest
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveWebAssemblyRenderMode(prerender: false), ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -70,6 +71,78 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task CanPreload_WebAssembly_ResourceAssets()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var writer = new StringWriter();
+
+        httpContext.SetEndpoint(
+            new Endpoint(
+                ctx => Task.CompletedTask,
+                new EndpointMetadataCollection([
+                    new ResourcePreloadCollection(
+                        new ResourceAssetCollection([
+                            new ResourceAsset("second.js", [
+                                new ResourceAssetProperty("preloadrel", "preload"),
+                                new ResourceAssetProperty("preloadas", "script"),
+                                new ResourceAssetProperty("preloadpriority", "high"),
+                                new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
+                                new ResourceAssetProperty("integrity", "abcd"),
+                                new ResourceAssetProperty("preloadorder", "2"),
+                                new ResourceAssetProperty("preloadgroup", "webassembly")
+                            ]),
+                            new ResourceAsset("first.js", [
+                                new ResourceAssetProperty("preloadrel", "preload"),
+                                new ResourceAssetProperty("preloadas", "script"),
+                                new ResourceAssetProperty("preloadpriority", "high"),
+                                new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
+                                new ResourceAssetProperty("integrity", "abcd"),
+                                new ResourceAssetProperty("preloadorder", "1"),
+                                new ResourceAssetProperty("preloadgroup", "webassembly")
+                            ]),
+                            new ResourceAsset("preload-nowebassembly.js", [
+                                new ResourceAssetProperty("preloadrel", "preload"),
+                                new ResourceAssetProperty("preloadas", "script"),
+                                new ResourceAssetProperty("preloadpriority", "high"),
+                                new ResourceAssetProperty("preloadcrossorigin", "anonymous"),
+                                new ResourceAssetProperty("integrity", "abcd"),
+                                new ResourceAssetProperty("preloadorder", "1"),
+                                new ResourceAssetProperty("preloadgroup", "abcd")
+                            ]),
+                            new ResourceAsset("nopreload.js", [
+                                new ResourceAssetProperty("integrity", "abcd")
+                            ])
+                        ])
+                    )
+                ]),
+                "TestEndpoint"
+            )
+        );
+
+        // Act
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveWebAssemblyRenderMode(prerender: false), ParameterView.Empty);
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+
+        // Assert
+        Assert.Equal(2, httpContext.Response.Headers.Link.Count);
+
+        var firstPreloadLink = httpContext.Response.Headers.Link[0];
+        Assert.Contains("<first.js>", firstPreloadLink);
+        Assert.Contains("rel=preload", firstPreloadLink);
+        Assert.Contains("as=script", firstPreloadLink);
+        Assert.Contains("fetchpriority=high", firstPreloadLink);
+        Assert.Contains("integrity=\"abcd\"", firstPreloadLink);
+
+        var secondPreloadLink = httpContext.Response.Headers.Link[1];
+        Assert.Contains("<second.js>", secondPreloadLink);
+        Assert.Contains("rel=preload", secondPreloadLink);
+        Assert.Contains("as=script", secondPreloadLink);
+        Assert.Contains("fetchpriority=high", secondPreloadLink);
+        Assert.Contains("integrity=\"abcd\"", secondPreloadLink);
+    }
+
+    [Fact]
     public async Task CanPrerender_ParameterlessComponent_ClientMode()
     {
         // Arrange
@@ -80,6 +153,7 @@ public class EndpointHtmlRendererTest
         var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), RenderMode.InteractiveWebAssembly, ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -123,6 +197,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -160,6 +235,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, ComponentPattern);
 
         // Assert
@@ -195,6 +271,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -244,6 +321,7 @@ public class EndpointHtmlRendererTest
             }));
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
         var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
 
         // Assert
@@ -750,9 +828,12 @@ public class EndpointHtmlRendererTest
             exception.Message);
     }
 
-    [Fact]
-    public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted(bool expectException)
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException", isEnabled: expectException);
         // Arrange
         var ctx = new DefaultHttpContext();
         ctx.Request.Scheme = "http";
@@ -760,25 +841,49 @@ public class EndpointHtmlRendererTest
         ctx.Request.PathBase = "/base";
         ctx.Request.Path = "/path";
         ctx.Request.QueryString = new QueryString("?query=value");
+        ctx.Response.Body = new MemoryStream();
         var responseMock = new Mock<IHttpResponseFeature>();
         responseMock.Setup(r => r.HasStarted).Returns(true);
         ctx.Features.Set(responseMock.Object);
         var httpContext = GetHttpContext(ctx);
+        string redirectUri = "http://localhost/redirect";
 
         // Act
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
-            httpContext,
-            typeof(RedirectComponent),
-            null,
-            ParameterView.FromDictionary(new Dictionary<string, object>
-            {
-                { "RedirectUri", "http://localhost/redirect" }
-            })));
+        if (expectException)
+        {
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
+                httpContext,
+                typeof(RedirectComponent),
+                null,
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { "RedirectUri", redirectUri }
+                })));
 
-        Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
-                        "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
-                        "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
-            exception.Message);
+            Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
+                            "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                            "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
+                exception.Message);
+        }
+        else
+        {
+            await renderer.PrerenderComponentAsync(
+                httpContext,
+                typeof(RedirectComponent),
+                null,
+                ParameterView.FromDictionary(new Dictionary<string, object>
+                {
+                    { "RedirectUri", redirectUri }
+                }));
+            // read the custom element from the response body
+            httpContext.Response.Body.Position = 0;
+            var reader = new StreamReader(httpContext.Response.Body);
+            var output = await reader.ReadToEndAsync();
+
+            // Assert that the output contains expected navigation instructions.
+            var pattern = "^<blazor-ssr><template type=\"redirection\".*>.*<\\/template><blazor-ssr-end><\\/blazor-ssr-end><\\/blazor-ssr>$";
+            Assert.Matches(pattern, output);
+        }
     }
 
     [Fact]
@@ -1063,6 +1168,7 @@ public class EndpointHtmlRendererTest
         var lines = content.Replace("\r\n", "\n").Split('\n');
         var serverMarkerMatch = Regex.Match(lines[0], PrerenderedComponentPattern);
         var serverNonPrerenderedMarkerMatch = Regex.Match(lines[1], ComponentPattern);
+        lines[2] = AssertAndStripWebAssemblyOptions(lines[2]);
         var webAssemblyMarkerMatch = Regex.Match(lines[2], PrerenderedComponentPattern);
         var webAssemblyNonPrerenderedMarkerMatch = Regex.Match(lines[3], ComponentPattern);
 
@@ -1166,6 +1272,8 @@ public class EndpointHtmlRendererTest
         // Assert
         var numMarkers = Regex.Matches(content, MarkerPrefix).Count;
         Assert.Equal(2, numMarkers); // A start and an end marker
+
+        content = AssertAndStripWebAssemblyOptions(content);
 
         var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Singleline);
         Assert.True(match.Success);
@@ -1498,6 +1606,14 @@ public class EndpointHtmlRendererTest
         }
     }
 
+    private string AssertAndStripWebAssemblyOptions(string content)
+    {
+        var wasmOptionsMatch = Regex.Match(content, WebAssemblyOptionsPattern);
+        Assert.True(wasmOptionsMatch.Success);
+        content = content.Substring(wasmOptionsMatch.Groups[0].Length);
+        return content;
+    }
+
     private class NamedEventHandlerComponent : ComponentBase
     {
         [Parameter]
@@ -1681,6 +1797,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(null, ""));
         services.AddScoped<ResourceCollectionProvider>();
+        services.AddSingleton(new WebAssemblySettingsEmitter(new TestEnvironment(Environments.Development)));
         return services;
     }
 

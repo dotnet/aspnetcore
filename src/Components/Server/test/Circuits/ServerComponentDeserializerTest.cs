@@ -156,7 +156,7 @@ public class ServerComponentDeserializerTest
     public void DoesNotParseOutOfOrderMarkers()
     {
         // Arrange
-        var markers = SerializeMarkers(CreateMarkers(typeof(TestComponent), typeof(TestComponent)).Reverse().ToArray());
+        var markers = SerializeMarkers(Enumerable.Reverse(CreateMarkers(typeof(TestComponent), typeof(TestComponent))).ToArray());
         var serverComponentDeserializer = CreateServerComponentDeserializer();
 
         // Act & assert
@@ -436,7 +436,7 @@ public class ServerComponentDeserializerTest
         return new ServerComponentDeserializer(
             _ephemeralDataProtectionProvider,
             NullLogger<ServerComponentDeserializer>.Instance,
-            new RootComponentTypeCache(),
+            new RootTypeCache(),
             new ComponentParameterDeserializer(NullLogger<ComponentParameterDeserializer>.Instance, new ComponentParametersTypeCache()));
     }
 

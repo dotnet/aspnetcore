@@ -20,6 +20,7 @@ run_build=true
 run_pack=false
 run_publish=false
 run_tests=false
+run_sign=false
 build_all=false
 build_deps=true
 only_build_repo_tasks=false
@@ -64,6 +65,7 @@ Options:
     --[no-]pack                       Produce packages.
     --[no-]test                       Run tests.
     --[no-]publish                    Run publish.
+    --[no-]sign                       Run code signing.
 
     --projects                        A list of projects to build. (Must be an absolute path.)
                                       Globbing patterns are supported, such as \"$(pwd)/**/*.csproj\".
@@ -166,6 +168,12 @@ while [[ $# -gt 0 ]]; do
         -no-test|-notest)
             run_tests=false
             ;;
+        -sign)
+            run_sign=true
+            ;;
+        -no-sign|-nosign)
+            run_sign=false
+            ;;
         -projects)
             shift
             build_projects="${1:-}"
@@ -224,6 +232,11 @@ while [[ $# -gt 0 ]]; do
         -excludeCIBinarylog|-nobl)
             exclude_ci_binary_log=true
             ;;
+        -verbosity|-v)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --verbosity" && __usage
+            verbosity="${1:-}"
+            ;;
         -dotnet-runtime-source-feed|-dotnetruntimesourcefeed|-runtime-source-feed|-runtimesourcefeed)
             shift
             [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed" && __usage
@@ -240,6 +253,12 @@ while [[ $# -gt 0 ]]; do
     esac
     shift
 done
+
+commandline_args=()
+
+if [ ${#msbuild_args[@]} -gt 0 ]; then
+    commandline_args=("${msbuild_args[@]}")
+fi
 
 if [ "$build_all" = true ]; then
     msbuild_args[${#msbuild_args[*]}]="-p:BuildAllProjects=true"
@@ -297,6 +316,7 @@ fi
 msbuild_args[${#msbuild_args[*]}]="-p:Pack=$run_pack"
 msbuild_args[${#msbuild_args[*]}]="-p:Publish=$run_publish"
 msbuild_args[${#msbuild_args[*]}]="-p:Test=$run_tests"
+msbuild_args[${#msbuild_args[*]}]="-p:Sign=$run_sign"
 
 msbuild_args[${#msbuild_args[*]}]="-p:TargetArchitecture=$target_arch"
 msbuild_args[${#msbuild_args[*]}]="-p:TargetOsName=$target_os_name"
@@ -378,6 +398,10 @@ restore=true
 InitializeToolset
 
 restore=$_tmp_restore=
+
+if [ ${#commandline_args[@]} -gt 0 ]; then
+  toolset_build_args+=("${commandline_args[@]}")
+fi
 
 if [ "$build_repo_tasks" = true ]; then
     MSBuild $_InitializeToolset \

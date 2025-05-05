@@ -1,4 +1,20 @@
 #nullable enable
-*REMOVED*static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.ApplyHotReloadDelta(string! moduleIdString, byte[]! metadataDelta, byte[]! ilDelta, byte[]! pdbBytes) -> void
-static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.ApplyHotReloadDelta(string! moduleIdString, byte[]! metadataDelta, byte[]! ilDelta, byte[]! pdbBytes, int[]? updatedTypes) -> void
-static Microsoft.AspNetCore.Components.WebAssembly.Http.WebAssemblyHttpRequestMessageExtensions.SetBrowserRequestStreamingEnabled(this System.Net.Http.HttpRequestMessage! requestMessage, bool streamingEnabled) -> System.Net.Http.HttpRequestMessage!
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.Delta() -> void
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.ILDelta.get -> byte[]!
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.ILDelta.init -> void
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.MetadataDelta.get -> byte[]!
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.MetadataDelta.init -> void
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.ModuleId.get -> string!
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.ModuleId.init -> void
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.PdbDelta.get -> byte[]!
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.PdbDelta.init -> void
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.UpdatedTypes.get -> int[]!
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.UpdatedTypes.init -> void
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.LogEntry() -> void
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.Message.get -> string!
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.Message.init -> void
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.Severity.get -> int
+Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry.Severity.init -> void
+static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.ApplyHotReloadDeltas(Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta[]! deltas, int loggingLevel) -> Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.LogEntry[]!

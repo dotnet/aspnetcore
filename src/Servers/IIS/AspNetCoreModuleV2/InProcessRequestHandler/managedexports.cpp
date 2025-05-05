@@ -114,8 +114,8 @@ http_get_server_variable(
     _Out_ BSTR* pwszReturn
 )
 {
-    PCWSTR pszVariableValue;
-    DWORD cbLength;
+    PCWSTR pszVariableValue = nullptr;
+    DWORD cbLength = 0;
 
     *pwszReturn = nullptr;
 
@@ -516,7 +516,13 @@ http_get_authentication_information(
 )
 {
     *pstrAuthType = SysAllocString(pInProcessHandler->QueryHttpContext()->GetUser()->GetAuthenticationType());
+    // prefer GetPrimaryToken over GetImpersonationToken as that's what we've been using since before .NET 10
+    // we'll fallback to GetImpersonationToken if GetPrimaryToken is not available
     *pvToken = pInProcessHandler->QueryHttpContext()->GetUser()->GetPrimaryToken();
+    if (*pvToken == nullptr)
+    {
+        *pvToken = pInProcessHandler->QueryHttpContext()->GetUser()->GetImpersonationToken();
+    }
 
     return S_OK;
 }

@@ -528,8 +528,8 @@ HASH_TABLE<_Record,_Key>::DeleteIf(
     PVOID                       pvContext
 )
 {
-    HASH_NODE<_Record> *pNode;
-    HASH_NODE<_Record> **ppPreviousNodeNextPointer;
+    HASH_NODE<_Record> *pNode = nullptr;
+    HASH_NODE<_Record> **ppPreviousNodeNextPointer = nullptr;
 
     _tableLock.ExclusiveAcquire();
 
@@ -568,7 +568,7 @@ HASH_TABLE<_Record,_Key>::Apply(
     PVOID                       pvContext
 )
 {
-    HASH_NODE<_Record> *pNode;
+    HASH_NODE<_Record> *pNode = nullptr;
 
     _tableLock.SharedAcquire();
 
@@ -595,13 +595,13 @@ HASH_TABLE<_Record,_Key>::RehashTableIfNeeded(
     VOID
 )
 {
-    HASH_NODE<_Record> **ppBuckets;
-    DWORD nBuckets;
-    HASH_NODE<_Record> *pNode;
-    HASH_NODE<_Record> *pNextNode;
-    HASH_NODE<_Record> **ppNextPointer;
-    HASH_NODE<_Record> *pNewNextNode;
-    DWORD               nNewBuckets;
+    HASH_NODE<_Record> **ppBuckets = nullptr;
+    DWORD nBuckets = 0;
+    HASH_NODE<_Record> *pNode = nullptr;
+    HASH_NODE<_Record> *pNextNode = nullptr;
+    HASH_NODE<_Record> **ppNextPointer = nullptr;
+    HASH_NODE<_Record> *pNewNextNode = nullptr;
+    DWORD               nNewBuckets = 0;
 
     //
     // If number of items has become too many, we will double the hash table

@@ -43,7 +43,6 @@ public partial class BootResourceCachingTest
         Navigate("/");
         WaitUntilLoaded();
         var initialResourcesRequested = GetAndClearRequestedPaths();
-        Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json", StringComparison.Ordinal)));
         Assert.NotEmpty(initialResourcesRequested.Where(path =>
             path.Contains("/dotnet.native.", StringComparison.Ordinal) &&
             path.EndsWith(".wasm", StringComparison.Ordinal)));
@@ -52,14 +51,11 @@ public partial class BootResourceCachingTest
             !path.Contains("/dotnet.native.", StringComparison.Ordinal) &&
             path.EndsWith(".wasm", StringComparison.Ordinal)));
 
-        // On subsequent loads, we skip the items referenced from blazor.boot.json
-        // which includes .wasm (original .dll) files and dotnet.native.[fingerprint].wasm
         Navigate("about:blank");
         Browser.Equal(string.Empty, () => Browser.Title);
         Navigate("/");
         WaitUntilLoaded();
         var subsequentResourcesRequested = GetAndClearRequestedPaths();
-        Assert.NotEmpty(initialResourcesRequested.Where(path => path.EndsWith("/blazor.boot.json", StringComparison.Ordinal)));
         Assert.DoesNotContain(subsequentResourcesRequested, path =>
             path.Contains("/dotnet.native.", StringComparison.Ordinal) &&
             path.EndsWith(".wasm", StringComparison.Ordinal));
@@ -117,16 +113,16 @@ public partial class BootResourceCachingTest
     }
 
     [GeneratedRegex("/Microsoft\\.AspNetCore\\.Components\\.\\w*\\.wasm")]
-    private static partial Regex GetFingerprintedComponentsEntryRegex();
+    private static partial Regex GetFingerprintedComponentsEntryRegex { get; }
 
     [GeneratedRegex("/dotnet\\.native\\.\\w*\\.wasm")]
-    private static partial Regex GetFingerprintedDotNetWasmEntryRegex();
+    private static partial Regex GetFingerprintedDotNetWasmEntryRegex { get; }
 
     private static bool IsFingerprintedComponentsEntry(string url)
-        => GetFingerprintedComponentsEntryRegex().IsMatch(url);
+        => GetFingerprintedComponentsEntryRegex.IsMatch(url);
 
     private static bool IsFingerprintedDotNetWasmEntry(string url)
-        => GetFingerprintedDotNetWasmEntryRegex().IsMatch(url);
+        => GetFingerprintedDotNetWasmEntryRegex.IsMatch(url);
 
     private IReadOnlyCollection<string> GetCacheEntryUrls()
     {

@@ -52,7 +52,7 @@ export interface IBlazor {
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile;
     NavigationLock: typeof NavigationLock;
-    invokeJSJson?: (identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number) => string | null;
+    invokeJSJson?: (identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number, callType: number) => string | null;
     endInvokeDotNetFromJS?: (callId: string, success: boolean, resultJsonOrErrorMessage: string) => void;
     receiveByteArray?: (id: number, data: Uint8Array) => void;
     getPersistedState?: () => string;
@@ -89,7 +89,11 @@ export interface IBlazor {
     }
 
     // APIs invoked by hot reload
+
+    // obsolete:
     applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined, updatedTypes?: number[]) => void;
+
+    applyHotReloadDeltas?: (deltas: { moduleId: string, metadataDelta: string, ilDelta: string, pdbDelta: string, updatedTypes: number[] }[], loggingLevel: number) => {message: string, severity: number}[];
     getApplyUpdateCapabilities?: () => string;
     hotReloadApplied?: () => void;
   }

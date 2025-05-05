@@ -51,7 +51,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
     // Once write or flush is called, we modify the _currentChunkMemory to prepend the size of data written
     // and append the end terminator.
 
-    private bool _autoChunk;
+    private ResponseBodyMode _responseBodyMode;
 
     private bool _writeStreamSuffixCalled;
 
@@ -121,7 +121,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         {
             if (!_writeStreamSuffixCalled)
             {
-                if (_autoChunk)
+                if (_responseBodyMode == ResponseBodyMode.Chunked)
                 {
                     var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                     result = WriteAsyncInternal(ref writer, EndChunkedResponseBytes);
@@ -147,7 +147,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
                 return new ValueTask<FlushResult>(new FlushResult(false, true));
             }
 
-            if (_autoChunk)
+            if (_responseBodyMode == ResponseBodyMode.Chunked)
             {
                 if (_advancedBytesForChunk > 0)
                 {
@@ -173,7 +173,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             // Local function so in the common-path the stack space for BufferWriter isn't reserved and cleared when it isn't used.
 
             Debug.Assert(!producer._pipeWriterCompleted);
-            Debug.Assert(producer._autoChunk && producer._advancedBytesForChunk > 0);
+            Debug.Assert(producer._responseBodyMode == ResponseBodyMode.Chunked && producer._advancedBytesForChunk > 0);
 
             var writer = new BufferWriter<PipeWriter>(producer._pipeWriter);
             producer.WriteCurrentChunkMemoryToPipeWriter(ref writer);
@@ -203,7 +203,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             {
                 return LeasedMemory(sizeHint);
             }
-            else if (_autoChunk)
+            else if (_responseBodyMode == ResponseBodyMode.Chunked)
             {
                 return GetChunkedMemory(sizeHint);
             }
@@ -228,7 +228,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             {
                 return LeasedMemory(sizeHint).Span;
             }
-            else if (_autoChunk)
+            else if (_responseBodyMode == ResponseBodyMode.Chunked)
             {
                 return GetChunkedMemory(sizeHint).Span;
             }
@@ -262,7 +262,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
                     _position += bytes;
                 }
             }
-            else if (_autoChunk)
+            else if (_responseBodyMode == ResponseBodyMode.Chunked)
             {
                 if (_advancedBytesForChunk > _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - bytes)
                 {
@@ -333,7 +333,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         writer.Commit();
     }
 
-    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appComplete)
+    public void WriteResponseHeaders(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, bool appComplete)
     {
         lock (_contextLock)
         {
@@ -346,11 +346,11 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
             var buffer = _pipeWriter;
             var writer = new BufferWriter<PipeWriter>(buffer);
-            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
+            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, responseBodyMode);
         }
     }
 
-    private void WriteResponseHeadersInternal(ref BufferWriter<PipeWriter> writer, int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
+    private void WriteResponseHeadersInternal(ref BufferWriter<PipeWriter> writer, int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode)
     {
         writer.Write(HttpVersion11Bytes);
         var statusBytes = ReasonPhrases.ToStatusBytes(statusCode, reasonPhrase);
@@ -360,7 +360,8 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
         writer.Commit();
 
-        _autoChunk = autoChunk;
+        Debug.Assert(responseBodyMode != ResponseBodyMode.Uninitialized);
+        _responseBodyMode = responseBodyMode;
         WriteDataWrittenBeforeHeaders(ref writer);
         _unflushedBytes += writer.BytesCommitted;
 
@@ -373,11 +374,11 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         {
             foreach (var segment in _completedSegments)
             {
-                if (_autoChunk)
+                if (_responseBodyMode == ResponseBodyMode.Chunked)
                 {
                     CommitChunkInternal(ref writer, segment.Span);
                 }
-                else
+                else if (_responseBodyMode == ResponseBodyMode.ContentLength)
                 {
                     writer.Write(segment.Span);
                     writer.Commit();
@@ -391,16 +392,19 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
 
         if (!_currentSegment.IsEmpty)
         {
-            var segment = _currentSegment.Slice(0, _position);
+            if (_responseBodyMode != ResponseBodyMode.Disabled)
+            {
+                var segment = _currentSegment.Slice(0, _position);
 
-            if (_autoChunk)
-            {
-                CommitChunkInternal(ref writer, segment.Span);
-            }
-            else
-            {
-                writer.Write(segment.Span);
-                writer.Commit();
+                if (_responseBodyMode == ResponseBodyMode.Chunked)
+                {
+                    CommitChunkInternal(ref writer, segment.Span);
+                }
+                else if (_responseBodyMode == ResponseBodyMode.ContentLength)
+                {
+                    writer.Write(segment.Span);
+                    writer.Commit();
+                }
             }
 
             _position = 0;
@@ -491,7 +495,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         return WriteAsync(ContinueBytes);
     }
 
-    public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
+    public ValueTask<FlushResult> FirstWriteAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
     {
         lock (_contextLock)
         {
@@ -505,13 +509,13 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             // Uses same BufferWriter to write response headers and response
             var writer = new BufferWriter<PipeWriter>(_pipeWriter);
 
-            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
+            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, responseBodyMode);
 
             return WriteAsyncInternal(ref writer, buffer, cancellationToken);
         }
     }
 
-    public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
+    public ValueTask<FlushResult> FirstWriteChunkedAsync(int statusCode, string? reasonPhrase, HttpResponseHeaders responseHeaders, ResponseBodyMode responseBodyMode, ReadOnlySpan<byte> buffer, CancellationToken cancellationToken)
     {
         lock (_contextLock)
         {
@@ -525,7 +529,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
             // Uses same BufferWriter to write response headers and chunk
             var writer = new BufferWriter<PipeWriter>(_pipeWriter);
 
-            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, autoChunk);
+            WriteResponseHeadersInternal(ref writer, statusCode, reasonPhrase, responseHeaders, responseBodyMode);
 
             CommitChunkInternal(ref writer, buffer);
 
@@ -541,7 +545,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         Debug.Assert(_completedSegments == null || _completedSegments.Count == 0);
         // Cleared in sequential address ascending order
         _currentMemoryPrefixBytes = 0;
-        _autoChunk = false;
+        _responseBodyMode = ResponseBodyMode.Uninitialized;
         _writeStreamSuffixCalled = false;
         _currentChunkMemoryUpdated = false;
         _startCalled = false;
@@ -570,7 +574,7 @@ internal class Http1OutputProducer : IHttpOutputProducer, IDisposable
         ReadOnlySpan<byte> buffer,
         CancellationToken cancellationToken = default)
     {
-        if (_autoChunk)
+        if (_responseBodyMode == ResponseBodyMode.Chunked)
         {
             if (_advancedBytesForChunk > 0)
             {

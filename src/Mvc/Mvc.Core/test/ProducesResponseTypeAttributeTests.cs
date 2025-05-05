@@ -67,6 +67,29 @@ public class ProducesResponseTypeAttributeTests
         Assert.Null(producesResponseTypeAttribute.ContentTypes);
     }
 
+    [Fact]
+    public void ProducesResponseTypeAttribute_SetsDescription()
+    {
+        // Arrange
+        var producesResponseTypeAttribute = new ProducesResponseTypeAttribute(typeof(Person), StatusCodes.Status200OK)
+        {
+            Description = "Example"
+        };
+
+        // Act and Assert
+        Assert.Equal("Example", producesResponseTypeAttribute.Description);
+    }
+
+    [Fact]
+    public void ProducesResponseTypeAttribute_WithTypeOnly_DoesNotSetDescription()
+    {
+        // Arrange
+        var producesResponseTypeAttribute = new ProducesResponseTypeAttribute(typeof(Person), StatusCodes.Status200OK);
+
+        // Act and Assert
+        Assert.Null(producesResponseTypeAttribute.Description);
+    }
+
     private class Person
     {
         public int Id { get; set; }

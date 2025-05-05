@@ -231,7 +231,7 @@ public class HeaderUtilitiesTest
     {
         var actual = HeaderUtilities.RemoveQuotes(input);
 
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.AsSpan(), actual);
     }
     [Theory]
     [InlineData("\"hello\"", true)]
@@ -258,7 +258,7 @@ public class HeaderUtilitiesTest
     {
         var actual = HeaderUtilities.UnescapeAsQuotedString(input);
 
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.AsSpan(), actual);
     }
 
     [Theory]
@@ -275,7 +275,7 @@ public class HeaderUtilitiesTest
     {
         var actual = HeaderUtilities.EscapeAsQuotedString(input);
 
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.AsSpan(), actual);
     }
 
     [Theory]

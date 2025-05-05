@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.AspNetCore.InternalTesting;
 
@@ -496,6 +497,42 @@ public class DotNetDispatcherTest
         Assert.Equal("\"hello world\"", resultJson);
     }
 
+    
+    [Fact]
+    public void CanInvokeMethodsWithMultipleIdentifiers() {
+        var jsRuntime = new TestJSRuntime();
+        var targetInstance = new MultipleJSInvokableAttributes();
+        jsRuntime.Invoke<object>("_setup",
+            DotNetObjectReference.Create(targetInstance));
+        var argsJson = "[\"hello Alias\"]";
+
+        // Act
+        var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "MultipleJSInvokableAttributesInstance", 1, default), argsJson);
+        var resultJson2 = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "Alias", 1, default), argsJson);
+
+        // Assert
+        Assert.Equal("\"hello Alias\"", resultJson);
+        Assert.Equal("\"hello Alias\"", resultJson2);
+    }
+    [Fact]
+    public void CanInvokeMethodsWithMultipleIdentifiers_Static()
+    {
+        // Arrange/Act
+        var jsRuntime = new TestJSRuntime();
+        var resultJson = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticNonVoidAlias1", default, default), null);
+        var result = JsonSerializer.Deserialize<TestDTO>(resultJson, jsRuntime.JsonSerializerOptions);
+
+        var resultJson2 = DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(thisAssemblyName, "InvocableStaticNonVoidAlias2", default, default), null);
+        var result2 = JsonSerializer.Deserialize<TestDTO>(resultJson2, jsRuntime.JsonSerializerOptions);
+
+        // Assert
+        Assert.Equal("Test", result.StringVal);
+        Assert.Equal(456, result.IntVal);
+
+        Assert.Equal("Test", result2.StringVal);
+        Assert.Equal(456, result2.IntVal);
+    }
+
     [Fact]
     public void CannotInvokeStaticOpenGenericMethods()
     {
@@ -874,6 +911,10 @@ public class DotNetDispatcherTest
         public static object MyInvocableNonVoid()
             => new TestDTO { StringVal = "Test", IntVal = 123 };
 
+        [JSInvokable("InvocableStaticNonVoidAlias1"), JSInvokable("InvocableStaticNonVoidAlias2")]
+        public static object MyInvocableNonVoidWithAlias()
+            => new TestDTO { StringVal = "Test", IntVal = 456 };
+
         [JSInvokable("InvocableStaticWithParams")]
         public static object[] MyInvocableWithParams(TestDTO dtoViaJson, int[] incrementAmounts, DotNetObjectReference<TestDTO> dtoByRef)
             => new object[]
@@ -1017,12 +1058,17 @@ public class DotNetDispatcherTest
         [JSInvokable] public TValue EchoParameter(TValue input) => input;
     }
 
+    public class MultipleJSInvokableAttributes
+    {
+        [JSInvokable, JSInvokable("Alias")] public string MultipleJSInvokableAttributesInstance(string input) => input;
+    }
+
     public class GenericMethodClass
     {
         [JSInvokable("StaticGenericMethod")] public static string StaticGenericMethod<TValue>(TValue input) => input.ToString();
         [JSInvokable("InstanceGenericMethod")] public string GenericMethod<TValue>(TValue input) => input.ToString();
     }
-
+   
     public class TestJSRuntime : JSInProcessRuntime
     {
         private TaskCompletionSource _nextInvocationTcs = new TaskCompletionSource();
@@ -1034,23 +1080,33 @@ public class DotNetDispatcherTest
         public string LastCompletionCallId { get; private set; }
         public DotNetInvocationResult LastCompletionResult { get; private set; }
 
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
-            LastInvocationAsyncHandle = asyncHandle;
-            LastInvocationIdentifier = identifier;
-            LastInvocationArgsJson = argsJson;
+            LastInvocationAsyncHandle = invocationInfo.AsyncHandle;
+            LastInvocationIdentifier = invocationInfo.Identifier;
+            LastInvocationArgsJson = invocationInfo.ArgsJson;
             _nextInvocationTcs.SetResult();
             _nextInvocationTcs = new TaskCompletionSource();
         }
 
-        protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override string InvokeJS(in JSInvocationInfo invocationInfo)
         {
             LastInvocationAsyncHandle = default;
-            LastInvocationIdentifier = identifier;
-            LastInvocationArgsJson = argsJson;
+            LastInvocationIdentifier = invocationInfo.Identifier;
+            LastInvocationArgsJson = invocationInfo.ArgsJson;
             _nextInvocationTcs.SetResult();
             _nextInvocationTcs = new TaskCompletionSource();
             return null;
+        }
+
+        protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
         }
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)

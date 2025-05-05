@@ -102,13 +102,14 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
         {
             _options.AddSchemaTransformer((schema, context, token) =>
             {
+                schema.Extensions ??= [];
                 if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription != null)
                 {
-                    schema.Extensions["x-my-extension"] = new OpenApiString(context.ParameterDescription.Name);
+                    schema.Extensions["x-my-extension"] = new OpenApiAny(context.ParameterDescription.Name);
                 }
                 else
                 {
-                    schema.Extensions["x-my-extension"] = new OpenApiString("response");
+                    schema.Extensions["x-my-extension"] = new OpenApiAny("response");
                 }
                 return Task.CompletedTask;
             });
@@ -175,13 +176,14 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
+            schema.Extensions ??= [];
             if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription != null)
             {
-                schema.Extensions["x-my-extension"] = new OpenApiString(context.ParameterDescription.Name);
+                schema.Extensions["x-my-extension"] = new OpenApiAny(context.ParameterDescription.Name);
             }
             else
             {
-                schema.Extensions["x-my-extension"] = new OpenApiString("response");
+                schema.Extensions["x-my-extension"] = new OpenApiAny("response");
             }
             return Task.CompletedTask;
         }

@@ -400,6 +400,68 @@ public class RequestTests : LoggedTest
     }
 
     [Fact]
+    public async Task IncompleteRequestBodyDoesNotLogAsApplicationError()
+    {
+        var appErrorLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var badRequestLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var connectionStoppedLogged = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        const int badRequestEventId = 17;
+        const int appErrorEventId = 13;
+        const int connectionStopEventId = 2;
+
+        // Listen for the expected log message
+        TestSink.MessageLogged += context =>
+        {
+            if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.BadRequests"
+                && context.EventId == badRequestEventId
+                && context.LogLevel == LogLevel.Debug)
+            {
+                badRequestLogged.TrySetResult();
+            }
+            else if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel"
+                    && context.EventId.Id == appErrorEventId
+                    && context.LogLevel > LogLevel.Debug)
+            {
+                appErrorLogged.TrySetResult();
+            }
+            else if (context.LoggerName == "Microsoft.AspNetCore.Server.Kestrel.Connections"
+                    && context.EventId == connectionStopEventId)
+            {
+                connectionStoppedLogged.TrySetResult();
+            }
+        };
+
+        await using var server = new TestServer(async context =>
+        {
+            var buffer = new byte[1024];
+
+            // Attempt to read more of the body than will show up.
+            await context.Request.Body.ReadAsync(buffer, 0, buffer.Length);
+        }, new TestServiceContext(LoggerFactory));
+
+        using (var connection = server.CreateConnection())
+        {
+            await connection.Send(
+                "POST / HTTP/1.1",
+                "Host:",
+                "Connection: keep-alive",
+                "Content-Type: application/json",
+                "Content-Length: 100",  // Declare a larger body than will be sent
+                "",
+                "");
+        }
+
+        await connectionStoppedLogged.Task.DefaultTimeout();
+
+        // Bad request log message should have fired.
+        await badRequestLogged.Task.DefaultTimeout();
+
+        // App error log message should not have fired.
+        Assert.False(appErrorLogged.Task.IsCompleted);
+    }
+
+    [Fact]
     public async Task ConnectionResetBetweenRequestsIsLoggedAsDebug()
     {
         var connectionReset = new SemaphoreSlim(0);

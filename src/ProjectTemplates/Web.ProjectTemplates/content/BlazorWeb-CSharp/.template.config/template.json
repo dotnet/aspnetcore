@@ -66,6 +66,7 @@
           "rename": {
             "BlazorWeb-CSharp/Components/Layout/": "./BlazorWeb-CSharp.Client/Layout/",
             "BlazorWeb-CSharp/Components/Pages/Home.razor": "./BlazorWeb-CSharp.Client/Pages/Home.razor",
+            "BlazorWeb-CSharp/Components/Pages/NotFound.razor": "./BlazorWeb-CSharp.Client/Pages/NotFound.razor",
             "BlazorWeb-CSharp/Components/Pages/Weather.razor": "./BlazorWeb-CSharp.Client/Pages/Weather.razor",
             "BlazorWeb-CSharp/Components/Routes.razor": "./BlazorWeb-CSharp.Client/Routes.razor"
           }
@@ -91,6 +92,17 @@
           "condition": "(!(UseServer && !UseWebAssembly))",
           "exclude": [
             "BlazorWeb-CSharp/Components/Pages/Counter.razor"
+          ]
+        },
+        {
+          "condition": "(!UseServer)",
+          "exclude": [
+            "BlazorWeb-CSharp/Components/Layout/ReconnectModal.razor",
+            "BlazorWeb-CSharp/Components/Layout/ReconnectModal.razor.css",
+            "BlazorWeb-CSharp/Components/Layout/ReconnectModal.razor.js",
+            "BlazorWeb-CSharp.Client/Layout/ReconnectModal.razor",
+            "BlazorWeb-CSharp.Client/Layout/ReconnectModal.razor.css",
+            "BlazorWeb-CSharp.Client/Layout/ReconnectModal.razor.js"
           ]
         },
         {
@@ -344,7 +356,7 @@
       "type": "parameter",
       "datatype": "choice",
       "defaultValue": "InteractivePerPage",
-      "displayName": "_Interactivity location",
+      "displayName": "Interactivity _location",
       "description": "Chooses which components will have interactive rendering enabled",
       "isEnabled": "(InteractivityPlatform != \"None\")",
       "choices": [
@@ -372,7 +384,7 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "true",
-      "displayName": "_Include sample pages",
+      "displayName": "Include _sample pages",
       "description": "Configures whether to add sample pages and styling to demonstrate basic usage patterns."
     },
     "Empty": {

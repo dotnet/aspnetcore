@@ -1,25 +1,10 @@
-#nullable enable
-Microsoft.AspNetCore.Http.HttpResults.InternalServerError
-Microsoft.AspNetCore.Http.HttpResults.InternalServerError.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Http.HttpResults.InternalServerError.StatusCode.get -> int
-Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>
-Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.StatusCode.get -> int
-Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>.Value.get -> TValue?
+Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>
+Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>.ExecuteAsync(Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>.StatusCode.get -> int?
 static Microsoft.AspNetCore.Http.HttpResults.RedirectHttpResult.IsLocalUrl(string? url) -> bool
-static Microsoft.AspNetCore.Http.Results.InternalServerError() -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
-*REMOVED*static Microsoft.AspNetCore.Http.Results.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.Problem(string? detail, string? instance, int? statusCode, string? title, string? type, System.Collections.Generic.IDictionary<string!, object?>? extensions) -> Microsoft.AspNetCore.Http.IResult!
-*REMOVED*static Microsoft.AspNetCore.Http.Results.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail, string? instance, int? statusCode, string? title, string? type, System.Collections.Generic.IDictionary<string!, object?>? extensions) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.Results.ValidationProblem(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors, string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? extensions = null) -> Microsoft.AspNetCore.Http.IResult!
-static Microsoft.AspNetCore.Http.TypedResults.InternalServerError() -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError!
-static Microsoft.AspNetCore.Http.TypedResults.InternalServerError<TValue>(TValue? error) -> Microsoft.AspNetCore.Http.HttpResults.InternalServerError<TValue>!
-static Microsoft.AspNetCore.Http.TypedResults.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult!
-*REMOVED*static Microsoft.AspNetCore.Http.TypedResults.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult!
-static Microsoft.AspNetCore.Http.TypedResults.Problem(string? detail, string? instance, int? statusCode, string? title, string? type, System.Collections.Generic.IDictionary<string!, object?>? extensions) -> Microsoft.AspNetCore.Http.HttpResults.ProblemHttpResult!
-*REMOVED*static Microsoft.AspNetCore.Http.TypedResults.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail = null, string? instance = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.ValidationProblem!
-static Microsoft.AspNetCore.Http.TypedResults.ValidationProblem(System.Collections.Generic.IDictionary<string!, string![]!>! errors, string? detail, string? instance, string? title, string? type, System.Collections.Generic.IDictionary<string!, object?>? extensions) -> Microsoft.AspNetCore.Http.HttpResults.ValidationProblem!
-static Microsoft.AspNetCore.Http.TypedResults.ValidationProblem(System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, string![]!>>! errors, string? detail = null, string? instance = null, string? title = null, string? type = null, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string!, object?>>? extensions = null) -> Microsoft.AspNetCore.Http.HttpResults.ValidationProblem!
+static Microsoft.AspNetCore.Http.Results.ServerSentEvents(System.Collections.Generic.IAsyncEnumerable<string!>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<System.Net.ServerSentEvents.SseItem<T>>! values) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.Results.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<T>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.IResult!
+static Microsoft.AspNetCore.Http.TypedResults.ServerSentEvents(System.Collections.Generic.IAsyncEnumerable<string!>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<string!>!
+static Microsoft.AspNetCore.Http.TypedResults.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<System.Net.ServerSentEvents.SseItem<T>>! values) -> Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>!
+static Microsoft.AspNetCore.Http.TypedResults.ServerSentEvents<T>(System.Collections.Generic.IAsyncEnumerable<T>! values, string? eventType = null) -> Microsoft.AspNetCore.Http.HttpResults.ServerSentEventsResult<T>!

@@ -12,9 +12,10 @@ parameters:
   #   The name of the job. This is included in the job ID.
   # targetRID: ''
   #   The name of the target RID to use, instead of the one auto-detected by Arcade.
-  # nonPortable: false
+  # portableBuild: false
   #   Enables non-portable mode. This means a more specific RID (e.g. fedora.32-x64 rather than
-  #   linux-x64), and compiling against distro-provided packages rather than portable ones.
+  #   linux-x64), and compiling against distro-provided packages rather than portable ones. The
+  #   default is portable mode.
   # skipPublishValidation: false
   #   Disables publishing validation.  By default, a check is performed to ensure no packages are
   #   published by source-build.
@@ -26,6 +27,8 @@ parameters:
   #   Specifies the build script to invoke to perform the build in the repo. The default
   #   './build.sh' should work for typical Arcade repositories, but this is customizable for
   #   difficult situations.
+  # buildArguments: ''
+  #   Specifies additional build arguments to pass to the build script.
   # jobProperties: {}
   #   A list of job properties to inject at the top level, for potential extensibility beyond
   #   container and pool.

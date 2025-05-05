@@ -21,9 +21,6 @@ parameters:
   runAsPublic: false
 
   # Optional: whether the build's artifacts will be published using release pipelines or direct feed publishing
-  publishUsingPipelines: false
-
-  # Optional: whether the build's artifacts will be published using release pipelines or direct feed publishing
   publishAssetsImmediately: false
 
   artifactsPublishingAdditionalParameters: ''
@@ -31,6 +28,9 @@ parameters:
   signingValidationAdditionalParameters: ''
 
   is1ESPipeline: ''
+
+  # Optional: 🌤️ or not the build has assets it wants to publish to BAR
+  isAssetlessBuild: false
 
 jobs:
 - job: Asset_Registry_Publish
@@ -75,15 +75,15 @@ jobs:
     - checkout: self
       fetchDepth: 3
       clean: true
-      
-    - task: DownloadBuildArtifacts@0
-      displayName: Download artifact
-      inputs:
-        artifactName: AssetManifests
-        downloadPath: '$(Build.StagingDirectory)/Download'
-        checkDownloadedFiles: true
-      condition: ${{ parameters.condition }}
-      continueOnError: ${{ parameters.continueOnError }}
+
+    - ${{ if eq(parameters.isAssetlessBuild, 'false') }}: 
+      - task: DownloadPipelineArtifact@2
+        displayName: Download Asset Manifests
+        inputs:
+          artifactName: AssetManifests
+          targetPath: '$(Build.StagingDirectory)/AssetManifests'
+        condition: ${{ parameters.condition }}
+        continueOnError: ${{ parameters.continueOnError }}
     
     - task: NuGetAuthenticate@1
 
@@ -95,9 +95,9 @@ jobs:
         scriptLocation: scriptPath
         scriptPath: $(Build.SourcesDirectory)/eng/common/sdk-task.ps1
         arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
-          /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
+          /p:ManifestsPath='$(Build.StagingDirectory)/AssetManifests'
+          /p:IsAssetlessBuild=${{ parameters.isAssetlessBuild }}
           /p:MaestroApiEndpoint=https://maestro.dot.net
-          /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
           /p:OfficialBuildId=$(Build.BuildNumber)
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
@@ -129,7 +129,7 @@ jobs:
           publishLocation: Container
           artifactName: ReleaseConfigs
 
-    - ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
+    - ${{ if or(eq(parameters.publishAssetsImmediately, 'true'), eq(parameters.isAssetlessBuild, 'true')) }}:
       - template: /eng/common/core-templates/post-build/setup-maestro-vars.yml
         parameters:
           BARBuildId: ${{ parameters.BARBuildId }}
@@ -150,6 +150,7 @@ jobs:
             -WaitPublishingFinish true
             -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
             -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
+            -SkipAssetsPublishing '${{ parameters.isAssetlessBuild }}'
 
     - ${{ if eq(parameters.enablePublishBuildArtifacts, 'true') }}:
       - template: /eng/common/core-templates/steps/publish-logs.yml

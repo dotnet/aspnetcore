@@ -5,6 +5,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
@@ -33,6 +34,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly Dictionary<ulong, ulong> _eventHandlerIdReplacements = new Dictionary<ulong, ulong>();
     private readonly ILogger _logger;
     private readonly ComponentFactory _componentFactory;
+    private readonly RenderingMetrics? _renderingMetrics;
     private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
     private Task? _ongoingQuiescenceTask;
 
@@ -44,6 +46,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private bool _rendererIsDisposed;
 
     private bool _hotReloadInitialized;
+    private bool _rendererIsStopped;
 
     /// <summary>
     /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -89,6 +92,10 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         // logger name in here as a string literal.
         _logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Components.RenderTree.Renderer");
         _componentFactory = new ComponentFactory(componentActivator, this);
+
+        // TODO register RenderingMetrics as singleton in DI
+        var meterFactory = serviceProvider.GetService<IMeterFactory>();
+        _renderingMetrics = meterFactory != null ? new RenderingMetrics(meterFactory) : null;
 
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
@@ -316,7 +323,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// </summary>
     /// <param name="componentId">The root component ID.</param>
     /// <returns>The type of the component.</returns>
-    internal Type GetRootComponentType(int componentId)
+    internal Type GetRootTypeType(int componentId)
         => GetRequiredRootComponentState(componentId).Component.GetType();
 
     /// <summary>
@@ -371,10 +378,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         var parentComponentState = GetOptionalComponentState(parentComponentId);
         var componentState = CreateComponentState(componentId, component, parentComponentState);
         Log.InitializingComponent(_logger, componentState, parentComponentState);
-        _componentStateById.Add(componentId, componentState);
-        _componentStateByComponent.Add(component, componentState);
         component.Attach(new RenderHandle(this, componentId));
         return componentState;
+    }
+
+    internal void RegisterComponentState(IComponent component, int componentId, ComponentState componentState)
+    {
+        _componentStateById.Add(componentId, componentState);
+        _componentStateByComponent.Add(component, componentState);
     }
 
     /// <summary>
@@ -654,6 +665,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         Dispatcher.AssertAccess();
 
+        if (_rendererIsStopped)
+        {
+            // Once we're stopped, we'll disregard further attempts to queue anything
+            return;
+        }
+
         var componentState = GetOptionalComponentState(componentId);
         if (componentState == null)
         {
@@ -721,13 +738,21 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     }
 
     /// <summary>
+    /// Stop adding render requests to the render queue.
+    /// </summary>
+    protected virtual void SignalRendererToFinishRendering()
+    {
+        _rendererIsStopped = true;
+    }
+
+    /// <summary>
     /// Processes pending renders requests from components if there are any.
     /// </summary>
     protected virtual void ProcessPendingRender()
     {
-        if (_rendererIsDisposed)
+        if (_rendererIsDisposed || _rendererIsStopped)
         {
-            // Once we're disposed, we'll disregard further attempts to render anything
+            // Once we're disposed or stopped, we'll disregard further attempts to render anything
             return;
         }
 
@@ -922,12 +947,15 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         var componentState = renderQueueEntry.ComponentState;
         Log.RenderingComponent(_logger, componentState);
+        var startTime = (_renderingMetrics != null && _renderingMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
+        _renderingMetrics?.RenderStart(componentState.Component.GetType().FullName);
         componentState.RenderIntoBatch(_batchBuilder, renderQueueEntry.RenderFragment, out var renderFragmentException);
         if (renderFragmentException != null)
         {
             // If this returns, the error was handled by an error boundary. Otherwise it throws.
             HandleExceptionViaErrorBoundary(renderFragmentException, componentState);
         }
+        _renderingMetrics?.RenderEnd(componentState.Component.GetType().FullName, renderFragmentException, startTime, Stopwatch.GetTimestamp());
 
         // Process disposal queue now in case it causes further component renders to be enqueued
         ProcessDisposalQueueInExistingBatch();
@@ -1126,9 +1154,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     /// <param name="disposing"><see langword="true"/> if this method is being invoked by <see cref="IDisposable.Dispose"/>, otherwise <see langword="false"/>.</param>
     protected virtual void Dispose(bool disposing)
     {
-        // Unlike other Renderer APIs, we need Dispose to be thread-safe 
-        // (and not require being called only from the sync context) 
-        // because other classes many need to dispose a Renderer during their own Dispose (rather than DisposeAsync) 
+        // Unlike other Renderer APIs, we need Dispose to be thread-safe
+        // (and not require being called only from the sync context)
+        // because other classes many need to dispose a Renderer during their own Dispose (rather than DisposeAsync)
         // and we don't want to force that other code to deal with calling InvokeAsync from a synchronous method.
         lock (_lockObject)
         {

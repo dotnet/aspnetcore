@@ -360,6 +360,35 @@ public class Http3ConnectionTests : Http3TestBase
         MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
     }
 
+    [Theory]
+    [InlineData((int)Http3FrameType.Settings, 20_000)]
+    //[InlineData((int)Http3FrameType.GoAway, 30)] // GoAway frames trigger graceful connection close which races with sending FRAME_ERROR
+    [InlineData((int)Http3FrameType.CancelPush, 30)]
+    [InlineData((int)Http3FrameType.MaxPushId, 30)]
+    [InlineData(int.MaxValue, 20_000)] // Unknown frame type
+    public async Task ControlStream_ClientToServer_LargeFrame_ConnectionError(int frameType, int length)
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var controlStream = await Http3Api.CreateControlStream();
+
+        // Need to send settings frame before other frames, otherwise it's a connection error
+        if (frameType != (int)Http3FrameType.Settings)
+        {
+            await controlStream.SendSettingsAsync(new List<Http3PeerSetting>());
+        }
+
+        await controlStream.SendFrameAsync((Http3FrameType)frameType, new byte[length]);
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http3ErrorCode.FrameError,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.FormatHttp3ControlStreamFrameTooLarge(Http3Formatting.ToFormattedType((Http3FrameType)frameType)));
+        MetricsAssert.Equal(ConnectionEndReason.InvalidFrameLength, Http3Api.ConnectionTags);
+    }
+
     [Fact]
     public async Task SETTINGS_MaxFieldSectionSizeSent_ServerReceivesValue()
     {

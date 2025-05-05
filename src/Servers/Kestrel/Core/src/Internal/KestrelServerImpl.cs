@@ -39,8 +39,9 @@ internal sealed class KestrelServerImpl : IServer
         IEnumerable<IMultiplexedConnectionListenerFactory> multiplexedFactories,
         IHttpsConfigurationService httpsConfigurationService,
         ILoggerFactory loggerFactory,
+        DiagnosticSource? diagnosticSource,
         KestrelMetrics metrics)
-        : this(transportFactories, multiplexedFactories, httpsConfigurationService, CreateServiceContext(options, loggerFactory, diagnosticSource: null, metrics))
+        : this(transportFactories, multiplexedFactories, httpsConfigurationService, CreateServiceContext(options, loggerFactory, diagnosticSource, metrics))
     {
     }
 
@@ -54,8 +55,8 @@ internal sealed class KestrelServerImpl : IServer
     {
         ArgumentNullException.ThrowIfNull(transportFactories);
 
-        _transportFactories = transportFactories.Reverse().ToList();
-        _multiplexedTransportFactories = multiplexedFactories.Reverse().ToList();
+        _transportFactories = Enumerable.Reverse(transportFactories).ToList();
+        _multiplexedTransportFactories = Enumerable.Reverse(multiplexedFactories).ToList();
         _httpsConfigurationService = httpsConfigurationService;
 
         if (_transportFactories.Count == 0 && _multiplexedTransportFactories.Count == 0)
@@ -111,7 +112,8 @@ internal sealed class KestrelServerImpl : IServer
 
     public KestrelServerOptions Options => ServiceContext.ServerOptions;
 
-    private ServiceContext ServiceContext { get; }
+    // Internal for testing
+    internal ServiceContext ServiceContext { get; }
 
     private KestrelTrace Trace => ServiceContext.Log;
 

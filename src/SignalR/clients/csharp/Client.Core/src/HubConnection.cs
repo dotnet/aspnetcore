@@ -97,6 +97,8 @@ public partial class HubConnection : IAsyncDisposable
     /// If this event was triggered from a connection error, the <see cref="Exception"/> that occurred will be passed in as the
     /// sole argument to this handler. If this event was triggered intentionally by either the client or server, then
     /// the argument will be <see langword="null"/>.
+    ///
+    /// The <see cref="Task"/> result does not block <see cref="HubConnection"/> operations.
     /// </remarks>
     /// <example>
     /// The following example attaches a handler to the <see cref="Closed"/> event, and checks the provided argument to determine
@@ -123,6 +125,8 @@ public partial class HubConnection : IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// The <see cref="Exception"/> that occurred will be passed in as the sole argument to this handler.
+    ///
+    /// The <see cref="Task"/> result does not block <see cref="HubConnection"/> operations.
     /// </remarks>
     /// <example>
     /// The following example attaches a handler to the <see cref="Reconnecting"/> event, and checks the provided argument to log the error.
@@ -141,6 +145,8 @@ public partial class HubConnection : IAsyncDisposable
     /// </summary>
     /// <remarks>
     /// The <see cref="string"/> parameter will be the <see cref="HubConnection"/>'s new ConnectionId or null if negotiation was skipped.
+    ///
+    /// The <see cref="Task"/> result does not block <see cref="HubConnection"/> operations.
     /// </remarks>
     /// <example>
     /// The following example attaches a handler to the <see cref="Reconnected"/> event, and checks the provided argument to log the ConnectionId.
@@ -1300,6 +1306,10 @@ public partial class HubConnection : IAsyncDisposable
                 {
                     await SendWithLock(connectionState, CompletionMessage.WithError(bindingFailure.InvocationId, "Client failed to parse argument(s)."), cancellationToken: default).ConfigureAwait(false);
                 }
+                break;
+            case StreamBindingFailureMessage bindingFailure:
+                // The server can't receive a response, so we just drop the message and log
+                Log.StreamBindingFailure(_logger, bindingFailure.Id, bindingFailure.BindingFailure.SourceException);
                 break;
             case InvocationMessage invocation:
                 Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);

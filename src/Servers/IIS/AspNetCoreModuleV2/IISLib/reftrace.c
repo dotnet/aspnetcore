@@ -115,7 +115,6 @@ Return Value:
 
 }   // WriteRefTraceLog
 
-
 LONG
 __cdecl
 WriteRefTraceLogEx(
@@ -156,9 +155,9 @@ Return Value:
 --*/
 {
 
-    REF_TRACE_LOG_ENTRY entry;
-    ULONG hash;
-    DWORD cStackFramesSkipped;
+    REF_TRACE_LOG_ENTRY entry{};
+    ULONG hash = 0;
+    DWORD cStackFramesSkipped = 0;
 
     //
     // Initialize the entry.

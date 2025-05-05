@@ -40,7 +40,7 @@
                 <component render-mode="ServerPrerendered" type="typeof(PreserveStateComponent)" param-State="@state1"></component>
                 @* State can change after a component has rendered, when this happens the output will not be updated during prerendering
                    and will have to wait until the app restarts in interactive mode.
-                *@ 
+                *@
                 PreserveService.NewState();
                 <component render-mode="ServerPrerendered" type="typeof(PreserveStateComponent)" param-State="@state2"></component>
                 break;
@@ -57,7 +57,7 @@
 
         @* This is just to show that the state of a service can still change after the component has rendered and it's the component
            responsibility to deal with updates after the initial render
-        *@ 
+        *@
         <p>
             Service state after components have rendered: <span id="service-state">@PreserveService.Guid</span>
         </p>
@@ -66,7 +66,7 @@
 
         PreserveService.NewState();
 
-        @* This is just to show that this state will be lost and not restored since the state was persisted before *@ 
+        @* This is just to show that this state will be lost and not restored since the state was persisted before *@
         <p>
             Service state after state has been persisted: <span id="service-state-after">@PreserveService.Guid</span>
         </p>

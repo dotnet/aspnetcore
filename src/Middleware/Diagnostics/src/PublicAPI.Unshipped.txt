@@ -1,3 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.StatusCodeSelector.get -> System.Func<System.Exception!, int>?
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.StatusCodeSelector.set -> void
+Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.get -> bool
+Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.set -> void
+static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, bool createScopeForErrors, string? queryFormat = null) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

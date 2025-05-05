@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Identity\\Core\\src\\Microsoft.AspNetCore.Identity.csproj",
       "src\\Identity\\EntityFrameworkCore\\src\\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj",

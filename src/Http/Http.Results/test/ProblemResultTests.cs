@@ -12,8 +12,6 @@ namespace Microsoft.AspNetCore.Http.HttpResults;
 
 public class ProblemResultTests
 {
-    private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web);
-
     [Fact]
     public async Task ExecuteAsync_UsesDefaults_ForProblemDetails()
     {
@@ -37,7 +35,7 @@ public class ProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status500InternalServerError, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, SerializerOptions);
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, JsonSerializerOptions.Web);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.6.1", responseDetails.Type);
         Assert.Equal("An error occurred while processing your request.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status500InternalServerError, responseDetails.Status);
@@ -69,7 +67,7 @@ public class ProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status500InternalServerError, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, SerializerOptions);
+        var responseDetails = JsonSerializer.Deserialize<ProblemDetails>(stream, JsonSerializerOptions.Web);
         Assert.Null(responseDetails.Type);
         Assert.Equal("An error occurred while processing your request.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status500InternalServerError, responseDetails.Status);
@@ -98,7 +96,7 @@ public class ProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream, SerializerOptions);
+        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream, JsonSerializerOptions.Web);
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", responseDetails.Type);
         Assert.Equal("One or more validation errors occurred.", responseDetails.Title);
         Assert.Equal(StatusCodes.Status400BadRequest, responseDetails.Status);
@@ -130,7 +128,7 @@ public class ProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status418ImATeapot, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream, SerializerOptions);
+        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream, JsonSerializerOptions.Web);
         Assert.Null(responseDetails.Type);
         Assert.Equal("I'm a teapot", responseDetails.Title);
         Assert.Equal(StatusCodes.Status418ImATeapot, responseDetails.Status);
@@ -162,7 +160,7 @@ public class ProblemResultTests
         // Assert
         Assert.Equal(StatusCodes.Status400BadRequest, httpContext.Response.StatusCode);
         stream.Position = 0;
-        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream, SerializerOptions);
+        var responseDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(stream, JsonSerializerOptions.Web);
         Assert.Equal(StatusCodes.Status400BadRequest, responseDetails.Status);
         var error = Assert.Single(responseDetails.Errors);
         Assert.Equal("testError", error.Key);

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Pipelines;
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
@@ -32,17 +33,17 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.True(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("multipart/form-data", content.Key);
-            Assert.Equal("object", content.Value.Schema.Type);
+            Assert.Equal(JsonSchemaType.Object, content.Value.Schema.Type);
             Assert.NotNull(content.Value.Schema.Properties);
             Assert.Contains("formFile", content.Value.Schema.Properties);
             var formFileProperty = content.Value.Schema.Properties["formFile"];
-            Assert.Equal("string", formFileProperty.Type);
+            Assert.Equal(JsonSchemaType.String, formFileProperty.Type);
             Assert.Equal("binary", formFileProperty.Format);
         });
     }
@@ -70,17 +71,18 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations![HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.True(operation.RequestBody.Required);
-            var schema = operation.RequestBody.Content["multipart/form-data"].Schema;
+            var schema = operation.RequestBody.Content!["multipart/form-data"].Schema;
+            Assert.NotNull(schema);
             if (!isOptional)
             {
-                Assert.Contains("formFile", schema.Required);
+                Assert.Contains("formFile", schema.Required!);
             }
             else
             {
-                Assert.DoesNotContain("formFile", schema.Required);
+                Assert.Null(schema.Required);
             }
         });
     }
@@ -108,18 +110,18 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.True(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("multipart/form-data", content.Key);
-            Assert.Equal("object", content.Value.Schema.Type);
+            Assert.Equal(JsonSchemaType.Object, content.Value.Schema.Type);
             Assert.NotNull(content.Value.Schema.Properties);
             Assert.Contains("formFileCollection", content.Value.Schema.Properties);
             var formFileProperty = content.Value.Schema.Properties["formFileCollection"];
-            Assert.Equal("array", formFileProperty.Type);
-            Assert.Equal("string", formFileProperty.Items.Type);
+            Assert.Equal(JsonSchemaType.Array, formFileProperty.Type);
+            Assert.Equal(JsonSchemaType.String, formFileProperty.Items.Type);
             Assert.Equal("binary", formFileProperty.Items.Format);
         });
     }
@@ -147,17 +149,18 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations![HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.True(operation.RequestBody.Required);
-            var schema = operation.RequestBody.Content["multipart/form-data"].Schema;
+            var schema = operation.RequestBody.Content!["multipart/form-data"].Schema;
+            Assert.NotNull(schema);
             if (!isOptional)
             {
-                Assert.Contains("formFile", schema.Required);
+                Assert.Contains("formFile", schema.Required!);
             }
             else
             {
-                Assert.DoesNotContain("formFile", schema.Required);
+                Assert.Null(schema.Required);
             }
         });
     }
@@ -176,28 +179,28 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("multipart/form-data", content.Key);
-            Assert.Equal("object", content.Value.Schema.Type);
+            Assert.Equal(JsonSchemaType.Object, content.Value.Schema.Type);
             Assert.NotNull(content.Value.Schema.AllOf);
             Assert.Collection(content.Value.Schema.AllOf,
                 allOfItem =>
                 {
                     Assert.NotNull(allOfItem.Properties);
                     Assert.Contains("formFile1", allOfItem.Properties);
-                    var formFile1Property = allOfItem.Properties["formFile1"].GetEffective(document);
-                    Assert.Equal("string", formFile1Property.Type);
+                    var formFile1Property = allOfItem.Properties["formFile1"];
+                    Assert.Equal(JsonSchemaType.String, formFile1Property.Type);
                     Assert.Equal("binary", formFile1Property.Format);
                 },
                 allOfItem =>
                 {
                     Assert.NotNull(allOfItem.Properties);
                     Assert.Contains("formFile2", allOfItem.Properties);
-                    var formFile2Property = allOfItem.Properties["formFile2"].GetEffective(document);
-                    Assert.Equal("string", formFile2Property.Type);
+                    var formFile2Property = allOfItem.Properties["formFile2"];
+                    Assert.Equal(JsonSchemaType.String, formFile2Property.Type);
                     Assert.Equal("binary", formFile2Property.Format);
                 });
         });
@@ -216,16 +219,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/magic-foo-content-type", content.Key);
-            Assert.Equal("object", content.Value.Schema.Type);
+            Assert.Equal(JsonSchemaType.Object, content.Value.Schema.Type);
             Assert.NotNull(content.Value.Schema.Properties);
             Assert.Contains("formFile", content.Value.Schema.Properties);
             var formFileProperty = content.Value.Schema.Properties["formFile"];
-            Assert.Equal("string", formFileProperty.Type);
+            Assert.Equal(JsonSchemaType.String, formFileProperty.Type);
             Assert.Equal("binary", formFileProperty.Format);
         });
     }
@@ -243,16 +246,16 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/magic-foo-content-type", content.Key);
-            Assert.Equal("object", content.Value.Schema.Type);
+            Assert.Equal(JsonSchemaType.Object, content.Value.Schema.Type);
             Assert.NotNull(content.Value.Schema.Properties);
             Assert.Contains("formFile", content.Value.Schema.Properties);
             var formFileProperty = content.Value.Schema.Properties["formFile"];
-            Assert.Equal("string", formFileProperty.Type);
+            Assert.Equal(JsonSchemaType.String, formFileProperty.Type);
             Assert.Equal("binary", formFileProperty.Format);
         });
     }
@@ -270,7 +273,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.False(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
@@ -302,7 +305,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations![HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.Equal(!isOptional, operation.RequestBody.Required);
         });
@@ -323,7 +326,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.False(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
@@ -345,7 +348,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
@@ -366,7 +369,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
@@ -387,7 +390,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.Null(operation.RequestBody);
         });
     }
@@ -406,7 +409,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -417,7 +420,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.NotNull(item.Schema.Properties);
                 Assert.Contains("id", item.Schema.Required);
                 Assert.Contains("title", item.Schema.Required);
@@ -427,22 +430,22 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     property =>
                     {
                         Assert.Equal("id", property.Key);
-                        Assert.Equal("integer", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("title", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("completed", property.Key);
-                        Assert.Equal("boolean", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("createdAt", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
                         Assert.Equal("date-time", property.Value.Format);
                     });
             }
@@ -463,7 +466,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -473,7 +476,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.NotNull(item.Schema.Properties);
                 // Assert that requiredness has been set for primitives
                 Assert.Contains("id", item.Schema.Required);
@@ -483,18 +486,18 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     subSchema =>
                     {
                         Assert.Contains("id", subSchema.Properties);
-                        Assert.Equal("integer", subSchema.Properties["id"].Type);
+                        Assert.Equal(JsonSchemaType.Integer, subSchema.Properties["id"].Type);
                     },
                     subSchema =>
                     {
                         Assert.Contains("date", subSchema.Properties);
-                        Assert.Equal("string", subSchema.Properties["date"].Type);
+                        Assert.Equal(JsonSchemaType.String, subSchema.Properties["date"].Type);
                         Assert.Equal("date-time", subSchema.Properties["date"].Format);
                     },
                     subSchema =>
                     {
                         Assert.Contains("value", subSchema.Properties);
-                        Assert.Equal("integer", subSchema.Properties["value"].Type);
+                        Assert.Equal(JsonSchemaType.Integer, subSchema.Properties["value"].Type);
                     });
             }
         });
@@ -510,7 +513,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -520,28 +523,28 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.NotNull(item.Schema.Properties);
                 Assert.Collection(item.Schema.Properties,
                     property =>
                     {
                         Assert.Equal("Id", property.Key);
-                        Assert.Equal("integer", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("Title", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("Completed", property.Key);
-                        Assert.Equal("boolean", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("CreatedAt", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
                         Assert.Equal("date-time", property.Value.Format);
                     });
             }
@@ -565,7 +568,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -576,7 +579,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.NotNull(item.Schema.AllOf);
                 Assert.Collection(item.Schema.AllOf,
                     allOfItem =>
@@ -584,22 +587,22 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         Assert.Collection(allOfItem.Properties, property =>
                             {
                                 Assert.Equal("id", property.Key);
-                                Assert.Equal("integer", property.Value.GetEffective(document).Type);
+                                Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("title", property.Key);
-                                Assert.Equal("string", property.Value.GetEffective(document).Type);
+                                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("completed", property.Key);
-                                Assert.Equal("boolean", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("createdAt", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.String, property.Value.Type);
                                 Assert.Equal("date-time", property.Value.Format);
                             });
                     },
@@ -609,12 +612,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                             property =>
                             {
                                 Assert.Equal("code", property.Key);
-                                Assert.Equal("integer", property.Value.GetEffective(document).Type);
+                                Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("message", property.Key);
-                                Assert.Equal("string", property.Value.GetEffective(document).Type);
+                                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                             });
                     });
             }
@@ -631,7 +634,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -641,7 +644,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.NotNull(item.Schema.AllOf);
                 Assert.Collection(item.Schema.AllOf,
                     allOfItem =>
@@ -649,22 +652,22 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         Assert.Collection(allOfItem.Properties, property =>
                             {
                                 Assert.Equal("Id", property.Key);
-                                Assert.Equal("integer", property.Value.GetEffective(document).Type);
+                                Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("Title", property.Key);
-                                Assert.Equal("string", property.Value.GetEffective(document).Type);
+                                Assert.Equal(JsonSchemaType.String, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("Completed", property.Key);
-                                Assert.Equal("boolean", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("CreatedAt", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.String, property.Value.Type);
                                 Assert.Equal("date-time", property.Value.Format);
                             });
                     },
@@ -674,12 +677,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                             property =>
                             {
                                 Assert.Equal("Code", property.Key);
-                                Assert.Equal("integer", property.Value.GetEffective(document).Type);
+                                Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("Message", property.Key);
-                                Assert.Equal("string", property.Value.GetEffective(document).Type);
+                                Assert.Equal(JsonSchemaType.String, property.Value.Type);
                             });
                     });
             }
@@ -699,7 +702,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -709,13 +712,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.NotNull(item.Schema.Properties);
                 Assert.Collection(item.Schema.Properties,
                     property =>
                     {
                         Assert.Equal("Name", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     });
             }
         });
@@ -739,7 +742,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -749,12 +752,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.NotNull(item.Schema.Properties);
                 Assert.All(item.Schema.Properties,
                     property =>
                     {
-                        Assert.False(property.Value.Nullable);
+                        Assert.False(property.Value.Type?.HasFlag(JsonSchemaType.Null));
                     });
             }
         });
@@ -781,28 +784,28 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             var item = Assert.Single(content.Values);
             Assert.NotNull(item.Schema);
-            Assert.Equal("object", item.Schema.Type);
+            Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
             Assert.Collection(item.Schema.Properties,
                 property =>
                 {
                     Assert.Equal("Name", property.Key);
-                    Assert.Equal("string", property.Value.GetEffective(document).Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("Description", property.Key);
-                    Assert.Equal("string", property.Value.GetEffective(document).Type);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
                 },
                 property =>
                 {
                     Assert.Equal("Resume", property.Key);
-                    Assert.Equal("string", property.Value.GetEffective(document).Type);
-                    Assert.Equal("binary", property.Value.GetEffective(document).Format);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal("binary", property.Value.Format);
                 });
         });
     }
@@ -823,28 +826,28 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.Collection(item.Schema.Properties,
                     property =>
                     {
                         Assert.Equal("name", property.Key);
-                        Assert.Equal("string", property.Value.GetEffective(document).Type);
+                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("description", property.Key);
-                        Assert.Equal("string", property.Value.GetEffective(document).Type);
+                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                     },
                     property =>
                     {
                         Assert.Equal("resume", property.Key);
-                        Assert.Equal("string", property.Value.Type);
+                        Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                         Assert.Equal("binary", property.Value.Format);
                     });
             }
@@ -852,10 +855,10 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     }
 
     [Theory]
-    [InlineData(nameof(ActionWithDateTimeForm), "string", "date-time")]
-    [InlineData(nameof(ActionWithGuidForm), "string", "uuid")]
-    [InlineData(nameof(ActionWithIntForm), "integer", "int32")]
-    public async Task GetOpenApiRequestBody_HandlesFormWithPrimitives_MvcAction(string actionMethodName, string type, string format)
+    [InlineData(nameof(ActionWithDateTimeForm), JsonSchemaType.String, "date-time")]
+    [InlineData(nameof(ActionWithGuidForm), JsonSchemaType.String, "uuid")]
+    [InlineData(nameof(ActionWithIntForm), JsonSchemaType.Integer, "int32")]
+    public async Task GetOpenApiRequestBody_HandlesFormWithPrimitives_MvcAction(string actionMethodName, JsonSchemaType type, string format)
     {
         // Arrange
         var action = CreateActionDescriptor(actionMethodName);
@@ -864,12 +867,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             var item = Assert.Single(content.Values);
             Assert.NotNull(item.Schema);
-            Assert.Equal("object", item.Schema.Type);
+            Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
             Assert.Collection(item.Schema.Properties,
                 property =>
                 {
@@ -891,27 +894,27 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
     public static object[][] FromFormWithPrimitives =>
     [
-        [([FromForm] int id) => {}, "integer", "int32"],
-        [([FromForm] long id) => {}, "integer", "int64"],
-        [([FromForm] float id) => {}, "number", "float"],
-        [([FromForm] double id) => {}, "number", "double"],
-        [([FromForm] decimal id) => {}, "number", "double"],
-        [([FromForm] bool id) => {}, "boolean", null],
-        [([FromForm] string id) => {}, "string", null],
-        [([FromForm] char id) => {}, "string", "char"],
-        [([FromForm] byte id) => {}, "integer", "uint8"],
-        [([FromForm] short id) => {}, "integer", "int16"],
-        [([FromForm] ushort id) => {}, "integer", "uint16"],
-        [([FromForm] uint id) => {}, "integer", "uint32"],
-        [([FromForm] ulong id) => {}, "integer", "uint64"],
-        [([FromForm] Uri id) => {}, "string", "uri"],
-        [([FromForm] TimeOnly id) => {}, "string", "time"],
-        [([FromForm] DateOnly id) => {}, "string", "date"]
+        [([FromForm] int id) => {}, JsonSchemaType.Integer, "int32"],
+        [([FromForm] long id) => {}, JsonSchemaType.Integer, "int64"],
+        [([FromForm] float id) => {}, JsonSchemaType.Number, "float"],
+        [([FromForm] double id) => {}, JsonSchemaType.Number, "double"],
+        [([FromForm] decimal id) => {}, JsonSchemaType.Number, "double"],
+        [([FromForm] bool id) => {}, JsonSchemaType.Boolean, null],
+        [([FromForm] string id) => {}, JsonSchemaType.String, null],
+        [([FromForm] char id) => {}, JsonSchemaType.String, "char"],
+        [([FromForm] byte id) => {}, JsonSchemaType.Integer, "uint8"],
+        [([FromForm] short id) => {}, JsonSchemaType.Integer, "int16"],
+        [([FromForm] ushort id) => {}, JsonSchemaType.Integer, "uint16"],
+        [([FromForm] uint id) => {}, JsonSchemaType.Integer, "uint32"],
+        [([FromForm] ulong id) => {}, JsonSchemaType.Integer, "uint64"],
+        [([FromForm] Uri id) => {}, JsonSchemaType.String, "uri"],
+        [([FromForm] TimeOnly id) => {}, JsonSchemaType.String, "time"],
+        [([FromForm] DateOnly id) => {}, JsonSchemaType.String, "date"]
     ];
 
     [Theory]
     [MemberData(nameof(FromFormWithPrimitives))]
-    public async Task GetOpenApiRequestBody_HandlesFormWithPrimitives(Delegate requestHandler, string schemaType, string schemaFormat)
+    public async Task GetOpenApiRequestBody_HandlesFormWithPrimitives(Delegate requestHandler, JsonSchemaType schemaType, string schemaFormat)
     {
         // Arrange
         var builder = CreateBuilder();
@@ -923,13 +926,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.Collection(item.Schema.Properties,
                     property =>
                     {
@@ -954,35 +957,35 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.Collection(item.Schema.AllOf,
                     allOfItem =>
                     {
                         Assert.Collection(allOfItem.Properties, property =>
                             {
                                 Assert.Equal("id", property.Key);
-                                Assert.Equal("integer", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("title", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("completed", property.Key);
-                                Assert.Equal("boolean", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("createdAt", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.String, property.Value.Type);
                                 Assert.Equal("date-time", property.Value.Format);
                             });
                     },
@@ -991,7 +994,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         Assert.Collection(allOfItem.Properties, property =>
                         {
                             Assert.Equal("formFile", property.Key);
-                            Assert.Equal("string", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String, property.Value.Type);
                             Assert.Equal("binary", property.Value.Format);
                         });
                     },
@@ -1000,7 +1003,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         Assert.Collection(allOfItem.Properties, property =>
                         {
                             Assert.Equal("guid", property.Key);
-                            Assert.Equal("string", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String, property.Value.Type);
                             Assert.Equal("uuid", property.Value.Format);
                         });
                     });
@@ -1018,35 +1021,35 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             foreach (var item in content.Values)
             {
                 Assert.NotNull(item.Schema);
-                Assert.Equal("object", item.Schema.Type);
+                Assert.Equal(JsonSchemaType.Object, item.Schema.Type);
                 Assert.Collection(item.Schema.AllOf,
                     allOfItem =>
                     {
                         Assert.Collection(allOfItem.Properties, property =>
                             {
                                 Assert.Equal("id", property.Key);
-                                Assert.Equal("integer", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("title", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("completed", property.Key);
-                                Assert.Equal("boolean", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
                             },
                             property =>
                             {
                                 Assert.Equal("createdAt", property.Key);
-                                Assert.Equal("string", property.Value.Type);
+                                Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                                 Assert.Equal("date-time", property.Value.Format);
                             });
                     },
@@ -1055,7 +1058,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         Assert.Collection(allOfItem.Properties, property =>
                         {
                             Assert.Equal("formFile", property.Key);
-                            Assert.Equal("string", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                             Assert.Equal("binary", property.Value.Format);
                         });
                     },
@@ -1064,7 +1067,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                         Assert.Collection(allOfItem.Properties, property =>
                         {
                             Assert.Equal("guid", property.Key);
-                            Assert.Equal("string", property.Value.Type);
+                            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
                             Assert.Equal("uuid", property.Value.Format);
                         });
                     });
@@ -1090,13 +1093,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         {
             foreach (var path in document.Paths)
             {
-                var operation = path.Value.Operations[OperationType.Get];
+                var operation = path.Value.Operations[HttpMethod.Get];
                 Assert.NotNull(operation.RequestBody.Content);
                 var content = Assert.Single(operation.RequestBody.Content);
                 Assert.Equal("application/octet-stream", content.Key);
                 Assert.NotNull(content.Value.Schema);
-                Assert.Equal("string", content.Value.Schema.GetEffective(document).Type);
-                Assert.Equal("binary", content.Value.Schema.GetEffective(document).Format);
+                Assert.Equal(JsonSchemaType.String, content.Value.Schema.Type);
+                Assert.Equal("binary", content.Value.Schema.Format);
             }
         });
     }
@@ -1115,12 +1118,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         static void VerifyDocument(OpenApiDocument document)
         {
             var path = Assert.Single(document.Paths);
-            var operation = path.Value.Operations[OperationType.Get];
+            var operation = path.Value.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/octet-stream", content.Key);
             Assert.NotNull(content.Value.Schema);
-            Assert.Equal("string", content.Value.Schema.Type);
+            Assert.Equal(JsonSchemaType.String, content.Value.Schema.Type);
             Assert.Equal("binary", content.Value.Schema.Format);
         }
     }

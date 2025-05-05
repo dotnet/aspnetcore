@@ -46,10 +46,14 @@ public class Program
 
                                 var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
 
+#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable SYSLIB0058 // Type or member is obsolete
                                 if (tlsFeature.CipherAlgorithm == CipherAlgorithmType.Null)
                                 {
                                     throw new NotSupportedException("Prohibited cipher: " + tlsFeature.CipherAlgorithm);
                                 }
+#pragma warning restore SYSLIB0058 // Type or member is obsolete
+#pragma warning restore CS0618 // Type or member is obsolete
 
                                 return next(context);
                             });

@@ -33,6 +33,36 @@ namespace Microsoft.AspNetCore.Mvc.Description;
 public class DefaultApiDescriptionProviderTest
 {
     [Fact]
+    public void OnlyCatchAllParameter_IsReportedAsOptional()
+    {
+        // Arrange: Create an action descriptor with a multi-parameter route template.
+        var action = CreateActionDescriptor();
+        action.AttributeRouteInfo = new AttributeRouteInfo
+        {
+            Template = "/products/{category}/items/{group}/inventory/{**any}"
+        };
+
+        // Act: Get the API descriptions using the existing helper.
+        var descriptions = GetApiDescriptions(action);
+
+        // Assert: Only the 'any' parameter should be optional.
+        var description = Assert.Single(descriptions);
+        var categoryParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "category", StringComparison.OrdinalIgnoreCase));
+        var groupParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "group", StringComparison.OrdinalIgnoreCase));
+        var anyParameter = Assert.Single(description.ParameterDescriptions,
+            p => string.Equals(p.Name, "any", StringComparison.OrdinalIgnoreCase));
+
+        // The non-catch-all parameters should be required.
+        Assert.True(categoryParameter.IsRequired);
+        Assert.True(groupParameter.IsRequired);
+
+        // The catch-all parameter should be optional.
+        Assert.False(anyParameter.IsRequired);
+    }
+
+    [Fact]
     public void GetApiDescription_IgnoresNonControllerActionDescriptor()
     {
         // Arrange
@@ -1107,7 +1137,8 @@ public class DefaultApiDescriptionProviderTest
         var action = CreateActionDescriptor(methodName);
         var filter = new ContentTypeAttribute("text/*")
         {
-            Type = typeof(Order)
+            Type = typeof(Order),
+            Description = "Example"
         };
 
         action.FilterDescriptors = new List<FilterDescriptor>
@@ -1124,6 +1155,7 @@ public class DefaultApiDescriptionProviderTest
         Assert.NotNull(responseTypes.ModelMetadata);
         Assert.Equal(200, responseTypes.StatusCode);
         Assert.Equal(typeof(Order), responseTypes.Type);
+        Assert.Equal("Example", responseTypes.Description);
 
         foreach (var responseFormat in responseTypes.ApiResponseFormats)
         {
@@ -2873,6 +2905,8 @@ public class DefaultApiDescriptionProviderTest
         public int StatusCode { get; set; }
 
         public Type Type { get; set; }
+
+        public string Description { get; set; }
 
         public void SetContentTypes(MediaTypeCollection contentTypes)
         {

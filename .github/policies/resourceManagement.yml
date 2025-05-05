@@ -1,3 +1,4 @@
+# Policybot docs live at https://eng.ms/docs/more/github-inside-microsoft/policies/resource-management
 id: 
 name: GitOps.PullRequestIssueManagement
 description: GitOps.PullRequestIssueManagement primitive
@@ -231,9 +232,13 @@ configuration:
       - isActivitySender:
           user: dotnet-maestro[bot]
           issueAuthor: False
-      - titleContains:
-          pattern: Update dependencies
-          isRegex: False
+      - or:
+        - titleContains:
+            pattern: Update dependencies
+            isRegex: False
+        - titleContains:
+            pattern: Source code updates
+            isRegex: False
       - targetsBranch:
           branch: main
       then:
@@ -377,30 +382,19 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 10.0-preview1
+          milestone: 10.0-preview5
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/9.0-rc2
+          branch: release/10.0-preview4
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0-rc2
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0-rc2 branch'
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Closed
-      - targetsBranch:
-          branch: release/9.0
-      then:
-      - removeMilestone
-      - addMilestone:
-          milestone: 9.0.0
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
+          milestone: 10.0-preview4
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0-preview1 branch'
     - if:
       - payloadType: Issues
       - isAction:
@@ -503,21 +497,6 @@ configuration:
       - isAction:
           action: Opened
       - targetsBranch:
-          branch: release/6.0
-      then:
-      - addMilestone:
-          milestone: 6.0.x
-      - addReply:
-          reply: >-
-            Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
-
-            Otherwise, please add `tell-mode` label.
-      description: Add release/6.0 targeting PRs to the servicing project
-    - if:
-      - payloadType: Pull_Request
-      - isAction:
-          action: Opened
-      - targetsBranch:
           branch: release/2.1
       then:
       - addMilestone:
@@ -572,12 +551,12 @@ configuration:
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/6.0
+          branch: release/9.0
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 6.0.36
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/6.0 branch'
+          milestone: 9.0.5
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
@@ -587,7 +566,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.11
+          milestone: 8.0.16
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
@@ -667,6 +646,8 @@ configuration:
       - titleContains:
           pattern: Update .NET SDK
           isRegex: False
+      - targetsBranch:
+          branch: main
       then:
       - addLabel:
           label: area-infrastructure
@@ -674,6 +655,27 @@ configuration:
           label: 'Type: Dependency Update :arrow_up_small:'
       - approvePullRequest:
           comment: Auto-approving SDK update.
-      description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests'
+      - enableAutoMerge:
+          mergeMethod: "squash"
+      description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests & enable auto-merge'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - isActivitySender:
+          user: dependabot[bot]
+          issueAuthor: False
+      - targetsBranch:
+          branch: main
+      then:
+      - addLabel:
+          label: area-infrastructure
+      - addLabel:
+          label: 'Type: Dependency Update :arrow_up_small:'
+      - approvePullRequest:
+          comment: Auto-approving dependabot update.
+      - enableAutoMerge:
+          mergeMethod: "squash"
+      description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
 onFailure: 
 onSuccess: 

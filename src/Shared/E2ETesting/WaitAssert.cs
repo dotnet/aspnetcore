@@ -35,6 +35,9 @@ public static class WaitAssert
     public static void True(this IWebDriver driver, Func<bool> actual, TimeSpan timeout)
         => WaitAssertCore(driver, () => Assert.True(actual()), timeout);
 
+    public static void True(this IWebDriver driver, Func<bool> actual, TimeSpan timeout, string message)
+        => WaitAssertCore(driver, () => Assert.True(actual(), message), timeout);
+
     public static void False(this IWebDriver driver, Func<bool> actual)
         => WaitAssertCore(driver, () => Assert.False(actual()));
 
@@ -116,7 +119,7 @@ public static class WaitAssert
             // tests running concurrently might use the DefaultTimeout in their current assertion, which is fine.
             TestRunFailed = true;
 
-            var innerHtml = driver.FindElement(By.CssSelector(":first-child"))?.GetAttribute("innerHTML");
+            var innerHtml = driver.FindElement(By.CssSelector(":first-child"))?.GetDomProperty("innerHTML");
 
             var fileId = $"{Guid.NewGuid():N}.png";
             var screenShotPath = Path.Combine(Path.GetFullPath(E2ETestOptions.Instance.ScreenShotsPath), fileId);
