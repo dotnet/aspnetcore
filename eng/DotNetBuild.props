@@ -1,25 +1,5 @@
 <!-- When altering this file, please include @dotnet/product-construction as a reviewer. -->
-
 <Project>
-
-  <PropertyGroup>
-    <GitHubRepositoryName>aspnetcore</GitHubRepositoryName>
-    <SourceBuildManagedOnly>true</SourceBuildManagedOnly>
-  </PropertyGroup>
-
-  <!--
-    Remove inner source .globalconfig file as both the inner and outer config files get loaded and cause a conflict.
-    Leaving the inner will cause all conflicting settings to be ignored.
-    https://learn.microsoft.com/dotnet/fundamentals/code-analysis/configuration-files#general-options.
-    This only needs to be done if there is an inner clone.
-  -->
-  <Target Name="RemoveInnerGlobalConfig"
-          DependsOnTargets="PrepareInnerSourceBuildRepoRoot"
-          BeforeTargets="RunInnerSourceBuildCommand"
-          Condition="'$(DotNetBuildOrchestrator)' != 'true'">
-
-    <Delete Files="$(InnerSourceBuildRepoRoot).globalconfig" />
-  </Target>
 
   <!-- Build RepoTasks - this is normally triggered via the build script but the inner ArPow source-build is run via msbuild.
        https://github.com/dotnet/source-build/issues/3807 -->
@@ -57,22 +37,6 @@
       WorkingDirectory="$(InnerSourceBuildRepoRoot)"
       EnvironmentVariables="@(InnerBuildEnv)"
       Condition="'$(OS)' == 'Windows_NT'" />
-  </Target>
-
-  <Target Name="GetAspnetcoreCategorizedIntermediateNupkgContents"
-          BeforeTargets="GetCategorizedIntermediateNupkgContents">
-    <PropertyGroup>
-      <InstallersArtifactsDir>$(CurrentRepoSourceBuildArtifactsDir)\installers\$(Configuration)\</InstallersArtifactsDir>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <!--
-        Add the internal installers artifacts required by dotnet/installer.
-      -->
-      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore_base_runtime.version" />
-      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-*.msi" />
-      <IntermediateNupkgArtifactFile Include="$(InstallersArtifactsDir)aspnetcore-runtime-*.pkg" />
-    </ItemGroup>
   </Target>
 
 </Project>
