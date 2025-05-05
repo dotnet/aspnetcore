@@ -143,8 +143,8 @@
     <SystemIOHashingVersion>9.0.4</SystemIOHashingVersion>
     <SystemRuntimeCachingVersion>9.0.4</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/extensions -->
-    <MicrosoftExtensionsDiagnosticsTestingVersion>9.5.0-preview.1.25223.1</MicrosoftExtensionsDiagnosticsTestingVersion>
-    <MicrosoftExtensionsTimeProviderTestingVersion>9.5.0-preview.1.25223.1</MicrosoftExtensionsTimeProviderTestingVersion>
+    <MicrosoftExtensionsDiagnosticsTestingVersion>9.5.0-preview.1.25252.3</MicrosoftExtensionsDiagnosticsTestingVersion>
+    <MicrosoftExtensionsTimeProviderTestingVersion>9.5.0-preview.1.25252.3</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>9.0.4</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>9.0.4</MicrosoftEntityFrameworkCoreInMemoryVersion>
