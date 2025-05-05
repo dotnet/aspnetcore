@@ -70,7 +70,7 @@ else
     private const string AuthenticatorUriFormat = "otpauth://totp/{0}:{1}?secret={2}&issuer={0}&digits=6";
 
     private string? message;
-    private ApplicationUser user = default!;
+    private ApplicationUser? user;
     private string? sharedKey;
     private string? authenticatorUri;
     private IEnumerable<string>? recoveryCodes;
@@ -84,12 +84,19 @@ else
     protected override async Task OnInitializedAsync()
     {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-
-        await LoadSharedKeyAndQrCodeUriAsync(user);
+        if (user is not null)
+        {
+            await LoadSharedKeyAndQrCodeUriAsync(user);
+        }
     }
 
     private async Task OnValidSubmitAsync()
     {
+        if (user is null)
+        {
+            throw new InvalidOperationException("User is not loaded; failed to configure authenticator app.");
+        }
+
         // Strip spaces and hyphens
         var verificationCode = Input.Code.Replace(" ", string.Empty).Replace("-", string.Empty);
 

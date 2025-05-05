@@ -31,7 +31,7 @@
 </div>
 
 @code {
-    private ApplicationUser user = default!;
+    private ApplicationUser? user;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
@@ -40,7 +40,7 @@
     {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
 
-        if (HttpMethods.IsGet(HttpContext.Request.Method) && !await UserManager.GetTwoFactorEnabledAsync(user))
+        if (user is not null && HttpMethods.IsGet(HttpContext.Request.Method) && !await UserManager.GetTwoFactorEnabledAsync(user))
         {
             throw new InvalidOperationException("Cannot disable 2FA for user as it's not currently enabled.");
         }
@@ -48,6 +48,11 @@
 
     private async Task OnSubmitAsync()
     {
+        if (user is null)
+        {
+            throw new InvalidOperationException("User is not loaded; failed to disable 2FA.");
+        }
+
         var disable2faResult = await UserManager.SetTwoFactorEnabledAsync(user, false);
         if (!disable2faResult.Succeeded)
         {
