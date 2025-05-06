@@ -74,8 +74,8 @@ public class ComponentsActivitySourceTest
         // Assert
         Assert.NotNull(activity);
         Assert.Equal(ComponentsActivitySource.OnCircuitName, activity.OperationName);
-        Assert.Equal($"CIRCUIT {circuitId}", activity.DisplayName);
-        Assert.Equal(ActivityKind.Server, activity.Kind);
+        Assert.Equal($"Circuit {circuitId}", activity.DisplayName);
+        Assert.Equal(ActivityKind.Internal, activity.Kind);
         Assert.True(activity.IsAllDataRequested);
         Assert.Equal(circuitId, activity.GetTagItem("circuit.id"));
         Assert.Contains(activity.Links, link => link.Context == httpContext);
@@ -118,8 +118,8 @@ public class ComponentsActivitySourceTest
         // Assert
         Assert.NotNull(activity);
         Assert.Equal(ComponentsActivitySource.OnRouteName, activity.OperationName);
-        Assert.Equal($"ROUTE {route} -> {componentType}", activity.DisplayName);
-        Assert.Equal(ActivityKind.Server, activity.Kind);
+        Assert.Equal($"Route {route} -> {componentType}", activity.DisplayName);
+        Assert.Equal(ActivityKind.Internal, activity.Kind);
         Assert.True(activity.IsAllDataRequested);
         Assert.Equal(componentType, activity.GetTagItem("component.type"));
         Assert.Equal(route, activity.GetTagItem("route"));
@@ -146,8 +146,8 @@ public class ComponentsActivitySourceTest
         // Assert
         Assert.NotNull(activity);
         Assert.Equal(ComponentsActivitySource.OnEventName, activity.OperationName);
-        Assert.Equal($"EVENT {attributeName} -> {componentType}.{methodName}", activity.DisplayName);
-        Assert.Equal(ActivityKind.Server, activity.Kind);
+        Assert.Equal($"Event {attributeName} -> {componentType}.{methodName}", activity.DisplayName);
+        Assert.Equal(ActivityKind.Internal, activity.Kind);
         Assert.True(activity.IsAllDataRequested);
         Assert.Equal(componentType, activity.GetTagItem("component.type"));
         Assert.Equal(methodName, activity.GetTagItem("component.method"));
@@ -218,7 +218,7 @@ public class ComponentsActivitySourceTest
 
         // Assert
         Assert.NotNull(activity);
-        Assert.Equal("CIRCUIT ", activity.DisplayName);
+        Assert.Equal("Circuit ", activity.DisplayName);
     }
 
     [Fact]
@@ -232,7 +232,7 @@ public class ComponentsActivitySourceTest
 
         // Assert
         Assert.NotNull(activity);
-        Assert.Equal("ROUTE unknown -> unknown", activity.DisplayName);
+        Assert.Equal("Route [unknown path] -> [unknown component]", activity.DisplayName);
     }
 
     [Fact]
@@ -246,6 +246,6 @@ public class ComponentsActivitySourceTest
 
         // Assert
         Assert.NotNull(activity);
-        Assert.Equal("EVENT unknown -> unknown.unknown", activity.DisplayName);
+        Assert.Equal("Event [unknown attribute] -> [unknown component].[unknown method]", activity.DisplayName);
     }
 }

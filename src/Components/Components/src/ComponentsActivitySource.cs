@@ -36,7 +36,7 @@ internal class ComponentsActivitySource
     {
         _circuitId = circuitId;
 
-        var activity = ActivitySource.CreateActivity(OnCircuitName, ActivityKind.Server, parentId: null, null, null);
+        var activity = ActivitySource.CreateActivity(OnCircuitName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
         {
             if (activity.IsAllDataRequested)
@@ -75,7 +75,7 @@ internal class ComponentsActivitySource
             _httpContext = CaptureHttpContext();
         }
 
-        var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Server, parentId: null, null, null);
+        var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
         {
             if (activity.IsAllDataRequested)
@@ -111,7 +111,7 @@ internal class ComponentsActivitySource
 
     public Activity? StartEventActivity(string? componentType, string? methodName, string? attributeName)
     {
-        var activity = ActivitySource.CreateActivity(OnEventName, ActivityKind.Server, parentId: null, null, null);
+        var activity = ActivitySource.CreateActivity(OnEventName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
         {
             if (activity.IsAllDataRequested)
