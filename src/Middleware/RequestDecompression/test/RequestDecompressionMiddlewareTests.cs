@@ -499,8 +499,8 @@ public class RequestDecompressionMiddlewareTests
         if (exceedsLimit)
         {
             Assert.NotNull(exception);
-            Assert.IsAssignableFrom<InvalidOperationException>(exception);
-            Assert.Equal("The maximum number of bytes have been read.", exception.Message);
+            Assert.IsAssignableFrom<BadHttpRequestException>(exception);
+            Assert.Equal(StatusCodes.Status413PayloadTooLarge, ((BadHttpRequestException)exception).StatusCode);
         }
         else
         {
@@ -583,8 +583,8 @@ public class RequestDecompressionMiddlewareTests
         if (exceedsLimit)
         {
             Assert.NotNull(exception);
-            Assert.IsAssignableFrom<InvalidOperationException>(exception);
-            Assert.Equal("The maximum number of bytes have been read.", exception.Message);
+            Assert.IsAssignableFrom<BadHttpRequestException>(exception);
+            Assert.Equal(StatusCodes.Status413PayloadTooLarge, ((BadHttpRequestException)exception).StatusCode);
         }
         else
         {
