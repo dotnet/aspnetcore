@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -25,6 +26,12 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
         var project = await CreateBuildPublishAsync(
             args: ["-int", interactivityOption],
             getTargetProject: GetTargetProject);
+
+        if (HasClientProject())
+        {
+            // TODO: Remove this when LazyAssemblyLoader is no longer being used.
+            AssertServerProjectCanUseLazyAssemblyLoader(GetTargetProject(project));
+        }
 
         // There won't be a counter page when the 'None' interactivity option is used
         var pagesToExclude = interactivityOption is "None"
@@ -91,5 +98,13 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             return request;
         });
         Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
+    }
+
+    private static void AssertServerProjectCanUseLazyAssemblyLoader(Project project)
+    {
+        var assemblyName = "Microsoft.AspNetCore.Components.WebAssembly.dll";
+        var fullPath = Path.Combine(project.TemplateBuildDir, assemblyName);
+        var doesExist = File.Exists(fullPath);
+        Assert.True(doesExist, "Required assembly does not exist");
     }
 }
