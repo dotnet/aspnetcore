@@ -87,8 +87,8 @@ internal sealed class ComponentsMetrics : IDisposable
     {
         var tags = new TagList
         {
-            { "component.type", componentType ?? "unknown" },
-            { "route", route ?? "unknown" },
+            { "aspnetcore.components.type", componentType ?? "unknown" },
+            { "aspnetcore.components.route", route ?? "unknown" },
         };
 
         _navigationCount.Add(1, tags);
@@ -102,9 +102,9 @@ internal sealed class ComponentsMetrics : IDisposable
 
             var tags = new TagList
             {
-                { "component.type", componentType ?? "unknown" },
-                { "component.method", methodName ?? "unknown" },
-                { "attribute.name", attributeName ?? "unknown" }
+                { "aspnetcore.components.type", componentType ?? "unknown" },
+                { "aspnetcore.components.method", methodName ?? "unknown" },
+                { "aspnetcore.components.attribute.name", attributeName ?? "unknown" }
             };
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp);
@@ -124,7 +124,7 @@ internal sealed class ComponentsMetrics : IDisposable
 
             var tags = new TagList
             {
-                { "component.type", componentType ?? "unknown" },
+                { "aspnetcore.components.type", componentType ?? "unknown" },
             };
 
             var duration = Stopwatch.GetElapsedTime(startTimestamp);
@@ -140,7 +140,7 @@ internal sealed class ComponentsMetrics : IDisposable
     {
         var tags = new TagList
         {
-            { "diff.approximate.length", BucketEditLength(diffLength) }
+            { "aspnetcore.components.diff.approximate.length", BucketEditLength(diffLength) }
         };
 
         var duration = Stopwatch.GetElapsedTime(startTimestamp);
@@ -152,8 +152,8 @@ internal sealed class ComponentsMetrics : IDisposable
         var receiverName = (callback.Receiver?.GetType() ?? callback.Delegate?.Target?.GetType())?.FullName;
         var tags = new TagList
         {
-            { "component.type", receiverName ?? "unknown" },
-            { "attribute.name", attributeName  ?? "unknown"},
+            { "aspnetcore.components.type", receiverName ?? "unknown" },
+            { "aspnetcore.components.attribute.name", attributeName  ?? "unknown"},
             { "error.type", exceptionType ?? "unknown"}
         };
         _eventException.Add(1, tags);
@@ -175,7 +175,7 @@ internal sealed class ComponentsMetrics : IDisposable
     {
         var tags = new TagList
         {
-            { "component.type", componentType ?? "unknown" },
+            { "aspnetcore.components.type", componentType ?? "unknown" },
             { "error.type", exceptionType ?? "unknown"}
         };
         _parametersException.Add(1, tags);

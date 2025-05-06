@@ -43,7 +43,7 @@ internal class ComponentsActivitySource
             {
                 if (_circuitId != null)
                 {
-                    activity.SetTag("circuit.id", _circuitId);
+                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
                 }
                 if (httpContext != default)
                 {
@@ -82,15 +82,15 @@ internal class ComponentsActivitySource
             {
                 if (_circuitId != null)
                 {
-                    activity.SetTag("circuit.id", _circuitId);
+                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
                 }
                 if (componentType != null)
                 {
-                    activity.SetTag("component.type", componentType);
+                    activity.SetTag("aspnetcore.components.type", componentType);
                 }
                 if (route != null)
                 {
-                    activity.SetTag("route", route);
+                    activity.SetTag("aspnetcore.components.route", route);
                 }
                 if (_httpContext != default)
                 {
@@ -118,19 +118,19 @@ internal class ComponentsActivitySource
             {
                 if (_circuitId != null)
                 {
-                    activity.SetTag("circuit.id", _circuitId);
+                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
                 }
                 if (componentType != null)
                 {
-                    activity.SetTag("component.type", componentType);
+                    activity.SetTag("aspnetcore.components.type", componentType);
                 }
                 if (methodName != null)
                 {
-                    activity.SetTag("component.method", methodName);
+                    activity.SetTag("aspnetcore.components.method", methodName);
                 }
                 if (attributeName != null)
                 {
-                    activity.SetTag("attribute.name", attributeName);
+                    activity.SetTag("aspnetcore.components.attribute.name", attributeName);
                 }
                 if (_httpContext != default)
                 {

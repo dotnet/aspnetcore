@@ -25,17 +25,17 @@ internal sealed class CircuitMetrics : IDisposable
 
         _circuitTotalCounter = _meter.CreateCounter<long>(
             "aspnetcore.components.circuits.count",
-            unit: "{circuits}",
+            unit: "{circuit}",
             description: "Total number of circuits.");
 
         _circuitActiveCounter = _meter.CreateUpDownCounter<long>(
             "aspnetcore.components.circuits.active_circuits",
-            unit: "{circuits}",
+            unit: "{circuit}",
             description: "Number of active circuits.");
 
         _circuitConnectedCounter = _meter.CreateUpDownCounter<long>(
             "aspnetcore.components.circuits.connected_circuits",
-            unit: "{circuits}",
+            unit: "{circuit}",
             description: "Number of disconnected circuits.");
 
         _circuitDuration = _meter.CreateHistogram<double>(

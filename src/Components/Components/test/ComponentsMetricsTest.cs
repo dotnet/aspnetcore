@@ -50,9 +50,9 @@ public class ComponentsMetricsTest
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal("TestComponent", measurements[0].Tags["component.type"]);
-        Assert.Equal("OnClickAsync", measurements[0].Tags["attribute.name"]);
-        Assert.Equal("MyMethod", measurements[0].Tags["component.method"]);
+        Assert.Equal("TestComponent", measurements[0].Tags["aspnetcore.components.type"]);
+        Assert.Equal("OnClickAsync", measurements[0].Tags["aspnetcore.components.attribute.name"]);
+        Assert.Equal("MyMethod", measurements[0].Tags["aspnetcore.components.method"]);
     }
 
     [Fact]
@@ -73,7 +73,7 @@ public class ComponentsMetricsTest
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal("TestComponent", measurements[0].Tags["component.type"]);
+        Assert.Equal("TestComponent", measurements[0].Tags["aspnetcore.components.type"]);
     }
 
     [Fact]
@@ -94,7 +94,7 @@ public class ComponentsMetricsTest
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal(50, measurements[0].Tags["diff.approximate.length"]);
+        Assert.Equal(50, measurements[0].Tags["aspnetcore.components.diff.approximate.length"]);
     }
 
     [Fact]
@@ -117,8 +117,8 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.Equal(1, measurements[0].Value);
         Assert.Equal("ArgumentException", measurements[0].Tags["error.type"]);
-        Assert.Equal("OnClick", measurements[0].Tags["attribute.name"]);
-        Assert.Contains("Microsoft.AspNetCore.Components.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["component.type"]);
+        Assert.Equal("OnClick", measurements[0].Tags["aspnetcore.components.attribute.name"]);
+        Assert.Contains("Microsoft.AspNetCore.Components.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["aspnetcore.components.type"]);
     }
 
     [Fact]
@@ -144,8 +144,8 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.Equal(1, measurements[0].Value);
         Assert.Equal("InvalidOperationException", measurements[0].Tags["error.type"]);
-        Assert.Equal("OnClickAsync", measurements[0].Tags["attribute.name"]);
-        Assert.Contains("Microsoft.AspNetCore.Components.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["component.type"]);
+        Assert.Equal("OnClickAsync", measurements[0].Tags["aspnetcore.components.attribute.name"]);
+        Assert.Contains("Microsoft.AspNetCore.Components.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["aspnetcore.components.type"]);
     }
 
     [Fact]
@@ -165,7 +165,7 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.Equal(1, measurements[0].Value);
         Assert.Equal("ArgumentException", measurements[0].Tags["error.type"]);
-        Assert.Equal("TestComponent", measurements[0].Tags["component.type"]);
+        Assert.Equal("TestComponent", measurements[0].Tags["aspnetcore.components.type"]);
     }
 
     [Fact]
@@ -188,7 +188,7 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.Equal(1, measurements[0].Value);
         Assert.Equal("InvalidOperationException", measurements[0].Tags["error.type"]);
-        Assert.Equal("TestComponent", measurements[0].Tags["component.type"]);
+        Assert.Equal("TestComponent", measurements[0].Tags["aspnetcore.components.type"]);
     }
 
     [Fact]

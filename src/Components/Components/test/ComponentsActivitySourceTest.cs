@@ -77,7 +77,7 @@ public class ComponentsActivitySourceTest
         Assert.Equal($"Circuit {circuitId}", activity.DisplayName);
         Assert.Equal(ActivityKind.Internal, activity.Kind);
         Assert.True(activity.IsAllDataRequested);
-        Assert.Equal(circuitId, activity.GetTagItem("circuit.id"));
+        Assert.Equal(circuitId, activity.GetTagItem("aspnetcore.components.circuit.id"));
         Assert.Contains(activity.Links, link => link.Context == httpContext);
         Assert.False(activity.IsStopped);
     }
@@ -121,9 +121,9 @@ public class ComponentsActivitySourceTest
         Assert.Equal($"Route {route} -> {componentType}", activity.DisplayName);
         Assert.Equal(ActivityKind.Internal, activity.Kind);
         Assert.True(activity.IsAllDataRequested);
-        Assert.Equal(componentType, activity.GetTagItem("component.type"));
-        Assert.Equal(route, activity.GetTagItem("route"));
-        Assert.Equal("test-circuit-id", activity.GetTagItem("circuit.id"));
+        Assert.Equal(componentType, activity.GetTagItem("aspnetcore.components.type"));
+        Assert.Equal(route, activity.GetTagItem("aspnetcore.components.route"));
+        Assert.Equal("test-circuit-id", activity.GetTagItem("aspnetcore.components.circuit.id"));
         Assert.False(activity.IsStopped);
     }
 
@@ -149,10 +149,10 @@ public class ComponentsActivitySourceTest
         Assert.Equal($"Event {attributeName} -> {componentType}.{methodName}", activity.DisplayName);
         Assert.Equal(ActivityKind.Internal, activity.Kind);
         Assert.True(activity.IsAllDataRequested);
-        Assert.Equal(componentType, activity.GetTagItem("component.type"));
-        Assert.Equal(methodName, activity.GetTagItem("component.method"));
-        Assert.Equal(attributeName, activity.GetTagItem("attribute.name"));
-        Assert.Equal("test-circuit-id", activity.GetTagItem("circuit.id"));
+        Assert.Equal(componentType, activity.GetTagItem("aspnetcore.components.type"));
+        Assert.Equal(methodName, activity.GetTagItem("aspnetcore.components.method"));
+        Assert.Equal(attributeName, activity.GetTagItem("aspnetcore.components.attribute.name"));
+        Assert.Equal("test-circuit-id", activity.GetTagItem("aspnetcore.components.circuit.id"));
         Assert.False(activity.IsStopped);
     }
 
