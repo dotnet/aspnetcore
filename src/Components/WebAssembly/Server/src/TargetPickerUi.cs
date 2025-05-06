@@ -366,9 +366,34 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
     {
         var underlyingV8Endpoint = new Uri(tabToDebug.WebSocketDebuggerUrl);
         var proxyEndpoint = new Uri(_debugProxyUrl);
-        var devToolsUrlAbsolute = new Uri(_browserHost + tabToDebug.DevtoolsFrontendUrl);
+        var devToolsUrlAbsolute = new Uri(new Uri(_browserHost), relativeUri: NormalizeDevtoolsFrontendUrl(tabToDebug.DevtoolsFrontendUrl));
         var devToolsUrlWithProxy = $"{devToolsUrlAbsolute.Scheme}://{devToolsUrlAbsolute.Authority}{devToolsUrlAbsolute.AbsolutePath}?{underlyingV8Endpoint.Scheme}={proxyEndpoint.Authority}{underlyingV8Endpoint.PathAndQuery}";
         return devToolsUrlWithProxy;
+
+        static string NormalizeDevtoolsFrontendUrl(string devtoolsFrontendUrl)
+        {
+            // Frontend url can be absolute or relative based on browser
+            string localPath;
+            string queryString;
+            if (Uri.TryCreate(devtoolsFrontendUrl, UriKind.Absolute, out var devtoolsFrontendUri))
+            {
+                localPath = devtoolsFrontendUri.LocalPath;
+                queryString = devtoolsFrontendUri.Query;
+            }
+            else
+            {
+                var queryStringBeginCharIndex = devtoolsFrontendUrl.IndexOf('?');
+                localPath = devtoolsFrontendUrl[..queryStringBeginCharIndex];
+                queryString = devtoolsFrontendUrl[queryStringBeginCharIndex..];
+            }
+
+            // We need only the last segment of the path
+            localPath = localPath.Split('/').Last().TrimStart('/');
+            // Ensure starts with "devtools"
+            localPath = $"devtools/{localPath}";
+
+            return $"{localPath}?{queryString}";
+        }
     }
 
     private string GetLaunchChromeInstructions(string targetApplicationUrl)
