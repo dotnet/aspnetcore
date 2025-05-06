@@ -19,9 +19,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 public partial class BootResourceCachingTest
     : ServerTestBase<AspNetSiteServerFixture>
 {
-    // The cache name is derived from the application's base href value (in this case, '/')
-    private const string CacheName = "dotnet-resources-/";
-
     public BootResourceCachingTest(
         BrowserFixture browserFixture,
         AspNetSiteServerFixture serverFixture,
