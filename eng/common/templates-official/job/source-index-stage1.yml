@@ -1,7 +1,7 @@
 parameters:
   runAsPublic: false
-  sourceIndexUploadPackageVersion: 2.0.0-20240502.12
-  sourceIndexProcessBinlogPackageVersion: 1.0.1-20240129.2
+  sourceIndexUploadPackageVersion: 2.0.0-20250425.2
+  sourceIndexProcessBinlogPackageVersion: 1.0.1-20250425.2
   sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
   sourceIndexBuildCommand: powershell -NoLogo -NoProfile -ExecutionPolicy Bypass -Command "eng/common/build.ps1 -restore -build -binarylog -ci"
   preSteps: []
