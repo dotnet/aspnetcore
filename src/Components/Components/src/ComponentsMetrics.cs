@@ -44,19 +44,19 @@ internal sealed class ComponentsMetrics : IDisposable
         _eventDuration = _meter.CreateHistogram(
             "aspnetcore.components.event_handler",
             unit: "s",
-            description: "Duration of processing browser event.",
+            description: "Duration of processing browser event.  It includes business logic of the component but not affected child components.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _parametersDuration = _lifeCycleMeter.CreateHistogram(
             "aspnetcore.components.update_parameters",
             unit: "s",
-            description: "Duration of processing component parameters.",
+            description: "Duration of processing component parameters. It includes business logic of the component.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorRenderingSecondsBucketBoundaries });
 
         _batchDuration = _lifeCycleMeter.CreateHistogram(
             "aspnetcore.components.render_diff",
             unit: "s",
-            description: "Duration of rendering DOM update including network and browser time.",
+            description: "Duration of rendering component tree and producing HTML diff. It includes business logic of the changed components.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorRenderingSecondsBucketBoundaries });
     }
 
