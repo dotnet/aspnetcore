@@ -45,7 +45,8 @@ public class ComplexType
 
     public SubTypeWithInheritance PropertyWithInheritance { get; set; } = new SubTypeWithInheritance("some-value", default);
 
-    public List<SubType> ListOfSubTypes { get; set; } = [];
+    // Nullable to validate https://github.com/dotnet/aspnetcore/issues/61737
+    public List<SubType>? ListOfSubTypes { get; set; } = [];
 
     [DerivedValidation(ErrorMessage = "Value must be an even number")]
     public int IntegerWithDerivedValidationAttribute { get; set; }

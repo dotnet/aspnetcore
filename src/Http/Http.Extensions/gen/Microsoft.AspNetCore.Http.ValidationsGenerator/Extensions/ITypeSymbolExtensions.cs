@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
@@ -45,8 +46,9 @@ internal static class ITypeSymbolExtensions
 
         if (type.NullableAnnotation == NullableAnnotation.Annotated)
         {
-            // Extract the underlying type from a reference type
-            type = type.OriginalDefinition;
+            // Remove the nullable annotation but keep any generic arguments, e.g. List<int>? → List<int>
+            // so we can retain them in future steps.
+            type = type.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
         }
 
         if (type is INamedTypeSymbol namedType && namedType.IsEnumerable(enumerable) && namedType.TypeArguments.Length == 1)
@@ -90,17 +92,17 @@ internal static class ITypeSymbolExtensions
 
     // Types exempted here have special binding rules in RDF and RDG and are not validatable
     // types themselves so we short-circuit on them.
-    internal static bool IsExemptType(this ITypeSymbol type, RequiredSymbols requiredSymbols)
+    internal static bool IsExemptType(this ITypeSymbol type, WellKnownTypes wellKnownTypes)
     {
-        return SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpContext)
-               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpRequest)
-               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.HttpResponse)
-               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.CancellationToken)
-               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.IFormCollection)
-               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.IFormFileCollection)
-               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.IFormFile)
-               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.Stream)
-               || SymbolEqualityComparer.Default.Equals(type, requiredSymbols.PipeReader);
+        return SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpContext))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpRequest))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpResponse))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Threading_CancellationToken))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormCollection))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormFileCollection))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormFile))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_IO_Stream))
+               || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_IO_Pipelines_PipeReader));
     }
 
     internal static IPropertySymbol? FindPropertyIncludingBaseTypes(this INamedTypeSymbol typeSymbol, string propertyName)

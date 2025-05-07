@@ -663,7 +663,7 @@ configuration:
       - isAction:
           action: Opened
       - isActivitySender:
-          user: app/dependabot
+          user: dependabot[bot]
           issueAuthor: False
       - targetsBranch:
           branch: main
