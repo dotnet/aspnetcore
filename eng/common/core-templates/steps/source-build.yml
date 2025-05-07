@@ -19,19 +19,6 @@ steps:
     set -x
     df -h
 
-    # If file changes are detected, set CopyWipIntoInnerSourceBuildRepo to copy the WIP changes into the inner source build repo.
-    internalRestoreArgs=
-    if ! git diff --quiet; then
-      internalRestoreArgs='/p:CopyWipIntoInnerSourceBuildRepo=true'
-      # The 'Copy WIP' feature of source build uses git stash to apply changes from the original repo.
-      # This only works if there is a username/email configured, which won't be the case in most CI runs.
-      git config --get user.email
-      if [ $? -ne 0 ]; then
-        git config user.email dn-bot@microsoft.com
-        git config user.name dn-bot
-      fi
-    fi
-
     # If building on the internal project, the internal storage variable may be available (usually only if needed)
     # In that case, add variables to allow the download of internal runtimes if the specified versions are not found
     # in the default public locations.
@@ -71,7 +58,6 @@ steps:
       --restore --build --pack -bl \
       ${{ parameters.platform.buildArguments }} \
       $internalRuntimeDownloadArgs \
-      $internalRestoreArgs \
       $targetRidArgs \
       $runtimeOsArgs \
       $baseOsArgs \
@@ -80,26 +66,12 @@ steps:
       /p:DotNetBuildRepo=true \
   displayName: Build
 
-# Upload build logs for diagnosis.
-- task: CopyFiles@2
-  displayName: Prepare BuildLogs staging directory
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)'
-    Contents: |
-      **/*.log
-      **/*.binlog
-      artifacts/sb/prebuilt-report/**
-    TargetFolder: '$(Build.StagingDirectory)/BuildLogs'
-    CleanTargetFolder: true
-  continueOnError: true
-  condition: succeededOrFailed()
-
 - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
   parameters:
     is1ESPipeline: ${{ parameters.is1ESPipeline }}
     args:
       displayName: Publish BuildLogs
-      targetPath: '$(Build.StagingDirectory)/BuildLogs'
+      targetPath: artifacts/log/$[ coalesce(variables._BuildConfig, 'Release') ]/
       artifactName: BuildLogs_SourceBuild_${{ parameters.platform.name }}_Attempt$(System.JobAttempt)
       continueOnError: true
       condition: succeededOrFailed()
