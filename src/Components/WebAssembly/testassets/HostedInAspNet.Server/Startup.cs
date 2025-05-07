@@ -26,7 +26,7 @@ public class Startup
         var mapAllApps = Configuration.GetValue<bool>("MapAllApps");
         app.Use(async (context, next) =>
         {
-            string originalRequestPath = request.Path;
+            string originalRequestPath = context.Request.Path;
             await next(context);
 
             // This is used by E2E tests to verify that the correct resources were fetched,
