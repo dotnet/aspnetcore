@@ -1,11 +1,12 @@
 <Project>
   <!-- This file is shared between Helix.proj and .csproj files. -->
   <PropertyGroup>
-    <HelixQueueAlmaLinux>(AlmaLinux.9.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-9-helix-amd64</HelixQueueAlmaLinux>
-    <HelixQueueAlpine>(Alpine.321.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-helix-amd64</HelixQueueAlpine>
-    <HelixQueueDebian>(Debian.13.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-amd64</HelixQueueDebian>
-    <HelixQueueFedora>(Fedora.42.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/fedora-42-helix-amd64</HelixQueueFedora>
-    <HelixQueueAzureLinux>(AzureLinux.30.Amd64.Open)Ubuntu.2204.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-helix-amd64</HelixQueueAzureLinux>
+    <HelixQueueAlmaLinux>(AlmaLinux.9.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-9-helix-amd64</HelixQueueAlmaLinux>
+    <HelixQueueAlpine>(Alpine.321.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-helix-amd64</HelixQueueAlpine>
+    <HelixQueueAzureLinux>(AzureLinux.30.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-helix-amd64</HelixQueueAzureLinux>
+    <HelixQueueDebian>(Debian.13.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-amd64</HelixQueueDebian>
+    <HelixQueueFedora>(Fedora.42.Amd64.Open)azurelinux.3.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/fedora-42-helix-amd64</HelixQueueFedora>
+    <!-- Arm64 -->
     <HelixQueueArmDebian>(Debian.13.Arm64.Open)ubuntu.2204.armarch.open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-arm64v8</HelixQueueArmDebian>
 
     <!-- Do not attempt to override global property. -->
@@ -42,9 +43,10 @@
 
         <!-- Containers -->
         <HelixAvailableTargetQueue Include="$(HelixQueueAlpine)" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="$(HelixQueueAzureLinux)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueDebian)" Platform="Linux" />
         <HelixAvailableTargetQueue Include="$(HelixQueueFedora)" Platform="Linux" />
-        <HelixAvailableTargetQueue Include="$(HelixQueueAzureLinux)" Platform="Linux" />
+        <!-- Arm64 -->
         <HelixAvailableTargetQueue Include="$(HelixQueueArmDebian)" Platform="Linux" />
 
         <!-- Mac -->

@@ -28,8 +28,8 @@
     <!-- Disabling on those OSes until a better fix can be identified -->
     <SkipHelixQueues>
       $(HelixQueueArmDebian);
-      $(HelixQueueDebian);
       $(HelixQueueAzureLinux);
+      $(HelixQueueDebian);
       $(SkipHelixQueues)
     </SkipHelixQueues>
   </PropertyGroup>

@@ -18,9 +18,9 @@
     <SkipHelixQueues>
       $(HelixQueueAlmaLinux);
       $(HelixQueueAlpine);
+      $(HelixQueueAzureLinux);
       $(HelixQueueDebian);
       $(HelixQueueFedora40);
-      $(HelixQueueMariner);
       Ubuntu.2204.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
