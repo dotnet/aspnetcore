@@ -457,7 +457,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             activity = ComponentActivitySource.StartEventActivity(receiverName, methodName, attributeName);
         }
 
-        var eventStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsEventDurationEnabled ? Stopwatch.GetTimestamp() : 0;
+        var eventStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsEventEnabled ? Stopwatch.GetTimestamp() : 0;
 
         // If this event attribute was rendered by a component that's since been disposed, don't dispatch the event at all.
         // This can occur because event handler disposal is deferred, so event handler IDs can outlive their components.
@@ -501,15 +501,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             task = callback.InvokeAsync(eventArgs);
 
             // collect metrics
-            if (ComponentMetrics != null && ComponentMetrics.IsEventDurationEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
             {
                 var receiverName = (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 var methodName = callback.Delegate.Method?.Name;
-                _ = ComponentMetrics.CaptureEventDurationAsync(task, eventStartTimestamp, receiverName, methodName, attributeName);
-            }
-            if (ComponentMetrics != null && ComponentMetrics.IsEventExceptionEnabled)
-            {
-                _ = ComponentMetrics.CaptureEventFailedAsync(task, callback, attributeName);
+                _ = ComponentMetrics.CaptureEventDuration(task, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
             // stop activity/trace
@@ -520,9 +516,11 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         }
         catch (Exception e)
         {
-            if (ComponentMetrics != null && ComponentMetrics.IsEventExceptionEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsEventEnabled)
             {
-                ComponentMetrics.EventFailed(e.GetType().FullName, callback, attributeName);
+                var receiverName = (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
+                var methodName = callback.Delegate.Method?.Name;
+                ComponentMetrics.FailEventSync(e, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
             if (ComponentActivitySource != null && activity != null)
@@ -813,7 +811,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         _isBatchInProgress = true;
         var updateDisplayTask = Task.CompletedTask;
-        var batchStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsBatchDurationEnabled ? Stopwatch.GetTimestamp() : 0;
+        var batchStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsBatchEnabled ? Stopwatch.GetTimestamp() : 0;
 
         try
         {
@@ -846,20 +844,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // if there is async work to be done.
             _ = InvokeRenderCompletedCalls(batch.UpdatedComponents, updateDisplayTask);
 
-            if (ComponentMetrics != null && ComponentMetrics.IsBatchDurationEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
             {
-                ComponentMetrics.BatchDuration(batchStartTimestamp, batch.UpdatedComponents.Count);
-            }
-            if (ComponentMetrics != null && ComponentMetrics.IsBatchExceptionEnabled)
-            {
-                _ = ComponentMetrics.CaptureBatchFailedAsync(updateDisplayTask);
+                _ = ComponentMetrics.CaptureBatchDuration(updateDisplayTask, batchStartTimestamp, batch.UpdatedComponents.Count);
             }
         }
         catch (Exception e)
         {
-            if (ComponentMetrics != null && ComponentMetrics.IsBatchExceptionEnabled)
+            if (ComponentMetrics != null && ComponentMetrics.IsBatchEnabled)
             {
-                ComponentMetrics.BatchFailed(e.GetType().Name);
+                ComponentMetrics.FailBatchSync(e, batchStartTimestamp);
             }
 
             // Ensure we catch errors while running the render functions of the components.

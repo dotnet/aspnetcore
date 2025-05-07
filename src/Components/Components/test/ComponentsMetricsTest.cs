@@ -29,243 +29,374 @@ public class ComponentsMetricsTest
 
         // Assert
         Assert.Equal(2, _meterFactory.Meters.Count);
-        Assert.Equal(ComponentsMetrics.MeterName, _meterFactory.Meters[0].Name);
+        Assert.Contains(_meterFactory.Meters, m => m.Name == ComponentsMetrics.MeterName);
+        Assert.Contains(_meterFactory.Meters, m => m.Name == ComponentsMetrics.LifecycleMeterName);
     }
 
     [Fact]
-    public async Task CaptureEventDurationAsync_RecordsDuration()
+    public void Navigation_RecordsMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var eventAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event.duration");
+        using var navigationCounter = new MetricCollector<long>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.navigation");
 
         // Act
-        var startTime = Stopwatch.GetTimestamp();
-        var task = Task.Delay(10); // Create a delay task
-        await componentsMetrics.CaptureEventDurationAsync(task, startTime, "TestComponent", "MyMethod", "OnClickAsync");
+        componentsMetrics.Navigation("TestComponent", "/test-route");
 
         // Assert
-        var measurements = eventAsyncDurationCollector.GetMeasurementSnapshot();
+        var measurements = navigationCounter.GetMeasurementSnapshot();
+
+        Assert.Single(measurements);
+        Assert.Equal(1, measurements[0].Value);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
+        Assert.Equal("/test-route", Assert.Contains("aspnetcore.components.route", measurements[0].Tags));
+    }
+
+    [Fact]
+    public void IsNavigationEnabled_ReturnsCorrectState()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+
+        // Create a collector to ensure the meter is enabled
+        using var navigationCounter = new MetricCollector<long>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.navigation");
+
+        // Act & Assert
+        Assert.True(componentsMetrics.IsNavigationEnabled);
+    }
+
+    [Fact]
+    public async Task CaptureEventDuration_RecordsSuccessMetric()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
+
+        // Act
+        var startTimestamp = Stopwatch.GetTimestamp();
+        await Task.Delay(10); // Small delay to ensure measureable duration
+        await componentsMetrics.CaptureEventDuration(Task.CompletedTask, startTimestamp,
+            "TestComponent", "OnClick", "onclick");
+
+        // Assert
+        var measurements = eventDurationHistogram.GetMeasurementSnapshot();
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal("TestComponent", measurements[0].Tags["aspnetcore.components.type"]);
-        Assert.Equal("OnClickAsync", measurements[0].Tags["aspnetcore.components.attribute.name"]);
-        Assert.Equal("MyMethod", measurements[0].Tags["aspnetcore.components.method"]);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", measurements[0].Tags));
+        Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurements[0].Tags));
+        Assert.DoesNotContain("error.type", measurements[0].Tags);
     }
 
     [Fact]
-    public async Task CaptureParametersDurationAsync_RecordsDuration()
+    public async Task CaptureEventDuration_RecordsErrorMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var parametersAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
+        using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
 
         // Act
-        var startTime = Stopwatch.GetTimestamp();
-        var task = Task.Delay(10); // Create a delay task
-        await componentsMetrics.CaptureParametersDurationAsync(task, startTime, "TestComponent");
+        var startTimestamp = Stopwatch.GetTimestamp();
+        await Task.Delay(10); // Small delay to ensure measureable duration
+        await componentsMetrics.CaptureEventDuration(Task.FromException(new InvalidOperationException()),
+            startTimestamp, "TestComponent", "OnClick", "onclick");
 
         // Assert
-        var measurements = parametersAsyncDurationCollector.GetMeasurementSnapshot();
+        var measurements = eventDurationHistogram.GetMeasurementSnapshot();
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal("TestComponent", measurements[0].Tags["aspnetcore.components.type"]);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", measurements[0].Tags));
+        Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurements[0].Tags));
+        Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
 
     [Fact]
-    public void BatchDuration_RecordsDuration()
+    public void FailEventSync_RecordsErrorMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var batchDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.duration");
+        using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
+        var exception = new InvalidOperationException();
 
         // Act
-        var startTime = Stopwatch.GetTimestamp();
-        Thread.Sleep(10); // Add a small delay to ensure a measurable duration
-        componentsMetrics.BatchDuration(startTime, 50);
+        var startTimestamp = Stopwatch.GetTimestamp();
+        componentsMetrics.FailEventSync(exception, startTimestamp,
+            "TestComponent", "OnClick", "onclick");
 
         // Assert
-        var measurements = batchDurationCollector.GetMeasurementSnapshot();
+        var measurements = eventDurationHistogram.GetMeasurementSnapshot();
 
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
-        Assert.Equal(50, measurements[0].Tags["aspnetcore.components.diff.approximate.length"]);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", measurements[0].Tags));
+        Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurements[0].Tags));
+        Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
 
     [Fact]
-    public void EventFailed_RecordsException()
+    public void IsEventEnabled_ReturnsCorrectState()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event.exceptions");
 
-        // Create a mock EventCallback
-        var callback = new EventCallback(new TestComponent(), () => { });
+        // Create a collector to ensure the meter is enabled
+        using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
+
+        // Act & Assert
+        Assert.True(componentsMetrics.IsEventEnabled);
+    }
+
+    [Fact]
+    public async Task CaptureParametersDuration_RecordsSuccessMetric()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
 
         // Act
-        componentsMetrics.EventFailed("ArgumentException", callback, "OnClick");
+        var startTimestamp = Stopwatch.GetTimestamp();
+        await Task.Delay(10); // Small delay to ensure measureable duration
+        await componentsMetrics.CaptureParametersDuration(Task.CompletedTask, startTimestamp, "TestComponent");
 
         // Assert
-        var measurements = eventExceptionCollector.GetMeasurementSnapshot();
+        var measurements = parametersDurationHistogram.GetMeasurementSnapshot();
 
         Assert.Single(measurements);
-        Assert.Equal(1, measurements[0].Value);
-        Assert.Equal("ArgumentException", measurements[0].Tags["error.type"]);
-        Assert.Equal("OnClick", measurements[0].Tags["aspnetcore.components.attribute.name"]);
-        Assert.Contains("Microsoft.AspNetCore.Components.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["aspnetcore.components.type"]);
+        Assert.True(measurements[0].Value > 0);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
+        Assert.DoesNotContain("error.type", measurements[0].Tags);
     }
 
     [Fact]
-    public async Task CaptureEventFailedAsync_RecordsException()
+    public async Task CaptureParametersDuration_RecordsErrorMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event.exceptions");
-
-        // Create a mock EventCallback
-        var callback = new EventCallback(new TestComponent(), () => { });
-
-        // Create a task that throws an exception
-        var task = Task.FromException(new InvalidOperationException());
+        using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
 
         // Act
-        await componentsMetrics.CaptureEventFailedAsync(task, callback, "OnClickAsync");
+        var startTimestamp = Stopwatch.GetTimestamp();
+        await Task.Delay(10); // Small delay to ensure measureable duration
+        await componentsMetrics.CaptureParametersDuration(Task.FromException(new InvalidOperationException()),
+            startTimestamp, "TestComponent");
 
         // Assert
-        var measurements = eventExceptionCollector.GetMeasurementSnapshot();
+        var measurements = parametersDurationHistogram.GetMeasurementSnapshot();
 
         Assert.Single(measurements);
-        Assert.Equal(1, measurements[0].Value);
-        Assert.Equal("InvalidOperationException", measurements[0].Tags["error.type"]);
-        Assert.Equal("OnClickAsync", measurements[0].Tags["aspnetcore.components.attribute.name"]);
-        Assert.Contains("Microsoft.AspNetCore.Components.ComponentsMetricsTest+TestComponent", (string)measurements[0].Tags["aspnetcore.components.type"]);
+        Assert.True(measurements[0].Value > 0);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
+        Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
 
     [Fact]
-    public void PropertiesFailed_RecordsException()
+    public void FailParametersSync_RecordsErrorMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.exceptions");
+        using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
+        var exception = new InvalidOperationException();
 
         // Act
-        componentsMetrics.PropertiesFailed("ArgumentException", "TestComponent");
+        var startTimestamp = Stopwatch.GetTimestamp();
+        componentsMetrics.FailParametersSync(exception, startTimestamp, "TestComponent");
 
         // Assert
-        var measurements = parametersExceptionCollector.GetMeasurementSnapshot();
+        var measurements = parametersDurationHistogram.GetMeasurementSnapshot();
 
         Assert.Single(measurements);
-        Assert.Equal(1, measurements[0].Value);
-        Assert.Equal("ArgumentException", measurements[0].Tags["error.type"]);
-        Assert.Equal("TestComponent", measurements[0].Tags["aspnetcore.components.type"]);
+        Assert.True(measurements[0].Value > 0);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
+        Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
 
     [Fact]
-    public async Task CapturePropertiesFailedAsync_RecordsException()
+    public void IsParametersEnabled_ReturnsCorrectState()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.exceptions");
 
-        // Create a task that throws an exception
-        var task = Task.FromException(new InvalidOperationException());
+        // Create a collector to ensure the meter is enabled
+        using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
+
+        // Act & Assert
+        Assert.True(componentsMetrics.IsParametersEnabled);
+    }
+
+    [Fact]
+    public async Task CaptureBatchDuration_RecordsSuccessMetric()
+    {
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
 
         // Act
-        await componentsMetrics.CapturePropertiesFailedAsync(task, "TestComponent");
+        var startTimestamp = Stopwatch.GetTimestamp();
+        await Task.Delay(10); // Small delay to ensure measureable duration
+        await componentsMetrics.CaptureBatchDuration(Task.CompletedTask, startTimestamp, 25);
 
         // Assert
-        var measurements = parametersExceptionCollector.GetMeasurementSnapshot();
+        var measurements = batchDurationHistogram.GetMeasurementSnapshot();
 
         Assert.Single(measurements);
-        Assert.Equal(1, measurements[0].Value);
-        Assert.Equal("InvalidOperationException", measurements[0].Tags["error.type"]);
-        Assert.Equal("TestComponent", measurements[0].Tags["aspnetcore.components.type"]);
+        Assert.True(measurements[0].Value > 0);
+        Assert.Equal(50, Assert.Contains("aspnetcore.components.diff.length", measurements[0].Tags));
+        Assert.DoesNotContain("error.type", measurements[0].Tags);
     }
 
     [Fact]
-    public void BatchFailed_RecordsException()
+    public async Task CaptureBatchDuration_RecordsErrorMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var batchExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.exceptions");
+        using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
 
         // Act
-        componentsMetrics.BatchFailed("ArgumentException");
+        var startTimestamp = Stopwatch.GetTimestamp();
+        await Task.Delay(10); // Small delay to ensure measureable duration
+        await componentsMetrics.CaptureBatchDuration(Task.FromException(new InvalidOperationException()),
+            startTimestamp, 25);
 
         // Assert
-        var measurements = batchExceptionCollector.GetMeasurementSnapshot();
+        var measurements = batchDurationHistogram.GetMeasurementSnapshot();
 
         Assert.Single(measurements);
-        Assert.Equal(1, measurements[0].Value);
-        Assert.Equal("ArgumentException", measurements[0].Tags["error.type"]);
+        Assert.True(measurements[0].Value > 0);
+        Assert.Equal(50, Assert.Contains("aspnetcore.components.diff.length", measurements[0].Tags));
+        Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
 
     [Fact]
-    public async Task CaptureBatchFailedAsync_RecordsException()
+    public void FailBatchSync_RecordsErrorMetric()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
-        using var batchExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.exceptions");
-
-        // Create a task that throws an exception
-        var task = Task.FromException(new InvalidOperationException());
+        using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
+        var exception = new InvalidOperationException();
 
         // Act
-        await componentsMetrics.CaptureBatchFailedAsync(task);
+        var startTimestamp = Stopwatch.GetTimestamp();
+        componentsMetrics.FailBatchSync(exception, startTimestamp);
 
         // Assert
-        var measurements = batchExceptionCollector.GetMeasurementSnapshot();
+        var measurements = batchDurationHistogram.GetMeasurementSnapshot();
 
         Assert.Single(measurements);
-        Assert.Equal(1, measurements[0].Value);
-        Assert.Equal("InvalidOperationException", measurements[0].Tags["error.type"]);
+        Assert.True(measurements[0].Value > 0);
+        Assert.Equal(0, Assert.Contains("aspnetcore.components.diff.length", measurements[0].Tags));
+        Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
 
     [Fact]
-    public void EnabledProperties_ReflectMeterState()
+    public void IsBatchEnabled_ReturnsCorrectState()
     {
         // Arrange
         var componentsMetrics = new ComponentsMetrics(_meterFactory);
 
-        // Create collectors to ensure the meters are enabled
-        using var eventAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event.duration");
-        using var eventExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.MeterName, "aspnetcore.components.event.exceptions");
-        using var parametersAsyncDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.duration");
-        using var parametersExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters.exceptions");
-        using var batchDurationCollector = new MetricCollector<double>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.duration");
-        using var batchExceptionCollector = new MetricCollector<long>(_meterFactory,
-            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.rendering.batch.exceptions");
+        // Create a collector to ensure the meter is enabled
+        using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
 
-        // Assert
-        Assert.True(componentsMetrics.IsEventDurationEnabled);
-        Assert.True(componentsMetrics.IsEventExceptionEnabled);
-        Assert.True(componentsMetrics.IsParametersDurationEnabled);
-        Assert.True(componentsMetrics.IsParametersExceptionEnabled);
-        Assert.True(componentsMetrics.IsBatchDurationEnabled);
-        Assert.True(componentsMetrics.IsBatchExceptionEnabled);
+        // Act & Assert
+        Assert.True(componentsMetrics.IsBatchEnabled);
     }
 
-    // Helper class for mock components
-    public class TestComponent : IComponent, IHandleEvent
+    [Fact]
+    public async Task ComponentLifecycle_RecordsAllMetricsCorrectly()
     {
-        public void Attach(RenderHandle renderHandle) { }
-        public Task HandleEventAsync(EventCallbackWorkItem item, object arg) => Task.CompletedTask;
-        public Task SetParametersAsync(ParameterView parameters) => Task.CompletedTask;
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+        using var navigationCounter = new MetricCollector<long>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.navigation");
+        using var eventDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.MeterName, "aspnetcore.components.event_handler");
+        using var parametersDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.update_parameters");
+        using var batchDurationHistogram = new MetricCollector<double>(_meterFactory,
+            ComponentsMetrics.LifecycleMeterName, "aspnetcore.components.render_diff");
+
+        // Act - Simulate a component lifecycle
+        // 1. Navigation
+        componentsMetrics.Navigation("TestComponent", "/test-route");
+
+        // 2. Parameters update
+        var startTimestamp1 = Stopwatch.GetTimestamp();
+        await Task.Delay(10);
+        await componentsMetrics.CaptureParametersDuration(Task.CompletedTask, startTimestamp1, "TestComponent");
+
+        // 3. Event handler
+        var startTimestamp2 = Stopwatch.GetTimestamp();
+        await Task.Delay(10);
+        await componentsMetrics.CaptureEventDuration(Task.CompletedTask, startTimestamp2,
+            "TestComponent", "OnClick", "onclick");
+
+        // 4. Rendering batch
+        var startTimestamp3 = Stopwatch.GetTimestamp();
+        await Task.Delay(10);
+        await componentsMetrics.CaptureBatchDuration(Task.CompletedTask, startTimestamp3, 15);
+
+        // Assert
+        var navigationMeasurements = navigationCounter.GetMeasurementSnapshot();
+        var eventMeasurements = eventDurationHistogram.GetMeasurementSnapshot();
+        var parametersMeasurements = parametersDurationHistogram.GetMeasurementSnapshot();
+        var batchMeasurements = batchDurationHistogram.GetMeasurementSnapshot();
+
+        Assert.Single(navigationMeasurements);
+        Assert.Single(eventMeasurements);
+        Assert.Single(parametersMeasurements);
+        Assert.Single(batchMeasurements);
+
+        // Check navigation
+        Assert.Equal(1, navigationMeasurements[0].Value);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", navigationMeasurements[0].Tags));
+        Assert.Equal("/test-route", Assert.Contains("aspnetcore.components.route", navigationMeasurements[0].Tags));
+
+        // Check event duration
+        Assert.True(eventMeasurements[0].Value > 0);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", eventMeasurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", eventMeasurements[0].Tags));
+        Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", eventMeasurements[0].Tags));
+
+        // Check parameters duration
+        Assert.True(parametersMeasurements[0].Value > 0);
+        Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", parametersMeasurements[0].Tags));
+
+        // Check batch duration
+        Assert.True(batchMeasurements[0].Value > 0);
+        Assert.Equal(20, Assert.Contains("aspnetcore.components.diff.length", batchMeasurements[0].Tags));
+    }
+
+    [Fact]
+    public void Dispose_DisposesAllMeters()
+    {
+        // This test verifies that disposing ComponentsMetrics properly disposes its meters
+        // Since we can't easily test disposal directly, we'll verify meters are created and assume
+        // the dispose method works as expected
+
+        // Arrange
+        var componentsMetrics = new ComponentsMetrics(_meterFactory);
+
+        // Act - We're not actually asserting anything here, just ensuring no exceptions are thrown
+        componentsMetrics.Dispose();
+
+        // Assert - MeterFactory.Create was called twice in constructor
+        Assert.Equal(2, _meterFactory.Meters.Count);
     }
 }

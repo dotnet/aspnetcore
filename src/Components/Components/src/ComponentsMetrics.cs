@@ -18,24 +18,16 @@ internal sealed class ComponentsMetrics : IDisposable
     private readonly Counter<long> _navigationCount;
 
     private readonly Histogram<double> _eventDuration;
-    private readonly Counter<long> _eventException;
-
     private readonly Histogram<double> _parametersDuration;
-    private readonly Counter<long> _parametersException;
-
     private readonly Histogram<double> _batchDuration;
-    private readonly Counter<long> _batchException;
 
     public bool IsNavigationEnabled => _navigationCount.Enabled;
 
-    public bool IsEventDurationEnabled => _eventDuration.Enabled;
-    public bool IsEventExceptionEnabled => _eventException.Enabled;
+    public bool IsEventEnabled => _eventDuration.Enabled;
 
-    public bool IsParametersDurationEnabled => _parametersDuration.Enabled;
-    public bool IsParametersExceptionEnabled => _parametersException.Enabled;
+    public bool IsParametersEnabled => _parametersDuration.Enabled;
 
-    public bool IsBatchDurationEnabled => _batchDuration.Enabled;
-    public bool IsBatchExceptionEnabled => _batchException.Enabled;
+    public bool IsBatchEnabled => _batchDuration.Enabled;
 
     public ComponentsMetrics(IMeterFactory meterFactory)
     {
@@ -50,37 +42,22 @@ internal sealed class ComponentsMetrics : IDisposable
             description: "Total number of route changes.");
 
         _eventDuration = _meter.CreateHistogram(
-            "aspnetcore.components.event.duration",
+            "aspnetcore.components.event_handler",
             unit: "s",
             description: "Duration of processing browser event.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
-        _eventException = _meter.CreateCounter<long>(
-            "aspnetcore.components.event.exceptions",
-            unit: "{exception}",
-            description: "Total number of exceptions during browser event processing.");
-
         _parametersDuration = _lifeCycleMeter.CreateHistogram(
-            "aspnetcore.components.update_parameters.duration",
+            "aspnetcore.components.update_parameters",
             unit: "s",
             description: "Duration of processing component parameters.",
-            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorParametersUpdateSecondsBucketBoundaries });
-
-        _parametersException = _lifeCycleMeter.CreateCounter<long>(
-            "aspnetcore.components.update_parameters.exceptions",
-            unit: "{exception}",
-            description: "Total number of exceptions during processing component parameters.");
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorRenderingSecondsBucketBoundaries });
 
         _batchDuration = _lifeCycleMeter.CreateHistogram(
-            "aspnetcore.components.rendering.batch.duration",
+            "aspnetcore.components.render_diff",
             unit: "s",
-            description: "Duration of rendering batch.",
-            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorBatchDiffSecondsBucketBoundaries });
-
-        _batchException = _lifeCycleMeter.CreateCounter<long>(
-            "aspnetcore.components.rendering.batch.exceptions",
-            unit: "{exception}",
-            description: "Total number of exceptions during batch rendering.");
+            description: "Duration of rendering DOM update including network and browser time.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorRenderingSecondsBucketBoundaries });
     }
 
     public void Navigation(string componentType, string route)
@@ -94,134 +71,109 @@ internal sealed class ComponentsMetrics : IDisposable
         _navigationCount.Add(1, tags);
     }
 
-    public async Task CaptureEventDurationAsync(Task task, long startTimestamp, string? componentType, string? methodName, string? attributeName)
-    {
-        try
-        {
-            await task;
-
-            var tags = new TagList
-            {
-                { "aspnetcore.components.type", componentType ?? "unknown" },
-                { "aspnetcore.components.method", methodName ?? "unknown" },
-                { "aspnetcore.components.attribute.name", attributeName ?? "unknown" }
-            };
-
-            var duration = Stopwatch.GetElapsedTime(startTimestamp);
-            _eventDuration.Record(duration.TotalSeconds, tags);
-        }
-        catch
-        {
-            // none
-        }
-    }
-
-    public async Task CaptureParametersDurationAsync(Task task, long startTimestamp, string? componentType)
-    {
-        try
-        {
-            await task;
-
-            var tags = new TagList
-            {
-                { "aspnetcore.components.type", componentType ?? "unknown" },
-            };
-
-            var duration = Stopwatch.GetElapsedTime(startTimestamp);
-            _parametersDuration.Record(duration.TotalSeconds, tags);
-        }
-        catch
-        {
-            // none
-        }
-    }
-
-    public void BatchDuration(long startTimestamp, int diffLength)
-    {
-        var tags = new TagList
-        {
-            { "aspnetcore.components.diff.approximate.length", BucketEditLength(diffLength) }
-        };
-
-        var duration = Stopwatch.GetElapsedTime(startTimestamp);
-        _batchDuration.Record(duration.TotalSeconds, tags);
-    }
-
-    public void EventFailed(string? exceptionType, EventCallback callback, string? attributeName)
-    {
-        var receiverName = (callback.Receiver?.GetType() ?? callback.Delegate?.Target?.GetType())?.FullName;
-        var tags = new TagList
-        {
-            { "aspnetcore.components.type", receiverName ?? "unknown" },
-            { "aspnetcore.components.attribute.name", attributeName  ?? "unknown"},
-            { "error.type", exceptionType ?? "unknown"}
-        };
-        _eventException.Add(1, tags);
-    }
-
-    public async Task CaptureEventFailedAsync(Task task, EventCallback callback, string? attributeName)
-    {
-        try
-        {
-            await task;
-        }
-        catch (Exception ex)
-        {
-            EventFailed(ex.GetType().Name, callback, attributeName);
-        }
-    }
-
-    public void PropertiesFailed(string? exceptionType, string? componentType)
+    public async Task CaptureEventDuration(Task task, long startTimestamp, string? componentType, string? methodName, string? attributeName)
     {
         var tags = new TagList
         {
             { "aspnetcore.components.type", componentType ?? "unknown" },
-            { "error.type", exceptionType ?? "unknown"}
+            { "aspnetcore.components.method", methodName ?? "unknown" },
+            { "aspnetcore.components.attribute.name", attributeName ?? "unknown" }
         };
-        _parametersException.Add(1, tags);
-    }
 
-    public async Task CapturePropertiesFailedAsync(Task task, string? componentType)
-    {
         try
         {
             await task;
         }
         catch (Exception ex)
         {
-            PropertiesFailed(ex.GetType().Name, componentType);
+            tags.Add("error.type", ex.GetType().FullName ?? "unknown");
         }
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        _eventDuration.Record(duration.TotalSeconds, tags);
     }
 
-    public void BatchFailed(string? exceptionType)
+    public void FailEventSync(Exception ex, long startTimestamp, string? componentType, string? methodName, string? attributeName)
     {
         var tags = new TagList
         {
-            { "error.type", exceptionType ?? "unknown"}
+            { "aspnetcore.components.type", componentType ?? "unknown" },
+            { "aspnetcore.components.method", methodName ?? "unknown" },
+            { "aspnetcore.components.attribute.name", attributeName ?? "unknown" },
+            { "error.type", ex.GetType().FullName ?? "unknown" }
         };
-        _batchException.Add(1, tags);
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        _eventDuration.Record(duration.TotalSeconds, tags);
     }
 
-    public async Task CaptureBatchFailedAsync(Task task)
+    public async Task CaptureParametersDuration(Task task, long startTimestamp, string? componentType)
     {
+        var tags = new TagList
+        {
+            { "aspnetcore.components.type", componentType ?? "unknown" },
+        };
+
+        try
+        {
+            await task;
+        }
+        catch(Exception ex)
+        {
+            tags.Add("error.type", ex.GetType().FullName ?? "unknown");
+        }
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        _parametersDuration.Record(duration.TotalSeconds, tags);
+    }
+
+    public void FailParametersSync(Exception ex, long startTimestamp, string? componentType)
+    {
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        var tags = new TagList
+        {
+            { "aspnetcore.components.type", componentType ?? "unknown" },
+            { "error.type", ex.GetType().FullName ?? "unknown" }
+        };
+        _parametersDuration.Record(duration.TotalSeconds, tags);
+    }
+
+    public async Task CaptureBatchDuration(Task task, long startTimestamp, int diffLength)
+    {
+        var tags = new TagList
+        {
+            { "aspnetcore.components.diff.length", BucketDiffLength(diffLength) }
+        };
+
         try
         {
             await task;
         }
         catch (Exception ex)
         {
-            BatchFailed(ex.GetType().Name);
+            tags.Add("error.type", ex.GetType().FullName ?? "unknown");
         }
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        _batchDuration.Record(duration.TotalSeconds, tags);
     }
 
-    private static int BucketEditLength(int batchLength)
+    public void FailBatchSync(Exception ex, long startTimestamp)
     {
-        return batchLength switch
+        var duration = Stopwatch.GetElapsedTime(startTimestamp);
+        var tags = new TagList
+            {
+                { "aspnetcore.components.diff.length", 0 },
+                { "error.type", ex.GetType().FullName ?? "unknown" }
+            };
+        _batchDuration.Record(duration.TotalSeconds, tags);
+    }
+
+    private static int BucketDiffLength(int diffLength)
+    {
+        return diffLength switch
         {
             <= 1 => 1,
             <= 2 => 2,
             <= 5 => 5,
             <= 10 => 10,
+            <= 20 => 20,
             <= 50 => 50,
             <= 100 => 100,
             <= 500 => 500,

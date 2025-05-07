@@ -24,24 +24,24 @@ internal sealed class CircuitMetrics : IDisposable
         _meter = meterFactory.Create(MeterName);
 
         _circuitTotalCounter = _meter.CreateCounter<long>(
-            "aspnetcore.components.circuits.count",
+            "aspnetcore.components.circuit.count",
             unit: "{circuit}",
             description: "Total number of circuits.");
 
         _circuitActiveCounter = _meter.CreateUpDownCounter<long>(
-            "aspnetcore.components.circuits.active_circuits",
+            "aspnetcore.components.circuit.active",
             unit: "{circuit}",
-            description: "Number of active circuits.");
+            description: "Number of active circuits in memory.");
 
         _circuitConnectedCounter = _meter.CreateUpDownCounter<long>(
-            "aspnetcore.components.circuits.connected_circuits",
+            "aspnetcore.components.circuit.connected",
             unit: "{circuit}",
-            description: "Number of disconnected circuits.");
+            description: "Number of circuits connected to client.");
 
         _circuitDuration = _meter.CreateHistogram<double>(
-            "aspnetcore.components.circuits.duration",
+            "aspnetcore.components.circuit.duration",
             unit: "s",
-            description: "Duration of circuit.",
+            description: "Duration of circuit and their total count.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorCircuitSecondsBucketBoundaries });
     }
 
