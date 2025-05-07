@@ -29,7 +29,13 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
         if (HasClientProject())
         {
-            // TODO: Remove this when LazyAssemblyLoader is no longer being used.
+            // In order to prevent an exception casued by missing LazyAssemblyLoader during pre-rendering,
+            // we are registering it into DI in AddInteractiveWebAssemblyComponents.
+            // To avoid adding new references between assemblies we try to resolve the type during run-time using reflection.
+            // This assert is here to check that the assembly containing LazyAssemblyLoader is actually present in a standard app
+            // created from the Blazor Web template.
+            // See https://github.com/dotnet/aspnetcore/issues/51966.
+            // TODO: Remove this when LazyAssemblyLoader is no longer being used, or the dependency graph changes so reflection is no longer needed.
             AssertServerProjectCanUseLazyAssemblyLoader(GetTargetProject(project));
         }
 
