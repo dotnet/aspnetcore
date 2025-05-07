@@ -15,7 +15,7 @@ public class BootResourceRequestLog
     {
         if (response.StatusCode != StatusCodes.Status304NotModified)
         {
-            _requestPaths.Add(request.Path);
+            _requestPaths.Add(originalRequestPath);
         }
     }
 
