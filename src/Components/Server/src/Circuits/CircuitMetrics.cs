@@ -12,7 +12,6 @@ internal sealed class CircuitMetrics : IDisposable
     public const string MeterName = "Microsoft.AspNetCore.Components.Server.Circuits";
 
     private readonly Meter _meter;
-    private readonly Counter<long> _circuitTotalCounter;
     private readonly UpDownCounter<long> _circuitActiveCounter;
     private readonly UpDownCounter<long> _circuitConnectedCounter;
     private readonly Histogram<double> _circuitDuration;
@@ -22,11 +21,6 @@ internal sealed class CircuitMetrics : IDisposable
         Debug.Assert(meterFactory != null);
 
         _meter = meterFactory.Create(MeterName);
-
-        _circuitTotalCounter = _meter.CreateCounter<long>(
-            "aspnetcore.components.circuit.count",
-            unit: "{circuit}",
-            description: "Total number of circuits.");
 
         _circuitActiveCounter = _meter.CreateUpDownCounter<long>(
             "aspnetcore.components.circuit.active",
@@ -41,7 +35,7 @@ internal sealed class CircuitMetrics : IDisposable
         _circuitDuration = _meter.CreateHistogram<double>(
             "aspnetcore.components.circuit.duration",
             unit: "s",
-            description: "Duration of circuit and their total count.",
+            description: "Duration of circuit lifetime and their total count.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorCircuitSecondsBucketBoundaries });
     }
 
@@ -50,10 +44,6 @@ internal sealed class CircuitMetrics : IDisposable
         if (_circuitActiveCounter.Enabled)
         {
             _circuitActiveCounter.Add(1);
-        }
-        if (_circuitTotalCounter.Enabled)
-        {
-            _circuitTotalCounter.Add(1);
         }
     }
 
