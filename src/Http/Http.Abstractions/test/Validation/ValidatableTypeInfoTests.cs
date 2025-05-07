@@ -495,6 +495,95 @@ public class ValidatableTypeInfoTests
         Assert.Equal("The Password field is required.", error.Value.Single());
     }
 
+    [Fact]
+    public async Task Validate_IValidatableObject_WithZeroAndMultipleMemberNames_BehavesAsExpected()
+    {
+        var globalType = new TestValidatableTypeInfo(
+            typeof(GlobalErrorObject),
+            []); // no properties – nothing sets MemberName
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(GlobalErrorObject), globalType }
+            })
+        };
+
+        var globalErrorInstance = new GlobalErrorObject { Data = -1 };
+        context.ValidationContext = new ValidationContext(globalErrorInstance);
+
+        await globalType.ValidateAsync(globalErrorInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        var globalError = Assert.Single(context.ValidationErrors);
+        Assert.Equal(string.Empty, globalError.Key);
+        Assert.Equal("Data must be positive.", globalError.Value.Single());
+
+        var multiType = new TestValidatableTypeInfo(
+            typeof(MultiMemberErrorObject),
+            [
+                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "FirstName", "FirstName", []),
+                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "LastName",  "LastName",  [])
+            ]);
+
+        context.ValidationErrors = [];
+        context.ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(MultiMemberErrorObject), multiType }
+        });
+
+        var multiErrorInstance = new MultiMemberErrorObject { FirstName = "", LastName = "" };
+        context.ValidationContext = new ValidationContext(multiErrorInstance);
+
+        await multiType.ValidateAsync(multiErrorInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("FirstName", kvp.Key);
+                Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("LastName", kvp.Key);
+                Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
+            });
+    }
+
+    // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739
+    private class GlobalErrorObject : IValidatableObject
+    {
+        public int Data { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Data <= 0)
+            {
+                yield return new ValidationResult("Data must be positive.");
+            }
+        }
+    }
+
+    // Returns multiple member names to validate https://github.com/dotnet/aspnetcore/issues/61739
+    private class MultiMemberErrorObject : IValidatableObject
+    {
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(LastName))
+            {
+                // MULTIPLE member names
+                yield return new ValidationResult(
+                    "FirstName and LastName are required.",
+                    [nameof(FirstName), nameof(LastName)]);
+            }
+        }
+    }
+
     private ValidatablePropertyInfo CreatePropertyInfo(
         Type containingType,
         Type propertyType,
@@ -534,7 +623,7 @@ public class ValidatableTypeInfoTests
         {
             if (Salary < 0)
             {
-                yield return new ValidationResult("Salary must be a positive value.", new[] { nameof(Salary) });
+                yield return new ValidationResult("Salary must be a positive value.", ["Salary"]);
             }
         }
     }

@@ -102,6 +102,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
         {
             _options.AddSchemaTransformer((schema, context, token) =>
             {
+                schema.Extensions ??= [];
                 if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription != null)
                 {
                     schema.Extensions["x-my-extension"] = new OpenApiAny(context.ParameterDescription.Name);
@@ -175,6 +176,7 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
+            schema.Extensions ??= [];
             if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription != null)
             {
                 schema.Extensions["x-my-extension"] = new OpenApiAny(context.ParameterDescription.Name);

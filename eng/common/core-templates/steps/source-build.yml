@@ -46,11 +46,6 @@ steps:
       buildConfig='$(_BuildConfig)'
     fi
 
-    officialBuildArgs=
-    if [ '${{ and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}' = 'True' ]; then
-      officialBuildArgs='/p:DotNetPublishUsingPipelines=true /p:OfficialBuildId=$(BUILD.BUILDNUMBER)'
-    fi
-
     targetRidArgs=
     if [ '${{ parameters.platform.targetRID }}' != '' ]; then
       targetRidArgs='/p:TargetRid=${{ parameters.platform.targetRID }}'
@@ -66,16 +61,6 @@ steps:
       baseOsArgs='/p:BaseOS=${{ parameters.platform.baseOS }}'
     fi
 
-    publishArgs=
-    if [ '${{ parameters.platform.skipPublishValidation }}' != 'true' ]; then
-      publishArgs='--publish'
-    fi
-
-    assetManifestFileName=SourceBuild_RidSpecific.xml
-    if [ '${{ parameters.platform.name }}' != '' ]; then
-      assetManifestFileName=SourceBuild_${{ parameters.platform.name }}.xml
-    fi
-
     portableBuildArgs=
     if [ '${{ parameters.platform.portableBuild }}' != '' ]; then
       portableBuildArgs='/p:PortableBuild=${{ parameters.platform.portableBuild }}'
@@ -83,8 +68,8 @@ steps:
 
     ${{ coalesce(parameters.platform.buildScript, './build.sh') }} --ci \
       --configuration $buildConfig \
-      --restore --build --pack $publishArgs -bl \
-      $officialBuildArgs \
+      --restore --build --pack -bl \
+      ${{ parameters.platform.buildArguments }} \
       $internalRuntimeDownloadArgs \
       $internalRestoreArgs \
       $targetRidArgs \
@@ -93,9 +78,6 @@ steps:
       $portableBuildArgs \
       /p:DotNetBuildSourceOnly=true \
       /p:DotNetBuildRepo=true \
-      /p:AssetManifestFileName=$assetManifestFileName \
-      /p:SetUpSourceBuildIntermediateNupkgCache=false \
-      /p:ReportPrebuiltUsage=false
   displayName: Build
 
 # Upload build logs for diagnosis.
@@ -122,14 +104,3 @@ steps:
       continueOnError: true
       condition: succeededOrFailed()
       sbomEnabled: false  # we don't need SBOM for logs
-
-# Manually inject component detection so that we can ignore the source build upstream cache, which contains
-# a nupkg cache of input packages (a local feed).
-# This path must match the upstream cache path in property 'CurrentRepoSourceBuiltNupkgCacheDir'
-# in src\Microsoft.DotNet.Arcade.Sdk\tools\SourceBuild\SourceBuildArcade.targets
-- template: /eng/common/core-templates/steps/component-governance.yml
-  parameters:
-    displayName: Component Detection (Exclude upstream cache)
-    is1ESPipeline: ${{ parameters.is1ESPipeline }}
-    componentGovernanceIgnoreDirectories: '$(Build.SourcesDirectory)/artifacts/sb/src/artifacts/obj/source-built-upstream-cache'
-    disableComponentGovernance: ${{ eq(variables['System.TeamProject'], 'public') }}
