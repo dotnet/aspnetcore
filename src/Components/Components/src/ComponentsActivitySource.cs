@@ -13,7 +13,7 @@ internal class ComponentsActivitySource
     internal const string Name = "Microsoft.AspNetCore.Components";
     internal const string OnCircuitName = $"{Name}.CircuitStart";
     internal const string OnRouteName = $"{Name}.RouteChange";
-    internal const string OnEventName = $"{Name}.Event";
+    internal const string OnEventName = $"{Name}.HandleEvent";
 
     private ActivityContext _httpContext;
     private ActivityContext _circuitContext;
