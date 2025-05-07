@@ -11,7 +11,7 @@ public class BootResourceRequestLog
 
     public IReadOnlyCollection<string> RequestPathsWithNewContent => _requestPaths;
 
-    public void AddRequest(HttpRequest request, HttpResponse response)
+    public void AddRequest(string originalRequestPath, HttpResponse response)
     {
         if (response.StatusCode != StatusCodes.Status304NotModified)
         {

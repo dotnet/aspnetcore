@@ -26,6 +26,7 @@ public class Startup
         var mapAllApps = Configuration.GetValue<bool>("MapAllApps");
         app.Use(async (context, next) =>
         {
+            string originalRequestPath = request.Path;
             await next(context);
 
             // This is used by E2E tests to verify that the correct resources were fetched,
@@ -33,7 +34,7 @@ public class Startup
             if (context.Request.Query.ContainsKey("customizedbootresource")
             || context.Request.Headers.ContainsKey("customizedbootresource"))
             {
-                bootResourceRequestLog.AddRequest(context.Request, context.Response);
+                bootResourceRequestLog.AddRequest(originalRequestPath, context.Response);
             }
         });
 
