@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -15,6 +16,9 @@ namespace Microsoft.Extensions.DependencyInjection;
 /// </summary>
 public static class WebAssemblyRazorComponentsBuilderExtensions
 {
+    private const string LazyAssemblyLoaderAssemblyName = "Microsoft.AspNetCore.Components.WebAssembly";
+    private const string LazyAssemblyLoaderTypeName = "Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader";
+
     /// <summary>
     /// Adds services to support rendering interactive WebAssembly components.
     /// </summary>
@@ -27,7 +31,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, WebAssemblyEndpointProvider>());
 
         // Try register LazyAssemblyLoader to prevent crashes during prerendering.
-        // TODO: Remove this once LazyAssemblyLoader is deprecated.
+        // TODO: Remove this once LazyAssemblyLoader is no longer used.
         var lazyAssemblyLoaderType = GetLazyAssemblyLoaderType();
 
         if (lazyAssemblyLoaderType != null)
@@ -57,12 +61,13 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
         return builder;
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, LazyAssemblyLoaderTypeName, LazyAssemblyLoaderAssemblyName)]
     private static Type? GetLazyAssemblyLoaderType()
     {
         try
         {
-            var assembly = Assembly.Load("Microsoft.AspNetCore.Components.WebAssembly");
-            return assembly.GetType("Microsoft.AspNetCore.Components.WebAssembly.Services.LazyAssemblyLoader", throwOnError: false);
+            var assembly = Assembly.Load(LazyAssemblyLoaderAssemblyName);
+            return assembly.GetType(LazyAssemblyLoaderTypeName, throwOnError: false);
         }
         catch
         {
