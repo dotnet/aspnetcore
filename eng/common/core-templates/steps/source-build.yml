@@ -46,11 +46,6 @@ steps:
       buildConfig='$(_BuildConfig)'
     fi
 
-    officialBuildArgs=
-    if [ '${{ and(ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}' = 'True' ]; then
-      officialBuildArgs='/p:DotNetPublishUsingPipelines=true /p:OfficialBuildId=$(BUILD.BUILDNUMBER)'
-    fi
-
     targetRidArgs=
     if [ '${{ parameters.platform.targetRID }}' != '' ]; then
       targetRidArgs='/p:TargetRid=${{ parameters.platform.targetRID }}'
@@ -66,16 +61,6 @@ steps:
       baseOsArgs='/p:BaseOS=${{ parameters.platform.baseOS }}'
     fi
 
-    publishArgs=
-    if [ '${{ parameters.platform.skipPublishValidation }}' != 'true' ]; then
-      publishArgs='--publish'
-    fi
-
-    assetManifestFileName=SourceBuild_RidSpecific.xml
-    if [ '${{ parameters.platform.name }}' != '' ]; then
-      assetManifestFileName=SourceBuild_${{ parameters.platform.name }}.xml
-    fi
-
     portableBuildArgs=
     if [ '${{ parameters.platform.portableBuild }}' != '' ]; then
       portableBuildArgs='/p:PortableBuild=${{ parameters.platform.portableBuild }}'
@@ -83,9 +68,8 @@ steps:
 
     ${{ coalesce(parameters.platform.buildScript, './build.sh') }} --ci \
       --configuration $buildConfig \
-      --restore --build --pack $publishArgs -bl \
+      --restore --build --pack -bl \
       ${{ parameters.platform.buildArguments }} \
-      $officialBuildArgs \
       $internalRuntimeDownloadArgs \
       $internalRestoreArgs \
       $targetRidArgs \
@@ -94,7 +78,6 @@ steps:
       $portableBuildArgs \
       /p:DotNetBuildSourceOnly=true \
       /p:DotNetBuildRepo=true \
-      /p:AssetManifestFileName=$assetManifestFileName
   displayName: Build
 
 # Upload build logs for diagnosis.
