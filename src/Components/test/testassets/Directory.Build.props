@@ -22,4 +22,7 @@
   <PropertyGroup>
     <WasmPreloadAssets>false</WasmPreloadAssets>
   </PropertyGroup>
+  <PropertyGroup>
+    <BlazorCacheBootResources>false</BlazorCacheBootResources>
+  </PropertyGroup>
 </Project>
