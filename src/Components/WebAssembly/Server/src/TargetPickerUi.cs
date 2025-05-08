@@ -372,27 +372,24 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
 
         static string NormalizeDevtoolsFrontendUrl(string devtoolsFrontendUrl)
         {
-            // Frontend url can be absolute or relative based on browser
-            string localPath;
-            string queryString;
-            if (Uri.TryCreate(devtoolsFrontendUrl, UriKind.Absolute, out var devtoolsFrontendUri))
+            // Currently frontend url can be:
+            // - absolute (since v135 of chrome and edge)
+            //      chrome example: https://chrome-devtools-frontend.appspot.com/serve_rev/@031848bc6ad02b97854f3d6154d3aefd0434756a/inspector.html?ws=localhost:9222/devtools/page/719FE9D3B43570193235446E0AB36859
+            //      edge example: https://aka.ms/docs-landing-page/serve_rev/@4e2c41645f24197463afa2ab6aa999352ee8255c/inspector.html?ws=localhost:9222/devtools/page/3A4D56E09776321628432588FC9299F4
+            // - relative (managed as fallback for brosers with prior version)
+            //      example: /devtools/inspector.html?ws=localhost:9222/devtools/page/DAB7FB6187B554E10B0BD18821265734
+            // The absolute url can't be used as-is because is not valid for debugging and cannot be made relative because of lack "devtools" segment
+            // before "inspector.html" but we can keep the query string and append to the default "devtools/inspector.html" browser devtools page
+
+            const string DefaultBrowserDevToolsPagePath = "devtools/inspector.html";
+
+            if (devtoolsFrontendUrl.StartsWith(DefaultBrowserDevToolsPagePath))
             {
-                localPath = devtoolsFrontendUri.LocalPath;
-                queryString = devtoolsFrontendUri.Query;
-            }
-            else
-            {
-                var queryStringBeginCharIndex = devtoolsFrontendUrl.IndexOf('?');
-                localPath = devtoolsFrontendUrl[..queryStringBeginCharIndex];
-                queryString = devtoolsFrontendUrl[queryStringBeginCharIndex..];
+                return devtoolsFrontendUrl;
             }
 
-            // We need only the last segment of the path
-            localPath = localPath.Split('/').Last().TrimStart('/');
-            // Ensure starts with "devtools"
-            localPath = $"devtools/{localPath}";
-
-            return $"{localPath}?{queryString}";
+            string queryString = devtoolsFrontendUrl[devtoolsFrontendUrl.IndexOf('?')..];
+            return $"{DefaultBrowserDevToolsPagePath}?{queryString}";
         }
     }
 
