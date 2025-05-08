@@ -71,7 +71,7 @@ steps:
     is1ESPipeline: ${{ parameters.is1ESPipeline }}
     args:
       displayName: Publish BuildLogs
-      targetPath: artifacts/log/${{ coalesce(variables._BuildConfig, 'Release') }}
+      targetPath: artifacts/log/$[ coalesce(variables._BuildConfig, 'Release') ]/
       artifactName: BuildLogs_SourceBuild_${{ parameters.platform.name }}_Attempt$(System.JobAttempt)
       continueOnError: true
       condition: succeededOrFailed()
