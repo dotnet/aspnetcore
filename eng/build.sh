@@ -254,6 +254,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -sourcebuild|-source-build|-sb)
             source_build=true
+            product_build=true
             ;;
         -productbuild|-product-build|-pb)
             product_build=true
