@@ -383,7 +383,7 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
 
             const string DefaultBrowserDevToolsPagePath = "devtools/inspector.html";
 
-            if (devtoolsFrontendUrl.StartsWith(DefaultBrowserDevToolsPagePath))
+            if (devtoolsFrontendUrl.AsSpan().TrimStart('/').StartsWith(DefaultBrowserDevToolsPagePath))
             {
                 return devtoolsFrontendUrl;
             }
