@@ -8,10 +8,10 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>8</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>16</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>17</AspNetCorePatchVersion>
     <PreReleaseVersionIteration>
     </PreReleaseVersionIteration>
-    <ValidateBaseline>true</ValidateBaseline>
+    <ValidateBaseline>false</ValidateBaseline>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">7.1.2</IdentityModelVersion>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">7.*</IdentityModelVersion>
     <!--
