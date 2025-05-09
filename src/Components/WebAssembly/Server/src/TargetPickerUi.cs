@@ -10,6 +10,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using System.Dynamic;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
@@ -388,8 +389,8 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
                 return devtoolsFrontendUrl;
             }
 
-            string queryString = devtoolsFrontendUrl[devtoolsFrontendUrl.IndexOf('?')..];
-            return $"{DefaultBrowserDevToolsPagePath}?{queryString}";
+            UriHelper.FromAbsolute(url, out _, out _, out _, out var query, out _);
+            return $"{DefaultBrowserDevToolsPagePath}{query}";
         }
     }
 
