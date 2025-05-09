@@ -28,7 +28,8 @@ public interface IJSInProcessObjectReference : IJSObjectReference, IDisposable
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSInProcessObjectReference"/> instance that represents the created JS object.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    IJSInProcessObjectReference InvokeNew(string identifier, object?[]? args);
+    IJSInProcessObjectReference InvokeNew(string identifier, object?[]? args)
+        => throw new NotImplementedException();
 
     /// <summary>
     /// Reads the value of the specified JavaScript property synchronously.
@@ -37,7 +38,8 @@ public interface IJSInProcessObjectReference : IJSObjectReference, IDisposable
     /// <param name="identifier">An identifier for the property to read. For example, the value <c>"someScope.someProp"</c> will read the value of the property <c>window.someScope.someProp</c>.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    TValue GetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier);
+    TValue GetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
+        => throw new NotImplementedException();
 
     /// <summary>
     /// Updates the value of the specified JavaScript property synchronously. If the property is not defined on the target object, it will be created.
@@ -46,5 +48,6 @@ public interface IJSInProcessObjectReference : IJSObjectReference, IDisposable
     /// <param name="identifier">An identifier for the property to set. For example, the value <c>"someScope.someProp"</c> will update the property <c>window.someScope.someProp</c>.</param>
     /// <param name="value">JSON-serializable value.</param>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    void SetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value);
+    void SetValue<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
+        => throw new NotImplementedException();
 }
