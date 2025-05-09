@@ -1,5 +1,6 @@
 using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -15,7 +16,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var binderAttribute = context.Metadata.BinderMetadata as FromFormOrJsonAttribute;
+            var parameter = context.Metadata.ParameterInfo;
+            var binderAttribute = parameter?.GetCustomAttributes(typeof(FromFormOrJsonAttribute), true)
+                                        .FirstOrDefault() as FromFormOrJsonAttribute;
+
             if (binderAttribute != null)
             {
                 var binderType = typeof(FromFormOrJsonModelBinder<>).MakeGenericType(context.Metadata.ModelType);

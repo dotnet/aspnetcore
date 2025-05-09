@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Mvc;
 /// Indicates that a parameter should be bound using the FromFormOrJsonModelBinder.
 /// </summary>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
-public class FromFormOrJsonAttribute : ModelBinderAttribute
+public sealed class FromFormOrJsonAttribute : Attribute, IBindingSourceMetadata
 {
-    public FromFormOrJsonAttribute() : base(typeof(FromFormOrJsonModelBinder<>)) { }
+    public BindingSource BindingSource => BindingSource.Custom;
 }

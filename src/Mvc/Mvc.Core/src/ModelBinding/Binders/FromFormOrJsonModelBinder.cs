@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 
@@ -68,12 +69,12 @@ public class FromFormOrJsonModelBinder<T> : IModelBinder where T : class
 
             bindingContext.Result = ModelBindingResult.Success(model);
         }
-        catch (JsonException ex)
+        catch (JsonException)
         {
             bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Invalid JSON payload.");
             bindingContext.Result = ModelBindingResult.Failed();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             bindingContext.ModelState.AddModelError(bindingContext.ModelName, "Unexpected error during model binding.");
             bindingContext.Result = ModelBindingResult.Failed();
