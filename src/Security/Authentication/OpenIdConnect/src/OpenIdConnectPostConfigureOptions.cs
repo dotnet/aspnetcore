@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
@@ -16,14 +17,18 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdConnectOptions>
 {
     private readonly IDataProtectionProvider _dp;
+    private readonly CookieAuthenticationOptions _cookieAuthenticationOptions;
+    private readonly IAuthenticationHandlerProvider _handlerProvider;
 
     /// <summary>
     /// Initializes a new instance of <see cref="OpenIdConnectPostConfigureOptions"/>.
     /// </summary>
     /// <param name="dataProtection">The <see cref="IDataProtectionProvider"/>.</param>
-    public OpenIdConnectPostConfigureOptions(IDataProtectionProvider dataProtection)
+    public OpenIdConnectPostConfigureOptions(IDataProtectionProvider dataProtection, CookieAuthenticationOptions cookieAuthenticationOptions, IAuthenticationHandlerProvider handlerProvider)
     {
         _dp = dataProtection;
+        _cookieAuthenticationOptions = cookieAuthenticationOptions;
+        _handlerProvider = handlerProvider;
     }
 
     /// <summary>
@@ -105,6 +110,8 @@ public class OpenIdConnectPostConfigureOptions : IPostConfigureOptions<OpenIdCon
                 };
             }
         }
+
+        _cookieAuthenticationOptions?.Events.OnValidatePrincipal = OpenIdConnectHandler.ValidatePrincipal;
     }
 
     private sealed class StringSerializer : IDataSerializer<string>
