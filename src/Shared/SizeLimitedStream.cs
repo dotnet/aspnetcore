@@ -1,14 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 internal sealed class SizeLimitedStream : Stream
 {
     private readonly Stream _innerStream;
     private readonly long? _sizeLimit;
-    private readonly Action<long, long>? _handleSizeLimit;
+    private readonly Action<long>? _handleSizeLimit;
     private long _totalBytesRead;
 
-    public SizeLimitedStream(Stream innerStream, long? sizeLimit, Action<long, long>? handleSizeLimit = null)
+    public SizeLimitedStream(Stream innerStream, long? sizeLimit, Action<long>? handleSizeLimit = null)
     {
         ArgumentNullException.ThrowIfNull(innerStream);
 
@@ -51,7 +53,7 @@ internal sealed class SizeLimitedStream : Stream
         {
             if (_handleSizeLimit != null)
             {
-                _handleSizeLimit(_totalBytesRead, _sizeLimit.Value);
+                _handleSizeLimit(_sizeLimit.Value);
             }
             else
             {
@@ -91,7 +93,7 @@ internal sealed class SizeLimitedStream : Stream
         {
             if (_handleSizeLimit != null)
             {
-                _handleSizeLimit(_totalBytesRead, _sizeLimit.Value);
+                _handleSizeLimit(_sizeLimit.Value);
             }
             else
             {

@@ -62,7 +62,7 @@ internal sealed partial class RequestDecompressionMiddleware
                 context.GetEndpoint()?.Metadata?.GetMetadata<IRequestSizeLimitMetadata>()?.MaxRequestBodySize
                     ?? context.Features.Get<IHttpMaxRequestBodySizeFeature>()?.MaxRequestBodySize;
 
-            context.Request.Body = new SizeLimitedStream(decompressionStream, sizeLimit, (long totalBytesRead, long sizeLimit) => throw new BadHttpRequestException(
+            context.Request.Body = new SizeLimitedStream(decompressionStream, sizeLimit, static (long sizeLimit) => throw new BadHttpRequestException(
                     $"The decompressed request body is larger than the request body size limit {sizeLimit}.",
                     StatusCodes.Status413PayloadTooLarge));
             await _next(context);
