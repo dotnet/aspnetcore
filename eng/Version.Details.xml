@@ -361,13 +361,13 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>86c2177121ebf8d49b372dd7232588ceaae6c7cb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.HotReload.Agent" Version="10.0.100-preview.5.25252.107">
+    <Dependency Name="Microsoft.DotNet.HotReload.Agent" Version="10.0.100-preview.5.25258.39">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha />
+      <Sha>5e6dacd4d3debda3266224b2a434811c6fa94987</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.HotReload.Agent.Data" Version="10.0.100-preview.5.25252.107">
+    <Dependency Name="Microsoft.DotNet.HotReload.Agent.Data" Version="10.0.100-preview.5.25258.39">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha />
+      <Sha>5e6dacd4d3debda3266224b2a434811c6fa94987</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
