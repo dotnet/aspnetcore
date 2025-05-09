@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -45,11 +44,14 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        Debug.Assert(context.ValidationContext is not null);
         if (value == null)
         {
             return;
         }
+
+        // Although classes can be annotated with [DisplayName], we only process display names when producing
+        // errors for properties so we can pass the `Type.Name` as the display name for the type here.
+        context.ValidationContext ??= new ValidationContext(value, displayName: Type.Name, serviceProvider: null, items: null);
 
         // Check if we've exceeded the maximum depth
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)

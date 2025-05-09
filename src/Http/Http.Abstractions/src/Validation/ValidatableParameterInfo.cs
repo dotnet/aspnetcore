@@ -3,7 +3,6 @@
 
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Validation;
@@ -60,13 +59,16 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
     /// </remarks>
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        Debug.Assert(context.ValidationContext is not null);
-
         // Skip validation if value is null and parameter is optional
         if (value == null && ParameterType.IsNullable())
         {
             return;
         }
+
+        // ValidationContext requires a non-null value although the invocation pattern that we use
+        // calls `GetValidationResult` and passes the value there. `GetValidationResult` tolerates
+        // null values so we only need to set a non-null value to the ValidationContext here.
+        context.ValidationContext ??= new ValidationContext(value ?? new object(), displayName: DisplayName, serviceProvider: null, items: null);
 
         context.ValidationContext.DisplayName = DisplayName;
         context.ValidationContext.MemberName = Name;

@@ -554,6 +554,69 @@ public class ValidatableTypeInfoTests
             });
     }
 
+    [Fact]
+    public async Task Validate_WithoutValidationContext_AddsErrorAndInitializesValidationContext()
+    {
+        // Arrange
+        var personType = new TestValidatableTypeInfo(
+            typeof(Person),
+            [
+                // Only the Name property is required for this test
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
+                    [new RequiredAttribute()])
+            ]);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Person), personType }
+            })
+        };
+
+        var person = new Person(); // Name is null → fails validation
+        Assert.Null(context.ValidationContext); // ensure no ValidationContext pre-set
+
+        // Act
+        await personType.ValidateAsync(person, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationContext);
+        Assert.NotNull(context.ValidationErrors);
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("Name", error.Key);
+        Assert.Equal("The Name field is required.", error.Value.First());
+    }
+
+    [Fact]
+    public async Task Validate_WithoutValidationContext_ValidObject_NoErrors()
+    {
+        // Arrange
+        var personType = new TestValidatableTypeInfo(
+            typeof(Person),
+            [
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
+                    [new RequiredAttribute()])
+            ]);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Person), personType }
+            })
+        };
+
+        var person = new Person { Name = "Alice" };
+
+        // Act
+        await personType.ValidateAsync(person, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationContext);
+        Assert.Null(context.ValidationErrors);
+    }
+
     // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739
     private class GlobalErrorObject : IValidatableObject
     {
