@@ -81,8 +81,8 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
         => InvokeJS(identifier, argsJson, JSCallResultType.Default, WindowObjectId);
 
     /// <summary>
-    /// Performs a synchronous function invocation.
-    /// </summary>
+    /// Performs a synchronous function invocation with the call type <see cref="JSCallType.FunctionCall"/>.
+    /// For more configuration options, use the overload <see cref="InvokeJS(in JSInvocationInfo)" />.
     /// <param name="identifier">The identifier for the function to invoke.</param>
     /// <param name="argsJson">A JSON representation of the arguments.</param>
     /// <param name="resultType">The type of result expected from the invocation.</param>
@@ -95,5 +95,8 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     /// </summary>
     /// <param name="invocationInfo">Configuration of the interop call.</param>
     /// <returns>A JSON representation of the result.</returns>
-    protected abstract string? InvokeJS(in JSInvocationInfo invocationInfo);
+    protected virtual string? InvokeJS(in JSInvocationInfo invocationInfo)
+    {
+        return InvokeJS(invocationInfo.Identifier, invocationInfo.ArgsJson, invocationInfo.ResultType, invocationInfo.TargetInstanceId);
+    }
 }
