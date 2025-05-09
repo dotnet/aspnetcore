@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// <summary>
 /// Contains validation information for a type.
 /// </summary>
+[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public abstract class ValidatableTypeInfo : IValidatableInfo
 {
     private readonly int _membersCount;

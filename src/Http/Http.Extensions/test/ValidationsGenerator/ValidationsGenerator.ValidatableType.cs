@@ -1,3 +1,5 @@
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -12,6 +14,8 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
     public async Task CanValidateTypesWithAttribute()
     {
         var source = """
+#pragma warning disable ASP0029
+
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;

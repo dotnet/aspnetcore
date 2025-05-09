@@ -2,12 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
 /// <summary>
 /// Represents the context for validating a validatable object.
 /// </summary>
+[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
     /// <summary>
