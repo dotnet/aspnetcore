@@ -389,7 +389,7 @@ firefox --start-debugger-server 6000 -new-tab about:debugging");
                 return devtoolsFrontendUrl;
             }
 
-            UriHelper.FromAbsolute(url, out _, out _, out _, out var query, out _);
+            UriHelper.FromAbsolute(devtoolsFrontendUrl, out _, out _, out _, out var query, out _);
             return $"{DefaultBrowserDevToolsPagePath}{query}";
         }
     }
