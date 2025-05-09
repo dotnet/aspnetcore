@@ -83,6 +83,7 @@ public abstract class JSInProcessRuntime : JSRuntime, IJSInProcessRuntime
     /// <summary>
     /// Performs a synchronous function invocation with the call type <see cref="JSCallType.FunctionCall"/>.
     /// For more configuration options, use the overload <see cref="InvokeJS(in JSInvocationInfo)" />.
+    /// </summary>
     /// <param name="identifier">The identifier for the function to invoke.</param>
     /// <param name="argsJson">A JSON representation of the arguments.</param>
     /// <param name="resultType">The type of result expected from the invocation.</param>
