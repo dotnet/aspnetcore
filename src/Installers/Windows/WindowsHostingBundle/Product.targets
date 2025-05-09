@@ -7,31 +7,31 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-win-x64.msi">
       <BundleNameProperty>DotNetRedistLtsInstallerx64</BundleNameProperty>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-win-x86.msi">
       <BundleNameProperty>DotNetRedistLtsInstallerx86</BundleNameProperty>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-win-arm64.msi">
       <BundleNameProperty>DotNetRedistLtsInstallerarm64</BundleNameProperty>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRefVersion)-win-x64.msi">
       <BundleNameProperty>DotNetRedistHostInstallerx64</BundleNameProperty>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRefVersion)-win-x86.msi">
       <BundleNameProperty>DotNetRedistHostInstallerx86</BundleNameProperty>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-host-$(MicrosoftNETCoreAppRefVersion)-win-arm64.msi">
       <BundleNameProperty>DotNetRedistHostInstallerarm64</BundleNameProperty>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-hostfxr-$(MicrosoftNETCoreAppRefVersion)-win-x64.msi">
       <BundleNameProperty>DotNetRedistHostfxrInstallerx64</BundleNameProperty>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-hostfxr-$(MicrosoftNETCoreAppRefVersion)-win-x86.msi">
       <BundleNameProperty>DotNetRedistHostfxrInstallerx86</BundleNameProperty>
     </RuntimeInstallers>
-    <RuntimeInstallers Include="$(DepsPath)dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
+    <RuntimeInstallers Include="$(DepsPath)dotnet-hostfxr-$(MicrosoftNETCoreAppRefVersion)-win-arm64.msi">
       <BundleNameProperty>DotNetRedistHostfxrInstallerarm64</BundleNameProperty>
     </RuntimeInstallers>
   </ItemGroup>
@@ -43,32 +43,32 @@
   <Target Name="CollectDependencies" BeforeTargets="Restore;CollectPackageReferences">
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for NETCoreApp. -->
     <ItemGroup>
-      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-win-x64.msi">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-win-x86.msi">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
-        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-win-arm64.msi">
+        <TargetFileName>dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-win-arm64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
-        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRefVersion)-win-x64.msi">
+        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRefVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
-        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRefVersion)-win-x86.msi">
+        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRefVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
-        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-host-$(MicrosoftNETCoreAppRefVersion)-win-arm64.msi">
+        <TargetFileName>dotnet-host-$(MicrosoftNETCoreAppRefVersion)-win-arm64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi">
-        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x64.msi</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRefVersion)-win-x64.msi">
+        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRefVersion)-win-x64.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi">
-        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-x86.msi</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRefVersion)-win-x86.msi">
+        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRefVersion)-win-x86.msi</TargetFileName>
       </RemoteAsset>
-      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi">
-        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRuntimeVersion)-win-arm64.msi</TargetFileName>
+      <RemoteAsset Include="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/dotnet-hostfxr-$(MicrosoftNETCoreAppRefVersion)-win-arm64.msi">
+        <TargetFileName>dotnet-hostfxr-$(MicrosoftNETCoreAppRefVersion)-win-arm64.msi</TargetFileName>
       </RemoteAsset>
     </ItemGroup>
 

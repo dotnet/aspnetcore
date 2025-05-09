@@ -65,7 +65,7 @@ public class TargetingPackTests
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
+        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppVersion().Split('-', 2)[0];
         var version = Version.Parse(versionStringWithoutPrereleaseTag);
         var aspnetcoreVersionString = TestData.GetSharedFxVersion().Split('-', 2)[0];
         var aspnetcoreVersion = Version.Parse(aspnetcoreVersionString);
@@ -148,7 +148,7 @@ public class TargetingPackTests
         Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count + 1);
 
         // PackageOverrides versions should remain at Major.Minor.0 while servicing.
-        var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppPackageVersion();
+        var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppVersion();
         Assert.True(
             NuGetVersion.TryParse(netCoreAppPackageVersion, out var parsedVersion),
             "MicrosoftNETCoreAppPackageVersion must be convertable to a NuGetVersion.");

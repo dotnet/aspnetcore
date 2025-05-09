@@ -23,7 +23,6 @@
         MicrosoftAspNetCoreAppRefVersion=$(TargetingPackVersion);
         MicrosoftAspNetCoreAppRuntimeVersion=$(SharedFxVersion);
         MicrosoftNETCoreAppRefVersion=$(MicrosoftNETCoreAppRefVersion);
-        MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
         MicrosoftPlaywrightCLIVersion=$(MicrosoftPlaywrightCLIVersion);
         LibNetHostAppPackVersion=$(BundledNETCoreAppPackageVersion);
         SupportedRuntimeIdentifiers=$([MSBuild]::Escape($(SupportedRuntimeIdentifiers)));
