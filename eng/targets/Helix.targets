@@ -21,7 +21,7 @@
       $(HelixQueueDebian12);
       $(HelixQueueFedora40);
       $(HelixQueueMariner);
-      Ubuntu.2004.Amd64.Open;
+      Ubuntu.2204.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
