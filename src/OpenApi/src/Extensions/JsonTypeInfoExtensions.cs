@@ -108,7 +108,7 @@ internal static class JsonTypeInfoExtensions
             // so we check if the name contains a backtick already.
             // For more information: https://github.com/dotnet/aspnetcore/issues/59092
             var backtickIndex = type.Name.LastIndexOf('`');
-            var isNestedGenericType = backtickIndex == -1;
+            var isNestedGenericType = backtickIndex < 0;
 
             var genericTypeName = isNestedGenericType ? type.Name : type.Name[..backtickIndex];
             var genericArguments = type.GetGenericArguments();
