@@ -40,8 +40,9 @@ internal sealed class KestrelServerImpl : IServer
         IHttpsConfigurationService httpsConfigurationService,
         ILoggerFactory loggerFactory,
         DiagnosticSource? diagnosticSource,
-        KestrelMetrics metrics)
-        : this(transportFactories, multiplexedFactories, httpsConfigurationService, CreateServiceContext(options, loggerFactory, diagnosticSource, metrics))
+        KestrelMetrics metrics,
+        IEnumerable<IHeartbeatHandler> heartbeatHandlers)
+        : this(transportFactories, multiplexedFactories, httpsConfigurationService, CreateServiceContext(options, loggerFactory, diagnosticSource, metrics, heartbeatHandlers))
     {
     }
 
@@ -73,7 +74,8 @@ internal sealed class KestrelServerImpl : IServer
         _transportManager = new TransportManager(_transportFactories, _multiplexedTransportFactories, _httpsConfigurationService, ServiceContext);
     }
 
-    private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource, KestrelMetrics metrics)
+    private static ServiceContext CreateServiceContext(IOptions<KestrelServerOptions> options, ILoggerFactory loggerFactory, DiagnosticSource? diagnosticSource, KestrelMetrics metrics,
+        IEnumerable<IHeartbeatHandler> heartbeatHandlers)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
@@ -87,7 +89,7 @@ internal sealed class KestrelServerImpl : IServer
         var dateHeaderValueManager = new DateHeaderValueManager(TimeProvider.System);
 
         var heartbeat = new Heartbeat(
-            new IHeartbeatHandler[] { dateHeaderValueManager, connectionManager },
+            [ dateHeaderValueManager, connectionManager, ..heartbeatHandlers ],
             TimeProvider.System,
             DebuggerWrapper.Singleton,
             trace,
