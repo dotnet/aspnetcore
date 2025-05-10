@@ -193,7 +193,7 @@ public class CircuitHostTest
         var circuitHost = TestCircuitHost.Create(handlers: new[] { handler1.Object, handler2.Object });
 
         // Act
-        await circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), cancellationToken);
+        await circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), default, cancellationToken);
 
         // Assert
         handler1.VerifyAll();
@@ -236,7 +236,7 @@ public class CircuitHostTest
         // Act
         object initializeException = null;
         circuitHost.UnhandledException += (sender, eventArgs) => initializeException = eventArgs.ExceptionObject;
-        var initializeTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), cancellationToken);
+        var initializeTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), default, cancellationToken);
         await initializeTask.WaitAsync(initializeTimeout);
 
         // Assert: This was not reached only because an exception was thrown in InitializeAsync()
@@ -266,7 +266,7 @@ public class CircuitHostTest
         };
 
         // Act
-        var initializeAsyncTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), new CancellationToken());
+        var initializeAsyncTask = circuitHost.InitializeAsync(new ProtectedPrerenderComponentApplicationStore(Mock.Of<IDataProtectionProvider>()), default, new CancellationToken());
 
         // Assert: No synchronous exceptions
         handler.VerifyAll();
