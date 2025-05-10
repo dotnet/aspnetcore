@@ -9,7 +9,7 @@
   ],
   "name": "ASP.NET Core Web API",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating a RESTful Web API using ASP.NET Core controllers or minimal APIs, with optional support for OpenAPI and authentication.",
+  "description": "A Web API that apps and websites can use to send and receive data.",
   "groupIdentity": "Microsoft.Web.WebApi",
   "precedence": "10000",
   "identity": "Microsoft.Web.WebApi.CSharp.10.0",
