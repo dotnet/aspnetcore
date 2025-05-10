@@ -34,7 +34,7 @@
 </div>
 
 @code {
-    private ApplicationUser user = default!;
+    private ApplicationUser? user;
     private string? username;
     private string? phoneNumber;
 
@@ -47,6 +47,11 @@
     protected override async Task OnInitializedAsync()
     {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        if (user is null)
+        {
+            return;
+        }
+
         username = await UserManager.GetUserNameAsync(user);
         phoneNumber = await UserManager.GetPhoneNumberAsync(user);
 
@@ -55,6 +60,11 @@
 
     private async Task OnValidSubmitAsync()
     {
+        if (user is null)
+        {
+            throw new InvalidOperationException("User is not loaded; failed to set phone number.");
+        }
+
         if (Input.PhoneNumber != phoneNumber)
         {
             var setPhoneResult = await UserManager.SetPhoneNumberAsync(user, Input.PhoneNumber);

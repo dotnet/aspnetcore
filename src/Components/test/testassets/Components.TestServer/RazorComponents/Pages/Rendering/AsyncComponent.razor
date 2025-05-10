@@ -1,0 +1,28 @@
+﻿@if(throwException)
+{
+    throw new InvalidOperationException("Child component UI exception: redirection should have stopped renderer.");
+}
+
+@code {
+    [Parameter]
+    public int Delay { get; set; }
+
+    private bool throwException { get; set; }
+
+    private string message = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield();
+        _ = ScheduleRenderingExceptionAfterDelay();
+    }
+
+    private async Task ScheduleRenderingExceptionAfterDelay()
+    {
+        // This update should not happen if the renderer is stopped
+        await Task.Delay(Delay);
+        throwException = true;
+        StateHasChanged();
+    }
+}
+

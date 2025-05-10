@@ -55,7 +55,7 @@
 
 @code {
     private string? message;
-    private ApplicationUser user = default!;
+    private ApplicationUser? user;
     private string? email;
     private bool isEmailConfirmed;
 
@@ -68,6 +68,11 @@
     protected override async Task OnInitializedAsync()
     {
         user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        if (user is null)
+        {
+            return;
+        }
+
         email = await UserManager.GetEmailAsync(user);
         isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
 
@@ -80,6 +85,11 @@
         {
             message = "Your email is unchanged.";
             return;
+        }
+
+        if (user is null)
+        {
+            throw new InvalidOperationException("User is not loaded; failed to manage email.");
         }
 
         var userId = await UserManager.GetUserIdAsync(user);
@@ -99,6 +109,11 @@
         if (email is null)
         {
             return;
+        }
+
+        if (user is null)
+        {
+            throw new InvalidOperationException("User is not loaded; failed to send verification email.");
         }
 
         var userId = await UserManager.GetUserIdAsync(user);
