@@ -24,7 +24,24 @@ internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<Forwarded
             return;
         }
 
-        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        var forwardedHeaders = _configuration["ForwardedHeaders_Headers"];
+        if (string.IsNullOrEmpty(forwardedHeaders))
+        {
+            options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        }
+        else
+        {
+            var headers = ForwardedHeaders.None;
+            foreach (var headerName in forwardedHeaders.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (Enum.TryParse<ForwardedHeaders>(headerName, true, out var headerValue))
+                {
+                    headers |= headerValue;
+                }
+            }
+            options.ForwardedHeaders = headers;
+        }
+
         // Only loopback proxies are allowed by default. Clear that restriction because forwarders are
         // being enabled by explicit configuration.
         options.KnownNetworks.Clear();
