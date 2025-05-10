@@ -21,6 +21,8 @@
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
+    <Reference Include="Microsoft.DotNet.HotReload.Agent" />
+    <Reference Include="Microsoft.DotNet.HotReload.Agent.Data" />
   </ItemGroup>
 
   <ItemGroup>

@@ -69,10 +69,7 @@ public static partial class WebAssemblyHotReload
         {
             s_initialized = true;
 
-            if (!HotReloadAgent.TryCreate(s_reporter, out var agent))
-            {
-                return;
-            }
+            var agent = new HotReloadAgent();
 
             var existingAgent = Interlocked.CompareExchange(ref s_hotReloadAgent, agent, null);
             if (existingAgent != null)
