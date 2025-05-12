@@ -319,7 +319,7 @@ public static class TestData
 
     public static string GetDefaultNetCoreTargetFramework() => GetTestDataValue("DefaultNetCoreTargetFramework");
 
-    public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppRuntimeVersion");
+    public static string GetMicrosoftNETCoreAppVersion() => GetTestDataValue("MicrosoftNETCoreAppRefVersion");
 
     public static string GetReferencePackSharedFxVersion() => GetTestDataValue("ReferencePackSharedFxVersion");
 

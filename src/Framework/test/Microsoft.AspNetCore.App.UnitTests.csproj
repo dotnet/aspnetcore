@@ -46,8 +46,8 @@
       <_Parameter2>$(TargetRuntimeIdentifier)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
-      <_Parameter1>MicrosoftNETCoreAppRuntimeVersion</_Parameter1>
-      <_Parameter2>$(MicrosoftNETCoreAppRuntimeVersion)</_Parameter2>
+      <_Parameter1>MicrosoftNETCoreAppRefVersion</_Parameter1>
+      <_Parameter2>$(MicrosoftNETCoreAppRefVersion)</_Parameter2>
     </AssemblyAttribute>
     <AssemblyAttribute Include="Microsoft.AspNetCore.TestData">
       <_Parameter1>SharedFrameworkBinariesFromRepo</_Parameter1>
