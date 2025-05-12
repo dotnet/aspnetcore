@@ -56,8 +56,6 @@ internal class ResourceCollectionProvider
 
         var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", _url);
         var result = await module.InvokeAsync<ResourceAsset[]>("get");
-        var collection = result == null ? ResourceAssetCollection.Empty : new ResourceAssetCollection(result);
-        var asset = collection["BasicTestApp.styles.css"];
-        return collection;
+        return result == null ? ResourceAssetCollection.Empty : new ResourceAssetCollection(result);
     }
 }
