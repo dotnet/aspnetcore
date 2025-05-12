@@ -17,23 +17,21 @@ internal class ResourceCollectionProvider
     public string? ResourceCollectionUrl
     {
         get => _url;
-        set => _url = value;
+        set
+        {
+            if (_url != null)
+            {
+                throw new InvalidOperationException("The resource collection URL has already been set.");
+            }
+            _url = value;
+        }
     }
+
     private ResourceAssetCollection? _resourceCollection;
     private readonly IJSRuntime _jsRuntime;
     public ResourceCollectionProvider(IJSRuntime jsRuntime)
     {
         _jsRuntime = jsRuntime;
-    }
-
-    [MemberNotNull(nameof(_url))]
-    internal void SetResourceCollectionUrl(string url)
-    {
-        if (_url != null)
-        {
-            throw new InvalidOperationException("The resource collection URL has already been set.");
-        }
-        _url = url;
     }
 
     internal async Task<ResourceAssetCollection> GetResourceCollection()
@@ -58,6 +56,8 @@ internal class ResourceCollectionProvider
 
         var module = await _jsRuntime.InvokeAsync<IJSObjectReference>("import", _url);
         var result = await module.InvokeAsync<ResourceAsset[]>("get");
-        return result == null ? ResourceAssetCollection.Empty : new ResourceAssetCollection(result);
+        var collection = result == null ? ResourceAssetCollection.Empty : new ResourceAssetCollection(result);
+        var asset = collection["BasicTestApp.styles.css"];
+        return collection;
     }
 }
