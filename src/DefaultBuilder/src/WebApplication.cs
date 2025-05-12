@@ -166,7 +166,7 @@ public sealed class WebApplication : IHost, IApplicationBuilder, IEndpointRouteB
     /// <param name="cancellationToken"></param>
     /// <returns>
     /// A <see cref="Task"/> that represents the shutdown of the <see cref="WebApplication"/>.
-    /// Successful completion indicates that all the HTTP server has stopped.
+    /// Successful completion indicates that the HTTP server has stopped.
     /// </returns>
     public Task StopAsync(CancellationToken cancellationToken = default) =>
         _host.StopAsync(cancellationToken);

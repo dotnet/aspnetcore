@@ -23,7 +23,7 @@ internal sealed class SupplyParameterFromQueryValueProvider(NavigationManager na
     public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
         => parameterInfo.Attribute is SupplyParameterFromQueryAttribute;
 
-    public object? GetCurrentValue(in CascadingParameterInfo parameterInfo)
+    public object? GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
     {
         TryUpdateUri();
 

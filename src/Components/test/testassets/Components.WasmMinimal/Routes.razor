@@ -1,6 +1,28 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
+@using Components.WasmMinimal.Pages
+@inject NavigationManager NavigationManager
 
-<Router AppAssembly="@typeof(Program).Assembly">
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useCustomNotFoundPage")]
+    public string? UseCustomNotFoundPage { get; set; }
+
+    private Type? NotFoundPageType { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (UseCustomNotFoundPage == "true")
+        {
+            NotFoundPageType = typeof(CustomNotFoundPage);
+        }
+        else
+        {
+            NotFoundPageType = null;
+        }
+    }
+}
+
+<Router AppAssembly="@typeof(Program).Assembly" NotFoundPage="NotFoundPageType">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />

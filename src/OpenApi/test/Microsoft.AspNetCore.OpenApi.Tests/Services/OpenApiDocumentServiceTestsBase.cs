@@ -23,28 +23,27 @@ using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Microsoft.OpenApi.Models;
 using Moq;
-using Xunit.Sdk;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
 public abstract class OpenApiDocumentServiceTestBase
 {
-    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
-        => await VerifyOpenApiDocument(builder, new OpenApiOptions(), verifyOpenApiDocument, cancellationToken);
+    public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, Action<OpenApiDocument> verifyOpenApiDocument)
+        => await VerifyOpenApiDocument(builder, new OpenApiOptions(), verifyOpenApiDocument);
 
     public static async Task VerifyOpenApiDocument(IEndpointRouteBuilder builder, OpenApiOptions openApiOptions, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
     {
         var documentService = CreateDocumentService(builder, openApiOptions);
         var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
-        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, cancellationToken);
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, null, cancellationToken);
         verifyOpenApiDocument(document);
     }
 
-    public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument)
+    public static async Task VerifyOpenApiDocument(ActionDescriptor action, Action<OpenApiDocument> verifyOpenApiDocument, CancellationToken cancellationToken = default)
     {
         var builder = CreateBuilder();
         var documentService = CreateDocumentService(builder, action);
         var scopedService = ((TestServiceProvider)builder.ServiceProvider).CreateScope();
-        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
+        var document = await documentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider, null, cancellationToken);
         verifyOpenApiDocument(document);
     }
 
@@ -85,7 +84,11 @@ public abstract class OpenApiDocumentServiceTestBase
         var openApiOptions = new Mock<IOptionsMonitor<OpenApiOptions>>();
         openApiOptions.Setup(o => o.Get(It.IsAny<string>())).Returns(new OpenApiOptions());
 
-        var schemaService = new OpenApiSchemaService("Test", Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions()), builder.ServiceProvider, openApiOptions.Object);
+        var jsonOptions = new Microsoft.AspNetCore.Http.Json.JsonOptions();
+        // Set strict number handling by default to make integer type checks more straightforward
+        jsonOptions.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
+
+        var schemaService = new OpenApiSchemaService("Test", Options.Create(jsonOptions), openApiOptions.Object);
         ((TestServiceProvider)builder.ServiceProvider).TestSchemaService = schemaService;
         var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, openApiOptions.Object, builder.ServiceProvider, new OpenApiTestServer());
         ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
@@ -126,9 +129,12 @@ public abstract class OpenApiDocumentServiceTestBase
         provider.OnProvidersExecuted(context);
 
         var apiDescriptionGroupCollectionProvider = CreateApiDescriptionGroupCollectionProvider(context.Results);
-        var jsonOptions = builder.ServiceProvider.GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>() ?? Options.Create(new Microsoft.AspNetCore.Http.Json.JsonOptions());
+        var defaultJsonOptions = new Microsoft.AspNetCore.Http.Json.JsonOptions();
+        // Set strict number handling by default to make integer type checks more straightforward
+        defaultJsonOptions.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
+        var jsonOptions = builder.ServiceProvider.GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>() ?? Options.Create(defaultJsonOptions);
 
-        var schemaService = new OpenApiSchemaService("Test", jsonOptions, builder.ServiceProvider, options.Object);
+        var schemaService = new OpenApiSchemaService("Test", jsonOptions, options.Object);
         ((TestServiceProvider)builder.ServiceProvider).TestSchemaService = schemaService;
         var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, options.Object, builder.ServiceProvider, new OpenApiTestServer());
         ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
@@ -159,8 +165,13 @@ public abstract class OpenApiDocumentServiceTestBase
 
     internal static TestEndpointRouteBuilder CreateBuilder(IServiceCollection serviceCollection = null)
     {
+        serviceCollection ??= new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
+        });
         var serviceProvider = new TestServiceProvider();
-        serviceProvider.SetInternalServiceProvider(serviceCollection ?? new ServiceCollection());
+        serviceProvider.SetInternalServiceProvider(serviceCollection);
         return new TestEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
     }
 
@@ -254,14 +265,12 @@ public abstract class OpenApiDocumentServiceTestBase
         public static TestServiceProvider Instance { get; } = new TestServiceProvider();
         private IKeyedServiceProvider _serviceProvider;
         internal OpenApiDocumentService TestDocumentService { get; set; }
-        internal OpenApiSchemaStore TestSchemaStoreService { get; } = new OpenApiSchemaStore();
         internal OpenApiSchemaService TestSchemaService { get; set; }
 
         public IServiceProvider ServiceProvider => this;
 
         public void SetInternalServiceProvider(IServiceCollection serviceCollection)
         {
-            serviceCollection.AddKeyedSingleton<OpenApiSchemaStore>("Test");
             serviceCollection.Configure<OpenApiOptions>("Test", options =>
             {
                 options.DocumentName = "Test";
@@ -294,10 +303,6 @@ public abstract class OpenApiDocumentServiceTestBase
             {
                 return TestSchemaService;
             }
-            if (serviceType == typeof(OpenApiSchemaStore))
-            {
-                return TestSchemaStoreService;
-            }
 
             return _serviceProvider.GetKeyedService(serviceType, serviceKey);
         }
@@ -311,10 +316,6 @@ public abstract class OpenApiDocumentServiceTestBase
             if (serviceType == typeof(OpenApiSchemaService))
             {
                 return TestSchemaService;
-            }
-            if (serviceType == typeof(OpenApiSchemaStore))
-            {
-                return TestSchemaStoreService;
             }
 
             return _serviceProvider.GetRequiredKeyedService(serviceType, serviceKey);

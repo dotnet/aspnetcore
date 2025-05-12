@@ -5,9 +5,6 @@ parameters:
   # Optional: Include PublishBuildArtifacts task
   enablePublishBuildArtifacts: false
 
-  # Optional: Enable publishing using release pipelines
-  enablePublishUsingPipelines: false
-
   # Optional: Enable running the source-build jobs to build repo from source
   enableSourceBuild: false
 
@@ -29,6 +26,9 @@ parameters:
 
   # Optional: Publish the assets as soon as the publish to BAR stage is complete, rather doing so in a separate stage.
   publishAssetsImmediately: false
+
+  # Optional: 🌤️ or not the build has assets it wants to publish to BAR
+  isAssetlessBuild: false
 
   # Optional: If using publishAssetsImmediately and additional parameters are needed, can be used to send along additional parameters (normally sent to post-build.yml)
   artifactsPublishingAdditionalParameters: ''
@@ -96,7 +96,7 @@ jobs:
         ${{ parameter.key }}: ${{ parameter.value }}
 
 - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-  - ${{ if or(eq(parameters.enablePublishBuildAssets, true), eq(parameters.artifacts.publish.manifests, 'true'), ne(parameters.artifacts.publish.manifests, '')) }}:
+  - ${{ if or(eq(parameters.enablePublishBuildAssets, true), eq(parameters.artifacts.publish.manifests, 'true'), ne(parameters.artifacts.publish.manifests, ''), eq(parameters.isAssetlessBuild, true)) }}:
     - template: ../job/publish-build-assets.yml
       parameters:
         is1ESPipeline: ${{ parameters.is1ESPipeline }}
@@ -112,8 +112,8 @@ jobs:
           - Source_Build_Complete
 
         runAsPublic: ${{ parameters.runAsPublic }}
-        publishUsingPipelines: ${{ parameters.enablePublishUsingPipelines }}
-        publishAssetsImmediately: ${{ parameters.publishAssetsImmediately }}
+        publishAssetsImmediately: ${{ or(parameters.publishAssetsImmediately, parameters.isAssetlessBuild) }}
+        isAssetlessBuild: ${{ parameters.isAssetlessBuild }}
         enablePublishBuildArtifacts: ${{ parameters.enablePublishBuildArtifacts }}
         artifactsPublishingAdditionalParameters: ${{ parameters.artifactsPublishingAdditionalParameters }}
         signingValidationAdditionalParameters: ${{ parameters.signingValidationAdditionalParameters }}

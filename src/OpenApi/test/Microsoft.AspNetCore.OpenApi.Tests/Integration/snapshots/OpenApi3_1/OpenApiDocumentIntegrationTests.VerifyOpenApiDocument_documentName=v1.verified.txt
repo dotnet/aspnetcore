@@ -1,0 +1,208 @@
+﻿{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "Sample | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/v1/array-of-guids": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "parameters": [
+          {
+            "name": "guids",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              }
+            }
+          },
+          {
+            "name": "X-Version",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "1.0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/todos": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "summary": "Creates a new todo item.",
+        "parameters": [
+          {
+            "name": "X-Version",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "1.0"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Todo"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/v1/todos/{id}": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "description": "Returns a specific todo item.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "X-Version",
+            "in": "header",
+            "schema": {
+              "type": "string",
+              "default": "1.0"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodoWithDueDate"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Todo": {
+        "required": [
+          "id",
+          "title",
+          "completed",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the to-do item.",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the to-do item."
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Indicates whether the to-do item is completed."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The date and time when the to-do item was created.",
+            "format": "date-time"
+          }
+        },
+        "description": "Represents a to-do item."
+      },
+      "TodoWithDueDate": {
+        "required": [
+          "dueDate",
+          "id",
+          "title",
+          "completed",
+          "createdAt"
+        ],
+        "type": "object",
+        "properties": {
+          "dueDate": {
+            "type": "string",
+            "description": "The due date of the to-do item.",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "integer",
+            "description": "The unique identifier of the to-do item.",
+            "format": "int32"
+          },
+          "title": {
+            "type": "string",
+            "description": "The title of the to-do item."
+          },
+          "completed": {
+            "type": "boolean",
+            "description": "Indicates whether the to-do item is completed."
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "The date and time when the to-do item was created.",
+            "format": "date-time"
+          }
+        },
+        "description": "Represents a to-do item with a due date."
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Json Web Token"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Sample"
+    }
+  ]
+}

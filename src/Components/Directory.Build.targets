@@ -1,3 +1,11 @@
 ﻿<Project>
+  <PropertyGroup Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' and '$(BuildNodeJS)' != 'false'">
+    <BlazorWebAssemblyJSPath
+        Condition=" '$(Configuration)' == 'Debug' ">$(RepoRoot)src\Components\Web.JS\dist\Debug\blazor.webassembly.js</BlazorWebAssemblyJSPath>
+    <BlazorWebAssemblyJSPath
+        Condition=" '$(Configuration)' != 'Debug' ">$(RepoRoot)src\Components\Web.JS\dist\Release\blazor.webassembly.js</BlazorWebAssemblyJSPath>
+    <BlazorWebAssemblyJSMapPath>$(BlazorWebAssemblyJSPath).map</BlazorWebAssemblyJSMapPath>
+  </PropertyGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 </Project>

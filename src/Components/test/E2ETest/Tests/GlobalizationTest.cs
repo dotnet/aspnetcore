@@ -104,49 +104,49 @@ public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServer
         var input = Browser.Exists(By.Id("input_type_number_int"));
         var display = Browser.Exists(By.Id("input_type_number_int_value"));
         Browser.Equal(42.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         input.Clear();
         input.SendKeys(9000.ToString(CultureInfo.InvariantCulture));
         input.SendKeys("\t");
         Browser.Equal(9000.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(9000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(9000.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // decimal
         input = Browser.Exists(By.Id("input_type_number_decimal"));
         display = Browser.Exists(By.Id("input_type_number_decimal_value"));
         Browser.Equal(4.2m.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(4.2m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(4.2m.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         input.Clear();
         input.SendKeys(9000.42m.ToString(CultureInfo.InvariantCulture));
         input.SendKeys("\t");
         Browser.Equal(9000.42m.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(9000.42m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(9000.42m.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // datetime
         input = Browser.Exists(By.Id("input_type_date_datetime"));
         display = Browser.Exists(By.Id("input_type_date_datetime_value"));
         var extraInput = Browser.Exists(By.Id("input_type_date_datetime_extrainput"));
         Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
-        Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         extraInput.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
         extraInput.SendKeys("\t");
         Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
-        Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // datetimeoffset
         input = Browser.Exists(By.Id("input_type_date_datetimeoffset"));
         display = Browser.Exists(By.Id("input_type_date_datetimeoffset_value"));
         extraInput = Browser.Exists(By.Id("input_type_date_datetimeoffset_extrainput"));
         Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
-        Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
         extraInput.SendKeys("\t");
         Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
-        Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
     }
 
     [Theory]
@@ -161,72 +161,72 @@ public abstract class GlobalizationTest<TServerFixture> : ServerTestBase<TServer
         var input = Browser.Exists(By.Id("inputnumber_int"));
         var display = Browser.Exists(By.Id("inputnumber_int_value"));
         Browser.Equal(42.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         input.Clear();
         input.SendKeys(9000.ToString(CultureInfo.InvariantCulture));
         input.SendKeys("\t");
         Browser.Equal(9000.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(9000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(9000.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // long
         input = Browser.Exists(By.Id("inputnumber_long"));
         display = Browser.Exists(By.Id("inputnumber_long_value"));
         Browser.Equal(4200.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(4200.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(4200.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         input.Clear();
         input.SendKeys(90000000000.ToString(CultureInfo.InvariantCulture));
         input.SendKeys("\t");
         Browser.Equal(90000000000.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(90000000000.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(90000000000.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // short
         input = Browser.Exists(By.Id("inputnumber_short"));
         display = Browser.Exists(By.Id("inputnumber_short_value"));
         Browser.Equal(42.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(42.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         input.Clear();
         input.SendKeys(127.ToString(CultureInfo.InvariantCulture));
         input.SendKeys("\t");
         Browser.Equal(127.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(127.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(127.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // decimal
         input = Browser.Exists(By.Id("inputnumber_decimal"));
         display = Browser.Exists(By.Id("inputnumber_decimal_value"));
         Browser.Equal(4.2m.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(4.2m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(4.2m.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         input.Clear();
         input.SendKeys(9000.42m.ToString(CultureInfo.InvariantCulture));
         input.SendKeys("\t");
         Browser.Equal(9000.42m.ToString(cultureInfo), () => display.Text);
-        Browser.Equal(9000.42m.ToString(CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(9000.42m.ToString(CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // datetime
         input = Browser.Exists(By.Id("inputdate_datetime"));
         display = Browser.Exists(By.Id("inputdate_datetime_value"));
         var extraInput = Browser.Exists(By.Id("inputdate_datetime_extrainput"));
         Browser.Equal(new DateTime(1985, 3, 4).ToString(cultureInfo), () => display.Text);
-        Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(new DateTime(1985, 3, 4).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         extraInput.ReplaceText(new DateTime(2000, 1, 2).ToString(cultureInfo));
         extraInput.SendKeys("\t");
         Browser.Equal(new DateTime(2000, 1, 2).ToString(cultureInfo), () => display.Text);
-        Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(new DateTime(2000, 1, 2).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         // datetimeoffset
         input = Browser.Exists(By.Id("inputdate_datetimeoffset"));
         display = Browser.Exists(By.Id("inputdate_datetimeoffset_value"));
         extraInput = Browser.Exists(By.Id("inputdate_datetimeoffset_extrainput"));
         Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString(cultureInfo), () => display.Text);
-        Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(new DateTimeOffset(new DateTime(1985, 3, 4)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
 
         extraInput.ReplaceText(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo));
         extraInput.SendKeys("\t");
         Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString(cultureInfo), () => display.Text);
-        Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetAttribute("value"));
+        Browser.Equal(new DateTimeOffset(new DateTime(2000, 1, 2)).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), () => input.GetDomProperty("value"));
     }
 }

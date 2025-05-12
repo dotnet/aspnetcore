@@ -885,7 +885,7 @@ public class CascadingParameterTest
         public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
             => parameterInfo.Attribute is SingleDeliveryCascadingParameterAttribute;
 
-        public object GetCurrentValue(in CascadingParameterInfo parameterInfo)
+        public object GetCurrentValue(object key, in CascadingParameterInfo parameterInfo)
             => new SingleDeliveryValue(Text);
 
         public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
@@ -1053,7 +1053,7 @@ public class CascadingParameterTest
             return true;
         }
 
-        object ICascadingValueSupplier.GetCurrentValue(in CascadingParameterInfo cascadingParameterState)
+        object ICascadingValueSupplier.GetCurrentValue(object key, in CascadingParameterInfo cascadingParameterState)
         {
             return Value;
         }

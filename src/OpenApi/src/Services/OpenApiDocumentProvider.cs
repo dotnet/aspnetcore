@@ -25,10 +25,13 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
     /// <param name="writer">A text writer associated with the document to write to.</param>
     public async Task GenerateAsync(string documentName, TextWriter writer)
     {
+        // See OpenApiServiceCollectionExtensions.cs to learn why we lowercase the document name
+        var lowercasedDocumentName = documentName.ToLowerInvariant();
+
         var options = serviceProvider.GetRequiredService<IOptionsMonitor<OpenApiOptions>>();
-        var namedOption = options.Get(documentName);
+        var namedOption = options.Get(lowercasedDocumentName);
         var resolvedOpenApiVersion = namedOption.OpenApiVersion;
-        await GenerateAsync(documentName, writer, resolvedOpenApiVersion);
+        await GenerateAsync(lowercasedDocumentName, writer, resolvedOpenApiVersion);
     }
 
     /// <summary>
@@ -40,14 +43,21 @@ internal sealed class OpenApiDocumentProvider(IServiceProvider serviceProvider) 
     /// <param name="openApiSpecVersion">The OpenAPI specification version to use when serializing the document.</param>
     public async Task GenerateAsync(string documentName, TextWriter writer, OpenApiSpecVersion openApiSpecVersion)
     {
+        // We need to retrieve the document name in a case-insensitive manner to support case-insensitive document name resolution.
+        // The document service is registered with a key equal to the document name, but in lowercase.
+        // The GetRequiredKeyedService() method is case-sensitive, which doesn't work well for OpenAPI document names here,
+        // as the document name is also used as the route to retrieve the document, so we need to ensure this is lowercased to achieve consistency with ASP.NET Core routing.
+        // See OpenApiServiceCollectionExtensions.cs for more info.
+        var lowercasedDocumentName = documentName.ToLowerInvariant();
+
         // Microsoft.OpenAPI does not provide async APIs for writing the JSON
         // document to a file. See https://github.com/microsoft/OpenAPI.NET/issues/421 for
         // more info.
-        var targetDocumentService = serviceProvider.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
+        var targetDocumentService = serviceProvider.GetRequiredKeyedService<OpenApiDocumentService>(lowercasedDocumentName);
         using var scopedService = serviceProvider.CreateScope();
         var document = await targetDocumentService.GetOpenApiDocumentAsync(scopedService.ServiceProvider);
         var jsonWriter = new OpenApiJsonWriter(writer);
-        document.Serialize(jsonWriter, openApiSpecVersion);
+        await document.SerializeAsync(jsonWriter, openApiSpecVersion);
     }
 
     /// <summary>

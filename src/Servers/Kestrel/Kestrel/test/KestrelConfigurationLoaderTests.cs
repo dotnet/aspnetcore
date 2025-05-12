@@ -197,6 +197,33 @@ public class KestrelConfigurationLoaderTests
     }
 
     [Fact]
+    public void ConfigureDefaultCertificatePathLoadsChain()
+    {
+        var serverOptions = CreateServerOptions();
+        var testCertPath = TestResources.GetCertPath("leaf.com.crt");
+        var ran1 = false;
+        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        {
+            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+            new KeyValuePair<string,string>("Certificates:Default:Path", testCertPath)
+        }).Build();
+
+        serverOptions.Configure(config)
+            .Endpoint("End1", opt =>
+            {
+                ran1 = true;
+                Assert.True(opt.IsHttps);
+                Assert.NotNull(opt.HttpsOptions.ServerCertificate);
+                Assert.NotNull(opt.HttpsOptions.ServerCertificateChain);
+                Assert.Equal(2, opt.HttpsOptions.ServerCertificateChain.Count);
+            }).Load();
+
+        Assert.True(ran1);
+
+        Assert.True(serverOptions.ConfigurationBackedListenOptions[0].IsTls);
+    }
+
+    [Fact]
     public void ConfigureEndpointDefaultCanEnableHttps()
     {
         var serverOptions = CreateServerOptions();

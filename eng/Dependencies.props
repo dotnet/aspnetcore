@@ -66,11 +66,11 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Diagnostics.Testing" />
     <LatestPackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <LatestPackageReference Include="Microsoft.Win32.Registry" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing.XUnit" />
-    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing.XUnit" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.Analyzer.Testing" />
+    <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
     <LatestPackageReference Include="Microsoft.OpenApi" />
-    <LatestPackageReference Include="Microsoft.OpenApi.Readers" />
+    <LatestPackageReference Include="Microsoft.OpenApi.YamlReader" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />
@@ -82,11 +82,11 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <LatestPackageReference Include="System.IO.Pipelines" />
+    <LatestPackageReference Include="System.Memory" />
     <LatestPackageReference Include="System.Net.Http" />
     <LatestPackageReference Include="System.Net.Http.Json" />
     <LatestPackageReference Include="System.Net.Sockets" />
     <LatestPackageReference Include="System.Net.ServerSentEvents" />
-    <LatestPackageReference Include="System.Private.Uri" />
     <LatestPackageReference Include="System.Reflection.Metadata" />
     <LatestPackageReference Include="System.Runtime.InteropServices.RuntimeInformation" />
     <LatestPackageReference Include="System.Runtime.Caching" />
@@ -223,6 +223,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="StackExchange.Redis" />
     <LatestPackageReference Include="Swashbuckle.AspNetCore" />
     <LatestPackageReference Include="System.Reactive.Linq" />
+    <LatestPackageReference Include="Verify.SourceGenerators" />
     <LatestPackageReference Include="Verify.Xunit" />
     <LatestPackageReference Include="xunit.abstractions" />
     <LatestPackageReference Include="xunit.analyzers" />
