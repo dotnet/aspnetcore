@@ -1309,7 +1309,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Theory]
-    [InlineData(true)]
+    // [InlineData(true)] QuarantinedTest: https://github.com/dotnet/aspnetcore/issues/61880
     [InlineData(false)]
     public void CanUseFormWithMethodGet(bool suppressEnhancedNavigation)
     {
