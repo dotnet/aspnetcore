@@ -35,6 +35,27 @@ public abstract class NavigationManager
 
     private CancellationTokenSource? _locationChangingCts;
 
+    /// <summary>
+    /// An event that fires when the page is not found.
+    /// </summary>
+    public event EventHandler<NotFoundEventArgs> OnNotFound
+    {
+        add
+        {
+            AssertInitialized();
+            _notFound += value;
+        }
+        remove
+        {
+            AssertInitialized();
+            _notFound -= value;
+        }
+    }
+
+    private EventHandler<NotFoundEventArgs>? _notFound;
+
+    private static readonly NotFoundEventArgs _notFoundEventArgs = new NotFoundEventArgs();
+
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
     private Uri? _baseUri;
@@ -176,6 +197,24 @@ public abstract class NavigationManager
     /// </remarks>
     public virtual void Refresh(bool forceReload = false)
         => NavigateTo(Uri, forceLoad: true, replace: true);
+
+    /// <summary>
+    /// Handles setting the NotFound state.
+    /// </summary>
+    public void NotFound() => NotFoundCore();
+
+    private void NotFoundCore()
+    {
+        if (_notFound == null)
+        {
+            // global router doesn't exist, no events were registered
+            return;
+        }
+        else
+        {
+            _notFound.Invoke(this, _notFoundEventArgs);
+        }
+    }
 
     /// <summary>
     /// Called to initialize BaseURI and current URI before these values are used for the first time.

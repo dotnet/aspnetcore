@@ -10,7 +10,7 @@
                 <div class="search-box">
                     <input type="search" autofocus @bind="firstNameFilter" @bind:event="oninput" placeholder="First name..." />
                 </div>
-                <button type="button" id="close-column-options" @onclick="@(() => quickGridRef.CloseColumnOptionsAsync())">Close Column Options</button>
+                <button type="button" id="close-column-options" @onclick="@(() => quickGridRef.HideColumnOptionsAsync())">Close Column Options</button>
             </ColumnOptions>
         </PropertyColumn>
         <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />

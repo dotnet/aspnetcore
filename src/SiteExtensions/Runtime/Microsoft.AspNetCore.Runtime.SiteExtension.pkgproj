@@ -14,6 +14,7 @@
     <DotNetUnpackFolder>$(RedistSharedFrameworkLayoutRoot)</DotNetUnpackFolder>
     <IsPackable>true</IsPackable>
     <NoSemVer20>true</NoSemVer20>
+    <CrossArchitectureInstallerBasePathNormalized>$([MSBuild]::NormalizeDirectory('$(CrossArchitectureInstallerBasePath)', 'aspnetcore', 'Runtime'))</CrossArchitectureInstallerBasePathNormalized>
   </PropertyGroup>
 
   <Import Project="..\..\..\src\Servers\IIS\build\assets.props" />
@@ -22,9 +23,6 @@
     <Content Include="applicationHost.xdt" />
     <Content Include="scmApplicationHost.xdt" />
     <Content Include="install.cmd" />
-    <Content Include="$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\net462\Microsoft.Web.Xdt.Extensions.dll"
-        Condition="EXISTS('$(ArtifactsBinDir)Microsoft.Web.Xdt.Extensions\$(Configuration)\net462\Microsoft.Web.Xdt.Extensions.dll')"
-        PackagePath="content" />
   </ItemGroup>
 
   <ItemGroup>
@@ -34,10 +32,12 @@
       SkipGetTargetFrameworkProperties="true" />
 
     <!-- Make sure redist folder is built and ready -->
+    <!-- Not necessary if this is Pass 2 of a VMR build -->
     <ProjectReference Include="..\..\Framework\App.Runtime\src\aspnetcore-runtime.proj"
       Private="false"
       ReferenceOutputAssembly="false"
-      SkipGetTargetFrameworkProperties="true" />
+      SkipGetTargetFrameworkProperties="true"
+      Condition="'$(DotNetBuildPass)' != '2'" />
 
     <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(TargetArchitecture)" />
     <NativeProjectReference Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\OutOfProcessRequestHandler.vcxproj" HandlerPath="2.0.0" Platform="$(TargetArchitecture)" />
@@ -45,16 +45,33 @@
 
   <Target Name="ResolveReferenceItemsForPackage" DependsOnTargets="ResolveReferences" BeforeTargets="_GetPackageFiles">
     <ItemGroup>
+      <AspNetRuntimeArchive 
+          Include="$(CrossArchitectureInstallerBasePathNormalized)**\$(RuntimeInstallerBaseName)-*-win-$(Platform).zip"
+          Exclude="$(CrossArchitectureInstallerBasePathNormalized)**\$(RuntimeInstallerBaseName)-composite*" />
+    </ItemGroup>
+
+    <Unzip
+        SourceFiles="@(AspNetRuntimeArchive)"
+        DestinationFolder="$(DotNetUnpackFolder)"
+        OverwriteReadOnlyFiles="true"
+        Condition="'$(DotNetBuildPass)' == '2'" />
+
+    <Error Condition="!Exists('$(DotNetUnpackFolder)')" Text="AspNetCore Shared Framework layout should be available for AspNetCoreRuntime .nupkg, but isn't." />
+    <Error Condition="!Exists('$(MicrosoftWebXdtExtensionsPath)')" Text="Microsoft.Web.Xdt.Extensions.dll should be available for AspNetCoreRuntime .nupkg, but isn't." />
+
+    <ItemGroup>
       <Content Include="$(DotNetUnpackFolder)\**\*.*" Exclude="$(DotNetUnpackFolder)\**\.*" PackagePath="content\%(RecursiveDir)" />
       <Content Include="%(ShimComponents.DllLocation)"
             Pack="true"
             Condition="'%(ShimComponents.Platform)' == '$(TargetArchitecture)'"
             PackagePath="content\ancm\%(ShimComponents.TempSubfolder)" />
+      <Content Include="$(MicrosoftWebXdtExtensionsPath)" PackagePath="content" />
     </ItemGroup>
   </Target>
 
   <Target Name="CopyFilesToOutputDirectory" />
   <Target Name="CoreCompile" />
   <Target Name="CreateManifestResourceNames" />
+  <Target Name="_VmrBuild" DependsOnTargets="Restore;Build;Pack" Condition=" '$(DotNetBuildPass)' == '2' " />
 
 </Project>

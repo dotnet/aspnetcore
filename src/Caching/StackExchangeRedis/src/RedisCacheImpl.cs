@@ -11,19 +11,20 @@ namespace Microsoft.Extensions.Caching.StackExchangeRedis;
 
 internal sealed class RedisCacheImpl : RedisCache
 {
+    private readonly IServiceProvider _services;
+
+    internal override bool IsHybridCacheActive()
+        => _services.GetService<HybridCache>() is not null;
+
     public RedisCacheImpl(IOptions<RedisCacheOptions> optionsAccessor, ILogger<RedisCache> logger, IServiceProvider services)
         : base(optionsAccessor, logger)
     {
-        HybridCacheActive = IsHybridCacheDefined(services);
+        _services = services; // important: do not check for HybridCache here due to dependency - creates a cycle
     }
 
     public RedisCacheImpl(IOptions<RedisCacheOptions> optionsAccessor, IServiceProvider services)
         : base(optionsAccessor)
     {
-        HybridCacheActive = IsHybridCacheDefined(services);
+        _services = services; // important: do not check for HybridCache here due to dependency - creates a cycle
     }
-
-    // HybridCache optionally uses IDistributedCache; if we're here, then *we are* the DC
-    private static bool IsHybridCacheDefined(IServiceProvider services)
-        => services.GetService<HybridCache>() is not null;
 }

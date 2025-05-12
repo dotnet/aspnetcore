@@ -1,2 +1,3 @@
 #nullable enable
-virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! currentUriAbsolute) -> bool
+Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
+virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool

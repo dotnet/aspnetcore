@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
+using System.Net.Http;
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -17,6 +20,47 @@ public class GlobalInteractivityTest(
     ITestOutputHelper output)
     : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<GlobalInteractivityApp>>>(browserFixture, serverFixture, output)
 {
+
+    [Theory]
+    [InlineData("server", false)]
+    [InlineData("webassembly", false)]
+    [InlineData("server", true)]
+    [InlineData("webassembly", true)]
+    public void CanRenderNotFoundInteractive(string renderingMode, bool useCustomNotFoundPage)
+    {
+        string query = useCustomNotFoundPage ? "?useCustomNotFoundPage=true" : "";
+        Navigate($"{ServerPathBase}/render-not-found-{renderingMode}{query}");
+
+        var buttonId = "trigger-not-found";
+        Browser.WaitForElementToBeVisible(By.Id(buttonId));
+        Browser.Exists(By.Id(buttonId)).Click();
+
+        if (useCustomNotFoundPage)
+        {
+            var infoText = Browser.FindElement(By.Id("test-info")).Text;
+            Assert.Contains("Welcome On Custom Not Found Page", infoText);
+        }
+        else
+        {
+            var bodyText = Browser.FindElement(By.TagName("body")).Text;
+            Assert.Contains("There's nothing here", bodyText);
+        }
+    }
+
+    [Fact]
+    public async Task CanSetNotFoundStatus()
+    {
+        var statusCode = await GetStatusCodeAsync($"/subdir/render-not-found-ssr");
+        Assert.Equal(HttpStatusCode.NotFound, statusCode);
+    }
+
+    private async Task<HttpStatusCode> GetStatusCodeAsync(string relativeUrl)
+    {
+        using var client = new HttpClient() { BaseAddress = _serverFixture.RootUri };
+        var response = await client.GetAsync(relativeUrl, HttpCompletionOption.ResponseHeadersRead);
+        return response.StatusCode;
+    }
+
     [Fact]
     public void CanFindStaticallyRenderedPageAfterClickingBrowserBackButtonOnDynamicallyRenderedPage()
     {

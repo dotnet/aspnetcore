@@ -32,7 +32,7 @@
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
   </PropertyGroup>
 
-  <Target Name="_DownloadAndExtractDotNetRuntime" Condition="'$(DotNetBuild)' != 'true'" Returns="$(DotNetRuntimeArchive)">
+  <Target Name="_DownloadAndExtractDotNetRuntime" Returns="$(DotNetRuntimeArchive)">
     <ItemGroup>
       <UrisToDownload Include="@(RemoteAssetBaseURL->'%(Identity)$(DotNetRuntimeDownloadPath)')" />
     </ItemGroup>
@@ -51,10 +51,10 @@
     <MakeDir Directories="$(OutputPath)" />
 
     <!-- Extract the dotnet-runtime archive -->
-    <Exec Condition="'$(ArchiveFormat)' == 'tar.gz' and '$(DotNetBuild)' != 'true'"
+    <Exec Condition="'$(ArchiveFormat)' == 'tar.gz'"
       Command="tar -xzf $(DotNetRuntimeArchive) -C $(OutputPath)" />
 
-    <Unzip Condition="'$(ArchiveFormat)' == 'zip' and '$(DotNetBuild)' != 'true'"
+    <Unzip Condition="'$(ArchiveFormat)' == 'zip'"
       SourceFiles="$(DotNetRuntimeArchive)"
       DestinationFolder="$(OutputPath)"
       OverwriteReadOnlyFiles="true" />

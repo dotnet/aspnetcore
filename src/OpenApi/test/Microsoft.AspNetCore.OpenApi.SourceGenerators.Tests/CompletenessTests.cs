@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using System.Text.Json.Nodes;
-using Microsoft.OpenApi.Models;
+using System.Net.Http;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
 
@@ -17,6 +15,7 @@ public class CompletenessTests
     {
         var source = """
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +35,7 @@ app.MapPost("/implementing-class", (ImplementingClass impl) => { });
 app.MapPost("/inherit-only-returns", (InheritOnlyReturns returns) => { });
 app.MapPost("/inherit-all-but-remarks", (InheritAllButRemarks remarks) => { });
 app.MapPost("/generic-class", (GenericClass<string> generic) => { });
+app.MapPost("/generic-parent", (GenericParent parent) => { });
 app.MapPost("/params-and-param-refs", (ParamsAndParamRefs refs) => { });
 
 
@@ -330,9 +330,92 @@ public class InheritAllButRemarks
 /// In generic classes and methods, you'll often want to reference the
 /// generic type, or the type parameter.
 /// </remarks>
-class GenericClass<T>
+public class GenericClass<T>
 {
     // Fields and members.
+}
+
+/// <summary>
+/// This class validates the behavior for mapping
+/// generic types to open generics for use in
+/// typeof expressions.
+/// </summary>
+public class GenericParent
+{
+    /// <summary>
+    /// This property is a nullable value type.
+    /// </summary>
+    public int? Id { get; set; }
+
+    /// <summary>
+    /// This property is a nullable reference type.
+    /// </summary>
+    public string? Name { get; set; }
+
+    /// <summary>
+    /// This property is a generic type containing a tuple.
+    /// </summary>
+    public Task<(int, string)> TaskOfTupleProp { get; set; }
+
+    /// <summary>
+    /// This property is a tuple with a generic type inside.
+    /// </summary>
+    public (int, Dictionary<int, string>) TupleWithGenericProp { get; set; }
+
+    /// <summary>
+    /// This property is a tuple with a nested generic type inside.
+    /// </summary>
+    public (int, Dictionary<int, Dictionary<string, int>>) TupleWithNestedGenericProp { get; set; }
+
+    /// <summary>
+    /// This method returns a generic type containing a tuple.
+    /// </summary>
+    public static Task<(int, string)> GetTaskOfTuple()
+    {
+        return Task.FromResult((1, "test"));
+    }
+
+    /// <summary>
+    /// This method returns a tuple with a generic type inside.
+    /// </summary>
+    public static (int, Dictionary<int, string>) GetTupleOfTask()
+    {
+        return (1, new Dictionary<int, string>());
+    }
+
+    /// <summary>
+    /// This method return a tuple with a generic type containing a
+    /// type parameter inside.
+    /// </summary>
+    public static (int, Dictionary<int, T>) GetTupleOfTask1<T>()
+    {
+        return (1, new Dictionary<int, T>());
+    }
+
+    /// <summary>
+    /// This method return a tuple with a generic type containing a
+    /// type parameter inside.
+    /// </summary>
+    public static (T, Dictionary<int, string>) GetTupleOfTask2<T>()
+    {
+        return (default, new Dictionary<int, string>());
+    }
+
+    /// <summary>
+    /// This method returns a nested generic with all types resolved.
+    /// </summary>
+    public static Dictionary<int, Dictionary<int, string>> GetNestedGeneric()
+    {
+        return new Dictionary<int, Dictionary<int, string>>();
+    }
+
+    /// <summary>
+    /// This method returns a nested generic with a type parameter.
+    /// </summary>
+    public static Dictionary<int, Dictionary<int, T>> GetNestedGeneric1<T>()
+    {
+        return new Dictionary<int, Dictionary<int, T>>();
+    }
 }
 
 /// <summary>
@@ -359,42 +442,51 @@ public class ParamsAndParamRefs
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
         await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
         {
-            var path = document.Paths["/example-class"].Operations[OperationType.Post];
+            var path = document.Paths["/example-class"].Operations[HttpMethod.Post];
             var exampleClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("Every class and member should have a one sentence\nsummary describing its purpose.", exampleClass.Description, ignoreLineEndingDifferences: true);
             Assert.Equal("The `Label` property represents a label\nfor this instance.", exampleClass.Properties["label"].Description, ignoreLineEndingDifferences: true);
 
-            path = document.Paths["/person"].Operations[OperationType.Post];
+            path = document.Paths["/person"].Operations[HttpMethod.Post];
             var person = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This is an example of a positional record.", person.Description);
             Assert.Equal("This tag will apply to the primary constructor parameter.", person.Properties["firstName"].Description);
             Assert.Equal("This tag will apply to the primary constructor parameter.", person.Properties["lastName"].Description);
 
-            path = document.Paths["/derived-class"].Operations[OperationType.Post];
+            path = document.Paths["/derived-class"].Operations[HttpMethod.Post];
             var derivedClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("A summary about this class.", derivedClass.Description);
 
-            path = document.Paths["/main-class"].Operations[OperationType.Post];
+            path = document.Paths["/main-class"].Operations[HttpMethod.Post];
             var mainClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("A summary about this class.", mainClass.Description);
 
-            path = document.Paths["/implementing-class"].Operations[OperationType.Post];
+            path = document.Paths["/implementing-class"].Operations[HttpMethod.Post];
             var implementingClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This interface would describe all the methods in\nits contract.", implementingClass.Description, ignoreLineEndingDifferences: true);
 
-            path = document.Paths["/inherit-only-returns"].Operations[OperationType.Post];
+            path = document.Paths["/inherit-only-returns"].Operations[HttpMethod.Post];
             var inheritOnlyReturns = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This class shows hows you can \"inherit\" the doc\ncomments from one method in another method.", inheritOnlyReturns.Description, ignoreLineEndingDifferences: true);
 
-            path = document.Paths["/inherit-all-but-remarks"].Operations[OperationType.Post];
+            path = document.Paths["/inherit-all-but-remarks"].Operations[HttpMethod.Post];
             var inheritAllButRemarks = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This class shows an example of sharing comments across methods.", inheritAllButRemarks.Description);
 
-            path = document.Paths["/generic-class"].Operations[OperationType.Post];
+            path = document.Paths["/generic-class"].Operations[HttpMethod.Post];
             var genericClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This is a generic class.", genericClass.Description);
 
-            path = document.Paths["/params-and-param-refs"].Operations[OperationType.Post];
+            path = document.Paths["/generic-parent"].Operations[HttpMethod.Post];
+            var genericParent = path.RequestBody.Content["application/json"].Schema;
+            Assert.Equal("This class validates the behavior for mapping\ngeneric types to open generics for use in\ntypeof expressions.", genericParent.Description, ignoreLineEndingDifferences: true);
+            Assert.Equal("This property is a nullable value type.", genericParent.Properties["id"].Description);
+            Assert.Equal("This property is a nullable reference type.", genericParent.Properties["name"].Description);
+            Assert.Equal("This property is a generic type containing a tuple.", genericParent.Properties["taskOfTupleProp"].Description);
+            Assert.Equal("This property is a tuple with a generic type inside.", genericParent.Properties["tupleWithGenericProp"].Description);
+            Assert.Equal("This property is a tuple with a nested generic type inside.", genericParent.Properties["tupleWithNestedGenericProp"].Description);
+
+            path = document.Paths["/params-and-param-refs"].Operations[HttpMethod.Post];
             var paramsAndParamRefs = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This shows examples of typeparamref and typeparam tags", paramsAndParamRefs.Description);
         });

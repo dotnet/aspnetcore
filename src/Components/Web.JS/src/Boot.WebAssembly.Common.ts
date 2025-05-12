@@ -14,6 +14,7 @@ import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethod
 import { WebAssemblyComponentDescriptor, WebAssemblyServerOptions, discoverWebAssemblyPersistedState } from './Services/ComponentDescriptorDiscovery';
 import { receiveDotNetDataStream } from './StreamingInterop';
 import { WebAssemblyComponentAttacher } from './Platform/WebAssemblyComponentAttacher';
+import { DotNet } from '@microsoft/dotnet-js-interop';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
@@ -103,10 +104,10 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
   };
 
   Blazor._internal.applyHotReloadDeltas = (deltas: { moduleId: string, metadataDelta: string, ilDelta: string, pdbDelta: string, updatedTypes: number[] }[], loggingLevel: number) => {
-    return dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDeltas', deltas, loggingLevel);
+    return dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDeltas', deltas, loggingLevel) ?? [];
   };
 
-  Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities');
+  Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities') ?? '';
 
   // Configure JS interop
   Blazor._internal.invokeJSJson = invokeJSJson;
@@ -263,12 +264,12 @@ async function scheduleAfterStarted(operations: string): Promise<void> {
   Blazor._internal.updateRootComponents(operations);
 }
 
-function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number): string | null {
+function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number, callType: number): string | null {
   if (asyncHandle !== 0) {
-    dispatcher.beginInvokeJSFromDotNet(asyncHandle, identifier, argsJson, resultType, targetInstanceId);
+    dispatcher.beginInvokeJSFromDotNet(asyncHandle, identifier, argsJson, resultType, targetInstanceId, callType);
     return null;
   } else {
-    return dispatcher.invokeJSFromDotNet(identifier, argsJson, resultType, targetInstanceId);
+    return dispatcher.invokeJSFromDotNet(identifier, argsJson, resultType, targetInstanceId, callType);
   }
 }
 

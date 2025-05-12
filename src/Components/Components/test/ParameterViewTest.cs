@@ -609,7 +609,7 @@ public partial class ParameterViewTest
         public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
             => throw new NotImplementedException();
 
-        public object GetCurrentValue(in CascadingParameterInfo parameterInfo)
+        public object GetCurrentValue(object key, in CascadingParameterInfo parameterInfo)
             => _value;
 
         public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)

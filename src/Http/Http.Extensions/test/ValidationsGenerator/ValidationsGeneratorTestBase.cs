@@ -2,12 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.CodeAnalysis;
@@ -16,16 +20,19 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using static Microsoft.AspNetCore.Http.Generators.Tests.RequestDelegateCreationTestBase;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator.Tests;
 
 [UsesVerify]
-public class ValidationsGeneratorTestBase : LoggedTestBase
+public partial class ValidationsGeneratorTestBase : LoggedTestBase
 {
+    [GeneratedRegex(@"\[global::System\.Runtime\.CompilerServices\.InterceptsLocationAttribute\([^)]*\)\]")]
+    private static partial Regex InterceptsLocationRegex();
+
     private static readonly CSharpParseOptions ParseOptions = new CSharpParseOptions(LanguageVersion.Preview)
-        .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Validations.Generated")]);
+        .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.AspNetCore.Http.Validation.Generated")]);
 
     internal static Task Verify(string source, out Compilation compilation)
     {
@@ -50,9 +57,11 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
                     MetadataReference.CreateFromFile(typeof(ValidateOptionsResult).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(IHttpMethodMetadata).Assembly.Location),
                     MetadataReference.CreateFromFile(typeof(IResult).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(HttpJsonServiceExtensions).Assembly.Location)
+                    MetadataReference.CreateFromFile(typeof(HttpJsonServiceExtensions).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(IValidatableInfoResolver).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(EndpointFilterFactoryContext).Assembly.Location),
                 ]);
-        var inputCompilation = CSharpCompilation.Create("OpenApiXmlCommentGeneratorSample",
+        var inputCompilation = CSharpCompilation.Create("ValidationsGeneratorSample",
             [CSharpSyntaxTree.ParseText(source, options: ParseOptions, path: "Program.cs")],
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
@@ -60,13 +69,48 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
+            .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "ValidationsGenerator", "snapshots")
                 : "snapshots");
     }
 
-    internal static void VerifyEndpoint(Compilation compilation, string routePattern, Action<Endpoint> verifyFunc)
+    internal static void VerifyValidatableType(Compilation compilation, string typeName, Action<ValidationOptions, Type> verifyFunc)
     {
+        if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.AspNetCore.Http.Abstractions", typeName: "Microsoft.AspNetCore.Http.Validation.ValidationOptions", out var services, out var serviceType, out var outputAssemblyName) is false)
+        {
+            throw new InvalidOperationException("Could not resolve services from compilation.");
+        }
+        var targetAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == outputAssemblyName);
+        var type = targetAssembly.GetType(typeName, throwOnError: false);
+
+        // Get IOptions<ValidationOptions> first
+        var optionsType = typeof(IOptions<>).MakeGenericType(serviceType);
+        var optionsInstance = services.GetService(optionsType) ?? throw new InvalidOperationException("Could not resolve IOptions<ValidationOptions>.");
+
+        // Then access the Value property
+        var valueProperty = optionsType.GetProperty("Value");
+        var service = (ValidationOptions)valueProperty.GetValue(optionsInstance) ?? throw new InvalidOperationException("Could not resolve ValidationOptions.");
+        verifyFunc(service, type);
+    }
+
+    internal static async Task VerifyEndpoint(Compilation compilation, string routePattern, Func<Endpoint, IServiceProvider, Task> verifyFunc)
+    {
+        if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.AspNetCore.Routing", typeName: "Microsoft.AspNetCore.Routing.EndpointDataSource", out var services, out var serviceType, out var outputAssemblyName) is false)
+        {
+            throw new InvalidOperationException("Could not resolve services from compilation.");
+        }
+        var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve EndpointDataSource.");
+        var endpoints = (IReadOnlyList<Endpoint>)service.GetType().GetProperty("Endpoints", BindingFlags.Instance | BindingFlags.Public).GetValue(service);
+        var endpoint = endpoints.FirstOrDefault(endpoint => endpoint is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern.RawText == routePattern);
+        await verifyFunc(endpoint, services);
+    }
+
+    private static bool TryResolveServicesFromCompilation(Compilation compilation, string targetAssemblyName, string typeName, out IServiceProvider serviceProvider, out Type serviceType, out string outputAssemblyName)
+    {
+        serviceProvider = null;
+        serviceType = null;
+        outputAssemblyName = $"TestProject-{Guid.NewGuid()}";
         var assemblyName = compilation.AssemblyName;
         var symbolsName = Path.ChangeExtension(assemblyName, "pdb");
 
@@ -76,7 +120,7 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         var emitOptions = new EmitOptions(
             debugInformationFormat: DebugInformationFormat.PortablePdb,
             pdbFilePath: symbolsName,
-            outputNameOverride: $"TestProject-{Guid.NewGuid()}");
+            outputNameOverride: outputAssemblyName);
 
         var embeddedTexts = new List<EmbeddedText>();
 
@@ -135,28 +179,24 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
 
         if (factory == null)
         {
-            return;
+            return false;
         }
 
         var services = ((IHost)factory([$"--{HostDefaults.ApplicationKey}={assemblyName}"])).Services;
 
         var applicationLifetime = services.GetRequiredService<IHostApplicationLifetime>();
-        using (var registration = applicationLifetime.ApplicationStarted.Register(() => waitForStartTcs.TrySetResult(0)))
+        using var registration = applicationLifetime.ApplicationStarted.Register(() => waitForStartTcs.TrySetResult(0));
+        waitForStartTcs.Task.Wait();
+        var targetAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == targetAssemblyName);
+        serviceType = targetAssembly.GetType(typeName, throwOnError: false);
+
+        if (serviceType == null)
         {
-            waitForStartTcs.Task.Wait();
-            var targetAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(assembly => assembly.GetName().Name == "Microsoft.AspNetCore.Routing");
-            var serviceType = targetAssembly.GetType("Microsoft.AspNetCore.Routing.EndpointDataSource", throwOnError: false);
-
-            if (serviceType == null)
-            {
-                return;
-            }
-
-            var service = services.GetService(serviceType) ?? throw new InvalidOperationException("Could not resolve EndpointDataSource.");
-            var endpoints = (IReadOnlyList<Endpoint>)serviceType.GetProperty("Endpoints", BindingFlags.Instance | BindingFlags.Public).GetValue(service);
-            var endpoint = endpoints.FirstOrDefault(endpoint => endpoint is RouteEndpoint routeEndpoint && routeEndpoint.RoutePattern.RawText == routePattern);
-            verifyFunc(endpoint);
+            return false;
         }
+
+        serviceProvider = services;
+        return true;
     }
 
     private sealed class NoopHostLifetime : IHostLifetime
@@ -510,10 +550,10 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         }
     }
 
-    internal HttpContext CreateHttpContext(IServiceProvider serviceProvider = null)
+    internal HttpContext CreateHttpContext(IServiceProvider serviceProvider)
     {
         var httpContext = new DefaultHttpContext();
-        httpContext.RequestServices = serviceProvider ?? CreateServiceProvider();
+        httpContext.RequestServices = serviceProvider;
 
         var outStream = new MemoryStream();
         httpContext.Response.Body = outStream;
@@ -521,14 +561,24 @@ public class ValidationsGeneratorTestBase : LoggedTestBase
         return httpContext;
     }
 
-    internal ServiceProvider CreateServiceProvider(Action<IServiceCollection> configureServices = null)
+    internal HttpContext CreateHttpContextWithPayload(string requestData, IServiceProvider serviceProvider = null)
     {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton(LoggerFactory);
-        if (configureServices is not null)
-        {
-            configureServices(serviceCollection);
-        }
-        return serviceCollection.BuildServiceProvider();
+        var httpContext = CreateHttpContext(serviceProvider);
+        httpContext.Features.Set<IHttpRequestBodyDetectionFeature>(new RequestBodyDetectionFeature(true));
+        httpContext.Request.Headers["Content-Type"] = "application/json";
+
+        var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(requestData));
+        httpContext.Request.Body = stream;
+        httpContext.Request.Headers["Content-Length"] = stream.Length.ToString(CultureInfo.InvariantCulture);
+        return httpContext;
+    }
+
+    internal static async Task<HttpValidationProblemDetails> AssertBadRequest(HttpContext context)
+    {
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        context.Response.Body.Position = 0;
+        using var reader = new StreamReader(context.Response.Body);
+        var responseBody = await reader.ReadToEndAsync();
+        return JsonSerializer.Deserialize<HttpValidationProblemDetails>(responseBody);
     }
 }

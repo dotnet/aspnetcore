@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Logging.AzureAppServices\\src\\Microsoft.Extensions.Logging.AzureAppServices.csproj",
       "src\\Logging.AzureAppServices\\test\\Microsoft.Extensions.Logging.AzureAppServices.Tests.csproj"

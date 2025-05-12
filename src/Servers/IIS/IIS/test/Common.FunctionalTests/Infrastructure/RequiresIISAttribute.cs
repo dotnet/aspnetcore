@@ -136,7 +136,7 @@ public sealed class RequiresIISAttribute : Attribute, ITestCondition
                 IsMet &= available;
                 if (!available)
                 {
-                    SkipReason += $"The machine does have {module.Capability} available.";
+                    SkipReason += $"The machine does not have {module.Capability} available.";
                 }
             }
         }

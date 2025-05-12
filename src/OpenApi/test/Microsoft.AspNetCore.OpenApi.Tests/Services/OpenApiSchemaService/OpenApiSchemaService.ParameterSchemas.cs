@@ -3,6 +3,8 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
@@ -70,7 +72,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(schemaType, parameter.Schema.Type);
             Assert.Equal(schemaFormat, parameter.Schema.Format);
@@ -98,7 +100,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(schemaType, parameter.Schema.Type);
             Assert.Equal(schemaFormat, parameter.Schema.Format);
@@ -141,12 +143,12 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, document =>
         {
             var path = Assert.Single(document.Paths);
-            var operation = path.Value.Operations[OperationType.Get];
+            var operation = path.Value.Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(type, parameter.Schema.Type);
             Assert.Equal(format, parameter.Schema.Format);
-            Assert.Equal(minimum, parameter.Schema.Minimum);
-            Assert.Equal(maximum, parameter.Schema.Maximum);
+            Assert.Equal(minimum?.ToString(CultureInfo.InvariantCulture), parameter.Schema.Minimum);
+            Assert.Equal(maximum?.ToString(CultureInfo.InvariantCulture), parameter.Schema.Maximum);
             Assert.Equal(minLength, parameter.Schema.MinLength);
             Assert.Equal(maxLength, parameter.Schema.MaxLength);
             Assert.Equal(pattern, parameter.Schema.Pattern);
@@ -190,10 +192,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/{id}"].Operations[OperationType.Post];
+            var operation = document.Paths!["/api/{id}"].Operations![HttpMethod.Post];
             var parameter = Assert.Single(operation.Parameters ?? []);
-            var openApiDefault = parameter.Schema.Default;
-            assert(openApiDefault);
+            var openApiDefault = parameter.Schema!.Default;
+            assert(openApiDefault!);
         });
     }
 #nullable restore
@@ -211,10 +213,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // consumed as integer
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(JsonSchemaType.Integer, parameter.Schema.Type);
-            Assert.Empty(parameter.Schema.Enum);
+            Assert.Null(parameter.Schema.Enum);
         });
     }
 
@@ -231,7 +233,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // are serialized with the `enum` value in the schema.
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Null(parameter.Schema.Type);
             Assert.Collection(parameter.Schema.Enum,
@@ -262,7 +264,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/{id}/{date}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/{id}/{date}"].Operations[HttpMethod.Get];
             Assert.Collection(operation.Parameters, parameter =>
             {
                 Assert.Equal("id", parameter.Name);
@@ -287,7 +289,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(action, document =>
         {
-            var operation = document.Paths["/api/{id}/{date}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/{id}/{date}"].Operations[HttpMethod.Get];
             Assert.Collection(operation.Parameters, parameter =>
             {
                 Assert.Equal("Id", parameter.Name);
@@ -312,7 +314,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(action, document =>
         {
-            var operation = document.Paths["/api/{id}/{name}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/{id}/{name}"].Operations[HttpMethod.Get];
             Assert.Collection(operation.Parameters, parameter =>
             {
                 Assert.Equal("Id", parameter.Name);
@@ -335,7 +337,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [([MaxLength(5)] int[] ids) => {}, (OpenApiSchema schema) => Assert.Equal(5, schema.MaxItems)],
         [([MinLength(2)] int[] id) => {}, (OpenApiSchema schema) => Assert.Equal(2, schema.MinItems)],
         [([Length(4, 8)] int[] id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.MinItems); Assert.Equal(8, schema.MaxItems); }],
-        [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }],
+        [([Range(4, 8)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal("4", schema.Minimum); Assert.Equal("8", schema.Maximum); }],
+        [([Range(1234, 5678)]int id) => {}, (OpenApiSchema schema) => { Assert.Equal("1234", schema.Minimum); Assert.Equal("5678", schema.Maximum); }],
+        [([Range(1234.56, 7891.1)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal("1234.56", schema.Minimum); Assert.Equal("7891.1", schema.Maximum); }],
         [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
         [([StringLength(10)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(0, schema.MinLength); }],
         [([StringLength(10, MinimumLength = 5)] string name) => {}, (OpenApiSchema schema) => { Assert.Equal(10, schema.MaxLength); Assert.Equal(5, schema.MinLength); }],
@@ -358,7 +362,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
             verifySchema(schema);
@@ -367,11 +371,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
     public static object[][] RouteParametersWithRangeAttributes =>
     [
-        [([Range(4, 8)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(4, schema.Minimum); Assert.Equal(8, schema.Maximum); }],
-        [([Range(int.MinValue, int.MaxValue)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(int.MinValue, schema.Minimum); Assert.Equal(int.MaxValue, schema.Maximum); }],
-        [([Range(0, double.MaxValue)] double id) => {}, (OpenApiSchema schema) => { Assert.Equal(0, schema.Minimum); Assert.Null(schema.Maximum); }],
-        [([Range(typeof(double), "0", "1.79769313486232E+308")] double id) => {}, (OpenApiSchema schema) => { Assert.Equal(0, schema.Minimum); Assert.Null(schema.Maximum); }],
-        [([Range(typeof(long), "-9223372036854775808", "9223372036854775807")] long id) => {}, (OpenApiSchema schema) => { Assert.Equal(long.MinValue, schema.Minimum); Assert.Equal(long.MaxValue, schema.Maximum); }],
+        [([Range(4, 8)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal("4", schema.Minimum); Assert.Equal("8", schema.Maximum); }],
+        [([Range(int.MinValue, int.MaxValue)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(int.MinValue.ToString(CultureInfo.InvariantCulture), schema.Minimum); Assert.Equal(int.MaxValue.ToString(CultureInfo.InvariantCulture), schema.Maximum); }],
+        [([Range(0, double.MaxValue)] double id) => {}, (OpenApiSchema schema) => { Assert.Equal("0", schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(double), "0", "1.79769313486232E+308")] double id) => {}, (OpenApiSchema schema) => { Assert.Equal("0", schema.Minimum); Assert.Null(schema.Maximum); }],
+        [([Range(typeof(long), "-9223372036854775808", "9223372036854775807")] long id) => {}, (OpenApiSchema schema) => { Assert.Equal(long.MinValue.ToString(CultureInfo.InvariantCulture), schema.Minimum); Assert.Equal(long.MaxValue.ToString(CultureInfo.InvariantCulture), schema.Maximum); }],
         [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
     ];
 
@@ -388,7 +392,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
             verifySchema(schema);
@@ -398,9 +402,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     public static object[][] RouteParametersWithRangeAttributes_CultureInfo =>
     [
         [([Range(typeof(DateTime), "2024-02-01", "2024-02-031")] DateTime id) => {}, (OpenApiSchema schema) => { Assert.Null(schema.Minimum); Assert.Null(schema.Maximum); }],
-        [([Range(typeof(decimal), "1,99", "3,99")] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal(1.99m, schema.Minimum); Assert.Equal(3.99m, schema.Maximum); }],
-        [([Range(typeof(decimal), "1,99", "3,99", ParseLimitsInInvariantCulture = true)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal(199, schema.Minimum); Assert.Equal(399, schema.Maximum); }],
-        [([Range(1000, 2000)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal(1000, schema.Minimum); Assert.Equal(2000, schema.Maximum); }]
+        [([Range(typeof(decimal), "1,99", "3,99")] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal("1.99", schema.Minimum); Assert.Equal("3.99", schema.Maximum); }],
+        [([Range(typeof(decimal), "1,99", "3,99", ParseLimitsInInvariantCulture = true)] decimal id) => {}, (OpenApiSchema schema) => { Assert.Equal("199", schema.Minimum); Assert.Equal("399", schema.Maximum); }],
+        [([Range(1000, 2000)] int id) => {}, (OpenApiSchema schema) => { Assert.Equal("1000", schema.Minimum); Assert.Equal("2000", schema.Maximum); }]
     ];
 
     [Theory]
@@ -417,7 +421,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/{id}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             var schema = Assert.IsType<OpenApiSchema>(parameter.Schema);
             verifySchema(schema);
@@ -442,7 +446,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             foreach (var path in document.Paths.Values)
             {
-                var operation = path.Operations[OperationType.Get];
+                var operation = path.Operations[HttpMethod.Get];
                 var parameter = Assert.Single(operation.Parameters);
                 Assert.True(parameter.Required);
             }
@@ -475,7 +479,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             // Array items can be serialized to nullable values when the element
             // type is nullable. For example, array-of-ints?ints=1&ints=2&ints=&ints=4
@@ -501,7 +505,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal("The ID of the entity", parameter.Description);
         });
@@ -549,7 +553,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             Assert.NotNull(operation.RequestBody.Content["application/json"]);
@@ -587,7 +591,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             Assert.NotNull(operation.RequestBody.Content["application/json"]);
@@ -618,7 +622,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         static void AssertOpenApiDocument(OpenApiDocument document)
         {
-            var operation = document.Paths["/api/with-enum"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/with-enum"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             var response = Assert.Single(operation.Responses).Value.Content["application/json"].Schema;
             Assert.Equal(((OpenApiSchemaReference)parameter.Schema).Reference.Id, ((OpenApiSchemaReference)response).Reference.Id);
@@ -651,7 +655,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(action, document =>
         {
-            var operation = document.Paths["/api/with-ambient-route-param/{versionId}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/with-ambient-route-param/{versionId}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
         });
@@ -684,7 +688,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         static void AssertOpenApiDocument(OpenApiDocument document)
         {
             // Parameter is a plain-old string when it comes from the route or query
-            var operation = document.Paths["/api/{student}"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/{student}"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal(JsonSchemaType.String, parameter.Schema.Type);
 
