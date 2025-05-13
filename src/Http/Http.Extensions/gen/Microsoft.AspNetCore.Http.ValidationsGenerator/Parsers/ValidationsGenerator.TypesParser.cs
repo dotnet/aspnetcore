@@ -39,6 +39,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             if (parameter.GetAttributes().Any(attr => attr.AttributeClass is not null && attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol)))
             {
                 continue;
+            }
 
             _ = TryExtractValidatableType(parameter.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes);
         }
