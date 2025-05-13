@@ -361,6 +361,14 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>85778473549347b3e4bad3ea009e9438df7b11bb</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.DotNet.HotReload.Agent" Version="10.0.100-preview.5.25258.39">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>5e6dacd4d3debda3266224b2a434811c6fa94987</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.HotReload.Agent.Data" Version="10.0.100-preview.5.25258.39">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>5e6dacd4d3debda3266224b2a434811c6fa94987</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
