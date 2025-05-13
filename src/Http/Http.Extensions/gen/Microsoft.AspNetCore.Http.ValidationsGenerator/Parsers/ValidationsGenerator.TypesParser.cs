@@ -34,10 +34,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         foreach (var parameter in parameters)
         {
+            // Skip attributes that implement the IFromServiceMetadata interface.
+            // These attributes are used for dependency injection (DI) purposes and do not require validation.
             if (parameter.GetAttributes().Any(attr => attr.AttributeClass is not null && attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol)))
             {
                 continue;
-            }
 
             _ = TryExtractValidatableType(parameter.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes);
         }
