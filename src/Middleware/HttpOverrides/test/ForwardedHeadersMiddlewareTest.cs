@@ -799,6 +799,63 @@ namespace Microsoft.AspNetCore.HttpOverrides
             Assert.Equal("http", context.Request.Scheme);
         }
 
+        [Theory]
+        [InlineData(ForwardedHeaders.XForwardedFor, false)]
+        [InlineData(ForwardedHeaders.XForwardedFor, true)]
+        [InlineData(ForwardedHeaders.XForwardedHost, false)]
+        [InlineData(ForwardedHeaders.XForwardedHost, true)]
+        [InlineData(ForwardedHeaders.XForwardedProto, false)]
+        [InlineData(ForwardedHeaders.XForwardedProto, true)]
+        public async Task IgnoreXForwardedHeadersFromUnknownProxy(ForwardedHeaders forwardedHeaders, bool unknownProxy)
+        {
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    var options = new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = forwardedHeaders
+                    };
+                    if (!unknownProxy)
+                    {
+                        var proxy = IPAddress.Parse("10.0.0.1");
+                        options.KnownProxies.Add(proxy);
+                    }
+                    app.UseForwardedHeaders(options);
+                });
+            var server = new TestServer(builder);
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+                c.Request.Headers["X-Forwarded-Host"] = "testhost";
+                c.Request.Headers["X-Forwarded-Proto"] = "Protocol";
+                c.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
+                c.Connection.RemotePort = 99;
+            });
+
+            if (unknownProxy)
+            {
+                Assert.Equal("10.0.0.1", context.Connection.RemoteIpAddress.ToString());
+                Assert.Equal("localhost", context.Request.Host.ToString());
+                Assert.Equal("http", context.Request.Scheme);
+            }
+            else
+            {
+                if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedFor))
+                {
+                    Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
+                }
+                if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedHost))
+                {
+                    Assert.Equal("testhost", context.Request.Host.ToString());
+                }
+                if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedProto))
+                {
+                    Assert.Equal("Protocol", context.Request.Scheme);
+                }
+            }
+        }
+
         [Fact]
         public async Task PartiallyEnabledForwardsPartiallyChangesRequest()
         {
