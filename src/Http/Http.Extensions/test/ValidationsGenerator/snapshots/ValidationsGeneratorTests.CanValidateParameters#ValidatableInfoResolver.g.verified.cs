@@ -60,6 +60,11 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.AspNetCore.Http.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
+            if (type == typeof(global::TestService))
+            {
+                validatableInfo = CreateTestService();
+                return true;
+            }
 
             return false;
         }
@@ -71,6 +76,20 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             return false;
         }
 
+        private ValidatableTypeInfo CreateTestService()
+        {
+            return new GeneratedValidatableTypeInfo(
+                type: typeof(global::TestService),
+                members: [
+                    new GeneratedValidatablePropertyInfo(
+                        containingType: typeof(global::TestService),
+                        propertyType: typeof(int),
+                        name: "Value",
+                        displayName: "Value"
+                    ),
+                ]
+            );
+        }
 
     }
 

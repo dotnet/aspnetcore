@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -19,6 +21,8 @@ internal static class ValidationEndpointFilterFactory
             return next;
         }
 
+        var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
+
         var parameterCount = parameters.Length;
         var validatableParameters = new IValidatableInfo[parameterCount];
         var parameterDisplayNames = new string[parameterCount];
@@ -26,6 +30,12 @@ internal static class ValidationEndpointFilterFactory
 
         for (var i = 0; i < parameterCount; i++)
         {
+            // Ignore parameters that are resolved from the DI container.
+            if (IsServiceParameter(parameters[i], serviceProviderIsService))
+            {
+                continue;
+            }
+
             if (options.TryGetValidatableParameterInfo(parameters[i], out var validatableParameter))
             {
                 validatableParameters[i] = validatableParameter;
@@ -69,6 +79,13 @@ internal static class ValidationEndpointFilterFactory
             return await next(context);
         };
     }
+
+    private static bool IsServiceParameter(ParameterInfo parameterInfo, IServiceProviderIsService? isService)
+        => HasFromServicesAttribute(parameterInfo) ||
+           (isService?.IsService(parameterInfo.ParameterType) == true);
+
+    private static bool HasFromServicesAttribute(ParameterInfo parameterInfo)
+        => parameterInfo.CustomAttributes.OfType<IFromServiceMetadata>().Any();
 
     private static string GetDisplayName(ParameterInfo parameterInfo)
     {

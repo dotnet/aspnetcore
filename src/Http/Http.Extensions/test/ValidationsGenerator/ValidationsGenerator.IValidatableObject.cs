@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Validation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,7 +25,11 @@ builder.Services.AddValidation();
 
 var app = builder.Build();
 
-app.MapPost("/validatable-object", (ComplexValidatableType model) => Results.Ok());
+app.MapPost("/validatable-object", (
+    ComplexValidatableType model,
+    // Demonstrates that parameters that are annotated with [FromService] are not processed
+    // by the source generator and not emitted as ValidatableTypes in the generated code.
+    [FromServices] IRangeService rangeService) => Results.Ok(rangeService.GetMinimum()));
 
 app.Run();
 
