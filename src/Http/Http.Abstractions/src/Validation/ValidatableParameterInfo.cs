@@ -4,12 +4,14 @@
 using System.Collections;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
 /// <summary>
 /// Contains validation information for a parameter.
 /// </summary>
+[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public abstract class ValidatableParameterInfo : IValidatableInfo
 {
     private RequiredAttribute? _requiredAttribute;

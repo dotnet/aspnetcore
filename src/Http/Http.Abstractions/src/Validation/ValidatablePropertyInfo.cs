@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// <summary>
 /// Contains validation information for a member of a type.
 /// </summary>
+[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public abstract class ValidatablePropertyInfo : IValidatableInfo
 {
     private RequiredAttribute? _requiredAttribute;
