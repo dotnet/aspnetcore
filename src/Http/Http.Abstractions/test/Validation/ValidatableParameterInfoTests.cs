@@ -287,60 +287,6 @@ public class ValidatableParameterInfoTests
         Assert.Equal("Test exception", error.Value.First());
     }
 
-    [Fact]
-    public async Task Validate_WithoutValidationContext_RequiredParameter_AddsErrorAndInitializesValidationContext()
-    {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(string),
-            name: "testParam",
-            displayName: "Test Parameter",
-            validationAttributes: [new RequiredAttribute()]);
-
-        // Create a ValidateContext without a pre-populated ValidationContext
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>())
-        };
-
-        // Sanity check
-        Assert.Null(context.ValidationContext);
-
-        // Act
-        await paramInfo.ValidateAsync(null, context, default);
-
-        // Assert – a ValidationContext should have been created and the error recorded
-        Assert.NotNull(context.ValidationContext);
-        var errors = context.ValidationErrors;
-        Assert.NotNull(errors);
-        var error = Assert.Single(errors);
-        Assert.Equal("testParam", error.Key);
-        Assert.Equal("The Test Parameter field is required.", error.Value.Single());
-    }
-
-    [Fact]
-    public async Task Validate_WithoutValidationContext_ValidValue_NoErrors()
-    {
-        // Arrange
-        var paramInfo = CreateTestParameterInfo(
-            parameterType: typeof(int),
-            name: "testParam",
-            displayName: "Test Parameter",
-            validationAttributes: [new RangeAttribute(10, 100)]);
-
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>())
-        };
-
-        // Act
-        await paramInfo.ValidateAsync(50, context, default);
-
-        // Assert – ValidationContext initialized, but no errors added
-        Assert.NotNull(context.ValidationContext);
-        Assert.Null(context.ValidationErrors);
-    }
-
     private TestValidatableParameterInfo CreateTestParameterInfo(
         Type parameterType,
         string name,

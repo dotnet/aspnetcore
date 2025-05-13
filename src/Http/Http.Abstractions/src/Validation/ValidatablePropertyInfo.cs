@@ -75,8 +75,6 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = $"{originalPrefix}.{Name}";
         }
 
-        context.ValidationContext ??= new ValidationContext(value ?? new object(), displayName: DisplayName, serviceProvider: null, items: null);
-
         context.ValidationContext.DisplayName = DisplayName;
         context.ValidationContext.MemberName = Name;
 

@@ -65,11 +65,6 @@ public abstract class ValidatableParameterInfo : IValidatableInfo
             return;
         }
 
-        // ValidationContext requires a non-null value although the invocation pattern that we use
-        // calls `GetValidationResult` and passes the value there. `GetValidationResult` tolerates
-        // null values so we only need to set a non-null value to the ValidationContext here.
-        context.ValidationContext ??= new ValidationContext(value ?? new object(), displayName: DisplayName, serviceProvider: null, items: null);
-
         context.ValidationContext.DisplayName = DisplayName;
         context.ValidationContext.MemberName = Name;
 
