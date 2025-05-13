@@ -473,6 +473,13 @@ T", null, null, false, null, null, null));
                         }
                     }
                 }
+                // Applies `<returns>` on XML comments for operation with single response value.
+                if (methodComment.Returns is { } returns && operation.Responses is { Count: 1 })
+                {
+                    var response = operation.Responses.First();
+                    response.Value.Description = returns;
+                }
+                // Applies `<response>` on XML comments for operation with multiple response values.
                 if (methodComment.Responses is { Count: > 0} && operation.Responses is { Count: > 0 })
                 {
                     foreach (var response in operation.Responses)
