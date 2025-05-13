@@ -23,4 +23,8 @@ Later on, this will be checked using this condition:
       Microsoft.Extensions.Identity.Stores;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.3' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

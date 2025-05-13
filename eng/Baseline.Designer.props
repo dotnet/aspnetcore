@@ -1155,7 +1155,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.Extensions.Identity.Stores-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' ">
-    <BaselinePackageVersion>2.3.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.3.2</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Extensions.Identity.Stores' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Identity.Core" Version="[2.3.0, )" />
