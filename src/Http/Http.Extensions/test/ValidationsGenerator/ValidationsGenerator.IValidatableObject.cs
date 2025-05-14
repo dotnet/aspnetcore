@@ -54,6 +54,8 @@ public class ComplexValidatableType: IValidatableObject
 public class SubType
 {
     [Required]
+    // This gets ignored since it has an unsupported constructor name
+    [Display(ShortName = "SubType")]
     public string RequiredProperty { get; set; } = "some-value";
 
     [StringLength(10)]

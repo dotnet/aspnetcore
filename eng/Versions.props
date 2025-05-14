@@ -144,8 +144,8 @@
     <SystemNumericsTensorsVersion>10.0.0-preview.5.25260.104</SystemNumericsTensorsVersion>
     <SystemRuntimeCachingVersion>10.0.0-preview.5.25260.104</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/extensions -->
-    <MicrosoftExtensionsDiagnosticsTestingVersion>9.5.0-preview.1.25252.3</MicrosoftExtensionsDiagnosticsTestingVersion>
-    <MicrosoftExtensionsTimeProviderTestingVersion>9.5.0-preview.1.25252.3</MicrosoftExtensionsTimeProviderTestingVersion>
+    <MicrosoftExtensionsDiagnosticsTestingVersion>9.6.0-preview.1.25260.2</MicrosoftExtensionsDiagnosticsTestingVersion>
+    <MicrosoftExtensionsTimeProviderTestingVersion>9.6.0-preview.1.25260.2</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>10.0.0-preview.4.25260.104</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>10.0.0-preview.4.25260.104</MicrosoftEntityFrameworkCoreInMemoryVersion>
@@ -155,6 +155,9 @@
     <MicrosoftEntityFrameworkCoreToolsVersion>10.0.0-preview.4.25260.104</MicrosoftEntityFrameworkCoreToolsVersion>
     <MicrosoftEntityFrameworkCoreVersion>10.0.0-preview.4.25260.104</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreDesignVersion>10.0.0-preview.4.25260.104</MicrosoftEntityFrameworkCoreDesignVersion>
+    <!-- Packages from dotnet/sdk -->
+    <MicrosoftDotNetHotReloadAgentVersion>10.0.100-preview.5.25258.39</MicrosoftDotNetHotReloadAgentVersion>
+    <MicrosoftDotNetHotReloadAgentDataVersion>10.0.100-preview.5.25258.39</MicrosoftDotNetHotReloadAgentDataVersion>
     <!-- Packages from dotnet/roslyn -->
     <!-- Not updated automatically -->
     <MicrosoftCodeAnalysisCommonVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCommonVersion>
