@@ -282,7 +282,7 @@ $MSBuildArguments += "/p:Publish=$Publish"
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
 
-$MSBuildArguments += "/p:DotNetBuildRepo=$ProductBuild"
+if ($ProductBuild) { $MSBuildArguments += "/p:DotNetBuildRepo=$ProductBuild" }
 
 if (-not $Configuration) {
     $Configuration = if ($CI) { 'Release' } else { 'Debug' }
@@ -298,6 +298,7 @@ if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
     $ToolsetBuildArguments += $runtimeFeedArg
     $ToolsetBuildArguments += $runtimeFeedKeyArg
 }
+if ($ProductBuild) { $ToolsetBuildArguments += "/p:DotNetBuildRepo=$ProductBuild" }
 
 # Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.
 [string[]]$dotnetBuildArguments = ''
