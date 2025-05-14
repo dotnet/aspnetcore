@@ -487,35 +487,53 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
 
         var parEndpoint = _configuration?.PushedAuthorizationRequestEndpoint;
 
-        switch (Options.PushedAuthorizationBehavior)
+        try
         {
-            case PushedAuthorizationBehavior.UseIfAvailable:
-                // Push if endpoint is in disco
-                if (!string.IsNullOrEmpty(parEndpoint))
-                {
+            switch (Options.PushedAuthorizationBehavior)
+            {
+                case PushedAuthorizationBehavior.UseIfAvailable:
+                    // Push if endpoint is in disco
+                    if (!string.IsNullOrEmpty(parEndpoint))
+                    {
+                        await PushAuthorizationRequest(message, properties, parEndpoint);
+                    }
+
+                    break;
+                case PushedAuthorizationBehavior.Disable:
+                    // Fail if disabled in options but required by disco
+                    if (_configuration?.RequirePushedAuthorizationRequests == true)
+                    {
+                        throw new InvalidOperationException("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.");
+                    }
+
+                    // Otherwise do nothing
+                    break;
+                case PushedAuthorizationBehavior.Require:
+                    // Fail if required in options but unavailable in disco
+                    if (string.IsNullOrEmpty(parEndpoint))
+                    {
+                        throw new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
+                    }
+
+                    // Otherwise push
                     await PushAuthorizationRequest(message, properties, parEndpoint);
-                }
+                    break;
+            }
+        }
+        catch(Exception exception)
+        {
+            var failContext = new PushedAuthorizationFailedContext(Context, Scheme, Options, properties, exception)
 
-                break;
-            case PushedAuthorizationBehavior.Disable:
-                // Fail if disabled in options but required by disco
-                if (_configuration?.RequirePushedAuthorizationRequests == true)
-                {
-                    throw new InvalidOperationException("Pushed authorization is required by the OpenId Connect provider, but disabled by the OpenIdConnectOptions.PushedAuthorizationBehavior.");
-                }
-
-                // Otherwise do nothing
-                break;
-            case PushedAuthorizationBehavior.Require:
-                // Fail if required in options but unavailable in disco
-                if (string.IsNullOrEmpty(parEndpoint))
-                {
-                    throw new InvalidOperationException("Pushed authorization is required by the OpenIdConnectOptions.PushedAuthorizationBehavior, but no pushed authorization endpoint is available.");
-                }
-
-                // Otherwise push
-                await PushAuthorizationRequest(message, properties, parEndpoint);
-                break;
+            await Events.PushAuthorizationFailed(failContext);
+            if (failContext.Handled)
+            {
+                Logger.PushAuthorizationFailedHandledResponse();
+                return;
+            }
+            else
+            {
+                throw;
+            }
         }
 
         if (Options.AuthenticationMethod == OpenIdConnectRedirectBehavior.RedirectGet)
