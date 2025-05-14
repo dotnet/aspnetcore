@@ -1,5 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Identity;
+using BlazorWeb_CSharp.Data;
 
 namespace BlazorWeb_CSharp.Components.Account;
 
@@ -49,5 +50,5 @@ internal sealed class IdentityRedirectManager(NavigationManager navigationManage
         => RedirectToWithStatus(CurrentPath, message, context);
 
     public void RedirectToInvalidUser(UserManager<ApplicationUser> userManager, HttpContext context)
-        => redirectManager.RedirectToWithStatus("Account/InvalidUser", $"Error: Unable to load user with ID '{userManager.GetUserId(context.User)}'.", context);
+        => RedirectToWithStatus("Account/InvalidUser", $"Error: Unable to load user with ID '{userManager.GetUserId(context.User)}'.", context);
 }
