@@ -69,13 +69,14 @@ public static class RouteHandlerExtensionMethods
     }
 
     /// <param name="name" example="Testy McTester">The name of the person.</param>
+    /// <returns>Returns the greeting.</returns>
+    /// <returns>Returns a different greeting.</returns>
     public static string Get3(string name)
     {
         return $"Hello, {name}!";
     }
 
-    /// <returns>This gets ignored. We favor response over returns.</returns>
-    /// <response code="404">Indicates that the value was not found.</response>
+    /// <returns>Indicates that the value was not found.</returns>
     public static NotFound<string> Get4()
     {
         return TypedResults.NotFound("Not found!");
@@ -249,6 +250,7 @@ public class Example : Task<int>
             Assert.Equal("The name of the person.", path3.Parameters[0].Description);
             var example = Assert.IsAssignableFrom<JsonNode>(path3.Parameters[0].Example);
             Assert.Equal("\"Testy McTester\"", example.ToJsonString());
+            Assert.Equal("Returns the greeting.", path3.Responses["200"].Description);
 
             var path4 = document.Paths["/4"].Operations[HttpMethod.Get];
             var response = path4.Responses["404"];
