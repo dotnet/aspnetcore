@@ -9,7 +9,6 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IEmailSender<ApplicationUser> EmailSender
-@inject IdentityUserAccessor UserAccessor
 @inject NavigationManager NavigationManager
 
 <PageTitle>Manage email</PageTitle>
@@ -67,9 +66,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
             return;
         }
 
@@ -89,7 +89,8 @@
 
         if (user is null)
         {
-            throw new InvalidOperationException("User is not loaded; failed to manage email.");
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
 
         var userId = await UserManager.GetUserIdAsync(user);
@@ -113,7 +114,8 @@
 
         if (user is null)
         {
-            throw new InvalidOperationException("User is not loaded; failed to send verification email.");
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
 
         var userId = await UserManager.GetUserIdAsync(user);

@@ -6,7 +6,6 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
-@inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<DeletePersonalData> Logger
 
@@ -52,18 +51,21 @@
     protected override async Task OnInitializedAsync()
     {
         Input ??= new();
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        if (user is not null)
+        user = await UserManager.GetUserAsync(HttpContext.User);
+        if (user is null)
         {
-            requirePassword = await UserManager.HasPasswordAsync(user);
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
+        requirePassword = await UserManager.HasPasswordAsync(user);
     }
 
     private async Task OnValidSubmitAsync()
     {
         if (user is null)
         {
-            throw new InvalidOperationException("User is not loaded; failed to delete personal data.");
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
 
         if (requirePassword && !await UserManager.CheckPasswordAsync(user, Input.Password))

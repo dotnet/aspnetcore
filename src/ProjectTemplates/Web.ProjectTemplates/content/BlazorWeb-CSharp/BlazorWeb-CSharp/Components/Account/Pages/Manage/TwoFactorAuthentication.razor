@@ -6,7 +6,6 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
-@inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Two-factor authentication (2FA)</PageTitle>
@@ -82,9 +81,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        var user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
             return;
         }
 

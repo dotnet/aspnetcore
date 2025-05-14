@@ -8,7 +8,6 @@
 @using BlazorWeb_CSharp.Data
 
 @inject UserManager<ApplicationUser> UserManager
-@inject IdentityUserAccessor UserAccessor
 @inject UrlEncoder UrlEncoder
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<EnableAuthenticator> Logger
@@ -83,10 +82,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
-        if (user is not null)
+        user = await UserManager.GetUserAsync(HttpContext.User);
+        if (user is null)
         {
-            await LoadSharedKeyAndQrCodeUriAsync(user);
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
     }
 
@@ -94,7 +94,8 @@ else
     {
         if (user is null)
         {
-            throw new InvalidOperationException("User is not loaded; failed to configure authenticator app.");
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
 
         // Strip spaces and hyphens
