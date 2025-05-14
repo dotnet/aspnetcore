@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Models.References;
 using Microsoft.OpenApi.Writers;
@@ -287,7 +287,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription is not null)
             {
                 schema.Extensions ??= [];
-                schema.Extensions["x-my-extension"] = new OpenApiAny(context.ParameterDescription.Name);
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension(context.ParameterDescription.Name);
             }
             return Task.CompletedTask;
         });
@@ -301,7 +301,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             // Schemas are distinct because of applied transformer so no reference is used.
             Assert.NotEqual(((OpenApiSchemaReference)requestSchema).Reference.Id, ((OpenApiSchemaReference)responseSchema).Reference.Id);
-            Assert.Equal("todo", ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            Assert.Equal("todo", ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
             Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
         });
     }

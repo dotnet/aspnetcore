@@ -61,7 +61,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using Microsoft.OpenApi.Models;
     using Microsoft.OpenApi.Models.Interfaces;
     using Microsoft.OpenApi.Models.References;
-    using Microsoft.OpenApi.Any;
 
     {{GeneratedCodeAttribute}}
     file record XmlComment(
