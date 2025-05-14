@@ -81,9 +81,6 @@ public static class WebHostBuilderKestrelExtensions
         hostBuilder.UseSockets();
         hostBuilder.ConfigureServices(services =>
         {
-            // Don't override an already-configured transport
-            //services.TryAddSingleton<IConnectionListenerFactory, SocketTransportFactory>();
-
             services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
             services.AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>();
             services.AddSingleton<IServer, KestrelServerImpl>();

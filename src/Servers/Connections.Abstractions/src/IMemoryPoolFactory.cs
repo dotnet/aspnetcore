@@ -6,13 +6,13 @@ using System.Buffers;
 namespace Microsoft.AspNetCore.Connections;
 
 /// <summary>
-/// 
+/// Interface for creating memory pools.
 /// </summary>
 public interface IMemoryPoolFactory<T>
 {
     /// <summary>
-    /// 
+    /// Creates a new instance of a memory pool.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A new memory pool instance.</returns>
     MemoryPool<T> Create();
 }

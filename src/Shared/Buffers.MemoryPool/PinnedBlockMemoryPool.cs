@@ -92,9 +92,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
             MemoryPoolThrowHelper.ThrowObjectDisposedException(MemoryPoolThrowHelper.ExceptionArgument.MemoryPool);
         }
 
-        //Interlocked.Increment(ref _rentCount);
-        //++_rentCount;
-        ScalableCount(ref _rentCount);
+        Interlocked.Increment(ref _rentCount);
 
         if (_blocks.TryDequeue(out var block))
         {
@@ -108,13 +106,11 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
 
         _metrics.IncrementTotalMemory(BlockSize);
         _metrics.Rent(BlockSize);
-        //Interlocked.Increment(ref _rentCount);
-        //++_rentCount;
 
         // We already counted this Rent call above, but since we're now allocating (need more blocks)
         // that means the pool is 'very' active and we probably shouldn't evict blocks, so we count again
         // to reduce the chance of eviction occurring this cycle.
-        ScalableCount(ref _rentCount);
+        Interlocked.Increment(ref _rentCount);
 
         return new MemoryPoolBlock(this, BlockSize);
     }
@@ -135,9 +131,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
             block.IsLeased = false;
 #endif
 
-        //Interlocked.Increment(ref _returnCount);
-        //++_returnCount;
-        ScalableCount(ref _returnCount);
+        Interlocked.Increment(ref _returnCount);
 
         if (!_isDisposed)
         {
@@ -247,33 +241,5 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
         public void Dispose()
         {
         }
-    }
-
-    // https://github.com/dotnet/runtime/blob/db681fb307d754c3746ffb40e0634e4c4e0caa9e/docs/design/features/ScalableApproximateCounting.md
-    static void ScalableCount(ref uint counter)
-    {
-        // Start using random for counting after 2^12 (4096)
-        //const int threshold = 12;
-        uint count = counter;
-        uint delta = 1;
-#if false
-        if (count > 0)
-        {
-            int logCount = 31 - (int)uint.LeadingZeroCount(count);
-
-            if (logCount >= threshold)
-            {
-                delta = 1u << (logCount - (threshold - 1));
-                uint rand = (uint)Random.Shared.Next();
-                bool update = (rand & (delta - 1)) == 0;
-                if (!update)
-                {
-                    return;
-                }
-            }
-        }
-#endif
-
-        Interlocked.Add(ref counter, delta);
     }
 }
