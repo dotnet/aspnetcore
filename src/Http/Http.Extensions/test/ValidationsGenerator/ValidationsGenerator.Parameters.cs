@@ -24,12 +24,15 @@ var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddValidation();
 builder.Services.AddSingleton<TestService>();
+builder.Services.AddKeyedSingleton<TestService>("serviceKey");
 
 var app = builder.Build();
 
 app.MapGet("/params", (
     // Skipped from validation because it is resolved as a service by IServiceProviderIsService
     TestService testService,
+    // Skipped from validation because it is marked as a [FromKeyedService] parameter
+    [FromKeyedServices("serviceKey")] TestService testService2,
     [Range(10, 100)] int value1,
     [Range(10, 100), Display(Name = "Valid identifier")] int value2,
     [Required] string value3 = "some-value",

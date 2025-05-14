@@ -21,6 +21,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder();
 builder.Services.AddSingleton<IRangeService, RangeService>();
+builder.Services.AddKeyedSingleton<TestService>("serviceKey");
 builder.Services.AddValidation();
 
 var app = builder.Build();
@@ -29,7 +30,8 @@ app.MapPost("/validatable-object", (
     ComplexValidatableType model,
     // Demonstrates that parameters that are annotated with [FromService] are not processed
     // by the source generator and not emitted as ValidatableTypes in the generated code.
-    [FromServices] IRangeService rangeService) => Results.Ok(rangeService.GetMinimum()));
+    [FromServices] IRangeService rangeService,
+    [FromKeyedServices("serviceKey")] TestService testService) => Results.Ok(rangeService.GetMinimum()));
 
 app.Run();
 
@@ -88,6 +90,12 @@ public class RangeService : IRangeService
 {
     public int GetMinimum() => 10;
     public int GetMaximum() => 100;
+}
+
+public class TestService
+{
+    [Range(10, 100)]
+    public int Value { get; set; } = 4;
 }
 """;
 
