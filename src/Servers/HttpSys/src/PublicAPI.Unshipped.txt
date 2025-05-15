@@ -1,3 +1,5 @@
 #nullable enable
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.TlsClientHelloBytesCallback.get -> System.Action<Microsoft.AspNetCore.Http.Features.IFeatureCollection!, System.ReadOnlySpan<byte>>?
 Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.TlsClientHelloBytesCallback.set -> void
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueSecurityDescriptor.get -> System.Security.AccessControl.GenericSecurityDescriptor?
+Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions.RequestQueueSecurityDescriptor.set -> void

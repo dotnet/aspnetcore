@@ -334,6 +334,7 @@
     <Project Path="src/Http/Metadata/src/Microsoft.AspNetCore.Metadata.csproj" />
   </Folder>
   <Folder Name="/src/Http/Owin/" Id="c6dae135-6509-c765-458b-3693a7b28e8c">
+    <Project Path="src/Http/Owin/benchmarks/Microsoft.AspNetCore.Owin.Microbenchmarks/Microsoft.AspNetCore.Owin.Microbenchmarks.csproj" />
     <Project Path="src/Http/Owin/src/Microsoft.AspNetCore.Owin.csproj" />
     <Project Path="src/Http/Owin/test/Microsoft.AspNetCore.Owin.Tests.csproj" />
   </Folder>
@@ -357,6 +358,7 @@
   <Folder Name="/src/Http/samples/" Id="0e46e96b-2613-2f61-4250-fc4a97d94f4c">
     <Project Path="src/Http/samples/MinimalSample/MinimalSample.csproj" />
     <Project Path="src/Http/samples/MinimalSampleFSharp/MinimalSampleFSharp.fsproj" />
+    <Project Path="src/Http/samples/MinimalSampleOwin/MinimalSampleOwin.csproj" />
     <Project Path="src/Http/samples/SampleApp/HttpAbstractions.SampleApp.csproj" />
   </Folder>
   <Folder Name="/src/Http/WebUtilities/" Id="1aadc95f-e3b5-447b-ddcf-108db21eb9ed">

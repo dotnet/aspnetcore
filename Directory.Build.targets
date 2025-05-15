@@ -119,7 +119,7 @@
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND $(IsTestProject) ">true</BuildHelixPayload>
-    <SkipTests Condition="'$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
+    <SkipTests Condition="'$(SkipTests)' == '' AND '$(SkipHelixReadyTests)' == 'true' AND '$(BuildHelixPayload)' == 'true'">true</SkipTests>
   </PropertyGroup>
 
   <PropertyGroup>

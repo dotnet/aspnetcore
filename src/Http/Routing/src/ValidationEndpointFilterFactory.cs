@@ -1,8 +1,12 @@
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -19,6 +23,8 @@ internal static class ValidationEndpointFilterFactory
             return next;
         }
 
+        var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
+
         var parameterCount = parameters.Length;
         var validatableParameters = new IValidatableInfo[parameterCount];
         var parameterDisplayNames = new string[parameterCount];
@@ -26,6 +32,12 @@ internal static class ValidationEndpointFilterFactory
 
         for (var i = 0; i < parameterCount; i++)
         {
+            // Ignore parameters that are resolved from the DI container.
+            if (IsServiceParameter(parameters[i], serviceProviderIsService))
+            {
+                continue;
+            }
+
             if (options.TryGetValidatableParameterInfo(parameters[i], out var validatableParameter))
             {
                 validatableParameters[i] = validatableParameter;
@@ -41,7 +53,7 @@ internal static class ValidationEndpointFilterFactory
 
         return async (context) =>
         {
-            var validatableContext = new ValidateContext { ValidationOptions = options };
+            ValidateContext? validateContext = null;
 
             for (var i = 0; i < context.Arguments.Count; i++)
             {
@@ -55,20 +67,40 @@ internal static class ValidationEndpointFilterFactory
                 }
 
                 var validationContext = new ValidationContext(argument, displayName, context.HttpContext.RequestServices, items: null);
-                validatableContext.ValidationContext = validationContext;
-                await validatableParameter.ValidateAsync(argument, validatableContext, context.HttpContext.RequestAborted);
+
+                if (validateContext == null)
+                {
+                    validateContext = new ValidateContext
+                    {
+                        ValidationOptions = options,
+                        ValidationContext = validationContext
+                    };
+                }
+                else
+                {
+                    validateContext.ValidationContext = validationContext;
+                }
+
+                await validatableParameter.ValidateAsync(argument, validateContext, context.HttpContext.RequestAborted);
             }
 
-            if (validatableContext.ValidationErrors is { Count: > 0 })
+            if (validateContext is { ValidationErrors.Count: > 0 })
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
                 context.HttpContext.Response.ContentType = "application/problem+json";
-                return await ValueTask.FromResult(new HttpValidationProblemDetails(validatableContext.ValidationErrors));
+                return await ValueTask.FromResult(new HttpValidationProblemDetails(validateContext.ValidationErrors));
             }
 
             return await next(context);
         };
     }
+
+    private static bool IsServiceParameter(ParameterInfo parameterInfo, IServiceProviderIsService? isService)
+        => HasFromServicesAttribute(parameterInfo) ||
+           (isService?.IsService(parameterInfo.ParameterType) == true);
+
+    private static bool HasFromServicesAttribute(ParameterInfo parameterInfo)
+        => parameterInfo.CustomAttributes.OfType<IFromServiceMetadata>().Any();
 
     private static string GetDisplayName(ParameterInfo parameterInfo)
     {

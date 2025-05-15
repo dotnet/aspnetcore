@@ -232,9 +232,13 @@ configuration:
       - isActivitySender:
           user: dotnet-maestro[bot]
           issueAuthor: False
-      - titleContains:
-          pattern: Update dependencies
-          isRegex: False
+      - or:
+        - titleContains:
+            pattern: Update dependencies
+            isRegex: False
+        - titleContains:
+            pattern: Source code updates
+            isRegex: False
       - targetsBranch:
           branch: main
       then:
@@ -551,7 +555,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.5
+          milestone: 9.0.6
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -562,7 +566,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.16
+          milestone: 8.0.17
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
@@ -642,6 +646,8 @@ configuration:
       - titleContains:
           pattern: Update .NET SDK
           isRegex: False
+      - targetsBranch:
+          branch: main
       then:
       - addLabel:
           label: area-infrastructure
@@ -649,6 +655,27 @@ configuration:
           label: 'Type: Dependency Update :arrow_up_small:'
       - approvePullRequest:
           comment: Auto-approving SDK update.
-      description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests'
+      - enableAutoMerge:
+          mergeMethod: "squash"
+      description: '[Infrastructure PRs] Add area-infrastructure label to SDK update Pull Requests & enable auto-merge'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - isActivitySender:
+          user: dependabot[bot]
+          issueAuthor: False
+      - targetsBranch:
+          branch: main
+      then:
+      - addLabel:
+          label: area-infrastructure
+      - addLabel:
+          label: 'Type: Dependency Update :arrow_up_small:'
+      - approvePullRequest:
+          comment: Auto-approving dependabot update.
+      - enableAutoMerge:
+          mergeMethod: "squash"
+      description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
 onFailure: 
 onSuccess: 

@@ -13,8 +13,8 @@
     <!-- Target the latest runtime patch so the latest version is specified in runtimeconfig.json -->
     <TargetLatestRuntimePatch>true</TargetLatestRuntimePatch>
     <RollForward>LatestPatch</RollForward>
-    <!-- Precompile the shared framework with ReadyToRun. ReadyToRun is not currently supported on s390x or ppc64le or armv6 or loongarch64. -->
-    <PublishReadyToRun Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' OR '$(TargetArchitecture)' == 'loongarch64' OR '$(TargetArchitecture)' == 'riscv64' ">false</PublishReadyToRun>
+    <!-- Precompile the shared framework with ReadyToRun. ReadyToRun is not currently supported on s390x or ppc64le or armv6. -->
+    <PublishReadyToRun Condition=" '$(TargetArchitecture)' == 's390x' OR '$(TargetArchitecture)' == 'armv6' OR '$(TargetArchitecture)' == 'ppc64le' ">false</PublishReadyToRun>
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
     <!-- Don't use ReadyToRun when explicitly opted out -->
     <PublishReadyToRun Condition="'$(CrossgenOutput)' == 'false'">false</PublishReadyToRun>

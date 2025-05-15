@@ -43,7 +43,8 @@ public interface IJSRuntime
     /// <param name="identifier">An identifier for the constructor function to invoke. For example, the value <c>"someScope.SomeClass"</c> will invoke the constructor <c>window.someScope.SomeClass</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
-    ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args);
+    ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
+        => throw new NotImplementedException();
 
     /// <summary>
     /// Invokes the specified JavaScript constructor function asynchronously. The function is invoked with the <c>new</c> operator.
@@ -55,7 +56,8 @@ public interface IJSRuntime
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
-    ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args);
+    ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+        => throw new NotImplementedException();
 
     /// <summary>
     /// Reads the value of the specified JavaScript property asynchronously.
@@ -63,7 +65,8 @@ public interface IJSRuntime
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
     /// <param name="identifier">An identifier for the property to read. For example, the value <c>"someScope.someProp"</c> will read the value of the property <c>window.someScope.someProp</c>.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-    ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier);
+    ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
+       => throw new NotImplementedException();
 
     /// <summary>
     /// Reads the value of the specified JavaScript property asynchronously.
@@ -75,7 +78,8 @@ public interface IJSRuntime
     /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
     /// </param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
-    ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken);
+    ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, CancellationToken cancellationToken)
+        => throw new NotImplementedException();
 
     /// <summary>
     /// Updates the value of the specified JavaScript property asynchronously. If the property is not defined on the target object, it will be created.
@@ -84,7 +88,8 @@ public interface IJSRuntime
     /// <param name="identifier">An identifier for the property to set. For example, the value <c>"someScope.someProp"</c> will update the property <c>window.someScope.someProp</c>.</param>
     /// <param name="value">JSON-serializable value.</param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-    ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value);
+    ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value)
+        => throw new NotImplementedException();
 
     /// <summary>
     /// Updates the value of the specified JavaScript property asynchronously. If the property is not defined on the target object, it will be created.
@@ -97,5 +102,6 @@ public interface IJSRuntime
     /// (<see cref="JSRuntime.DefaultAsyncTimeout"/>) from being applied.
     /// </param>
     /// <returns>A <see cref="ValueTask"/> that represents the asynchronous invocation operation.</returns>
-    ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken);
+    ValueTask SetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+        => throw new NotImplementedException();
 }

@@ -34,6 +34,7 @@
 |  __`ASP0026`__ | [Authorize] overridden by [AllowAnonymous] from farther away |
 |  __`ASP0027`__ | Unnecessary public Program class declaration |
 |  __`ASP0028`__ | Consider using ListenAnyIP() instead of Listen(IPAddress.Any) |
+|  __`ASP0029`__ | Experimental warning for validations resolver APIs |
 
 ### API (`API1000-API1003`)
 

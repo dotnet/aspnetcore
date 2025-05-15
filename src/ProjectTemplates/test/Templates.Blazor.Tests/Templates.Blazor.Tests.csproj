@@ -9,6 +9,7 @@
     <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <RunBlazorPlaywrightTemplateTests Condition="'$(RunBlazorPlaywrightTemplateTests)' == ''">$(RunTemplateTests)</RunBlazorPlaywrightTemplateTests>
     <SkipTests Condition="'$(RunBlazorPlaywrightTemplateTests)' != 'true'">true</SkipTests>
+    <SkipTests Condition="'$(RunBlazorPlaywrightTemplateTests)' == 'true'">false</SkipTests>
     <BuildHelixPayload Condition="'$(RunBlazorPlaywrightTemplateTests)' != 'true'">false</BuildHelixPayload>
 
     <BaseOutputPath />

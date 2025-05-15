@@ -47,5 +47,6 @@
     <PublishAllBuildsAssetsInThisJob Condition="('$(OS)' == 'Windows_NT' and '$(DotNetBuildOrchestrator)' != 'true')
                                                 or ('$(DotNetBuildOrchestrator)' == 'true' and '$(EnableDefaultRidSpecificArtifacts)' != 'true'
                                                     and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'))">true</PublishAllBuildsAssetsInThisJob>
+    <PublishInstallerBaseVersion Condition="'$(PublishInstallerBaseVersion)' == ''">$(PublishAllBuildsAssetsInThisJob)</PublishInstallerBaseVersion>
   </PropertyGroup>
 </Project>

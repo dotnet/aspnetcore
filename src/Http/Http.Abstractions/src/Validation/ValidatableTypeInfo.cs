@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -11,6 +10,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// <summary>
 /// Contains validation information for a type.
 /// </summary>
+[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public abstract class ValidatableTypeInfo : IValidatableInfo
 {
     private readonly int _membersCount;
@@ -44,7 +44,6 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        Debug.Assert(context.ValidationContext is not null);
         if (value == null)
         {
             return;
@@ -104,12 +103,20 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 {
                     if (validationResult != ValidationResult.Success && validationResult.ErrorMessage is not null)
                     {
-                        var memberName = validationResult.MemberNames.First();
-                        var key = string.IsNullOrEmpty(originalPrefix) ?
-                            memberName :
-                            $"{originalPrefix}.{memberName}";
+                        // Create a validation error for each member name that is provided
+                        foreach (var memberName in validationResult.MemberNames)
+                        {
+                            var key = string.IsNullOrEmpty(originalPrefix) ?
+                                memberName :
+                                $"{originalPrefix}.{memberName}";
+                            context.AddOrExtendValidationError(key, validationResult.ErrorMessage);
+                        }
 
-                        context.AddOrExtendValidationError(key, validationResult.ErrorMessage);
+                        if (!validationResult.MemberNames.Any())
+                        {
+                            // If no member names are specified, then treat this as a top-level error
+                            context.AddOrExtendValidationError(string.Empty, validationResult.ErrorMessage);
+                        }
                     }
                 }
 
