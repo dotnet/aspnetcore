@@ -21,6 +21,8 @@
   </ItemGroup>
   <PropertyGroup>
     <WasmPreloadAssets>false</WasmPreloadAssets>
-    <WasmInlineBootConfig>false</WasmInlineBootConfig>
+  </PropertyGroup>
+  <PropertyGroup>
+    <BlazorCacheBootResources>false</BlazorCacheBootResources>
   </PropertyGroup>
 </Project>

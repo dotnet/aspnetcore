@@ -4679,6 +4679,24 @@ public partial class HubConnectionHandlerTests : VerifiableLoggedTest
             Assert.True(Assert.IsType<bool>(res.Result));
         }
     }
+    
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/61491
+    [Fact]
+    public async Task HubMethodCanInjectServiceWithNullParameter()
+    {
+        var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(provider =>
+        {
+            provider.AddSingleton<Service1>();
+        });
+        var connectionHandler = serviceProvider.GetService<HubConnectionHandler<ServicesHub>>();
+
+        using (var client = new TestClient())
+        {
+            var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+            var res = await client.InvokeAsync(nameof(ServicesHub.ServiceWithStringAttribute),(string)null ).DefaultTimeout();
+            Assert.Equal(115L, res.Result);
+        }
+    }
 
     [Fact]
     public async Task HubMethodCanInjectMultipleServices()

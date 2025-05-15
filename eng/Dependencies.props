@@ -25,6 +25,8 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <LatestPackageReference Include="Microsoft.CSharp" />
+    <LatestPackageReference Include="Microsoft.DotNet.HotReload.Agent" />
+    <LatestPackageReference Include="Microsoft.DotNet.HotReload.Agent.Data" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
@@ -70,7 +72,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeFix.Testing" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.CSharp.SourceGenerators.Testing" />
     <LatestPackageReference Include="Microsoft.OpenApi" />
-    <LatestPackageReference Include="Microsoft.OpenApi.Readers" />
+    <LatestPackageReference Include="Microsoft.OpenApi.YamlReader" />
     <LatestPackageReference Include="System.Buffers" />
     <LatestPackageReference Include="System.CodeDom" />
     <LatestPackageReference Include="System.CommandLine.Experimental" />
@@ -253,7 +255,7 @@ and are generated based on the last package release.
     -->
     <LatestPackageReference Update="@(LatestPackageReference->WithMetadataValue('Version', ''))">
       <Version
-          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) or $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Crossgen2.'))">$(MicrosoftNETCoreAppRuntimeVersion)</Version>
+          Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) or $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Crossgen2.'))">$(MicrosoftNETCoreAppRefVersion)</Version>
     </LatestPackageReference>
   </ItemGroup>
 </Project>

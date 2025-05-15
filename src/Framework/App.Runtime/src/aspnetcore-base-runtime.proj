@@ -13,7 +13,7 @@
 
   <Target Name="WriteBaseRuntimeVersionFile" AfterTargets="Build">
     <WriteLinesToFile File="$(BaseRuntimeVersionFileOutputPath)"
-                      Lines="$(MicrosoftNETCoreAppRuntimeVersion)"
+                      Lines="$(MicrosoftNETCoreAppRefVersion)"
                       Overwrite="true" />
   </Target>
 </Project>

@@ -65,7 +65,7 @@
         Targets="_VmrBuild" />
     <MSBuild Projects="..\..\..\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj"
         BuildInParallel="false"
-        Properties="Platform=x86;TargetRid=win-x86;BaseOS=win-x86;TargetRuntimeIdentifier=win-x86;TargetArchitecture=x86"
+        Properties="Platform=x86;TargetRid=win-x86;BaseRid=win-x86;TargetRuntimeIdentifier=win-x86;TargetArchitecture=x86"
         Targets="_VmrBuild" />
     <MSBuild Projects="..\..\..\LoggingBranch\LB.csproj"
         BuildInParallel="false"
@@ -73,7 +73,7 @@
         Targets="_VmrBuild" />
     <MSBuild Projects="..\..\..\LoggingBranch\LB.csproj"
         BuildInParallel="false"
-        Properties="Platform=x86;TargetRid=win-x86;BaseOS=win-x86;TargetRuntimeIdentifier=win-x86;TargetArchitecture=x86;DisableTransitiveFrameworkReferences=true"
+        Properties="Platform=x86;TargetRid=win-x86;BaseRid=win-x86;TargetRuntimeIdentifier=win-x86;TargetArchitecture=x86;DisableTransitiveFrameworkReferences=true"
         Targets="_VmrBuild" />
   </Target>
 
@@ -112,7 +112,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(DotNetBuild)' == 'true'">
-      <_SiteExtensionsReference Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64.%(_ResolvedPackageVersionInfo.PackageVersion).nupkg" 
+      <_SiteExtensionsReference Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64.%(_ResolvedPackageVersionInfo.PackageVersion).nupkg"
           Name="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x64" />
       <_SiteExtensionsReference Include="$(ArtifactsNonShippingPackagesDir)Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86.%(_ResolvedPackageVersionInfo.PackageVersion).nupkg"
           Name="Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(AspNetCoreMajorMinorVersion).x86" />

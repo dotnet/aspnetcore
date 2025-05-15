@@ -35,6 +35,8 @@ target_arch='x64'
 configuration=''
 runtime_source_feed=''
 runtime_source_feed_key=''
+source_build=false
+product_build=false
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
@@ -87,6 +89,9 @@ Options:
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
+
+    --sourceBuild|-sb                 Build the repository in source-only mode.
+    --productBuild|-pb                Build the repository in product-build mode.
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -247,6 +252,13 @@ while [[ $# -gt 0 ]]; do
             [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed-key" && __usage
             runtime_source_feed_key="${1:-}"
             ;;
+        -sourcebuild|-source-build|-sb)
+            source_build=true
+            product_build=true
+            ;;
+        -productbuild|-product-build|-pb)
+            product_build=true
+            ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"
             ;;
@@ -321,6 +333,11 @@ msbuild_args[${#msbuild_args[*]}]="-p:Sign=$run_sign"
 msbuild_args[${#msbuild_args[*]}]="-p:TargetArchitecture=$target_arch"
 msbuild_args[${#msbuild_args[*]}]="-p:TargetOsName=$target_os_name"
 
+sourceBuildArg="/p:DotNetBuildSourceOnly=$source_build"
+productBuildArg="/p:DotNetBuildRepo=$product_build"
+msbuild_args[${#msbuild_args[*]}]=$sourceBuildArg
+msbuild_args[${#msbuild_args[*]}]=$productBuildArg
+
 if [ -z "$configuration" ]; then
     if [ "$ci" = true ]; then
         configuration='Release'
@@ -358,10 +375,6 @@ fi
 if [ "$(uname)" = "Darwin" ]; then
     ulimit -n 10000
 fi
-
-# tools.sh expects the remaining arguments to be available via the $properties string array variable
-# TODO: Remove when https://github.com/dotnet/source-build/issues/4337 is implemented.
-properties=$msbuild_args
 
 # Import Arcade
 . "$DIR/common/tools.sh"

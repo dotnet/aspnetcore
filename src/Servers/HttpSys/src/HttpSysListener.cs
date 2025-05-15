@@ -73,7 +73,8 @@ internal sealed partial class HttpSysListener : IDisposable
         try
         {
             _serverSession = new ServerSession();
-            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode, Logger);
+            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode,
+                options.RequestQueueSecurityDescriptor, Logger);
             _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
 
             _disconnectListener = new DisconnectListener(_requestQueue, Logger);
