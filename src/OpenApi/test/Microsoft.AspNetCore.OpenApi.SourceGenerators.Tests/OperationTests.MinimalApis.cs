@@ -55,6 +55,7 @@ public static class RouteHandlerExtensionMethods
     /// <description>
     /// A description of the action.
     /// </description>
+    /// <returns>Returns the greeting.</returns>
     public static string Get()
     {
         return "Hello, World!";
@@ -68,17 +69,20 @@ public static class RouteHandlerExtensionMethods
     }
 
     /// <param name="name" example="Testy McTester">The name of the person.</param>
+    /// <returns>Returns the greeting.</returns>
+    /// <returns>Returns a different greeting.</returns>
     public static string Get3(string name)
     {
         return $"Hello, {name}!";
     }
 
-    /// <response code="404">Indicates that the value was not found.</response>
+    /// <returns>Indicates that the value was not found.</returns>
     public static NotFound<string> Get4()
     {
         return TypedResults.NotFound("Not found!");
     }
 
+    /// <returns>This gets ignored.</returns>
     /// <response code="200">Indicates that the value is even.</response>
     /// <response code="201">Indicates that the value is less than 50.</response>
     /// <response code="404">Indicates that the value was not found.</response>
@@ -174,6 +178,7 @@ public static class RouteHandlerExtensionMethods
     /// <summary>
     /// A summary of Get14.
     /// </summary>
+    /// <returns>Returns the greeting.</returns>
     public static async Task<Holder<string>> Get14()
     {
         await Task.Delay(1000);
@@ -182,6 +187,7 @@ public static class RouteHandlerExtensionMethods
     /// <summary>
     /// A summary of Get15.
     /// </summary>
+    /// <response code="200">Returns the greeting.</response>
     public static Task<Holder<string>> Get15()
     {
         return Task.FromResult(new Holder<string> { Value = "Hello, World!" });
@@ -234,6 +240,7 @@ public class Example : Task<int>
             var path = document.Paths["/1"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of the action.", path.Summary);
             Assert.Equal("A description of the action.", path.Description);
+            Assert.Equal("Returns the greeting.", path.Responses["200"].Description);
 
             var path2 = document.Paths["/2"].Operations[HttpMethod.Get];
             Assert.Equal("The name of the person.", path2.Parameters[0].Description);
@@ -243,6 +250,7 @@ public class Example : Task<int>
             Assert.Equal("The name of the person.", path3.Parameters[0].Description);
             var example = Assert.IsAssignableFrom<JsonNode>(path3.Parameters[0].Example);
             Assert.Equal("\"Testy McTester\"", example.ToJsonString());
+            Assert.Equal("Returns the greeting.", path3.Responses["200"].Description);
 
             var path4 = document.Paths["/4"].Operations[HttpMethod.Get];
             var response = path4.Responses["404"];
@@ -285,9 +293,11 @@ public class Example : Task<int>
 
             var path14 = document.Paths["/14"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get14.", path14.Summary);
+            Assert.Equal("Returns the greeting.", path14.Responses["200"].Description);
 
             var path15 = document.Paths["/15"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get15.", path15.Summary);
+            Assert.Equal("Returns the greeting.", path15.Responses["200"].Description);
 
             var path16 = document.Paths["/16"].Operations[HttpMethod.Post];
             Assert.Equal("A summary of Post16.", path16.Summary);

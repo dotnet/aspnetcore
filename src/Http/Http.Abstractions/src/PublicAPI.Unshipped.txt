@@ -24,7 +24,7 @@ Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentDepth.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentValidationPath.get -> string!
 Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentValidationPath.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidateContext() -> void
-Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext?
+Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext!
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationContext.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.Dictionary<string!, string![]!>?
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationErrors.set -> void
