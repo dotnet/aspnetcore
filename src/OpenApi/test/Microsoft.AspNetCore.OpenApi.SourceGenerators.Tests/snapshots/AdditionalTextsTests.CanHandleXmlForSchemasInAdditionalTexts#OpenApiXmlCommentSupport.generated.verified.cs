@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using Microsoft.OpenApi.Models;
     using Microsoft.OpenApi.Models.Interfaces;
     using Microsoft.OpenApi.Models.References;
-    using Microsoft.OpenApi.Any;
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file record XmlComment(
@@ -383,6 +382,13 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         }
                     }
                 }
+                // Applies `<returns>` on XML comments for operation with single response value.
+                if (methodComment.Returns is { } returns && operation.Responses is { Count: 1 })
+                {
+                    var response = operation.Responses.First();
+                    response.Value.Description = returns;
+                }
+                // Applies `<response>` on XML comments for operation with multiple response values.
                 if (methodComment.Responses is { Count: > 0} && operation.Responses is { Count: > 0 })
                 {
                     foreach (var response in operation.Responses)

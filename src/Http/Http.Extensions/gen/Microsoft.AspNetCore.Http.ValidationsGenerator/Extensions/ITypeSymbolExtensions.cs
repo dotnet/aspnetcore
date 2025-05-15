@@ -124,4 +124,18 @@ internal static class ITypeSymbolExtensions
 
         return null;
     }
+
+    /// <summary>
+    /// Checks if the parameter is marked with [FromService] or [FromKeyedService] attributes.
+    /// </summary>
+    /// <param name="parameter">The parameter to check.</param>
+    /// <param name="fromServiceMetadataSymbol">The symbol representing the [FromService] attribute.</param>
+    /// <param name="fromKeyedServiceAttributeSymbol">The symbol representing the [FromKeyedService] attribute.</param>
+    internal static bool IsServiceParameter(this IParameterSymbol parameter, INamedTypeSymbol fromServiceMetadataSymbol, INamedTypeSymbol fromKeyedServiceAttributeSymbol)
+    {
+        return parameter.GetAttributes().Any(attr =>
+            attr.AttributeClass is not null &&
+            (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
+             SymbolEqualityComparer.Default.Equals(attr.AttributeClass, fromKeyedServiceAttributeSymbol)));
+    }
 }

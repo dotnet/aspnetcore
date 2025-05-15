@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Extensions;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Models.References;
 
@@ -159,7 +159,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
 
                 // Add a reference to the example in the shape schema
                 schema.Extensions ??= [];
-                schema.Extensions["x-example-component"] = new OpenApiAny("#/components/schemas/TriangleExample");
+                schema.Extensions["x-example-component"] = new JsonNodeExtension("#/components/schemas/TriangleExample");
                 schema.Description = "A shape with an example reference";
             }
         });

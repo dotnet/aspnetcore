@@ -25,10 +25,23 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var parameters = operation.TryGetRouteHandlerMethod(operation.SemanticModel, out var method)
             ? method.Parameters
             : [];
+
+        var fromServiceMetadataSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
+        var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
+
         var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
         List<ITypeSymbol> visitedTypes = [];
+
         foreach (var parameter in parameters)
         {
+            // Skip parameters that are injected as services
+            if (parameter.IsServiceParameter(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+            {
+                continue;
+            }
+
             _ = TryExtractValidatableType(parameter.Type, wellKnownTypes, ref validatableTypes, ref visitedTypes);
         }
         return [.. validatableTypes];
