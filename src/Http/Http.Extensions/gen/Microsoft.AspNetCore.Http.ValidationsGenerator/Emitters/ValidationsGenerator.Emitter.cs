@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
@@ -14,6 +15,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     public static string GeneratedCodeConstructor => $@"global::System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(ValidationsGenerator).Assembly.FullName}"", ""{typeof(ValidationsGenerator).Assembly.GetName().Version}"")";
     public static string GeneratedCodeAttribute => $"[{GeneratedCodeConstructor}]";
+    private static readonly Regex InvalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
 
     internal static void Emit(SourceProductionContext context, (InterceptableLocation? AddValidation, ImmutableArray<ValidatableType> ValidatableTypes) emitInputs)
     {
@@ -238,12 +240,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
 
     private static string SanitizeTypeName(string typeName)
     {
-        // Replace invalid characters with underscores and remove generic notation
-        return typeName
-            .Replace(".", "_")
-            .Replace("<", "_")
-            .Replace(">", "_")
-            .Replace(",", "_")
-            .Replace(" ", "_");
+        // Replace invalid characters with underscores
+        return InvalidNameCharsRegex.Replace(typeName, "_");
     }
 }
