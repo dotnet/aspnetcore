@@ -206,25 +206,18 @@ internal sealed class PersistentServicesRegistry
 
         public (string, Type)[] KeyTypePairs => _cachedKeysForService;
 
-        // Mapping for internal classes bundled in different assemblies during prerendering and WASM rendering.
-        private static readonly Dictionary<string, string> _canonicalMap = new(StringComparer.OrdinalIgnoreCase)
-        {
-            { "Microsoft.AspNetCore.Components.Endpoints", "Microsoft.AspNetCore.Components" },
-            { "Microsoft.AspNetCore.Components.WebAssembly", "Microsoft.AspNetCore.Components" }
-        };
-
         private static string ComputeKey(Type keyType, string propertyName)
         {
             // This happens once per type and property combo, so allocations are ok.
             var assemblyName = keyType.Assembly.FullName;
-            var assemblySimpleName = keyType.Assembly.GetName().Name ?? "";
-            if (_canonicalMap.TryGetValue(assemblySimpleName, out var canonicalAssembly))
-            {
-                assemblyName = canonicalAssembly;
-            }
-
             var typeName = keyType.FullName;
-            var inputString = string.Join(".", assemblyName, typeName, propertyName);
+
+            // Internal classes can be bundled in different assemblies during prerendering and WASM rendering.
+            bool isTypeInternal = (!keyType.IsPublic && !keyType.IsNested) || keyType.IsNestedAssembly;
+            var inputString = isTypeInternal
+                ? string.Join(".", typeName, propertyName)
+                : string.Join(".", assemblyName, typeName, propertyName);
+
             var input = Encoding.UTF8.GetBytes(inputString);
             var hash = SHA256.HashData(input);
             return Convert.ToBase64String(hash);
