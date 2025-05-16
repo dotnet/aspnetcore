@@ -390,6 +390,46 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
     }
 
+    [Theory]
+    [MemberData(nameof(BodyData))]
+    public async Task RequestBodyWithStreamCloseWorks(string expected)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                var arr = new byte[4096];
+                var contentLengthBytesLeft = c.Request.Body.Length;
+
+                // (1) The subsequent middleware reads right up to the buffer size (guided by the ContentLength header)
+                while (contentLengthBytesLeft > 0)
+                {
+                    var res = await c.Request.Body.ReadAsync(arr, 0, (int)Math.Min(arr.Length, contentLengthBytesLeft));
+                    contentLengthBytesLeft -= res;
+                    if (res == 0)
+                    {
+                        break;
+                    }
+                }
+
+                // (2) The subsequent middleware closes the request stream after its consumption
+                c.Request.Body.Close();
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.ContentType = "text/plain";
+        var buffer = Encoding.UTF8.GetBytes(expected);
+        httpContext.Request.Body = new MemoryStream(buffer);
+        httpContext.Request.ContentLength = buffer.Length;
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
+    }
+
     [Fact]
     public async Task RequestBodyReadingLimitLongCharactersWorks()
     {
@@ -1153,6 +1193,32 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         letBodyFinish.SetResult();
 
         await middlewareTask;
+    }
+
+    [Theory]
+    [MemberData(nameof(BodyData))]
+    public async Task ResponseBodyWithStreamCloseWorks(string expected)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                c.Response.ContentType = "text/plain";
+
+                // (1) The subsequent middleware writes its response
+                await c.Response.WriteAsync(expected);
+
+                // (2) The subsequent middleware closes the response stream after it has completed writing to it
+                c.Response.Body.Close();
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
     }
 
     [Fact]
