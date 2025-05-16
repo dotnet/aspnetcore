@@ -24,7 +24,7 @@ class TestInput : IDisposable
 
     public TestInput(KestrelTrace log = null, ITimeoutControl timeoutControl = null)
     {
-        _memoryPool = PinnedBlockMemoryPoolFactory.Create();
+        _memoryPool = TestMemoryPoolFactory.Create();
         var options = new PipeOptions(pool: _memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         var pair = DuplexPipe.CreateConnectionPair(options, options);
         Transport = pair.Transport;
