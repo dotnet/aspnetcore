@@ -149,7 +149,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var resourceCollectionProvider = resourceCollectionUrl != null ? httpContext.RequestServices.GetService<ResourceCollectionProvider>() : null;
         if (resourceCollectionUrl != null && resourceCollectionProvider != null)
         {
-            resourceCollectionProvider.SetResourceCollectionUrl(resourceCollectionUrl.Url);
+            resourceCollectionProvider.ResourceCollectionUrl = resourceCollectionUrl.Url;
             resourceCollectionProvider.SetResourceCollection(resourceCollection ?? ResourceAssetCollection.Empty);
         }
     }

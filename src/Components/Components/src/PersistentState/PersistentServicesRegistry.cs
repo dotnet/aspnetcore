@@ -211,8 +211,16 @@ internal sealed class PersistentServicesRegistry
             // This happens once per type and property combo, so allocations are ok.
             var assemblyName = keyType.Assembly.FullName;
             var typeName = keyType.FullName;
-            var input = Encoding.UTF8.GetBytes(string.Join(".", assemblyName, typeName, propertyName));
-            return Convert.ToBase64String(SHA256.HashData(input));
+
+            // Internal classes can be bundled in different assemblies during prerendering and WASM rendering.
+            bool isTypeInternal = (!keyType.IsPublic && !keyType.IsNested) || keyType.IsNestedAssembly;
+            var inputString = isTypeInternal
+                ? string.Join(".", typeName, propertyName)
+                : string.Join(".", assemblyName, typeName, propertyName);
+
+            var input = Encoding.UTF8.GetBytes(inputString);
+            var hash = SHA256.HashData(input);
+            return Convert.ToBase64String(hash);
         }
 
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties(

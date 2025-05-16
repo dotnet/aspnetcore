@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Hosting;
@@ -92,7 +93,12 @@ public class RazorComponentsServiceCollectionExtensionsTest
                 {
                     typeof(SupplyParameterFromFormValueProvider),
                     typeof(SupplyParameterFromQueryValueProvider),
-                }
+                },
+                [typeof(IPersistentServiceRegistration)] = new[]
+                {
+                    typeof(ResourceCollectionProvider),
+                    typeof(AntiforgeryStateProvider),
+                },
             };
         }
     }
