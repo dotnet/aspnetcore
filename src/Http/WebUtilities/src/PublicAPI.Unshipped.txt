@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.AspNetCore.WebUtilities.WebEncoders.TryBase64UrlDecode(string! input, int offset, int count, System.Span<byte> destination, out int bytesWritten) -> bool

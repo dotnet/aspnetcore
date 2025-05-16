@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery;
@@ -32,8 +35,11 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
             return null;
         }
 
+        // todo skip allocations here as well
         var claimUidBytes = ComputeSha256(uniqueIdentifierParameters);
-        return Convert.ToBase64String(claimUidBytes);
+
+        Convert.TryToBase64Chars(claimUidBytes, out var str, out int charsWritten);
+        return str.ToString;
     }
 
     public static IList<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
@@ -119,7 +125,53 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
         return identifierParameters;
     }
 
-    private byte[] ComputeSha256(IEnumerable<string> parameters)
+    private void ComputeSha256(IEnumerable<string> parameters, Span<byte> output)
+    {
+        // compute total size
+        int totalSize = 0;
+        foreach (var param in parameters)
+        {
+            int byteCount = Encoding.UTF8.GetByteCount(param);
+            totalSize += 4 + byteCount; // 4 bytes for length prefix
+        }
+
+        byte[]? rented = null;
+        var buffer = totalSize <= 256
+            ? stackalloc byte[256]
+            : (rented = ArrayPool<byte>.Shared.Rent(totalSize));
+        buffer = buffer[..totalSize];
+
+        try
+        {
+            int offset = 0;
+
+            foreach (var param in parameters)
+            {
+                int byteCount = Encoding.UTF8.GetByteCount(param);
+
+                // Write 4-byte length prefix
+                BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset, 4), byteCount);
+                offset += 4;
+
+                // Write UTF-8 bytes
+                Encoding.UTF8.GetBytes(param, buffer.Slice(offset, byteCount));
+                offset += byteCount;
+            }
+
+            SHA256.TryHashData(buffer.Slice(0, totalSize), output, out int bytesWritten);
+            Debug.Assert(bytesWritten == 32);
+        }
+        finally
+        {
+            buffer.Clear(); // security ?
+            if (rented is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rented);
+            }
+        }
+    }
+
+    private byte[] ComputeSha256StreamWriter(IEnumerable<string> parameters)
     {
         var serializationContext = _pool.Get();
 
