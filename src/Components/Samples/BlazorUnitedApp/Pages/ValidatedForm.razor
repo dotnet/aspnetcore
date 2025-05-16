@@ -1,0 +1,70 @@
+﻿@page "/validated-form"
+@rendermode InteractiveServer
+
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@using BlazorUnitedApp.Validation
+
+<PageTitle>Validated Form</PageTitle>
+
+<h1>Validated Form</h1>
+
+<EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+    <div class="alert @StatusClass">@StatusMessage</div>
+ 
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+ 
+    <div class="form-group">
+        <label for="name">Author.Name: </label>
+        <InputText Id="name" Class="form-control" @bind-Value="@Model.Author.Name"></InputText>
+        <ValidationMessage For="@(() => Model.Author.Name)" />
+    </div>
+    <div class="form-group">
+        <label for="name">Author.Email: </label>
+        <InputText Id="name" Class="form-control" @bind-Value="@Model.Author.Email"></InputText>
+        <ValidationMessage For="@(() => Model.Author.Email)" />
+    </div>
+    <div class="form-group">
+        <label for="age">Author.Age: </label>
+        <InputNumber Id="age" Class="form-control" @bind-Value="@Model.Author.Age"></InputNumber>
+        <ValidationMessage For="@(() => Model.Author.Age)" />
+    </div>
+    <div class="form-group">
+        <label for="city">Author.Address.City: </label>
+        <InputText Id="city" Class="form-control" @bind-Value="@Model.Author.Address.City"></InputText>
+        <ValidationMessage For="@(() => Model.Author.Address.City)" />
+    </div>
+    <div class="form-group">
+        <label for="street">Author.Address.Street: </label>
+        <InputText Id="street" Class="form-control" @bind-Value="@Model.Author.Address.Street"></InputText>
+        <ValidationMessage For="@(() => Model.Author.Address.Street)" />
+    </div>
+    <div class="form-group">
+        <label for="body">Text: </label>
+        <InputTextArea Id="body" Class="form-control" @bind-Value="@Model.Text"></InputTextArea>
+        <ValidationMessage For="@(() => Model.Text)" />
+    </div>
+    <button type="submit">Ok</button>
+ 
+</EditForm>
+ 
+@code
+{
+    private string? StatusMessage;
+    private string? StatusClass;
+ 
+    private GuestbookEntry Model = new GuestbookEntry();
+ 
+    protected void HandleValidSubmit()
+    {
+        StatusClass = "alert-info";
+        StatusMessage = DateTime.Now + " Handle valid submit";
+    }
+ 
+    protected void HandleInvalidSubmit()
+    {
+        StatusClass = "alert-danger";
+        StatusMessage = DateTime.Now + " Handle invalid submit";
+    }
+}
