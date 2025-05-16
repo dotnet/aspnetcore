@@ -4,10 +4,19 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
     <Nullable>enable</Nullable>
+
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.Http.Validation.Generated</InterceptorsNamespaces>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.ValidationsGenerator/Microsoft.AspNetCore.Http.ValidationsGenerator.csproj"
+     OutputItemType="Analyzer"
+     ReferenceOutputAssembly="false" />
   </ItemGroup>
 
   <ItemGroup>
