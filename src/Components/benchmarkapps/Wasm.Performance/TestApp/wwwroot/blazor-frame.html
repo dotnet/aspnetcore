@@ -3,7 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <title>E2EPerformance</title>
+    <link rel="preload" id="webassembly" />
     <base href="/" />
+    <script type="importmap"></script>
 </head>
 <body>
     <script>
@@ -19,6 +21,6 @@
     </script>
 
     <app>Loading...</app>
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js"></script>
 </body>
 </html>
