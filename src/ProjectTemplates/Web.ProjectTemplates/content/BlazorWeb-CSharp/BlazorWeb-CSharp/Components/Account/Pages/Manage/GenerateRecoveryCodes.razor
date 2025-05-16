@@ -4,7 +4,6 @@
 @using BlazorWeb_CSharp.Data
 
 @inject UserManager<ApplicationUser> UserManager
-@inject IdentityUserAccessor UserAccessor
 @inject IdentityRedirectManager RedirectManager
 @inject ILogger<GenerateRecoveryCodes> Logger
 
@@ -48,9 +47,10 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
             return;
         }
 
@@ -65,7 +65,8 @@ else
     {
         if (user is null)
         {
-            throw new InvalidOperationException("User is not loaded; failed to generate recovery codes.");
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
 
         var userId = await UserManager.GetUserIdAsync(user);

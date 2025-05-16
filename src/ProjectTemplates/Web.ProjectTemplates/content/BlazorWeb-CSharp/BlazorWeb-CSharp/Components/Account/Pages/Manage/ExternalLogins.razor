@@ -6,7 +6,6 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
-@inject IdentityUserAccessor UserAccessor
 @inject IUserStore<ApplicationUser> UserStore
 @inject IdentityRedirectManager RedirectManager
 
@@ -85,9 +84,10 @@
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
             return;
         }
 
@@ -114,7 +114,8 @@
     {
         if (user is null)
         {
-            throw new InvalidOperationException("User is not loaded; failed to remove external login.");
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
 
         var result = await UserManager.RemoveLoginAsync(user, LoginProvider!, ProviderKey!);
@@ -131,7 +132,8 @@
     {
         if (user is null)
         {
-            throw new InvalidOperationException("User is not loaded; failed to add external login.");
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
 
         var userId = await UserManager.GetUserIdAsync(user);
