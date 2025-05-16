@@ -7,6 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Http.Validation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions))]
 
@@ -112,6 +115,13 @@ public static class EditContextDataAnnotationsExtensions
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
+
+            if (TryValidateTypeInfo(validationContext))
+            {
+                _editContext.NotifyValidationStateChanged();
+                return;
+            }
+
             var validationResults = new List<ValidationResult>();
             Validator.TryValidateObject(_editContext.Model, validationContext, validationResults, true);
 
@@ -139,6 +149,52 @@ public static class EditContextDataAnnotationsExtensions
 
             _editContext.NotifyValidationStateChanged();
         }
+
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        private bool TryValidateTypeInfo(ValidationContext validationContext)
+        {
+            var options = _serviceProvider?.GetService<IOptions<ValidationOptions>>()?.Value;
+
+            if (options == null || !options.TryGetValidatableTypeInfo(_editContext.Model.GetType(), out var typeInfo))
+            {
+                return false;
+            }
+
+            var validateContext = new ValidateContext
+            {
+                ValidationOptions = options,
+                ValidationContext = validationContext,
+            };
+
+            var validationTask = typeInfo.ValidateAsync(_editContext.Model, validateContext, CancellationToken.None);
+
+            if (!validationTask.IsCompleted)
+            {
+                throw new InvalidOperationException("Async validation is not supported");
+            }
+
+            var validationErrors = validateContext.ValidationErrors;
+
+            // Transfer results to the ValidationMessageStore
+            _messages.Clear();
+
+            if (validationErrors is not null && validationErrors.Count > 0)
+            {
+                foreach (var (key, value) in validationErrors)
+                {
+                    var keySegments = key.Split('.');
+                    var container = keySegments.Length > 1
+                        ? GetPropertyByPath(_editContext.Model, keySegments[..^1])
+                        : _editContext.Model;
+                    var fieldName = keySegments[^1];
+
+                    _messages.Add(new FieldIdentifier(container, fieldName), value);
+                }
+            }
+
+            return true;
+        }
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         public void Dispose()
         {
@@ -173,6 +229,21 @@ public static class EditContextDataAnnotationsExtensions
         internal void ClearCache()
         {
             _propertyInfoCache.Clear();
+        }
+
+        // TODO(OR): Replace this with more robust implementation.
+        private static object GetPropertyByPath(object obj, string[] path)
+        {
+            var currentObject = obj;
+
+            foreach (string propertyName in path)
+            {
+                Type currentType = currentObject!.GetType();
+                PropertyInfo propertyInfo = currentType.GetProperty(propertyName)!;
+                currentObject = propertyInfo.GetValue(currentObject);
+            }
+
+            return currentObject!;
         }
     }
 }
