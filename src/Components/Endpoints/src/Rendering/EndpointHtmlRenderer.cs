@@ -183,17 +183,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
-    private void SignalRendererToFinishRenderingAfterCurrentBatch()
+    private void SignalRendererToFinishRendering()
     {
         // sets a deferred stop on the renderer, which will have an effect after the current batch is completed
         _rendererIsStopped = true;
-    }
-
-    protected override void SignalRendererToFinishRendering()
-    {
-        SignalRendererToFinishRenderingAfterCurrentBatch();
-        // sets a hard stop on the renderer, which will have an effect immediately
-        base.SignalRendererToFinishRendering();
     }
 
     protected override void ProcessPendingRender()
