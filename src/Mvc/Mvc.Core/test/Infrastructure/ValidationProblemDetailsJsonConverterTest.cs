@@ -158,7 +158,7 @@ public class ValidationProblemDetailsJsonConverterTest
     }
 
     [Fact]
-    public void WriteUsingJsonSerializerOptionsWorks()
+    public void WriteUsingJsonSerializerOptionsWithDifferentPoliciesWorks()
     {
         var errors = new Dictionary<string, string[]>()
         {
@@ -172,21 +172,69 @@ public class ValidationProblemDetailsJsonConverterTest
             Status = 400
         };
 
-        // Act
-        using MemoryStream stream = new();
-        using Utf8JsonWriter writer = new(stream);
+        // Test CamelCase
+        {
+            using MemoryStream stream = new();
+            using Utf8JsonWriter writer = new(stream);
 
-        var options = new JsonOptions().JsonSerializerOptions;
-        options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+            var options = new JsonOptions().JsonSerializerOptions;
+            options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
 
-        JsonSerializer.Serialize(writer, problemDetails, options);
+            JsonSerializer.Serialize(writer, problemDetails, options);
 
-        writer.Flush();
-        var json = Encoding.UTF8.GetString(stream.ToArray());
+            writer.Flush();
+            var json = Encoding.UTF8.GetString(stream.ToArray());
 
-        var expectedJSON = $"{{\"title\":\"{problemDetails.Title}\",\"status\":{problemDetails.Status}," +
-            "\"errors\":{\"property\":[\"error0\"],\"twoWords\":[\"error1\"],\"topLevelProperty.PropertyName\":[\"error2\"]}}";
-        Assert.NotNull(json);
-        Assert.Equal(expectedJSON, json);
+            var expectedJSON = $"{{\"title\":\"{problemDetails.Title}\",\"status\":{problemDetails.Status}," +
+                "\"errors\":{\"property\":[\"error0\"],\"twoWords\":[\"error1\"],\"topLevelProperty.PropertyName\":[\"error2\"]}}";
+            Assert.NotNull(json);
+            Assert.Equal(expectedJSON, json);
+        }
+
+        // Test KebabCase
+        {
+            using MemoryStream stream = new();
+            using Utf8JsonWriter writer = new(stream);
+
+            var options = new JsonOptions().JsonSerializerOptions;
+            options.DictionaryKeyPolicy = new KebabCaseDictionaryNamingPolicy();
+
+            JsonSerializer.Serialize(writer, problemDetails, options);
+
+            writer.Flush();
+            var json = Encoding.UTF8.GetString(stream.ToArray());
+
+            var expectedJSON = $"{{\"title\":\"{problemDetails.Title}\",\"status\":{problemDetails.Status}," +
+                "\"errors\":{\"property\":[\"error0\"],\"two-words\":[\"error1\"],\"top-level-property.property-name\":[\"error2\"]}}";
+            Assert.NotNull(json);
+            Assert.Equal(expectedJSON, json);
+        }
+    }
+
+    private class KebabCaseDictionaryNamingPolicy : JsonNamingPolicy
+    {
+        public override string ConvertName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return name;
+
+            var parts = name.Split('.');
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (string.IsNullOrEmpty(parts[i]))
+                    continue;
+
+                var result = string.Empty;
+                for (var j = 0; j < parts[i].Length; j++)
+                {
+                    if (j > 0 && char.IsUpper(parts[i][j]))
+                        result += "-";
+                    result += char.ToLowerInvariant(parts[i][j]);
+                }
+                parts[i] = result;
+            }
+
+            return string.Join(".", parts);
+        }
     }
 }

@@ -139,6 +139,8 @@ public static class MvcCoreServiceCollectionExtensions
             ServiceDescriptor.Transient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>());
         services.TryAddEnumerable(
             ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcCoreRouteOptionsSetup>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Transient<IConfigureOptions<JsonOptions>, MvcJsonOptionsSetup>());
 
         //
         // Action Discovery
