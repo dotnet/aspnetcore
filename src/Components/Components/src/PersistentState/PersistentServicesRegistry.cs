@@ -89,7 +89,6 @@ internal sealed class PersistentServicesRegistry
             {
                 state.PersistAsJson(key, value, propertyType);
             }
-            Console.WriteLine($"[Persist] type: {instance.GetType()}, propertyType: {propertyType}, key: {key}, result: {value}");
         }
     }
 
@@ -137,7 +136,6 @@ internal sealed class PersistentServicesRegistry
                 var (setter, getter) = accessors.GetAccessor(key);
                 setter.SetValue(instance, result!);
             }
-            Console.WriteLine($"[Restore] type: {instance.GetType()}, propertyType: {propertyType}, key: {key}, result: {result}");
         }
     }
 
@@ -222,10 +220,7 @@ internal sealed class PersistentServicesRegistry
 
             var input = Encoding.UTF8.GetBytes(inputString);
             var hash = SHA256.HashData(input);
-            var key = Convert.ToBase64String(hash);
-
-            Console.WriteLine($"[ComputeKey] inputString: {inputString}, key: {key}");
-            return key;
+            return Convert.ToBase64String(hash);
         }
 
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties(

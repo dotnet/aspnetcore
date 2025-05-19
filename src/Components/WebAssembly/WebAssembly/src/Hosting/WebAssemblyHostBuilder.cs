@@ -308,6 +308,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSupplyValueFromPersistentComponentStateProvider();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
         Services.AddSingleton<ResourceCollectionProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddLogging(builder =>
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));
