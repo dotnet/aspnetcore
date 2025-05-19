@@ -4,21 +4,21 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.AspNetCore.Mvc.Infrastructure;
+namespace Microsoft.AspNetCore.Http;
 
 /// <summary>
-/// A custom JsonConverter for ValidationProblemDetails that respects the JsonSerializerOptions.DictionaryKeyPolicy
+/// A custom JsonConverter for HttpValidationProblemDetails that respects the JsonSerializerOptions.DictionaryKeyPolicy
 /// when serializing validation error property names.
 /// </summary>
-internal sealed class ValidationProblemDetailsJsonConverter : JsonConverter<ValidationProblemDetails>
+internal sealed class HttpValidationProblemDetailsJsonConverter : JsonConverter<HttpValidationProblemDetails>
 {
-    public override ValidationProblemDetails Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override HttpValidationProblemDetails? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        // Use the default deserialization for reading ValidationProblemDetails
-        return JsonSerializer.Deserialize<ValidationProblemDetails>(ref reader, options);
+        // Use the default deserialization
+        return JsonSerializer.Deserialize<HttpValidationProblemDetails>(ref reader, options);
     }
 
-    public override void Write(Utf8JsonWriter writer, ValidationProblemDetails value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, HttpValidationProblemDetails value, JsonSerializerOptions options)
     {
         writer.WriteStartObject();
 

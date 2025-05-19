@@ -22,5 +22,8 @@ internal sealed class ProblemDetailsJsonOptionsSetup : IConfigureOptions<JsonOpt
         // If apps need to customize ProblemDetails serialization, they can prepend a custom ProblemDetails resolver
         // to the chain in an IConfigureOptions<JsonOptions> registered after the call to AddProblemDetails().
         options.SerializerOptions.TypeInfoResolverChain.Insert(0, new ProblemDetailsJsonContext());
+        
+        // Add converter to handle DictionaryKeyPolicy for validation error property names
+        options.SerializerOptions.Converters.Add(new HttpValidationProblemDetailsJsonConverter());
     }
 }
