@@ -5,6 +5,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -29,7 +31,10 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     public static IServiceCollection AddAuthenticationStateDeserialization(this IServiceCollection services, Action<AuthenticationStateDeserializationOptions>? configure = null)
     {
         services.AddOptions();
-        services.TryAddScoped<AuthenticationStateProvider, DeserializedAuthenticationStateProvider>();
+        services.TryAddSingleton<AuthenticationStateProvider, DeserializedAuthenticationStateProvider>();
+        services.TryAddSingleton(sp => (DeserializedAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<DeserializedAuthenticationStateProvider>(services, RenderMode.InteractiveWebAssembly);
+
         if (configure != null)
         {
             services.Configure(configure);

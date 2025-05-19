@@ -89,6 +89,7 @@ internal sealed class PersistentServicesRegistry
             {
                 state.PersistAsJson(key, value, propertyType);
             }
+            Console.WriteLine($"[Persist] type: {instance.GetType()}, propertyType: {propertyType}, key: {key}, result: {value}");
         }
     }
 
@@ -136,6 +137,7 @@ internal sealed class PersistentServicesRegistry
                 var (setter, getter) = accessors.GetAccessor(key);
                 setter.SetValue(instance, result!);
             }
+            Console.WriteLine($"[Restore] type: {instance.GetType()}, propertyType: {propertyType}, key: {key}, result: {result}");
         }
     }
 
@@ -211,8 +213,19 @@ internal sealed class PersistentServicesRegistry
             // This happens once per type and property combo, so allocations are ok.
             var assemblyName = keyType.Assembly.FullName;
             var typeName = keyType.FullName;
-            var input = Encoding.UTF8.GetBytes(string.Join(".", assemblyName, typeName, propertyName));
-            return Convert.ToBase64String(SHA256.HashData(input));
+
+            // Internal classes can be bundled in different assemblies during prerendering and WASM rendering.
+            bool isTypeInternal = (!keyType.IsPublic && !keyType.IsNested) || keyType.IsNestedAssembly;
+            var inputString = isTypeInternal
+                ? string.Join(".", typeName, propertyName)
+                : string.Join(".", assemblyName, typeName, propertyName);
+
+            var input = Encoding.UTF8.GetBytes(inputString);
+            var hash = SHA256.HashData(input);
+            var key = Convert.ToBase64String(hash);
+
+            Console.WriteLine($"[ComputeKey] inputString: {inputString}, key: {key}");
+            return key;
         }
 
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties(
