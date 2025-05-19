@@ -3,6 +3,10 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
@@ -12,6 +16,8 @@ namespace Microsoft.AspNetCore.Http.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
+    private JsonNamingPolicy? _dictionaryKeyPolicy;
+    
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
     /// This context provides access to service provider and other validation metadata.
@@ -59,28 +65,46 @@ public sealed class ValidateContext
     /// This is used to prevent stack overflows from circular references.
     /// </summary>
     public int CurrentDepth { get; set; }
+    
+    /// <summary>
+    /// Gets the DictionaryKeyPolicy from JsonSerializerOptions if available in the service provider.
+    /// </summary>
+    private JsonNamingPolicy? DictionaryKeyPolicy
+    {
+        get
+        {
+            if (_dictionaryKeyPolicy is null && ValidationContext.GetService(typeof(IOptions<JsonOptions>)) is IOptions<JsonOptions> jsonOptions)
+            {
+                _dictionaryKeyPolicy = jsonOptions.Value.SerializerOptions.DictionaryKeyPolicy;
+            }
+
+            return _dictionaryKeyPolicy;
+        }
+    }
 
     internal void AddValidationError(string key, string[] error)
     {
         ValidationErrors ??= [];
 
-        ValidationErrors[key] = error;
+        var transformedKey = TransformKey(key);
+        ValidationErrors[transformedKey] = error;
     }
 
     internal void AddOrExtendValidationErrors(string key, string[] errors)
     {
         ValidationErrors ??= [];
 
-        if (ValidationErrors.TryGetValue(key, out var existingErrors))
+        var transformedKey = TransformKey(key);
+        if (ValidationErrors.TryGetValue(transformedKey, out var existingErrors))
         {
             var newErrors = new string[existingErrors.Length + errors.Length];
             existingErrors.CopyTo(newErrors, 0);
             errors.CopyTo(newErrors, existingErrors.Length);
-            ValidationErrors[key] = newErrors;
+            ValidationErrors[transformedKey] = newErrors;
         }
         else
         {
-            ValidationErrors[key] = errors;
+            ValidationErrors[transformedKey] = errors;
         }
     }
 
@@ -88,13 +112,19 @@ public sealed class ValidateContext
     {
         ValidationErrors ??= [];
 
-        if (ValidationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
+        var transformedKey = TransformKey(key);
+        if (ValidationErrors.TryGetValue(transformedKey, out var existingErrors) && !existingErrors.Contains(error))
         {
-            ValidationErrors[key] = [.. existingErrors, error];
+            ValidationErrors[transformedKey] = [.. existingErrors, error];
         }
         else
         {
-            ValidationErrors[key] = [error];
+            ValidationErrors[transformedKey] = [error];
         }
+    }
+    
+    private string TransformKey(string key)
+    {
+        return DictionaryKeyPolicy?.ConvertName(key) ?? key;
     }
 }

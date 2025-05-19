@@ -6,6 +6,10 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text.Json;
+using Microsoft.AspNetCore.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http.Validation.Tests;
 
@@ -596,6 +600,9 @@ public class ValidatableTypeInfoTests
         public string? Name { get; set; }
         public int Age { get; set; }
         public Address? Address { get; set; }
+        public string? EmailAddress { get; set; }
+        public string? TwoWords { get; set; }
+        public string? TopLevelPropertyPropertyName { get; set; }
     }
 
     private class Address
@@ -716,6 +723,157 @@ public class ValidatableTypeInfoTests
             }
 
             return ValidationResult.Success;
+        }
+    }
+    
+    [Fact]
+    public async Task Validate_RespectsJsonSerializerOptions_DictionaryKeyPolicy()
+    {
+        // Arrange
+        var personType = new TestValidatableTypeInfo(
+            typeof(Person),
+            [
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(Person), typeof(int), "Age", "Age",
+                    []),
+                CreatePropertyInfo(typeof(Person), typeof(string), "EmailAddress", "EmailAddress",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(Person), typeof(string), "TopLevelProperty.PropertyName", "TopLevelProperty.PropertyName",
+                    [new RequiredAttribute()])
+            ]);
+
+        var person = new Person
+        {
+            // Missing required fields
+        };
+        
+        // Create a service provider with JsonOptions that uses camelCase
+        var services = new ServiceCollection();
+        services.Configure<JsonOptions>(options =>
+        {
+            options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var validationContext = new ValidationContext(person, serviceProvider, null);
+        var validateContext = new ValidateContext
+        {
+            ValidationContext = validationContext,
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Person), personType }
+            })
+        };
+
+        // Act
+        await personType.ValidateAsync(person, validateContext, default);
+
+        // Assert
+        Assert.NotNull(validateContext.ValidationErrors);
+        Assert.Collection(validateContext.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("name", kvp.Key);  // Transformed to camelCase
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("emailAddress", kvp.Key);  // Transformed to camelCase
+                Assert.Equal("The EmailAddress field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("topLevelProperty.PropertyName", kvp.Key);  // Just the first part transformed
+                Assert.Equal("The TopLevelProperty.PropertyName field is required.", kvp.Value.First());
+            });
+    }
+    
+    [Fact]
+    public async Task Validate_RespectsJsonSerializerOptions_CustomDictionaryKeyPolicy()
+    {
+        // Arrange
+        var personType = new TestValidatableTypeInfo(
+            typeof(Person),
+            [
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(Person), typeof(string), "EmailAddress", "EmailAddress",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(Person), typeof(string), "TwoWords", "TwoWords",
+                    [new RequiredAttribute()])
+            ]);
+
+        var person = new Person
+        {
+            // Missing required fields
+        };
+        
+        // Create a service provider with JsonOptions that uses kebab-case naming policy
+        var services = new ServiceCollection();
+        services.Configure<JsonOptions>(options =>
+        {
+            options.SerializerOptions.DictionaryKeyPolicy = new KebabCaseDictionaryNamingPolicy();
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var validationContext = new ValidationContext(person, serviceProvider, null);
+        var validateContext = new ValidateContext
+        {
+            ValidationContext = validationContext,
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Person), personType }
+            })
+        };
+
+        // Act
+        await personType.ValidateAsync(person, validateContext, default);
+
+        // Assert
+        Assert.NotNull(validateContext.ValidationErrors);
+        Assert.Collection(validateContext.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("email-address", kvp.Key);
+                Assert.Equal("The EmailAddress field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("two-words", kvp.Key);
+                Assert.Equal("The TwoWords field is required.", kvp.Value.First());
+            });
+    }
+    
+    private class KebabCaseDictionaryNamingPolicy : JsonNamingPolicy
+    {
+        public override string ConvertName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return name;
+            
+            var parts = name.Split('.');
+            for (int i = 0; i < parts.Length; i++)
+            {
+                if (string.IsNullOrEmpty(parts[i]))
+                    continue;
+
+                var result = string.Empty;
+                for (var j = 0; j < parts[i].Length; j++)
+                {
+                    if (j > 0 && char.IsUpper(parts[i][j]))
+                        result += "-";
+                    result += char.ToLowerInvariant(parts[i][j]);
+                }
+                parts[i] = result;
+            }
+
+            return string.Join(".", parts);
         }
     }
 
