@@ -26,8 +26,6 @@ internal sealed class AuthenticationStateSerializer : AuthenticationStateProvide
     public void SetAuthenticationState(Task<AuthenticationState> authenticationStateTask)
     {
         ArgumentNullException.ThrowIfNull(authenticationStateTask, nameof(authenticationStateTask));
-
-        // fire and forget, not good... This method can throw, especially on serialization.
         _ = SetAuthenticationStateAsync(authenticationStateTask);
     }
 

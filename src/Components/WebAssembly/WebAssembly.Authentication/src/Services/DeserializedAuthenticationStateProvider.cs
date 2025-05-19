@@ -9,9 +9,6 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 internal sealed class DeserializedAuthenticationStateProvider : AuthenticationStateProvider
 {
-    // restoring part is on DeserializedAuthenticationStateProvider but persisting part is on AuthenticationStateSerializer
-    // how can we make the key the same if these are two different classes in different assemblies?
-    // should we merge them and move to the Shared folder? Or should we allow passing a custom key to [SupplyParameterFromPersistentComponentState] attribute?
     private readonly Func<AuthenticationStateData?, Task<AuthenticationState>> _deserializeCallback;
 
     [SupplyParameterFromPersistentComponentState]
