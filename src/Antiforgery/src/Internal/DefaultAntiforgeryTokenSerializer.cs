@@ -30,8 +30,6 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
 
     public AntiforgeryToken Deserialize(string serializedToken)
     {
-        var serializationContext = _pool.Get();
-
         byte[]? rented = null;
         Exception? innerException = null;
         try
@@ -68,8 +66,6 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
         }
         finally
         {
-            _pool.Return(serializationContext);
-
             if (rented is not null)
             {
                 ArrayPool<byte>.Shared.Return(rented);
