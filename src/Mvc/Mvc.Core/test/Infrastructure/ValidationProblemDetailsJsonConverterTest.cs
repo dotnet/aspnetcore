@@ -3,46 +3,13 @@
 
 using System.Text;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Http.Abstractions.Tests;
+namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 
-public class HttpValidationProblemDetailsJsonConverterTest
+public class ValidationProblemDetailsJsonConverterTest
 {
-    private static JsonSerializerOptions JsonSerializerOptions => new JsonOptions().SerializerOptions;
-
-    [Fact]
-    public void Write_Works()
-    {
-        var problemDetails = new HttpValidationProblemDetails();
-
-        problemDetails.Type = "https://tools.ietf.org/html/rfc9110#section-15.5.5";
-        problemDetails.Title = "Not found";
-        problemDetails.Status = 404;
-        problemDetails.Detail = "Product not found";
-        problemDetails.Instance = "http://example.com/products/14";
-        problemDetails.Extensions["traceId"] = "|37dd3dd5-4a9619f953c40a16.";
-        problemDetails.Errors.Add("key0", new[] { "error0" });
-        problemDetails.Errors.Add("key1", new[] { "error1", "error2" });
-
-        var ms = new MemoryStream();
-        var writer = new Utf8JsonWriter(ms);
-        JsonSerializer.Serialize(writer, problemDetails, JsonSerializerOptions);
-        writer.Flush();
-
-        ms.Seek(0, SeekOrigin.Begin);
-        var document = JsonDocument.Parse(ms);
-        Assert.Equal(problemDetails.Type, document.RootElement.GetProperty("type").GetString());
-        Assert.Equal(problemDetails.Title, document.RootElement.GetProperty("title").GetString());
-        Assert.Equal(problemDetails.Status, document.RootElement.GetProperty("status").GetInt32());
-        Assert.Equal(problemDetails.Detail, document.RootElement.GetProperty("detail").GetString());
-        Assert.Equal(problemDetails.Instance, document.RootElement.GetProperty("instance").GetString());
-        Assert.Equal((string)problemDetails.Extensions["traceId"]!, document.RootElement.GetProperty("traceId").GetString());
-        var errorsElement = document.RootElement.GetProperty("errors");
-        Assert.Equal("error0", errorsElement.GetProperty("key0")[0].GetString());
-        Assert.Equal("error1", errorsElement.GetProperty("key1")[0].GetString());
-        Assert.Equal("error2", errorsElement.GetProperty("key1")[1].GetString());
-    }
+    private static JsonSerializerOptions JsonSerializerOptions => new JsonOptions().JsonSerializerOptions;
 
     [Fact]
     public void Read_Works()
@@ -60,9 +27,8 @@ public class HttpValidationProblemDetailsJsonConverterTest
         reader.Read();
 
         // Act
-        var problemDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(ref reader, JsonSerializerOptions);
+        var problemDetails = JsonSerializer.Deserialize<ValidationProblemDetails>(ref reader, JsonSerializerOptions);
 
-        Assert.NotNull(problemDetails);
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
@@ -73,7 +39,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
-                Assert.Equal(traceId, kvp.Value?.ToString());
+                Assert.Equal(traceId, kvp.Value.ToString());
             });
         Assert.Collection(
             problemDetails.Errors.OrderBy(kvp => kvp.Key),
@@ -103,9 +69,8 @@ public class HttpValidationProblemDetailsJsonConverterTest
         reader.Read();
 
         // Act
-        var problemDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(ref reader, JsonSerializerOptions);
+        var problemDetails = JsonSerializer.Deserialize<ValidationProblemDetails>(ref reader, JsonSerializerOptions);
 
-        Assert.NotNull(problemDetails);
         Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
@@ -114,7 +79,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
-                Assert.Equal(traceId, kvp.Value?.ToString());
+                Assert.Equal(traceId, kvp.Value.ToString());
             });
         Assert.Collection(
             problemDetails.Errors.OrderBy(kvp => kvp.Key),
@@ -142,10 +107,9 @@ public class HttpValidationProblemDetailsJsonConverterTest
             "\"errors\":{\"key0\":[\"error0\"],\"key1\":[\"error1\",\"error2\"]}}";
 
         // Act
-        var problemDetails = JsonSerializer.Deserialize<HttpValidationProblemDetails>(json, JsonSerializerOptions);
+        var problemDetails = JsonSerializer.Deserialize<ValidationProblemDetails>(json, JsonSerializerOptions);
 
-        Assert.NotNull(problemDetails);
-        Assert.Equal(type, problemDetails!.Type);
+        Assert.Equal(type, problemDetails.Type);
         Assert.Equal(title, problemDetails.Title);
         Assert.Equal(status, problemDetails.Status);
         Assert.Collection(
@@ -153,7 +117,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
             kvp =>
             {
                 Assert.Equal("traceId", kvp.Key);
-                Assert.Equal(traceId, kvp.Value?.ToString());
+                Assert.Equal(traceId, kvp.Value.ToString());
             });
         Assert.Collection(
             problemDetails.Errors.OrderBy(kvp => kvp.Key),
@@ -168,20 +132,43 @@ public class HttpValidationProblemDetailsJsonConverterTest
                 Assert.Equal(new[] { "error1", "error2" }, kvp.Value);
             });
     }
-    
+
+    [Fact]
+    public void WriteWorks()
+    {
+        var problemDetails = new ValidationProblemDetails(new Dictionary<string, string[]>() { { "Property", new string[] { "error0" } } })
+        {
+            Title = "One or more validation errors occurred.",
+            Status = 400
+        };
+
+        using MemoryStream stream = new();
+        using Utf8JsonWriter writer = new(stream);
+
+        // Act
+        JsonSerializer.Serialize(writer, problemDetails, JsonSerializerOptions);
+
+        writer.Flush();
+        var json = Encoding.UTF8.GetString(stream.ToArray());
+
+        var expectedJSON = $"{{\"title\":\"{problemDetails.Title}\",\"status\":{problemDetails.Status}," +
+            "\"errors\":{\"Property\":[\"error0\"]}}";
+        Assert.NotNull(json);
+        Assert.Equal(expectedJSON, json);
+    }
+
     [Fact]
     public void WriteUsingJsonSerializerOptionsWithDifferentPoliciesWorks()
     {
         var errors = new Dictionary<string, string[]>()
         {
-            { "Property", new[] { "error0" } },
-            { "TwoWords", new[] { "error1" } },
-            { "TopLevelProperty.PropertyName", new[] { "error2" } }
+            { "Property",  new string[]{ "error0" } },
+            { "TwoWords",  new string[]{ "error1" } },
+            { "TopLevelProperty.PropertyName",  new string[]{ "error2" } },
         };
-        
-        var problemDetails = new HttpValidationProblemDetails(errors)
+        var problemDetails = new ValidationProblemDetails(errors)
         {
-            Title = "Validation error",
+            Title = "One or more validation errors occurred.",
             Status = 400
         };
 
@@ -190,7 +177,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
             using MemoryStream stream = new();
             using Utf8JsonWriter writer = new(stream);
 
-            var options = new JsonOptions().SerializerOptions;
+            var options = new JsonOptions().JsonSerializerOptions;
             options.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
 
             JsonSerializer.Serialize(writer, problemDetails, options);
@@ -209,7 +196,7 @@ public class HttpValidationProblemDetailsJsonConverterTest
             using MemoryStream stream = new();
             using Utf8JsonWriter writer = new(stream);
 
-            var options = new JsonOptions().SerializerOptions;
+            var options = new JsonOptions().JsonSerializerOptions;
             options.DictionaryKeyPolicy = new KebabCaseDictionaryNamingPolicy();
 
             JsonSerializer.Serialize(writer, problemDetails, options);
