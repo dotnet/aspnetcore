@@ -6,8 +6,6 @@
 
 <PageTitle>Validated Order Form</PageTitle>
 
-<h3>Validated Order Form</h3>
-
 <EditForm Model="@order" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
     
@@ -47,11 +45,6 @@
                             <label for="shippingStreet" class="form-label">Street</label>
                             <InputText id="shippingStreet" @bind-Value="order.CustomerDetails.ShippingAddress.Street" class="form-control" />
                             <ValidationMessage For="@(() => order.CustomerDetails.ShippingAddress.Street)" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="shippingCity" class="form-label">City</label>
-                            <InputText id="shippingCity" @bind-Value="order.CustomerDetails.ShippingAddress.City" class="form-control" />
-                            <ValidationMessage For="@(() => order.CustomerDetails.ShippingAddress.City)" />
                         </div>
                         <div class="mb-3">
                             <label for="shippingZipCode" class="form-label">Zip Code</label>
