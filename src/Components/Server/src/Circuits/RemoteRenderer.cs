@@ -60,11 +60,11 @@ internal partial class RemoteRenderer : WebRenderer
 
     public override Dispatcher Dispatcher { get; } = Dispatcher.CreateDefault();
 
-    protected override ResourceAssetCollection Assets => _resourceCollection ?? base.Assets;
+    protected internal override ResourceAssetCollection Assets => _resourceCollection ?? base.Assets;
 
-    protected override RendererInfo RendererInfo => _componentPlatform;
+    protected internal override RendererInfo RendererInfo => _componentPlatform;
 
-    protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveServer;
+    protected internal override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveServer;
 
     public Task AddComponentAsync(Type componentType, ParameterView parameters, string domElementSelector)
     {
@@ -306,7 +306,7 @@ internal partial class RemoteRenderer : WebRenderer
         }
     }
 
-    protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
+    protected internal override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
         => renderMode switch
         {
             InteractiveServerRenderMode or InteractiveAutoRenderMode => componentActivator.CreateInstance(componentType),
@@ -369,7 +369,7 @@ internal partial class RemoteRenderer : WebRenderer
         }
     }
 
-    private static partial class Log
+    private static new partial class Log
     {
         [LoggerMessage(100, LogLevel.Warning, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
         private static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
