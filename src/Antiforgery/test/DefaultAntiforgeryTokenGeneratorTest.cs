@@ -548,7 +548,6 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
         var fieldtoken = new AntiforgeryToken()
         {
-            ClaimUid = new BinaryBlob(32),
             SecurityToken = cookieToken.SecurityToken,
             Username = "THE-USER",
             IsCookieToken = false,
@@ -558,9 +557,7 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         var mockClaimUidExtractor = new MockClaimUidExtractor(
             (claimsPrincipal, bytes) =>
             {
-                var data = fieldtoken.ClaimUid.GetData();
-                data.CopyTo(bytes);
-                return data.Length;
+                return 0;
             });
 
         var mockAdditionalDataProvider = new Mock<IAntiforgeryAdditionalDataProvider>();
@@ -596,12 +593,16 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
             ClaimUid = new BinaryBlob(256)
         };
 
-        var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
-        mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
-                             .Returns(Convert.ToBase64String(fieldtoken.ClaimUid.GetData()));
+        var mockClaimUidExtractor = new MockClaimUidExtractor(
+            (claimsPrincipal, bytes) =>
+            {
+                var data = fieldtoken.ClaimUid.GetData();
+                data.CopyTo(bytes);
+                return data.Length;
+            });
 
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-            claimUidExtractor: mockClaimUidExtractor.Object,
+            claimUidExtractor: mockClaimUidExtractor,
             additionalDataProvider: null);
 
         // Act

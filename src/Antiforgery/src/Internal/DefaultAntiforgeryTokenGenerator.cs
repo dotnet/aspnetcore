@@ -151,7 +151,8 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
                     currentUsername = authenticatedIdentity.Name ?? string.Empty;
                 }
 
-                if (requestToken.ClaimUid?.Equals(claimUidBytes.AsSpan(0, bytesWritten)) != true)
+                if (!(requestToken.ClaimUid is null && bytesWritten == 0) // both are not defined
+                    && requestToken.ClaimUid?.Equals(claimUidBytes.AsSpan(0, bytesWritten)) != true)
                 {
                     message = Resources.AntiforgeryToken_ClaimUidMismatch;
                     return false;
