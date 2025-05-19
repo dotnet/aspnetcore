@@ -1,12 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -18,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Extension methods to add DataAnnotations validation to an <see cref="EditContext"/>.
 /// </summary>
-public static class EditContextDataAnnotationsExtensions
+public static partial class EditContextDataAnnotationsExtensions
 {
     /// <summary>
     /// Adds DataAnnotations validation support to the <see cref="EditContext"/>.
@@ -62,7 +65,7 @@ public static class EditContextDataAnnotationsExtensions
     }
 #pragma warning restore IDE0051 // Remove unused private members
 
-    private sealed class DataAnnotationsEventSubscriptions : IDisposable
+    private sealed partial class DataAnnotationsEventSubscriptions : IDisposable
     {
         private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache = new();
 
@@ -85,6 +88,7 @@ public static class EditContextDataAnnotationsExtensions
             }
         }
 
+        // TODO(OR): Should this also use ValidatablePropertyInfo.ValidateAsync?
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
         {
@@ -180,21 +184,80 @@ public static class EditContextDataAnnotationsExtensions
 
             if (validationErrors is not null && validationErrors.Count > 0)
             {
-                foreach (var (key, value) in validationErrors)
+                foreach (var (fieldPath, messages) in validationErrors)
                 {
-                    var keySegments = key.Split('.');
-                    var container = keySegments.Length > 1
-                        ? GetPropertyByPath(_editContext.Model, keySegments[..^1])
-                        : _editContext.Model;
-                    var fieldName = keySegments[^1];
+                    var dotSegments = fieldPath.Split('.');
+                    var fieldName = dotSegments[^1];
+                    var fieldContainer = GetFieldContainer(_editContext.Model, dotSegments[..^1]);
 
-                    _messages.Add(new FieldIdentifier(container, fieldName), value);
+                    _messages.Add(new FieldIdentifier(fieldContainer, fieldName), messages);
                 }
             }
 
             return true;
         }
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        // TODO(OR): Replace this with a more robust implementation or a different approach. Ideally, collect references during the validation process itself.
+        private static object GetFieldContainer(object obj, string[] dotSegments)
+        {
+            // The method does not check nullity and index bounds everywhere as the path is constructed internally and assumed to be correct.
+            object currentObject = obj;
+
+            for (int i = 0; i < dotSegments.Length; i++)
+            {
+                string segment = dotSegments[i];
+
+                if (currentObject == null)
+                {
+                    string traversedPath = string.Join(".", dotSegments.Take(i));
+                    throw new ArgumentException($"Cannot access segment '{segment}' because the path '{traversedPath}' resolved to null.");
+                }
+
+                Match match = _pathSegmentRegex.Match(segment);
+                if (!match.Success)
+                {
+                    throw new ArgumentException($"Invalid path segment: '{segment}'.");
+                }
+
+                string propertyName = match.Groups[1].Value;
+                string? indexStr = match.Groups[2].Success ? match.Groups[2].Value : null;
+
+                Type currentType = currentObject.GetType();
+                PropertyInfo propertyInfo = currentType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                object propertyValue = propertyInfo!.GetValue(currentObject)!;
+
+                if (indexStr != null) // Indexed access
+                {
+                    if (!int.TryParse(indexStr, out int index))
+                    {
+                        throw new ArgumentException($"Invalid index '{indexStr}' in segment '{segment}'.");
+                    }
+
+                    if (propertyValue is Array array)
+                    {
+                        currentObject = array.GetValue(index)!;
+                    }
+                    else if (propertyValue is IList list)
+                    {
+                        currentObject = list[index]!;
+                    }
+                    else if (propertyValue is IEnumerable enumerable)
+                    {
+                        currentObject = enumerable.Cast<object>().ElementAt(index);
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Property '{propertyName}' is not an array, list, or enumerable. Cannot access by index in segment '{segment}'.");
+                    }
+                }
+                else // Simple property access
+                {
+                    currentObject = propertyValue;
+                }
+            }
+            return currentObject!;
+        }
 
         public void Dispose()
         {
@@ -231,19 +294,10 @@ public static class EditContextDataAnnotationsExtensions
             _propertyInfoCache.Clear();
         }
 
-        // TODO(OR): Replace this with more robust implementation.
-        private static object GetPropertyByPath(object obj, string[] path)
-        {
-            var currentObject = obj;
+        private static readonly Regex _pathSegmentRegex = PathSegmentRegexGen();
 
-            foreach (string propertyName in path)
-            {
-                Type currentType = currentObject!.GetType();
-                PropertyInfo propertyInfo = currentType.GetProperty(propertyName)!;
-                currentObject = propertyInfo.GetValue(currentObject);
-            }
-
-            return currentObject!;
-        }
+        // Regex to parse "PropertyName" or "PropertyName[index]"
+        [GeneratedRegex(@"^([a-zA-Z_]\w*)(?:\[(\d+)\])?$", RegexOptions.Compiled)]
+        private static partial Regex PathSegmentRegexGen();
     }
 }

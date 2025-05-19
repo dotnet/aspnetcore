@@ -15,6 +15,15 @@ public class GuestbookEntry
     public Author Author { get; set; } = new Author();
 
     [Required]
+    public string? Title { get; set; }
+
+    public List<Message> Messages { get; set; } = [];
+}
+
+public class Message
+{
+    [Required]
+    [StringLength(50, ErrorMessage = "Name is too long.")]
     public string? Text { get; set; }
 }
 

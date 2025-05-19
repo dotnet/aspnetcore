@@ -11,10 +11,10 @@
 
 <EditForm Model="@Model" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <div class="alert @StatusClass">@StatusMessage</div>
- 
+
     <DataAnnotationsValidator />
     <ValidationSummary />
- 
+
     <div class="form-group">
         <label for="name">Author.Name: </label>
         <InputText Id="name" Class="form-control" @bind-Value="@Model.Author.Name"></InputText>
@@ -41,27 +41,60 @@
         <ValidationMessage For="@(() => Model.Author.Address.Street)" />
     </div>
     <div class="form-group">
-        <label for="body">Text: </label>
-        <InputTextArea Id="body" Class="form-control" @bind-Value="@Model.Text"></InputTextArea>
-        <ValidationMessage For="@(() => Model.Text)" />
+        <label for="body">Title: </label>
+        <InputTextArea Id="body" Class="form-control" @bind-Value="@Model.Title"></InputTextArea>
+        <ValidationMessage For="@(() => Model.Title)" />
     </div>
+
+
+    @for (int i = 0; i < Model.Messages.Count; i++)
+    {
+        var itemIndex = i;
+        <div class="item-row" style="margin-bottom: 15px; padding: 10px; border: 1px solid #ccc;">
+            <h5>Item @(itemIndex + 1)</h5>
+            <div class="form-group">
+                <label for="@($"itemName{itemIndex}")">Name:</label>
+                <InputText id="@($"itemName{itemIndex}")" @bind-Value="Model.Messages[itemIndex].Text" class="form-control" />
+                <ValidationMessage For="@(() => Model.Messages[itemIndex].Text)" />
+            </div>
+            <button type="button" class="btn btn-danger btn-sm" @onclick="() => RemoveItem(itemIndex)">Remove Item</button>
+        </div>
+    }
+
+    <button type="button" class="btn btn-primary" @onclick="AddMessage">Add Item</button>
+
     <button type="submit">Ok</button>
- 
+
 </EditForm>
- 
+
 @code
 {
     private string? StatusMessage;
     private string? StatusClass;
- 
+
+    private List<List<Address>> ListModel = new List<List<Address>> { new List<Address> { new Address { City = "Brno" }, new Address { } } };
+
     private GuestbookEntry Model = new GuestbookEntry();
- 
+
+    private void AddMessage()
+    {
+        Model.Messages.Add(new Message());
+    }
+
+    private void RemoveItem(int index)
+    {
+        if (index >= 0 && index < Model.Messages.Count)
+        {
+            Model.Messages.RemoveAt(index);
+        }
+    }
+
     protected void HandleValidSubmit()
     {
         StatusClass = "alert-info";
         StatusMessage = DateTime.Now + " Handle valid submit";
     }
- 
+
     protected void HandleInvalidSubmit()
     {
         StatusClass = "alert-danger";
