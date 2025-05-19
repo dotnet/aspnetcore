@@ -2,6 +2,7 @@
   <PropertyGroup>
     <BlazorWebAssemblyJSPath>$(MSBuildThisFileDirectory)blazor.webassembly.js</BlazorWebAssemblyJSPath>
     <BlazorRoutingEnableRegexConstraint Condition="'$(BlazorRoutingEnableRegexConstraint)' == ''">false</BlazorRoutingEnableRegexConstraint>
+    <WebAssemblyHotReloadCapabilities>Baseline;AddMethodToExistingType;AddStaticFieldToExistingType;NewTypeDefinition;ChangeCustomAttributes;AddInstanceFieldToExistingType;GenericAddMethodToExistingType;GenericUpdateMethod;UpdateParameters;GenericAddFieldToExistingType</WebAssemblyHotReloadCapabilities>
   </PropertyGroup>
 
   <ItemGroup>
