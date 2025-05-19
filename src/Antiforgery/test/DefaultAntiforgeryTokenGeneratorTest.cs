@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.ObjectPool;
 using Moq;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
@@ -401,12 +402,13 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
             IsCookieToken = false
         };
 
-        var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
-        mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
-                             .Returns((string)null);
+        var mockClaimUidExtractor = new MockClaimUidExtractor(bytesFunc: (claims, bytes) =>
+        {
+            return 0;
+        });
 
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-            claimUidExtractor: mockClaimUidExtractor.Object,
+            claimUidExtractor: mockClaimUidExtractor,
             additionalDataProvider: null);
 
         string expectedMessage =
@@ -439,12 +441,16 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         };
 
         var differentToken = new BinaryBlob(256);
-        var mockClaimUidExtractor = new Mock<IClaimUidExtractor>();
-        mockClaimUidExtractor.Setup(o => o.ExtractClaimUid(It.Is<ClaimsPrincipal>(c => c.Identity == identity)))
-                             .Returns(Convert.ToBase64String(differentToken.GetData()));
+
+        var mockClaimUidExtractor = new MockClaimUidExtractor(
+            bytesFunc: (claimsPrincipal, bytes) =>
+            {
+                bytes = differentToken.GetData();
+                return differentToken.BitLength;
+            });
 
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-            claimUidExtractor: mockClaimUidExtractor.Object,
+            claimUidExtractor: mockClaimUidExtractor,
             additionalDataProvider: null);
 
         string expectedMessage =
@@ -542,18 +548,27 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         var cookieToken = new AntiforgeryToken() { IsCookieToken = true };
         var fieldtoken = new AntiforgeryToken()
         {
+            ClaimUid = new BinaryBlob(32),
             SecurityToken = cookieToken.SecurityToken,
             Username = "THE-USER",
             IsCookieToken = false,
             AdditionalData = "some-additional-data"
         };
 
+        var mockClaimUidExtractor = new MockClaimUidExtractor(
+            (claimsPrincipal, bytes) =>
+            {
+                var data = fieldtoken.ClaimUid.GetData();
+                data.CopyTo(bytes);
+                return data.Length;
+            });
+
         var mockAdditionalDataProvider = new Mock<IAntiforgeryAdditionalDataProvider>();
         mockAdditionalDataProvider.Setup(o => o.ValidateAdditionalData(httpContext, "some-additional-data"))
                                   .Returns(true);
 
         var tokenProvider = new DefaultAntiforgeryTokenGenerator(
-            claimUidExtractor: new Mock<IClaimUidExtractor>().Object,
+            claimUidExtractor: mockClaimUidExtractor,
             additionalDataProvider: mockAdditionalDataProvider.Object);
 
         // Act
@@ -614,6 +629,40 @@ public class DefaultAntiforgeryTokenGeneratorProviderTest
         public override string Name
         {
             get { return String.Empty; }
+        }
+    }
+
+    private class MockClaimUidExtractor : IClaimUidExtractor
+    {
+        private readonly Func<ClaimsPrincipal, Span<byte>, int> _bytesFunc;
+        private readonly Func<ClaimsPrincipal, string> _claimsFunc;
+
+        public MockClaimUidExtractor(
+            Func<ClaimsPrincipal, Span<byte>, int> bytesFunc = null,
+            Func<ClaimsPrincipal, string> claimsFunc = null)
+        {
+            _bytesFunc = bytesFunc;
+            _claimsFunc = claimsFunc;
+        }
+
+        public void ExtractClaimUid(ClaimsPrincipal claimsPrincipal, Span<byte> destination, out int bytesWritten)
+        {
+            if (_bytesFunc is null)
+            {
+                throw new NotImplementedException($"Explicitly define {nameof(_bytesFunc)} invocation for testing");
+            }
+
+            bytesWritten = _bytesFunc(claimsPrincipal, destination);
+        }
+
+        public string ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
+        {
+            if (_claimsFunc is null)
+            {
+                throw new NotImplementedException($"Explicitly define {nameof(_claimsFunc)} invocation for testing");
+            }
+
+            return _claimsFunc(claimsPrincipal);
         }
     }
 }

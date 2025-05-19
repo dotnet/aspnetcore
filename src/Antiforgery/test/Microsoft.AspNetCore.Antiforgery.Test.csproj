@@ -16,5 +16,4 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)AntiforgeryMetadata.cs" />
   </ItemGroup>
-
 </Project>

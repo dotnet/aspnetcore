@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -137,15 +138,28 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
 
         // Is the incoming token meant for the current user?
         var currentUsername = string.Empty;
-        BinaryBlob? currentClaimUid = null;
 
         var authenticatedIdentity = GetAuthenticatedIdentity(httpContext.User);
         if (authenticatedIdentity != null)
         {
-            currentClaimUid = GetClaimUidBlob(_claimUidExtractor.ExtractClaimUid(httpContext.User));
-            if (currentClaimUid == null)
+            var claimUidBytes = ArrayPool<byte>.Shared.Rent(1024);
+            try
             {
-                currentUsername = authenticatedIdentity.Name ?? string.Empty;
+                _claimUidExtractor.ExtractClaimUid(httpContext.User, claimUidBytes.AsSpan(), out var bytesWritten);
+                if (bytesWritten is 0)
+                {
+                    currentUsername = authenticatedIdentity.Name ?? string.Empty;
+                }
+
+                if (requestToken.ClaimUid?.Equals(claimUidBytes.AsSpan(0, bytesWritten)) != true)
+                {
+                    message = Resources.AntiforgeryToken_ClaimUidMismatch;
+                    return false;
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(claimUidBytes);
             }
         }
 
@@ -164,14 +178,8 @@ internal sealed class DefaultAntiforgeryTokenGenerator : IAntiforgeryTokenGenera
             return false;
         }
 
-        if (!object.Equals(requestToken.ClaimUid, currentClaimUid))
-        {
-            message = Resources.AntiforgeryToken_ClaimUidMismatch;
-            return false;
-        }
-
         // Is the AdditionalData valid?
-        if (_additionalDataProvider != null &&
+        if (_additionalDataProvider is not null &&
             !_additionalDataProvider.ValidateAdditionalData(httpContext, requestToken.AdditionalData))
         {
             message = Resources.AntiforgeryToken_AdditionalDataCheckFailed;

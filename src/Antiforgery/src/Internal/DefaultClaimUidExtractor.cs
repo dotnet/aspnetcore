@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery;
@@ -24,6 +24,22 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
     }
 
     /// <inheritdoc />
+    public void ExtractClaimUid(ClaimsPrincipal claimsPrincipal, Span<byte> destination, out int bytesWritten)
+    {
+        Debug.Assert(claimsPrincipal != null);
+
+        var uniqueIdentifierParameters = GetUniqueIdentifierParameters(claimsPrincipal.Identities);
+        if (uniqueIdentifierParameters == null)
+        {
+            // No authenticated identities containing claims found.
+            bytesWritten = 0;
+            return;
+        }
+
+        ComputeSha256(uniqueIdentifierParameters, destination, out bytesWritten);
+    }
+
+    /// <inheritdoc />
     public string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
     {
         Debug.Assert(claimsPrincipal != null);
@@ -37,9 +53,7 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
 
         // todo skip allocations here as well
         var claimUidBytes = ComputeSha256(uniqueIdentifierParameters);
-
-        Convert.TryToBase64Chars(claimUidBytes, out var str, out int charsWritten);
-        return str.ToString;
+        return Convert.ToBase64String(claimUidBytes);
     }
 
     public static IList<string>? GetUniqueIdentifierParameters(IEnumerable<ClaimsIdentity> claimsIdentities)
@@ -125,53 +139,42 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
         return identifierParameters;
     }
 
-    private void ComputeSha256(IEnumerable<string> parameters, Span<byte> output)
+    private static void ComputeSha256(IEnumerable<string> parameters, Span<byte> output, out int bytesWritten)
     {
-        // compute total size
-        int totalSize = 0;
+        int estimatedSize = 0;
         foreach (var param in parameters)
         {
             int byteCount = Encoding.UTF8.GetByteCount(param);
-            totalSize += 4 + byteCount; // 4 bytes for length prefix
+            estimatedSize += 5 + byteCount; // max 5 bytes for 7-bit length + content
         }
 
-        byte[]? rented = null;
-        var buffer = totalSize <= 256
-            ? stackalloc byte[256]
-            : (rented = ArrayPool<byte>.Shared.Rent(totalSize));
-        buffer = buffer[..totalSize];
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(estimatedSize);
 
         try
         {
             int offset = 0;
-
             foreach (var param in parameters)
             {
                 int byteCount = Encoding.UTF8.GetByteCount(param);
 
-                // Write 4-byte length prefix
-                BinaryPrimitives.WriteInt32LittleEndian(buffer.Slice(offset, 4), byteCount);
-                offset += 4;
+                // Write 7-bit encoded length prefix
+                offset += buffer.AsSpan(offset).Write7BitEncodedInt(byteCount);
 
                 // Write UTF-8 bytes
-                Encoding.UTF8.GetBytes(param, buffer.Slice(offset, byteCount));
+                Encoding.UTF8.GetBytes(param, buffer.AsSpan(offset, byteCount));
                 offset += byteCount;
             }
 
-            SHA256.TryHashData(buffer.Slice(0, totalSize), output, out int bytesWritten);
+            SHA256.TryHashData(buffer.AsSpan(0, offset), output, out bytesWritten);
             Debug.Assert(bytesWritten == 32);
         }
         finally
         {
-            buffer.Clear(); // security ?
-            if (rented is not null)
-            {
-                ArrayPool<byte>.Shared.Return(rented);
-            }
+            ArrayPool<byte>.Shared.Return(buffer);
         }
     }
 
-    private byte[] ComputeSha256StreamWriter(IEnumerable<string> parameters)
+    private byte[] ComputeSha256(IEnumerable<string> parameters)
     {
         var serializationContext = _pool.Get();
 

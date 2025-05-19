@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Antiforgery;
 // Represents a binary blob (token) that contains random data.
 // Useful for binary data inside a serialized stream.
 [DebuggerDisplay("{DebuggerString}")]
-internal sealed class BinaryBlob : IEquatable<BinaryBlob>
+internal sealed class BinaryBlob : IEquatable<BinaryBlob>, IEquatable<ReadOnlySpan<byte>>
 {
     private readonly byte[] _data;
 
@@ -50,6 +50,16 @@ internal sealed class BinaryBlob : IEquatable<BinaryBlob>
         return Equals(obj as BinaryBlob);
     }
 
+    public bool Equals(ReadOnlySpan<byte> other)
+    {
+        if (other.Length != _data.Length)
+        {
+            return false;
+        }
+
+        return AreSpanEqual(_data, other);
+    }
+
     public bool Equals(BinaryBlob? other)
     {
         if (other == null)
@@ -58,7 +68,7 @@ internal sealed class BinaryBlob : IEquatable<BinaryBlob>
         }
 
         Debug.Assert(_data.Length == other._data.Length);
-        return AreByteArraysEqual(_data, other._data);
+        return AreSpanEqual(_data, other._data);
     }
 
     public byte[] GetData()
@@ -83,16 +93,16 @@ internal sealed class BinaryBlob : IEquatable<BinaryBlob>
 
     // Need to mark it with NoInlining and NoOptimization attributes to ensure that the
     // operation runs in constant time.
-    [MethodImplAttribute(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
-    private static bool AreByteArraysEqual(byte[] a, byte[] b)
+    [MethodImpl(MethodImplOptions.NoInlining | MethodImplOptions.NoOptimization)]
+    private static bool AreSpanEqual(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b)
     {
-        if (a == null || b == null || a.Length != b.Length)
+        if (a.Length != b.Length)
         {
             return false;
         }
 
         var areEqual = true;
-        for (var i = 0; i < a.Length; i++)
+        for (int i = 0; i < a.Length; i++)
         {
             areEqual &= (a[i] == b[i]);
         }
