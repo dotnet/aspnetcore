@@ -14,7 +14,8 @@ namespace Microsoft.AspNetCore.Http.Validation;
 
 internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfoResolver
 {
-    // TODO: the implementation currently relies on static discovery of types.
+    // TODO: The implementation currently relies on static discovery of types.
+    // See https://github.com/dotnet/aspnetcore/issues/61220
     public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
     {
         validatableInfo = null;
@@ -76,17 +77,7 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
     {
         // Skip primitives, enums, common built-in types, and types that are specially
         // handled by RDF/RDG that don't need validation if they don't have attributes
-        if (type.IsPrimitive ||
-            type.IsEnum ||
-            type == typeof(string) ||
-            type == typeof(decimal) ||
-            type == typeof(DateTime) ||
-            type == typeof(DateTimeOffset) ||
-            type == typeof(TimeOnly) ||
-            type == typeof(DateOnly) ||
-            type == typeof(TimeSpan) ||
-            type == typeof(Guid) ||
-            type == typeof(IFormFile) ||
+        if (type == typeof(IFormFile) ||
             type == typeof(IFormFileCollection) ||
             type == typeof(IFormCollection) ||
             type == typeof(HttpContext) ||

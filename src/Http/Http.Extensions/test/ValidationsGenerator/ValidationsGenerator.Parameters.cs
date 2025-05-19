@@ -39,7 +39,8 @@ app.MapGet("/params", (
     [CustomValidation(ErrorMessage = "Value must be an even number")] int value4 = 4,
     [CustomValidation, Range(10, 100)] int value5 = 10,
     // Skipped from validation because it is marked as a [FromService] parameter
-    [FromServices] [Range(10, 100)] int? value6 = 4) => "OK");
+    [FromServices] [Range(10, 100)] int? value6 = 4,
+    [MinLength(7)] string? value7 = "LongEnough") => "OK");
 
 app.Run();
 
@@ -58,7 +59,7 @@ public class TestService
         await VerifyEndpoint(compilation, "/params", async (endpoint, serviceProvider) =>
         {
             var context = CreateHttpContext(serviceProvider);
-            context.Request.QueryString = new QueryString("?value1=5&value2=5&value3=&value4=3&value5=5");
+            context.Request.QueryString = new QueryString("?value1=5&value2=5&value3=&value4=3&value5=5&value7=Short");
             await endpoint.RequestDelegate(context);
             var problemDetails = await AssertBadRequest(context);
             Assert.Collection(problemDetails.Errors,
@@ -93,6 +94,11 @@ public class TestService
                     {
                         Assert.Equal("The field value5 must be between 10 and 100.", error);
                     });
+                },
+                error =>
+                {
+                    Assert.Equal("value7", error.Key);
+                    Assert.Equal("The field value7 must be a string or array type with a minimum length of '7'.", error.Value.Single());
                 });
         });
     }

@@ -33,19 +33,8 @@ public class RuntimeValidatableParameterInfoResolverTests
     }
 
     [Theory]
-    [InlineData(typeof(string))]
-    [InlineData(typeof(int))]
-    [InlineData(typeof(bool))]
-    [InlineData(typeof(DateTime))]
-    [InlineData(typeof(Guid))]
-    [InlineData(typeof(decimal))]
-    [InlineData(typeof(DayOfWeek))] // Enum
     [InlineData(typeof(ClaimsPrincipal))]
     [InlineData(typeof(PipeReader))]
-    [InlineData(typeof(DateTimeOffset))]
-    [InlineData(typeof(TimeOnly))]
-    [InlineData(typeof(DateOnly))]
-    [InlineData(typeof(TimeSpan))]
     [InlineData(typeof(IFormFile))]
     [InlineData(typeof(IFormFileCollection))]
     [InlineData(typeof(IFormCollection))]
