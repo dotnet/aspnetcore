@@ -75,6 +75,7 @@ public static class RazorComponentsServiceCollectionExtensions
         services.TryAddScoped<WebAssemblySettingsEmitter>();
 
         services.TryAddScoped<ResourceCollectionProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);
 
         ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(services);
         ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
