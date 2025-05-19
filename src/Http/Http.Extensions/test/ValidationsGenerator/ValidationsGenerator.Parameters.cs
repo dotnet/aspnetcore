@@ -28,7 +28,7 @@ builder.Services.AddKeyedSingleton<TestService>("serviceKey");
 
 var app = builder.Build();
 
-app.MapGet("/params", (
+app.MapPost("/params", (
     // Skipped from validation because it is resolved as a service by IServiceProviderIsService
     TestService testService,
     // Skipped from validation because it is marked as a [FromKeyedService] parameter
@@ -40,7 +40,8 @@ app.MapGet("/params", (
     [CustomValidation, Range(10, 100)] int value5 = 10,
     // Skipped from validation because it is marked as a [FromService] parameter
     [FromServices] [Range(10, 100)] int? value6 = 4,
-    [MinLength(7)] string? value7 = "LongEnough") => "OK");
+    [MinLength(7)] string? value7 = "LongEnough",
+    Dictionary<string, TestService>? testDict = null) => "OK");
 
 app.Run();
 

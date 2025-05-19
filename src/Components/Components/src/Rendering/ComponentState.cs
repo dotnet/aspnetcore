@@ -23,6 +23,7 @@ public class ComponentState : IAsyncDisposable
     private RenderTreeBuilder _nextRenderTree;
     private ArrayBuilder<RenderTreeFrame>? _latestDirectParametersSnapshot; // Lazily instantiated
     private bool _componentWasDisposed;
+    private readonly string? _componentTypeName;
 
     /// <summary>
     /// Constructs an instance of <see cref="ComponentState"/>.
@@ -50,6 +51,11 @@ public class ComponentState : IAsyncDisposable
         {
             _hasCascadingParameters = true;
             _hasAnyCascadingParameterSubscriptions = AddCascadingParameterSubscriptions();
+        }
+
+        if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+        {
+            _componentTypeName = component.GetType().FullName;
         }
     }
 
@@ -231,14 +237,27 @@ public class ComponentState : IAsyncDisposable
     // a consistent set to the recipient.
     private void SupplyCombinedParameters(ParameterView directAndCascadingParameters)
     {
-        // Normalise sync and async exceptions into a Task
+        var parametersStartTimestamp = _renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled ? Stopwatch.GetTimestamp() : 0;
+
+        // Normalize sync and async exceptions into a Task
         Task setParametersAsyncTask;
         try
         {
             setParametersAsyncTask = Component.SetParametersAsync(directAndCascadingParameters);
+
+            // collect metrics
+            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            {
+                _ = _renderer.ComponentMetrics.CaptureParametersDuration(setParametersAsyncTask, parametersStartTimestamp, _componentTypeName);
+            }
         }
         catch (Exception ex)
         {
+            if (_renderer.ComponentMetrics != null && _renderer.ComponentMetrics.IsParametersEnabled)
+            {
+                _renderer.ComponentMetrics.FailParametersSync(ex, parametersStartTimestamp, _componentTypeName);
+            }
+
             setParametersAsyncTask = Task.FromException(ex);
         }
 
