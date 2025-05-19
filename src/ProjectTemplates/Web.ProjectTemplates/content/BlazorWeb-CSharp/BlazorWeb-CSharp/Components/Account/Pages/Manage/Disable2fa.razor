@@ -54,7 +54,8 @@
     {
         if (user is null)
         {
-            throw new InvalidOperationException("User is not loaded; failed to disable 2FA.");
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
         }
 
         var disable2faResult = await UserManager.SetTwoFactorEnabledAsync(user, false);
