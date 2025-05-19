@@ -123,7 +123,13 @@ public sealed class ValidateContext
         }
     }
     
-    private string TransformKey(string key)
+    
+    /// <summary>
+    /// Transforms a property key using the configured DictionaryKeyPolicy from JsonSerializerOptions.
+    /// </summary>
+    /// <param name="key">The property key to transform.</param>
+    /// <returns>The transformed key, or the original key if no transformation policy is set.</returns>
+    public string TransformKey(string key)
     {
         return DictionaryKeyPolicy?.ConvertName(key) ?? key;
     }

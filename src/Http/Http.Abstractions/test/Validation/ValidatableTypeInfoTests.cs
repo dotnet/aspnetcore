@@ -849,6 +849,71 @@ public class ValidatableTypeInfoTests
                 Assert.Equal("The TwoWords field is required.", kvp.Value.First());
             });
     }
+    [Fact]
+    public async Task Validate_RespectsJsonSerializerOptions_ErrorMessagesUseTransformedNames()
+    {
+        // Arrange
+        var personType = new TestValidatableTypeInfo(
+            typeof(Person),
+            [
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(Person), typeof(string), "EmailAddress", "EmailAddress",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(Person), typeof(string), "TwoWords", "TwoWords",
+                    [new RequiredAttribute()])
+            ]);
+
+        var person = new Person
+        {
+            // Missing required fields
+        };
+        
+        // Create a service provider with JsonOptions that uses camelCase
+        var services = new ServiceCollection();
+        services.Configure<JsonOptions>(options =>
+        {
+            options.SerializerOptions.DictionaryKeyPolicy = JsonNamingPolicy.CamelCase;
+        });
+        var serviceProvider = services.BuildServiceProvider();
+        
+        var validationContext = new ValidationContext(person, serviceProvider, null);
+        var validateContext = new ValidateContext
+        {
+            ValidationContext = validationContext,
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Person), personType }
+            })
+        };
+
+        // Act
+        await personType.ValidateAsync(person, validateContext, default);
+
+        // Assert
+        Assert.NotNull(validateContext.ValidationErrors);
+        
+        // Check that the error keys are transformed
+        Assert.Collection(validateContext.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("name", kvp.Key);
+                // Check that the error message refers to "name" not "Name"
+                Assert.Equal("The name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("emailAddress", kvp.Key);
+                // Check that the error message refers to "emailAddress" not "EmailAddress"
+                Assert.Equal("The emailAddress field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("twoWords", kvp.Key);
+                // Check that the error message refers to "twoWords" not "TwoWords"
+                Assert.Equal("The twoWords field is required.", kvp.Value.First());
+            });
+    }
     
     private class KebabCaseDictionaryNamingPolicy : JsonNamingPolicy
     {

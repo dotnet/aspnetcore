@@ -76,7 +76,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         context.ValidationContext.DisplayName = DisplayName;
-        context.ValidationContext.MemberName = Name;
+        
+        // Transform the MemberName using the same policy used for dictionary keys
+        // This ensures error messages reference the transformed property name
+        var transformedName = context.TransformKey(Name);
+        context.ValidationContext.MemberName = transformedName;
 
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
