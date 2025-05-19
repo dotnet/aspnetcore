@@ -37,7 +37,7 @@ internal sealed class DefaultAntiforgeryTokenSerializer : IAntiforgeryTokenSeria
             var tokenLength = serializedToken.Length;
             var charsRequired = WebEncoders.GetArraySizeRequiredToDecode(tokenLength);
 
-            var chars = charsRequired < 128 ? stackalloc byte[128] : (rented = ArrayPool<byte>.Shared.Rent(charsRequired));
+            var chars = charsRequired < 256 ? stackalloc byte[256] : (rented = ArrayPool<byte>.Shared.Rent(charsRequired));
             chars = chars[..charsRequired];
 
             var decodedResult = WebEncoders.TryBase64UrlDecode(
