@@ -33,7 +33,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
         services.AddOptions();
         services.TryAddSingleton<AuthenticationStateProvider, DeserializedAuthenticationStateProvider>();
         services.TryAddSingleton(sp => (DeserializedAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>());
-        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<DeserializedAuthenticationStateProvider>(services, RenderMode.InteractiveWebAssembly);
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AuthenticationStateProvider>(services, RenderMode.InteractiveWebAssembly);
 
         if (configure != null)
         {
