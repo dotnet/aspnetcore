@@ -120,12 +120,17 @@ public static partial class EditContextDataAnnotationsExtensions
         {
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
 
-            if (TryValidateTypeInfo(validationContext))
+            if (!TryValidateTypeInfo(validationContext))
             {
-                _editContext.NotifyValidationStateChanged();
-                return;
+                ValidateWithDefaultValidator(validationContext);
             }
 
+            _editContext.NotifyValidationStateChanged();
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private void ValidateWithDefaultValidator(ValidationContext validationContext)
+        {
             var validationResults = new List<ValidationResult>();
             Validator.TryValidateObject(_editContext.Model, validationContext, validationResults, true);
 
@@ -150,8 +155,6 @@ public static partial class EditContextDataAnnotationsExtensions
                     _messages.Add(new FieldIdentifier(_editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
                 }
             }
-
-            _editContext.NotifyValidationStateChanged();
         }
 
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
@@ -199,9 +202,10 @@ public static partial class EditContextDataAnnotationsExtensions
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
         // TODO(OR): Replace this with a more robust implementation or a different approach. Ideally, collect references during the validation process itself.
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private static object GetFieldContainer(object obj, string[] dotSegments)
         {
-            // The method does not check nullity and index bounds everywhere as the path is constructed internally and assumed to be correct.
+            // The method does not check all possiblle null access and index bound errors as the path is constructed internally and assumed to be correct.
             object currentObject = obj;
 
             for (int i = 0; i < dotSegments.Length; i++)
@@ -224,10 +228,14 @@ public static partial class EditContextDataAnnotationsExtensions
                 string? indexStr = match.Groups[2].Success ? match.Groups[2].Value : null;
 
                 Type currentType = currentObject.GetType();
-                PropertyInfo propertyInfo = currentType.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                PropertyInfo propertyInfo = currentType!.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)!;
                 object propertyValue = propertyInfo!.GetValue(currentObject)!;
 
-                if (indexStr != null) // Indexed access
+                if (indexStr == null) // Simple property access
+                {
+                    currentObject = propertyValue;
+                }
+                else // Indexed access
                 {
                     if (!int.TryParse(indexStr, out int index))
                     {
@@ -251,10 +259,7 @@ public static partial class EditContextDataAnnotationsExtensions
                         throw new ArgumentException($"Property '{propertyName}' is not an array, list, or enumerable. Cannot access by index in segment '{segment}'.");
                     }
                 }
-                else // Simple property access
-                {
-                    currentObject = propertyValue;
-                }
+
             }
             return currentObject!;
         }
