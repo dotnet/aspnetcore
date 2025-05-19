@@ -533,10 +533,12 @@ HostFxrResolver::InvokeWhereToFindDotnet()
 
 BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
 {
+    // Errors while reading from the file shouldn't throw unless
+    // file.exception(bits) is set
     std::ifstream file(dotnetPath, std::ios::binary);
     if (!file.is_open())
     {
-        LOG_INFOF(L"Failed to open file %ls", dotnetPath);
+        LOG_TRACEF(L"Failed to open file %ls", dotnetPath);
         return false;
     }
 
@@ -545,7 +547,7 @@ BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
     file.read(reinterpret_cast<char*>(&dosHeader), sizeof(dosHeader));
     if (dosHeader.e_magic != IMAGE_DOS_SIGNATURE) // 'MZ'
     {
-        LOG_INFOF(L"%ls is not a valid executable file (missing MZ header).", dotnetPath);
+        LOG_TRACEF(L"%ls is not a valid executable file (missing MZ header).", dotnetPath);
         return false;
     }
 
@@ -557,7 +559,7 @@ BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
     file.read(reinterpret_cast<char*>(&peSignature), sizeof(peSignature));
     if (peSignature != IMAGE_NT_SIGNATURE) // 'PE\0\0'
     {
-        LOG_INFOF(L"%ls is not a valid PE file (missing PE header).", dotnetPath);
+        LOG_TRACEF(L"%ls is not a valid PE file (missing PE header).", dotnetPath);
         return false;
     }
 
