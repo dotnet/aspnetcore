@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
@@ -47,18 +48,21 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
-    public async Task DoesNotRenderChildAfterRendererStopped()
+    public async Task DoesNotRenderAfterRendererStopped()
     {
-        renderer.SignalRendererToFinishRendering();
-
         var httpContext = GetHttpContext();
         var writer = new StringWriter();
 
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), null, ParameterView.Empty);
-        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
-        var content = writer.ToString();
+        var component = new StoppingRendererComponent();
+        var id = renderer.AssignRootComponentId(component);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(id, ParameterView.Empty));
+        int initialRenderCount = renderer.RenderCount;
 
-        Assert.DoesNotContain("Hello from SimpleComponent", content);
+        renderer.SignalRendererToFinishRendering();
+
+        component.TaskCompletionSource.SetResult(false);
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(id, ParameterView.Empty));
+        Assert.Equal(initialRenderCount, renderer.RenderCount);
     }
 
     [Fact]
@@ -1772,18 +1776,19 @@ public class EndpointHtmlRendererTest
     private class TestEndpointHtmlRenderer : EndpointHtmlRenderer
     {
         private bool _rendererIsStopped = false;
+        private int _lastComponentId;
+        private int _renderCount;
+        private RenderBatch _lastBatch;
+
         public TestEndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : base(serviceProvider, loggerFactory)
         {
         }
 
         internal int TestAssignRootComponentId(IComponent component)
         {
-            return base.AssignRootComponentId(component);
-        }
-        public void SignalRendererToFinishRendering()
-        {
-            // sets a deferred stop on the renderer, which will have an effect after the current batch is completed
-            _rendererIsStopped = true;
+            var id = base.AssignRootComponentId(component);
+            _lastComponentId = id;
+            return id;
         }
 
         protected override void ProcessPendingRender()
@@ -1793,6 +1798,19 @@ public class EndpointHtmlRendererTest
                 return;
             }
             base.ProcessPendingRender();
+
+            _renderCount++;
+            _lastBatch = GetCurrentRenderBatch();
+        }
+
+        public int RenderCount => _renderCount;
+
+        public RenderBatch GetCurrentRenderBatch() => _lastBatch;
+
+        public new void SignalRendererToFinishRendering()
+        {
+            _rendererIsStopped = true;
+            base.SignalRendererToFinishRendering();
         }
     }
 
