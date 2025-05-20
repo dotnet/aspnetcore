@@ -326,28 +326,30 @@ internal static class JsonNodeSchemaExtensions
                 schema.ApplyValidationAttributes(validationAttributes);
             }
 
-            // Handle case when the model is a DTO with a primary constructor
+            // Handle class types with primary constructors
+            // Primary constructors in classes don't automatically create properties like they do in records,
+            // so we need to manually find constructor parameters that match property names and apply their attributes
             if (schema is JsonObject schemaObject && schemaObject["properties"] is JsonObject propertiesObject &&
-                parameterInfo.ParameterType.GetConstructors() is var constructors && constructors.Length > 0)
+                parameterInfo.ParameterType.GetConstructors() is var constructors)
             {
-                // Find a constructor that appears to be a primary constructor (has parameters that match property names)
-                foreach (var constructor in constructors)
+                // Find primary constructor - a good heuristic is to look for the constructor with the most parameters
+                // that match property names, similar to how records work
+                var bestConstructor = constructors
+                    .OrderByDescending(c => c.GetParameters().Length)
+                    .FirstOrDefault();
+                
+                if (bestConstructor?.GetParameters() is { Length: > 0 } parameters)
                 {
-                    // Primary constructors generally have parameters that match property names
-                    if (constructor.GetParameters() is { Length: > 0 } parameters)
+                    foreach (var parameter in parameters)
                     {
-                        foreach (var parameter in parameters)
+                        // Check for matching property in schema (case insensitive)
+                        var propertyName = char.ToLowerInvariant(parameter.Name[0]) + parameter.Name[1..];
+                        
+                        if (propertiesObject[propertyName] is JsonObject propertySchema)
                         {
-                            // Check for matching property in schema (case insensitive)
-                            // Property names in schema use camelCase, but C# properties typically use PascalCase
-                            var propertyName = char.ToLowerInvariant(parameter.Name[0]) + parameter.Name[1..];
-                            
-                            if (propertiesObject[propertyName] is JsonObject propertySchema)
-                            {
-                                // Apply validation attributes from constructor parameter
-                                var paramAttributes = parameter.GetCustomAttributes().OfType<ValidationAttribute>();
-                                propertySchema.ApplyValidationAttributes(paramAttributes);
-                            }
+                            // Apply validation attributes from constructor parameter
+                            var paramAttributes = parameter.GetCustomAttributes().OfType<ValidationAttribute>();
+                            propertySchema.ApplyValidationAttributes(paramAttributes);
                         }
                     }
                 }
