@@ -87,7 +87,7 @@ Options:
     --binarylog|-bl                   Use a binary logger
     --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
-    --warnaserror                     Sets warnaserror msbuild parameter: 'true' or 'false'
+    --warnAsError                     Sets warnaserror msbuild parameter: 'true' or 'false'
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
