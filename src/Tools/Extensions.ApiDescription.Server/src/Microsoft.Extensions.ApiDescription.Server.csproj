@@ -35,6 +35,8 @@
   <ItemGroup>
     <NuspecProperty Include="artifactsBinDir=$(ArtifactsBinDir)" />
     <NuspecProperty Include="configuration=$(Configuration)" />
+    <NuspecProperty Include="corefxTfm=$(DefaultNetCoreTargetFramework)" />
+    <NuspecProperty Include="netfxTfm=$(DefaultNetFxTargetFramework)" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
