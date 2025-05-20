@@ -26,9 +26,13 @@ public class PrimaryConstructorAttributesTest
 
         var app = builder.Build();
 
-        // Define routes with DTOs using primary constructors
-        app.MapPost("/users", (UserDto dto) => Results.Ok(dto))
-            .WithName("CreateUser")
+        // Define routes with DTOs using primary constructors - both with and without property prefix
+        app.MapPost("/users/property-prefix", (UserDtoWithPropertyPrefix dto) => Results.Ok(dto))
+            .WithName("CreateUserWithPropertyPrefix")
+            .WithOpenApi();
+            
+        app.MapPost("/users/no-prefix", (UserDtoWithNoPrefix dto) => Results.Ok(dto))
+            .WithName("CreateUserWithNoPrefix")
             .WithOpenApi();
 
         app.MapOpenApi(); // GET /openapi/v1.json
@@ -46,20 +50,29 @@ public class PrimaryConstructorAttributesTest
             var openApiDoc = await response.Content.ReadFromJsonAsync<JsonNode>();
             Assert.NotNull(openApiDoc);
 
-            // Assert
-            // Find the UserDto schema in the components section
+            // Assert for property prefix case
+            // Find the UserDtoWithPropertyPrefix schema in the components section
             var schemas = openApiDoc["components"]?["schemas"];
             Assert.NotNull(schemas);
 
-            var userDtoSchema = schemas["UserDto"];
-            Assert.NotNull(userDtoSchema);
+            var userDtoWithPropertyPrefixSchema = schemas["UserDtoWithPropertyPrefix"];
+            Assert.NotNull(userDtoWithPropertyPrefixSchema);
 
             // Check that the age property has the Range attribute constraints
-            var ageProperty = userDtoSchema["properties"]?["age"];
-            Assert.NotNull(ageProperty);
+            var agePropertyWithPrefix = userDtoWithPropertyPrefixSchema["properties"]?["age"];
+            Assert.NotNull(agePropertyWithPrefix);
+            Assert.Equal(0, agePropertyWithPrefix["minimum"]?.GetValue<int>());
+            Assert.Equal(120, agePropertyWithPrefix["maximum"]?.GetValue<int>());
             
-            Assert.Equal(0, ageProperty["minimum"]?.GetValue<int>());
-            Assert.Equal(120, ageProperty["maximum"]?.GetValue<int>());
+            // Assert for no prefix case
+            var userDtoWithNoPrefixSchema = schemas["UserDtoWithNoPrefix"];
+            Assert.NotNull(userDtoWithNoPrefixSchema);
+
+            // Check that the age property has the Range attribute constraints, even without property prefix
+            var agePropertyNoPrefix = userDtoWithNoPrefixSchema["properties"]?["age"];
+            Assert.NotNull(agePropertyNoPrefix);
+            Assert.Equal(0, agePropertyNoPrefix["minimum"]?.GetValue<int>());
+            Assert.Equal(120, agePropertyNoPrefix["maximum"]?.GetValue<int>());
         }
         finally
         {
@@ -68,8 +81,15 @@ public class PrimaryConstructorAttributesTest
         }
     }
 
-    // Simple DTO that uses a primary constructor (C# 12 feature)
-    public class UserDto(string name, [property: Range(0, 120)] int age)
+    // DTO with property: prefix on attributes
+    public class UserDtoWithPropertyPrefix(string name, [property: Range(0, 120)] int age)
+    {
+        public string Name => name;
+        public int Age => age;
+    }
+    
+    // DTO without property: prefix on attributes
+    public class UserDtoWithNoPrefix(string name, [Range(0, 120)] int age)
     {
         public string Name => name;
         public int Age => age;

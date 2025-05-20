@@ -342,12 +342,32 @@ internal static class JsonNodeSchemaExtensions
                 {
                     foreach (var parameter in parameters)
                     {
-                        // Check for matching property in schema (case insensitive)
-                        var propertyName = char.ToLowerInvariant(parameter.Name[0]) + parameter.Name[1..];
+                        // Try different naming conventions to match property names
+                        // 1. Direct match (parameter name to property name)
+                        // 2. Camel case (first char lower case)
+                        // 3. Pascal case (first char upper case)
+                        var possiblePropertyNames = new[]
+                        {
+                            parameter.Name,
+                            char.ToLowerInvariant(parameter.Name[0]) + parameter.Name[1..],
+                            char.ToUpperInvariant(parameter.Name[0]) + parameter.Name[1..]
+                        };
                         
-                        if (propertiesObject[propertyName] is JsonObject propertySchema)
+                        // Find matching property in the schema
+                        JsonObject? propertySchema = null;
+                        foreach (var propName in possiblePropertyNames)
+                        {
+                            if (propertiesObject[propName] is JsonObject schema)
+                            {
+                                propertySchema = schema;
+                                break;
+                            }
+                        }
+                        
+                        if (propertySchema != null)
                         {
                             // Apply validation attributes from constructor parameter
+                            // regardless of whether they have the 'property:' prefix or not
                             var paramAttributes = parameter.GetCustomAttributes().OfType<ValidationAttribute>();
                             propertySchema.ApplyValidationAttributes(paramAttributes);
                         }

@@ -11,9 +11,11 @@ using Microsoft.OpenApi.Models;
 public partial class OpenApiSchemaServiceTests
 {
     [Theory]
-    [InlineData(true)]  // Test with record
-    [InlineData(false)] // Test with class
-    public async Task GetOpenApiSchema_HandlesAttributesOnPrimaryConstructorParameters(bool useRecord)
+    [InlineData(true, true)]   // Test with record, property prefix
+    [InlineData(false, true)]  // Test with class, property prefix
+    [InlineData(true, false)]  // Test with record, no property prefix
+    [InlineData(false, false)] // Test with class, no property prefix
+    public async Task GetOpenApiSchema_HandlesAttributesOnPrimaryConstructorParameters(bool useRecord, bool usePropertyPrefix)
     {
         // Arrange
         var builder = CreateBuilder();
@@ -21,21 +23,47 @@ public partial class OpenApiSchemaServiceTests
         // Act
         if (useRecord)
         {
-            builder.MapPost("/api/record", (RecordWithPrimaryConstructor dto) => dto);
+            if (usePropertyPrefix)
+            {
+                builder.MapPost("/api/record/property-prefix", (RecordWithPropertyPrefix dto) => dto);
+            }
+            else
+            {
+                builder.MapPost("/api/record/no-prefix", (RecordWithNoPrefix dto) => dto);
+            }
         }
         else
         {
-            builder.MapPost("/api/class", (ClassWithPrimaryConstructor dto) => dto);
+            if (usePropertyPrefix)
+            {
+                builder.MapPost("/api/class/property-prefix", (ClassWithPropertyPrefix dto) => dto);
+            }
+            else
+            {
+                builder.MapPost("/api/class/no-prefix", (ClassWithNoPrefix dto) => dto);
+            }
         }
 
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var path = useRecord ? "/api/record" : "/api/class";
+            string path;
+            string schemaType;
+
+            if (useRecord)
+            {
+                path = usePropertyPrefix ? "/api/record/property-prefix" : "/api/record/no-prefix";
+                schemaType = usePropertyPrefix ? nameof(RecordWithPropertyPrefix) : nameof(RecordWithNoPrefix);
+            }
+            else
+            {
+                path = usePropertyPrefix ? "/api/class/property-prefix" : "/api/class/no-prefix";
+                schemaType = usePropertyPrefix ? nameof(ClassWithPropertyPrefix) : nameof(ClassWithNoPrefix);
+            }
+
             var operation = document.Paths[path].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody.Content["application/json"].Schema;
 
-            var schemaType = useRecord ? nameof(RecordWithPrimaryConstructor) : nameof(ClassWithPrimaryConstructor);
             Assert.Equal(schemaType, requestBody.Reference.Id);
 
             var schemaObject = document.Components.Schemas[schemaType];
@@ -51,13 +79,25 @@ public partial class OpenApiSchemaServiceTests
         });
     }
 
-    public record RecordWithPrimaryConstructor(
+    public record RecordWithPropertyPrefix(
         [Required] string name, 
         [property: Range(0, 120)] int age);
 
-    public class ClassWithPrimaryConstructor(
+    public class ClassWithPropertyPrefix(
         [Required] string name, 
         [property: Range(0, 120)] int age)
+    {
+        public string Name => name;
+        public int Age => age;
+    }
+
+    public record RecordWithNoPrefix(
+        [Required] string name, 
+        [Range(0, 120)] int age);
+
+    public class ClassWithNoPrefix(
+        [Required] string name, 
+        [Range(0, 120)] int age)
     {
         public string Name => name;
         public int Age => age;
