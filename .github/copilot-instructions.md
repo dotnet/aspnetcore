@@ -1,0 +1,3 @@
+- To build and run tests in the repo, use the `build.sh` script that is located in each subdirectory within the `src` folder.
+- Always generate code that conforms with the guidelines provided in the .editorconfig file in the root of this repo.
+- Always generate XML docs for public APIs that are introduced in each change.
