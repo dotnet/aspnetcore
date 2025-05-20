@@ -329,10 +329,15 @@ internal static class JsonNodeSchemaExtensions
             // Handle class types with primary constructors
             // Primary constructors in classes don't automatically create properties like they do in records,
             // so we need to manually find constructor parameters that match property names and apply their attributes
-            if (schema is JsonObject schemaObject && schemaObject["properties"] is JsonObject propertiesObject &&
-                parameterInfo.ParameterType.GetConstructors() is var constructors)
+            if (schema is JsonObject schemaObject && schemaObject["properties"] is JsonObject propertiesObject)
             {
-                // Find primary constructor - a good heuristic is to look for the constructor with the most parameters
+#if !TRIMMING
+                var type = parameterInfo.ParameterType;
+                
+                // Get all constructors of the type - limited to public ones only for trim safety
+                var constructors = type.GetConstructors();
+                
+                // Find primary constructor - look for the constructor with the most parameters
                 // that match property names, similar to how records work
                 var bestConstructor = constructors
                     .OrderByDescending(c => c.GetParameters().Length)
@@ -340,40 +345,55 @@ internal static class JsonNodeSchemaExtensions
                 
                 if (bestConstructor?.GetParameters() is { Length: > 0 } parameters)
                 {
-                    foreach (var parameter in parameters)
+                    ApplyParameterAttributesToProperties(parameters, propertiesObject);
+                }
+#endif
+            }
+            
+#if !TRIMMING
+            // Helper method to apply parameter attributes to matching properties
+            static void ApplyParameterAttributesToProperties(ParameterInfo[] parameters, JsonObject propertiesObject)
+            {
+                foreach (var parameter in parameters)
+                {
+                    if (parameter.Name is null)
                     {
-                        // Try different naming conventions to match property names
-                        // 1. Direct match (parameter name to property name)
-                        // 2. Camel case (first char lower case)
-                        // 3. Pascal case (first char upper case)
-                        var possiblePropertyNames = new[]
+                        continue;
+                    }
+                    
+                    // Try different naming conventions to match property names
+                    // 1. Direct match (parameter name to property name)
+                    // 2. Camel case (first char lower case)
+                    // 3. Pascal case (first char upper case)
+                    var paramName = parameter.Name;
+                    var possiblePropertyNames = new[]
+                    {
+                        paramName,
+                        char.ToLowerInvariant(paramName[0]) + paramName[1..],
+                        char.ToUpperInvariant(paramName[0]) + paramName[1..]
+                    };
+                    
+                    // Find matching property in the schema
+                    JsonObject? propertySchema = null;
+                    foreach (var propName in possiblePropertyNames)
+                    {
+                        if (propertiesObject[propName] is JsonObject schema)
                         {
-                            parameter.Name,
-                            char.ToLowerInvariant(parameter.Name[0]) + parameter.Name[1..],
-                            char.ToUpperInvariant(parameter.Name[0]) + parameter.Name[1..]
-                        };
-                        
-                        // Find matching property in the schema
-                        JsonObject? propertySchema = null;
-                        foreach (var propName in possiblePropertyNames)
-                        {
-                            if (propertiesObject[propName] is JsonObject schema)
-                            {
-                                propertySchema = schema;
-                                break;
-                            }
+                            propertySchema = schema;
+                            break;
                         }
-                        
-                        if (propertySchema != null)
-                        {
-                            // Apply validation attributes from constructor parameter
-                            // regardless of whether they have the 'property:' prefix or not
-                            var paramAttributes = parameter.GetCustomAttributes().OfType<ValidationAttribute>();
-                            propertySchema.ApplyValidationAttributes(paramAttributes);
-                        }
+                    }
+                    
+                    if (propertySchema != null)
+                    {
+                        // Apply validation attributes from constructor parameter
+                        // regardless of whether they have the 'property:' prefix or not
+                        var paramAttributes = parameter.GetCustomAttributes().OfType<ValidationAttribute>();
+                        propertySchema.ApplyValidationAttributes(paramAttributes);
                     }
                 }
             }
+#endif
 
             schema.ApplyNullabilityContextInfo(parameterInfo);
         }
