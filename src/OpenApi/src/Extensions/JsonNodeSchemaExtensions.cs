@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -331,71 +332,82 @@ internal static class JsonNodeSchemaExtensions
             // so we need to manually find constructor parameters that match property names and apply their attributes
             if (schema is JsonObject schemaObject && schemaObject["properties"] is JsonObject propertiesObject)
             {
-#if !TRIMMING
-                var type = parameterInfo.ParameterType;
-                
-                // Get all constructors of the type - limited to public ones only for trim safety
-                var constructors = type.GetConstructors();
-                
-                // Find primary constructor - look for the constructor with the most parameters
-                // that match property names, similar to how records work
-                var bestConstructor = constructors
-                    .OrderByDescending(c => c.GetParameters().Length)
-                    .FirstOrDefault();
-                
-                if (bestConstructor?.GetParameters() is { Length: > 0 } parameters)
-                {
-                    ApplyParameterAttributesToProperties(parameters, propertiesObject);
-                }
-#endif
+                ApplyCtorAttributes(parameterInfo.ParameterType, propertiesObject);
             }
-            
-#if !TRIMMING
-            // Helper method to apply parameter attributes to matching properties
-            static void ApplyParameterAttributesToProperties(ParameterInfo[] parameters, JsonObject propertiesObject)
-            {
-                foreach (var parameter in parameters)
-                {
-                    if (parameter.Name is null)
-                    {
-                        continue;
-                    }
-                    
-                    // Try different naming conventions to match property names
-                    // 1. Direct match (parameter name to property name)
-                    // 2. Camel case (first char lower case)
-                    // 3. Pascal case (first char upper case)
-                    var paramName = parameter.Name;
-                    var possiblePropertyNames = new[]
-                    {
-                        paramName,
-                        char.ToLowerInvariant(paramName[0]) + paramName[1..],
-                        char.ToUpperInvariant(paramName[0]) + paramName[1..]
-                    };
-                    
-                    // Find matching property in the schema
-                    JsonObject? propertySchema = null;
-                    foreach (var propName in possiblePropertyNames)
-                    {
-                        if (propertiesObject[propName] is JsonObject schema)
-                        {
-                            propertySchema = schema;
-                            break;
-                        }
-                    }
-                    
-                    if (propertySchema != null)
-                    {
-                        // Apply validation attributes from constructor parameter
-                        // regardless of whether they have the 'property:' prefix or not
-                        var paramAttributes = parameter.GetCustomAttributes().OfType<ValidationAttribute>();
-                        propertySchema.ApplyValidationAttributes(paramAttributes);
-                    }
-                }
-            }
-#endif
 
             schema.ApplyNullabilityContextInfo(parameterInfo);
+        }
+
+        /// <summary>
+        /// Applies attributes from constructor parameters to the corresponding properties.
+        /// </summary>
+        /// <param name="dtoType">The type to inspect for constructor parameters.</param>
+        /// <param name="propertiesObject">The JSON object containing property schemas.</param>
+        private static void ApplyCtorAttributes(
+            [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)]
+            Type dtoType,
+            JsonObject propertiesObject)
+        {
+            // Get all constructors of the type - limited to public ones only for trim safety
+            var constructors = dtoType.GetConstructors();
+            
+            // Find primary constructor - look for the constructor with the most parameters
+            // that match property names, similar to how records work
+            var bestConstructor = constructors
+                .OrderByDescending(c => c.GetParameters().Length)
+                .FirstOrDefault();
+            
+            if (bestConstructor?.GetParameters() is { Length: > 0 } parameters)
+            {
+                ApplyParameterAttributesToProperties(parameters, propertiesObject);
+            }
+        }
+
+        /// <summary>
+        /// Helper method to apply parameter attributes to matching properties.
+        /// </summary>
+        /// <param name="parameters">The constructor parameters.</param>
+        /// <param name="propertiesObject">The JSON object containing property schemas.</param>
+        private static void ApplyParameterAttributesToProperties(ParameterInfo[] parameters, JsonObject propertiesObject)
+        {
+            foreach (var parameter in parameters)
+            {
+                if (parameter.Name is null)
+                {
+                    continue;
+                }
+                
+                // Try different naming conventions to match property names
+                // 1. Direct match (parameter name to property name)
+                // 2. Camel case (first char lower case)
+                // 3. Pascal case (first char upper case)
+                var paramName = parameter.Name;
+                var possiblePropertyNames = new[]
+                {
+                    paramName,
+                    char.ToLowerInvariant(paramName[0]) + paramName[1..],
+                    char.ToUpperInvariant(paramName[0]) + paramName[1..]
+                };
+                
+                // Find matching property in the schema
+                JsonObject? propertySchema = null;
+                foreach (var propName in possiblePropertyNames)
+                {
+                    if (propertiesObject[propName] is JsonObject schema)
+                    {
+                        propertySchema = schema;
+                        break;
+                    }
+                }
+                
+                if (propertySchema != null)
+                {
+                    // Apply validation attributes from constructor parameter
+                    // regardless of whether they have the 'property:' prefix or not
+                    var paramAttributes = parameter.GetCustomAttributes().OfType<ValidationAttribute>();
+                    propertySchema.ApplyValidationAttributes(paramAttributes);
+                }
+            }
         }
         // Route constraints are only defined on parameters that are sourced from the path. Since
         // they are encoded in the route template, and not in the type information based to the underlying
