@@ -6,6 +6,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Http.Validation.Tests;
 
@@ -81,7 +83,210 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public async Task Validate_HandlesIValidatableObject_Implementation()
+    public async Task Validate_ValidatesComplexType_WithNestedProperties_AppliesJsonPropertyNamingPolicy()
+    {
+        // Arrange
+        var personType = new TestValidatableTypeInfo(
+            typeof(Person),
+            [
+                CreatePropertyInfo(typeof(Person), typeof(string), "Name", "Name",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(Person), typeof(int), "Age", "Age",
+                    [new RangeAttribute(0, 120)]),
+                CreatePropertyInfo(typeof(Person), typeof(Address), "Address", "Address",
+                    [])
+            ]);
+
+        var addressType = new TestValidatableTypeInfo(
+            typeof(Address),
+            [
+                CreatePropertyInfo(typeof(Address), typeof(string), "Street", "Street",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(Address), typeof(string), "City", "City",
+                    [new RequiredAttribute()])
+            ]);
+
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(Person), personType },
+            { typeof(Address), addressType }
+        });
+
+        var personWithMissingRequiredFields = new Person
+        {
+            Age = 150, // Invalid age
+            Address = new Address() // Missing required City and Street
+        };
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(personWithMissingRequiredFields),
+            SerializerOptions = jsonOptions
+        };
+
+        // Act
+        await personType.ValidateAsync(personWithMissingRequiredFields, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("age", kvp.Key);
+                Assert.Equal("The field Age must be between 0 and 120.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("address.street", kvp.Key);
+                Assert.Equal("The Street field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("address.city", kvp.Key);
+                Assert.Equal("The City field is required.", kvp.Value.First());
+            });
+    }
+
+    [Theory]
+    [InlineData("CamelCase", "firstName", "lastName")]
+    [InlineData("KebabCaseLower", "first-name", "last-name")]
+    [InlineData("SnakeCaseLower", "first_name", "last_name")]
+    public async Task Validate_AppliesJsonPropertyNamingPolicy_ForDifferentNamingPolicies(string policy, string expectedFirstName, string expectedLastName)
+    {
+        // Arrange
+        var personType = new TestValidatableTypeInfo(
+            typeof(PersonWithJsonNames),
+            [
+                CreatePropertyInfo(typeof(PersonWithJsonNames), typeof(string), "FirstName", "FirstName",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(PersonWithJsonNames), typeof(string), "LastName", "LastName",
+                    [new RequiredAttribute()])
+            ]);
+
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(PersonWithJsonNames), personType }
+        });
+
+        var person = new PersonWithJsonNames(); // Missing required fields
+
+        var jsonOptions = new JsonSerializerOptions();
+        jsonOptions.PropertyNamingPolicy = policy switch
+        {
+            "CamelCase" => JsonNamingPolicy.CamelCase,
+            "KebabCaseLower" => JsonNamingPolicy.KebabCaseLower,
+            "SnakeCaseLower" => JsonNamingPolicy.SnakeCaseLower,
+            _ => null
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(person),
+            SerializerOptions = jsonOptions
+        };
+
+        // Act
+        await personType.ValidateAsync(person, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal(expectedFirstName, kvp.Key);
+                Assert.Equal("The FirstName field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal(expectedLastName, kvp.Key);
+                Assert.Equal("The LastName field is required.", kvp.Value.First());
+            });
+    }
+
+    [Fact]
+    public async Task Validate_HandlesArrayIndices_WithJsonPropertyNamingPolicy()
+    {
+        // Arrange
+        var orderType = new TestValidatableTypeInfo(
+            typeof(Order),
+            [
+                CreatePropertyInfo(typeof(Order), typeof(string), "OrderNumber", "OrderNumber",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(Order), typeof(List<OrderItem>), "Items", "Items",
+                    [])
+            ]);
+
+        var itemType = new TestValidatableTypeInfo(
+            typeof(OrderItem),
+            [
+                CreatePropertyInfo(typeof(OrderItem), typeof(string), "ProductName", "ProductName",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(OrderItem), typeof(int), "Quantity", "Quantity",
+                    [new RangeAttribute(1, 100)])
+            ]);
+
+        var order = new Order
+        {
+            // Missing OrderNumber
+            Items =
+            [
+                new OrderItem { /* Missing ProductName */ Quantity = 0 }, // Invalid quantity
+            ]
+        };
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(OrderItem), itemType },
+                { typeof(Order), orderType }
+            }),
+            ValidationContext = new ValidationContext(order),
+            SerializerOptions = jsonOptions
+        };
+
+        // Act
+        await orderType.ValidateAsync(order, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("orderNumber", kvp.Key);
+                Assert.Equal("The OrderNumber field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("items[0].productName", kvp.Key);
+                Assert.Equal("The ProductName field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("items[0].quantity", kvp.Key);
+                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
+            });
+    }
+
+    [Fact]
+    public async Task Validate_HandlesIValidatableObject_WithJsonPropertyNamingPolicy()
     {
         // Arrange
         var employeeType = new TestValidatableTypeInfo(
@@ -101,13 +306,20 @@ public class ValidatableTypeInfoTests
             Department = "IT",
             Salary = -5000 // Negative salary will trigger IValidatableObject validation
         };
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
         var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
                 { typeof(Employee), employeeType }
             }),
-            ValidationContext = new ValidationContext(employee)
+            ValidationContext = new ValidationContext(employee),
+            SerializerOptions = jsonOptions
         };
 
         // Act
@@ -116,8 +328,49 @@ public class ValidatableTypeInfoTests
         // Assert
         Assert.NotNull(context.ValidationErrors);
         var error = Assert.Single(context.ValidationErrors);
-        Assert.Equal("Salary", error.Key);
+        Assert.Equal("salary", error.Key);
         Assert.Equal("Salary must be a positive value.", error.Value.First());
+    }
+
+    [Fact]
+    public async Task Validate_IValidatableObject_WithZeroAndMultipleMemberNames_WithJsonNamingPolicy()
+    {
+        var multiType = new TestValidatableTypeInfo(
+            typeof(MultiMemberErrorObject),
+            [
+                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "FirstName", "FirstName", []),
+                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "LastName",  "LastName",  [])
+            ]);
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(MultiMemberErrorObject), multiType }
+            }),
+            ValidationContext = new ValidationContext(new MultiMemberErrorObject { FirstName = "", LastName = "" }),
+            SerializerOptions = jsonOptions
+        };
+
+        await multiType.ValidateAsync(context.ValidationContext.ObjectInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("firstName", kvp.Key);
+                Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("lastName", kvp.Key);
+                Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
+            });
     }
 
     [Fact]
@@ -596,6 +849,21 @@ public class ValidatableTypeInfoTests
         public string? Name { get; set; }
         public int Age { get; set; }
         public Address? Address { get; set; }
+    }
+
+    private class PersonWithJsonNames
+    {
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+    }
+
+    private class ModelWithJsonPropertyNames
+    {
+        [JsonPropertyName("username")]
+        public string? UserName { get; set; }
+
+        [JsonPropertyName("email")]
+        public string? EmailAddress { get; set; }
     }
 
     private class Address

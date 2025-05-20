@@ -23,6 +23,8 @@ Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentDepth.get -> int
 Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentDepth.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentValidationPath.get -> string!
 Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentValidationPath.set -> void
+Microsoft.AspNetCore.Http.Validation.ValidateContext.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions?
+Microsoft.AspNetCore.Http.Validation.ValidateContext.SerializerOptions.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidateContext() -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext!
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationContext.set -> void
