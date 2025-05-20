@@ -316,7 +316,7 @@ fi
 [ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJSUnlessSourcebuild=$build_nodejs"
 [ ! -z "$build_managed" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
 [ ! -z "$build_installers" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildInstallers=$build_installers"
-[ ! -z "$product_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuildRepo=$product_build"
+[ ! -z "$product_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuild=$product_build"
 [ ! -z "$source_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuildSourceOnly=$source_build"
 
 # Run restore by default unless --no-restore or --no-build was specified.
@@ -354,7 +354,7 @@ if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedArg
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedKeyArg
 fi
-[ ! -z "$product_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuildRepo=$product_build"
+[ ! -z "$product_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuild=$product_build"
 [ ! -z "$source_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuildSourceOnly=$source_build"
 
 # Initialize global variables need to be set before the import of Arcade is imported
