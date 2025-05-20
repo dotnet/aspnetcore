@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 #nullable enable
 
-namespace System.Buffers;
+namespace Microsoft.AspNetCore;
 
 /// <summary>
 /// Block tracking object used by the byte buffer memory pool. A slab is a large allocation which is divided into smaller blocks. The

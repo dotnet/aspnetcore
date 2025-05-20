@@ -8,6 +8,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Security;
 using System.Text;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;

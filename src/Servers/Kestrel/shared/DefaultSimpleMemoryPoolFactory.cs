@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Internal;
 
-internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>
+internal sealed class DefaultSimpleMemoryPoolFactory : IMemoryPoolFactory<byte>
 {
-    public static DefaultMemoryPoolFactory Instance { get; } = new DefaultMemoryPoolFactory();
+    public static DefaultSimpleMemoryPoolFactory Instance { get; } = new DefaultSimpleMemoryPoolFactory();
 
     public MemoryPool<byte> Create()
     {

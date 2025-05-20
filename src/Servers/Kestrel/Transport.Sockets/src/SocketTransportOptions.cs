@@ -166,5 +166,5 @@ public class SocketTransportOptions
         return listenSocket;
     }
 
-    internal IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = DefaultMemoryPoolFactory.Instance;
+    internal IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = DefaultSimpleMemoryPoolFactory.Instance;
 }

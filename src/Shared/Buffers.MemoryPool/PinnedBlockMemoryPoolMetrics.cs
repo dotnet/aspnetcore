@@ -2,48 +2,44 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.Metrics;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
 
 #nullable enable
 
-namespace System.Buffers;
+namespace Microsoft.AspNetCore;
 
 internal sealed class PinnedBlockMemoryPoolMetrics
 {
-    // Note: Dot separated instead of dash.
-    public const string MeterName = "System.Buffers.PinnedBlockMemoryPool";
+    public const string MeterName = "Microsoft.AspNetCore.MemoryPool";
 
     private readonly Meter _meter;
     private readonly UpDownCounter<long> _currentMemory;
     private readonly Counter<long> _totalAllocatedMemory;
     private readonly Counter<long> _evictedMemory;
-    private readonly Counter<long> _usageRate;
+    private readonly Counter<long> _totalRented;
 
     public PinnedBlockMemoryPoolMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
 
         _currentMemory = _meter.CreateUpDownCounter<long>(
-            "pinnedblockmemorypool.current_memory",
+            "aspnetcore.memorypool.current_memory",
             unit: "{bytes}",
-            description: "Number of bytes that are currently pooled by the pinned block memory pool.");
+            description: "Number of bytes that are currently pooled by the pool.");
 
         _totalAllocatedMemory = _meter.CreateCounter<long>(
-           "pinnedblockmemorypool.total_allocated",
+           "aspnetcore.memorypool.total_allocated",
             unit: "{bytes}",
-            description: "Total number of allocations made by the pinned block memory pool.");
+            description: "Total number of allocations made by the pool.");
 
         _evictedMemory = _meter.CreateCounter<long>(
-           "pinnedblockmemorypool.evicted_memory",
+           "aspnetcore.memorypool.evicted_memory",
             unit: "{bytes}",
             description: "Total number of bytes that have been evicted.");
 
-        _usageRate = _meter.CreateCounter<long>(
-            "pinnedblockmemorypool.usage_rate",
+        _totalRented = _meter.CreateCounter<long>(
+            "aspnetcore.memorypool.total_rented",
             unit: "{bytes}",
-            description: "Rate of bytes rented from the pool."
-            );
+            description: "Total number of rented bytes from the pool.");
     }
 
     public void UpdateCurrentMemory(int bytes)
@@ -63,6 +59,6 @@ internal sealed class PinnedBlockMemoryPoolMetrics
 
     public void Rent(int bytes)
     {
-        _usageRate.Add(bytes);
+        _totalRented.Add(bytes);
     }
 }

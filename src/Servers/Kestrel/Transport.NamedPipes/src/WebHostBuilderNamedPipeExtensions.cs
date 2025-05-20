@@ -3,7 +3,6 @@
 
 using System.Runtime.Versioning;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 using Microsoft.Extensions.DependencyInjection;

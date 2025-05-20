@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 
 #nullable enable
 
-namespace System.Buffers;
+namespace Microsoft.AspNetCore;
 
 /// <summary>
 /// Used to allocate and distribute re-usable blocks of memory.
@@ -159,6 +158,12 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
         PerformEviction();
     }
 
+    /// <summary>
+    /// Examines the current usage and activity of the memory pool and evicts a calculated number of unused memory blocks.
+    /// The eviction policy is adaptive: if the pool is underutilized or idle, more blocks are evicted;
+    /// if activity is high, fewer or no blocks are evicted.
+    /// Evicted blocks are removed from the pool and their memory is unrooted for garbage collection.
+    /// </summary>
     internal void PerformEviction()
     {
         var currentCount = (uint)_blocks.Count;

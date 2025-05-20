@@ -2,6 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Microsoft.Extensions.Internal.Test;
 
@@ -192,9 +197,10 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
         var previousCount = memoryPool.BlockCount();
 
         // Scheduling only works every 10 seconds and is initialized to UtcNow + 10 when the pool is constructed
-        Assert.False(memoryPool.TryScheduleEviction(DateTime.UtcNow));
+        var time = DateTime.UtcNow;
+        Assert.False(memoryPool.TryScheduleEviction(time));
 
-        Assert.True(memoryPool.TryScheduleEviction(DateTime.UtcNow.AddSeconds(10)));
+        Assert.True(memoryPool.TryScheduleEviction(time.AddSeconds(10)));
 
         var maxWait = TimeSpan.FromSeconds(5);
         while (memoryPool.BlockCount() > previousCount - (previousCount / 30) && maxWait > TimeSpan.Zero)
@@ -206,10 +212,10 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
         Assert.InRange(memoryPool.BlockCount(), previousCount - (previousCount / 10), previousCount - (previousCount / 30));
 
         // Since we scheduled successfully, we now need to wait 10 seconds to schedule again.
-        Assert.False(memoryPool.TryScheduleEviction(DateTime.UtcNow.AddSeconds(10)));
+        Assert.False(memoryPool.TryScheduleEviction(time.AddSeconds(10)));
 
         previousCount = memoryPool.BlockCount();
-        Assert.True(memoryPool.TryScheduleEviction(DateTime.UtcNow.AddSeconds(20)));
+        Assert.True(memoryPool.TryScheduleEviction(time.AddSeconds(20)));
 
         maxWait = TimeSpan.FromSeconds(5);
         while (memoryPool.BlockCount() > previousCount - (previousCount / 30) && maxWait > TimeSpan.Zero)
@@ -219,5 +225,154 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
         }
 
         Assert.InRange(memoryPool.BlockCount(), previousCount - (previousCount / 10), previousCount - (previousCount / 30));
+    }
+
+    [Fact]
+    public void CurrentMemoryMetricTracksPooledMemory()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var currentMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.current_memory");
+
+        var pool = new PinnedBlockMemoryPool(testMeterFactory);
+
+        Assert.Empty(currentMemoryMetric.GetMeasurementSnapshot());
+
+        var mem = pool.Rent();
+        mem.Dispose();
+
+        Assert.Collection(currentMemoryMetric.GetMeasurementSnapshot(), m => Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value));
+
+        mem = pool.Rent();
+
+        Assert.Equal(-1 * PinnedBlockMemoryPool.BlockSize, currentMemoryMetric.LastMeasurement.Value);
+
+        var mem2 = pool.Rent();
+
+        mem.Dispose();
+        mem2.Dispose();
+
+        Assert.Equal(2 * PinnedBlockMemoryPool.BlockSize, currentMemoryMetric.GetMeasurementSnapshot().EvaluateAsCounter());
+
+        // Eviction after returning everything to reset internal counters
+        pool.PerformEviction();
+
+        // Trigger eviction
+        pool.PerformEviction();
+
+        // Verify eviction updates current memory metric
+        Assert.Equal(0, currentMemoryMetric.GetMeasurementSnapshot().EvaluateAsCounter());
+    }
+
+    [Fact]
+    public void TotalAllocatedMetricTracksAllocatedMemory()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var totalMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.total_allocated");
+
+        var pool = new PinnedBlockMemoryPool(testMeterFactory);
+
+        Assert.Empty(totalMemoryMetric.GetMeasurementSnapshot());
+
+        var mem1 = pool.Rent();
+        var mem2 = pool.Rent();
+
+        // Each Rent that allocates a new block should increment total memory by block size
+        Assert.Equal(2 * PinnedBlockMemoryPool.BlockSize, totalMemoryMetric.GetMeasurementSnapshot().EvaluateAsCounter());
+
+        mem1.Dispose();
+        mem2.Dispose();
+
+        // Disposing (returning) blocks does not affect total memory
+        Assert.Equal(2 * PinnedBlockMemoryPool.BlockSize, totalMemoryMetric.GetMeasurementSnapshot().EvaluateAsCounter());
+    }
+
+    [Fact]
+    public void TotalRentedMetricTracksRentOperations()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.total_rented");
+
+        var pool = new PinnedBlockMemoryPool(testMeterFactory);
+
+        Assert.Empty(rentMetric.GetMeasurementSnapshot());
+
+        var mem1 = pool.Rent();
+        var mem2 = pool.Rent();
+
+        // Each Rent should record the size of the block rented
+        Assert.Collection(rentMetric.GetMeasurementSnapshot(),
+            m => Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value),
+            m => Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value));
+
+        mem1.Dispose();
+        mem2.Dispose();
+
+        // Disposing does not affect rent metric
+        Assert.Equal(2 * PinnedBlockMemoryPool.BlockSize, rentMetric.GetMeasurementSnapshot().EvaluateAsCounter());
+    }
+
+    [Fact]
+    public void EvictedMemoryMetricTracksEvictedMemory()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var evictMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.evicted_memory");
+
+        var pool = new PinnedBlockMemoryPool(testMeterFactory);
+
+        // Fill the pool with some blocks
+        var blocks = new List<IMemoryOwner<byte>>();
+        for (int i = 0; i < 10; i++)
+        {
+            blocks.Add(pool.Rent());
+        }
+        foreach (var block in blocks)
+        {
+            block.Dispose();
+        }
+        blocks.Clear();
+
+        Assert.Empty(evictMetric.GetMeasurementSnapshot());
+
+        // Eviction after returning everything to reset internal counters
+        pool.PerformEviction();
+
+        // Trigger eviction
+        pool.PerformEviction();
+
+        // At least some blocks should be evicted, each eviction records block size
+        Assert.NotEmpty(evictMetric.GetMeasurementSnapshot());
+        foreach (var measurement in evictMetric.GetMeasurementSnapshot())
+        {
+            Assert.Equal(PinnedBlockMemoryPool.BlockSize, measurement.Value);
+        }
+    }
+
+    // Smoke test to ensure that metrics are aggregated across multiple pools if the same meter factory is used
+    [Fact]
+    public void MetricsAreAggregatedAcrossPoolsWithSameMeterFactory()
+    {
+        var testMeterFactory = new TestMeterFactory();
+        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.total_rented");
+
+        var pool1 = new PinnedBlockMemoryPool(testMeterFactory);
+        var pool2 = new PinnedBlockMemoryPool(testMeterFactory);
+
+        var mem1 = pool1.Rent();
+        var mem2 = pool2.Rent();
+
+        // Both pools should contribute to the same metric stream
+        Assert.Equal(2 * PinnedBlockMemoryPool.BlockSize, rentMetric.GetMeasurementSnapshot().EvaluateAsCounter());
+
+        mem1.Dispose();
+        mem2.Dispose();
+
+        // Renting and returning from both pools should not interfere with metric collection
+        var mem3 = pool1.Rent();
+        var mem4 = pool2.Rent();
+
+        Assert.Equal(4 * PinnedBlockMemoryPool.BlockSize, rentMetric.GetMeasurementSnapshot().EvaluateAsCounter());
+
+        mem3.Dispose();
+        mem4.Dispose();
     }
 }
