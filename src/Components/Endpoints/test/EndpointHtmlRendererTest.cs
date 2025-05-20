@@ -47,6 +47,21 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task DoesNotRenderChildAfterRendererStopped()
+    {
+        renderer.SignalRendererToFinishRendering();
+
+        var httpContext = GetHttpContext();
+        var writer = new StringWriter();
+
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), null, ParameterView.Empty);
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+        var content = writer.ToString();
+
+        Assert.DoesNotContain("Hello from SimpleComponent", content);
+    }
+
+    [Fact]
     public async Task CanRender_ParameterlessComponent_ClientMode()
     {
         // Arrange
@@ -1756,6 +1771,7 @@ public class EndpointHtmlRendererTest
 
     private class TestEndpointHtmlRenderer : EndpointHtmlRenderer
     {
+        private bool _rendererIsStopped = false;
         public TestEndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : base(serviceProvider, loggerFactory)
         {
         }
@@ -1763,6 +1779,20 @@ public class EndpointHtmlRendererTest
         internal int TestAssignRootComponentId(IComponent component)
         {
             return base.AssignRootComponentId(component);
+        }
+        public void SignalRendererToFinishRendering()
+        {
+            // sets a deferred stop on the renderer, which will have an effect after the current batch is completed
+            _rendererIsStopped = true;
+        }
+
+        protected override void ProcessPendingRender()
+        {
+            if (_rendererIsStopped)
+            {
+                return;
+            }
+            base.ProcessPendingRender();
         }
     }
 
