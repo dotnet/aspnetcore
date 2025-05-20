@@ -46,7 +46,6 @@ public class Program
 
         #if (IndividualLocalAuth)
         builder.Services.AddCascadingAuthenticationState();
-        builder.Services.AddScoped<IdentityUserAccessor>();
         builder.Services.AddScoped<IdentityRedirectManager>();
         #if (UseServer)
         builder.Services.AddScoped<AuthenticationStateProvider, IdentityRevalidatingAuthenticationStateProvider>();
