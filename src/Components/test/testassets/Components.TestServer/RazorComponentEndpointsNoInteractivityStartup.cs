@@ -50,8 +50,15 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         {
             app.Map("/reexecution", reexecutionApp =>
             {
+                reexecutionApp.UseStaticFiles();
+                reexecutionApp.UseRouting();
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
-                ConfigureSubdirPipeline(reexecutionApp, env);
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                reexecutionApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorComponents<TRootComponent>();
+                });
             });
 
             ConfigureSubdirPipeline(app, env);
