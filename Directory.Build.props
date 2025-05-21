@@ -133,6 +133,9 @@
 
     <!-- // Temporary diagnostic code from https://github.com/dotnet/extensions/pull/4130 for metrics APIs used in test. -->
     <NoWarn>$(NoWarn);TBD</NoWarn>
+
+    <!-- In Preview5 only, NoWarn this signing error about mismatched 1st/3rd party .dll/signatures. SignTool mistakenly sees R2R images as 3rd-party -->
+    <NoWarn>$(NoWarn);SIGN004</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->
