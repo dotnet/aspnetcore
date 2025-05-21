@@ -66,37 +66,7 @@ public sealed class ValidateContext
     /// When available, property names in validation errors will be formatted according to the
     /// PropertyNamingPolicy and JsonPropertyName attributes.
     /// </summary>
-    internal JsonSerializerOptions? SerializerOptions 
-    { 
-        get
-        {
-            // If explicit options have been set, use those (primarily for testing)
-            if (_serializerOptions is not null)
-            {
-                return _serializerOptions;
-            }
-            
-            // Otherwise try to get them from DI
-            var jsonOptionsType = Type.GetType("Microsoft.AspNetCore.Http.Json.JsonOptions, Microsoft.AspNetCore.Http.Extensions");
-            if (jsonOptionsType is null)
-            {
-                return null;
-            }
-            
-            var jsonOptionsService = ValidationContext.GetService(jsonOptionsType);
-            if (jsonOptionsService is null)
-            {
-                return null;
-            }
-            
-            // Get the SerializerOptions property via reflection
-            var serializerOptionsProperty = jsonOptionsType.GetProperty("SerializerOptions");
-            return serializerOptionsProperty?.GetValue(jsonOptionsService) as JsonSerializerOptions;
-        }
-        set => _serializerOptions = value;
-    }
-    
-    private JsonSerializerOptions? _serializerOptions;
+    public JsonSerializerOptions? SerializerOptions { get; set; }
 
     internal void AddValidationError(string key, string[] error)
     {
