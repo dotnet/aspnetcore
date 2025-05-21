@@ -55,12 +55,14 @@ public class EndpointHtmlRendererTest
 
         var component = new StoppingRendererComponent();
         var id = renderer.AssignRootComponentId(component);
-        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(id, ParameterView.Empty));
-        int initialRenderCount = renderer.RenderCount;
+        var initialRenderOperation = renderer.Dispatcher.InvokeAsync(
+            () => renderer.RenderRootComponentAsync(id, ParameterView.Empty));
 
         renderer.SignalRendererToFinishRendering();
-
         component.TaskCompletionSource.SetResult(false);
+        await initialRenderOperation;
+        int initialRenderCount = renderer.RenderCount;
+
         await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(id, ParameterView.Empty));
         Assert.Equal(initialRenderCount, renderer.RenderCount);
     }
@@ -1776,19 +1778,10 @@ public class EndpointHtmlRendererTest
     private class TestEndpointHtmlRenderer : EndpointHtmlRenderer
     {
         private bool _rendererIsStopped = false;
-        private int _lastComponentId;
         private int _renderCount;
-        private RenderBatch _lastBatch;
 
         public TestEndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : base(serviceProvider, loggerFactory)
         {
-        }
-
-        internal int TestAssignRootComponentId(IComponent component)
-        {
-            var id = base.AssignRootComponentId(component);
-            _lastComponentId = id;
-            return id;
         }
 
         protected override void ProcessPendingRender()
@@ -1800,12 +1793,9 @@ public class EndpointHtmlRendererTest
             base.ProcessPendingRender();
 
             _renderCount++;
-            _lastBatch = GetCurrentRenderBatch();
         }
 
         public int RenderCount => _renderCount;
-
-        public RenderBatch GetCurrentRenderBatch() => _lastBatch;
 
         public new void SignalRendererToFinishRendering()
         {
