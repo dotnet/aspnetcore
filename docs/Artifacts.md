@@ -1,7 +1,7 @@
 Artifacts
 =========
 
-Building this repo produces build artifacts in the directory structure described below. Build outputs are organized into logical groups based on artifact type and the intended usage of the artifacts.
+Building this repo produces build artifacts in the directory structure described below. Build outputs are organized into logical groups, based on artifact type and the intended usage of the artifacts.
 
 See also https://github.com/dotnet/arcade/blob/master/Documentation/ArcadeSdk.md This repo follows _most_ of the conventions described there.
 
