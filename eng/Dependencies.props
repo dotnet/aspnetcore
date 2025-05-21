@@ -265,10 +265,10 @@ and are generated based on the last package release.
       <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
     </LatestPackageReference>
     <LatestPackageReference Update="Microsoft.CodeAnalysis.CSharp">
-      <Version>$(Analyzer_MicrosoftCodeAnalysisCSharpVersion)</Version>
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
     </LatestPackageReference>
     <LatestPackageReference Update="Microsoft.CodeAnalysis.CSharp.Workspaces">
-      <Version>$(Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion)</Version>
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
     </LatestPackageReference>
     <LatestPackageReference Update="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore">
       <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
