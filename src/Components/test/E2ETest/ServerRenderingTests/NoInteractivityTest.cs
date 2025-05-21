@@ -87,28 +87,37 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("Default Not Found Page", () => Browser.Title);
     }
 
-    [Fact]
-    public void ProgrammaticNavigationToNotExistingPathReExecutesTo404()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void ProgrammaticNavigationToNotExistingPathReExecutesTo404(bool streaming)
     {
-        Navigate($"{ServerPathBase}/reexecution/redirection-not-found?navigate-programmatically=true");
+        string streamingPath = streaming ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}?navigate-programmatically=true");
         Assert404ReExecuted();
     }
 
-    [Fact]
-    public void LinkNavigationToNotExistingPathReExecutesTo404()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LinkNavigationToNotExistingPathReExecutesTo404(bool streaming)
     {
-        Navigate($"{ServerPathBase}/reexecution/redirection-not-found");
+        string streamingPath = streaming ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}");
         Browser.Click(By.Id("link-to-not-existing-page"));
         Assert404ReExecuted();
     }
 
-    [Fact]
-    public void BrowserNavigationToNotExistingPathReExecutesTo404()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void BrowserNavigationToNotExistingPathReExecutesTo404(bool streaming)
     {
         // non-existing path has to have re-execution middleware set up
         // so it has to have "reexecution" prefix. Otherwise middleware mapping
         // will not be activated, see configuration in Startup
-        Navigate($"{ServerPathBase}/reexecution/not-existing-page");
+        string streamingPath = streaming ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/not-existing-page-ssr{streamingPath}");
         Assert404ReExecuted();
     }
 

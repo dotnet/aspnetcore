@@ -1,0 +1,26 @@
+﻿
+@inject NavigationManager NavigationManager
+
+<h1>Original page</h1>
+
+<p id="test-info">Any content</p>
+<a id="link-to-not-existing-page" href="@(_nonExistingPath)">
+    Go to not-existing-page
+</a>
+
+@code{
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "navigate-programmatically")]
+    public bool? NavigateProgrammatically { get; set; }
+
+    private string? _nonExistingPath;
+
+    protected override void OnInitialized()
+    {
+        _nonExistingPath = $"{NavigationManager.BaseUri}not-existing-page";
+        if (NavigateProgrammatically == true)
+        {
+            NavigationManager.NavigateTo(_nonExistingPath);
+        }
+    }
+}
