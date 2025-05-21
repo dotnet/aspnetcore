@@ -35,6 +35,8 @@ target_arch='x64'
 configuration=''
 runtime_source_feed=''
 runtime_source_feed_key=''
+source_build=''
+product_build=''
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
@@ -87,6 +89,9 @@ Options:
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
+
+    --sourceBuild|-sb                 Build the repository in source-only mode.
+    --productBuild|-pb                Build the repository in product-build mode.
 
 Description:
     This build script installs required tools and runs an MSBuild command on this repository
@@ -232,6 +237,11 @@ while [[ $# -gt 0 ]]; do
         -excludeCIBinarylog|-nobl)
             exclude_ci_binary_log=true
             ;;
+        -verbosity|-v)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --verbosity" && __usage
+            verbosity="${1:-}"
+            ;;
         -dotnet-runtime-source-feed|-dotnetruntimesourcefeed|-runtime-source-feed|-runtimesourcefeed)
             shift
             [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed" && __usage
@@ -241,6 +251,13 @@ while [[ $# -gt 0 ]]; do
             shift
             [ -z "${1:-}" ] && __error "Missing value for parameter --runtime-source-feed-key" && __usage
             runtime_source_feed_key="${1:-}"
+            ;;
+        -sourcebuild|-source-build|-sb)
+            source_build=true
+            product_build=true
+            ;;
+        -productbuild|-product-build|-pb)
+            product_build=true
             ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"
@@ -299,6 +316,8 @@ fi
 [ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJSUnlessSourcebuild=$build_nodejs"
 [ ! -z "$build_managed" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
 [ ! -z "$build_installers" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildInstallers=$build_installers"
+[ ! -z "$product_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuildRepo=$product_build"
+[ ! -z "$source_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuildSourceOnly=$source_build"
 
 # Run restore by default unless --no-restore or --no-build was specified.
 [ -z "$run_restore" ] && run_restore=true
@@ -328,13 +347,15 @@ msbuild_args[${#msbuild_args[*]}]="-p:Configuration=$configuration"
 # Set up additional runtime args
 toolset_build_args=()
 if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
-    runtimeFeedArg="/p:DotNetRuntimeSourceFeed=$runtime_source_feed"
-    runtimeFeedKeyArg="/p:DotNetRuntimeSourceFeedKey=$runtime_source_feed_key"
+    runtimeFeedArg="-p:DotNetRuntimeSourceFeed=$runtime_source_feed"
+    runtimeFeedKeyArg="-p:DotNetRuntimeSourceFeedKey=$runtime_source_feed_key"
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedArg
     msbuild_args[${#msbuild_args[*]}]=$runtimeFeedKeyArg
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedArg
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedKeyArg
 fi
+[ ! -z "$product_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuildRepo=$product_build"
+[ ! -z "$source_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuildSourceOnly=$source_build"
 
 # Initialize global variables need to be set before the import of Arcade is imported
 restore=$run_restore
@@ -353,10 +374,6 @@ fi
 if [ "$(uname)" = "Darwin" ]; then
     ulimit -n 10000
 fi
-
-# tools.sh expects the remaining arguments to be available via the $properties string array variable
-# TODO: Remove when https://github.com/dotnet/source-build/issues/4337 is implemented.
-properties=$msbuild_args
 
 # Import Arcade
 . "$DIR/common/tools.sh"

@@ -9,6 +9,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable ASP0029
 
 namespace System.Runtime.CompilerServices
 {
@@ -38,6 +39,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             Name = name;
         }
 
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
         internal global::System.Type ContainingType { get; }
         internal string Name { get; }
 
@@ -60,6 +62,16 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.AspNetCore.Http.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
+            if (type == typeof(global::TestService))
+            {
+                validatableInfo = CreateTestService();
+                return true;
+            }
+            if (type == typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>))
+            {
+                validatableInfo = CreateDictionary_2();
+                return true;
+            }
 
             return false;
         }
@@ -71,6 +83,52 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             return false;
         }
 
+        private ValidatableTypeInfo CreateTestService()
+        {
+            return new GeneratedValidatableTypeInfo(
+                type: typeof(global::TestService),
+                members: [
+                    new GeneratedValidatablePropertyInfo(
+                        containingType: typeof(global::TestService),
+                        propertyType: typeof(int),
+                        name: "Value",
+                        displayName: "Value"
+                    ),
+                ]
+            );
+        }
+        private ValidatableTypeInfo CreateDictionary_2()
+        {
+            return new GeneratedValidatableTypeInfo(
+                type: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                members: [
+                    new GeneratedValidatablePropertyInfo(
+                        containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                        propertyType: typeof(global::System.Collections.Generic.ICollection<global::TestService>),
+                        name: "System.Collections.Generic.IDictionary<TKey,TValue>.Values",
+                        displayName: "System.Collections.Generic.IDictionary<TKey,TValue>.Values"
+                    ),
+                    new GeneratedValidatablePropertyInfo(
+                        containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                        propertyType: typeof(global::System.Collections.Generic.IEnumerable<global::TestService>),
+                        name: "System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.Values",
+                        displayName: "System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.Values"
+                    ),
+                    new GeneratedValidatablePropertyInfo(
+                        containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                        propertyType: typeof(global::TestService),
+                        name: "this[]",
+                        displayName: "this[]"
+                    ),
+                    new GeneratedValidatablePropertyInfo(
+                        containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                        propertyType: typeof(global::System.Collections.ICollection),
+                        name: "System.Collections.IDictionary.Values",
+                        displayName: "System.Collections.IDictionary.Values"
+                    ),
+                ]
+            );
+        }
 
     }
 
@@ -78,7 +136,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     file static class GeneratedServiceCollectionExtensions
     {
         [InterceptsLocation]
-        public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddValidation(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action<ValidationOptions>? configureOptions = null)
+        public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddValidation(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action<global::Microsoft.AspNetCore.Http.Validation.ValidationOptions>? configureOptions = null)
         {
             // Use non-extension method to avoid infinite recursion.
             return global::Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(services, options =>
@@ -95,23 +153,50 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class ValidationAttributeCache
     {
-        private sealed record CacheKey(global::System.Type ContainingType, string PropertyName);
+        private sealed record CacheKey([property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] global::System.Type ContainingType, string PropertyName);
         private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> _cache = new();
 
         public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
             global::System.Type containingType,
             string propertyName)
         {
             var key = new CacheKey(containingType, propertyName);
             return _cache.GetOrAdd(key, static k =>
             {
+                var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
+
+                // Get attributes from the property
                 var property = k.ContainingType.GetProperty(k.PropertyName);
-                if (property == null)
+                if (property != null)
                 {
-                    return [];
+                    var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true);
+
+                    results.AddRange(propertyAttributes);
                 }
 
-                return [.. global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true)];
+                // Check constructors for parameters that match the property name
+                // to handle record scenarios
+                foreach (var constructor in k.ContainingType.GetConstructors())
+                {
+                    // Look for parameter with matching name (case insensitive)
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+
+                    if (parameter != null)
+                    {
+                        var paramAttributes = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameter, inherit: true);
+
+                        results.AddRange(paramAttributes);
+
+                        break;
+                    }
+                }
+
+                return results.ToArray();
             });
         }
     }

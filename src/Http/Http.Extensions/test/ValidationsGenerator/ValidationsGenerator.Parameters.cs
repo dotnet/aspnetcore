@@ -16,27 +16,43 @@ using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Validation;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddValidation();
+builder.Services.AddSingleton<TestService>();
+builder.Services.AddKeyedSingleton<TestService>("serviceKey");
 
 var app = builder.Build();
 
-app.MapGet("/params", (
+app.MapPost("/params", (
+    // Skipped from validation because it is resolved as a service by IServiceProviderIsService
+    TestService testService,
+    // Skipped from validation because it is marked as a [FromKeyedService] parameter
+    [FromKeyedServices("serviceKey")] TestService testService2,
     [Range(10, 100)] int value1,
     [Range(10, 100), Display(Name = "Valid identifier")] int value2,
     [Required] string value3 = "some-value",
     [CustomValidation(ErrorMessage = "Value must be an even number")] int value4 = 4,
-    [CustomValidation, Range(10, 100)] int value5 = 10) => "OK");
+    [CustomValidation, Range(10, 100)] int value5 = 10,
+    // Skipped from validation because it is marked as a [FromService] parameter
+    [FromServices] [Range(10, 100)] int? value6 = 4,
+    Dictionary<string, TestService>? testDict = null) => "OK");
 
 app.Run();
 
 public class CustomValidationAttribute : ValidationAttribute
 {
     public override bool IsValid(object? value) => value is int number && number % 2 == 0;
+}
+
+public class TestService
+{
+    [Range(10, 100)]
+    public int Value { get; set; } = 4;
 }
 """;
         await Verify(source, out var compilation);

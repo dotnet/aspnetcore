@@ -16,11 +16,11 @@
 
   <PropertyGroup Condition="'$(TestDependsOnPlaywright)' == 'true'">
     <SkipHelixQueues>
-      $(HelixQueueAlmaLinux8);
-      $(HelixQueueAlpine318);
-      $(HelixQueueDebian12);
+      $(HelixQueueAlmaLinux);
+      $(HelixQueueAlpine);
+      $(HelixQueueAzureLinux);
+      $(HelixQueueDebian);
       $(HelixQueueFedora40);
-      $(HelixQueueMariner);
       Ubuntu.2004.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>

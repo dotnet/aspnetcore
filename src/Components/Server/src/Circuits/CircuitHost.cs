@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
@@ -23,11 +24,14 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
+    private readonly CircuitMetrics? _circuitMetrics;
+    private readonly ComponentsActivitySource? _componentsActivitySource;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
     private bool _disposed;
+    private long _startTime;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
     // it need so be torn down. The registry listens to this even so that the circuit can
@@ -47,6 +51,8 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
+        CircuitMetrics? circuitMetrics,
+        ComponentsActivitySource? componentsActivitySource,
         ILogger logger)
     {
         CircuitId = circuitId;
@@ -64,6 +70,8 @@ internal partial class CircuitHost : IAsyncDisposable
         JSRuntime = jsRuntime ?? throw new ArgumentNullException(nameof(jsRuntime));
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
+        _circuitMetrics = circuitMetrics;
+        _componentsActivitySource = componentsActivitySource;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         Services = scope.ServiceProvider;
@@ -100,7 +108,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, CancellationToken cancellationToken)
+    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpContext, CancellationToken cancellationToken)
     {
         Log.InitializationStarted(_logger);
 
@@ -110,13 +118,17 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 throw new InvalidOperationException("The circuit host is already initialized.");
             }
+            Activity? activity = null;
 
             try
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
+                activity = _componentsActivitySource?.StartCircuitActivity(CircuitId.Id, httpContext);
+                _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
+
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
-                // the components inmediately during start.
+                // the components immediately during start.
                 // On Blazor Web scenarios we delay running these handlers until the first UpdateRootComponents call
                 // We do this so that the handlers can have access to the restored application state.
                 if (Descriptors.Count > 0)
@@ -157,9 +169,13 @@ internal partial class CircuitHost : IAsyncDisposable
                 _isFirstUpdate = Descriptors.Count == 0;
 
                 Log.InitializationSucceeded(_logger);
+
+                activity?.Stop();
             }
             catch (Exception ex)
             {
+                _componentsActivitySource?.FailCircuitActivity(activity, ex);
+
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
@@ -230,6 +246,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task OnCircuitOpenedAsync(CancellationToken cancellationToken)
     {
         Log.CircuitOpened(_logger, CircuitId);
+        _circuitMetrics?.OnCircuitOpened();
 
         Renderer.Dispatcher.AssertAccess();
 
@@ -259,6 +276,7 @@ internal partial class CircuitHost : IAsyncDisposable
     public async Task OnConnectionUpAsync(CancellationToken cancellationToken)
     {
         Log.ConnectionUp(_logger, CircuitId, Client.ConnectionId);
+        _circuitMetrics?.OnConnectionUp();
 
         Renderer.Dispatcher.AssertAccess();
 
@@ -288,6 +306,7 @@ internal partial class CircuitHost : IAsyncDisposable
     public async Task OnConnectionDownAsync(CancellationToken cancellationToken)
     {
         Log.ConnectionDown(_logger, CircuitId, Client.ConnectionId);
+        _circuitMetrics?.OnConnectionDown();
 
         Renderer.Dispatcher.AssertAccess();
 
@@ -317,6 +336,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task OnCircuitDownAsync(CancellationToken cancellationToken)
     {
         Log.CircuitClosed(_logger, CircuitId);
+        _circuitMetrics?.OnCircuitDown(_startTime, Stopwatch.GetTimestamp());
 
         List<Exception> exceptions = null;
 
@@ -828,10 +848,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             operation.Descriptor.ComponentType,
                             operation.Marker.Value.Key,
                             operation.Descriptor.Parameters);
-                        if (pendingTasks != null)
-                        {
-                            pendingTasks[i] = task;
-                        }
+                        pendingTasks?[i] = task;
                         break;
                     case RootComponentOperationType.Update:
                         // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.

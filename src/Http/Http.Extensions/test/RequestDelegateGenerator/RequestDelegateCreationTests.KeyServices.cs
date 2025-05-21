@@ -127,7 +127,7 @@ app.MapGet("/", (HttpContext context, [FromKeyedServices("service1")] TestServic
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             async () => await endpoint.RequestDelegate(httpContext));
 
-        Assert.Equal("No service for type 'Microsoft.AspNetCore.Http.Generators.Tests.TestService' has been registered.", exception.Message);
+        Assert.Equal("No keyed service for type 'Microsoft.AspNetCore.Http.Generators.Tests.TestService' using key type 'System.String' has been registered.", exception.Message);
     }
 
     [Fact]

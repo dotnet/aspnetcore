@@ -9,8 +9,8 @@
 
 @inject UserManager<ApplicationUser> UserManager
 @inject IEmailSender<ApplicationUser> EmailSender
-@inject IdentityUserAccessor UserAccessor
 @inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
 
 <PageTitle>Manage email</PageTitle>
 
@@ -55,7 +55,7 @@
 
 @code {
     private string? message;
-    private ApplicationUser user = default!;
+    private ApplicationUser? user;
     private string? email;
     private bool isEmailConfirmed;
 
@@ -67,7 +67,13 @@
 
     protected override async Task OnInitializedAsync()
     {
-        user = await UserAccessor.GetRequiredUserAsync(HttpContext);
+        user = await UserManager.GetUserAsync(HttpContext.User);
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
+        }
+
         email = await UserManager.GetEmailAsync(user);
         isEmailConfirmed = await UserManager.IsEmailConfirmedAsync(user);
 
@@ -79,6 +85,12 @@
         if (Input.NewEmail is null || Input.NewEmail == email)
         {
             message = "Your email is unchanged.";
+            return;
+        }
+
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
             return;
         }
 
@@ -98,6 +110,12 @@
     {
         if (email is null)
         {
+            return;
+        }
+
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
             return;
         }
 

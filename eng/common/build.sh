@@ -136,7 +136,7 @@ while [[ $# > 0 ]]; do
       restore=true
       pack=true
       ;;
-    -productBuild|-pb)
+    -productbuild|-pb)
       build=true
       product_build=true
       restore=true
@@ -250,6 +250,7 @@ function Build {
     /p:PerformanceTest=$performance_test \
     /p:Sign=$sign \
     /p:Publish=$publish \
+    /p:RestoreStaticGraphEnableBinaryLogger=$binary_log \
     $properties
 
   ExitWithExitCode 0

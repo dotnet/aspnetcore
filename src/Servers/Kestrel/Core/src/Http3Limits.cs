@@ -37,7 +37,7 @@ public class Http3Limits
     /// <summary>
     /// Indicates the size of the maximum allowed size of a request header field sequence. This limit applies to both name and value sequences in their compressed and uncompressed representations.
     /// <para>
-    /// Value must be greater than 0, defaults to 2^14 (16,384).
+    /// Value must be greater than 0, defaults to 2^15 (32,768).
     /// </para>
     /// </summary>
     public int MaxRequestHeaderFieldSize

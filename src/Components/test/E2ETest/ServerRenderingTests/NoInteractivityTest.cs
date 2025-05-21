@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -63,5 +64,59 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("Test claim value", () => Browser.FindElement(By.Id("test-claim")).Text);
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-in-test-role-1")).Text);
         Browser.Equal("True", () => Browser.FindElement(By.Id("is-in-test-role-2")).Text);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void NavigatesWithoutInteractivityByRequestRedirection(bool controlFlowByException, bool isStreaming)
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException", isEnabled: controlFlowByException);
+        string streaming = isStreaming ? $"streaming-" : "";
+        Navigate($"{ServerPathBase}/routing/ssr-{streaming}navigate-to");
+        Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);
+        Browser.Click(By.Id("redirectButton"));
+        Browser.Equal("Routing test cases", () => Browser.Exists(By.Id("test-info")).Text);
+    }
+
+    [Fact]
+    public void CanRenderNotFoundPageAfterStreamingStarted()
+    {
+        Navigate($"{ServerPathBase}/streaming-set-not-found");
+        Browser.Equal("Default Not Found Page", () => Browser.Title);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanRenderNotFoundPageNoStreaming(bool useCustomNotFoundPage)
+    {
+        string query = useCustomNotFoundPage ? "&useCustomNotFoundPage=true" : "";
+        Navigate($"{ServerPathBase}/set-not-found?shouldSet=true{query}");
+
+        if (useCustomNotFoundPage)
+        {
+            var infoText = Browser.FindElement(By.Id("test-info")).Text;
+            Assert.Contains("Welcome On Custom Not Found Page", infoText);
+        }
+        else
+        {
+            var bodyText = Browser.FindElement(By.TagName("body")).Text;
+            Assert.Contains("There's nothing here", bodyText);
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanRenderNotFoundPageWithStreaming(bool useCustomNotFoundPage)
+    {
+        // when streaming started, we always render page under "not-found" path
+        string query = useCustomNotFoundPage ? "?useCustomNotFoundPage=true" : "";
+        Navigate($"{ServerPathBase}/streaming-set-not-found{query}");
+
+        string expectedTitle = "Default Not Found Page";
+        Browser.Equal(expectedTitle, () => Browser.Title);
     }
 }

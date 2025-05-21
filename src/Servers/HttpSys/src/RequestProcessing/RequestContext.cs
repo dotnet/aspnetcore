@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -219,28 +221,116 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
     }
 
-    internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    /// <summary>
+    /// Attempts to get the client hello message bytes from the http.sys.
+    /// If not successful, will return false.
+    /// </summary>
+    internal unsafe bool GetAndInvokeTlsClientHelloMessageBytesCallback(IFeatureCollection features, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
     {
-        if (HttpApi.HttpGetRequestProperty != null)
+        if (!HttpApi.SupportsClientHello)
         {
-            var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
+            // not supported, so we just return and don't invoke the callback
+            return false;
+        }
+
+        uint bytesReturnedValue = 0;
+        uint* bytesReturned = &bytesReturnedValue;
+        uint statusCode;
+
+        var requestId = PinsReleased ? Request.RequestId : RequestId;
+
+        // we will try with some "random" buffer size
+        var buffer = ArrayPool<byte>.Shared.Rent(512);
+        try
+        {
             fixed (byte* pBuffer = buffer)
             {
-                var statusCode = HttpApi.HttpGetRequestProperty(
-                    Server.RequestQueue.Handle,
-                    RequestId,
-                    HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                statusCode = HttpApi.HttpGetRequestProperty(
+                    requestQueueHandle: Server.RequestQueue.Handle,
+                    requestId,
+                    propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
                     qualifier: null,
                     qualifierSize: 0,
-                    (void*)pBuffer,
-                    (uint)buffer.Length,
-                    bytesReturned: null,
-                    IntPtr.Zero);
+                    output: pBuffer,
+                    outputSize: (uint)buffer.Length,
+                    bytesReturned: (IntPtr)bytesReturned,
+                    overlapped: IntPtr.Zero);
 
-                if (statusCode == ErrorCodes.ERROR_SUCCESS)
+                if (statusCode is ErrorCodes.ERROR_SUCCESS)
                 {
-                    return Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
+                    tlsClientHelloBytesCallback(features, buffer.AsSpan(0, (int)bytesReturnedValue));
+                    return true;
                 }
+            }
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+        }
+
+        // if buffer supplied is too small, `bytesReturned` will have proper size
+        // so retry should succeed with the properly allocated buffer
+        if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
+        {
+            try
+            {
+                var correctSize = (int)bytesReturnedValue;
+                buffer = ArrayPool<byte>.Shared.Rent(correctSize);
+
+                fixed (byte* pBuffer = buffer)
+                {
+                    statusCode = HttpApi.HttpGetRequestProperty(
+                        requestQueueHandle: Server.RequestQueue.Handle,
+                        requestId,
+                        propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                        qualifier: null,
+                        qualifierSize: 0,
+                        output: pBuffer,
+                        outputSize: (uint)buffer.Length,
+                        bytesReturned: (IntPtr)bytesReturned,
+                        overlapped: IntPtr.Zero);
+
+                    if (statusCode is ErrorCodes.ERROR_SUCCESS)
+                    {
+                        tlsClientHelloBytesCallback(features, buffer.AsSpan(0, correctSize));
+                        return true;
+                    }
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+            }
+        }
+
+        Log.TlsClientHelloRetrieveError(Logger, requestId, statusCode);
+        return false;
+    }
+
+    internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
+    {
+        if (!HttpApi.HttpGetRequestPropertySupported)
+        {
+            return default;
+        }
+
+        var buffer = new byte[HttpApiTypes.SniPropertySizeInBytes];
+        fixed (byte* pBuffer = buffer)
+        {
+            var statusCode = HttpApi.HttpGetRequestProperty(
+                Server.RequestQueue.Handle,
+                RequestId,
+                HTTP_REQUEST_PROPERTY.HttpRequestPropertySni,
+                qualifier: null,
+                qualifierSize: 0,
+                pBuffer,
+                (uint)buffer.Length,
+                bytesReturned: IntPtr.Zero,
+                IntPtr.Zero);
+
+            if (statusCode == ErrorCodes.ERROR_SUCCESS)
+            {
+                return Marshal.PtrToStructure<HTTP_REQUEST_PROPERTY_SNI>((IntPtr)pBuffer);
             }
         }
 

@@ -54,19 +54,20 @@
     <FrameworkReference
       Update="Microsoft.NETCore.App"
       Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '${DefaultNetCoreTargetFramework}') AND '${DefaultNetCoreTargetFramework}' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
-      RuntimeFrameworkVersion="${MicrosoftNETCoreAppRuntimeVersion}"
+      RuntimeFrameworkVersion="${MicrosoftNETCoreAppRefVersion}"
       TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
 
     <PackageReference Include="Microsoft.DotNet.ILCompiler"
       Condition=" '$(PublishAot)' == 'true' "
-      Version="${MicrosoftNETCoreAppRuntimeVersion}" />
+      Version="${MicrosoftNETCoreAppRefVersion}" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Use the same NETCore shared framework as repo built against except when building product code in servicing. -->
-    <KnownFrameworkReference Update="Microsoft.NETCore.App">
+    <!-- We cannot use live shims when building tool packs in VMR - only package for current arch is available. -->
+    <KnownFrameworkReference Update="Microsoft.NETCore.App" Condition=" '$(DotNetBuild)' != 'true' OR '$(PackAsToolShimRuntimeIdentifiers)' == '' ">
       <LatestRuntimeFrameworkVersion
-          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</LatestRuntimeFrameworkVersion>
       <TargetingPackVersion
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</TargetingPackVersion>
       <!--
@@ -79,25 +80,26 @@
       -->
       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
           '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' AND
-          '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRuntimeVersion}</DefaultRuntimeFrameworkVersion>
+          '$(TargetLatestDotNetRuntime)' != 'false' ">${MicrosoftNETCoreAppRefVersion}</DefaultRuntimeFrameworkVersion>
       <RuntimePackRuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(RuntimePackRuntimeIdentifiers);$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
     </KnownFrameworkReference>
 
-    <KnownAppHostPack Update="Microsoft.NETCore.App">
+    <!-- We cannot use live shims when building tool packs in VMR - only package for current arch is available. -->
+    <KnownAppHostPack Update="Microsoft.NETCore.App" Condition=" '$(DotNetBuild)' != 'true' OR '$(PackAsToolShimRuntimeIdentifiers)' == '' ">
       <AppHostPackVersion
-        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</AppHostPackVersion>
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</AppHostPackVersion>
       <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownAppHostPack>
 
     <KnownRuntimePack Update="Microsoft.NETCore.App">
       <LatestRuntimeFrameworkVersion
-        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</LatestRuntimeFrameworkVersion>
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</LatestRuntimeFrameworkVersion>
       <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownRuntimePack>
 
     <KnownWebAssemblySdkPack Update="Microsoft.NET.Sdk.WebAssembly.Pack">
       <WebAssemblySdkPackVersion
-        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</WebAssemblySdkPackVersion>
+        Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</WebAssemblySdkPackVersion>
     </KnownWebAssemblySdkPack>
 
     <KnownAspNetCorePack Update="Microsoft.AspNetCore.App.Internal.Assets">
@@ -107,13 +109,13 @@
 
     <KnownCrossgen2Pack Update="Microsoft.NETCore.App.Crossgen2">
       <Crossgen2PackVersion
-          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</Crossgen2PackVersion>
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</Crossgen2PackVersion>
       <Crossgen2RuntimeIdentifiers Condition="'$(DotNetBuild)' == 'true'">%(Crossgen2RuntimeIdentifiers);$(NETCoreSdkRuntimeIdentifier);$(TargetRuntimeIdentifier)</Crossgen2RuntimeIdentifiers>
     </KnownCrossgen2Pack>
 
     <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks" Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">
       <ILLinkPackVersion
-          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRuntimeVersion}</ILLinkPackVersion>
+          Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</ILLinkPackVersion>
     </KnownILLinkPack>
 
     <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->

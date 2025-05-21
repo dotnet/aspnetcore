@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -13,8 +16,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal class TestCircuitHost : CircuitHost
 {
-    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, CircuitHandler[] circuitHandlers, ILogger logger)
-        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, circuitHandlers, logger)
+    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, CircuitHandler[] circuitHandlers, CircuitMetrics circuitMetrics, ComponentsActivitySource componentsActivitySource, ILogger logger)
+        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, circuitHandlers, circuitMetrics, componentsActivitySource, logger)
     {
     }
 
@@ -35,6 +38,8 @@ internal class TestCircuitHost : CircuitHost
             .Setup(services => services.GetService(typeof(IJSRuntime)))
             .Returns(jsRuntime);
         var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
+        var circuitMetrics = new CircuitMetrics(new TestMeterFactory());
+        var componentsActivitySource = new ComponentsActivitySource();
 
         if (remoteRenderer == null)
         {
@@ -60,6 +65,8 @@ internal class TestCircuitHost : CircuitHost
             jsRuntime,
             navigationManager,
             handlers,
+            circuitMetrics,
+            componentsActivitySource,
             NullLogger<CircuitHost>.Instance);
     }
 }

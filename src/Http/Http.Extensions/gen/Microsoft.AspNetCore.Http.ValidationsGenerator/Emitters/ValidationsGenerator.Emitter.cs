@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.Text;
 using System.Text;
 using Microsoft.CodeAnalysis.CSharp;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Http.ValidationsGenerator;
 
@@ -14,6 +15,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     public static string GeneratedCodeConstructor => $@"global::System.CodeDom.Compiler.GeneratedCodeAttribute(""{typeof(ValidationsGenerator).Assembly.FullName}"", ""{typeof(ValidationsGenerator).Assembly.GetName().Version}"")";
     public static string GeneratedCodeAttribute => $"[{GeneratedCodeConstructor}]";
+    private static readonly Regex InvalidNameCharsRegex = new("[^0-9A-Za-z_]", RegexOptions.Compiled);
 
     internal static void Emit(SourceProductionContext context, (InterceptableLocation? AddValidation, ImmutableArray<ValidatableType> ValidatableTypes) emitInputs)
     {
@@ -37,6 +39,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 // </auto-generated>
 //------------------------------------------------------------------------------
 #nullable enable
+#pragma warning disable ASP0029
 
 namespace System.Runtime.CompilerServices
 {
@@ -66,6 +69,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             Name = name;
         }
 
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
         internal global::System.Type ContainingType { get; }
         internal string Name { get; }
 
@@ -106,7 +110,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     file static class GeneratedServiceCollectionExtensions
     {
         {{addValidation.GetInterceptsLocationAttributeSyntax()}}
-        public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddValidation(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action<ValidationOptions>? configureOptions = null)
+        public static global::Microsoft.Extensions.DependencyInjection.IServiceCollection AddValidation(this global::Microsoft.Extensions.DependencyInjection.IServiceCollection services, global::System.Action<global::Microsoft.AspNetCore.Http.Validation.ValidationOptions>? configureOptions = null)
         {
             // Use non-extension method to avoid infinite recursion.
             return global::Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(services, options =>
@@ -123,23 +127,50 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
     {{GeneratedCodeAttribute}}
     file static class ValidationAttributeCache
     {
-        private sealed record CacheKey(global::System.Type ContainingType, string PropertyName);
+        private sealed record CacheKey([property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)] global::System.Type ContainingType, string PropertyName);
         private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> _cache = new();
 
         public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties)]
             global::System.Type containingType,
             string propertyName)
         {
             var key = new CacheKey(containingType, propertyName);
             return _cache.GetOrAdd(key, static k =>
             {
+                var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
+
+                // Get attributes from the property
                 var property = k.ContainingType.GetProperty(k.PropertyName);
-                if (property == null)
+                if (property != null)
                 {
-                    return [];
+                    var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true);
+
+                    results.AddRange(propertyAttributes);
                 }
 
-                return [.. global::System.Reflection.CustomAttributeExtensions.GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true)];
+                // Check constructors for parameters that match the property name
+                // to handle record scenarios
+                foreach (var constructor in k.ContainingType.GetConstructors())
+                {
+                    // Look for parameter with matching name (case insensitive)
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+
+                    if (parameter != null)
+                    {
+                        var paramAttributes = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameter, inherit: true);
+
+                        results.AddRange(paramAttributes);
+
+                        break;
+                    }
+                }
+
+                return results.ToArray();
             });
         }
     }
@@ -209,12 +240,7 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
 
     private static string SanitizeTypeName(string typeName)
     {
-        // Replace invalid characters with underscores and remove generic notation
-        return typeName
-            .Replace(".", "_")
-            .Replace("<", "_")
-            .Replace(">", "_")
-            .Replace(",", "_")
-            .Replace(" ", "_");
+        // Replace invalid characters with underscores
+        return InvalidNameCharsRegex.Replace(typeName, "_");
     }
 }
