@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 internal sealed class ApiResponseTypeProvider
 {
+    internal readonly record struct ResponseKey(
+        int StatusCode,
+        Type? DeclaredType,
+        string? ContentType);
+
     private readonly IModelMetadataProvider _modelMetadataProvider;
     private readonly IActionResultTypeMapper _mapper;
     private readonly MvcOptions _mvcOptions;
@@ -87,9 +92,7 @@ internal sealed class ApiResponseTypeProvider
             responseTypeMetadataProviders,
             _modelMetadataProvider);
 
-        // Read response metadata from providers and
-        // overwrite responseTypes from the metadata based
-        // on the status code
+        // Read response metadata from providers
         var responseTypesFromProvider = ReadResponseMetadata(
             responseMetadataAttributes,
             type,
@@ -98,6 +101,7 @@ internal sealed class ApiResponseTypeProvider
             out var _,
             responseTypeMetadataProviders);
 
+        // Merge the response types
         foreach (var responseType in responseTypesFromProvider)
         {
             responseTypes[responseType.Key] = responseType.Value;
@@ -106,7 +110,11 @@ internal sealed class ApiResponseTypeProvider
         // Set the default status only when no status has already been set explicitly
         if (responseTypes.Count == 0 && type != null)
         {
-            responseTypes.Add(StatusCodes.Status200OK, new ApiResponseType
+            var key = new ResponseKey(
+                StatusCodes.Status200OK,
+                type,
+                null);
+            responseTypes.Add(key, new ApiResponseType
             {
                 StatusCode = StatusCodes.Status200OK,
                 Type = type,
@@ -128,11 +136,16 @@ internal sealed class ApiResponseTypeProvider
             CalculateResponseFormatForType(apiResponse, contentTypes, responseTypeMetadataProviders, _modelMetadataProvider);
         }
 
-        return responseTypes.Values;
+        // Order the response types by status code, type name, and content type for consistent output
+        return responseTypes.Values
+            .OrderBy(r => r.StatusCode)
+            .ThenBy(r => r.Type?.Name)
+            .ThenBy(r => r.ApiResponseFormats.FirstOrDefault()?.MediaType)
+            .ToList();
     }
 
     // Shared with EndpointMetadataApiDescriptionProvider
-    internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadResponseMetadata(
         IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
         Type? type,
         Type? defaultErrorType,
@@ -142,7 +155,7 @@ internal sealed class ApiResponseTypeProvider
         IModelMetadataProvider? modelMetadataProvider = null)
     {
         errorSetByDefault = false;
-        var results = new Dictionary<int, ApiResponseType>();
+        var results = new Dictionary<ResponseKey, ApiResponseType>();
 
         // Get the content type that the action explicitly set to support.
         // Walk through all 'filter' attributes in order, and allow each one to see or override
@@ -213,7 +226,13 @@ internal sealed class ApiResponseTypeProvider
 
                 if (apiResponseType.Type != null)
                 {
-                    results[apiResponseType.StatusCode] = apiResponseType;
+                    var mediaType = apiResponseType.ApiResponseFormats.FirstOrDefault()?.MediaType;
+                    var key = new ResponseKey(
+                        apiResponseType.StatusCode,
+                        apiResponseType.Type,
+                        mediaType);
+                    
+                    results[key] = apiResponseType;
                 }
             }
         }
@@ -221,13 +240,13 @@ internal sealed class ApiResponseTypeProvider
         return results;
     }
 
-    internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(
+    internal static Dictionary<ResponseKey, ApiResponseType> ReadResponseMetadata(
         IReadOnlyList<IProducesResponseTypeMetadata> responseMetadata,
         Type? type,
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
         IModelMetadataProvider? modelMetadataProvider = null)
     {
-        var results = new Dictionary<int, ApiResponseType>();
+        var results = new Dictionary<ResponseKey, ApiResponseType>();
 
         foreach (var metadata in responseMetadata)
         {
@@ -269,7 +288,12 @@ internal sealed class ApiResponseTypeProvider
 
             if (apiResponseType.Type != null)
             {
-                results[apiResponseType.StatusCode] = apiResponseType;
+                var mediaType = apiResponseType.ApiResponseFormats.FirstOrDefault()?.MediaType;
+                var key = new ResponseKey(
+                    apiResponseType.StatusCode,
+                    apiResponseType.Type,
+                    mediaType);
+                results[key] = apiResponseType;
             }
         }
 

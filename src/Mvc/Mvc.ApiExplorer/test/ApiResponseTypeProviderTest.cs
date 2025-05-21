@@ -823,6 +823,40 @@ public class ApiResponseTypeProviderTest
         // Assert
         Assert.False(result.Any());
     }
+    
+    [Fact]
+    public void GetApiResponseTypes_HandlesMultipleResponseTypesWithSameStatusCodeButDifferentContentTypes()
+    {
+        // Arrange
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetUser));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(BaseModel), 200, "application/json"), FilterScope.Action));
+        actionDescriptor.FilterDescriptors.Add(new FilterDescriptor(new ProducesResponseTypeAttribute(typeof(string), 200, "text/html"), FilterScope.Action));
+        
+        var provider = GetProvider();
+
+        // Act
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        Assert.Equal(2, result.Count);
+        
+        var orderedResults = result.OrderBy(r => r.ApiResponseFormats.FirstOrDefault()?.MediaType).ToList();
+        
+        Assert.Collection(
+            orderedResults,
+            responseType =>
+            {
+                Assert.Equal(typeof(BaseModel), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(new[] { "application/json" }, GetSortedMediaTypes(responseType));
+            },
+            responseType =>
+            {
+                Assert.Equal(typeof(string), responseType.Type);
+                Assert.Equal(200, responseType.StatusCode);
+                Assert.Equal(new[] { "text/html" }, GetSortedMediaTypes(responseType));
+            });
+    }
 
     private static ApiResponseTypeProvider GetProvider()
     {
