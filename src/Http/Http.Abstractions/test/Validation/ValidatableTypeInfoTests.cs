@@ -857,12 +857,62 @@ public class ValidatableTypeInfoTests
         public string? LastName { get; set; }
     }
 
+[Fact]
+    public async Task Validate_RespectsJsonPropertyNameAttribute_ForValidationErrors()
+    {
+        // Arrange
+        var modelType = new TestValidatableTypeInfo(
+            typeof(ModelWithJsonPropertyNames),
+            [
+                CreatePropertyInfo(typeof(ModelWithJsonPropertyNames), typeof(string), "UserName", "UserName",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(ModelWithJsonPropertyNames), typeof(string), "EmailAddress", "EmailAddress",
+                    [new EmailAddressAttribute()])
+            ]);
+
+        var model = new ModelWithJsonPropertyNames { EmailAddress = "invalid-email" }; // Missing username and invalid email
+
+        var jsonOptions = new JsonSerializerOptions();
+        // Add a custom converter that knows about JsonPropertyName attributes
+        jsonOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(ModelWithJsonPropertyNames), modelType }
+            }),
+            ValidationContext = new ValidationContext(model),
+            SerializerOptions = jsonOptions
+        };
+
+        // Act
+        await modelType.ValidateAsync(model, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp => 
+            {
+                // Currently uses camelCase naming policy, not JsonPropertyName
+                Assert.Equal("userName", kvp.Key);
+                Assert.Equal("The UserName field is required.", kvp.Value.First());
+            },
+            kvp => 
+            {
+                // Currently uses camelCase naming policy, not JsonPropertyName
+                Assert.Equal("emailAddress", kvp.Key); 
+                Assert.Equal("The EmailAddress field is not a valid e-mail address.", kvp.Value.First());
+            });
+    }
+
     private class ModelWithJsonPropertyNames
     {
         [JsonPropertyName("username")]
         public string? UserName { get; set; }
 
         [JsonPropertyName("email")]
+        [EmailAddress]
         public string? EmailAddress { get; set; }
     }
 

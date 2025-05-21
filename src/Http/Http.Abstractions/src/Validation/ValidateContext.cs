@@ -134,6 +134,7 @@ public sealed class ValidateContext
         int lastIndex = 0;
         int i = 0;
         bool inBracket = false;
+        var propertyNamingPolicy = SerializerOptions?.PropertyNamingPolicy;
 
         while (i < key.Length)
         {
@@ -145,7 +146,9 @@ public sealed class ValidateContext
                 if (i > lastIndex)
                 {
                     string segment = key.Substring(lastIndex, i - lastIndex);
-                    string formattedSegment = SerializerOptions!.PropertyNamingPolicy!.ConvertName(segment);
+                    string formattedSegment = propertyNamingPolicy != null 
+                        ? propertyNamingPolicy.ConvertName(segment) 
+                        : segment;
                     result.Append(formattedSegment);
                 }
                 
@@ -172,7 +175,9 @@ public sealed class ValidateContext
                 if (i > lastIndex)
                 {
                     string segment = key.Substring(lastIndex, i - lastIndex);
-                    string formattedSegment = SerializerOptions!.PropertyNamingPolicy!.ConvertName(segment);
+                    string formattedSegment = propertyNamingPolicy != null 
+                        ? propertyNamingPolicy.ConvertName(segment) 
+                        : segment;
                     result.Append(formattedSegment);
                 }
                 result.Append(c);
@@ -186,9 +191,9 @@ public sealed class ValidateContext
         if (lastIndex < key.Length)
         {
             string segment = key.Substring(lastIndex);
-            if (!inBracket)
+            if (!inBracket && propertyNamingPolicy != null)
             {
-                segment = SerializerOptions!.PropertyNamingPolicy!.ConvertName(segment);
+                segment = propertyNamingPolicy.ConvertName(segment);
             }
             result.Append(segment);
         }
