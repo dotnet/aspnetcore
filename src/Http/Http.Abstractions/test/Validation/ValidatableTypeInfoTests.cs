@@ -139,7 +139,7 @@ public class ValidatableTypeInfoTests
             kvp =>
             {
                 Assert.Equal("name", kvp.Key);
-                Assert.Equal("The Name field is required.", kvp.Value.First());
+                Assert.Equal("The name field is required.", kvp.Value.First());
             },
             kvp =>
             {
@@ -149,12 +149,12 @@ public class ValidatableTypeInfoTests
             kvp =>
             {
                 Assert.Equal("address.street", kvp.Key);
-                Assert.Equal("The Street field is required.", kvp.Value.First());
+                Assert.Equal("The street field is required.", kvp.Value.First());
             },
             kvp =>
             {
                 Assert.Equal("address.city", kvp.Key);
-                Assert.Equal("The City field is required.", kvp.Value.First());
+                Assert.Equal("The city field is required.", kvp.Value.First());
             });
     }
 
@@ -281,7 +281,7 @@ public class ValidatableTypeInfoTests
             kvp =>
             {
                 Assert.Equal("items[0].quantity", kvp.Key);
-                Assert.Equal("The field quantity must be between 1 and 100.", kvp.Value.First());
+                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
             });
     }
 

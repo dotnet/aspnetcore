@@ -215,41 +215,65 @@ public sealed class ValidateContext
             return errorMessage;
         }
         
-        // Common pattern: "The {PropertyName} field is required."
-        const string pattern = "The ";
-        const string fieldPattern = " field ";
+        // Pattern 1: "The {PropertyName} field is required."
+        const string pattern1Start = "The ";
+        const string pattern1Middle = " field ";
         
-        int startIndex = errorMessage.IndexOf(pattern, StringComparison.Ordinal);
-        if (startIndex != 0)
+        // Pattern 2: "The field {PropertyName} must be between X and Y."
+        const string pattern2 = "The field ";
+        
+        // Try Pattern 1 first
+        if (errorMessage.StartsWith(pattern1Start, StringComparison.Ordinal))
         {
-            return errorMessage; // Does not start with "The "
+            int endIndex = errorMessage.IndexOf(pattern1Middle, pattern1Start.Length, StringComparison.Ordinal);
+            if (endIndex > pattern1Start.Length)
+            {
+                // Extract the property name between "The " and " field "
+                ReadOnlySpan<char> messageSpan = errorMessage.AsSpan();
+                ReadOnlySpan<char> propertyNameSpan = messageSpan.Slice(pattern1Start.Length, endIndex - pattern1Start.Length);
+                string propertyName = propertyNameSpan.ToString();
+                
+                if (!string.IsNullOrWhiteSpace(propertyName))
+                {
+                    // Format the property name with the naming policy
+                    string formattedPropertyName = SerializerOptions.PropertyNamingPolicy.ConvertName(propertyName);
+                    
+                    // Construct the new error message by combining parts
+                    return string.Concat(
+                        pattern1Start, 
+                        formattedPropertyName, 
+                        messageSpan.Slice(endIndex).ToString()
+                    );
+                }
+            }
+        }
+        // Try Pattern 2
+        else if (errorMessage.StartsWith(pattern2, StringComparison.Ordinal))
+        {
+            // Find the word after "The field " and before " must"
+            const string pattern2End = " must";
+            int startPos = pattern2.Length;
+            int endPos = errorMessage.IndexOf(pattern2End, startPos, StringComparison.Ordinal);
+            
+            if (endPos > startPos)
+            {
+                string propertyName = errorMessage.Substring(startPos, endPos - startPos);
+                if (!string.IsNullOrWhiteSpace(propertyName))
+                {
+                    // Format the property name with the naming policy
+                    string formattedPropertyName = SerializerOptions.PropertyNamingPolicy.ConvertName(propertyName);
+                    
+                    // Reconstruct the message
+                    ReadOnlySpan<char> errorSpan = errorMessage.AsSpan();
+                    return string.Concat(
+                        pattern2, 
+                        formattedPropertyName, 
+                        errorSpan.Slice(endPos));
+                }
+            }
         }
         
-        int endIndex = errorMessage.IndexOf(fieldPattern, pattern.Length, StringComparison.Ordinal);
-        if (endIndex <= pattern.Length)
-        {
-            return errorMessage; // Does not contain " field " or it's too early
-        }
-        
-        // Extract the property name between "The " and " field "
-        // Use ReadOnlySpan<char> for better performance
-        ReadOnlySpan<char> messageSpan = errorMessage.AsSpan();
-        ReadOnlySpan<char> propertyNameSpan = messageSpan.Slice(pattern.Length, endIndex - pattern.Length);
-        string propertyName = propertyNameSpan.ToString();
-        
-        if (string.IsNullOrWhiteSpace(propertyName))
-        {
-            return errorMessage;
-        }
-        
-        // Format the property name with the naming policy
-        string formattedPropertyName = SerializerOptions.PropertyNamingPolicy.ConvertName(propertyName);
-        
-        // Construct the new error message by combining parts
-        return string.Concat(
-            pattern, 
-            formattedPropertyName, 
-            messageSpan.Slice(endIndex).ToString()
-        );
+        // Return the original message if no patterns matched or formatting failed
+        return errorMessage;
     }
 }
