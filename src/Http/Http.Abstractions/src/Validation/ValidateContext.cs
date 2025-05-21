@@ -60,13 +60,13 @@ public sealed class ValidateContext
     /// This is used to prevent stack overflows from circular references.
     /// </summary>
     public int CurrentDepth { get; set; }
-
+    
     /// <summary>
     /// Gets or sets the JSON serializer options to use for property name formatting.
     /// When set, property names in validation errors will be formatted according to the
     /// PropertyNamingPolicy and JsonPropertyName attributes.
     /// </summary>
-    public JsonSerializerOptions? SerializerOptions { get; set; }
+    internal JsonSerializerOptions? SerializerOptions { get; set; }
 
     internal void AddValidationError(string key, string[] error)
     {
@@ -108,7 +108,7 @@ public sealed class ValidateContext
             ValidationErrors[formattedKey] = [error];
         }
     }
-
+    
     private string FormatKey(string key)
     {
         if (string.IsNullOrEmpty(key) || SerializerOptions?.PropertyNamingPolicy is null)
@@ -123,11 +123,10 @@ public sealed class ValidateContext
             return FormatComplexKey(key);
         }
 
-        // For JsonPropertyName attribute support, we'd need property info
-        // but for basic usage, apply the naming policy directly
+        // Apply the naming policy directly
         return SerializerOptions.PropertyNamingPolicy.ConvertName(key);
     }
-
+    
     private string FormatComplexKey(string key)
     {
         // Use a more direct approach for complex keys with dots and array indices

@@ -57,7 +57,8 @@ internal static class ValidationEndpointFilterFactory
             ValidateContext? validateContext = null;
 
             // Get JsonOptions from DI if available
-            var jsonOptions = context.HttpContext.RequestServices.GetService<IOptions<JsonOptions>>()?.Value;
+            var jsonOptions = context.HttpContext.RequestServices.GetService<IOptions<JsonOptions>>();
+            var jsonSerializerOptions = jsonOptions?.Value?.SerializerOptions;
 
             for (var i = 0; i < context.Arguments.Count; i++)
             {
@@ -77,9 +78,15 @@ internal static class ValidationEndpointFilterFactory
                     validateContext = new ValidateContext
                     {
                         ValidationOptions = options,
-                        ValidationContext = validationContext,
-                        SerializerOptions = jsonOptions?.SerializerOptions
+                        ValidationContext = validationContext
                     };
+                    
+                    // Set the serializer options via reflection as it's internal
+                    if (jsonSerializerOptions is not null)
+                    {
+                        var serializerOptionsProp = typeof(ValidateContext).GetProperty("SerializerOptions", BindingFlags.NonPublic | BindingFlags.Instance);
+                        serializerOptionsProp?.SetValue(validateContext, jsonSerializerOptions);
+                    }
                 }
                 else
                 {
