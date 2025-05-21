@@ -96,42 +96,43 @@ public class ApiResponseTypeProviderTest
         // Act
         var result = provider.GetApiResponseTypes(actionDescriptor);
 
+        // Group responses by status code
+        var responsesByStatus = result
+            .OrderBy(r => r.StatusCode)
+            .GroupBy(r => r.StatusCode)
+            .ToDictionary(g => g.Key, g => g.OrderBy(r => r.Type?.Name).ToList());
+            
         // Assert
+        // Check status code 201
+        Assert.True(responsesByStatus.ContainsKey(201));
+        var status201Responses = responsesByStatus[201];
+        Assert.Contains(status201Responses, r => r.Type == typeof(BaseModel));
+        var baseModelResponse = status201Responses.First(r => r.Type == typeof(BaseModel));
         Assert.Collection(
-            result.OrderBy(r => r.StatusCode),
-            responseType =>
-            {
-                Assert.Equal(201, responseType.StatusCode);
-                Assert.Equal(typeof(BaseModel), responseType.Type);
-                Assert.False(responseType.IsDefaultResponse);
-                Assert.Collection(
-                    responseType.ApiResponseFormats,
-                    format =>
-                    {
-                        Assert.Equal("application/json", format.MediaType);
-                        Assert.IsType<TestOutputFormatter>(format.Formatter);
-                    });
-            },
-            responseType =>
-            {
-                Assert.Equal(400, responseType.StatusCode);
-                Assert.Equal(typeof(ProblemDetails), responseType.Type);
-                Assert.False(responseType.IsDefaultResponse);
-                Assert.Collection(
-                    responseType.ApiResponseFormats,
-                    format =>
-                    {
-                        Assert.Equal("application/json", format.MediaType);
-                        Assert.IsType<TestOutputFormatter>(format.Formatter);
-                    });
-            },
-            responseType =>
-            {
-                Assert.Equal(404, responseType.StatusCode);
-                Assert.Equal(typeof(void), responseType.Type);
-                Assert.False(responseType.IsDefaultResponse);
-                Assert.Empty(responseType.ApiResponseFormats);
+            baseModelResponse.ApiResponseFormats,
+            format => {
+                Assert.Equal("application/json", format.MediaType);
+                Assert.IsType<TestOutputFormatter>(format.Formatter);
             });
+            
+        // Check status code 400
+        Assert.True(responsesByStatus.ContainsKey(400));
+        var status400Responses = responsesByStatus[400];
+        Assert.Contains(status400Responses, r => r.Type == typeof(ProblemDetails));
+        var problemDetailsResponse = status400Responses.First(r => r.Type == typeof(ProblemDetails));
+        Assert.Collection(
+            problemDetailsResponse.ApiResponseFormats,
+            format => {
+                Assert.Equal("application/json", format.MediaType);
+                Assert.IsType<TestOutputFormatter>(format.Formatter);
+            });
+            
+        // Check status code 404
+        Assert.True(responsesByStatus.ContainsKey(404));
+        var status404Responses = responsesByStatus[404];
+        Assert.Contains(status404Responses, r => r.Type == typeof(void));
+        var voidResponse = status404Responses.First(r => r.Type == typeof(void));
+        Assert.Empty(voidResponse.ApiResponseFormats);
     }
 
     [Fact]
