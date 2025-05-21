@@ -140,6 +140,7 @@ internal sealed partial class OpenApiJsonSchema
         {
             type = JsonSchemaType.Array;
             var array = new JsonArray();
+            reader.Read();
             while (reader.TokenType != JsonTokenType.EndArray)
             {
                 array.Add(ReadJsonNode(ref reader));

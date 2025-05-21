@@ -722,4 +722,52 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             return true;
         }
     }
+
+    // Regression test for https://github.com/dotnet/aspnetcore/issues/62023
+    // Testing that the array parsing in our OpenApiJsonSchema works
+    [Fact]
+    public async Task CustomConverterThatOutputsArrayWithDefaultValue()
+    {
+        // Arrange
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new EnumArrayTypeConverter());
+        });
+        var builder = CreateBuilder(serviceCollection);
+
+        // Act
+        builder.MapPost("/api", (EnumArrayType e = EnumArrayType.None) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var param = Assert.Single(operation.Parameters);
+            Assert.NotNull(param.Schema);
+            Assert.IsType<JsonArray>(param.Schema.Default);
+            // Type is null, it's up to the user to configure this via a custom schema
+            // transformer for types with a converter.
+            Assert.Null(param.Schema.Type);
+        });
+    }
+
+    public enum EnumArrayType
+    {
+        None = 1
+    }
+
+    public class EnumArrayTypeConverter : JsonConverter<EnumArrayType>
+    {
+        public override EnumArrayType Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return new EnumArrayType();
+        }
+
+        public override void Write(Utf8JsonWriter writer, EnumArrayType value, JsonSerializerOptions options)
+        {
+            writer.WriteStartArray();
+            writer.WriteEndArray();
+        }
+    }
 }
