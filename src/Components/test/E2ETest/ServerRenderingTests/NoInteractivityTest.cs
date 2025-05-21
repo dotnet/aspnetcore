@@ -87,6 +87,34 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("Default Not Found Page", () => Browser.Title);
     }
 
+    [Fact]
+    public void ProgrammaticNavigationToNotExistingPathReExecutesTo404()
+    {
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found?navigate-programmatically=true");
+        Assert404ReExecuted();
+    }
+
+    [Fact]
+    public void LinkNavigationToNotExistingPathReExecutesTo404()
+    {
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found");
+        Browser.Click(By.Id("link-to-not-existing-page"));
+        Assert404ReExecuted();
+    }
+
+    [Fact]
+    public void BrowserNavigationToNotExistingPathReExecutesTo404()
+    {
+        // non-existing path has to have re-execution middleware set up
+        // so it has to have "reexecution" prefix. Otherwise middleware mapping
+        // will not be activated, see configuration in Startup
+        Navigate($"{ServerPathBase}/reexecution/not-existing-page");
+        Assert404ReExecuted();
+    }
+
+    private void Assert404ReExecuted() =>
+        Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]

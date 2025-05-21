@@ -89,7 +89,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         });
     }
 
-    protected virtual void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
+    private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
     {
         WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
 
