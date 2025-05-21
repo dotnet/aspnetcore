@@ -74,8 +74,7 @@ public sealed class ValidateContext
         ValidationErrors ??= [];
 
         var formattedKey = FormatKey(key);
-        var formattedErrors = errors.Select(FormatErrorMessage).ToArray();
-        ValidationErrors[formattedKey] = formattedErrors;
+        ValidationErrors[formattedKey] = errors;
     }
 
     internal void AddOrExtendValidationErrors(string key, string[] errors)
@@ -83,18 +82,17 @@ public sealed class ValidateContext
         ValidationErrors ??= [];
 
         var formattedKey = FormatKey(key);
-        var formattedErrors = errors.Select(FormatErrorMessage).ToArray();
         
         if (ValidationErrors.TryGetValue(formattedKey, out var existingErrors))
         {
-            var newErrors = new string[existingErrors.Length + formattedErrors.Length];
+            var newErrors = new string[existingErrors.Length + errors.Length];
             existingErrors.CopyTo(newErrors, 0);
-            formattedErrors.CopyTo(newErrors, existingErrors.Length);
+            errors.CopyTo(newErrors, existingErrors.Length);
             ValidationErrors[formattedKey] = newErrors;
         }
         else
         {
-            ValidationErrors[formattedKey] = formattedErrors;
+            ValidationErrors[formattedKey] = errors;
         }
     }
 
@@ -103,15 +101,14 @@ public sealed class ValidateContext
         ValidationErrors ??= [];
 
         var formattedKey = FormatKey(key);
-        var formattedError = FormatErrorMessage(error);
         
-        if (ValidationErrors.TryGetValue(formattedKey, out var existingErrors) && !existingErrors.Contains(formattedError))
+        if (ValidationErrors.TryGetValue(formattedKey, out var existingErrors) && !existingErrors.Contains(error))
         {
-            ValidationErrors[formattedKey] = [.. existingErrors, formattedError];
+            ValidationErrors[formattedKey] = [.. existingErrors, error];
         }
         else
         {
-            ValidationErrors[formattedKey] = [formattedError];
+            ValidationErrors[formattedKey] = [error];
         }
     }
     
@@ -207,73 +204,5 @@ public sealed class ValidateContext
         return result.ToString();
     }
     
-    // Format validation error messages to use the same property naming policy as the keys
-    private string FormatErrorMessage(string errorMessage)
-    {
-        if (SerializerOptions?.PropertyNamingPolicy is null)
-        {
-            return errorMessage;
-        }
-        
-        // Pattern 1: "The {PropertyName} field is required."
-        const string pattern1Start = "The ";
-        const string pattern1Middle = " field ";
-        
-        // Pattern 2: "The field {PropertyName} must be between X and Y."
-        const string pattern2 = "The field ";
-        
-        // Try Pattern 1 first
-        if (errorMessage.StartsWith(pattern1Start, StringComparison.Ordinal))
-        {
-            int endIndex = errorMessage.IndexOf(pattern1Middle, pattern1Start.Length, StringComparison.Ordinal);
-            if (endIndex > pattern1Start.Length)
-            {
-                // Extract the property name between "The " and " field "
-                ReadOnlySpan<char> messageSpan = errorMessage.AsSpan();
-                ReadOnlySpan<char> propertyNameSpan = messageSpan.Slice(pattern1Start.Length, endIndex - pattern1Start.Length);
-                string propertyName = propertyNameSpan.ToString();
-                
-                if (!string.IsNullOrWhiteSpace(propertyName))
-                {
-                    // Format the property name with the naming policy
-                    string formattedPropertyName = SerializerOptions.PropertyNamingPolicy.ConvertName(propertyName);
-                    
-                    // Construct the new error message by combining parts
-                    return string.Concat(
-                        pattern1Start, 
-                        formattedPropertyName, 
-                        messageSpan.Slice(endIndex).ToString()
-                    );
-                }
-            }
-        }
-        // Try Pattern 2
-        else if (errorMessage.StartsWith(pattern2, StringComparison.Ordinal))
-        {
-            // Find the word after "The field " and before " must"
-            const string pattern2End = " must";
-            int startPos = pattern2.Length;
-            int endPos = errorMessage.IndexOf(pattern2End, startPos, StringComparison.Ordinal);
-            
-            if (endPos > startPos)
-            {
-                string propertyName = errorMessage.Substring(startPos, endPos - startPos);
-                if (!string.IsNullOrWhiteSpace(propertyName))
-                {
-                    // Format the property name with the naming policy
-                    string formattedPropertyName = SerializerOptions.PropertyNamingPolicy.ConvertName(propertyName);
-                    
-                    // Reconstruct the message
-                    ReadOnlySpan<char> errorSpan = errorMessage.AsSpan();
-                    return string.Concat(
-                        pattern2, 
-                        formattedPropertyName, 
-                        errorSpan.Slice(endPos));
-                }
-            }
-        }
-        
-        // Return the original message if no patterns matched or formatting failed
-        return errorMessage;
-    }
+
 }

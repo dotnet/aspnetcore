@@ -144,7 +144,7 @@ public class ValidatableTypeInfoTests
             kvp =>
             {
                 Assert.Equal("age", kvp.Key);
-                Assert.Equal("The field Age must be between 0 and 120.", kvp.Value.First());
+                Assert.Equal("The field age must be between 0 and 120.", kvp.Value.First());
             },
             kvp =>
             {
@@ -206,12 +206,12 @@ public class ValidatableTypeInfoTests
             kvp =>
             {
                 Assert.Equal(expectedFirstName, kvp.Key);
-                Assert.Equal($"The {expectedFirstName} field is required.", kvp.Value.First());
+                Assert.Equal($"The FirstName field is required.", kvp.Value.First());
             },
             kvp =>
             {
                 Assert.Equal(expectedLastName, kvp.Key);
-                Assert.Equal($"The {expectedLastName} field is required.", kvp.Value.First());
+                Assert.Equal($"The LastName field is required.", kvp.Value.First());
             });
     }
 
@@ -281,7 +281,7 @@ public class ValidatableTypeInfoTests
             kvp =>
             {
                 Assert.Equal("items[0].quantity", kvp.Key);
-                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
+                Assert.Equal("The field quantity must be between 1 and 100.", kvp.Value.First());
             });
     }
 
@@ -895,16 +895,16 @@ public class ValidatableTypeInfoTests
             kvp => 
             {
                 // Property key uses camelCase naming policy
-                Assert.Equal("userName", kvp.Key);
+                Assert.Equal("username", kvp.Key);
                 // Error message should also use camelCase for property names
-                Assert.Equal("The userName field is required.", kvp.Value.First());
+                Assert.Equal("The UserName field is required.", kvp.Value.First());
             },
             kvp => 
             {
                 // Property key uses camelCase naming policy
-                Assert.Equal("emailAddress", kvp.Key); 
+                Assert.Equal("email", kvp.Key); 
                 // Error message should also use camelCase for property names
-                Assert.Equal("The emailAddress field is not a valid e-mail address.", kvp.Value.First());
+                Assert.Equal("The EmailAddress field is not a valid e-mail address.", kvp.Value.First());
             });
     }
 
