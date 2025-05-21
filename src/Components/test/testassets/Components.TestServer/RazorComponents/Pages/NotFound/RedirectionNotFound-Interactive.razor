@@ -1,0 +1,32 @@
+﻿@page "/redirection-not-found"
+@page "/reexecution/redirection-not-found"
+@rendermode @(RenderModeHelper.GetRenderMode(_currentRenderMode))
+@inject NavigationManager NavigationManager
+
+<PageTitle>Original page</PageTitle>
+
+<p id="test-info">Any content</p>
+<a id="link-to-not-existing-page" href="@(_nonExistingPath)">
+    Go to not-existing-page
+</a>
+
+@code{
+    [Parameter, SupplyParameterFromQuery(Name = "renderMode")]
+    public string? RenderModeStr { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "navigate-programmatically")]
+    public bool? NavigateProgrammatically { get; set; }
+
+    private string? _nonExistingPath;
+    private RenderModeId _currentRenderMode => RenderModeHelper.ParseRenderMode(RenderModeStr);
+
+    protected override void OnInitialized()
+    {
+        _nonExistingPath = $"{NavigationManager.BaseUri}not-existing-page";
+        if (NavigateProgrammatically == true)
+        {
+            NavigationManager.NavigateTo(_nonExistingPath);
+        }
+    }
+}
