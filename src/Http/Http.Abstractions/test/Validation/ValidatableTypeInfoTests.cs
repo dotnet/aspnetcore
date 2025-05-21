@@ -271,17 +271,17 @@ public class ValidatableTypeInfoTests
             kvp =>
             {
                 Assert.Equal("orderNumber", kvp.Key);
-                Assert.Equal("The OrderNumber field is required.", kvp.Value.First());
+                Assert.Equal("The orderNumber field is required.", kvp.Value.First());
             },
             kvp =>
             {
                 Assert.Equal("items[0].productName", kvp.Key);
-                Assert.Equal("The ProductName field is required.", kvp.Value.First());
+                Assert.Equal("The productName field is required.", kvp.Value.First());
             },
             kvp =>
             {
                 Assert.Equal("items[0].quantity", kvp.Key);
-                Assert.Equal("The field Quantity must be between 1 and 100.", kvp.Value.First());
+                Assert.Equal("The field quantity must be between 1 and 100.", kvp.Value.First());
             });
     }
 
