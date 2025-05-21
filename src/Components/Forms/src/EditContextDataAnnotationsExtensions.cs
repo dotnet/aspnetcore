@@ -173,6 +173,10 @@ public static partial class EditContextDataAnnotationsExtensions
                 ValidationContext = validationContext,
             };
 
+            var containerMapping = new Dictionary<string, object?>();
+
+            validateContext.OnValidationError += (key, _, container) => containerMapping[key] = container;
+
             var validationTask = typeInfo.ValidateAsync(_editContext.Model, validateContext, CancellationToken.None);
 
             if (!validationTask.IsCompleted)
@@ -187,11 +191,16 @@ public static partial class EditContextDataAnnotationsExtensions
 
             if (validationErrors is not null && validationErrors.Count > 0)
             {
-                foreach (var (fieldPath, messages) in validationErrors)
+                foreach (var (fieldKey, messages) in validationErrors)
                 {
-                    var dotSegments = fieldPath.Split('.');
-                    var fieldName = dotSegments[^1];
-                    var fieldContainer = GetFieldContainer(_editContext.Model, dotSegments[..^1]);
+                    // Reverse mapping based on storing references during validation
+                    var fieldContainer = containerMapping[fieldKey] ?? _editContext.Model;
+
+                    // Alternative: Reverse mapping based on object graph walk
+                    //var fieldContainer = GetFieldContainer(_editContext.Model, fieldKey);
+
+                    var lastDotIndex = fieldKey.LastIndexOf('.');
+                    var fieldName = lastDotIndex >= 0 ? fieldKey[(lastDotIndex + 1)..] : fieldKey;
 
                     _messages.Add(new FieldIdentifier(fieldContainer, fieldName), messages);
                 }
@@ -201,12 +210,13 @@ public static partial class EditContextDataAnnotationsExtensions
         }
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
-        // TODO(OR): Replace this with a more robust implementation or a different approach. Ideally, collect references during the validation process itself.
+        // TODO(OR): Replace this with a more robust implementation or a different approach. E.g. collect references during the validation process itself.
         [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
-        private static object GetFieldContainer(object obj, string[] dotSegments)
+        private static object GetFieldContainer(object obj, string fieldKey)
         {
-            // The method does not check all possiblle null access and index bound errors as the path is constructed internally and assumed to be correct.
-            object currentObject = obj;
+            // The method does not check all possible null access and index bound errors as the path is constructed internally and assumed to be correct.
+            var dotSegments = fieldKey.Split('.')[..^1];
+            var currentObject = obj;
 
             for (int i = 0; i < dotSegments.Length; i++)
             {
