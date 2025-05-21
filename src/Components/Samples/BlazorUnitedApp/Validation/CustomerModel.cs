@@ -11,9 +11,5 @@ public class CustomerModel
     [EmailAddress(ErrorMessage = "Invalid Email Address.")]
     public string? Email { get; set; }
 
-    [Required(ErrorMessage = "Age is required.")]
-    [Range(18, 99, ErrorMessage = "Age must be between 18 and 99.")]
-    public int? Age { get; set; }
-
     public AddressModel ShippingAddress { get; set; } = new AddressModel();
 }

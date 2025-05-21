@@ -193,10 +193,12 @@ public static partial class EditContextDataAnnotationsExtensions
             {
                 foreach (var (fieldKey, messages) in validationErrors)
                 {
-                    // Reverse mapping based on storing references during validation
+                    // Reverse mapping based on storing references during validation.
+                    // With this approach, we could skip iterating over ValidateContext.ValidationErrors and pass the errors
+                    // directly to ValidationMessageStore in the OnValidationError handler.
                     var fieldContainer = containerMapping[fieldKey] ?? _editContext.Model;
 
-                    // Alternative: Reverse mapping based on object graph walk
+                    // Alternative: Reverse mapping based on object graph walk.
                     //var fieldContainer = GetFieldContainer(_editContext.Model, fieldKey);
 
                     var lastDotIndex = fieldKey.LastIndexOf('.');

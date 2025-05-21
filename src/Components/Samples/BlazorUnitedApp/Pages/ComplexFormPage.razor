@@ -8,7 +8,7 @@
 
 <EditForm Model="@order" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
-    
+
     <div class="container mt-4">
         <h4>Order Details</h4>
         <div class="mb-3">
@@ -32,24 +32,21 @@
                     <InputText id="customerEmail" @bind-Value="order.CustomerDetails.Email" class="form-control" />
                     <ValidationMessage For="@(() => order.CustomerDetails.Email)" />
                 </div>
-                <div class="mb-3">
-                    <label for="customerAge" class="form-label">Age</label>
-                    <InputNumber id="customerAge" @bind-Value="order.CustomerDetails.Age" class="form-control" />
-                    <ValidationMessage For="@(() => order.CustomerDetails.Age)" />
-                </div>
 
                 <h5>Shipping Address</h5>
                 <div class="card mb-3">
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label for="shippingStreet" class="form-label">Street</label>
-                            <InputText id="shippingStreet" @bind-Value="order.CustomerDetails.ShippingAddress.Street" class="form-control" />
-                            <ValidationMessage For="@(() => order.CustomerDetails.ShippingAddress.Street)" />
-                        </div>
-                        <div class="mb-3">
-                            <label for="shippingZipCode" class="form-label">Zip Code</label>
-                            <InputText id="shippingZipCode" @bind-Value="order.CustomerDetails.ShippingAddress.ZipCode" class="form-control" />
-                            <ValidationMessage For="@(() => order.CustomerDetails.ShippingAddress.ZipCode)" />
+                        <div class="row">
+                            <div class="mb-3 col-sm-8">
+                                <label for="shippingStreet" class="form-label">Street</label>
+                                <InputText id="shippingStreet" @bind-Value="order.CustomerDetails.ShippingAddress.Street" class="form-control" />
+                                <ValidationMessage For="@(() => order.CustomerDetails.ShippingAddress.Street)" />
+                            </div>
+                            <div class="mb-3 col-sm">
+                                <label for="shippingZipCode" class="form-label">Zip Code</label>
+                                <InputText id="shippingZipCode" @bind-Value="order.CustomerDetails.ShippingAddress.ZipCode" class="form-control" />
+                                <ValidationMessage For="@(() => order.CustomerDetails.ShippingAddress.ZipCode)" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -70,21 +67,16 @@
                         <button type="button" class="btn btn-sm btn-danger" @onclick="() => RemoveOrderItem(itemIndex)">Remove</button>
                     </div>
                     <div class="card-body">
-                        <div class="mb-3">
-                            <label for="@($"productName_{itemIndex}")" class="form-label">Product Name</label>
-                            <InputText id="@($"productName_{itemIndex}")" @bind-Value="order.OrderItems[itemIndex].ProductName" class="form-control" />
-                            <ValidationMessage For="@(() => order.OrderItems[itemIndex].ProductName)" />
-                        </div>
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="mb-3 col-sm-8">
+                                <label for="@($"productName_{itemIndex}")" class="form-label">Product Name</label>
+                                <InputText id="@($"productName_{itemIndex}")" @bind-Value="order.OrderItems[itemIndex].ProductName" class="form-control" />
+                                <ValidationMessage For="@(() => order.OrderItems[itemIndex].ProductName)" />
+                            </div>
+                            <div class="mb-3 col-sm">
                                 <label for="@($"quantity_{itemIndex}")" class="form-label">Quantity</label>
                                 <InputNumber id="@($"quantity_{itemIndex}")" @bind-Value="order.OrderItems[itemIndex].Quantity" class="form-control" />
                                 <ValidationMessage For="@(() => order.OrderItems[itemIndex].Quantity)" />
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="@($"price_{itemIndex}")" class="form-label">Price</label>
-                                <InputNumber id="@($"price_{itemIndex}")" @bind-Value="order.OrderItems[itemIndex].Price" class="form-control" TValue="decimal" ParseErrorMessage="Please enter a valid price." />
-                                <ValidationMessage For="@(() => order.OrderItems[itemIndex].Price)" />
                             </div>
                         </div>
                     </div>
@@ -95,7 +87,7 @@
         {
             <p>No order items. Add one below.</p>
         }
-        
+
         <button type="button" class="btn btn-success mb-3" @onclick="AddOrderItem">Add Order Item</button>
 
         <hr />
@@ -118,7 +110,7 @@
         <ul>
             @foreach (var item in order.OrderItems)
             {
-                <li>@item.Quantity x @item.ProductName at @item.Price.ToString("C")</li>
+                <li>@item.Quantity x @item.ProductName</li>
             }
         </ul>
     </div>
@@ -126,7 +118,7 @@
 
 @if (submitFailed)
 {
-     <div class="mt-4 alert alert-danger" role="alert">
+    <div class="mt-4 alert alert-danger" role="alert">
         <h4>Form Submission Failed!</h4>
         <p>Please correct the validation errors and try again.</p>
     </div>
@@ -141,12 +133,8 @@
     private void HandleValidSubmit()
     {
         Console.WriteLine("Form submitted successfully!");
-        // Here you would typically process the order
-        // For demo purposes, we'll just display a success message
         submitted = true;
         submitFailed = false;
-        // To see the data in console:
-        // System.Text.Json.JsonSerializer.Serialize(order);
     }
 
     private void HandleInvalidSubmit()
@@ -159,7 +147,7 @@
     private void AddOrderItem()
     {
         order.OrderItems.Add(new OrderItemModel());
-        submitted = false; // Reset submission status
+        submitted = false;
         submitFailed = false;
     }
 
@@ -169,7 +157,7 @@
         {
             order.OrderItems.RemoveAt(index);
         }
-        submitted = false; // Reset submission status
+        submitted = false;
         submitFailed = false;
     }
 }
