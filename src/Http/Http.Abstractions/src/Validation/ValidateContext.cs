@@ -3,6 +3,7 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Http.Validation;
@@ -68,12 +69,13 @@ public sealed class ValidateContext
     /// </summary>
     public JsonSerializerOptions? SerializerOptions { get; set; }
 
-    internal void AddValidationError(string key, string[] error)
+    internal void AddValidationError(string key, string[] errors)
     {
         ValidationErrors ??= [];
 
         var formattedKey = FormatKey(key);
-        ValidationErrors[formattedKey] = error;
+        var formattedErrors = errors.Select(FormatErrorMessage).ToArray();
+        ValidationErrors[formattedKey] = formattedErrors;
     }
 
     internal void AddOrExtendValidationErrors(string key, string[] errors)
@@ -81,16 +83,18 @@ public sealed class ValidateContext
         ValidationErrors ??= [];
 
         var formattedKey = FormatKey(key);
+        var formattedErrors = errors.Select(FormatErrorMessage).ToArray();
+        
         if (ValidationErrors.TryGetValue(formattedKey, out var existingErrors))
         {
-            var newErrors = new string[existingErrors.Length + errors.Length];
+            var newErrors = new string[existingErrors.Length + formattedErrors.Length];
             existingErrors.CopyTo(newErrors, 0);
-            errors.CopyTo(newErrors, existingErrors.Length);
+            formattedErrors.CopyTo(newErrors, existingErrors.Length);
             ValidationErrors[formattedKey] = newErrors;
         }
         else
         {
-            ValidationErrors[formattedKey] = errors;
+            ValidationErrors[formattedKey] = formattedErrors;
         }
     }
 
@@ -99,13 +103,15 @@ public sealed class ValidateContext
         ValidationErrors ??= [];
 
         var formattedKey = FormatKey(key);
-        if (ValidationErrors.TryGetValue(formattedKey, out var existingErrors) && !existingErrors.Contains(error))
+        var formattedError = FormatErrorMessage(error);
+        
+        if (ValidationErrors.TryGetValue(formattedKey, out var existingErrors) && !existingErrors.Contains(formattedError))
         {
-            ValidationErrors[formattedKey] = [.. existingErrors, error];
+            ValidationErrors[formattedKey] = [.. existingErrors, formattedError];
         }
         else
         {
-            ValidationErrors[formattedKey] = [error];
+            ValidationErrors[formattedKey] = [formattedError];
         }
     }
     
@@ -146,7 +152,7 @@ public sealed class ValidateContext
                 if (i > lastIndex)
                 {
                     string segment = key.Substring(lastIndex, i - lastIndex);
-                    string formattedSegment = propertyNamingPolicy != null 
+                    string formattedSegment = propertyNamingPolicy is not null 
                         ? propertyNamingPolicy.ConvertName(segment) 
                         : segment;
                     result.Append(formattedSegment);
@@ -175,7 +181,7 @@ public sealed class ValidateContext
                 if (i > lastIndex)
                 {
                     string segment = key.Substring(lastIndex, i - lastIndex);
-                    string formattedSegment = propertyNamingPolicy != null 
+                    string formattedSegment = propertyNamingPolicy is not null 
                         ? propertyNamingPolicy.ConvertName(segment) 
                         : segment;
                     result.Append(formattedSegment);
@@ -191,7 +197,7 @@ public sealed class ValidateContext
         if (lastIndex < key.Length)
         {
             string segment = key.Substring(lastIndex);
-            if (!inBracket && propertyNamingPolicy != null)
+            if (!inBracket && propertyNamingPolicy is not null)
             {
                 segment = propertyNamingPolicy.ConvertName(segment);
             }
@@ -199,5 +205,51 @@ public sealed class ValidateContext
         }
 
         return result.ToString();
+    }
+    
+    // Format validation error messages to use the same property naming policy as the keys
+    private string FormatErrorMessage(string errorMessage)
+    {
+        if (SerializerOptions?.PropertyNamingPolicy is null)
+        {
+            return errorMessage;
+        }
+        
+        // Common pattern: "The {PropertyName} field is required."
+        const string pattern = "The ";
+        const string fieldPattern = " field ";
+        
+        int startIndex = errorMessage.IndexOf(pattern, StringComparison.Ordinal);
+        if (startIndex != 0)
+        {
+            return errorMessage; // Does not start with "The "
+        }
+        
+        int endIndex = errorMessage.IndexOf(fieldPattern, pattern.Length, StringComparison.Ordinal);
+        if (endIndex <= pattern.Length)
+        {
+            return errorMessage; // Does not contain " field " or it's too early
+        }
+        
+        // Extract the property name between "The " and " field "
+        // Use ReadOnlySpan<char> for better performance
+        ReadOnlySpan<char> messageSpan = errorMessage.AsSpan();
+        ReadOnlySpan<char> propertyNameSpan = messageSpan.Slice(pattern.Length, endIndex - pattern.Length);
+        string propertyName = propertyNameSpan.ToString();
+        
+        if (string.IsNullOrWhiteSpace(propertyName))
+        {
+            return errorMessage;
+        }
+        
+        // Format the property name with the naming policy
+        string formattedPropertyName = SerializerOptions.PropertyNamingPolicy.ConvertName(propertyName);
+        
+        // Construct the new error message by combining parts
+        return string.Concat(
+            pattern, 
+            formattedPropertyName, 
+            messageSpan.Slice(endIndex).ToString()
+        );
     }
 }

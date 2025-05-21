@@ -206,12 +206,12 @@ public class ValidatableTypeInfoTests
             kvp =>
             {
                 Assert.Equal(expectedFirstName, kvp.Key);
-                Assert.Equal("The FirstName field is required.", kvp.Value.First());
+                Assert.Equal($"The {expectedFirstName} field is required.", kvp.Value.First());
             },
             kvp =>
             {
                 Assert.Equal(expectedLastName, kvp.Key);
-                Assert.Equal("The LastName field is required.", kvp.Value.First());
+                Assert.Equal($"The {expectedLastName} field is required.", kvp.Value.First());
             });
     }
 
@@ -894,15 +894,17 @@ public class ValidatableTypeInfoTests
         Assert.Collection(context.ValidationErrors,
             kvp => 
             {
-                // Currently uses camelCase naming policy, not JsonPropertyName
+                // Property key uses camelCase naming policy
                 Assert.Equal("userName", kvp.Key);
-                Assert.Equal("The UserName field is required.", kvp.Value.First());
+                // Error message should also use camelCase for property names
+                Assert.Equal("The userName field is required.", kvp.Value.First());
             },
             kvp => 
             {
-                // Currently uses camelCase naming policy, not JsonPropertyName
+                // Property key uses camelCase naming policy
                 Assert.Equal("emailAddress", kvp.Key); 
-                Assert.Equal("The EmailAddress field is not a valid e-mail address.", kvp.Value.First());
+                // Error message should also use camelCase for property names
+                Assert.Equal("The emailAddress field is not a valid e-mail address.", kvp.Value.First());
             });
     }
 
@@ -1104,5 +1106,78 @@ public class ValidatableTypeInfoTests
                 return false;
             }
         }
+    }
+    
+    [Fact]
+    public void Validate_FormatsErrorMessagesWithPropertyNamingPolicy()
+    {
+        // Arrange
+        var validationOptions = new ValidationOptions();
+        
+        var address = new Address();
+        var validationContext = new ValidationContext(address);
+        var validateContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = validationContext,
+            SerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            }
+        };
+
+        var propertyInfo = CreatePropertyInfo(
+            typeof(Address),
+            typeof(string),
+            "Street",
+            "Street",
+            [new RequiredAttribute()]);
+
+        // Act
+        propertyInfo.ValidateAsync(address, validateContext, CancellationToken.None);
+
+        // Assert
+        var error = Assert.Single(validateContext.ValidationErrors!);
+        Assert.Equal("street", error.Key);
+        Assert.Equal("The street field is required.", error.Value.First());
+    }
+
+    [Fact]
+    public void Validate_PreservesCustomErrorMessagesWithPropertyNamingPolicy()
+    {
+        // Arrange
+        var validationOptions = new ValidationOptions();
+        
+        var model = new TestModel();
+        var validationContext = new ValidationContext(model);
+        var validateContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = validationContext,
+            SerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            }
+        };
+
+        var propertyInfo = CreatePropertyInfo(
+            typeof(TestModel),
+            typeof(string),
+            "CustomProperty",
+            "CustomProperty",
+            [new RequiredAttribute { ErrorMessage = "Custom message without standard format." }]);
+
+        // Act
+        propertyInfo.ValidateAsync(model, validateContext, CancellationToken.None);
+
+        // Assert
+        var error = Assert.Single(validateContext.ValidationErrors!);
+        Assert.Equal("customProperty", error.Key);
+        Assert.Equal("Custom message without standard format.", error.Value.First()); // Custom message without formatting
+    }
+    
+    private class TestModel
+    {
+        public string? CustomProperty { get; set; }
     }
 }
