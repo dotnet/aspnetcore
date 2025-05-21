@@ -6,7 +6,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -56,9 +55,7 @@ internal static class ValidationEndpointFilterFactory
         {
             ValidateContext? validateContext = null;
 
-            // Get JsonOptions from DI if available
-            var jsonOptions = context.HttpContext.RequestServices.GetService<IOptions<JsonOptions>>();
-            var jsonSerializerOptions = jsonOptions?.Value?.SerializerOptions;
+            // JsonOptions will be retrieved directly by ValidateContext.SerializerOptions property
 
             for (var i = 0; i < context.Arguments.Count; i++)
             {
@@ -80,13 +77,6 @@ internal static class ValidationEndpointFilterFactory
                         ValidationOptions = options,
                         ValidationContext = validationContext
                     };
-                    
-                    // Set the serializer options via reflection as it's internal
-                    if (jsonSerializerOptions is not null)
-                    {
-                        var serializerOptionsProp = typeof(ValidateContext).GetProperty("SerializerOptions", BindingFlags.NonPublic | BindingFlags.Instance);
-                        serializerOptionsProp?.SetValue(validateContext, jsonSerializerOptions);
-                    }
                 }
                 else
                 {
