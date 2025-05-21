@@ -150,6 +150,36 @@ public abstract class OpenApiDocumentServiceTestBase
         apiDescriptionGroupCollectionProvider.Setup(p => p.ApiDescriptionGroups).Returns(apiDescriptionGroupCollection);
         return apiDescriptionGroupCollectionProvider.Object;
     }
+    
+    public static IApiDescriptionGroupCollectionProvider CreateActionDescriptorCollectionProvider(ControllerActionDescriptor actionDescriptor)
+    {
+        var apiDescription = new ApiDescription
+        {
+            ActionDescriptor = actionDescriptor,
+            HttpMethod = "GET",
+            RelativePath = actionDescriptor.AttributeRouteInfo?.Template?.TrimStart('/'),
+        };
+
+        // Add response type metadata
+        foreach (var metadata in actionDescriptor.EndpointMetadata)
+        {
+            if (metadata is ProducesResponseTypeAttribute responseTypeAttribute)
+            {
+                apiDescription.SupportedResponseTypes.Add(new ApiResponseType
+                {
+                    StatusCode = responseTypeAttribute.StatusCode,
+                    Type = responseTypeAttribute.Type,
+                    // ModelMetadata is created elsewhere in the real implementation
+                    ApiResponseFormats = responseTypeAttribute.ContentTypes?.Select(ct => new ApiResponseFormat
+                    {
+                        MediaType = ct
+                    }).ToList() ?? new List<ApiResponseFormat>()
+                });
+            }
+        }
+
+        return CreateApiDescriptionGroupCollectionProvider([apiDescription]);
+    }
 
     private static EndpointMetadataApiDescriptionProvider CreateEndpointMetadataApiDescriptionProvider(EndpointDataSource endpointDataSource)
     {
@@ -245,6 +275,52 @@ public abstract class OpenApiDocumentServiceTestBase
             }
         }
 
+        action.Parameters = [];
+        foreach (var parameter in action.MethodInfo.GetParameters())
+        {
+            action.Parameters.Add(new ControllerParameterDescriptor()
+            {
+                Name = parameter.Name,
+                ParameterType = parameter.ParameterType,
+                BindingInfo = BindingInfo.GetBindingInfo(parameter.GetCustomAttributes().OfType<object>()),
+                ParameterInfo = parameter
+            });
+        }
+
+        return action;
+    }
+    
+    public ControllerActionDescriptor GetControllerActionDescriptor(Type controllerType, string methodName, string routeTemplate, string httpMethod)
+    {
+        var action = new ControllerActionDescriptor();
+        action.SetProperty(new ApiDescriptionActionData());
+
+        action.MethodInfo = controllerType.GetMethod(
+            methodName,
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+
+        action.ControllerTypeInfo = controllerType.GetTypeInfo();
+        action.BoundProperties = new List<ParameterDescriptor>();
+
+        action.AttributeRouteInfo = new()
+        {
+            Template = routeTemplate,
+        };
+        
+        action.RouteValues.Add("controller", controllerType.Name.Replace("Controller", ""));
+        action.RouteValues.Add("action", methodName);
+        action.ActionConstraints = [new HttpMethodActionConstraint([httpMethod])];
+        
+        // Add method attributes to metadata
+        action.EndpointMetadata = [..action.MethodInfo.GetCustomAttributes()];
+        
+        // Add controller attributes to metadata
+        foreach (var attribute in controllerType.GetCustomAttributes())
+        {
+            action.EndpointMetadata.Add(attribute);
+        }
+
+        // Add parameters
         action.Parameters = [];
         foreach (var parameter in action.MethodInfo.GetParameters())
         {
