@@ -672,14 +672,12 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
     /// </summary>
     /// <param name="parameter">The <see cref="ParameterInfo"/> for the endpoint parameter.</param>
     /// <param name="builder">The endpoint builder for the endpoint being constructed.</param>
-#pragma warning disable RS0016 // Add public types and members to the declared API
     public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
-#pragma warning restore RS0016 // Add public types and members to the declared API
     {
         ArgumentNullException.ThrowIfNull(parameter);
         ArgumentNullException.ThrowIfNull(builder);
 
-        builder.Metadata.Add(new AcceptsMetadata(new[] { "application/json-patch+json" }, parameter.ParameterType));
+        builder.Metadata.Add(new AcceptsMetadata(["application/json-patch+json"], typeof(TModel)));
     }
 #endif
 
