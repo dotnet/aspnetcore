@@ -16,6 +16,11 @@
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>
 
+  <ItemGroup>
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
     <Compile Include="$(SharedSourceRoot)Nullable\NullableAttributes.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
