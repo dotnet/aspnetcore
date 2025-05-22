@@ -29,7 +29,7 @@ internal static class ValidationEndpointFilterFactory
         var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
 
         // Use a list to only store validatable parameters instead of arrays for all parameters
-        var validatableParameters = new List<ValidatableParameterEntry>();
+        List<ValidatableParameterEntry>? validatableParameters = null;
 
         for (var i = 0; i < parameters.Length; i++)
         {
@@ -41,6 +41,7 @@ internal static class ValidationEndpointFilterFactory
 
             if (options.TryGetValidatableParameterInfo(parameters[i], out var validatableParameter))
             {
+                validatableParameters ??= new();
                 validatableParameters.Add(new ValidatableParameterEntry(
                     i,
                     validatableParameter,
@@ -48,7 +49,7 @@ internal static class ValidationEndpointFilterFactory
             }
         }
 
-        if (validatableParameters.Count == 0)
+        if (validatableParameters is null || validatableParameters.Count == 0)
         {
             return next;
         }
