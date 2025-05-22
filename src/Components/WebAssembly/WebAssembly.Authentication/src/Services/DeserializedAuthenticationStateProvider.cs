@@ -11,13 +11,10 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 internal sealed class DeserializedAuthenticationStateProvider : AuthenticationStateProvider
 {
-    // Do not change. This must match all versions of the server-side AuthenticationStateSerializer.PersistenceKey.
-    private const string PersistenceKey = $"__internal__{nameof(AuthenticationState)}";
-
     private static readonly Task<AuthenticationState> _defaultUnauthenticatedTask =
         Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
 
-    private Task<AuthenticationState> _authenticationStateTask = _defaultUnauthenticatedTask;
+    private readonly Task<AuthenticationState> _authenticationStateTask;
 
     [SupplyParameterFromPersistentComponentState]
     private AuthenticationStateData? AuthStateData { get; set; }
@@ -29,20 +26,11 @@ internal sealed class DeserializedAuthenticationStateProvider : AuthenticationSt
     [DynamicDependency(JsonSerialized, typeof(AuthenticationStateData))]
     [DynamicDependency(JsonSerialized, typeof(IList<ClaimData>))]
     [DynamicDependency(JsonSerialized, typeof(ClaimData))]
-    public DeserializedAuthenticationStateProvider(PersistentComponentState state, IOptions<AuthenticationStateDeserializationOptions> options)
+    public DeserializedAuthenticationStateProvider(IOptions<AuthenticationStateDeserializationOptions> options)
     {
-        // For backwards compatibility, try to read from the direct state first
-        if (AuthStateData is null && 
-            state.TryTakeFromJson<AuthenticationStateData?>(PersistenceKey, out var authenticationStateData) && 
-            authenticationStateData is not null)
-        {
-            AuthStateData = authenticationStateData;
-        }
-
-        if (AuthStateData is not null)
-        {
-            _authenticationStateTask = options.Value.DeserializationCallback(AuthStateData);
-        }
+        _authenticationStateTask = AuthStateData is not null
+            ? options.Value.DeserializationCallback(AuthStateData)
+            : _defaultUnauthenticatedTask;
     }
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync() => _authenticationStateTask;
