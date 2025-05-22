@@ -3,8 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
@@ -18,7 +21,7 @@ namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 // documents for cases where there's no class/DTO to work on. Typical use case: backend not built in
 // .NET or architecture doesn't contain a shared DTO layer.
 [JsonConverter(typeof(JsonPatchDocumentConverter))]
-public class JsonPatchDocument : IJsonPatchDocument
+public class JsonPatchDocument : IJsonPatchDocument, IEndpointParameterMetadataProvider
 {
     public List<Operation> Operations { get; private set; }
 
@@ -217,5 +220,18 @@ public class JsonPatchDocument : IJsonPatchDocument
         }
 
         return allOps;
+    }
+
+    /// <summary>
+    /// Populates metadata for the related <see cref="Endpoint"/> when this type is used as a parameter.
+    /// </summary>
+    /// <param name="parameter">The <see cref="ParameterInfo"/> for the endpoint parameter.</param>
+    /// <param name="builder">The <see cref="EndpointBuilder"/> for the endpoint being constructed.</param>
+    public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(parameter);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Metadata.Add(new AcceptsMetadata(new[] { "application/json-patch+json" }, parameter.ParameterType));
     }
 }
