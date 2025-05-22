@@ -4,9 +4,9 @@
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.Extensions.Validation.ValidationsGenerator;
+namespace Microsoft.Extensions.Validation;
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)

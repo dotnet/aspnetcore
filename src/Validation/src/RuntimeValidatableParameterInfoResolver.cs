@@ -86,12 +86,6 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             type == typeof(DateOnly) ||
             type == typeof(TimeSpan) ||
             type == typeof(Guid) ||
-            type == typeof(IFormFile) ||
-            type == typeof(IFormFileCollection) ||
-            type == typeof(IFormCollection) ||
-            type == typeof(HttpContext) ||
-            type == typeof(HttpRequest) ||
-            type == typeof(HttpResponse) ||
             type == typeof(ClaimsPrincipal) ||
             type == typeof(CancellationToken) ||
             type == typeof(Stream) ||

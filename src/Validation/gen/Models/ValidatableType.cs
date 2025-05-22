@@ -4,7 +4,7 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.Extensions.Validation.ValidationsGenerator;
+namespace Microsoft.Extensions.Validation;
 
 internal sealed record class ValidatableType(
     ITypeSymbol Type,

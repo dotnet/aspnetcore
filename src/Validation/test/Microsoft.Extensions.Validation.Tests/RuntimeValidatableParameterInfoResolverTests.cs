@@ -46,12 +46,6 @@ public class RuntimeValidatableParameterInfoResolverTests
     [InlineData(typeof(TimeOnly))]
     [InlineData(typeof(DateOnly))]
     [InlineData(typeof(TimeSpan))]
-    [InlineData(typeof(IFormFile))]
-    [InlineData(typeof(IFormFileCollection))]
-    [InlineData(typeof(IFormCollection))]
-    [InlineData(typeof(HttpContext))]
-    [InlineData(typeof(HttpRequest))]
-    [InlineData(typeof(HttpResponse))]
     [InlineData(typeof(CancellationToken))]
     public void TryGetValidatableParameterInfo_WithSimpleTypesAndNoAttributes_ReturnsFalse(Type parameterType)
     {

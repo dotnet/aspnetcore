@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.Extensions.Validation.ValidationsGenerator;
+namespace Microsoft.Extensions.Validation;
 
 internal sealed class ValidatableTypeComparer : IEqualityComparer<ValidatableType?>
 {

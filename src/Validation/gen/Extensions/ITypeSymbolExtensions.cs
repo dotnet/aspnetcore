@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.Extensions.Validation.ValidationsGenerator;
+namespace Microsoft.Extensions.Validation;
 
 internal static class ITypeSymbolExtensions
 {

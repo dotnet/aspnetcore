@@ -12,7 +12,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 
-namespace Microsoft.Extensions.Validation.ValidationsGenerator;
+namespace Microsoft.Extensions.Validation;
 
 public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {

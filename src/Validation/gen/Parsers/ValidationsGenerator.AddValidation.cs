@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Microsoft.Extensions.Validation.ValidationsGenerator;
+namespace Microsoft.Extensions.Validation;
 
 public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
@@ -29,7 +29,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var symbol = semanticModel.GetSymbolInfo(node, cancellationToken).Symbol;
         if (symbol is not IMethodSymbol methodSymbol
             || methodSymbol.ContainingType.Name != "ValidationServiceCollectionExtensions"
-            || methodSymbol.ContainingAssembly.Name != "Microsoft.AspNetCore.Http.Abstractions")
+            || methodSymbol.ContainingAssembly.Name != "Microsoft.Extensions.Validation")
         {
             return null;
         }
