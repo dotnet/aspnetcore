@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.Extensions.Validation.ValidationsGenerator" />
+    <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
   </ItemGroup>
 
   <ItemGroup>
