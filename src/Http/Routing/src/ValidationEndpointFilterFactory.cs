@@ -15,19 +15,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 internal static class ValidationEndpointFilterFactory
 {
     // A small struct to hold the validatable parameter details to avoid allocating arrays for parameters that don't need validation
-    private readonly struct ValidatableParameterEntry
-    {
-        public ValidatableParameterEntry(int index, IValidatableInfo parameter, string displayName)
-        {
-            Index = index;
-            Parameter = parameter;
-            DisplayName = displayName;
-        }
-
-        public int Index { get; }
-        public IValidatableInfo Parameter { get; }
-        public string DisplayName { get; }
-    }
+    private readonly record struct ValidatableParameterEntry(int Index, IValidatableInfo Parameter, string DisplayName);
 
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
@@ -41,7 +29,7 @@ internal static class ValidationEndpointFilterFactory
         var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
 
         // Use a list to only store validatable parameters instead of arrays for all parameters
-        var validatableParameters = new System.Collections.Generic.List<ValidatableParameterEntry>();
+        var validatableParameters = new List<ValidatableParameterEntry>();
 
         for (var i = 0; i < parameters.Length; i++)
         {
@@ -73,7 +61,7 @@ internal static class ValidationEndpointFilterFactory
             {
                 if (entry.Index >= context.Arguments.Count)
                 {
-                    continue;
+                    break;
                 }
 
                 var argument = context.Arguments[entry.Index];
