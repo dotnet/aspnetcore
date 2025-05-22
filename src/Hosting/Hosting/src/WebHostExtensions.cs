@@ -52,7 +52,6 @@ public static class WebHostExtensions
                 try
                 {
                     await host.WaitForTokenShutdownAsync(cts.Token);
-                    lifetime.SetExitedGracefully();
                 }
                 finally
                 {
@@ -95,7 +94,6 @@ public static class WebHostExtensions
                 try
                 {
                     await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
-                    lifetime.SetExitedGracefully();
                 }
                 finally
                 {
