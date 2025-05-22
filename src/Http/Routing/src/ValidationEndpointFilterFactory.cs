@@ -5,7 +5,9 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net.Mime;
 using System.Reflection;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -87,8 +89,27 @@ internal static class ValidationEndpointFilterFactory
             if (validateContext is { ValidationErrors.Count: > 0 })
             {
                 context.HttpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                context.HttpContext.Response.ContentType = "application/problem+json";
-                return await ValueTask.FromResult(new HttpValidationProblemDetails(validateContext.ValidationErrors));
+
+                var problemDetails = new HttpValidationProblemDetails(validateContext.ValidationErrors);
+
+                var problemDetailsService = context.HttpContext.RequestServices.GetService<IProblemDetailsService>();
+                if (problemDetailsService is not null)
+                {
+                    if (await problemDetailsService.TryWriteAsync(new()
+                    {
+                        HttpContext = context.HttpContext,
+                        ProblemDetails = problemDetails
+                    }))
+                    {
+                        // We need to prevent further execution, because the actual
+                        // ProblemDetails response has already been written by ProblemDetailsService.
+                        return await ValueTask.FromResult(EmptyHttpResult.Instance);
+                    }
+                }
+
+                // Fallback to the default implementation.
+                context.HttpContext.Response.ContentType = MediaTypeNames.Application.ProblemJson;
+                return await ValueTask.FromResult(problemDetails);
             }
 
             return await next(context);
