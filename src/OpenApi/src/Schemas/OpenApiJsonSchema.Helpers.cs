@@ -140,6 +140,7 @@ internal sealed partial class OpenApiJsonSchema
         {
             type = JsonSchemaType.Array;
             var array = new JsonArray();
+            // Read to process JsonTokenType.StartArray before advancing
             reader.Read();
             while (reader.TokenType != JsonTokenType.EndArray)
             {
