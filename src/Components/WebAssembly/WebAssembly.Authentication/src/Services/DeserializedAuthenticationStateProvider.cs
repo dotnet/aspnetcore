@@ -15,7 +15,7 @@ internal sealed class DeserializedAuthenticationStateProvider : AuthenticationSt
     private readonly Task<AuthenticationState> _authenticationStateTask;
 
     [SupplyParameterFromPersistentComponentState]
-    private AuthenticationStateData? AuthStateData { get; set; }
+    public AuthenticationStateData? AuthStateData { get; set; }
 
     public DeserializedAuthenticationStateProvider(IOptions<AuthenticationStateDeserializationOptions> options)
     {
