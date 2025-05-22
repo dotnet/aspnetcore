@@ -660,11 +660,13 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument, IEndpointParameterM
     }
 
     /// <summary>
-    /// Populates metadata for the related <see cref="Endpoint"/> when this type is used as a parameter.
+    /// Populates metadata for the related endpoint when this type is used as a parameter.
     /// </summary>
     /// <param name="parameter">The <see cref="ParameterInfo"/> for the endpoint parameter.</param>
-    /// <param name="builder">The <see cref="EndpointBuilder"/> for the endpoint being constructed.</param>
+    /// <param name="builder">The endpoint builder for the endpoint being constructed.</param>
+#pragma warning disable RS0016 // Add public types and members to the declared API
     public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+#pragma warning restore RS0016 // Add public types and members to the declared API
     {
         ArgumentNullException.ThrowIfNull(parameter);
         ArgumentNullException.ThrowIfNull(builder);

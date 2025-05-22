@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.AspNetCore.JsonPatch.Converters;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
@@ -15,13 +13,22 @@ using Microsoft.AspNetCore.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
+#if NET
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
+#endif
+
 namespace Microsoft.AspNetCore.JsonPatch;
 
 // Implementation details: the purpose of this type of patch document is to allow creation of such
 // documents for cases where there's no class/DTO to work on. Typical use case: backend not built in
 // .NET or architecture doesn't contain a shared DTO layer.
 [JsonConverter(typeof(JsonPatchDocumentConverter))]
+#if NET
 public class JsonPatchDocument : IJsonPatchDocument, IEndpointParameterMetadataProvider
+#else
+public class JsonPatchDocument : IJsonPatchDocument
+#endif
 {
     public List<Operation> Operations { get; private set; }
 
@@ -222,16 +229,20 @@ public class JsonPatchDocument : IJsonPatchDocument, IEndpointParameterMetadataP
         return allOps;
     }
 
+#if NET
     /// <summary>
-    /// Populates metadata for the related <see cref="Endpoint"/> when this type is used as a parameter.
+    /// Populates metadata for the related endpoint when this type is used as a parameter.
     /// </summary>
     /// <param name="parameter">The <see cref="ParameterInfo"/> for the endpoint parameter.</param>
-    /// <param name="builder">The <see cref="EndpointBuilder"/> for the endpoint being constructed.</param>
+    /// <param name="builder">The endpoint builder for the endpoint being constructed.</param>
+#pragma warning disable RS0016 // Add public types and members to the declared API
     public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+#pragma warning restore RS0016 // Add public types and members to the declared API
     {
         ArgumentNullException.ThrowIfNull(parameter);
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(new AcceptsMetadata(new[] { "application/json-patch+json" }, parameter.ParameterType));
     }
+#endif
 }
