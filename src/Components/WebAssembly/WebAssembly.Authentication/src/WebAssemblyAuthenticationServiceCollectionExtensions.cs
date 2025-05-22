@@ -32,7 +32,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     {
         services.AddOptions();
         services.TryAddScoped<AuthenticationStateProvider, DeserializedAuthenticationStateProvider>();
-        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<DeserializedAuthenticationStateProvider>(services, RenderMode.InteractiveWebAssembly);
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AuthenticationStateProvider>(services, RenderMode.InteractiveWebAssembly);
         if (configure != null)
         {
             services.Configure(configure);
