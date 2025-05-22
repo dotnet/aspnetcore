@@ -13,10 +13,17 @@
     [SupplyParameterFromQuery(Name = "navigate-programmatically")]
     public bool? NavigateProgrammatically { get; set; }
 
+    [Parameter]
+    public bool StartStreaming { get; set; } = false;
+
     private string _nonExistingPath = string.Empty;
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        if (StartStreaming)
+        {
+            await Task.Yield();
+        }
         _nonExistingPath = $"{NavigationManager.BaseUri}reexecution/not-existing-page";
         if (NavigateProgrammatically == true)
         {
