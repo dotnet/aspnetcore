@@ -43,7 +43,8 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
     public static IRazorComponentsBuilder AddAuthenticationStateSerialization(this IRazorComponentsBuilder builder, Action<AuthenticationStateSerializationOptions>? configure = null)
     {
         builder.Services.TryAddEnumerable(ServiceDescriptor.Scoped<IHostEnvironmentAuthenticationStateProvider, AuthenticationStateSerializer>());
-        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AuthenticationStateProvider>(builder.Services, RenderMode.InteractiveWebAssembly);
+        builder.Services.TryAddScoped<AuthenticationStateProvider>(sp => (AuthenticationStateProvider)sp.GetRequiredService<IHostEnvironmentAuthenticationStateProvider>());
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AuthenticationStateProvider>(builder.Services, RenderMode.InteractiveAuto);
         if (configure is not null)
         {
             builder.Services.Configure(configure);
