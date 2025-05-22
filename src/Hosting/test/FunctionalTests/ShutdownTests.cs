@@ -99,7 +99,7 @@ public class ShutdownTests : LoggedTest
 
                 SendSIGTERM(deployer.HostProcess.Id);
 
-                WaitForExitOrKill(deployer.HostProcess, 143); // Expected exit code of a process terminated by `kill -s TERM`
+                WaitForExitOrKill(deployer.HostProcess);
 
                 try
                 {
@@ -131,7 +131,7 @@ public class ShutdownTests : LoggedTest
         WaitForExitOrKill(process);
     }
 
-    private static void WaitForExitOrKill(Process process, int expectedExitCode = 0)
+    private static void WaitForExitOrKill(Process process)
     {
         process.WaitForExit(5 * 1000);
         if (!process.HasExited)
@@ -139,6 +139,6 @@ public class ShutdownTests : LoggedTest
             process.Kill();
         }
 
-        Assert.Equal(expectedExitCode, process.ExitCode);
+        Assert.Equal(0, process.ExitCode);
     }
 }
