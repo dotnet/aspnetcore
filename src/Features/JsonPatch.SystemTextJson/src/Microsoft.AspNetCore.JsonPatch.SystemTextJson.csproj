@@ -17,11 +17,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Shipped.txt" />
-    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Unshipped.txt" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
   </ItemGroup>
 
