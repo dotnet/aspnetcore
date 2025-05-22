@@ -11,7 +11,7 @@
 
     <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
     <PortableBuild Condition="'$(PortableBuild)' == ''">true</PortableBuild>
-    <DefaultAppHostRuntimeIdentifier Condition=" '$(DotNetBuild)' == 'true' ">$(TargetRuntimeIdentifier)</DefaultAppHostRuntimeIdentifier>
+    <DefaultAppHostRuntimeIdentifier Condition="'$(DotNetBuild)' == 'true'">$(TargetRuntimeIdentifier)</DefaultAppHostRuntimeIdentifier>
 
     <BuildNodeJS>$(BuildNodeJSUnlessSourcebuild)</BuildNodeJS>
     <BuildNodeJS Condition="'$(DotNetBuildSourceOnly)' == 'true'">false</BuildNodeJS>
