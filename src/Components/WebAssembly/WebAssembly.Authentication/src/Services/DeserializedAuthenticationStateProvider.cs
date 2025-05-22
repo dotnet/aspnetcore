@@ -17,7 +17,10 @@ internal sealed class DeserializedAuthenticationStateProvider : AuthenticationSt
     private static readonly Task<AuthenticationState> _defaultUnauthenticatedTask =
         Task.FromResult(new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity())));
 
-    private readonly Task<AuthenticationState> _authenticationStateTask = _defaultUnauthenticatedTask;
+    private Task<AuthenticationState> _authenticationStateTask = _defaultUnauthenticatedTask;
+
+    [SupplyParameterFromPersistentComponentState]
+    private AuthenticationStateData? AuthStateData { get; set; }
 
     [UnconditionalSuppressMessage(
         "Trimming",
@@ -28,12 +31,18 @@ internal sealed class DeserializedAuthenticationStateProvider : AuthenticationSt
     [DynamicDependency(JsonSerialized, typeof(ClaimData))]
     public DeserializedAuthenticationStateProvider(PersistentComponentState state, IOptions<AuthenticationStateDeserializationOptions> options)
     {
-        if (!state.TryTakeFromJson<AuthenticationStateData?>(PersistenceKey, out var authenticationStateData) || authenticationStateData is null)
+        // For backwards compatibility, try to read from the direct state first
+        if (AuthStateData is null && 
+            state.TryTakeFromJson<AuthenticationStateData?>(PersistenceKey, out var authenticationStateData) && 
+            authenticationStateData is not null)
         {
-            return;
+            AuthStateData = authenticationStateData;
         }
 
-        _authenticationStateTask = options.Value.DeserializationCallback(authenticationStateData);
+        if (AuthStateData is not null)
+        {
+            _authenticationStateTask = options.Value.DeserializationCallback(AuthStateData);
+        }
     }
 
     public override Task<AuthenticationState> GetAuthenticationStateAsync() => _authenticationStateTask;
