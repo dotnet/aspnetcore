@@ -51,9 +51,9 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
             app.Map("/reexecution", reexecutionApp =>
             {
                 reexecutionApp.UseStaticFiles();
-                reexecutionApp.UseRouting();
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
                 reexecutionApp.UseRouting();
+                RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(reexecutionApp);
                 reexecutionApp.UseAntiforgery();
                 reexecutionApp.UseEndpoints(endpoints =>
                 {

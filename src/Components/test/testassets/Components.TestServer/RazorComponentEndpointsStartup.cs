@@ -75,7 +75,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             app.Map("/reexecution", reexecutionApp =>
             {
-                reexecutionApp.UseRouting();
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
                 reexecutionApp.UseRouting();
 
