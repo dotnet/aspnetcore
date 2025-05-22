@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -41,6 +42,7 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
     public static IRazorComponentsBuilder AddAuthenticationStateSerialization(this IRazorComponentsBuilder builder, Action<AuthenticationStateSerializationOptions>? configure = null)
     {
         builder.Services.TryAddEnumerable(ServiceDescriptor.Scoped<IHostEnvironmentAuthenticationStateProvider, AuthenticationStateSerializer>());
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<AuthenticationStateSerializer>(builder.Services, RenderMode.InteractiveWebAssembly);
         if (configure is not null)
         {
             builder.Services.Configure(configure);

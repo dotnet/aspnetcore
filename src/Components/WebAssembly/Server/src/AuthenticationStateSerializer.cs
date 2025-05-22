@@ -17,6 +17,14 @@ internal sealed class AuthenticationStateSerializer : IHostEnvironmentAuthentica
     private readonly PersistingComponentStateSubscription _subscription;
 
     private Task<AuthenticationState>? _authenticationStateTask;
+    private AuthenticationStateData? _authenticationStateData;
+
+    [PersistentComponentStateStore]
+    public AuthenticationStateData? AuthStateData
+    {
+        get => _authenticationStateData;
+        set => _authenticationStateData = value;
+    }
 
     public AuthenticationStateSerializer(PersistentComponentState persistentComponentState, IOptions<AuthenticationStateSerializationOptions> options)
     {
@@ -32,11 +40,7 @@ internal sealed class AuthenticationStateSerializer : IHostEnvironmentAuthentica
             throw new InvalidOperationException($"{nameof(SetAuthenticationState)} must be called before the {nameof(PersistentComponentState)}.{nameof(PersistentComponentState.RegisterOnPersisting)} callback.");
         }
 
-        var authenticationStateData = await _serializeCallback(await _authenticationStateTask);
-        if (authenticationStateData is not null)
-        {
-            _state.PersistAsJson(PersistenceKey, authenticationStateData);
-        }
+        AuthStateData = await _serializeCallback(await _authenticationStateTask);
     }
 
     /// <inheritdoc />
