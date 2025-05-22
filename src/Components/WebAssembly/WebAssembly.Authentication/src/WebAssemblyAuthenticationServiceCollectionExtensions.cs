@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 using Microsoft.AspNetCore.Components.WebAssembly.Authentication.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -30,6 +31,7 @@ public static class WebAssemblyAuthenticationServiceCollectionExtensions
     {
         services.AddOptions();
         services.TryAddScoped<AuthenticationStateProvider, DeserializedAuthenticationStateProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<DeserializedAuthenticationStateProvider>(services, RenderMode.InteractiveWebAssembly);
         if (configure != null)
         {
             services.Configure(configure);

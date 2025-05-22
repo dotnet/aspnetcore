@@ -1,13 +1,13 @@
 {
-  "name": "@microsoft/signalr-protocol-msgpack",
-  "version": "10.0.0-dev",
-  "description": "MsgPack Protocol support for ASP.NET Core SignalR",
+  "name": "@microsoft/signalr",
+  "version": "5.0.0-dev",
+  "description": "ASP.NET Core SignalR Client",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
   "typings": "./dist/esm/index.d.ts",
-  "umd": "./dist/browser/signalr-protocol-msgpack.js",
-  "umd_name": "signalR.protocols.msgpack",
-  "unpkg": "./dist/browser/signalr-protocol-msgpack.js",
+  "umd": "./dist/browser/signalr.js",
+  "umd_name": "signalR",
+  "unpkg": "./dist/browser/signalr.js",
   "directories": {
     "test": "spec"
   },
@@ -15,11 +15,11 @@
   "scripts": {
     "clean": "rimraf ./dist",
     "prebuild": "rimraf ./src/pkg-version.ts && node -e \"const fs = require('fs'); const packageJson = require('./package.json'); fs.writeFileSync('./src/pkg-version.ts', 'export const VERSION = \\'' + packageJson.version + '\\';');\"",
-    "build": "npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
+    "build": "npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:webworker",
     "build:esm": "tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
     "build:cjs": "tsc --project ./tsconfig.json --module commonjs --outDir ./dist/cjs",
     "build:browser": "webpack-cli",
-    "build:uglify": "terser -m -c --ecma 2019 --module --source-map \"url='signalr-protocol-msgpack.min.js.map',content='./dist/browser/signalr-protocol-msgpack.js.map'\" --comments -o ./dist/browser/signalr-protocol-msgpack.min.js ./dist/browser/signalr-protocol-msgpack.js",
+    "build:webworker": "webpack-cli --env platform=webworker",
     "get-version": "node -e \"const { name, version } = require('./package.json'); console.log(`${name};${version}`);\""
   },
   "keywords": [
@@ -41,11 +41,14 @@
     "src/**/*"
   ],
   "dependencies": {
-    "@microsoft/signalr": ">=10.0.0-dev",
-    "@msgpack/msgpack": "^2.7.0"
+    "abort-controller": "^3.0.0",
+    "eventsource": "^2.0.2",
+    "fetch-cookie": "^2.0.3",
+    "node-fetch": "^2.6.7",
+    "ws": "^7.5.10"
   },
   "overrides": {
-    "ws": ">=7.4.6",
+    "ansi-regex": "5.0.1",
     "tough-cookie": ">=4.1.3"
   }
 }

@@ -19,13 +19,7 @@ internal sealed class DeserializedAuthenticationStateProvider : AuthenticationSt
     [SupplyParameterFromPersistentComponentState]
     private AuthenticationStateData? AuthStateData { get; set; }
 
-    [UnconditionalSuppressMessage(
-        "Trimming",
-        "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
-        Justification = $"{nameof(DeserializedAuthenticationStateProvider)} uses the {nameof(DynamicDependencyAttribute)} to preserve the necessary members.")]
-    [DynamicDependency(JsonSerialized, typeof(AuthenticationStateData))]
-    [DynamicDependency(JsonSerialized, typeof(IList<ClaimData>))]
-    [DynamicDependency(JsonSerialized, typeof(ClaimData))]
+
     public DeserializedAuthenticationStateProvider(IOptions<AuthenticationStateDeserializationOptions> options)
     {
         _authenticationStateTask = AuthStateData is not null
