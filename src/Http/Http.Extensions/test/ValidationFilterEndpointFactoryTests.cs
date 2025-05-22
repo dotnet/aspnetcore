@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
-public class ValidationFilterEndpointFactoryTests
+public class ValidationEndpointFilterFactoryTests
 {
     [Fact]
     public async Task GetHttpValidationProblemDetailsWhenProblemDetailsServiceNotRegistered()
