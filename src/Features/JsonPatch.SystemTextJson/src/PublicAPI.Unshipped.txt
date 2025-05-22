@@ -6,7 +6,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions.JsonPatchException.Json
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.IJsonPatchDocument
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.JsonPatchDocument() -> void
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.PopulateMetadata(System.Reflection.ParameterInfo parameter, Microsoft.AspNetCore.Builder.EndpointBuilder builder) -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>.JsonPatchDocument() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchError
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation
@@ -53,7 +52,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Test = 5 
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.SerializerOptions.set -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument.Test(string path, object value) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>.PopulateMetadata(System.Reflection.ParameterInfo parameter, Microsoft.AspNetCore.Builder.EndpointBuilder builder) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>.Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>.Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, System.Collections.Generic.IList<TProp>>> path, TProp value, int position) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>.Add<TProp>(System.Linq.Expressions.Expression<System.Func<TModel, TProp>> path, TProp value) -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.JsonPatchDocument<TModel>

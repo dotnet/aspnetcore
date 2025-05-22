@@ -672,7 +672,7 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
     /// </summary>
     /// <param name="parameter">The <see cref="ParameterInfo"/> for the endpoint parameter.</param>
     /// <param name="builder">The endpoint builder for the endpoint being constructed.</param>
-    public static void PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    static void IEndpointParameterMetadataProvider.PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(parameter);
         ArgumentNullException.ThrowIfNull(builder);

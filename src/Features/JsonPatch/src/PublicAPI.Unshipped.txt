@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.JsonPatch.JsonPatchDocument.PopulateMetadata(System.Reflection.ParameterInfo parameter, Microsoft.AspNetCore.Builder.EndpointBuilder builder) -> void
-Microsoft.AspNetCore.JsonPatch.JsonPatchDocument<TModel>.PopulateMetadata(System.Reflection.ParameterInfo parameter, Microsoft.AspNetCore.Builder.EndpointBuilder builder) -> void
