@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Server;
 
-internal sealed class AuthenticationStateSerializer : IHostEnvironmentAuthenticationStateProvider
+internal sealed class AuthenticationStateSerializer : AuthenticationStateProvider, IHostEnvironmentAuthenticationStateProvider
 {
     // Do not change. This must match all versions of the server-side DeserializedAuthenticationStateProvider.PersistenceKey.
     internal const string PersistenceKey = $"__internal__{nameof(AuthenticationState)}";
@@ -14,14 +14,9 @@ internal sealed class AuthenticationStateSerializer : IHostEnvironmentAuthentica
     private readonly Func<AuthenticationState, ValueTask<AuthenticationStateData?>> _serializeCallback;
 
     private Task<AuthenticationState>? _authenticationStateTask;
-    private AuthenticationStateData? _authenticationStateData;
 
     [SupplyParameterFromPersistentComponentState]
-    public AuthenticationStateData? AuthStateData
-    {
-        get => _authenticationStateData;
-        set => _authenticationStateData = value;
-    }
+    private AuthenticationStateData? AuthStateData { get; set; }
 
     public AuthenticationStateSerializer(IOptions<AuthenticationStateSerializationOptions> options)
     {
@@ -36,6 +31,11 @@ internal sealed class AuthenticationStateSerializer : IHostEnvironmentAuthentica
         if (_authenticationStateTask is not null)
         {
             AuthStateData = await _serializeCallback(await _authenticationStateTask);
+            NotifyAuthenticationStateChanged(_authenticationStateTask);
         }
     }
+
+    /// <inheritdoc />
+    public override Task<AuthenticationState> GetAuthenticationStateAsync() => 
+        _authenticationStateTask ?? Task.FromResult(new AuthenticationState(new System.Security.Claims.ClaimsPrincipal()));
 }
