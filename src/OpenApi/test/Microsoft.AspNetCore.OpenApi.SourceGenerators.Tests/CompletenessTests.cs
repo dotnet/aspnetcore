@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
 
@@ -435,6 +436,39 @@ public class ParamsAndParamRefs
     public static T GetGenericValue<T>(T para)
     {
         return para;
+    }
+}
+
+/// <summary>
+/// A class that implements the <see cref="IDisposable"/> interface.
+/// </summary>
+public class DisposableType : IDisposable
+{
+    /// <summary>
+    /// Finalizes an instance of the <see cref="DisposableType"/> class.
+    /// </summary>
+    ~DisposableType()
+    {
+        Dispose(false);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+    /// </summary>
+    /// <param name="disposing">
+    /// <see langword="true" /> to release both managed and unmanaged resources;
+    /// <see langword="false" /> to release only unmanaged resources.
+    /// </param>
+    protected virtual void Dispose(bool disposing)
+    {
+        // No-op
     }
 }
 """;
