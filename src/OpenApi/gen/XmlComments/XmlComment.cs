@@ -203,10 +203,10 @@ internal sealed partial class XmlComment
     }
 
     /// <summary>
-    /// Resolves the links in the XML documentation into type names.
+    /// Resolves the links in the XML documentation into language keywords.
     /// </summary>
     /// <param name="node">The target node to process crefs in.</param>
-    /// <param name="elementName">The node type to process crefs for, can be `see` or `seealso`.</param>
+    /// <param name="elementName">The node type to process langwords for, can be `see` or `seealso`.</param>
     private static void ResolveLangKeyword(XNode node, string elementName)
     {
         if (node == null || string.IsNullOrEmpty(elementName))

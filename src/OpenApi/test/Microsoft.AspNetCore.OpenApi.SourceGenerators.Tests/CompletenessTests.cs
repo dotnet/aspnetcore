@@ -464,6 +464,7 @@ public class DisposableType : IDisposable
     /// <param name="disposing">
     /// <see langword="true" /> to release both managed and unmanaged resources;
     /// <see langword="false" /> to release only unmanaged resources.
+    /// <see langword="null" /> to indicate a no-op.
     /// </param>
     protected virtual void Dispose(bool disposing)
     {
