@@ -15,12 +15,12 @@ internal sealed class DeserializedAuthenticationStateProvider : AuthenticationSt
     private readonly Task<AuthenticationState> _authenticationStateTask;
 
     [SupplyParameterFromPersistentComponentState]
-    public AuthenticationStateData? AuthStateData { get; set; }
+    public AuthenticationStateData? CurrentAuthenticationState { get; set; }
 
     public DeserializedAuthenticationStateProvider(IOptions<AuthenticationStateDeserializationOptions> options)
     {
-        _authenticationStateTask = AuthStateData is not null
-            ? options.Value.DeserializationCallback(AuthStateData)
+        _authenticationStateTask = CurrentAuthenticationState is not null
+            ? options.Value.DeserializationCallback(CurrentAuthenticationState)
             : _defaultUnauthenticatedTask;
     }
 

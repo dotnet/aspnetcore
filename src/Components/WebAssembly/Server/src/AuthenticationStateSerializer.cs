@@ -16,7 +16,7 @@ internal sealed class AuthenticationStateSerializer : AuthenticationStateProvide
     private Task<AuthenticationState>? _authenticationStateTask;
 
     [SupplyParameterFromPersistentComponentState]
-    public AuthenticationStateData? AuthStateData { get; set; }
+    public AuthenticationStateData? CurrentAuthenticationState { get; set; }
 
     public AuthenticationStateSerializer(IOptions<AuthenticationStateSerializationOptions> options)
     {
@@ -28,7 +28,7 @@ internal sealed class AuthenticationStateSerializer : AuthenticationStateProvide
     {
         _authenticationStateTask = authenticationStateTask ?? throw new ArgumentNullException(nameof(authenticationStateTask));
         
-        AuthStateData = await _serializeCallback(await _authenticationStateTask);
+        CurrentAuthenticationState = await _serializeCallback(await _authenticationStateTask);
         NotifyAuthenticationStateChanged(_authenticationStateTask);
     }
 
