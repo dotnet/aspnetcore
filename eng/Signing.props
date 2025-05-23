@@ -7,6 +7,11 @@
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- In Preview5 only, NoWarn this signing error about mismatched 1st/3rd party .dll/signatures. SignTool mistakenly sees R2R images as 3rd-party -->
+    <NoWarn>$(NoWarn);SIGN004</NoWarn>
+  </PropertyGroup>
+
   <ItemGroup Label="File signing information">
     <!-- Third-party components which should be signed.  -->
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="3PartySHA2" />
