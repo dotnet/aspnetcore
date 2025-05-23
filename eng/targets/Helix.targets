@@ -21,7 +21,7 @@
       $(HelixQueueAzureLinux);
       $(HelixQueueDebian);
       $(HelixQueueFedora40);
-      Ubuntu.2204.Amd64.Open;
+      AzureLinux.3.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
   </PropertyGroup>
