@@ -9,6 +9,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -29,6 +30,7 @@ public class SignInManager<TUser> where TUser : class
     private readonly IAuthenticationSchemeProvider _schemes;
     private readonly IUserConfirmation<TUser> _confirmation;
     private readonly IPasskeyHandler<TUser>? _passkeyHandler;
+    private readonly SignInManagerMetrics? _metrics;
     private HttpContext? _context;
     private TwoFactorAuthenticationInfo? _twoFactorInfo;
     private PasskeyCreationOptions? _passkeyCreationOptions;
@@ -63,6 +65,7 @@ public class SignInManager<TUser> where TUser : class
         Logger = logger;
         _schemes = schemes;
         _confirmation = confirmation;
+        _metrics = userManager.ServiceProvider?.GetService<SignInManagerMetrics>();
     }
 
     /// <summary>
@@ -194,11 +197,25 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RefreshSignInAsync(TUser user)
     {
+        try
+        {
+            var (success, isPersistent) = await RefreshSignInCoreAsync(user);
+            _metrics?.RefreshSignIn(typeof(TUser).FullName!, AuthenticationScheme, success, isPersistent);
+        }
+        catch (Exception ex)
+        {
+            _metrics?.RefreshSignIn(typeof(TUser).FullName!, AuthenticationScheme, success: null, isPersistent: null, ex);
+            throw;
+        }
+    }
+
+    private async Task<(bool success, bool? isPersistent)> RefreshSignInCoreAsync(TUser user)
+    {
         var auth = await Context.AuthenticateAsync(AuthenticationScheme);
         if (!auth.Succeeded || auth.Principal?.Identity?.IsAuthenticated != true)
         {
             Logger.LogError("RefreshSignInAsync prevented because the user is not currently authenticated. Use SignInAsync instead for initial sign in.");
-            return;
+            return (false, auth.Properties?.IsPersistent);
         }
 
         var authenticatedUserId = UserManager.GetUserId(auth.Principal);
@@ -206,12 +223,12 @@ public class SignInManager<TUser> where TUser : class
         if (authenticatedUserId == null || authenticatedUserId != newUserId)
         {
             Logger.LogError("RefreshSignInAsync prevented because currently authenticated user has a different UserId. Use SignInAsync instead to change users.");
-            return;
+            return (false, auth.Properties?.IsPersistent);
         }
 
         IList<Claim> claims = Array.Empty<Claim>();
-        var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
-        var amr = auth?.Principal?.FindFirst("amr");
+        var authenticationMethod = auth.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
+        var amr = auth.Principal?.FindFirst("amr");
 
         if (authenticationMethod != null || amr != null)
         {
@@ -226,7 +243,8 @@ public class SignInManager<TUser> where TUser : class
             }
         }
 
-        await SignInWithClaimsAsync(user, auth?.Properties, claims);
+        await SignInWithClaimsAsync(user, auth.Properties, claims);
+        return (true, auth.Properties?.IsPersistent ?? false);
     }
 
     /// <summary>
@@ -278,17 +296,27 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task SignInWithClaimsAsync(TUser user, AuthenticationProperties? authenticationProperties, IEnumerable<Claim> additionalClaims)
     {
-        var userPrincipal = await CreateUserPrincipalAsync(user);
-        foreach (var claim in additionalClaims)
+        try
         {
-            userPrincipal.Identities.First().AddClaim(claim);
-        }
-        await Context.SignInAsync(AuthenticationScheme,
-            userPrincipal,
-            authenticationProperties ?? new AuthenticationProperties());
+            var userPrincipal = await CreateUserPrincipalAsync(user);
+            foreach (var claim in additionalClaims)
+            {
+                userPrincipal.Identities.First().AddClaim(claim);
+            }
+            await Context.SignInAsync(AuthenticationScheme,
+                userPrincipal,
+                authenticationProperties ?? new AuthenticationProperties());
 
-        // This is useful for updating claims immediately when hitting MapIdentityApi's /account/info endpoint with cookies.
-        Context.User = userPrincipal;
+            // This is useful for updating claims immediately when hitting MapIdentityApi's /account/info endpoint with cookies.
+            Context.User = userPrincipal;
+
+            _metrics?.SignInUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme);
+        }
+        catch (Exception ex)
+        {
+            _metrics?.SignInUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme, ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -296,15 +324,25 @@ public class SignInManager<TUser> where TUser : class
     /// </summary>
     public virtual async Task SignOutAsync()
     {
-        await Context.SignOutAsync(AuthenticationScheme);
+        try
+        {
+            await Context.SignOutAsync(AuthenticationScheme);
 
-        if (await _schemes.GetSchemeAsync(IdentityConstants.ExternalScheme) != null)
-        {
-            await Context.SignOutAsync(IdentityConstants.ExternalScheme);
+            if (await _schemes.GetSchemeAsync(IdentityConstants.ExternalScheme) != null)
+            {
+                await Context.SignOutAsync(IdentityConstants.ExternalScheme);
+            }
+            if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
+            {
+                await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+            }
+
+            _metrics?.SignOutUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme);
         }
-        if (await _schemes.GetSchemeAsync(IdentityConstants.TwoFactorUserIdScheme) != null)
+        catch (Exception ex)
         {
-            await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+            _metrics?.SignOutUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme, ex);
+            throw;
         }
     }
 
@@ -378,12 +416,23 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> PasswordSignInAsync(TUser user, string password,
         bool isPersistent, bool lockoutOnFailure)
     {
-        ArgumentNullException.ThrowIfNull(user);
+        try
+        {
+            ArgumentNullException.ThrowIfNull(user);
 
-        var attempt = await CheckPasswordSignInAsync(user, password, lockoutOnFailure);
-        return attempt.Succeeded
-            ? await SignInOrTwoFactorAsync(user, isPersistent)
-            : attempt;
+            var attempt = await CheckPasswordSignInAsync(user, password, lockoutOnFailure);
+            var result = attempt.Succeeded
+                ? await SignInOrTwoFactorAsync(user, isPersistent)
+                : attempt;
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Password, isPersistent);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Password, isPersistent, ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -402,6 +451,7 @@ public class SignInManager<TUser> where TUser : class
         var user = await UserManager.FindByNameAsync(userName);
         if (user == null)
         {
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, SignInResult.Failed, SignInType.Password, isPersistent);
             return SignInResult.Failed;
         }
 
@@ -418,8 +468,24 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> CheckPasswordSignInAsync(TUser user, string password, bool lockoutOnFailure)
     {
-        ArgumentNullException.ThrowIfNull(user);
+        try
+        {
+            ArgumentNullException.ThrowIfNull(user);
 
+            var result = await CheckPasswordSignInCoreAsync(user, password, lockoutOnFailure);
+            _metrics?.CheckPasswordSignIn(typeof(TUser).FullName!, result);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.CheckPasswordSignIn(typeof(TUser).FullName!, result: null, ex);
+            throw;
+        }
+    }
+
+    private async Task<SignInResult> CheckPasswordSignInCoreAsync(TUser user, string password, bool lockoutOnFailure)
+    {
         var error = await PreSignInCheck(user);
         if (error != null)
         {
@@ -841,19 +907,37 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RememberTwoFactorClientAsync(TUser user)
     {
-        var principal = await StoreRememberClient(user);
-        await Context.SignInAsync(IdentityConstants.TwoFactorRememberMeScheme,
-            principal,
-            new AuthenticationProperties { IsPersistent = true });
+        try
+        {
+            var principal = await StoreRememberClient(user);
+            await Context.SignInAsync(IdentityConstants.TwoFactorRememberMeScheme,
+                principal,
+                new AuthenticationProperties { IsPersistent = true });
+            _metrics?.RememberTwoFactorClient(typeof(TUser).FullName!, IdentityConstants.TwoFactorRememberMeScheme);
+        }
+        catch (Exception ex)
+        {
+            _metrics?.RememberTwoFactorClient(typeof(TUser).FullName!, IdentityConstants.TwoFactorRememberMeScheme, ex);
+            throw;
+        }
     }
 
     /// <summary>
     /// Clears the "Remember this browser flag" from the current browser, as an asynchronous operation.
     /// </summary>
     /// <returns>The task object representing the asynchronous operation.</returns>
-    public virtual Task ForgetTwoFactorClientAsync()
+    public virtual async Task ForgetTwoFactorClientAsync()
     {
-        return Context.SignOutAsync(IdentityConstants.TwoFactorRememberMeScheme);
+        try
+        {
+            await Context.SignOutAsync(IdentityConstants.TwoFactorRememberMeScheme);
+            _metrics?.ForgetTwoFactorClient(typeof(TUser).FullName!, IdentityConstants.TwoFactorRememberMeScheme);
+        }
+        catch (Exception ex)
+        {
+            _metrics?.ForgetTwoFactorClient(typeof(TUser).FullName!, IdentityConstants.TwoFactorRememberMeScheme, ex);
+            throw;
+        }
     }
 
     /// <summary>
@@ -862,6 +946,22 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="recoveryCode">The two factor recovery code.</param>
     /// <returns></returns>
     public virtual async Task<SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode)
+    {
+        try
+        {
+            var result = await TwoFactorRecoveryCodeSignInCoreAsync(recoveryCode);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorRecoveryCode, isPersistent: false);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorRecoveryCode, isPersistent: false, ex);
+            throw;
+        }
+    }
+
+    private async Task<SignInResult> TwoFactorRecoveryCodeSignInCoreAsync(string recoveryCode)
     {
         var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
         if (twoFactorInfo == null)
@@ -890,8 +990,10 @@ public class SignInManager<TUser> where TUser : class
             return SignInResult.Failed;
         }
 
-        var claims = new List<Claim>();
-        claims.Add(new Claim("amr", "mfa"));
+        var claims = new List<Claim>
+        {
+            new Claim("amr", "mfa")
+        };
 
         if (twoFactorInfo.LoginProvider != null)
         {
@@ -925,6 +1027,22 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
+    {
+        try
+        {
+            var result = await TwoFactorAuthenticatorSignInCoreAsync(code, isPersistent, rememberClient);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorAuthenticator, isPersistent);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorAuthenticator, isPersistent, ex);
+            throw;
+        }
+    }
+
+    private async Task<SignInResult> TwoFactorAuthenticatorSignInCoreAsync(string code, bool isPersistent, bool rememberClient)
     {
         var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
         if (twoFactorInfo == null)
@@ -973,6 +1091,22 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
+    {
+        try
+        {
+            var result = await TwoFactorSignInCoreAsync(provider, code, isPersistent, rememberClient);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactor, isPersistent);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactor, isPersistent, ex);
+            throw;
+        }
+    }
+
+    private async Task<SignInResult> TwoFactorSignInCoreAsync(string provider, string code, bool isPersistent, bool rememberClient)
     {
         var twoFactorInfo = await RetrieveTwoFactorInfoAsync();
         if (twoFactorInfo == null)
@@ -1046,6 +1180,22 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
+    {
+        try
+        {
+            var result = await ExternalLoginSignInCoreAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.External, isPersistent);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.External, isPersistent, ex);
+            throw;
+        }
+    }
+
+    private async Task<SignInResult> ExternalLoginSignInCoreAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
     {
         var user = await UserManager.FindByLoginAsync(loginProvider, providerKey);
         if (user == null)
