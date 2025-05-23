@@ -258,4 +258,23 @@ and are generated based on the last package release.
           Condition=" $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Runtime.')) or $([System.String]::new('%(Identity)').StartsWith('Microsoft.NETCore.App.Crossgen2.'))">$(MicrosoftNETCoreAppRefVersion)</Version>
     </LatestPackageReference>
   </ItemGroup>
+
+  <!-- Replicates the same overriding of versions that occurs on Roslyn package versions for source only builds -->
+  <ItemGroup Label="Source only build overrides" Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.Common">
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+    </LatestPackageReference>
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.CSharp">
+      <Version>$(Analyzer_MicrosoftCodeAnalysisCSharpVersion)</Version>
+    </LatestPackageReference>
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.CSharp.Workspaces">
+      <Version>$(Analyzer_MicrosoftCodeAnalysisCSharpWorkspacesVersion)</Version>
+    </LatestPackageReference>
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore">
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+    </LatestPackageReference>
+    <LatestPackageReference Update="Microsoft.CodeAnalysis.Razor">
+      <Version>$(MicrosoftCodeAnalysisVersion_LatestVS)</Version>
+    </LatestPackageReference>
+  </ItemGroup>
 </Project>
