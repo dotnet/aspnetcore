@@ -41,7 +41,7 @@ internal static class ValidationEndpointFilterFactory
 
             if (options.TryGetValidatableParameterInfo(parameters[i], out var validatableParameter))
             {
-                validatableParameters ??= new();
+                validatableParameters ??= [];
                 validatableParameters.Add(new ValidatableParameterEntry(
                     i,
                     validatableParameter,
