@@ -113,12 +113,15 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
             (config, _) =>
             {
 
-                config
+                foreach (var site in config
                     .RequiredElement("system.applicationHost")
                     .RequiredElement("sites")
-                    .RequiredElement("site")
-                    .RequiredElement("application")
-                    .SetAttributeValue("preloadEnabled", true);
+                    .Elements("site"))
+                {
+                    site
+                        .RequiredElement("application")
+                        .SetAttributeValue("preloadEnabled", true);
+                }
             });
 
         baseDeploymentParameters.EnableModule("ApplicationInitializationModule", "%IIS_BIN%\\warmup.dll");
