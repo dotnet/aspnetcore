@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
@@ -67,5 +68,5 @@ public class SocketConnectionFactoryOptions
     /// </remarks>
     public bool UnsafePreferInlineScheduling { get; set; }
 
-    internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = PinnedBlockMemoryPoolFactory.Create;
+    internal IMemoryPoolFactory<byte> MemoryPoolFactory { get; set; } = DefaultSimpleMemoryPoolFactory.Instance;
 }
