@@ -28,6 +28,8 @@ Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationContext.get -> Sy
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationContext.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationErrors.get -> System.Collections.Generic.Dictionary<string!, string![]!>?
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationErrors.set -> void
+Microsoft.AspNetCore.Http.Validation.ValidateContext.SerializerOptions.get -> System.Text.Json.JsonSerializerOptions?
+Microsoft.AspNetCore.Http.Validation.ValidateContext.SerializerOptions.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationOptions.get -> Microsoft.AspNetCore.Http.Validation.ValidationOptions!
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationOptions.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidationOptions

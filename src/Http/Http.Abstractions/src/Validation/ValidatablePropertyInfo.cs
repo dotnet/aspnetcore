@@ -76,7 +76,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         context.ValidationContext.DisplayName = DisplayName;
-        context.ValidationContext.MemberName = Name;
+        
+        // Format member name according to naming policy if available
+        var memberName = Name;
+        if (context.SerializerOptions?.PropertyNamingPolicy is not null)
+        {
+            memberName = context.SerializerOptions.PropertyNamingPolicy.ConvertName(Name);
+        }
+        context.ValidationContext.MemberName = memberName;
 
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
