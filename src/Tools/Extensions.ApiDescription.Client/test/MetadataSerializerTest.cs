@@ -193,7 +193,10 @@ public class MetadataSerializerTest
         // Act
         var result = MetadataSerializer.SerializeMetadata(input);
 
-        // Assert
+       // sort the values, since order is undefined for Dictionary
+       expectedResult = string.Join("|", expectedResult.Split('|').OrderBy(s => s));
+       result = string.Join("|", result.Split('|').OrderBy(s => s));
+       // Assert
         Assert.Equal(expectedResult, result);
     }
 
