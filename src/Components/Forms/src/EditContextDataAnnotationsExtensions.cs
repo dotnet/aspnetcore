@@ -1,12 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http.Validation;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions))]
 
@@ -15,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Extension methods to add DataAnnotations validation to an <see cref="EditContext"/>.
 /// </summary>
-public static class EditContextDataAnnotationsExtensions
+public static partial class EditContextDataAnnotationsExtensions
 {
     /// <summary>
     /// Adds DataAnnotations validation support to the <see cref="EditContext"/>.
@@ -59,7 +65,7 @@ public static class EditContextDataAnnotationsExtensions
     }
 #pragma warning restore IDE0051 // Remove unused private members
 
-    private sealed class DataAnnotationsEventSubscriptions : IDisposable
+    private sealed partial class DataAnnotationsEventSubscriptions : IDisposable
     {
         private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache = new();
 
@@ -82,6 +88,7 @@ public static class EditContextDataAnnotationsExtensions
             }
         }
 
+        // TODO(OR): Should this also use ValidatablePropertyInfo.ValidateAsync?
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
         {
@@ -112,6 +119,18 @@ public static class EditContextDataAnnotationsExtensions
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
+
+            if (!TryValidateTypeInfo(validationContext))
+            {
+                ValidateWithDefaultValidator(validationContext);
+            }
+
+            _editContext.NotifyValidationStateChanged();
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private void ValidateWithDefaultValidator(ValidationContext validationContext)
+        {
             var validationResults = new List<ValidationResult>();
             Validator.TryValidateObject(_editContext.Model, validationContext, validationResults, true);
 
@@ -136,8 +155,125 @@ public static class EditContextDataAnnotationsExtensions
                     _messages.Add(new FieldIdentifier(_editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
                 }
             }
+        }
 
-            _editContext.NotifyValidationStateChanged();
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        private bool TryValidateTypeInfo(ValidationContext validationContext)
+        {
+            var options = _serviceProvider?.GetService<IOptions<ValidationOptions>>()?.Value;
+
+            if (options == null || !options.TryGetValidatableTypeInfo(_editContext.Model.GetType(), out var typeInfo))
+            {
+                return false;
+            }
+
+            var validateContext = new ValidateContext
+            {
+                ValidationOptions = options,
+                ValidationContext = validationContext,
+            };
+
+            var containerMapping = new Dictionary<string, object?>();
+
+            validateContext.OnValidationError += (key, _, container) => containerMapping[key] = container;
+
+            var validationTask = typeInfo.ValidateAsync(_editContext.Model, validateContext, CancellationToken.None);
+
+            if (!validationTask.IsCompleted)
+            {
+                throw new InvalidOperationException("Async validation is not supported");
+            }
+
+            var validationErrors = validateContext.ValidationErrors;
+
+            // Transfer results to the ValidationMessageStore
+            _messages.Clear();
+
+            if (validationErrors is not null && validationErrors.Count > 0)
+            {
+                foreach (var (fieldKey, messages) in validationErrors)
+                {
+                    // Reverse mapping based on storing references during validation.
+                    // With this approach, we could skip iterating over ValidateContext.ValidationErrors and pass the errors
+                    // directly to ValidationMessageStore in the OnValidationError handler.
+                    var fieldContainer = containerMapping[fieldKey] ?? _editContext.Model;
+
+                    // Alternative: Reverse mapping based on object graph walk.
+                    //var fieldContainer = GetFieldContainer(_editContext.Model, fieldKey);
+
+                    var lastDotIndex = fieldKey.LastIndexOf('.');
+                    var fieldName = lastDotIndex >= 0 ? fieldKey[(lastDotIndex + 1)..] : fieldKey;
+
+                    _messages.Add(new FieldIdentifier(fieldContainer, fieldName), messages);
+                }
+            }
+
+            return true;
+        }
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
+        // TODO(OR): Replace this with a more robust implementation or a different approach. E.g. collect references during the validation process itself.
+        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private static object GetFieldContainer(object obj, string fieldKey)
+        {
+            // The method does not check all possible null access and index bound errors as the path is constructed internally and assumed to be correct.
+            var dotSegments = fieldKey.Split('.')[..^1];
+            var currentObject = obj;
+
+            for (int i = 0; i < dotSegments.Length; i++)
+            {
+                string segment = dotSegments[i];
+
+                if (currentObject == null)
+                {
+                    string traversedPath = string.Join(".", dotSegments.Take(i));
+                    throw new ArgumentException($"Cannot access segment '{segment}' because the path '{traversedPath}' resolved to null.");
+                }
+
+                Match match = _pathSegmentRegex.Match(segment);
+                if (!match.Success)
+                {
+                    throw new ArgumentException($"Invalid path segment: '{segment}'.");
+                }
+
+                string propertyName = match.Groups[1].Value;
+                string? indexStr = match.Groups[2].Success ? match.Groups[2].Value : null;
+
+                Type currentType = currentObject.GetType();
+                PropertyInfo propertyInfo = currentType!.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)!;
+                object propertyValue = propertyInfo!.GetValue(currentObject)!;
+
+                if (indexStr == null) // Simple property access
+                {
+                    currentObject = propertyValue;
+                }
+                else // Indexed access
+                {
+                    if (!int.TryParse(indexStr, out int index))
+                    {
+                        throw new ArgumentException($"Invalid index '{indexStr}' in segment '{segment}'.");
+                    }
+
+                    if (propertyValue is Array array)
+                    {
+                        currentObject = array.GetValue(index)!;
+                    }
+                    else if (propertyValue is IList list)
+                    {
+                        currentObject = list[index]!;
+                    }
+                    else if (propertyValue is IEnumerable enumerable)
+                    {
+                        currentObject = enumerable.Cast<object>().ElementAt(index);
+                    }
+                    else
+                    {
+                        throw new ArgumentException($"Property '{propertyName}' is not an array, list, or enumerable. Cannot access by index in segment '{segment}'.");
+                    }
+                }
+
+            }
+            return currentObject!;
         }
 
         public void Dispose()
@@ -174,5 +310,11 @@ public static class EditContextDataAnnotationsExtensions
         {
             _propertyInfoCache.Clear();
         }
+
+        private static readonly Regex _pathSegmentRegex = PathSegmentRegexGen();
+
+        // Regex to parse "PropertyName" or "PropertyName[index]"
+        [GeneratedRegex(@"^([a-zA-Z_]\w*)(?:\[(\d+)\])?$", RegexOptions.Compiled)]
+        private static partial Regex PathSegmentRegexGen();
     }
 }

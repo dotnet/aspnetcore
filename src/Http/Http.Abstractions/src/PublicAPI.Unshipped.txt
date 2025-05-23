@@ -23,6 +23,7 @@ Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentDepth.get -> int
 Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentDepth.set -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentValidationPath.get -> string!
 Microsoft.AspNetCore.Http.Validation.ValidateContext.CurrentValidationPath.set -> void
+Microsoft.AspNetCore.Http.Validation.ValidateContext.OnValidationError -> System.Action<string!, string![]!, object?>?
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidateContext() -> void
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext!
 Microsoft.AspNetCore.Http.Validation.ValidateContext.ValidationContext.set -> void
