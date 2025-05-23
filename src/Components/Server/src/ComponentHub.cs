@@ -45,6 +45,7 @@ internal sealed partial class ComponentHub : Hub
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
     private readonly ILogger _logger;
     private readonly ActivityContext _httpContext;
+    private readonly CircuitActivitySource _circuitActivitySource;
 
     public ComponentHub(
         IServerComponentDeserializer serializer,
@@ -53,6 +54,7 @@ internal sealed partial class ComponentHub : Hub
         CircuitIdFactory circuitIdFactory,
         CircuitRegistry circuitRegistry,
         ICircuitHandleRegistry circuitHandleRegistry,
+        CircuitActivitySource circuitActivitySource,
         ILogger<ComponentHub> logger)
     {
         _serverComponentSerializer = serializer;
@@ -61,8 +63,9 @@ internal sealed partial class ComponentHub : Hub
         _circuitIdFactory = circuitIdFactory;
         _circuitRegistry = circuitRegistry;
         _circuitHandleRegistry = circuitHandleRegistry;
+        _circuitActivitySource = circuitActivitySource;
         _logger = logger;
-        _httpContext = ComponentsActivitySource.CaptureHttpContext();
+        _httpContext = CircuitActivitySource.CaptureHttpContext();
     }
 
     /// <summary>
@@ -122,7 +125,13 @@ internal sealed partial class ComponentHub : Hub
 
         try
         {
+            // Create the circuit ID early so it can be added to the activity
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
+            var circuitId = _circuitIdFactory.CreateCircuitId();
+            
+            // Start circuit activity here in ComponentHub
+            var circuitActivity = _circuitActivitySource.StartCircuitActivity(circuitId.Id, _httpContext);
+            
             var store = !string.IsNullOrEmpty(applicationState) ?
                 new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
                 new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
@@ -134,7 +143,8 @@ internal sealed partial class ComponentHub : Hub
                 uri,
                 Context.User,
                 store,
-                resourceCollection);
+                resourceCollection,
+                circuitActivity);
 
             // Fire-and-forget the initialization process, because we can't block the
             // SignalR message loop (we'd get a deadlock if any of the initialization

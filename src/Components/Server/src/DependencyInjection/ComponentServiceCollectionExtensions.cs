@@ -78,7 +78,10 @@ public static class ComponentServiceCollectionExtensions
 
         services.TryAddSingleton<CircuitRegistry>();
 
-        // Add ComponentsActivitySource for tracing
+        // Add CircuitActivitySource for circuit-related tracing
+        services.AddCircuitActivitySource();
+        
+        // Add ComponentsActivitySource for component-level tracing
         ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
 
         // Standard blazor hosting services implementations

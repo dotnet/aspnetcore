@@ -25,7 +25,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
     private readonly CircuitMetrics? _circuitMetrics;
-    private readonly ComponentsActivitySource? _componentsActivitySource;
+    private readonly CircuitActivitySource? _circuitActivitySource;
+    private readonly Activity? _circuitActivity;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
@@ -52,7 +53,8 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
         CircuitMetrics? circuitMetrics,
-        ComponentsActivitySource? componentsActivitySource,
+        CircuitActivitySource? circuitActivitySource,
+        Activity? circuitActivity,
         ILogger logger)
     {
         CircuitId = circuitId;
@@ -71,7 +73,8 @@ internal partial class CircuitHost : IAsyncDisposable
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _circuitMetrics = circuitMetrics;
-        _componentsActivitySource = componentsActivitySource;
+        _circuitActivitySource = circuitActivitySource;
+        _circuitActivity = circuitActivity;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         Services = scope.ServiceProvider;
@@ -124,7 +127,6 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
-                activity = _componentsActivitySource?.StartCircuitActivity(CircuitId.Id, httpContext);
                 _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
 
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
@@ -169,12 +171,10 @@ internal partial class CircuitHost : IAsyncDisposable
                 _isFirstUpdate = Descriptors.Count == 0;
 
                 Log.InitializationSucceeded(_logger);
-
-                activity?.Stop();
             }
             catch (Exception ex)
             {
-                _componentsActivitySource?.FailCircuitActivity(activity, ex);
+                _circuitActivitySource?.FailCircuitActivity(_circuitActivity, ex);
 
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);
@@ -337,6 +337,9 @@ internal partial class CircuitHost : IAsyncDisposable
     {
         Log.CircuitClosed(_logger, CircuitId);
         _circuitMetrics?.OnCircuitDown(_startTime, Stopwatch.GetTimestamp());
+        
+        // Stop the circuit activity when the circuit is closed
+        _circuitActivitySource?.StopCircuitActivity(_circuitActivity);
 
         List<Exception> exceptions = null;
 

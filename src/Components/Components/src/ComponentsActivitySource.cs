@@ -11,17 +11,28 @@ namespace Microsoft.AspNetCore.Components;
 internal class ComponentsActivitySource
 {
     internal const string Name = "Microsoft.AspNetCore.Components";
-    internal const string OnCircuitName = $"{Name}.CircuitStart";
     internal const string OnRouteName = $"{Name}.RouteChange";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
     private ActivityContext _httpContext;
-    private ActivityContext _circuitContext;
-    private string? _circuitId;
     private ActivityContext _routeContext;
+    private Activity? _capturedActivity;
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
+    /// <summary>
+    /// Initializes the ComponentsActivitySource with a captured activity for linking.
+    /// </summary>
+    /// <param name="capturedActivity">Activity to link with component activities.</param>
+    public void Initialize(Activity? capturedActivity)
+    {
+        _capturedActivity = capturedActivity;
+        _httpContext = CaptureHttpContext();
+    }
+
+    /// <summary>
+    /// Captures the current HTTP context activity.
+    /// </summary>
     public static ActivityContext CaptureHttpContext()
     {
         var parentActivity = Activity.Current;
@@ -32,58 +43,19 @@ internal class ComponentsActivitySource
         return default;
     }
 
-    public Activity? StartCircuitActivity(string circuitId, ActivityContext httpContext)
-    {
-        _circuitId = circuitId;
-
-        var activity = ActivitySource.CreateActivity(OnCircuitName, ActivityKind.Internal, parentId: null, null, null);
-        if (activity is not null)
-        {
-            if (activity.IsAllDataRequested)
-            {
-                if (_circuitId != null)
-                {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
-                }
-                if (httpContext != default)
-                {
-                    activity.AddLink(new ActivityLink(httpContext));
-                }
-            }
-            activity.DisplayName = $"Circuit {circuitId ?? ""}";
-            activity.Start();
-            _circuitContext = activity.Context;
-        }
-        return activity;
-    }
-
-    public void FailCircuitActivity(Activity? activity, Exception ex)
-    {
-        _circuitContext = default;
-        if (activity != null && !activity.IsStopped)
-        {
-            activity.SetTag("error.type", ex.GetType().FullName);
-            activity.SetStatus(ActivityStatusCode.Error);
-            activity.Stop();
-        }
-    }
-
     public Activity? StartRouteActivity(string componentType, string route)
     {
-        if (_httpContext == default)
-        {
-            _httpContext = CaptureHttpContext();
-        }
-
         var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
         {
             if (activity.IsAllDataRequested)
             {
-                if (_circuitId != null)
+                // Copy any circuit ID from captured activity if present
+                if (_capturedActivity != null && _capturedActivity.GetTagItem("aspnetcore.components.circuit.id") is string circuitId)
                 {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
+                    activity.SetTag("aspnetcore.components.circuit.id", circuitId);
                 }
+                
                 if (componentType != null)
                 {
                     activity.SetTag("aspnetcore.components.type", componentType);
@@ -96,9 +68,9 @@ internal class ComponentsActivitySource
                 {
                     activity.AddLink(new ActivityLink(_httpContext));
                 }
-                if (_circuitContext != default)
+                if (_capturedActivity != null)
                 {
-                    activity.AddLink(new ActivityLink(_circuitContext));
+                    activity.AddLink(new ActivityLink(_capturedActivity.Context));
                 }
             }
 
@@ -116,10 +88,12 @@ internal class ComponentsActivitySource
         {
             if (activity.IsAllDataRequested)
             {
-                if (_circuitId != null)
+                // Copy any circuit ID from captured activity if present
+                if (_capturedActivity != null && _capturedActivity.GetTagItem("aspnetcore.components.circuit.id") is string circuitId)
                 {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
+                    activity.SetTag("aspnetcore.components.circuit.id", circuitId);
                 }
+                
                 if (componentType != null)
                 {
                     activity.SetTag("aspnetcore.components.type", componentType);
@@ -136,9 +110,9 @@ internal class ComponentsActivitySource
                 {
                     activity.AddLink(new ActivityLink(_httpContext));
                 }
-                if (_circuitContext != default)
+                if (_capturedActivity != null)
                 {
-                    activity.AddLink(new ActivityLink(_circuitContext));
+                    activity.AddLink(new ActivityLink(_capturedActivity.Context));
                 }
                 if (_routeContext != default)
                 {
