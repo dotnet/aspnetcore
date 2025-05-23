@@ -5,8 +5,6 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
-namespace TestServer;
-
 public static class RenderModeHelper
 {
     public static IComponentRenderMode GetRenderMode(RenderModeId renderMode)

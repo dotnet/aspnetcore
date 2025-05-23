@@ -1411,4 +1411,41 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Click(By.Id("redirectButton"));
         Browser.Equal("Routing test cases", () => Browser.Exists(By.Id("test-info")).Text);
     }
+
+    [Theory]
+    // prerendering (SSR) is tested in NoInteractivityTest
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void ProgrammaticNavigationToNotExistingPathReExecutesTo404(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found?renderMode={renderMode}&navigate-programmatically=true");
+        Assert404ReExecuted();
+    }
+
+    [Theory]
+    // prerendering (SSR) is tested in NoInteractivityTest
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void LinkNavigationToNotExistingPathReExecutesTo404(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found?renderMode={renderMode}");
+        Browser.Click(By.Id("link-to-not-existing-page"));
+        Assert404ReExecuted();
+    }
+
+    [Theory]
+    // prerendering (SSR) is tested in NoInteractivityTest
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void BrowserNavigationToNotExistingPathReExecutesTo404(string renderMode)
+    {
+        // non-existing path has to have re-execution middleware set up
+        // so it has to have "reexecution" prefix. Otherwise middleware mapping
+        // will not be activated, see configuration in Startup
+        Navigate($"{ServerPathBase}/reexecution/not-existing-page?renderMode={renderMode}");
+        Assert404ReExecuted();
+    }
+
+    private void Assert404ReExecuted() =>
+        Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 }
