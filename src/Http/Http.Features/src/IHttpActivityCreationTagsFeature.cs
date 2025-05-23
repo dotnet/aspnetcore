@@ -15,7 +15,6 @@ public interface IHttpActivityCreationTagsFeature
     /// A collection of tags to be added to the <see cref="System.Diagnostics.Activity"/> when it is created for the current HTTP request.
     /// These tags are available at Activity creation time and can be used for sampling decisions.
     /// </summary>
-    /// <returns>An <see cref="ActivityTagsCollection"/> containing tags to add to the Activity at creation time.</returns>
-    ActivityTagsCollection? ActivityCreationTags { get; }
+    /// <returns>An <see cref="TagList"/> containing tags to add to the Activity at creation time.</returns>
+    TagList? ActivityCreationTags { get; }
 }
-
