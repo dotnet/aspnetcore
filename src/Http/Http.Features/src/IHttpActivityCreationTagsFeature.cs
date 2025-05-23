@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-
 namespace Microsoft.AspNetCore.Http.Features;
 
 /// <summary>
@@ -15,6 +13,6 @@ public interface IHttpActivityCreationTagsFeature
     /// A collection of tags to be added to the <see cref="System.Diagnostics.Activity"/> when it is created for the current HTTP request.
     /// These tags are available at Activity creation time and can be used for sampling decisions.
     /// </summary>
-    /// <returns>An <see cref="TagList"/> containing tags to add to the Activity at creation time.</returns>
-    TagList? ActivityCreationTags { get; }
+    /// <returns>Tags to add to the Activity at creation time.</returns>
+    IEnumerable<KeyValuePair<string, object?>>? ActivityCreationTags { get; }
 }
