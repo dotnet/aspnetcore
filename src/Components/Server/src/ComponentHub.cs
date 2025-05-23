@@ -65,7 +65,7 @@ internal sealed partial class ComponentHub : Hub
         _circuitHandleRegistry = circuitHandleRegistry;
         _circuitActivitySource = circuitActivitySource;
         _logger = logger;
-        _httpContext = CircuitActivitySource.CaptureHttpContext();
+        _httpContext = CaptureHttpContext();
     }
 
     /// <summary>
@@ -429,5 +429,15 @@ internal sealed partial class ComponentHub : Hub
 
             InvalidCircuitIdCore(logger, circuitSecret);
         }
+    }
+    
+    private static ActivityContext CaptureHttpContext()
+    {
+        var parentActivity = Activity.Current;
+        if (parentActivity is not null && parentActivity.OperationName == "Microsoft.AspNetCore.Hosting.HttpRequestIn" && parentActivity.Recorded)
+        {
+            return parentActivity.Context;
+        }
+        return default;
     }
 }

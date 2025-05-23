@@ -14,7 +14,6 @@ internal class ComponentsActivitySource
     internal const string OnRouteName = $"{Name}.RouteChange";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
-    private ActivityContext _httpContext;
     private ActivityContext _routeContext;
     private Activity? _capturedActivity;
 
@@ -27,20 +26,6 @@ internal class ComponentsActivitySource
     public void Initialize(Activity? capturedActivity)
     {
         _capturedActivity = capturedActivity;
-        _httpContext = CaptureHttpContext();
-    }
-
-    /// <summary>
-    /// Captures the current HTTP context activity.
-    /// </summary>
-    public static ActivityContext CaptureHttpContext()
-    {
-        var parentActivity = Activity.Current;
-        if (parentActivity is not null && parentActivity.OperationName == "Microsoft.AspNetCore.Hosting.HttpRequestIn" && parentActivity.Recorded)
-        {
-            return parentActivity.Context;
-        }
-        return default;
     }
 
     public Activity? StartRouteActivity(string componentType, string route)
@@ -63,10 +48,6 @@ internal class ComponentsActivitySource
                 if (route != null)
                 {
                     activity.SetTag("aspnetcore.components.route", route);
-                }
-                if (_httpContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_httpContext));
                 }
                 if (_capturedActivity != null)
                 {
@@ -105,10 +86,6 @@ internal class ComponentsActivitySource
                 if (attributeName != null)
                 {
                     activity.SetTag("aspnetcore.components.attribute.name", attributeName);
-                }
-                if (_httpContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_httpContext));
                 }
                 if (_capturedActivity != null)
                 {

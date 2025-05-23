@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -28,6 +29,7 @@ internal partial class RemoteRenderer : WebRenderer
     internal readonly ConcurrentQueue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new ConcurrentQueue<UnacknowledgedRenderBatch>();
     private long _nextRenderId = 1;
     private bool _disposing;
+    private readonly Activity? _capturedActivity;
 
     /// <summary>
     /// Notifies when a rendering exception occurred.
@@ -54,6 +56,11 @@ internal partial class RemoteRenderer : WebRenderer
         _serverComponentDeserializer = serverComponentDeserializer;
         _logger = logger;
         _resourceCollection = resourceCollection;
+        _capturedActivity = Activity.Current; // Capture the current activity
+
+        // Initialize ComponentsActivitySource with the captured activity
+        var componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
+        componentsActivitySource?.Initialize(_capturedActivity);
 
         ElementReferenceContext = jsRuntime.ElementReferenceContext;
     }
@@ -369,7 +376,7 @@ internal partial class RemoteRenderer : WebRenderer
         }
     }
 
-    private static new partial class Log
+    private static partial class Log
     {
         [LoggerMessage(100, LogLevel.Warning, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
         private static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);

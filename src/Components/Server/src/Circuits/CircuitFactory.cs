@@ -70,8 +70,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         }
         var componentsActivitySource = scope.ServiceProvider.GetService<ComponentsActivitySource>();
         
-        // Initialize the components activity source with the circuit activity if available
-        componentsActivitySource?.Initialize(circuitActivity);
+        // We don't need to explicitly initialize the ComponentsActivitySource here anymore
+        // since the RemoteRenderer will capture Activity.Current and initialize it
         
         var circuitActivitySource = scope.ServiceProvider.GetService<CircuitActivitySource>();
 
