@@ -62,7 +62,7 @@
                       Encoding="ASCII" />
 
     <ItemGroup>
-      <Artifact Include="@(ProductVersionFile)" Kind="Blob" UploadPathSegment="Runtime" />
+      <Artifact Include="@(ProductVersionFile)" Kind="Blob" UploadPathSegment="Runtime/" />
     </ItemGroup>
   </Target>
 
