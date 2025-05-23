@@ -386,7 +386,26 @@ internal sealed class OpenApiDocumentService(
             var responseKey = responseType.IsDefaultResponse
                 ? OpenApiConstants.DefaultOpenApiResponseKey
                 : responseType.StatusCode.ToString(CultureInfo.InvariantCulture);
-            responses.Add(responseKey, await GetResponseAsync(document, description, responseType.StatusCode, responseType, scopedServiceProvider, schemaTransformers, cancellationToken));
+                
+            if (responses.TryGetValue(responseKey, out var existingResponse))
+            {
+                // If a response with the same status code already exists, add the content types
+                // from the current responseType to the existing response's Content dictionary
+                var newResponse = await GetResponseAsync(document, description, responseType.StatusCode, responseType, scopedServiceProvider, schemaTransformers, cancellationToken);
+                
+                if (newResponse.Content != null && existingResponse.Content != null)
+                {
+                    foreach (var contentType in newResponse.Content)
+                    {
+                        existingResponse.Content.TryAdd(contentType.Key, contentType.Value);
+                    }
+                }
+            }
+            else
+            {
+                // Add new response
+                responses.Add(responseKey, await GetResponseAsync(document, description, responseType.StatusCode, responseType, scopedServiceProvider, schemaTransformers, cancellationToken));
+            }
         }
         return responses;
     }

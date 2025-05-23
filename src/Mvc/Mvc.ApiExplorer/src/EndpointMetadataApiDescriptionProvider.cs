@@ -346,7 +346,12 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
         // We favor types added via the extension methods (which implements IProducesResponseTypeMetadata)
         // over those that are added via attributes.
-        var responseMetadataTypes = producesResponseMetadataTypes.Values.Concat(responseProviderMetadataTypes.Values);
+        // Order the combined list of response types by status code for consistent output
+        var responseMetadataTypes = producesResponseMetadataTypes.Values
+            .Concat(responseProviderMetadataTypes.Values)
+            .OrderBy(r => r.StatusCode)
+            .ThenBy(r => r.Type?.Name)
+            .ThenBy(r => r.ApiResponseFormats.FirstOrDefault()?.MediaType);
 
         if (responseMetadataTypes.Any())
         {
