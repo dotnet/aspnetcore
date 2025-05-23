@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
@@ -64,7 +65,7 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddSingleton<CircuitMetrics>();
         services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
         services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
-        services.TryAddSingleton<RootTypeCache>();
+        services.TryAddSingleton<Microsoft.AspNetCore.Components.RootTypeCache>();
         services.TryAddSingleton<ComponentParameterDeserializer>();
         services.TryAddSingleton<ComponentParametersTypeCache>();
         services.TryAddSingleton<CircuitIdFactory>();
@@ -76,6 +77,9 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
 
         services.TryAddSingleton<CircuitRegistry>();
+
+        // Add ComponentsActivitySource for tracing
+        ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);
 
         // Standard blazor hosting services implementations
         //
