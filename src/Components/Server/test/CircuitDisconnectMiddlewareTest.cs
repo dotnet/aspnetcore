@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Moq;
 
 namespace Microsoft.AspNetCore.Components.Server;
 
@@ -23,7 +24,8 @@ public class CircuitDisconnectMiddlewareTest
         var registry = new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            circuitIdFactory);
+            circuitIdFactory,
+            Mock.Of<CircuitPersistenceManager>());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -51,7 +53,8 @@ public class CircuitDisconnectMiddlewareTest
         var registry = new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            circuitIdFactory);
+            circuitIdFactory,
+            Mock.Of<CircuitPersistenceManager>());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -78,7 +81,8 @@ public class CircuitDisconnectMiddlewareTest
         var registry = new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            circuitIdFactory);
+            circuitIdFactory,
+            Mock.Of<CircuitPersistenceManager>());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -105,7 +109,8 @@ public class CircuitDisconnectMiddlewareTest
         var registry = new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            circuitIdFactory);
+            circuitIdFactory,
+            Mock.Of<CircuitPersistenceManager>());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -138,7 +143,8 @@ public class CircuitDisconnectMiddlewareTest
         var registry = new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            circuitIdFactory);
+            circuitIdFactory,
+            Mock.Of<CircuitPersistenceManager>());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -173,7 +179,8 @@ public class CircuitDisconnectMiddlewareTest
         var registry = new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            circuitIdFactory);
+            circuitIdFactory,
+            Mock.Of<CircuitPersistenceManager>());
 
         registry.Register(testCircuitHost);
 
@@ -210,7 +217,8 @@ public class CircuitDisconnectMiddlewareTest
         var registry = new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            circuitIdFactory);
+            circuitIdFactory,
+            Mock.Of<CircuitPersistenceManager>());
 
         registry.Register(circuitHost);
         await registry.DisconnectAsync(circuitHost, "1234");
