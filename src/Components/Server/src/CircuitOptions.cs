@@ -45,6 +45,32 @@ public sealed class CircuitOptions
     public TimeSpan DisconnectedCircuitRetentionPeriod { get; set; } = TimeSpan.FromMinutes(3);
 
     /// <summary>
+    /// Gets or sets a value that determines the maximum number of persisted circuits state that
+    /// are retained in memory by the server when no distributed cache is configured.
+    /// </summary>
+    /// <remarks>
+    /// When using a distributed cache like <see cref="Extensions.Caching.Hybrid.HybridCache"/> this value is ignored
+    /// and the configuration from <see cref="Extensions.DependencyInjection.MemoryCacheServiceCollectionExtensions.AddMemoryCache(Extensions.DependencyInjection.IServiceCollection)"/>
+    /// is used instead.
+    public int PersistedCircuitMaxRetained { get; set; } = 100;
+
+    /// <summary>
+    /// Gets or sets the duration for which a persisted circuit is retained in memory.
+    /// </summary>
+    /// <remarks>This value is used for the default in-memory cache implementation as well as for the
+    /// duration for which the persisted circuits are retained in the local in memory cache when using a
+    /// <see cref="Extensions.Caching.Hybrid.HybridCache"/>.</remarks>"/>
+    public TimeSpan PersistedCircuitInMemoryRetentionPeriod { get; set; } = TimeSpan.FromHours(1);
+
+    /// <summary>
+    /// Gets or sets the duration for which the persisted circuits are retained in the distributed cache when using a
+    /// <see cref="Extensions.Caching.Hybrid.HybridCache"/>.</summary>
+    /// <remarks>
+    /// The default value is 8 hours
+    /// </remarks>
+    public TimeSpan PersistedCircuitDistributedRetentionPeriod { get; set; } = TimeSpan.FromHours(8);
+
+    /// <summary>
     /// Gets or sets a value that determines whether or not to send detailed exception messages to JavaScript when an unhandled exception
     /// happens on the circuit or when a .NET method invocation through JS interop results in an exception.
     /// </summary>

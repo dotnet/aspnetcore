@@ -354,7 +354,7 @@ public class CircuitRegistryTest
     private class TestCircuitRegistry : CircuitRegistry
     {
         public TestCircuitRegistry(CircuitIdFactory factory, CircuitOptions circuitOptions = null)
-            : base(Options.Create(circuitOptions ?? new CircuitOptions()), NullLogger<CircuitRegistry>.Instance, factory)
+            : base(Options.Create(circuitOptions ?? new CircuitOptions()), NullLogger<CircuitRegistry>.Instance, factory, Mock.Of<CircuitPersistenceManager>())
         {
         }
 
@@ -395,6 +395,6 @@ public class CircuitRegistryTest
         return new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            factory ?? TestCircuitIdFactory.CreateTestFactory());
+            factory ?? TestCircuitIdFactory.CreateTestFactory(), Mock.Of<CircuitPersistenceManager>());
     }
 }

@@ -41,16 +41,19 @@ internal partial class CircuitRegistry
     private readonly CircuitOptions _options;
     private readonly ILogger _logger;
     private readonly CircuitIdFactory _circuitIdFactory;
+    private readonly CircuitPersistenceManager _circuitPersistenceManager;
     private readonly PostEvictionCallbackRegistration _postEvictionCallback;
 
     public CircuitRegistry(
         IOptions<CircuitOptions> options,
         ILogger<CircuitRegistry> logger,
-        CircuitIdFactory CircuitHostFactory)
+        CircuitIdFactory CircuitHostFactory,
+        CircuitPersistenceManager circuitPersistenceManager)
     {
         _options = options.Value;
         _logger = logger;
         _circuitIdFactory = CircuitHostFactory;
+        _circuitPersistenceManager = circuitPersistenceManager;
         ConnectedCircuits = new ConcurrentDictionary<CircuitId, CircuitHost>();
 
         DisconnectedCircuits = new MemoryCache(new MemoryCacheOptions
@@ -264,8 +267,8 @@ internal partial class CircuitRegistry
             case EvictionReason.Capacity:
                 // Kick off the dispose in the background.
                 var disconnectedEntry = (DisconnectedCircuitEntry)value;
-                Log.CircuitEvicted(_logger, disconnectedEntry.CircuitHost.CircuitId, reason);
-                _ = DisposeCircuitEntry(disconnectedEntry);
+                Log.CircuitEvicted(_logger, disconnectedEntry.CircuitHost.CircuitId, reason);                
+                _ = PauseAndDisposeCircuitEntry(disconnectedEntry);
                 break;
 
             case EvictionReason.Removed:
@@ -278,12 +281,13 @@ internal partial class CircuitRegistry
         }
     }
 
-    private async Task DisposeCircuitEntry(DisconnectedCircuitEntry entry)
+    private async Task PauseAndDisposeCircuitEntry(DisconnectedCircuitEntry entry)
     {
         DisposeTokenSource(entry);
 
         try
         {
+            await _circuitPersistenceManager.PauseCircuitAsync(entry.CircuitHost);
             entry.CircuitHost.UnhandledException -= CircuitHost_UnhandledException;
             await entry.CircuitHost.DisposeAsync();
         }
