@@ -291,7 +291,10 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         return (componentDescriptor, serverComponent);
     }
 
-    public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out RootComponentOperationBatch? result)
+    public bool TryDeserializeRootComponentOperations(
+        string serializedComponentOperations,
+        [NotNullWhen(true)] out RootComponentOperationBatch? result,
+        bool deserializeMarkers = true)
     {
         int[]? seenComponentIdsStorage = null;
         try
@@ -327,6 +330,13 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
                     Log.InvalidRootComponentOperation(_logger, operation.Type, message: "Missing marker.");
                     result = null;
                     return false;
+                }
+
+                if (!deserializeMarkers)
+                {
+                    // If we are not deserializing markers, we can skip the rest of the processing.
+                    operation.Descriptor = null;
+                    continue;
                 }
 
                 if (!TryDeserializeWebRootComponentDescriptor(operation.Marker.Value, out var descriptor))

@@ -42,6 +42,7 @@ internal sealed partial class ComponentHub : Hub
     private readonly ICircuitFactory _circuitFactory;
     private readonly CircuitIdFactory _circuitIdFactory;
     private readonly CircuitRegistry _circuitRegistry;
+    private readonly CircuitPersistenceManager _circuitPersistenceManager;
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
     private readonly ILogger _logger;
     private readonly ActivityContext _httpContext;
@@ -52,6 +53,7 @@ internal sealed partial class ComponentHub : Hub
         ICircuitFactory circuitFactory,
         CircuitIdFactory circuitIdFactory,
         CircuitRegistry circuitRegistry,
+        CircuitPersistenceManager circuitPersistenceProvider,
         ICircuitHandleRegistry circuitHandleRegistry,
         ILogger<ComponentHub> logger)
     {
@@ -60,6 +62,7 @@ internal sealed partial class ComponentHub : Hub
         _circuitFactory = circuitFactory;
         _circuitIdFactory = circuitIdFactory;
         _circuitRegistry = circuitRegistry;
+        _circuitPersistenceManager = circuitPersistenceProvider;
         _circuitHandleRegistry = circuitHandleRegistry;
         _logger = logger;
         _httpContext = ComponentsActivitySource.CaptureHttpContext();
@@ -172,21 +175,35 @@ internal sealed partial class ComponentHub : Hub
             return;
         }
 
-        if (!_serverComponentSerializer.TryDeserializeRootComponentOperations(
-            serializedComponentOperations,
-            out var operations))
+        RootComponentOperationBatch operations;
+        ProtectedPrerenderComponentApplicationStore store;
+        var persistedState = circuitHost.TakePersistedCircuitState();
+        if (persistedState != null)
         {
-            // There was an error, so kill the circuit.
-            await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
-            await NotifyClientError(Clients.Caller, "The list of component operations is not valid.");
-            Context.Abort();
+            operations = _circuitPersistenceManager.ToRootComponentOperationBatch(
+                persistedState.RootComponents,
+                serializedComponentOperations);
 
-            return;
+            store = _circuitPersistenceManager.ToComponentApplicationStore(persistedState.ApplicationState);
         }
+        else
+        {
+            if (!_serverComponentSerializer.TryDeserializeRootComponentOperations(
+            serializedComponentOperations,
+            out operations))
+            {
+                // There was an error, so kill the circuit.
+                await _circuitRegistry.TerminateAsync(circuitHost.CircuitId);
+                await NotifyClientError(Clients.Caller, "The list of component operations is not valid.");
+                Context.Abort();
 
-        var store = !string.IsNullOrEmpty(applicationState) ?
-            new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
-            new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
+                return;
+            }
+
+            store = !string.IsNullOrEmpty(applicationState) ?
+                new ProtectedPrerenderComponentApplicationStore(applicationState, _dataProtectionProvider) :
+                new ProtectedPrerenderComponentApplicationStore(_dataProtectionProvider);
+        }
 
         _ = circuitHost.UpdateRootComponents(operations, store, Context.ConnectionAborted);
     }
@@ -218,6 +235,160 @@ internal sealed partial class ComponentHub : Hub
         // If we get here the circuit does not exist anymore. This is something that's valid for a client to
         // recover from, and the client is not holding any resources right now other than the connection.
         return false;
+    }
+
+    // This method drives the resumption of a circuit that has been previously paused and ejected out of memory.
+    // Resuming a circuit is very similar to starting a new circuit.
+    // We receive an existing circuit ID to look up the existing circuit state.
+    // We receive the base URI and the URI to perform the same checks that we do during start circuit.
+    // Upon resuming a circuit ID, its ID changes. This has some ramifications:
+    // * When a circuit is paused, the old circuit is gone. There's no way to bring it back.
+    // * Resuming a circuit means to essentially create a new circuit. One that "starts" from where the previous one "paused".
+    // * When a circuit is "paused" it might be stored either in the browser (the client holds all state) during "graceful pauses" or
+    //   it can be stored in cache storage during "ungraceful pauses".
+    // * For the circuit to successfully resume, this call needs to succeed (returning a new circuit ID).
+    //   * Retrieving and deleting the state for the old circuit is part of this process
+    //   * Once we retrieve the state, we delete it, and we check that it's no longer there before we try to resume
+    //     the new circuit
+    //   * No other connection can get here while we are inside ResumeCircuit (SignalR only processes one message at a time, and we don't work if you change this setting).
+    // * In the unlikely event that the connection breaks, there are two things that could happen:
+    //   * If the client was the one providing the circuit state, it could potentially resume elsewhere (for example another server).
+    //     * In that case this circuit won't do anything. We don't consider the circuit fully resumed until we have attached and triggered a render
+    //       into the DOM. If a failure happens before that, we directly discard the new circuit and its state.
+    //   * If the state was stored on the server, then the state is gone after we retrieve it from the cache. Even if a client were to connect to
+    //     two separate server instances (for example, server A, B, where it starts resuming on A, something fails and tries to start resuming on B)
+    //     the state would either be ignored in one case or lost.
+    //   * Two things can happen:
+    //     * Both A and B are somehow able to read the same state.
+    //       * Even if A gets the state, it doesn't complete the "resume" handshake, so its state gets discarded
+    //       and not saved again.
+    //       * B might complete the handshake and then the circuit will resume on B.
+    //     * A deletes the state before B is able to read it. Then "resumption" fails, as the circuit state is gone.
+
+    // On the server we are going to have a public method on Circuit.cs to trigger pausing a circuit from the server
+    // that returns the root components and application state as strings data-protected by the data protection provider.
+    // Those can be then passed to this method for resuming the circuit.
+    public async ValueTask<string> ResumeCircuit(
+        string circuitIdSecret,
+        string baseUri,
+        string uri,
+        string rootComponents,
+        string applicationState)
+    {
+        // TryParseCircuitId will not throw.
+        if (!_circuitIdFactory.TryParseCircuitId(circuitIdSecret, out var circuitId))
+        {
+            // Invalid id.
+            Log.InvalidCircuitId(_logger, circuitIdSecret);
+            return null;
+        }
+
+        var circuitHost = _circuitHandleRegistry.GetCircuit(Context.Items, CircuitKey);
+        if (circuitHost != null)
+        {
+            // This is an error condition and an attempt to bind multiple circuits to a single connection.
+            // We can reject this and terminate the connection.
+            Log.CircuitAlreadyInitialized(_logger, circuitHost.CircuitId);
+            await NotifyClientError(Clients.Caller, $"The circuit host '{circuitHost.CircuitId}' has already been initialized.");
+            Context.Abort();
+            return null;
+        }
+
+        if (baseUri == null ||
+            uri == null ||
+            !Uri.TryCreate(baseUri, UriKind.Absolute, out _) ||
+            !Uri.TryCreate(uri, UriKind.Absolute, out _))
+        {
+            // We do some really minimal validation here to prevent obviously wrong data from getting in
+            // without duplicating too much logic.
+            //
+            // This is an error condition attempting to initialize the circuit in a way that would fail.
+            // We can reject this and terminate the connection.
+            Log.InvalidInputData(_logger);
+            await NotifyClientError(Clients.Caller, "The uris provided are invalid.");
+            Context.Abort();
+            return null;
+        }
+
+        PersistedCircuitState? persistedCircuitState;
+        if (string.IsNullOrEmpty(rootComponents) && string.IsNullOrEmpty(applicationState))
+        {
+            persistedCircuitState = await _circuitPersistenceManager.ResumeCircuitAsync(circuitId, Context.ConnectionAborted);
+            if (persistedCircuitState == null)
+            {
+                Log.InvalidInputData(_logger);
+                await NotifyClientError(Clients.Caller, "The circuit state could not be retrieved. It may have been deleted or expired.");
+                Context.Abort();
+                return null;
+            }
+        }
+        else if (!string.IsNullOrEmpty(rootComponents) || !string.IsNullOrEmpty(applicationState))
+        {
+            Log.InvalidInputData(_logger);
+            await NotifyClientError(
+                Clients.Caller,
+                string.IsNullOrEmpty(rootComponents) ?
+                "The root components provided are invalid." :
+                "The application state provided is invalid."
+            );
+            Context.Abort();
+            return null;
+        }
+        else
+        {
+            persistedCircuitState = _circuitPersistenceManager.FromProtectedState(rootComponents, applicationState);
+            if (persistedCircuitState == null)
+            {
+                // If we couldn't deserialize the persisted state, signal that.
+                Log.InvalidInputData(_logger);
+                await NotifyClientError(Clients.Caller, "The root components or application state provided are invalid.");
+                Context.Abort();
+                return null;
+            }
+        }
+
+        try
+        {
+            var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
+            var resourceCollection = Context.GetHttpContext().GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
+            circuitHost = await _circuitFactory.CreateCircuitHostAsync(
+                [],
+                circuitClient,
+                baseUri,
+                uri,
+                Context.User,
+                store: null,
+                resourceCollection);
+
+            // Fire-and-forget the initialization process, because we can't block the
+            // SignalR message loop (we'd get a deadlock if any of the initialization
+            // logic relied on receiving a subsequent message from SignalR), and it will
+            // take care of its own errors anyway.
+            _ = circuitHost.InitializeAsync(store: null, _httpContext, Context.ConnectionAborted);
+
+            circuitHost.AttachPersistedState(persistedCircuitState);
+
+            // It's safe to *publish* the circuit now because nothing will be able
+            // to run inside it until after InitializeAsync completes.
+            _circuitRegistry.Register(circuitHost);
+            _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost);
+
+            // Returning the secret here so the client can reconnect.
+            //
+            // Logging the secret and circuit ID here so we can associate them with just logs (if TRACE level is on).
+            Log.CreatedCircuit(_logger, circuitHost.CircuitId, circuitHost.CircuitId.Secret, Context.ConnectionId);
+
+            return circuitHost.CircuitId.Secret;
+        }
+        catch (Exception ex)
+        {
+            // If the circuit fails to initialize synchronously we can notify the client immediately
+            // and shut down the connection.
+            Log.CircuitInitializationFailed(_logger, ex);
+            await NotifyClientError(Clients.Caller, "The circuit failed to initialize.");
+            Context.Abort();
+            return null;
+        }
     }
 
     public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
@@ -371,6 +542,13 @@ internal sealed partial class ComponentHub : Hub
     }
 
     private static Task NotifyClientError(IClientProxy client, string error) => client.SendAsync("JS.Error", error);
+
+    internal class ResumeCircuitResult
+    {
+        public string CircuitId { get; set; }
+        public string ApplicationState { get; set; }
+        public string Operations { get; set; }
+    }
 
     private static partial class Log
     {

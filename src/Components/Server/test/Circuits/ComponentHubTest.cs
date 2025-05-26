@@ -112,7 +112,7 @@ public class ComponentHubTest
         var circuitRegistry = new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            circuitIdFactory);
+            circuitIdFactory, Mock.Of<CircuitPersistenceManager>());
         var serializer = new TestServerComponentDeserializer();
         var circuitHandleRegistry = new TestCircuitHandleRegistry();
         var hub = new ComponentHub(
@@ -121,6 +121,7 @@ public class ComponentHubTest
             circuitFactory: circuitFactory,
             circuitIdFactory: circuitIdFactory,
             circuitRegistry: circuitRegistry,
+            circuitPersistenceProvider: Mock.Of<CircuitPersistenceManager>(),
             circuitHandleRegistry: circuitHandleRegistry,
             logger: NullLogger<ComponentHub>.Instance);
 
@@ -178,7 +179,7 @@ public class ComponentHubTest
             return true;
         }
 
-        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out RootComponentOperationBatch operationsWithDescriptors)
+        public bool TryDeserializeRootComponentOperations(string serializedComponentOperations, out RootComponentOperationBatch operationsWithDescriptors, bool deserializeDescriptors = true)
         {
             operationsWithDescriptors = default;
             return true;

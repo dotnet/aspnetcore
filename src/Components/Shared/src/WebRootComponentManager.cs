@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Numerics;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 #if COMPONENTS_SERVER
@@ -83,6 +84,16 @@ internal partial class WebAssemblyRenderer
             return component;
         }
 
+#if COMPONENTS_SERVER
+        internal IEnumerable<(int id, ComponentMarkerKey key, (Type componentType, ParameterView parameters))> GetRootComponents()
+        {
+            foreach (var (id, (key, type, parameters)) in _webRootComponents)
+            {
+                yield return (id, key, (type, parameters));
+            }
+        }
+#endif
+
         private sealed class WebRootComponent
         {
             [DynamicallyAccessedMembers(Component)]
@@ -124,6 +135,18 @@ internal partial class WebAssemblyRenderer
                 _interactiveComponentId = interactiveComponentId;
                 _latestParameters = initialParameters;
             }
+
+#if COMPONENTS_SERVER
+            public void Deconstruct(
+                out ComponentMarkerKey key,
+                out Type componentType,
+                out ParameterView parameters)
+            {
+                key = _key;
+                componentType = _componentType;
+                parameters = _latestParameters.Parameters;
+            }
+#endif
 
             public Task UpdateAsync(
                 Renderer renderer,
