@@ -1,6 +1,18 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressLoggingCallback.get -> System.Func<Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext!, bool>?
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressLoggingCallback.set -> void
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.get -> bool
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.set -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult.ExceptionHandler = 3 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult.ExceptionHandlingPath = 4 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult.IExceptionHandler = 1 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult.ProblemDetailsService = 2 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult.Unhandled = 0 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.Exception.get -> System.Exception!
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.Exception.init -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.ExceptionHandlerSuppressLoggingContext() -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.HandlerResult.get -> Microsoft.AspNetCore.Diagnostics.ExceptionHandlerResult
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.HandlerResult.init -> void
 static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, bool createScopeForErrors, string? queryFormat = null) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressLoggingIExceptionHandler.get -> bool
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressLoggingIExceptionHandler.set -> void

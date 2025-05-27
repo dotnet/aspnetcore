@@ -34,6 +34,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     public async Task ExceptionIsSetOnProblemDetailsContext()
     {
         // Arrange
+        ExceptionHandlerSuppressLoggingContext loggingContext = null;
         using var host = new HostBuilder()
             .ConfigureServices(services =>
             {
@@ -54,7 +55,14 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
                 .UseTestServer()
                 .Configure(app =>
                 {
-                    app.UseExceptionHandler();
+                    app.UseExceptionHandler(new ExceptionHandlerOptions
+                    {
+                        SuppressLoggingCallback = context =>
+                        {
+                            loggingContext = context;
+                            return true;
+                        }
+                    });
                     app.Run(context =>
                     {
                         throw new Exception("Test exception");
@@ -76,6 +84,9 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         var body = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         var originalExceptionMessage = ((JsonElement)body.Extensions["OriginalExceptionMessage"]).GetString();
         Assert.Equal("Test exception", originalExceptionMessage);
+
+        Assert.IsType<Exception>(loggingContext.Exception);
+        Assert.Equal(ExceptionHandlerResult.ProblemDetailsService, loggingContext.HandlerResult);
     }
 
     [Fact]
@@ -102,8 +113,10 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         Assert.Collection(sink.Writes, w => Assert.Equal("UnhandledException", w.EventId.Name));
     }
 
-    [Fact]
-    public async Task Invoke_HasExceptionHandler_SuppressIExceptionHandlerLogging_HasLogs()
+    [Theory]
+    [InlineData(ExceptionHandlerResult.ExceptionHandler, false)]
+    [InlineData(ExceptionHandlerResult.ProblemDetailsService, true)]
+    public async Task Invoke_HasExceptionHandler_SuppressLogging_CallbackRun(ExceptionHandlerResult suppressResult, bool logged)
     {
         // Arrange
         var sink = new TestSink();
@@ -115,13 +128,20 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
                 context.Features.Set<IHttpResponseFeature>(new TestHttpResponseFeature());
                 return Task.CompletedTask;
             },
-            suppressLoggingHandlingException: true);
+            suppressLoggingCallback: c => c.HandlerResult == suppressResult);
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, loggerFactory: new TestLoggerFactory(sink, true));
 
         // Act & Assert
         await middleware.Invoke(httpContext);
 
-        Assert.Collection(sink.Writes, w => Assert.Equal("UnhandledException", w.EventId.Name));
+        if (logged)
+        {
+            Assert.Collection(sink.Writes, w => Assert.Equal("UnhandledException", w.EventId.Name));
+        }
+        else
+        {
+            Assert.Empty(sink.Writes);
+        }
     }
 
     private sealed class TestHttpResponseFeature : HttpResponseFeature
@@ -190,7 +210,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         var sink = new TestSink();
         var httpContext = CreateHttpContext();
 
-        var optionsAccessor = CreateOptionsAccessor(suppressLoggingHandlingException: suppressedLogs);
+        var optionsAccessor = CreateOptionsAccessor(suppressLoggingCallback: c => suppressedLogs);
 
         var exceptionHandlers = new List<IExceptionHandler>
         {
@@ -584,7 +604,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     private IOptions<ExceptionHandlerOptions> CreateOptionsAccessor(
         RequestDelegate exceptionHandler = null,
         string exceptionHandlingPath = null,
-        bool? suppressLoggingHandlingException = null)
+        Func<ExceptionHandlerSuppressLoggingContext, bool> suppressLoggingCallback = null)
     {
         exceptionHandler ??= c => Task.CompletedTask;
         var options = new ExceptionHandlerOptions()
@@ -592,9 +612,9 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
             ExceptionHandler = exceptionHandler,
             ExceptionHandlingPath = exceptionHandlingPath,
         };
-        if (suppressLoggingHandlingException != null)
+        if (suppressLoggingCallback != null)
         {
-            options.SuppressLoggingIExceptionHandler = suppressLoggingHandlingException.Value;
+            options.SuppressLoggingCallback = suppressLoggingCallback;
         }
         var optionsAccessor = Mock.Of<IOptions<ExceptionHandlerOptions>>(o => o.Value == options);
         return optionsAccessor;
