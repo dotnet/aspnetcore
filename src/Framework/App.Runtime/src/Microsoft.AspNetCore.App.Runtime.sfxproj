@@ -40,6 +40,11 @@
 
     <!-- TODO: Try to remove this disable property -->
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+
+    <GetSharedFrameworkFilesForReadyToRunDependsOn>
+      $(GetSharedFrameworkFilesForReadyToRunDependsOn);
+      _ResolveCopyLocalNativeReference;
+    </GetSharedFrameworkFilesForReadyToRunDependsOn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildInstallers)' == 'true' or '$(TargetOsName)' == 'win'">
@@ -81,6 +86,11 @@
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll" />
   </ItemGroup>
 
+  <Target Name="_ResolveCopyLocalNativeReference">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Include="@(NativeRuntimeAsset)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"

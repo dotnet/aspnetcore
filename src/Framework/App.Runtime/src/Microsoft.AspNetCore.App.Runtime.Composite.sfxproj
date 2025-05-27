@@ -31,6 +31,11 @@
     <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
 
     <PartialCompositeAssemblyListPath>PartialCompositeAssemblyListPath.txt</PartialCompositeAssemblyListPath>
+
+    <GetSharedFrameworkFilesForReadyToRunDependsOn>
+      $(GetSharedFrameworkFilesForReadyToRunDependsOn);
+      _ResolveCopyLocalNativeReference;
+    </GetSharedFrameworkFilesForReadyToRunDependsOn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -84,6 +89,11 @@
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll" />
   </ItemGroup>
 
+  <Target Name="_ResolveCopyLocalNativeReference">
+    <ItemGroup>
+      <ReferenceCopyLocalPaths Include="@(NativeRuntimeAsset)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"
