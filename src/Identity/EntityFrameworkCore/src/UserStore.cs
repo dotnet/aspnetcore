@@ -91,8 +91,7 @@ public class UserStore<TUser, TRole, TContext, TKey> : UserStore<TUser, TRole, T
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
 /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
 public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
-    UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim, IdentityUserPasskey<TKey>>,
-    IProtectedUserStore<TUser>
+    UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim, IdentityUserPasskey<TKey>>
     where TUser : IdentityUser<TKey>
     where TRole : IdentityRole<TKey>
     where TContext : DbContext
@@ -126,6 +125,7 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
 /// <typeparam name="TUserPasskey">The type representing a user passkey.</typeparam>
 public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim, TUserPasskey> :
     UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim>,
+    IProtectedUserStore<TUser>,
     IUserPasskeyStore<TUser>
     where TUser : IdentityUser<TKey>
     where TRole : IdentityRole<TKey>

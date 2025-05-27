@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialrequestoptions"/>.
 /// </remarks>
-public class PasskeyRequestOptions(string? userId, string optionsJson)
+public sealed class PasskeyRequestOptions(string? userId, string optionsJson)
 {
     private readonly string _optionsJson = optionsJson;
 
