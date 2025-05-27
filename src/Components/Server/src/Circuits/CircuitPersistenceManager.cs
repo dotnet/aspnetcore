@@ -5,32 +5,35 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal partial class CircuitPersistenceManager(
-    ComponentStatePersistenceManager persistenceManager,
     ServerComponentSerializer serverComponentSerializer,
-    ServerComponentDeserializer serverComponentDeserializer,
     ICircuitPersistenceProvider circuitPersistenceProvider,
-    IDataProtectionProvider dataProtectionProvider) : IPersistentComponentStateStore
+    IDataProtectionProvider dataProtectionProvider)
 {
-    private PersistedCircuitState? _persistedCircuitState;
 
     public async Task PauseCircuitAsync(CircuitHost circuit, CancellationToken cancellation = default)
     {
         var renderer = circuit.Renderer;
-        using var subscription = persistenceManager.State.RegisterOnPersisting(() => PersistRootComponents(renderer));
-        await persistenceManager.PersistStateAsync(this, renderer);
+        var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
+        using var subscription = persistenceManager.State.RegisterOnPersisting(
+            () => PersistRootComponents(renderer, persistenceManager.State),
+            RenderMode.InteractiveServer);
+        var store = new CircuitPersistenceManagerStore();
+        await persistenceManager.PersistStateAsync(store, renderer);
 
         await circuitPersistenceProvider.PersistCircuitAsync(
             circuit.CircuitId,
-            _persistedCircuitState,
+            store.PersistedCircuitState,
             cancellation);
     }
 
-    private Task PersistRootComponents(RemoteRenderer renderer)
+    private Task PersistRootComponents(RemoteRenderer renderer, PersistentComponentState state)
     {
         var persistedComponents = new Dictionary<int, ComponentMarker>();
         var components = renderer.GetOrCreateWebRootComponentManager().GetRootComponents();
@@ -42,7 +45,7 @@ internal partial class CircuitPersistenceManager(
             persistedComponents.Add(id, marker);
         }
 
-        persistenceManager.State.PersistAsJson(typeof(CircuitPersistenceManager).FullName, persistedComponents);
+        state.PersistAsJson(typeof(CircuitPersistenceManager).FullName, persistedComponents);
 
         return Task.CompletedTask;
     }
@@ -50,45 +53,6 @@ internal partial class CircuitPersistenceManager(
     public async Task<PersistedCircuitState> ResumeCircuitAsync(CircuitId circuitId, CancellationToken cancellation = default)
     {
         return await circuitPersistenceProvider.RestoreCircuitAsync(circuitId, cancellation);
-    }
-
-    private struct PersistedComponentDescriptor
-    {
-        public int SsrComponentId { get; set; }
-        public ComponentMarkerKey? Key { get; set; }
-        public ComponentMarker Marker { get; set; }
-    }
-
-    // This store only support serializing the state
-    Task<IDictionary<string, byte[]>> IPersistentComponentStateStore.GetPersistedStateAsync() => throw new NotImplementedException();
-
-    // During the persisting phase the state is captured into a Dictionary<string, byte[]>, our implementation registers
-    // a callback so that it can run at the same time as the other components' state is persisted.
-    // We then are called to save the persisted state, at which point, we extract the component records
-    // and store them separately from the other state.
-    Task IPersistentComponentStateStore.PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
-    {
-        var dictionary = new Dictionary<string, byte[]>(state.Count - 1);
-        byte[] rootComponentMarkers = null;
-        foreach (var (key, value) in state)
-        {
-            if (key == typeof(CircuitPersistenceManager).FullName)
-            {
-                rootComponentMarkers = value;
-            }
-            else
-            {
-                dictionary[key] = value;
-            }
-        }
-
-        _persistedCircuitState = new PersistedCircuitState
-        {
-            ApplicationState = dictionary,
-            RootComponents = rootComponentMarkers
-        };
-
-        return Task.CompletedTask;
     }
 
     internal PersistedCircuitState FromProtectedState(string rootComponents, string applicationState) => throw new NotImplementedException();
@@ -100,13 +64,16 @@ internal partial class CircuitPersistenceManager(
     // That ends up calling UpdateRootComponents with the old descriptors and no application state.
     // On the server side, we replace the descriptors with the ones that we have persisted. We can't use the original descriptors because
     // those have a lifetime of ~ 5 minutes, after which we are not able to unprotect them anymore.
-    internal RootComponentOperationBatch ToRootComponentOperationBatch(byte[] rootComponents, string serializedComponentOperations)
+    internal RootComponentOperationBatch ToRootComponentOperationBatch(
+        IServerComponentDeserializer serverComponentDeserializer,
+        byte[] rootComponents,
+        string serializedComponentOperations)
     {
         // Deserialize the existing batch the client has sent but ignore the markers
         if (!serverComponentDeserializer.TryDeserializeRootComponentOperations(
             serializedComponentOperations,
             out var result,
-            deserializeMarkers: false))
+            deserializeDescriptors: false))
         {
             return null;
         }
@@ -147,6 +114,43 @@ internal partial class CircuitPersistenceManager(
     internal ProtectedPrerenderComponentApplicationStore ToComponentApplicationStore(Dictionary<string, byte[]> applicationState)
     {
         return new ProtectedPrerenderComponentApplicationStore(applicationState, dataProtectionProvider);
+    }
+
+    private class CircuitPersistenceManagerStore : IPersistentComponentStateStore
+    {
+        internal PersistedCircuitState PersistedCircuitState { get; private set; }
+
+        // This store only support serializing the state
+        Task<IDictionary<string, byte[]>> IPersistentComponentStateStore.GetPersistedStateAsync() => throw new NotImplementedException();
+
+        // During the persisting phase the state is captured into a Dictionary<string, byte[]>, our implementation registers
+        // a callback so that it can run at the same time as the other components' state is persisted.
+        // We then are called to save the persisted state, at which point, we extract the component records
+        // and store them separately from the other state.
+        Task IPersistentComponentStateStore.PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
+        {
+            var dictionary = new Dictionary<string, byte[]>(state.Count - 1);
+            byte[] rootComponentMarkers = null;
+            foreach (var (key, value) in state)
+            {
+                if (key == typeof(CircuitPersistenceManager).FullName)
+                {
+                    rootComponentMarkers = value;
+                }
+                else
+                {
+                    dictionary[key] = value;
+                }
+            }
+
+            PersistedCircuitState = new PersistedCircuitState
+            {
+                ApplicationState = dictionary,
+                RootComponents = rootComponentMarkers
+            };
+
+            return Task.CompletedTask;
+        }
     }
 
     [JsonSerializable(typeof(Dictionary<int, ComponentMarker>))]

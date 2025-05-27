@@ -11,7 +11,7 @@ using Microsoft.Extensions.Primitives;
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 // Default implmentation of ICircuitPersistenceProvider that uses an in-memory cache
-internal sealed partial class DefaultPersistedCircuitCache : ICircuitPersistenceProvider
+internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircuitPersistenceProvider
 {
     private readonly Lock _lock = new();
     private readonly CircuitOptions _options;
@@ -20,7 +20,7 @@ internal sealed partial class DefaultPersistedCircuitCache : ICircuitPersistence
     private readonly PostEvictionCallbackRegistration _postEvictionCallback;
     private readonly ILogger<ICircuitPersistenceProvider> _logger;
 
-    public DefaultPersistedCircuitCache(
+    public DefaultInMemoryCircuitPersistenceProvider(
         ISystemClock clock,
         ILogger<ICircuitPersistenceProvider> logger,
         IOptions<CircuitOptions> options)

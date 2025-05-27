@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
@@ -68,6 +70,7 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddSingleton<ComponentParameterDeserializer>();
         services.TryAddSingleton<ComponentParametersTypeCache>();
         services.TryAddSingleton<CircuitIdFactory>();
+        services.TryAddSingleton<ServerComponentSerializer>();
         services.TryAddScoped<IServerComponentDeserializer, ServerComponentDeserializer>();
         services.TryAddScoped<IErrorBoundaryLogger, RemoteErrorBoundaryLogger>();
         services.TryAddScoped<AntiforgeryStateProvider, DefaultAntiforgeryStateProvider>();
@@ -75,7 +78,10 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
         services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
 
+        services.TryAddSingleton<ISystemClock, SystemClock>();
         services.TryAddSingleton<CircuitRegistry>();
+        services.TryAddSingleton<CircuitPersistenceManager>();
+        services.TryAddSingleton<ICircuitPersistenceProvider, DefaultInMemoryCircuitPersistenceProvider>();
 
         // Standard blazor hosting services implementations
         //
