@@ -250,6 +250,16 @@ export function isLogicalElement(element: Node): boolean {
   return logicalChildrenPropname in element;
 }
 
+// This function returns all the descendants of the logical element before yielding the element
+// itself.
+export function *depthFirstNodeTreeTraversal(element: LogicalElement): Iterable<LogicalElement> {
+  const children = getLogicalChildrenArray(element);
+  for (const child of children) {
+    yield* depthFirstNodeTreeTraversal(child);
+  }
+  yield element;
+}
+
 export function permuteLogicalChildren(parent: LogicalElement, permutationList: PermutationListEntry[]): void {
   // The permutationList must represent a valid permutation, i.e., the list of 'from' indices
   // is distinct, and the list of 'to' indices is a permutation of it. The algorithm here

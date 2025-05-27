@@ -113,6 +113,18 @@ export class EventDelegator {
     }
   }
 
+  public removeListenersForElement(element: Element): void {
+    // This method gets called whenever the .NET-side code reports that a certain element
+    // has been disposed. We remove all event handlers for that element.
+    const infosForElement = this.getEventHandlerInfosForElement(element, false);
+    if (infosForElement) {
+      for (const handlerInfo of infosForElement.enumerateHandlers()) {
+        this.eventInfoStore.remove(handlerInfo.eventHandlerId);
+      }
+      delete element[this.eventsCollectionKey];
+    }
+  }
+
   public notifyAfterClick(callback: (event: MouseEvent) => void): void {
     // This is extremely special-case. It's needed so that navigation link click interception
     // can be sure to run *after* our synthetic bubbling process. If a need arises, we can
@@ -325,6 +337,14 @@ class EventHandlerInfosForElement {
   private preventDefaultFlags: { [eventName: string]: boolean } | null = null;
 
   private stopPropagationFlags: { [eventName: string]: boolean } | null = null;
+
+  public *enumerateHandlers() : IterableIterator<EventHandlerInfo> {
+    for (const eventName in this.handlers) {
+      if (Object.prototype.hasOwnProperty.call(this.handlers, eventName)) {
+        yield this.handlers[eventName];
+      }
+    }
+  }
 
   public getHandler(eventName: string): EventHandlerInfo | null {
     return Object.prototype.hasOwnProperty.call(this.handlers, eventName) ? this.handlers[eventName] : null;

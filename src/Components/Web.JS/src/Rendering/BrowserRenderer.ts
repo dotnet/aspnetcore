@@ -3,7 +3,7 @@
 
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
@@ -53,6 +53,25 @@ export class BrowserRenderer {
     this.rootComponentIds.add(componentId);
 
     elementsToClearOnRootComponentRender.add(element);
+  }
+
+  public detachRootComponentFromLogicalElement(componentId: number): void {
+    const element = this.childComponentLocations[componentId];
+    if (!element) {
+      throw new Error(`Root component '${componentId}' is not currently attached to any element`);
+    }
+
+    // If the element is a root component, we remove the association with the component ID
+    // and mark it as no longer being an interactive root component.
+    markAsInteractiveRootComponentElement(element, false);
+    delete this.childComponentLocations[componentId];
+
+    for (const childNode of depthFirstNodeTreeTraversal(element)) {
+      if (childNode instanceof Element){
+        this.eventDelegator.removeListenersForElement(childNode as Element);
+      }
+      emptyLogicalElement(childNode as LogicalElement);
+    }
   }
 
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
