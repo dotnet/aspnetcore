@@ -387,7 +387,7 @@ virtual Microsoft.AspNetCore.Identity.IdentityErrorDescriber.DuplicateUserName(s
 virtual Microsoft.AspNetCore.Identity.IdentityErrorDescriber.InvalidEmail(string? email) -> Microsoft.AspNetCore.Identity.IdentityError!
 virtual Microsoft.AspNetCore.Identity.IdentityErrorDescriber.InvalidRoleName(string? role) -> Microsoft.AspNetCore.Identity.IdentityError!
 virtual Microsoft.AspNetCore.Identity.IdentityErrorDescriber.InvalidToken() -> Microsoft.AspNetCore.Identity.IdentityError!
-virtual Microsoft.AspNetCore.Identity.IdentityErrorDescriber.InvalidUserName(string? userName) -> Microsoft.AspNetCore.Identity.IdentityError!
+virtual Microsoft.AspNetCore.Identity.IdentityErrorDescriber.InvalidUserName(string? userName, string? allowedUsernameCharacters) -> Microsoft.AspNetCore.Identity.IdentityError!
 virtual Microsoft.AspNetCore.Identity.IdentityErrorDescriber.LoginAlreadyAssociated() -> Microsoft.AspNetCore.Identity.IdentityError!
 virtual Microsoft.AspNetCore.Identity.IdentityErrorDescriber.PasswordMismatch() -> Microsoft.AspNetCore.Identity.IdentityError!
 virtual Microsoft.AspNetCore.Identity.IdentityErrorDescriber.PasswordRequiresDigit() -> Microsoft.AspNetCore.Identity.IdentityError!
