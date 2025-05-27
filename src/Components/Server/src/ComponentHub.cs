@@ -181,6 +181,7 @@ internal sealed partial class ComponentHub : Hub
         if (persistedState != null)
         {
             operations = _circuitPersistenceManager.ToRootComponentOperationBatch(
+                _serverComponentSerializer,
                 persistedState.RootComponents,
                 serializedComponentOperations);
 
