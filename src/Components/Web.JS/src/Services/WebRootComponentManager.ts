@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ComponentDescriptor, ComponentMarker, descriptorToMarker, WebAssemblyServerOptions } from './ComponentDescriptorDiscovery';
+import { ComponentDescriptor, ComponentMarker, descriptorToMarker, ServerComponentDescriptor, WebAssemblyServerOptions } from './ComponentDescriptorDiscovery';
 import { isRendererAttached, registerRendererAttachedListener } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
@@ -9,7 +9,7 @@ import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, sta
 import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
-import { getRendererer } from '../Rendering/Renderer';
+import { detachRootComponent, getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
 import { setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
@@ -38,7 +38,7 @@ type RootComponentRemoveOperation = {
   ssrComponentId: number;
 };
 
-type RootComponentInfo = {
+export type RootComponentInfo = {
   descriptor: ComponentDescriptor;
   ssrComponentId: number;
   assignedRendererId?: WebRendererId;
@@ -206,10 +206,10 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     // The following timeout allows us to liberally call this function without
     // taking the small performance hit from requent repeated calls to
     // refreshRootComponents.
-    setTimeout(() => {
+    queueMicrotask(() => {
       this._isComponentRefreshPending = false;
       this.refreshRootComponents(this._rootComponentsBySsrComponentId.values());
-    }, 0);
+    });
   }
 
   private circuitMayHaveNoRootComponents() {
@@ -462,6 +462,17 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         }
       }
     }
+  }
+
+  public onComponentReset(infos: RootComponentInfo []): void {
+    for (const info of infos) {
+      const descriptor = info.descriptor as ServerComponentDescriptor;
+      const existing = this._rootComponentsBySsrComponentId.get(info.ssrComponentId);
+      this.unregisterComponent(existing!);
+      detachRootComponent(existing!.assignedRendererId as number, existing!.ssrComponentId);
+      this.registerComponent(descriptor);
+    }
+    this.rootComponentsMayRequireRefresh();
   }
 }
 
