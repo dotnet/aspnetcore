@@ -47,6 +47,14 @@ export function attachRootComponentToElement(elementSelector: string, componentI
   attachRootComponentToLogicalElement(browserRendererId, toLogicalElement(element, /* allow existing contents */ true), componentId, appendContent);
 }
 
+export function detachRootComponent(browserRendererId: number, componentId: number): void {
+  const browserRenderer = browserRenderers[browserRendererId];
+  if (!browserRenderer) {
+    throw new Error(`There is no browser renderer with ID ${browserRendererId}.`);
+  }
+  browserRenderer.detachRootComponentFromLogicalElement(componentId);
+}
+
 export function getRendererer(browserRendererId: number): BrowserRenderer | undefined {
   return browserRenderers[browserRendererId];
 }

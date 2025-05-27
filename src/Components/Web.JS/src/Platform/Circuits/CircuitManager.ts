@@ -3,7 +3,7 @@
 
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
-import { ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
+import { ComponentDescriptor, ComponentMarker, ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
 import { RootComponentManager } from '../../Services/RootComponentManager';
@@ -18,6 +18,7 @@ import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
+import { RootComponentInfo } from '../../Services/WebRootComponentManager';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _componentManager: RootComponentManager<ServerComponentDescriptor>;
@@ -28,7 +29,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private readonly _logger: ConsoleLogger;
 
-  private readonly _renderQueue: RenderQueue;
+  private _renderQueue: RenderQueue;
 
   private readonly _dispatcher: DotNet.ICallDispatcher;
 
@@ -106,7 +107,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     for (const handler of this._options.circuitHandlers) {
-      if (handler.onCircuitOpened){
+      if (handler.onCircuitOpened) {
         handler.onCircuitOpened();
       }
     }
@@ -224,7 +225,47 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
-      return false;
+      detachWebRendererInterop(WebRendererId.Server);
+      this._interopMethodsForReconnection = undefined;
+      const resume = await this._connection!.invoke<string>(
+        'ResumeCircuit',
+        this._circuitId,
+        navigationManagerFunctions.getBaseURI(),
+        navigationManagerFunctions.getLocationHref(),
+        '[]',
+        ''
+      );
+      if (!resume) {
+        return false;
+      }
+
+      const { circuitId, batch, state } = JSON.parse(resume);
+      const parsedBatch = JSON.parse(batch);
+      const operations = parsedBatch.operations;
+      const infos: RootComponentInfo[] = [];
+
+      for (let i = 0; i < operations.length; i++) {
+        const operation = operations[i];
+        if (operation.type === 'Add') {
+          const descriptor = this._componentManager.resolveRootComponent(operation.ssrComponentId);
+          console.log(descriptor);
+          const rootComponent = {
+            descriptor: {
+              ...descriptor,
+              ...operation.marker,
+            },
+            ssrComponentId: operation.ssrComponentId,
+          };
+          console.log(rootComponent);
+          infos.push(rootComponent);
+        }
+
+        this._circuitId = circuitId;
+        this._applicationState = state;
+        this._firstUpdate = true;
+        this._renderQueue = new RenderQueue(this._logger);
+        this._componentManager.onComponentReset?.(infos);
+      }
     }
 
     this._options.reconnectionHandler!.onConnectionUp();
