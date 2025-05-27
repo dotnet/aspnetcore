@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
 
+@inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
@@ -16,8 +17,9 @@
 <div class="row">
     <div class="col-lg-6">
         <section>
+            <PasskeyHandler CurrentRequestOptions="@currentPasskeyRequestOptions" OnResponse="LoginUserWithPasskey" OnError="SetPasskeyError" />
             <StatusMessage Message="@errorMessage" />
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+            <EditForm EditContext="editContext" method="post" OnSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
                 <h2>Use a local account to log in.</h2>
                 <hr />
@@ -39,8 +41,14 @@
                     </label>
                 </div>
                 <div>
-                    <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary" disabled="@(currentPasskeyRequestOptions is not null)">Log in</button>
                 </div>
+                <hr />
+                <div class="d-flex flex-column">
+                    <span class="text-secondary mx-auto mt-2">OR</span>
+                    <button type="submit" name="Input.UsePasskey" value="true" class="btn btn-link mx-auto" disabled="@(currentPasskeyRequestOptions is not null)">Log in with a passkey</button>
+                </div>
+                <hr />
                 <div>
                     <p>
                         <a href="Account/ForgotPassword">Forgot your password?</a>
@@ -67,10 +75,13 @@
 @code {
     private string? errorMessage;
 
+    private EditContext editContext = default!;
+    private string? currentPasskeyRequestOptions;
+
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromForm]
+    [SupplyParameterFromForm(FormName = "login")]
     private InputModel Input { get; set; } = new();
 
     [SupplyParameterFromQuery]
@@ -78,6 +89,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        editContext = new EditContext(Input);
+
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
             // Clear the existing external cookie to ensure a clean login process
@@ -87,6 +100,29 @@
 
     public async Task LoginUser()
     {
+        // When performing passkey sign-in, don't perform form validation.
+        // If provided, we use the email as a hint to suggest which user is likely being signed in.
+        if (Input.UsePasskey)
+        {
+            var user = Input.Email is { Length: > 0 } email
+                ? await UserManager.FindByEmailAsync(email)
+                : null;
+
+            var passkeyRequestArgs = new PasskeyRequestArgs<ApplicationUser>
+            {
+                User = user,
+            };
+            var options = await SignInManager.ConfigurePasskeyRequestOptionsAsync(passkeyRequestArgs);
+            currentPasskeyRequestOptions = options.AsJson();
+            return;
+        }
+
+        // If doing a password sign-in, validate the form.
+        if (!editContext.Validate())
+        {
+            return;
+        }
+
         // This doesn't count login failures towards account lockout
         // To enable password failures to trigger account lockout, set lockoutOnFailure: true
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
@@ -112,6 +148,33 @@
         }
     }
 
+    public async Task LoginUserWithPasskey(string responseJson)
+    {
+        var options = await SignInManager.RetrievePasskeyRequestOptionsAsync();
+        if (options is null)
+        {
+            errorMessage = "Error: Could not complete passkey login. Please try again.";
+            return;
+        }
+
+        var result = await SignInManager.PasskeySignInAsync(responseJson, options);
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User logged in.");
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+        else
+        {
+            errorMessage = "Error: Could not log in using the provided passkey.";
+            return;
+        }
+    }
+
+    public void SetPasskeyError(string? error)
+    {
+        errorMessage = $"Error: Could not log in using the provided passkey{(string.IsNullOrEmpty(error) ? "." : $": {error}")}";
+    }
+
     private sealed class InputModel
     {
         [Required]
@@ -124,5 +187,7 @@
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
+
+        public bool UsePasskey { get; set; }
     }
 }

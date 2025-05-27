@@ -211,6 +211,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>a4d6fdc935d5da12efb00a0b3b693ff1439e0b41</Sha>
     </Dependency>
+    <Dependency Name="System.Formats.Cbor" Version="10.0.0-preview.5.25270.108">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>a4d6fdc935d5da12efb00a0b3b693ff1439e0b41</Sha>
+    </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="10.0.0-preview.5.25270.108">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>a4d6fdc935d5da12efb00a0b3b693ff1439e0b41</Sha>
@@ -290,6 +294,10 @@
     <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0-preview.5.25270.108">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>a4d6fdc935d5da12efb00a0b3b693ff1439e0b41</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Bcl.Memory" Version="10.0.0-preview.4.25177.9">
+      <Uri>https://github.com/dotnet/runtime</Uri>
+      <Sha>fa004fb5ce5ec9f99d1c3ba3adc48c9473cc8eaa</Sha>
     </Dependency>
     <!-- Transitive package to provide coherency in dotnet/extensions -->
     <Dependency Name="Microsoft.Bcl.TimeProvider" Version="10.0.0-preview.5.25270.108">

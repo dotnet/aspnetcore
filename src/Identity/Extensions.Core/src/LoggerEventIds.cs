@@ -22,4 +22,6 @@ internal static class LoggerEventIds
     public static readonly EventId UserValidationFailed = new EventId(13, "UserValidationFailed");
     public static readonly EventId PasswordValidationFailed = new EventId(14, "PasswordValidationFailed");
     public static readonly EventId GetSecurityStampFailed = new EventId(15, "GetSecurityStampFailed");
+    public static readonly EventId PasskeyAttestationFailed = new EventId(16, "PasskeyAttestationFailed");
+    public static readonly EventId PasskeyAssertionFailed = new EventId(16, "PasskeyAssertionFailed");
 }

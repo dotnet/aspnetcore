@@ -15,4 +15,6 @@ internal static class EventIds
     public static EventId UserLockedOut = new EventId(3, "UserLockedOut");
     public static EventId UserCannotSignInWithoutConfirmedAccount = new EventId(4, "UserCannotSignInWithoutConfirmedAccount");
     public static EventId TwoFactorSecurityStampValidationFailed = new EventId(5, "TwoFactorSecurityStampValidationFailed");
+    public static EventId NoPasskeyCreationOptions = new EventId(6, "NoPasskeyCreationOptions");
+    public static EventId UserDoesNotMatchPasskeyCreationOptions = new EventId(7, "UserDoesNotMatchPasskeyCreationOptions");
 }

@@ -67,6 +67,33 @@ public class UserOnlyStore<TUser, TContext, TKey> : UserOnlyStore<TUser, TContex
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
 public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken> :
+    UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken, IdentityUserPasskey<TKey>>
+    where TUser : IdentityUser<TKey>
+    where TContext : DbContext
+    where TKey : IEquatable<TKey>
+    where TUserClaim : IdentityUserClaim<TKey>, new()
+    where TUserLogin : IdentityUserLogin<TKey>, new()
+    where TUserToken : IdentityUserToken<TKey>, new()
+{
+    /// <summary>
+    /// Constructs a new instance of <see cref="UserStore{TUser, TRole, TContext, TKey}"/>.
+    /// </summary>
+    /// <param name="context">The <see cref="DbContext"/>.</param>
+    /// <param name="describer">The <see cref="IdentityErrorDescriber"/>.</param>
+    public UserOnlyStore(TContext context, IdentityErrorDescriber? describer = null) : base(context, describer) { }
+}
+
+/// <summary>
+/// Represents a new instance of a persistence store for the specified user and role types.
+/// </summary>
+/// <typeparam name="TUser">The type representing a user.</typeparam>
+/// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
+/// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
+/// <typeparam name="TUserToken">The type representing a user token.</typeparam>
+/// <typeparam name="TUserPasskey">The type representing a user passkey.</typeparam>
+public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken, TUserPasskey> :
     UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>,
     IUserLoginStore<TUser>,
     IUserClaimStore<TUser>,
@@ -80,14 +107,18 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     IUserAuthenticationTokenStore<TUser>,
     IUserAuthenticatorKeyStore<TUser>,
     IUserTwoFactorRecoveryCodeStore<TUser>,
-    IProtectedUserStore<TUser>
+    IProtectedUserStore<TUser>,
+    IUserPasskeyStore<TUser>
     where TUser : IdentityUser<TKey>
     where TContext : DbContext
     where TKey : IEquatable<TKey>
     where TUserClaim : IdentityUserClaim<TKey>, new()
     where TUserLogin : IdentityUserLogin<TKey>, new()
     where TUserToken : IdentityUserToken<TKey>, new()
+    where TUserPasskey : IdentityUserPasskey<TKey>, new()
 {
+    private bool? _dbContextSupportsPasskeys;
+
     /// <summary>
     /// Creates a new instance of the store.
     /// </summary>
@@ -123,6 +154,18 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     /// DbSet of user tokens.
     /// </summary>
     protected DbSet<TUserToken> UserTokens { get { return Context.Set<TUserToken>(); } }
+
+    /// <summary>
+    /// DbSet of user passkeys.
+    /// </summary>
+    protected DbSet<TUserPasskey> UserPasskeys
+    {
+        get
+        {
+            ThrowIfPasskeysNotSupported();
+            return Context.Set<TUserPasskey>();
+        }
+    }
 
     /// <summary>
     /// Gets or sets a flag indicating if changes should be persisted after CreateAsync, UpdateAsync and DeleteAsync are called.
@@ -509,5 +552,213 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     {
         UserTokens.Remove(token);
         return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Called to create a new instance of a <see cref="IdentityUserPasskey{TKey}"/>.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <param name="passkey">The passkey.</param>
+    /// <returns></returns>
+    protected virtual TUserPasskey CreateUserPasskey(TUser user, UserPasskeyInfo passkey)
+    {
+        return new TUserPasskey
+        {
+            UserId = user.Id,
+            CredentialId = passkey.CredentialId,
+            PublicKey = passkey.PublicKey,
+            Name = passkey.Name,
+            CreatedAt = passkey.CreatedAt,
+            Transports = passkey.Transports,
+            SignCount = passkey.SignCount,
+            IsUserVerified = passkey.IsUserVerified,
+            IsBackupEligible = passkey.IsBackupEligible,
+            IsBackedUp = passkey.IsBackedUp,
+            AttestationObject = passkey.AttestationObject,
+            ClientDataJson = passkey.ClientDataJson,
+        };
+    }
+
+    /// <summary>
+    /// Find a passkey with the specified credential id for a user.
+    /// </summary>
+    /// <param name="userId">The user's id.</param>
+    /// <param name="credentialId">The credential id to search for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The user passkey if it exists.</returns>
+    protected virtual Task<TUserPasskey?> FindUserPasskeyAsync(TKey userId, byte[] credentialId, CancellationToken cancellationToken)
+    {
+        return UserPasskeys.SingleOrDefaultAsync(
+            userPasskey => userPasskey.UserId.Equals(userId) && userPasskey.CredentialId.SequenceEqual(credentialId),
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Find a passkey with the specified credential id.
+    /// </summary>
+    /// <param name="credentialId">The credential id to search for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The user passkey if it exists.</returns>
+    protected virtual Task<TUserPasskey?> FindUserPasskeyByIdAsync(byte[] credentialId, CancellationToken cancellationToken)
+    {
+        return UserPasskeys.SingleOrDefaultAsync(userPasskey => userPasskey.CredentialId.SequenceEqual(credentialId), cancellationToken);
+    }
+
+    /// <summary>
+    /// Creates a new passkey credential in the store for the specified <paramref name="user"/>,
+    /// or updates an existing passkey.
+    /// </summary>
+    /// <param name="user">The user to create the passkey credential for.</param>
+    /// <param name="passkey"></param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+    public virtual async Task SetPasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(passkey);
+
+        var userPasskey = await FindUserPasskeyByIdAsync(passkey.CredentialId, cancellationToken).ConfigureAwait(false);
+        if (userPasskey != null)
+        {
+            userPasskey.Name = passkey.Name;
+            userPasskey.SignCount = passkey.SignCount;
+            userPasskey.IsBackedUp = passkey.IsBackedUp;
+            userPasskey.IsUserVerified = passkey.IsUserVerified;
+            UserPasskeys.Update(userPasskey);
+        }
+        else
+        {
+            userPasskey = CreateUserPasskey(user, passkey);
+            UserPasskeys.Add(userPasskey);
+        }
+
+        await SaveChanges(cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the passkey credentials for the specified <paramref name="user"/>.
+    /// </summary>
+    /// <param name="user">The user whose passkeys should be retrieved.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing a list of the user's passkeys.</returns>
+    public virtual async Task<IList<UserPasskeyInfo>> GetPasskeysAsync(TUser user, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        var userId = user.Id;
+        var passkeys = await UserPasskeys
+            .Where(p => p.UserId.Equals(userId))
+            .Select(p => new UserPasskeyInfo(
+                p.CredentialId,
+                p.PublicKey,
+                p.Name,
+                p.CreatedAt,
+                p.SignCount,
+                p.Transports,
+                p.IsUserVerified,
+                p.IsBackupEligible,
+                p.IsBackedUp,
+                p.AttestationObject,
+                p.ClientDataJson))
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return passkeys;
+    }
+
+    /// <summary>
+    /// Finds and returns a user, if any, associated with the specified passkey credential identifier.
+    /// </summary>
+    /// <param name="credentialId">The passkey credential id to search for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>
+    /// The <see cref="Task"/> that represents the asynchronous operation, containing the user, if any, associated with the specified passkey credential id.
+    /// </returns>
+    public virtual async Task<TUser?> FindByPasskeyIdAsync(byte[] credentialId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+
+        var passkey = await FindUserPasskeyByIdAsync(credentialId, cancellationToken).ConfigureAwait(false);
+        if (passkey != null)
+        {
+            return await FindUserAsync(passkey.UserId, cancellationToken).ConfigureAwait(false);
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Finds a passkey for the specified user with the specified credential id.
+    /// </summary>
+    /// <param name="user">The user whose passkey should be retrieved.</param>
+    /// <param name="credentialId">The credential id to search for.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation, containing the user's passkey information.</returns>
+    public virtual async Task<UserPasskeyInfo?> FindPasskeyAsync(TUser user, byte[] credentialId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+
+        var passkey = await FindUserPasskeyAsync(user.Id, credentialId, cancellationToken).ConfigureAwait(false);
+        if (passkey != null)
+        {
+            return new UserPasskeyInfo(
+                passkey.CredentialId,
+                passkey.PublicKey,
+                passkey.Name,
+                passkey.CreatedAt,
+                passkey.SignCount,
+                passkey.Transports,
+                passkey.IsUserVerified,
+                passkey.IsBackupEligible,
+                passkey.IsBackedUp,
+                passkey.AttestationObject,
+                passkey.ClientDataJson);
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Removes a passkey credential from the specified <paramref name="user"/>.
+    /// </summary>
+    /// <param name="user">The user to remove the passkey credential from.</param>
+    /// <param name="credentialId">The credential id of the passkey to remove.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+    public virtual async Task RemovePasskeyAsync(TUser user, byte[] credentialId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(credentialId);
+
+        var passkey = await FindUserPasskeyAsync(user.Id, credentialId, cancellationToken).ConfigureAwait(false);
+        if (passkey != null)
+        {
+            UserPasskeys.Remove(passkey);
+            await SaveChanges(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private void ThrowIfPasskeysNotSupported()
+    {
+        if (_dbContextSupportsPasskeys == true)
+        {
+            return;
+        }
+
+        _dbContextSupportsPasskeys ??= Context.Model.FindEntityType(typeof(TUserPasskey)) is not null;
+        if (_dbContextSupportsPasskeys == false)
+        {
+            throw new InvalidOperationException(
+                $"This operation is not permitted because the underlying '{nameof(DbContext)}' does not include '{typeof(TUserPasskey).Name}' in its model. " +
+                $"When using '{nameof(IdentityDbContext)}', make sure that '{nameof(IdentityOptions)}.{nameof(IdentityOptions.Stores)}.{nameof(StoreOptions.SchemaVersion)}' " +
+                $"is set to '{nameof(IdentitySchemaVersions)}.{nameof(IdentitySchemaVersions.Version3)}' or higher.");
+        }
     }
 }

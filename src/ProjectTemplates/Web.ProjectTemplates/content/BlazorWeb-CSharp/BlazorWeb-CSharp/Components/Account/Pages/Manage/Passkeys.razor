@@ -1,0 +1,238 @@
+﻿@page "/Account/Manage/Passkeys"
+
+@using BlazorWeb_CSharp.Data
+@using Microsoft.AspNetCore.Identity
+@using System.ComponentModel.DataAnnotations
+
+@inject UserManager<ApplicationUser> UserManager
+@inject SignInManager<ApplicationUser> SignInManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Manage your passkeys</PageTitle>
+
+<h3>Manage your passkeys</h3>
+
+<StatusMessage />
+
+@if (!string.IsNullOrEmpty(renamingPasskeyId))
+{
+    <EditForm Model="RenameInput" OnValidSubmit="RenamePasskeyAsync" FormName="rename-passkey" method="post">
+        <DataAnnotationsValidator />
+        <h4>Enter a name for your passkey</h4>
+        <hr />
+        <ValidationSummary class="text-danger" role="alert" />
+        <div class="form-floating mb-3">
+            <InputText @bind-Value="RenameInput.DisplayName" id="RenameInput.DisplayName" class="form-control" aria-required="true" placeholder="My passkey" />
+            <label for="RenameInput.DisplayName" class="form-label">Passkey name</label>
+            <ValidationMessage For="() => RenameInput.DisplayName" class="text-danger" />
+        </div>
+        <div class="form-floating mb-3">
+            <input type="hidden" name="RenameInput.Id" value="@renamingPasskeyId" />
+        </div>
+        <div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Continue</button>
+        </div>
+    </EditForm>
+}
+else
+{
+    @if (currentPasskeys is { Count: > 0 })
+    {
+        <table class="table">
+            <tbody>
+                @foreach (var passkey in currentPasskeys)
+                {
+                    <tr>
+                        <td>@(passkey.Name ?? "Unnamed passkey")</td>
+                        <td>
+                            @{
+                                var credentialId = Convert.ToBase64String(passkey.CredentialId);
+                            }
+                            <form @formname="@($"remove-passkey-{credentialId}")" @onsubmit="RemovePasskeyAsync" method="post">
+                                <AntiforgeryToken />
+                                <div>
+                                    <input type="hidden" name="@nameof(RemovingPasskeyId)" value="@credentialId" />
+                                    <button type="submit" class="btn btn-primary" title="Remove this passkey from your account">Remove</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No passkeys are registered.</p>
+    }
+
+    <PasskeyHandler CurrentCreationOptions="@currentPasskeyCreationOptions" OnResponse="AddPasskeyAsync" OnError="SetPasskeyError" />
+
+    <form @formname="configure-passkey-creation-options" @onsubmit="ConfigurePasskeyCreationOptions" method="post">
+        <AntiforgeryToken />
+        <button type="submit" class="btn btn-primary" disabled="@(currentPasskeyCreationOptions is not null)">Add a new passkey</button>
+    </form>
+}
+
+@code {
+    private ApplicationUser? user;
+    private IList<UserPasskeyInfo>? currentPasskeys;
+    private string? renamingPasskeyId;
+    private string? currentPasskeyCreationOptions;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private string? RemovingPasskeyId { get; set; }
+
+    [SupplyParameterFromForm(FormName = "rename-passkey")]
+    private RenamePasskeyInput RenameInput { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        renamingPasskeyId = RenameInput?.Id;
+
+        user = await UserManager.GetUserAsync(HttpContext.User);
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
+        }
+        currentPasskeys = await UserManager.GetPasskeysAsync(user);
+    }
+
+    private async Task ConfigurePasskeyCreationOptions()
+    {
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
+        }
+
+        var userId = await UserManager.GetUserIdAsync(user);
+        var userName = await UserManager.GetUserNameAsync(user) ?? "User";
+        var userEntity = new PasskeyUserEntity(userId, userName, displayName: userName);
+        var options = await SignInManager.ConfigurePasskeyCreationOptionsAsync(new(userEntity));
+        currentPasskeyCreationOptions = options.AsJson();
+    }
+
+    private async Task AddPasskeyAsync(string responseJson)
+    {
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
+        }
+
+        var options = await SignInManager.RetrievePasskeyCreationOptionsAsync();
+        if (options is null)
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: Could not retrieve passkey creation options.", HttpContext);
+            return;
+        }
+
+        var attestationResult = await UserManager.PerformPasskeyAttestationAsync(responseJson, options);
+        if (!attestationResult.Succeeded)
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add the passkey: {attestationResult.Failure.Message}.", HttpContext);
+            return;
+        }
+
+        await UserManager.SetPasskeyAsync(user, attestationResult.Passkey);
+
+        // Immediately prompt the user to enter a name for the credential
+        renamingPasskeyId = Convert.ToBase64String(attestationResult.Passkey.CredentialId);
+    }
+
+    private void SetPasskeyError(string error)
+    {
+        RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add a passkey: {error}", HttpContext);
+    }
+
+    private async Task RemovePasskeyAsync()
+    {
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
+        }
+
+        var passkey = GetPasskeyByBase64Id(RemovingPasskeyId);
+        if (passkey is null)
+        {
+            // Redirected in GetPasskeyByBase64Id
+            return;
+        }
+
+        await UserManager.RemovePasskeyAsync(user, passkey.CredentialId);
+
+        RedirectManager.RedirectToCurrentPageWithStatus("Passkey deleted successfully.", HttpContext);
+    }
+
+    private async Task RenamePasskeyAsync()
+    {
+        if (user is null)
+        {
+            RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
+            return;
+        }
+
+        var passkey = GetPasskeyByBase64Id(RenameInput.Id);
+        if (passkey is null)
+        {
+            // Redirected in GetPasskeyByBase64Id
+            return;
+        }
+
+        passkey.Name = RenameInput.DisplayName;
+        var result = await UserManager.SetPasskeyAsync(user, passkey);
+        if (!result.Succeeded)
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: The passkey could not be updated.", HttpContext);
+            return;
+        }
+
+        RedirectManager.RedirectToCurrentPageWithStatus("Passkey updated successfully.", HttpContext);
+    }
+
+    private UserPasskeyInfo? GetPasskeyByBase64Id(string? base64CredentialId)
+    {
+        if (string.IsNullOrEmpty(base64CredentialId))
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: The passkey ID was not specified.", HttpContext);
+            return null;
+        }
+
+        var credentialId = Convert.FromBase64String(base64CredentialId);
+        if (credentialId is null)
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: The specified passkey ID had an invalid format.", HttpContext);
+            return null;
+        }
+
+        if (currentPasskeys is null)
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: Could not fetch passkeys for the current user.", HttpContext);
+            return null;
+        }
+
+        var credential = currentPasskeys.SingleOrDefault(c => c.CredentialId.SequenceEqual(credentialId));
+        if (credential is null)
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus("Error: The specified passkey does not exist for the current user.", HttpContext);
+            return null;
+        }
+
+        return credential;
+    }
+
+    private sealed class RenamePasskeyInput
+    {
+        [Required]
+        public string Id { get; set; } = "";
+
+        [Required]
+        public string DisplayName { get; set; } = "";
+    }
+}

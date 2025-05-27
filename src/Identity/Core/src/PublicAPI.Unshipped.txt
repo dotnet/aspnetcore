@@ -1,1 +1,6 @@
 #nullable enable
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ConfigurePasskeyCreationOptionsAsync(Microsoft.AspNetCore.Identity.PasskeyCreationArgs! creationArgs) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyCreationOptions!>!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ConfigurePasskeyRequestOptionsAsync(Microsoft.AspNetCore.Identity.PasskeyRequestArgs<TUser!>! requestArgs) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyRequestOptions!>!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.PasskeySignInAsync(string! credentialJson, Microsoft.AspNetCore.Identity.PasskeyRequestOptions! options) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.SignInResult!>!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.RetrievePasskeyCreationOptionsAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyCreationOptions?>!
+virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.RetrievePasskeyRequestOptionsAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyRequestOptions?>!

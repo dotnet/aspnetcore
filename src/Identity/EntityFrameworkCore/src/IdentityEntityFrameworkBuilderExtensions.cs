@@ -46,7 +46,7 @@ public static class IdentityEntityFrameworkBuilderExtensions
 
             Type userStoreType;
             Type roleStoreType;
-            var identityContext = FindGenericBaseType(contextType, typeof(IdentityDbContext<,,,,,,,>));
+            var identityContext = FindGenericBaseType(contextType, typeof(IdentityDbContext<,,,,,,,,>));
             if (identityContext == null)
             {
                 // If its a custom DbContext, we can only add the default POCOs
@@ -55,13 +55,14 @@ public static class IdentityEntityFrameworkBuilderExtensions
             }
             else
             {
-                userStoreType = typeof(UserStore<,,,,,,,,>).MakeGenericType(userType, roleType, contextType,
+                userStoreType = typeof(UserStore<,,,,,,,,,>).MakeGenericType(userType, roleType, contextType,
                     identityContext.GenericTypeArguments[2],
                     identityContext.GenericTypeArguments[3],
                     identityContext.GenericTypeArguments[4],
                     identityContext.GenericTypeArguments[5],
                     identityContext.GenericTypeArguments[7],
-                    identityContext.GenericTypeArguments[6]);
+                    identityContext.GenericTypeArguments[6],
+                    identityContext.GenericTypeArguments[8]);
                 roleStoreType = typeof(RoleStore<,,,,>).MakeGenericType(roleType, contextType,
                     identityContext.GenericTypeArguments[2],
                     identityContext.GenericTypeArguments[4],
@@ -73,7 +74,7 @@ public static class IdentityEntityFrameworkBuilderExtensions
         else
         {   // No Roles
             Type userStoreType;
-            var identityContext = FindGenericBaseType(contextType, typeof(IdentityUserContext<,,,,>));
+            var identityContext = FindGenericBaseType(contextType, typeof(IdentityUserContext<,,,,,>));
             if (identityContext == null)
             {
                 // If its a custom DbContext, we can only add the default POCOs

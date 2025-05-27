@@ -392,6 +392,7 @@
   <Folder Name="/src/Identity/samples/" Id="222336da-9e35-29e0-50c1-87e7441d2b2b">
     <Project Path="src/Identity/samples/IdentitySample.DefaultUI/IdentitySample.DefaultUI.csproj" />
     <Project Path="src/Identity/samples/IdentitySample.Mvc/IdentitySample.Mvc.csproj" />
+    <Project Path="src/Identity/samples/IdentitySample.PasskeyConformance/IdentitySample.PasskeyConformance.csproj" />
   </Folder>
   <Folder Name="/src/Identity/Specification.Tests/" Id="f8dfe8a4-1d8c-9e84-e870-8ba24ebd08ff">
     <Project Path="src/Identity/Specification.Tests/src/Microsoft.AspNetCore.Identity.Specification.Tests.csproj" />

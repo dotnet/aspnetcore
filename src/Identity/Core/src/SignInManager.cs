@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Identity;
 public class SignInManager<TUser> where TUser : class
 {
     private const string LoginProviderKey = "LoginProvider";
+    private const string PasskeyCreationOptionsKey = "PasskeyCreationOptions";
+    private const string PasskeyRequestOptionsKey = "PasskeyRequestOptions";
     private const string XsrfKey = "XsrfId";
 
     private readonly IHttpContextAccessor _contextAccessor;
@@ -26,6 +28,8 @@ public class SignInManager<TUser> where TUser : class
     private readonly IUserConfirmation<TUser> _confirmation;
     private HttpContext? _context;
     private TwoFactorAuthenticationInfo? _twoFactorInfo;
+    private PasskeyCreationOptions? _passkeyCreationOptions;
+    private PasskeyRequestOptions? _passkeyRequestOptions;
 
     /// <summary>
     /// Creates a new instance of <see cref="SignInManager{TUser}"/>.
@@ -340,7 +344,7 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="password">The password to attempt to sign in with.</param>
     /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
     /// <param name="lockoutOnFailure">Flag indicating if the user account should be locked if the sign in fails.</param>
-    /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+    /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> PasswordSignInAsync(TUser user, string password,
         bool isPersistent, bool lockoutOnFailure)
@@ -361,7 +365,7 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="password">The password to attempt to sign in with.</param>
     /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
     /// <param name="lockoutOnFailure">Flag indicating if the user account should be locked if the sign in fails.</param>
-    /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+    /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> PasswordSignInAsync(string userName, string password,
         bool isPersistent, bool lockoutOnFailure)
@@ -381,9 +385,8 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="user">The user to sign in.</param>
     /// <param name="password">The password to attempt to sign in with.</param>
     /// <param name="lockoutOnFailure">Flag indicating if the user account should be locked if the sign in fails.</param>
-    /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+    /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
-    /// <returns></returns>
     public virtual async Task<SignInResult> CheckPasswordSignInAsync(TUser user, string password, bool lockoutOnFailure)
     {
         ArgumentNullException.ThrowIfNull(user);
@@ -430,6 +433,157 @@ public class SignInManager<TUser> where TUser : class
             }
         }
         return SignInResult.Failed;
+    }
+
+    /// <summary>
+    /// Attempts to sign in the user with a passkey, as an asynchronous operation.
+    /// </summary>
+    /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
+    /// <param name="options">The original passkey request options provided to the browser.</param>
+    /// <returns>
+    /// The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
+    /// for the sign-in attempt.
+    /// </returns>
+    public virtual async Task<SignInResult> PasskeySignInAsync(string credentialJson, PasskeyRequestOptions options)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(credentialJson);
+
+        var assertionResult = await UserManager.PerformPasskeyAssertionAsync(credentialJson, options);
+        if (!assertionResult.Succeeded)
+        {
+            return SignInResult.Failed;
+        }
+
+        var setPasskeyResult = await UserManager.SetPasskeyAsync(assertionResult.User, assertionResult.Passkey).ConfigureAwait(false);
+        if (!setPasskeyResult.Succeeded)
+        {
+            return SignInResult.Failed;
+        }
+
+        return await SignInOrTwoFactorAsync(assertionResult.User, isPersistent: false, bypassTwoFactor: true);
+    }
+
+    /// <summary>
+    /// Generates a <see cref="PasskeyCreationOptions"/> and stores it in the current <see cref="HttpContext"/> for later retrieval.
+    /// </summary>
+    /// <param name="creationArgs">Args for configuring the <see cref="PasskeyCreationOptions"/>.</param>
+    /// <returns>
+    /// A task object representing the asynchronous operation containing the <see cref="PasskeyCreationOptions"/>.
+    /// </returns>
+    public virtual async Task<PasskeyCreationOptions> ConfigurePasskeyCreationOptionsAsync(PasskeyCreationArgs creationArgs)
+    {
+        ArgumentNullException.ThrowIfNull(creationArgs);
+
+        var options = await UserManager.GeneratePasskeyCreationOptionsAsync(creationArgs);
+
+        var props = new AuthenticationProperties();
+        props.Items[PasskeyCreationOptionsKey] = options.AsJson();
+        var claimsIdentity = new ClaimsIdentity(new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme));
+        claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, options.UserEntity.Id));
+        claimsIdentity.AddClaim(new Claim(ClaimTypes.Email, options.UserEntity.Name));
+        claimsIdentity.AddClaim(new Claim(ClaimTypes.Name, options.UserEntity.DisplayName));
+        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+        await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, claimsPrincipal, props);
+
+        return options;
+    }
+
+    /// <summary>
+    /// Generates a <see cref="PasskeyRequestOptions"/> and stores it in the current <see cref="HttpContext"/> for later retrieval.
+    /// </summary>
+    /// <param name="requestArgs">Args for configuring the <see cref="PasskeyRequestOptions"/>.</param>
+    /// <returns>
+    /// A task object representing the asynchronous operation containing the <see cref="PasskeyRequestOptions"/>.
+    /// </returns>
+    public virtual async Task<PasskeyRequestOptions> ConfigurePasskeyRequestOptionsAsync(PasskeyRequestArgs<TUser> requestArgs)
+    {
+        ArgumentNullException.ThrowIfNull(requestArgs);
+
+        var options = await UserManager.GeneratePasskeyRequestOptionsAsync(requestArgs);
+
+        var props = new AuthenticationProperties();
+        props.Items[PasskeyRequestOptionsKey] = options.AsJson();
+        var claimsIdentity = new ClaimsIdentity(new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme));
+
+        if (options.UserId is { } userId)
+        {
+            claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userId));
+        }
+
+        var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
+        await Context.SignInAsync(IdentityConstants.TwoFactorUserIdScheme, claimsPrincipal, props);
+        return options;
+    }
+
+    /// <summary>
+    /// Retrieves the <see cref="PasskeyCreationOptions"/> stored in the current <see cref="HttpContext"/>.
+    /// </summary>
+    /// <returns>
+    /// A task object representing the asynchronous operation containing the <see cref="PasskeyCreationOptions"/>.
+    /// </returns>
+    public virtual async Task<PasskeyCreationOptions?> RetrievePasskeyCreationOptionsAsync()
+    {
+        if (_passkeyCreationOptions is not null)
+        {
+            return _passkeyCreationOptions;
+        }
+
+        var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
+        await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+
+        if (result?.Principal == null)
+        {
+            return null;
+        }
+
+        var optionsJson = result.Properties?.Items[PasskeyCreationOptionsKey];
+        if (optionsJson == null)
+        {
+            return null;
+        }
+
+        if (result.Principal.FindFirstValue(ClaimTypes.NameIdentifier) is not { Length: > 0 } userId ||
+            result.Principal.FindFirstValue(ClaimTypes.Email) is not { Length: > 0 } userName ||
+            result.Principal.FindFirstValue(ClaimTypes.Name) is not { Length: > 0 } userDisplayName)
+        {
+            return null;
+        }
+
+        var userEntity = new PasskeyUserEntity(userId, userName, userDisplayName);
+        _passkeyCreationOptions = new(userEntity, optionsJson);
+        return _passkeyCreationOptions;
+    }
+
+    /// <summary>
+    /// Retrieves the <see cref="PasskeyRequestOptions"/> stored in the current <see cref="HttpContext"/>.
+    /// </summary>
+    /// <returns>
+    /// A task object representing the asynchronous operation containing the <see cref="PasskeyRequestOptions"/>.
+    /// </returns>
+    public virtual async Task<PasskeyRequestOptions?> RetrievePasskeyRequestOptionsAsync()
+    {
+        if (_passkeyRequestOptions is not null)
+        {
+            return _passkeyRequestOptions;
+        }
+
+        var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
+        await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+
+        if (result?.Principal == null)
+        {
+            return null;
+        }
+
+        var optionsJson = result.Properties?.Items[PasskeyRequestOptionsKey];
+        if (optionsJson == null)
+        {
+            return null;
+        }
+
+        var userId = result.Principal.FindFirstValue(ClaimTypes.NameIdentifier);
+        _passkeyRequestOptions = new(userId, optionsJson);
+        return _passkeyRequestOptions;
     }
 
     /// <summary>
@@ -542,7 +696,7 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
     /// <param name="rememberClient">Flag indicating whether the current browser should be remember, suppressing all further
     /// two factor authentication prompts.</param>
-    /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+    /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
     {
@@ -590,7 +744,7 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
     /// <param name="rememberClient">Flag indicating whether the current browser should be remember, suppressing all further
     /// two factor authentication prompts.</param>
-    /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+    /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
     {
@@ -651,7 +805,7 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="loginProvider">The login provider to use.</param>
     /// <param name="providerKey">The unique provider identifier for the user.</param>
     /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
-    /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+    /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
     public virtual Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent)
         => ExternalLoginSignInAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor: false);
@@ -663,7 +817,7 @@ public class SignInManager<TUser> where TUser : class
     /// <param name="providerKey">The unique provider identifier for the user.</param>
     /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
     /// <param name="bypassTwoFactor">Flag indicating whether to bypass two factor authentication.</param>
-    /// <returns>The task object representing the asynchronous operation containing the <see name="SignInResult"/>
+    /// <returns>The task object representing the asynchronous operation containing the <see cref="SignInResult"/>
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
     {
@@ -695,7 +849,7 @@ public class SignInManager<TUser> where TUser : class
     /// Gets the external login information for the current login, as an asynchronous operation.
     /// </summary>
     /// <param name="expectedXsrf">Flag indication whether a Cross Site Request Forgery token was expected in the current request.</param>
-    /// <returns>The task object representing the asynchronous operation containing the <see name="ExternalLoginInfo"/>
+    /// <returns>The task object representing the asynchronous operation containing the <see cref="ExternalLoginInfo"/>
     /// for the sign-in attempt.</returns>
     public virtual async Task<ExternalLoginInfo?> GetExternalLoginInfoAsync(string? expectedXsrf = null)
     {

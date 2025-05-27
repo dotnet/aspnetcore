@@ -42,6 +42,9 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddScoped<IPasswordHasher<TUser>, PasswordHasher<TUser>>();
         services.TryAddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
+        services.TryAddScoped<IPasskeyRequestContextProvider, DefaultPasskeyRequestContextProvider>();
+        services.TryAddScoped<IPasskeyOriginValidator, DefaultPasskeyOriginValidator>();
+        services.TryAddScoped<IPasskeyHandler<TUser>, DefaultPasskeyHandler<TUser>>();
         // No interface for the error describer so we can add errors without rev'ing the interface
         services.TryAddScoped<IdentityErrorDescriber>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser>>();
