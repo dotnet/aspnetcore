@@ -742,10 +742,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
             var param = Assert.Single(operation.Parameters);
             Assert.NotNull(param.Schema);
-            Assert.IsType<JsonArray>(param.Schema.Default);
+            Assert.IsType<OpenApiArray>(param.Schema.Default);
             // Type is null, it's up to the user to configure this via a custom schema
             // transformer for types with a converter.
             Assert.Null(param.Schema.Type);
@@ -769,10 +769,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
+            var operation = document.Paths["/api"].Operations[OperationType.Post];
             var param = Assert.Single(operation.Parameters);
             Assert.NotNull(param.Schema);
-            Assert.IsType<JsonObject>(param.Schema.Default);
+            Assert.IsType<OpenApiObject>(param.Schema.Default);
             // Type is null, it's up to the user to configure this via a custom schema
             // transformer for types with a converter.
             Assert.Null(param.Schema.Type);
