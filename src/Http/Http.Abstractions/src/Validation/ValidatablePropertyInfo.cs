@@ -21,7 +21,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
     /// </summary>
     protected ValidatablePropertyInfo(
-        [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+        [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)]
         Type declaringType,
         Type propertyType,
         string name,
