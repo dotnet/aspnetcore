@@ -7,10 +7,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace FileManagerSample;
 
 [ApiController]
-[Route("[controller]")]
+[Route("controller")]
 public class FileController : ControllerBase
 {
-    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/file/upload
+    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/controller/upload
     [HttpPost]
     [Route("upload")]
     public async Task<IActionResult> Upload()
@@ -33,7 +33,7 @@ public class FileController : ControllerBase
         return Ok($"File '{file.Name}' uploaded.");
     }
 
-    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/file/upload-cts
+    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/controller/upload-cts
     [HttpPost]
     [Route("upload-cts")]
     public async Task<IActionResult> UploadCts(CancellationToken cancellationToken)
@@ -55,10 +55,10 @@ public class FileController : ControllerBase
         return Ok($"File '{file.Name}' uploaded.");
     }
 
-    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/file/upload-cts-noop
+    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/controller/upload-cts-noop
     [HttpPost]
     [Route("upload-cts-noop")]
-    public async Task<IActionResult> UploadCtsNoop(CancellationToken cancellationToken)
+    public IActionResult UploadCtsNoop(CancellationToken cancellationToken)
     {
         // 1. form feature initialization
         // 2.calling `FormFeature.InnerReadFormAsync()`
@@ -67,10 +67,10 @@ public class FileController : ControllerBase
         return Ok($"Noop completed.");
     }
 
-    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/file/upload-str-noop
+    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/controller/upload-str-noop
     [HttpPost]
     [Route("upload-str-noop")]
-    public async Task<IActionResult> UploadStrNoop(string str)
+    public IActionResult UploadStrNoop(string str)
     {
         // 1. form feature initialization
         // 2.calling `FormFeature.InnerReadFormAsync()`
@@ -79,10 +79,10 @@ public class FileController : ControllerBase
         return Ok($"Str completed.");
     }
 
-    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/file/upload-str-query
+    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/controller/upload-str-query
     [HttpPost]
     [Route("upload-str-query")]
-    public async Task<IActionResult> UploadStrQuery([FromQuery] string str)
+    public IActionResult UploadStrQuery([FromQuery] string str)
     {
         // 1. form feature initialization
         // 2.calling `FormFeature.InnerReadFormAsync()`
@@ -91,15 +91,27 @@ public class FileController : ControllerBase
         return Ok($"Query completed.");
     }
 
-    // curl -X POST -F "file=@D:\.other\big-files\bigfile.dat" http://localhost:5000/file/upload-query-param/1
+    // curl -X POST -F "file=@D:\.other\big-files\bigfile_50mb.dat" http://localhost:5000/controller/upload-route-param/1
     [HttpPost]
-    [Route("upload-query-param/{id}")]
-    public async Task<IActionResult> UploadQueryParam([FromQuery] string id)
+    [Route("upload-route-param/{id}")]
+    public IActionResult UploadQueryParam(string id)
     {
         // 1. form feature initialization
         // 2.calling `FormFeature.InnerReadFormAsync()`
         // 3. endpoint handler
 
         return Ok($"Query completed: query id = {id}");
+    }
+
+    // curl -X POST -F "file=@D:\.other\big-files\bigfile_50mb.dat" http://localhost:5000/controller/upload-file
+    [HttpPost]
+    [Route("upload-file")]
+    public IActionResult UploadForm([FromForm] IFormFile file)
+    {
+        // 1. form feature initialization
+        // 2.calling `FormFeature.InnerReadFormAsync()`
+        // 3. endpoint handler
+
+        return Ok($"File '{file.FileName}' uploaded.");
     }
 }
