@@ -47,6 +47,7 @@ export interface CircuitHandler {
 export interface ReconnectionHandler {
   onConnectionDown(options: ReconnectionOptions, error?: Error): void;
   onConnectionUp(): void;
+  onCircuitResumed(): void;
 }
 
 function computeDefaultRetryInterval(previousAttempts: number, maxRetries?: number): number | null {

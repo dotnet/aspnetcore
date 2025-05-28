@@ -13,14 +13,17 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
 
   private readonly _reconnectCallback: () => Promise<boolean>;
 
+  private readonly _resumeCallback: () => Promise<boolean>;
+
   private _currentReconnectionProcess: ReconnectionProcess | null = null;
 
   private _reconnectionDisplay?: ReconnectDisplay;
 
-  constructor(logger: Logger, overrideDisplay?: ReconnectDisplay, reconnectCallback?: () => Promise<boolean>) {
+  constructor(logger: Logger, overrideDisplay?: ReconnectDisplay, reconnectCallback?: () => Promise<boolean>, resumeCallback?: () => Promise<boolean>) {
     this._logger = logger;
     this._reconnectionDisplay = overrideDisplay;
     this._reconnectCallback = reconnectCallback || Blazor.reconnect!;
+    this._resumeCallback = resumeCallback || Blazor.resume!;
   }
 
   onConnectionDown(options: ReconnectionOptions, _error?: Error): void {
@@ -32,7 +35,13 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     }
 
     if (!this._currentReconnectionProcess) {
-      this._currentReconnectionProcess = new ReconnectionProcess(options, this._logger, this._reconnectCallback, this._reconnectionDisplay);
+      this._currentReconnectionProcess = new ReconnectionProcess(
+        options,
+        this._logger,
+        this._reconnectCallback,
+        this._resumeCallback,
+        this._reconnectionDisplay
+      );
     }
   }
 
@@ -41,6 +50,10 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
       this._currentReconnectionProcess.dispose();
       this._currentReconnectionProcess = null;
     }
+  }
+
+  onCircuitResumed(): void {
+    return;
   }
 }
 
@@ -51,7 +64,7 @@ class ReconnectionProcess {
 
   isDisposed = false;
 
-  constructor(options: ReconnectionOptions, private logger: Logger, private reconnectCallback: () => Promise<boolean>, display: ReconnectDisplay) {
+  constructor(options: ReconnectionOptions, private logger: Logger, private reconnectCallback: () => Promise<boolean>, private resumeCallback: () => Promise<boolean>, display: ReconnectDisplay) {
     this.reconnectDisplay = display;
     this.reconnectDisplay.show();
     this.attemptPeriodicReconnection(options);
@@ -65,7 +78,7 @@ class ReconnectionProcess {
   async attemptPeriodicReconnection(options: ReconnectionOptions) {
     for (let i = 0; options.maxRetries === undefined || i < options.maxRetries; i++) {
       let retryInterval: number;
-      if (typeof(options.retryIntervalMilliseconds) === 'function') {
+      if (typeof (options.retryIntervalMilliseconds) === 'function') {
         const computedRetryInterval = options.retryIntervalMilliseconds(i);
         if (computedRetryInterval === null || computedRetryInterval === undefined) {
           break;
@@ -92,6 +105,12 @@ class ReconnectionProcess {
         // - exception to mean we didn't reach the server (this can be sync or async)
         const result = await this.reconnectCallback();
         if (!result) {
+          // Try to resume the circuit if the reconnect failed
+          const resumeResult = await this.resumeCallback();
+          if (resumeResult) {
+            return;
+          }
+
           // If the server responded and refused to reconnect, stop auto-retrying.
           this.reconnectDisplay.rejected();
           return;

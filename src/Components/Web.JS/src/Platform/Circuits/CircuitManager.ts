@@ -20,6 +20,7 @@ import { attachWebRendererInterop, detachWebRendererInterop } from '../../Render
 import { sendJSDataStream } from './CircuitStreamingInterop';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
+
   private readonly _componentManager: RootComponentManager<ServerComponentDescriptor>;
 
   private _applicationState: string;
@@ -224,28 +225,36 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
-      const resume = await this._connection!.invoke<string>(
-        'ResumeCircuit',
-        this._circuitId,
-        navigationManagerFunctions.getBaseURI(),
-        navigationManagerFunctions.getLocationHref(),
-        '[]',
-        ''
-      );
-      if (!resume) {
-        detachWebRendererInterop(WebRendererId.Server);
-        this._interopMethodsForReconnection = undefined;
-        return false;
-      }
-
-      this._circuitId = resume;
-      this._renderQueue = new RenderQueue(this._logger);
-
-      this._componentManager.onComponentReload?.();
+      return false;
     }
 
     this._options.reconnectionHandler!.onConnectionUp();
 
+    return true;
+  }
+
+  public async resume(): Promise<boolean> {
+    if (!this._circuitId) {
+      throw new Error('Method not implemented.');
+    }
+
+    const resume = await this._connection!.invoke<string>(
+      'ResumeCircuit',
+      this._circuitId,
+      navigationManagerFunctions.getBaseURI(),
+      navigationManagerFunctions.getLocationHref(),
+      '[]',
+      ''
+    );
+    if (!resume) {
+      return false;
+    }
+
+    this._circuitId = resume;
+    this._renderQueue = new RenderQueue(this._logger);
+    this._options.reconnectionHandler!.onCircuitResumed();
+    this._options.reconnectionHandler!.onConnectionUp();
+    this._componentManager.onComponentReload?.();
     return true;
   }
 
