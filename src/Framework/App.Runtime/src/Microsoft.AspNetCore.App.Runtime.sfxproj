@@ -79,8 +79,9 @@
 
     <NativeRuntimeAsset Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.dll" />
+    <NativeRuntimeAsset Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
+        Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.pdb" />
   </ItemGroup>
-
 
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"
