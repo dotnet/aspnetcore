@@ -149,7 +149,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var resourceCollectionProvider = resourceCollectionUrl != null ? httpContext.RequestServices.GetService<ResourceCollectionProvider>() : null;
         if (resourceCollectionUrl != null && resourceCollectionProvider != null)
         {
-            resourceCollectionProvider.SetResourceCollectionUrl(resourceCollectionUrl.Url);
+            resourceCollectionProvider.ResourceCollectionUrl = resourceCollectionUrl.Url;
             resourceCollectionProvider.SetResourceCollection(resourceCollection ?? ResourceAssetCollection.Empty);
         }
     }
@@ -183,17 +183,11 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
-    private void SignalRendererToFinishRenderingAfterCurrentBatch()
+    // For testing purposes only
+    internal void SignalRendererToFinishRendering()
     {
         // sets a deferred stop on the renderer, which will have an effect after the current batch is completed
         _rendererIsStopped = true;
-    }
-
-    protected override void SignalRendererToFinishRendering()
-    {
-        SignalRendererToFinishRenderingAfterCurrentBatch();
-        // sets a hard stop on the renderer, which will have an effect immediately
-        base.SignalRendererToFinishRendering();
     }
 
     protected override void ProcessPendingRender()

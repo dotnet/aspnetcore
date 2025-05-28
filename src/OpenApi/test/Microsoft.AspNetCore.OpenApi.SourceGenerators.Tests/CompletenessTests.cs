@@ -437,6 +437,40 @@ public class ParamsAndParamRefs
         return para;
     }
 }
+
+/// <summary>
+/// A class that implements the <see cref="IDisposable"/> interface.
+/// </summary>
+public class DisposableType : IDisposable
+{
+    /// <summary>
+    /// Finalizes an instance of the <see cref="DisposableType"/> class.
+    /// </summary>
+    ~DisposableType()
+    {
+        Dispose(false);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+    /// </summary>
+    /// <param name="disposing">
+    /// <see langword="true" /> to release both managed and unmanaged resources;
+    /// <see langword="false" /> to release only unmanaged resources.
+    /// <see langword="null" /> to indicate a no-op.
+    /// </param>
+    protected virtual void Dispose(bool disposing)
+    {
+        // No-op
+    }
+}
 """;
         var generator = new XmlCommentGenerator();
         await SnapshotTestHelper.Verify(source, generator, out var compilation);

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
@@ -44,6 +45,26 @@ public class EndpointHtmlRendererTest
     public EndpointHtmlRendererTest()
     {
         renderer = GetEndpointHtmlRenderer();
+    }
+
+    [Fact]
+    public async Task DoesNotRenderAfterRendererStopped()
+    {
+        var httpContext = GetHttpContext();
+        var writer = new StringWriter();
+
+        var component = new StoppingRendererComponent();
+        var id = renderer.AssignRootComponentId(component);
+        var initialRenderOperation = renderer.Dispatcher.InvokeAsync(
+            () => renderer.RenderRootComponentAsync(id, ParameterView.Empty));
+
+        renderer.SignalRendererToFinishRendering();
+        component.TaskCompletionSource.SetResult(false);
+        await initialRenderOperation;
+        int initialRenderCount = renderer.RenderCount;
+
+        await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(id, ParameterView.Empty));
+        Assert.Equal(initialRenderCount, renderer.RenderCount);
     }
 
     [Fact]
@@ -1756,13 +1777,30 @@ public class EndpointHtmlRendererTest
 
     private class TestEndpointHtmlRenderer : EndpointHtmlRenderer
     {
+        private bool _rendererIsStopped = false;
+        private int _renderCount;
+
         public TestEndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory) : base(serviceProvider, loggerFactory)
         {
         }
 
-        internal int TestAssignRootComponentId(IComponent component)
+        protected override void ProcessPendingRender()
         {
-            return base.AssignRootComponentId(component);
+            if (_rendererIsStopped)
+            {
+                return;
+            }
+            base.ProcessPendingRender();
+
+            _renderCount++;
+        }
+
+        public int RenderCount => _renderCount;
+
+        public new void SignalRendererToFinishRendering()
+        {
+            _rendererIsStopped = true;
+            base.SignalRendererToFinishRendering();
         }
     }
 

@@ -56,14 +56,14 @@
                       $(RepoRoot)src\SignalR\perf\benchmarkapps\**\*.csproj;
                       " />
 
-    <!-- In the VMR, we don't build the native ANCM bits in pass 1 -->
+    <!-- In the .NET product build mode, don't build the native ANCM bits in pass 1 -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Installers\**\*.vcxproj;
                       "
                       Condition=" '$(BuildNative)' == 'true' and '$(DotNetBuild)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1') " />
 
 
-    <!-- This project requires inputs from x64, x86, and arm64 on Windows - therefore in the VMR, we build it in pass 2 -->
+    <!-- This project requires inputs from x64, x86, and arm64 on Windows - therefore in the .NET product build mode, build it in pass 2 -->
     <ProjectToExclude Include="
                       $(RepoRoot)src\Servers\IIS/IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj;
                       "
@@ -83,7 +83,7 @@
         </ProjectToBuild>
       </ItemGroup>
     </When>
-    <!-- Projects to build in VMR build pass 2 -->
+    <!-- Projects to build in .NET product build pass 2 -->
     <When Condition="'$(DotNetBuildPass)' == '2'">
       <ItemGroup Condition=" '$(DotNetBuild)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64' ">
         <!-- Build Hosting Bundle -->
@@ -264,7 +264,7 @@
         <_VcxTargetPlatform Condition="'$(TargetArchitecture)' == 'arm64'">ARM64</_VcxTargetPlatform>
       </PropertyGroup>
 
-      <!-- In the VMR, we build the installers entirely via HostingBundle ProjectReferences in pass 2 -->
+      <!-- In .NET product build mode, build the installers entirely via HostingBundle ProjectReferences in pass 2 -->
       <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(_BuildWindowsInstallers)' == 'true' ">
         <!-- Build the ANCM custom action -->
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\CustomAction\aspnetcoreCA.vcxproj" AdditionalProperties="Platform=x64" />

@@ -64,7 +64,50 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             validatableInfo = null;
             if (type == typeof(global::TestService))
             {
-                validatableInfo = CreateTestService();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::TestService),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::TestService),
+                            propertyType: typeof(int),
+                            name: "Value",
+                            displayName: "Value"
+                        ),
+                    ]
+                );
+                return true;
+            }
+            if (type == typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>))
+            {
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                            propertyType: typeof(global::System.Collections.Generic.ICollection<global::TestService>),
+                            name: "System.Collections.Generic.IDictionary<TKey,TValue>.Values",
+                            displayName: "System.Collections.Generic.IDictionary<TKey,TValue>.Values"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                            propertyType: typeof(global::System.Collections.Generic.IEnumerable<global::TestService>),
+                            name: "System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.Values",
+                            displayName: "System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.Values"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                            propertyType: typeof(global::TestService),
+                            name: "this[]",
+                            displayName: "this[]"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
+                            propertyType: typeof(global::System.Collections.ICollection),
+                            name: "System.Collections.IDictionary.Values",
+                            displayName: "System.Collections.IDictionary.Values"
+                        ),
+                    ]
+                );
                 return true;
             }
 
@@ -77,22 +120,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             validatableInfo = null;
             return false;
         }
-
-        private ValidatableTypeInfo CreateTestService()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::TestService),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::TestService),
-                        propertyType: typeof(int),
-                        name: "Value",
-                        displayName: "Value"
-                    ),
-                ]
-            );
-        }
-
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
