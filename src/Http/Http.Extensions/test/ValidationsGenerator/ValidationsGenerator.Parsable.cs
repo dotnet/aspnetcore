@@ -88,32 +88,33 @@ public class ComplexTypeWithParsableProperties
             Assert.Collection(problemDetails.Errors.OrderBy(kvp => kvp.Key),
                 error =>
                 {
-                    Assert.Equal("DateOnlyWithRange", error.Key);
+                    Assert.Equal("dateOnlyWithRange", error.Key);
                     Assert.Contains("Date must be between 2023-01-01 and 2025-12-31", error.Value);
                 },
                 error =>
                 {
-                    Assert.Equal("DecimalWithRange", error.Key);
+                    Assert.Equal("decimalWithRange", error.Key);
                     Assert.Contains("Amount must be between 0.1 and 100.5", error.Value);
                 },
                 error =>
                 {
-                    Assert.Equal("TimeOnlyWithRequiredValue", error.Key);
-                    Assert.Contains("The TimeOnlyWithRequiredValue field is required.", error.Value);
+                    Assert.Equal("timeOnlyWithRequiredValue", error.Key);
+                    Assert.Contains("The timeOnlyWithRequiredValue field is required.", error.Value);
                 },
                 error =>
                 {
-                    Assert.Equal("TimeSpanWithHourRange", error.Key);
+                    Assert.Equal("timeSpanWithHourRange", error.Key);
                     Assert.Contains("Hours must be between 0 and 12", error.Value);
                 },
                 error =>
                 {
-                    Assert.Equal("Url", error.Key);
+                    Assert.Equal("url", error.Key);
+                    // Message provided explicitly in attribute
                     Assert.Contains("The field Url must be a valid URL.", error.Value);
                 },
                 error =>
                 {
-                    Assert.Equal("VersionWithRegex", error.Key);
+                    Assert.Equal("versionWithRegex", error.Key);
                     Assert.Contains("Must be a valid version number (e.g. 1.0.0)", error.Value);
                 }
             );

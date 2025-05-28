@@ -206,12 +206,12 @@ public class ValidatableTypeInfoTests
             kvp =>
             {
                 Assert.Equal(expectedFirstName, kvp.Key);
-                Assert.Equal($"The FirstName field is required.", kvp.Value.First());
+                Assert.Equal($"The {expectedFirstName} field is required.", kvp.Value.First());
             },
             kvp =>
             {
                 Assert.Equal(expectedLastName, kvp.Key);
-                Assert.Equal($"The LastName field is required.", kvp.Value.First());
+                Assert.Equal($"The {expectedLastName} field is required.", kvp.Value.First());
             });
     }
 
@@ -891,20 +891,17 @@ public class ValidatableTypeInfoTests
 
         // Assert
         Assert.NotNull(context.ValidationErrors);
+        // Use [JsonPropertyName] over naming policy
         Assert.Collection(context.ValidationErrors,
-            kvp => 
+            kvp =>
             {
-                // Property key uses camelCase naming policy
                 Assert.Equal("username", kvp.Key);
-                // Error message should also use camelCase for property names
-                Assert.Equal("The UserName field is required.", kvp.Value.First());
+                Assert.Equal("The username field is required.", kvp.Value.First());
             },
-            kvp => 
+            kvp =>
             {
-                // Property key uses camelCase naming policy
-                Assert.Equal("email", kvp.Key); 
-                // Error message should also use camelCase for property names
-                Assert.Equal("The EmailAddress field is not a valid e-mail address.", kvp.Value.First());
+                Assert.Equal("email", kvp.Key);
+                Assert.Equal("The email field is not a valid e-mail address.", kvp.Value.First());
             });
     }
 
@@ -1107,13 +1104,13 @@ public class ValidatableTypeInfoTests
             }
         }
     }
-    
+
     [Fact]
     public void Validate_FormatsErrorMessagesWithPropertyNamingPolicy()
     {
         // Arrange
         var validationOptions = new ValidationOptions();
-        
+
         var address = new Address();
         var validationContext = new ValidationContext(address);
         var validateContext = new ValidateContext
@@ -1147,7 +1144,7 @@ public class ValidatableTypeInfoTests
     {
         // Arrange
         var validationOptions = new ValidationOptions();
-        
+
         var model = new TestModel();
         var validationContext = new ValidationContext(model);
         var validateContext = new ValidateContext
@@ -1175,7 +1172,7 @@ public class ValidatableTypeInfoTests
         Assert.Equal("customProperty", error.Key);
         Assert.Equal("Custom message without standard format.", error.Value.First()); // Custom message without formatting
     }
-    
+
     private class TestModel
     {
         public string? CustomProperty { get; set; }

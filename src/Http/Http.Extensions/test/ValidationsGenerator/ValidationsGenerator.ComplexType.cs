@@ -124,8 +124,8 @@ public static class CustomValidators
                 var problemDetails = await AssertBadRequest(context);
                 Assert.Collection(problemDetails.Errors, kvp =>
                 {
-                    Assert.Equal("IntegerWithRange", kvp.Key);
-                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                    Assert.Equal("integerWithRange", kvp.Key);
+                    Assert.Equal("The field integerWithRange must be between 10 and 100.", kvp.Value.Single());
                 });
             }
 
@@ -143,7 +143,7 @@ public static class CustomValidators
                 var problemDetails = await AssertBadRequest(context);
                 Assert.Collection(problemDetails.Errors, kvp =>
                 {
-                    Assert.Equal("IntegerWithRangeAndDisplayName", kvp.Key);
+                    Assert.Equal("integerWithRangeAndDisplayName", kvp.Key);
                     Assert.Equal("The field Valid identifier must be between 10 and 100.", kvp.Value.Single());
                 });
             }
@@ -162,8 +162,8 @@ public static class CustomValidators
                 var problemDetails = await AssertBadRequest(context);
                 Assert.Collection(problemDetails.Errors, kvp =>
                 {
-                    Assert.Equal("PropertyWithMemberAttributes", kvp.Key);
-                    Assert.Equal("The PropertyWithMemberAttributes field is required.", kvp.Value.Single());
+                    Assert.Equal("propertyWithMemberAttributes", kvp.Key);
+                    Assert.Equal("The propertyWithMemberAttributes field is required.", kvp.Value.Single());
                 });
             }
 
@@ -185,13 +185,13 @@ public static class CustomValidators
                 Assert.Collection(problemDetails.Errors,
                 kvp =>
                 {
-                    Assert.Equal("PropertyWithMemberAttributes.RequiredProperty", kvp.Key);
-                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                    Assert.Equal("propertyWithMemberAttributes.requiredProperty", kvp.Key);
+                    Assert.Equal("The requiredProperty field is required.", kvp.Value.Single());
                 },
                 kvp =>
                 {
-                    Assert.Equal("PropertyWithMemberAttributes.StringWithLength", kvp.Key);
-                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                    Assert.Equal("propertyWithMemberAttributes.stringWithLength", kvp.Key);
+                    Assert.Equal("The field stringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                 });
             }
 
@@ -214,18 +214,18 @@ public static class CustomValidators
                 Assert.Collection(problemDetails.Errors,
                 kvp =>
                 {
-                    Assert.Equal("PropertyWithInheritance.EmailString", kvp.Key);
-                    Assert.Equal("The EmailString field is not a valid e-mail address.", kvp.Value.Single());
+                    Assert.Equal("propertyWithInheritance.emailString", kvp.Key);
+                    Assert.Equal("The emailString field is not a valid e-mail address.", kvp.Value.Single());
                 },
                 kvp =>
                 {
-                    Assert.Equal("PropertyWithInheritance.RequiredProperty", kvp.Key);
-                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                    Assert.Equal("propertyWithInheritance.requiredProperty", kvp.Key);
+                    Assert.Equal("The requiredProperty field is required.", kvp.Value.Single());
                 },
                 kvp =>
                 {
-                    Assert.Equal("PropertyWithInheritance.StringWithLength", kvp.Key);
-                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                    Assert.Equal("propertyWithInheritance.stringWithLength", kvp.Key);
+                    Assert.Equal("The field stringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                 });
             }
 
@@ -257,18 +257,18 @@ public static class CustomValidators
                 Assert.Collection(problemDetails.Errors,
                 kvp =>
                 {
-                    Assert.Equal("ListOfSubTypes[0].RequiredProperty", kvp.Key);
-                    Assert.Equal("The RequiredProperty field is required.", kvp.Value.Single());
+                    Assert.Equal("listOfSubTypes[0].requiredProperty", kvp.Key);
+                    Assert.Equal("The requiredProperty field is required.", kvp.Value.Single());
                 },
                 kvp =>
                 {
-                    Assert.Equal("ListOfSubTypes[0].StringWithLength", kvp.Key);
-                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                    Assert.Equal("listOfSubTypes[0].stringWithLength", kvp.Key);
+                    Assert.Equal("The field stringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                 },
                 kvp =>
                 {
-                    Assert.Equal("ListOfSubTypes[1].StringWithLength", kvp.Key);
-                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                    Assert.Equal("listOfSubTypes[1].stringWithLength", kvp.Key);
+                    Assert.Equal("The field stringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                 });
             }
 
@@ -286,7 +286,7 @@ public static class CustomValidators
                 var problemDetails = await AssertBadRequest(context);
                 Assert.Collection(problemDetails.Errors, kvp =>
                 {
-                    Assert.Equal("IntegerWithDerivedValidationAttribute", kvp.Key);
+                    Assert.Equal("integerWithDerivedValidationAttribute", kvp.Key);
                     Assert.Equal("Value must be an even number", kvp.Value.Single());
                 });
             }
@@ -305,15 +305,15 @@ public static class CustomValidators
                 var problemDetails = await AssertBadRequest(context);
                 Assert.Collection(problemDetails.Errors, kvp =>
                 {
-                    Assert.Equal("PropertyWithMultipleAttributes", kvp.Key);
+                    Assert.Equal("propertyWithMultipleAttributes", kvp.Key);
                     Assert.Collection(kvp.Value,
                     error =>
                     {
-                        Assert.Equal("The field PropertyWithMultipleAttributes is invalid.", error);
+                        Assert.Equal("The field propertyWithMultipleAttributes is invalid.", error);
                     },
                     error =>
                     {
-                        Assert.Equal("The field PropertyWithMultipleAttributes must be between 10 and 100.", error);
+                        Assert.Equal("The field propertyWithMultipleAttributes must be between 10 and 100.", error);
                     });
                 });
             }
@@ -333,7 +333,7 @@ public static class CustomValidators
                 var problemDetails = await AssertBadRequest(context);
                 Assert.Collection(problemDetails.Errors, kvp =>
                 {
-                    Assert.Equal("IntegerWithCustomValidation", kvp.Key);
+                    Assert.Equal("integerWithCustomValidation", kvp.Key);
                     var error = Assert.Single(kvp.Value);
                     Assert.Equal("Can't use the same number value in two properties on the same class.", error);
                 });

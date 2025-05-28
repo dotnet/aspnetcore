@@ -114,43 +114,43 @@ public class RecursiveType
                 Assert.Collection(problemDetails.Errors,
                     error =>
                     {
-                        Assert.Equal("Value", error.Key);
-                        Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("value", error.Key);
+                        Assert.Equal("The field value must be between 10 and 100.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("Next.Value", error.Key);
-                        Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("next.value", error.Key);
+                        Assert.Equal("The field value must be between 10 and 100.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("Next.Next.Value", error.Key);
-                        Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("next.next.value", error.Key);
+                        Assert.Equal("The field value must be between 10 and 100.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("Next.Next.Next.Value", error.Key);
-                        Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("next.next.next.value", error.Key);
+                        Assert.Equal("The field value must be between 10 and 100.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("Next.Next.Next.Next.Value", error.Key);
-                        Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("next.next.next.next.value", error.Key);
+                        Assert.Equal("The field value must be between 10 and 100.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("Next.Next.Next.Next.Next.Value", error.Key);
-                        Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("next.next.next.next.next.value", error.Key);
+                        Assert.Equal("The field value must be between 10 and 100.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("Next.Next.Next.Next.Next.Next.Value", error.Key);
-                        Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("next.next.next.next.next.next.value", error.Key);
+                        Assert.Equal("The field value must be between 10 and 100.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("Next.Next.Next.Next.Next.Next.Next.Value", error.Key);
-                        Assert.Equal("The field Value must be between 10 and 100.", error.Value.Single());
+                        Assert.Equal("next.next.next.next.next.next.next.value", error.Key);
+                        Assert.Equal("The field value must be between 10 and 100.", error.Value.Single());
                     });
             }
         });

@@ -128,23 +128,24 @@ public class TestService
                 Assert.Collection(problemDetails.Errors,
                     error =>
                     {
-                        Assert.Equal("Value2", error.Key);
+                        Assert.Equal("value2", error.Key);
                         Assert.Collection(error.Value,
-                            msg => Assert.Equal("The Value2 field is required.", msg));
+                            msg => Assert.Equal("The value2 field is required.", msg));
                     },
                     error =>
                     {
-                        Assert.Equal("SubType.RequiredProperty", error.Key);
-                        Assert.Equal("The RequiredProperty field is required.", error.Value.Single());
+                        Assert.Equal("subType.requiredProperty", error.Key);
+                        Assert.Equal("The requiredProperty field is required.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("SubType.Value3", error.Key);
+                        Assert.Equal("subType.value3", error.Key);
                         Assert.Equal("The field ValidatableSubType must be 'some-value'.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("Value1", error.Key);
+                        Assert.Equal("value1", error.Key);
+                        // The error message is generated using nameof(Value1) in the IValidateObject implementation
                         Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
                     });
             }
@@ -169,12 +170,12 @@ public class TestService
                 Assert.Collection(problemDetails.Errors,
                     error =>
                     {
-                        Assert.Equal("SubType.Value3", error.Key);
+                        Assert.Equal("subType.value3", error.Key);
                         Assert.Equal("The field ValidatableSubType must be 'some-value'.", error.Value.Single());
                     },
                     error =>
                     {
-                        Assert.Equal("Value1", error.Key);
+                        Assert.Equal("value1", error.Key);
                         Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
                     });
             }
@@ -199,7 +200,7 @@ public class TestService
                 Assert.Collection(problemDetails.Errors,
                     error =>
                     {
-                        Assert.Equal("Value1", error.Key);
+                        Assert.Equal("value1", error.Key);
                         Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
                     });
             }
