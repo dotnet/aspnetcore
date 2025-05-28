@@ -38,6 +38,7 @@ runtime_source_feed_key=''
 source_build=''
 product_build=''
 from_vmr=''
+warn_as_error=true
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
@@ -87,6 +88,7 @@ Options:
     --binarylog|-bl                   Use a binary logger
     --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    --warnAsError                     Sets warnaserror msbuild parameter: 'true' or 'false'
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
@@ -263,6 +265,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         -fromvmr|-from-vmr)
             from_vmr=true
+        -warnaserror)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --warnaserror" && __usage
+            warn_as_error="${1:-}"
             ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"

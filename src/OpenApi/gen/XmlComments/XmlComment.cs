@@ -35,8 +35,11 @@ internal sealed partial class XmlComment
         // Transform triple slash comment
         var doc = XDocument.Parse(xml, LoadOptions.PreserveWhitespace | LoadOptions.SetLineInfo);
 
-        ResolveCrefLink(compilation, doc, $"//{DocumentationCommentXmlNames.SeeAlsoElementName}[@cref]");
-        ResolveCrefLink(compilation, doc, $"//{DocumentationCommentXmlNames.SeeElementName}[@cref]");
+        ResolveCrefLink(compilation, doc, DocumentationCommentXmlNames.SeeAlsoElementName);
+        ResolveCrefLink(compilation, doc, DocumentationCommentXmlNames.SeeElementName);
+
+        ResolveLangKeyword(doc, DocumentationCommentXmlNames.SeeElementName);
+
         // Resolve <list> and <item> tags into bullets
         ResolveListTags(doc);
         // Resolve <code> tags into code blocks
@@ -171,18 +174,20 @@ internal sealed partial class XmlComment
     /// </summary>
     /// <param name="compilation">The compilation to resolve type symbol declarations from.</param>
     /// <param name="node">The target node to process crefs in.</param>
-    /// <param name="nodeSelector">The node type to process crefs for, can be `see` or `seealso`.</param>
-    private static void ResolveCrefLink(Compilation compilation, XNode node, string nodeSelector)
+    /// <param name="elementName">The node type to process crefs for, can be `see` or `seealso`.</param>
+    private static void ResolveCrefLink(Compilation compilation, XNode node, string elementName)
     {
-        if (node == null || string.IsNullOrEmpty(nodeSelector))
+        if (node == null || string.IsNullOrEmpty(elementName))
         {
             return;
         }
 
-        var nodes = node.XPathSelectElements(nodeSelector + "[@cref]").ToArray();
+        var attributeName = DocumentationCommentXmlNames.CrefAttributeName;
+
+        var nodes = node.XPathSelectElements($"//{elementName}[@{attributeName}]").ToArray();
         foreach (var item in nodes)
         {
-            var cref = item.Attribute(DocumentationCommentXmlNames.CrefAttributeName).Value;
+            var cref = item.Attribute(attributeName).Value;
             if (string.IsNullOrEmpty(cref))
             {
                 continue;
@@ -194,6 +199,33 @@ internal sealed partial class XmlComment
                 var type = symbol.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
                 item.ReplaceWith(new XText(type));
             }
+        }
+    }
+
+    /// <summary>
+    /// Resolves the links in the XML documentation into language keywords.
+    /// </summary>
+    /// <param name="node">The target node to process crefs in.</param>
+    /// <param name="elementName">The node type to process langwords for, can be `see` or `seealso`.</param>
+    private static void ResolveLangKeyword(XNode node, string elementName)
+    {
+        if (node == null || string.IsNullOrEmpty(elementName))
+        {
+            return;
+        }
+
+        var attributeName = DocumentationCommentXmlNames.LangwordAttributeName;
+
+        var nodes = node.XPathSelectElements($"//{elementName}[@{attributeName}]").ToArray();
+        foreach (var item in nodes)
+        {
+            var langword = item.Attribute(attributeName).Value;
+            if (string.IsNullOrEmpty(langword))
+            {
+                continue;
+            }
+
+            item.ReplaceWith(new XText($"`{langword}`"));
         }
     }
 

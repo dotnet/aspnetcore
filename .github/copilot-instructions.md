@@ -3,6 +3,8 @@
 * Make only high confidence suggestions when reviewing code changes.
 * Always use the latest version C#, currently C# 13 features.
 * Never change global.json unless explicitly asked to.
+* Never change package.json or package-lock.json files unless explicitly asked to.
+* Never change NuGet.config files unless explicitly asked to.
 
 ## Formatting
 
@@ -12,7 +14,7 @@
 * Ensure that the final return statement of a method is on its own line.
 * Use pattern matching and switch expressions wherever possible.
 * Use `nameof` instead of string literals when referring to member names.
-* Ensure that XML doc comments are created for any public APIs. When applicable, include <example> and <code> documentation in the comments.
+* Ensure that XML doc comments are created for any public APIs. When applicable, include `<example>` and `<code>` documentation in the comments.
 
 ### Nullable Reference Types
 
