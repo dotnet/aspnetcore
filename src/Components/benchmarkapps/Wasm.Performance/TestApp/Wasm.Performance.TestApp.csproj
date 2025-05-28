@@ -9,6 +9,7 @@
     -->
     <BlazorCacheBootResources>false</BlazorCacheBootResources>
     <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <BlazorWebAssemblyJSMapPath></BlazorWebAssemblyJSMapPath>
   </PropertyGroup>
 
   <ItemGroup>
