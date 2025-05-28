@@ -39,6 +39,7 @@ source_build=''
 product_build=''
 from_vmr=''
 warn_as_error=true
+from_vmr=''
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
