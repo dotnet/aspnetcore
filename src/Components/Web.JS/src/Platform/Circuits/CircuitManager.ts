@@ -18,7 +18,6 @@ import { Blazor } from '../../GlobalExports';
 import { showErrorNotification } from '../../BootErrors';
 import { attachWebRendererInterop, detachWebRendererInterop } from '../../Rendering/WebRendererInteropMethods';
 import { sendJSDataStream } from './CircuitStreamingInterop';
-import { RootComponentInfo } from '../../Services/WebRootComponentManager';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private readonly _componentManager: RootComponentManager<ServerComponentDescriptor>;
@@ -225,8 +224,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     if (!await this._connection!.invoke<boolean>('ConnectCircuit', this._circuitId)) {
-      detachWebRendererInterop(WebRendererId.Server);
-      this._interopMethodsForReconnection = undefined;
       const resume = await this._connection!.invoke<string>(
         'ResumeCircuit',
         this._circuitId,
@@ -236,36 +233,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         ''
       );
       if (!resume) {
+        detachWebRendererInterop(WebRendererId.Server);
+        this._interopMethodsForReconnection = undefined;
         return false;
       }
 
-      const { circuitId, batch, state } = JSON.parse(resume);
-      const parsedBatch = JSON.parse(batch);
-      const operations = parsedBatch.operations;
-      const infos: RootComponentInfo[] = [];
+      this._circuitId = resume;
+      this._renderQueue = new RenderQueue(this._logger);
 
-      for (let i = 0; i < operations.length; i++) {
-        const operation = operations[i];
-        if (operation.type === 'Add') {
-          const descriptor = this._componentManager.resolveRootComponent(operation.ssrComponentId);
-          console.log(descriptor);
-          const rootComponent = {
-            descriptor: {
-              ...descriptor,
-              ...operation.marker,
-            },
-            ssrComponentId: operation.ssrComponentId,
-          };
-          console.log(rootComponent);
-          infos.push(rootComponent);
-        }
+      this._componentManager.onComponentReset?.();
 
-        this._circuitId = circuitId;
-        this._applicationState = state;
-        this._firstUpdate = true;
-        this._renderQueue = new RenderQueue(this._logger);
-        this._componentManager.onComponentReset?.(infos);
-      }
     }
 
     this._options.reconnectionHandler!.onConnectionUp();

@@ -180,7 +180,7 @@ internal sealed partial class ComponentHub : Hub
         var persistedState = circuitHost.TakePersistedCircuitState();
         if (persistedState != null)
         {
-            operations = _circuitPersistenceManager.ToRootComponentOperationBatch(
+            operations = CircuitPersistenceManager.ToRootComponentOperationBatch(
                 _serverComponentSerializer,
                 persistedState.RootComponents,
                 serializedComponentOperations);
@@ -312,7 +312,7 @@ internal sealed partial class ComponentHub : Hub
         }
 
         PersistedCircuitState? persistedCircuitState;
-        if (string.IsNullOrEmpty(rootComponents) && string.IsNullOrEmpty(applicationState))
+        if (rootComponents == "[]" && string.IsNullOrEmpty(applicationState))
         {
             persistedCircuitState = await _circuitPersistenceManager.ResumeCircuitAsync(circuitId, Context.ConnectionAborted);
             if (persistedCircuitState == null)
