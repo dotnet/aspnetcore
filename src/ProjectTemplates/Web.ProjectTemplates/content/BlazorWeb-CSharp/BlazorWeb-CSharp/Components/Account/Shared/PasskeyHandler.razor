@@ -1,0 +1,76 @@
+﻿@using BlazorWeb_CSharp.Data
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+
+<form id="passkey-response-form" @formname="passkey-response" @onsubmit="OnSubmitAsync" method="post">
+    <AntiforgeryToken />
+    <input id="passkey-response" type="hidden" name="@(nameof(ResponseJson))" />
+    <input id="passkey-error" type="hidden" name="@(nameof(Error))" />
+</form>
+
+@if (options is not null)
+{
+    <script type="application/json" id="passkey-options">@((MarkupString)options)</script>
+    <script src="./Components/Account/Shared/PasskeyHandler.razor.js" data-action="@action"></script>
+}
+
+@code {
+    private string? action;
+    private string? options;
+
+    [Parameter]
+    public string? CurrentCreationOptions { get; set; }
+
+    [Parameter]
+    public string? CurrentRequestOptions { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public EventCallback<string> OnResponse { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public EventCallback<string?> OnError { get; set; }
+
+    [SupplyParameterFromForm]
+    private string? ResponseJson { get; set; }
+
+    [SupplyParameterFromForm]
+    private string? Error { get; set; }
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            // Clear the existing two factor cookie to ensure a clean ceremony
+            await HttpContext.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
+        }
+    }
+
+    protected override void OnParametersSet()
+    {
+        (options, action) = (CurrentCreationOptions, CurrentRequestOptions) switch
+        {
+            (null, null) => (null, null),
+            (var createOptions, null) => (createOptions, "create"),
+            (null, var requestOptions) => (requestOptions, "get"),
+            (not null, not null) => throw new InvalidOperationException(
+                $"Only one of '{nameof(CurrentCreationOptions)}' and '{nameof(CurrentRequestOptions)}' should be specified."),
+        };
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        if (ResponseJson is { Length: > 0 } responseJson)
+        {
+            await OnResponse.InvokeAsync(responseJson);
+        }
+        else
+        {
+            await OnError.InvokeAsync(Error);
+        }
+    }
+}

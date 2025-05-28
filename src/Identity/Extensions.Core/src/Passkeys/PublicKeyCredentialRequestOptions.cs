@@ -1,0 +1,56 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
+
+namespace Microsoft.AspNetCore.Identity;
+
+/// <summary>
+/// Represents options for requesting a credential.
+/// </summary>
+/// <remarks>
+/// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialrequestoptionsjson"/>
+/// </remarks>
+internal sealed class PublicKeyCredentialRequestOptions(BufferSource challenge)
+{
+    /// <summary>
+    /// Gets the challenge that the authenticator signs when producing an assertion for the requested credential.
+    /// </summary>
+    public BufferSource Challenge { get; } = challenge;
+
+    /// <summary>
+    /// Gets or sets a time in milliseconds that the server is willing to wait for the call to complete.
+    /// </summary>
+    public ulong? Timeout { get; set; }
+
+    /// <summary>
+    /// Gets or sets the relying party identifier.
+    /// </summary>
+    public string? RpId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the credentials of the identified user account, if any.
+    /// </summary>
+    public IReadOnlyList<PublicKeyCredentialDescriptor> AllowCredentials { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the user verification requirement for the request.
+    /// </summary>
+    public string UserVerification { get; set; } = "preferred";
+
+    /// <summary>
+    /// Gets or sets hints that guide the user agent in interacting with the user.
+    /// </summary>
+    public IReadOnlyList<string> Hints { get; set; } = [];
+
+    /// <summary>
+    /// Gets or sets the client extension inputs that the relying party supports.
+    /// </summary>
+    public JsonElement? Extensions { get; set; }
+}
