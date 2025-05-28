@@ -55,25 +55,6 @@ export class BrowserRenderer {
     elementsToClearOnRootComponentRender.add(element);
   }
 
-  public detachRootComponentFromLogicalElement(componentId: number): void {
-    const element = this.childComponentLocations[componentId];
-    if (!element) {
-      throw new Error(`Root component '${componentId}' is not currently attached to any element`);
-    }
-
-    // If the element is a root component, we remove the association with the component ID
-    // and mark it as no longer being an interactive root component.
-    markAsInteractiveRootComponentElement(element, false);
-    delete this.childComponentLocations[componentId];
-
-    for (const childNode of depthFirstNodeTreeTraversal(element)) {
-      if (childNode instanceof Element){
-        this.eventDelegator.removeListenersForElement(childNode as Element);
-      }
-      emptyLogicalElement(childNode as LogicalElement);
-    }
-  }
-
   public updateComponent(batch: RenderBatch, componentId: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
     const element = this.childComponentLocations[componentId];
     if (!element) {
@@ -82,6 +63,7 @@ export class BrowserRenderer {
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
     if (elementsToClearOnRootComponentRender.delete(element)) {
+      this.detachEventHandlersFromElement(element);
       emptyLogicalElement(element);
 
       if (element instanceof Comment) {
@@ -126,6 +108,14 @@ export class BrowserRenderer {
 
   private attachComponentToElement(componentId: number, element: LogicalElement) {
     this.childComponentLocations[componentId] = element;
+  }
+
+  private detachEventHandlersFromElement(element: LogicalElement): void {
+    for (const childNode of depthFirstNodeTreeTraversal(element)) {
+      if (childNode instanceof Element) {
+        this.eventDelegator.removeListenersForElement(childNode as Element);
+      }
+    }
   }
 
   private applyEdits(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
@@ -405,6 +395,10 @@ export function isInteractiveRootComponentElement(element: LogicalElement): bool
 
 export function setShouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement, shouldPreserve: boolean) {
   element[preserveContentOnDisposalPropname] = shouldPreserve;
+}
+
+export function setClearContentOnRootComponentRerender(element: LogicalElement): void {
+  elementsToClearOnRootComponentRender.add(element);
 }
 
 function shouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement): boolean {
