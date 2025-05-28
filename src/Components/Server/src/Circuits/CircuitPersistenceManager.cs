@@ -64,7 +64,7 @@ internal partial class CircuitPersistenceManager(
     // That ends up calling UpdateRootComponents with the old descriptors and no application state.
     // On the server side, we replace the descriptors with the ones that we have persisted. We can't use the original descriptors because
     // those have a lifetime of ~ 5 minutes, after which we are not able to unprotect them anymore.
-    internal RootComponentOperationBatch ToRootComponentOperationBatch(
+    internal static RootComponentOperationBatch ToRootComponentOperationBatch(
         IServerComponentDeserializer serverComponentDeserializer,
         byte[] rootComponents,
         string serializedComponentOperations)
@@ -78,9 +78,9 @@ internal partial class CircuitPersistenceManager(
             return null;
         }
 
-        var data = JsonSerializer.Deserialize(
+        var data = JsonSerializer.Deserialize<Dictionary<int,ComponentMarker>>(
             rootComponents,
-            CircuitPersistenceManagerSerializerContext.Default.DictionaryInt32ComponentMarker);
+            JsonSerializerOptionsProvider.Options);
 
         // Ensure that all operations in the batch are `Add` operations.
         for (var i = 0; i < result.Operations.Length; i++)

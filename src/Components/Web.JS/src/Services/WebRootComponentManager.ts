@@ -464,14 +464,13 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
   }
 
-  public onComponentReset(infos: RootComponentInfo []): void {
-    for (const info of infos) {
-      const descriptor = info.descriptor as ServerComponentDescriptor;
-      const existing = this._rootComponentsBySsrComponentId.get(info.ssrComponentId);
-      this.unregisterComponent(existing!);
-      detachRootComponent(existing!.assignedRendererId as number, existing!.ssrComponentId);
-      this.registerComponent(descriptor);
+  public onComponentReset(): void {
+    for (const [key, value] of this._rootComponentsBySsrComponentId.entries()) {
+      detachRootComponent(value.assignedRendererId as number, key);
+      value.assignedRendererId = undefined;
+      value.uniqueIdAtLastUpdate = (value.uniqueIdAtLastUpdate ?? 0) + 1;
     }
+
     this.rootComponentsMayRequireRefresh();
   }
 }
