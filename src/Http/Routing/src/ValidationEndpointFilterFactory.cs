@@ -103,13 +103,13 @@ internal static class ValidationEndpointFilterFactory
                     {
                         // We need to prevent further execution, because the actual
                         // ProblemDetails response has already been written by ProblemDetailsService.
-                        return await ValueTask.FromResult(EmptyHttpResult.Instance);
+                        return EmptyHttpResult.Instance;
                     }
                 }
 
                 // Fallback to the default implementation.
                 context.HttpContext.Response.ContentType = MediaTypeNames.Application.ProblemJson;
-                return await ValueTask.FromResult(problemDetails);
+                return problemDetails;
             }
 
             return await next(context);
