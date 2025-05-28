@@ -67,6 +67,20 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     return true;
   };
 
+  Blazor.resume = async () => {
+    if (circuit.didRenderingFail()) {
+      // We can't resume after a failure, so exit early.
+      return false;
+    }
+
+    if (!(await circuit.resume())) {
+      logger.log(LogLevel.Information, 'Resume attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
+      return false;
+    }
+
+    return true;
+  };
+
   Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
 
