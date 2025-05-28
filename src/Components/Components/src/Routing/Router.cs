@@ -42,6 +42,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private bool _onNavigateCalled;
 
+    [DynamicallyAccessedMembers(LinkerFlags.Component)]
+    private Type? _notFoundLayoutType;
+
     [Inject] private NavigationManager NavigationManager { get; set; }
 
     [Inject] private INavigationInterception NavigationInterception { get; set; }
@@ -156,6 +159,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
                     $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
             }
+
+            var layoutAttr = NotFoundPage.GetTypeInfo().GetCustomAttribute<LayoutAttribute>();
+            _notFoundLayoutType = layoutAttr?.LayoutType;
         }
 
         if (!_onNavigateCalled)
@@ -223,7 +229,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute.AsSpan());
         var locationPathSpan = TrimQueryOrHash(relativePath);
         var locationPath = $"/{locationPathSpan}";
-        Activity? activity = null;
+        Activity? activity;
 
         // In order to avoid routing twice we check for RouteData
         if (RoutingStateProvider?.RouteData is { } endpointRouteData)
@@ -286,7 +292,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 // We did not find a Component that matches the route.
                 // Only show the NotFound content if the application developer programatically got us here i.e we did not
                 // intercept the navigation. In all other cases, force a browser navigation since this could be non-Blazor content.
-                _renderHandle.Render(NotFound ?? DefaultNotFoundContent);
+                RenderNotFound();
             }
             else
             {
@@ -382,23 +388,43 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         if (_renderHandle.IsInitialized)
         {
             Log.DisplayingNotFound(_logger);
-            _renderHandle.Render(builder =>
+            RenderNotFound();
+        }
+    }
+
+    private void RenderNotFound()
+    {
+        _renderHandle.Render(builder =>
+        {
+            if (NotFoundPage != null)
             {
-                if (NotFoundPage != null)
+                if (_notFoundLayoutType is Type layoutType)
+                {
+                    // Directly instantiate the layout type, supplying the NotFoundPage as the Body
+                    builder.OpenComponent(0, layoutType);
+                    builder.AddAttribute(1, LayoutComponentBase.BodyPropertyName,
+                        (RenderFragment)(childBuilder =>
+                        {
+                            childBuilder.OpenComponent(2, NotFoundPage);
+                            childBuilder.CloseComponent();
+                        }));
+                    builder.CloseComponent();
+                }
+                else
                 {
                     builder.OpenComponent(0, NotFoundPage);
                     builder.CloseComponent();
                 }
-                else if (NotFound != null)
-                {
-                    NotFound(builder);
-                }
-                else
-                {
-                    DefaultNotFoundContent(builder);
-                }
-            });
-        }
+            }
+            else if (NotFound != null)
+            {
+                NotFound(builder);
+            }
+            else
+            {
+                DefaultNotFoundContent(builder);
+            }
+        });
     }
 
     async Task IHandleAfterRender.OnAfterRenderAsync()

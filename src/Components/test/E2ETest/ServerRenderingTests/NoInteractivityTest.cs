@@ -136,6 +136,9 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         {
             var infoText = Browser.FindElement(By.Id("test-info")).Text;
             Assert.Contains("Welcome On Custom Not Found Page", infoText);
+            // custom page should have a custom layout
+            var aboutLink = Browser.FindElement(By.Id("about-link")).Text;
+            Assert.Contains("About", aboutLink);
         }
         else
         {

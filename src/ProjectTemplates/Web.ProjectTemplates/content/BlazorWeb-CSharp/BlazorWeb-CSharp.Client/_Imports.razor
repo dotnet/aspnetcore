@@ -10,3 +10,6 @@
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.JSInterop
 @using BlazorWeb_CSharp.Client
+@*#if (!UseServer && UseWebAssembly && InteractiveAtRoot) -->
+@using BlazorWeb_CSharp.Client.Layout
+##endif*@
