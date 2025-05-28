@@ -102,8 +102,9 @@
     <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
     <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
     <SharedFxMsiVersion>$(PackageVersion)</SharedFxMsiVersion>
-    <SharedFxMsiVersion
-        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</SharedFxMsiVersion>
+    <NonStableVersion>$(PackageVersion)</NonStableVersion>
+    <NonStableVersion
+        Condition="! $(NonStableVersion.Contains('$(_BuildNumberLabels)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</NonStableVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -122,7 +123,7 @@
 
   <!-- CrossArchitectureInstallerBasePath is a global property, so use a new property instead of modifying it -->
   <PropertyGroup Condition="'$(AddVersionToCrossArchitectureInstallerBasePath)' == 'true'">
-    <CrossArchitectureInstallerBasePathNormalized>$([MSBuild]::NormalizeDirectory('$(CrossArchitectureInstallerBasePath)', 'aspnetcore', 'Runtime', '$(SharedFxMsiVersion)'))</CrossArchitectureInstallerBasePathNormalized>
+    <CrossArchitectureInstallerBasePathNormalized>$([MSBuild]::NormalizeDirectory('$(CrossArchitectureInstallerBasePath)', 'aspnetcore', 'Runtime', '$(NonStableVersion)'))</CrossArchitectureInstallerBasePathNormalized>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(AddVersionToCrossArchitectureInstallerBasePath)' != 'true'">
