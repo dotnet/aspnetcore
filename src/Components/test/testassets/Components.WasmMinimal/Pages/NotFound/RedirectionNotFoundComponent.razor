@@ -1,12 +1,14 @@
-﻿
-@inject NavigationManager NavigationManager
+﻿@inject NavigationManager NavigationManager
 
-<h1>Original page</h1>
+@if (!WaitForInteractivity || RendererInfo.IsInteractive)
+{
+    <h1>Original page</h1>
 
-<p id="test-info">Any content</p>
-<a id="link-to-not-existing-page" href="@_nonExistingPath">
-    Go to not-existing-page
-</a>
+    <p id="test-info">Any content</p>
+    <a id="link-to-not-existing-page" href="@_nonExistingPath">
+        Go to not-existing-page
+    </a>
+}
 
 @code{
     [Parameter]
@@ -15,6 +17,9 @@
 
     [Parameter]
     public bool StartStreaming { get; set; } = false;
+
+    [Parameter]
+    public bool WaitForInteractivity { get; set; } = false;
 
     private string _nonExistingPath = string.Empty;
 
