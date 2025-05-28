@@ -3,7 +3,7 @@
 
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
-import { ComponentDescriptor, ComponentMarker, ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
+import { ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
 import { RootComponentManager } from '../../Services/RootComponentManager';
@@ -241,8 +241,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._circuitId = resume;
       this._renderQueue = new RenderQueue(this._logger);
 
-      this._componentManager.onComponentReset?.();
-
+      this._componentManager.onComponentReload?.();
     }
 
     this._options.reconnectionHandler!.onConnectionUp();

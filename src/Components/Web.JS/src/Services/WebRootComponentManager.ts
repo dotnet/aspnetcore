@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ComponentDescriptor, ComponentMarker, descriptorToMarker, ServerComponentDescriptor, WebAssemblyServerOptions } from './ComponentDescriptorDiscovery';
+import { ComponentDescriptor, ComponentMarker, descriptorToMarker, WebAssemblyServerOptions } from './ComponentDescriptorDiscovery';
 import { isRendererAttached, registerRendererAttachedListener } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
@@ -9,9 +9,9 @@ import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, sta
 import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
-import { detachRootComponent, getRendererer } from '../Rendering/Renderer';
+import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
-import { setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
+import { setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
 
 type RootComponentOperationBatch = {
@@ -464,11 +464,10 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
   }
 
-  public onComponentReset(): void {
-    for (const [key, value] of this._rootComponentsBySsrComponentId.entries()) {
-      detachRootComponent(value.assignedRendererId as number, key);
+  public onComponentReload(): void {
+    for (const [_, value] of this._rootComponentsBySsrComponentId.entries()) {
       value.assignedRendererId = undefined;
-      value.uniqueIdAtLastUpdate = (value.uniqueIdAtLastUpdate ?? 0) + 1;
+      setClearContentOnRootComponentRerender(value.descriptor.start as unknown as LogicalElement);
     }
 
     this.rootComponentsMayRequireRefresh();
