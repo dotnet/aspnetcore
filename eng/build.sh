@@ -37,6 +37,7 @@ runtime_source_feed=''
 runtime_source_feed_key=''
 source_build=''
 product_build=''
+warn_as_error=true
 
 if [ "$(uname)" = "Darwin" ]; then
     target_os_name='osx'
@@ -86,6 +87,7 @@ Options:
     --binarylog|-bl                   Use a binary logger
     --excludeCIBinarylog              Don't output binary log by default in CI builds (short: -nobl).
     --verbosity|-v                    MSBuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic]
+    --warnAsError                     Sets warnaserror msbuild parameter: 'true' or 'false'
 
     --runtime-source-feed             Additional feed that can be used when downloading .NET runtimes and SDKs
     --runtime-source-feed-key         Key for feed that can be used when downloading .NET runtimes and SDKs
@@ -259,6 +261,11 @@ while [[ $# -gt 0 ]]; do
         -productbuild|-product-build|-pb)
             product_build=true
             ;;
+        -warnaserror)
+            shift
+            [ -z "${1:-}" ] && __error "Missing value for parameter --warnaserror" && __usage
+            warn_as_error="${1:-}"
+            ;;
         *)
             msbuild_args[${#msbuild_args[*]}]="$1"
             ;;
@@ -316,7 +323,7 @@ fi
 [ ! -z "$build_nodejs" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildNodeJSUnlessSourcebuild=$build_nodejs"
 [ ! -z "$build_managed" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildManaged=$build_managed"
 [ ! -z "$build_installers" ] && msbuild_args[${#msbuild_args[*]}]="-p:BuildInstallers=$build_installers"
-[ ! -z "$product_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuildRepo=$product_build"
+[ ! -z "$product_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuild=$product_build"
 [ ! -z "$source_build" ] && msbuild_args[${#msbuild_args[*]}]="-p:DotNetBuildSourceOnly=$source_build"
 
 # Run restore by default unless --no-restore or --no-build was specified.
@@ -354,7 +361,7 @@ if [ ! -z "$runtime_source_feed$runtime_source_feed_key" ]; then
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedArg
     toolset_build_args[${#toolset_build_args[*]}]=$runtimeFeedKeyArg
 fi
-[ ! -z "$product_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuildRepo=$product_build"
+[ ! -z "$product_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuild=$product_build"
 [ ! -z "$source_build" ] && toolset_build_args[${#toolset_build_args[*]}]="-p:DotNetBuildSourceOnly=$source_build"
 
 # Initialize global variables need to be set before the import of Arcade is imported

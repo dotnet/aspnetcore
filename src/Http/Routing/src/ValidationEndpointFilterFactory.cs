@@ -15,6 +15,9 @@ namespace Microsoft.AspNetCore.Http.Validation;
 
 internal static class ValidationEndpointFilterFactory
 {
+    // A small struct to hold the validatable parameter details to avoid allocating arrays for parameters that don't need validation
+    private readonly record struct ValidatableParameterEntry(int Index, IValidatableInfo Parameter, string DisplayName);
+
     public static EndpointFilterDelegate Create(EndpointFilterFactoryContext context, EndpointFilterDelegate next)
     {
         var parameters = context.MethodInfo.GetParameters();
@@ -26,12 +29,10 @@ internal static class ValidationEndpointFilterFactory
 
         var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
 
-        var parameterCount = parameters.Length;
-        var validatableParameters = new IValidatableInfo[parameterCount];
-        var parameterDisplayNames = new string[parameterCount];
-        var hasValidatableParameters = false;
+        // Use a list to only store validatable parameters instead of arrays for all parameters
+        List<ValidatableParameterEntry>? validatableParameters = null;
 
-        for (var i = 0; i < parameterCount; i++)
+        for (var i = 0; i < parameters.Length; i++)
         {
             // Ignore parameters that are resolved from the DI container.
             if (IsServiceParameter(parameters[i], serviceProviderIsService))
@@ -41,13 +42,15 @@ internal static class ValidationEndpointFilterFactory
 
             if (options.TryGetValidatableParameterInfo(parameters[i], out var validatableParameter))
             {
-                validatableParameters[i] = validatableParameter;
-                parameterDisplayNames[i] = GetDisplayName(parameters[i]);
-                hasValidatableParameters = true;
+                validatableParameters ??= [];
+                validatableParameters.Add(new ValidatableParameterEntry(
+                    i,
+                    validatableParameter,
+                    GetDisplayName(parameters[i])));
             }
         }
 
-        if (!hasValidatableParameters)
+        if (validatableParameters is null || validatableParameters.Count == 0)
         {
             return next;
         }
@@ -60,18 +63,20 @@ internal static class ValidationEndpointFilterFactory
             var jsonOptions = context.HttpContext.RequestServices.GetService<IOptions<JsonOptions>>();
             var serializerOptions = jsonOptions?.Value?.SerializerOptions;
 
-            for (var i = 0; i < context.Arguments.Count; i++)
+            foreach (var entry in validatableParameters)
             {
-                var validatableParameter = validatableParameters[i];
-                var displayName = parameterDisplayNames[i];
+                if (entry.Index >= context.Arguments.Count)
+                {
+                    break;
+                }
 
-                var argument = context.Arguments[i];
-                if (argument is null || validatableParameter is null)
+                var argument = context.Arguments[entry.Index];
+                if (argument is null)
                 {
                     continue;
                 }
 
-                var validationContext = new ValidationContext(argument, displayName, context.HttpContext.RequestServices, items: null);
+                var validationContext = new ValidationContext(argument, entry.DisplayName, context.HttpContext.RequestServices, items: null);
 
                 if (validateContext == null)
                 {
@@ -87,7 +92,7 @@ internal static class ValidationEndpointFilterFactory
                     validateContext.ValidationContext = validationContext;
                 }
 
-                await validatableParameter.ValidateAsync(argument, validateContext, context.HttpContext.RequestAborted);
+                await entry.Parameter.ValidateAsync(argument, validateContext, context.HttpContext.RequestAborted);
             }
 
             if (validateContext is { ValidationErrors.Count: > 0 })

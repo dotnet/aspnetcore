@@ -129,14 +129,14 @@ while [[ $# > 0 ]]; do
     -pack)
       pack=true
       ;;
-    -sourcebuild|-sb)
+    -sourcebuild|-source-build|-sb)
       build=true
       source_build=true
       product_build=true
       restore=true
       pack=true
       ;;
-    -productbuild|-pb)
+    -productbuild|-product-build|-pb)
       build=true
       product_build=true
       restore=true
@@ -241,7 +241,7 @@ function Build {
     /p:RepoRoot="$repo_root" \
     /p:Restore=$restore \
     /p:Build=$build \
-    /p:DotNetBuildRepo=$product_build \
+    /p:DotNetBuild=$product_build \
     /p:DotNetBuildSourceOnly=$source_build \
     /p:Rebuild=$rebuild \
     /p:Test=$test \
