@@ -265,6 +265,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -fromvmr|-from-vmr)
             from_vmr=true
+            ;;
         -warnaserror)
             shift
             [ -z "${1:-}" ] && __error "Missing value for parameter --warnaserror" && __usage
