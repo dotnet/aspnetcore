@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Extensions.Tests;
 
-public class ValidationEndpointFilterFactoryTests
+public class ValidationEndpointFilterFactoryTests : LoggedTest
 {
     [Fact]
     public async Task GetHttpValidationProblemDetailsWhenProblemDetailsServiceNotRegistered()
@@ -26,7 +26,7 @@ public class ValidationEndpointFilterFactoryTests
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
 
         // Act - Create one endpoint with validation
-        builder.MapGet("test-enabled", ([Range(5, 10)] int param) => "Validation enabled here.");
+        builder.MapGet("validation-test", ([Range(5, 10)] int param) => "Validation enabled here.");
 
         // Build the endpoints
         var dataSource = Assert.Single(builder.DataSources);
@@ -73,7 +73,7 @@ public class ValidationEndpointFilterFactoryTests
         var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
 
         // Act - Create one endpoint with validation
-        builder.MapGet("test-enabled", ([Range(5, 10)] int param) => "Validation enabled here.");
+        builder.MapGet("validation-test", ([Range(5, 10)] int param) => "Validation enabled here.");
 
         // Build the endpoints
         var dataSource = Assert.Single(builder.DataSources);
@@ -101,6 +101,7 @@ public class ValidationEndpointFilterFactoryTests
         ms.Seek(0, SeekOrigin.Begin);
         var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(ms, JsonSerializerOptions.Web);
 
+        // Check if the response is an actual ProblemDetails object
         Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
         Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
         Assert.Equal(StatusCodes.Status400BadRequest, problemDetails.Status);
@@ -109,6 +110,67 @@ public class ValidationEndpointFilterFactoryTests
         Assert.True(problemDetails.Extensions.TryGetValue("errors", out var errorsObj));
         var errors = Assert.IsType<JsonElement>(errorsObj);
         Assert.True(errors.EnumerateObject().Count() == 1);
+    }
+
+    [Fact]
+    public async Task UseProblemDetailsServiceWithCallbackWhenAddedInServiceCollection()
+    {
+        var services = new ServiceCollection();
+        services.AddValidation();
+
+        services.AddProblemDetails(options =>
+        {
+            options.CustomizeProblemDetails = context =>
+            {
+                context.ProblemDetails.Extensions.Add("timestamp", DateTimeOffset.Now);
+            };
+        });
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        var builder = new DefaultEndpointRouteBuilder(new ApplicationBuilder(serviceProvider));
+
+        // Act - Create one endpoint with validation
+        builder.MapGet("validation-test", ([Range(5, 10)] int param) => "Validation enabled here.");
+
+        // Build the endpoints
+        var dataSource = Assert.Single(builder.DataSources);
+        var endpoints = dataSource.Endpoints;
+
+        // Get filter factories from endpoint
+        var endpoint = endpoints[0];
+
+        var context = new DefaultHttpContext
+        {
+            RequestServices = serviceProvider
+        };
+
+        context.Request.Method = "GET";
+        context.Request.QueryString = new QueryString("?param=15");
+        using var ms = new MemoryStream();
+        context.Response.Body = ms;
+
+        await endpoint.RequestDelegate(context);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        Assert.StartsWith(MediaTypeNames.Application.ProblemJson, context.Response.ContentType, StringComparison.OrdinalIgnoreCase);
+
+        ms.Seek(0, SeekOrigin.Begin);
+        var problemDetails = await JsonSerializer.DeserializeAsync<ProblemDetails>(ms, JsonSerializerOptions.Web);
+
+        // Check if the response is an actual ProblemDetails object
+        Assert.Equal("https://tools.ietf.org/html/rfc9110#section-15.5.1", problemDetails.Type);
+        Assert.Equal("One or more validation errors occurred.", problemDetails.Title);
+        Assert.Equal(StatusCodes.Status400BadRequest, problemDetails.Status);
+
+        // Check that ProblemDetails contains the errors object with 1 validation error
+        Assert.True(problemDetails.Extensions.TryGetValue("errors", out var errorsObj));
+        var errors = Assert.IsType<JsonElement>(errorsObj);
+        Assert.True(errors.EnumerateObject().Count() == 1);
+
+        // Check that ProblemDetails customizations are applied in the response
+        Assert.True(problemDetails.Extensions.ContainsKey("timestamp"));
     }
 
     private class DefaultEndpointRouteBuilder(IApplicationBuilder applicationBuilder) : IEndpointRouteBuilder
