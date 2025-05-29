@@ -124,7 +124,8 @@ public class GlobbingUrlBuilder
             options.AddExpirationToken(changeToken);
             trimmedIncludePatterns.Add(NormalizePath(includePattern));
         }
-        var matcher = MatcherBuilder != null ? MatcherBuilder() : new Matcher();
+
+        var matcher = MatcherBuilder != null ? MatcherBuilder() : new Matcher(preserveFilterOrder: true);
         matcher.AddIncludePatterns(trimmedIncludePatterns);
 
         if (!string.IsNullOrWhiteSpace(exclude))
