@@ -102,6 +102,9 @@ Key for feed that can be used when downloading .NET runtimes and SDKs
 .PARAMETER ProductBuild
 Build the repository in product mode (short: -pb).
 
+.PARAMETER fromVMR
+Set when building from within the VMR.
+
 .EXAMPLE
 Building both native and managed projects.
 
@@ -203,6 +206,9 @@ param(
     [Alias('pb')]
     [switch]$ProductBuild,
 
+    # Intentionally lowercase as tools.ps1 depends on it
+    [switch]$fromVMR,
+
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
@@ -283,6 +289,7 @@ $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
 
 if ($ProductBuild) { $MSBuildArguments += "/p:DotNetBuild=$ProductBuild" }
+if ($fromVMR) { $MSBuildArguments += "/p:DotNetBuildFromVMR=$fromVMR" }
 
 if (-not $Configuration) {
     $Configuration = if ($CI) { 'Release' } else { 'Debug' }
@@ -299,6 +306,7 @@ if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
     $ToolsetBuildArguments += $runtimeFeedKeyArg
 }
 if ($ProductBuild) { $ToolsetBuildArguments += "/p:DotNetBuild=$ProductBuild" }
+if ($fromVMR) { $ToolsetBuildArguments += "/p:DotNetBuildFromVMR=$fromVMR" }
 
 # Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.
 [string[]]$dotnetBuildArguments = ''

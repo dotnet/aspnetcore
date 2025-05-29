@@ -1642,7 +1642,7 @@ public static partial class RequestDelegateFactory
         return Expression.Call(GetRequiredServiceMethod.MakeGenericMethod(parameter.ParameterType), RequestServicesExpr);
     }
 
-    private static Expression BindParameterFromKeyedService(ParameterInfo parameter, object key, RequestDelegateFactoryContext factoryContext)
+    private static Expression BindParameterFromKeyedService(ParameterInfo parameter, object? key, RequestDelegateFactoryContext factoryContext)
     {
         var isOptional = IsOptionalParameter(parameter, factoryContext);
 

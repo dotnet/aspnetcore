@@ -239,8 +239,6 @@ configuration:
         - titleContains:
             pattern: Source code updates
             isRegex: False
-      - targetsBranch:
-          branch: main
       then:
       - addLabel:
           label: area-infrastructure
