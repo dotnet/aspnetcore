@@ -36,6 +36,5 @@ public sealed class LayoutAttribute : Attribute
     /// The type of the layout. The type must implement <see cref="IComponent"/>
     /// and must accept a parameter with the name 'Body'.
     /// </summary>
-    [DynamicallyAccessedMembers(Component)]
     public Type LayoutType { get; private set; }
 }

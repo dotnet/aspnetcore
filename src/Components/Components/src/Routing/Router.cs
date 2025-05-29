@@ -42,9 +42,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private bool _onNavigateCalled;
 
-    [DynamicallyAccessedMembers(LinkerFlags.Component)]
-    private Type? _notFoundLayoutType;
-
     [Inject] private NavigationManager NavigationManager { get; set; }
 
     [Inject] private INavigationInterception NavigationInterception { get; set; }
@@ -157,11 +154,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             if (routeAttributes.Length == 0)
             {
                 throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
-                    $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
-            }
-
-            var layoutAttr = NotFoundPage.GetTypeInfo().GetCustomAttribute<LayoutAttribute>();
-            _notFoundLayoutType = layoutAttr?.LayoutType;
+                    $"does not have a {typeof(RouteAttribu
         }
 
         if (!_onNavigateCalled)
@@ -401,10 +394,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 builder.OpenComponent<RouteView>(0);
                 builder.AddAttribute(1, nameof(RouteView.RouteData),
                     new RouteData(NotFoundPage, _emptyParametersDictionary));
-                if (_notFoundLayoutType is Type layoutType)
-                {
-                    builder.AddAttribute(2, nameof(RouteView.DefaultLayout), layoutType);
-                }
                 builder.CloseComponent();
             }
             else if (NotFound != null)
