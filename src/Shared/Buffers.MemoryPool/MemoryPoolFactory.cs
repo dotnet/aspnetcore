@@ -12,7 +12,6 @@ internal static class TestMemoryPoolFactory
 {
     public static MemoryPool<byte> Create(IMeterFactory? meterFactory = null)
     {
-        meterFactory ??= NoopMeterFactory.Instance;
 #if DEBUG
         return new DiagnosticMemoryPool(CreatePinnedBlockMemoryPool(meterFactory));
 #else
@@ -22,18 +21,6 @@ internal static class TestMemoryPoolFactory
 
     public static MemoryPool<byte> CreatePinnedBlockMemoryPool(IMeterFactory? meterFactory = null)
     {
-        meterFactory ??= NoopMeterFactory.Instance;
         return new PinnedBlockMemoryPool(meterFactory);
-    }
-
-    private sealed class NoopMeterFactory : IMeterFactory
-    {
-        public static NoopMeterFactory Instance = new NoopMeterFactory();
-
-        public Meter Create(MeterOptions options) => new Meter(options);
-
-        public void Dispose()
-        {
-        }
     }
 }

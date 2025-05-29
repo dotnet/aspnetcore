@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore;
 
@@ -13,14 +14,14 @@ namespace Microsoft.AspNetCore;
 
 internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyncDisposable
 {
-    private readonly IMeterFactory _meterFactory;
-    private readonly ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool> _pools = new();
+    private readonly IMeterFactory? _meterFactory;
+    private readonly ConcurrentDictionary<PinnedBlockMemoryPool, bool> _pools = new();
     private readonly PeriodicTimer _timer;
     private readonly Task _timerTask;
 
-    public DefaultMemoryPoolFactory(IMeterFactory? meterFactory = null)
+    public DefaultMemoryPoolFactory(IMeterFactory? meterFactory = null, ILogger<DefaultMemoryPoolFactory>? logger = null)
     {
-        _meterFactory = meterFactory ?? NoopMeterFactory.Instance;
+        _meterFactory = meterFactory;
         _timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
         _timerTask = Task.Run(async () =>
         {
@@ -36,7 +37,7 @@ internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyn
             }
             catch (Exception ex)
             {
-                Debug.WriteLine(ex);
+                logger?.LogCritical(ex, "Error while evicting memory from pools.");
             }
         });
     }
@@ -45,11 +46,11 @@ internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyn
     {
         var pool = new PinnedBlockMemoryPool(_meterFactory);
 
-        _pools.TryAdd(pool, pool);
+        _pools.TryAdd(pool, true);
 
         pool.OnPoolDisposed(static (state, self) =>
         {
-            ((ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool>)state!).TryRemove(self, out _);
+            ((ConcurrentDictionary<PinnedBlockMemoryPool, bool>)state!).TryRemove(self, out _);
         }, _pools);
 
         return pool;
@@ -59,16 +60,5 @@ internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyn
     {
         _timer.Dispose();
         await _timerTask;
-    }
-
-    private sealed class NoopMeterFactory : IMeterFactory
-    {
-        public static NoopMeterFactory Instance = new NoopMeterFactory();
-
-        public Meter Create(MeterOptions options) => new Meter(options);
-
-        public void Dispose()
-        {
-        }
     }
 }

@@ -41,7 +41,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     /// </summary>
     private bool _isDisposed; // To detect redundant calls
 
-    private readonly PinnedBlockMemoryPoolMetrics _metrics;
+    private readonly PinnedBlockMemoryPoolMetrics? _metrics;
 
     private long _currentMemory;
     private long _evictedMemory;
@@ -60,14 +60,9 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     /// </summary>
     private const int AnySize = -1;
 
-    public PinnedBlockMemoryPool()
-        : this(NoopMeterFactory.Instance)
+    public PinnedBlockMemoryPool(IMeterFactory? meterFactory = null)
     {
-    }
-
-    public PinnedBlockMemoryPool(IMeterFactory meterFactory)
-    {
-        _metrics = new(meterFactory);
+        _metrics = meterFactory is null ? null : new PinnedBlockMemoryPoolMetrics(meterFactory);
     }
 
     /// <summary>
@@ -95,16 +90,16 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
 
         if (_blocks.TryDequeue(out var block))
         {
-            _metrics.UpdateCurrentMemory(-block.Memory.Length);
-            _metrics.Rent(block.Memory.Length);
+            _metrics?.UpdateCurrentMemory(-block.Memory.Length);
+            _metrics?.Rent(block.Memory.Length);
             Interlocked.Add(ref _currentMemory, -block.Memory.Length);
 
             // block successfully taken from the stack - return it
             return block;
         }
 
-        _metrics.IncrementTotalMemory(BlockSize);
-        _metrics.Rent(BlockSize);
+        _metrics?.IncrementTotalMemory(BlockSize);
+        _metrics?.Rent(BlockSize);
 
         // We already counted this Rent call above, but since we're now allocating (need more blocks)
         // that means the pool is 'very' active and we probably shouldn't evict blocks, so we count again
@@ -134,7 +129,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
 
         if (!_isDisposed)
         {
-            _metrics.UpdateCurrentMemory(block.Memory.Length);
+            _metrics?.UpdateCurrentMemory(block.Memory.Length);
             Interlocked.Add(ref _currentMemory, block.Memory.Length);
 
             _blocks.Enqueue(block);
@@ -201,8 +196,8 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
         // Remove from queue and let GC clean the memory up
         while (burstAmount > 0 && _blocks.TryDequeue(out var block))
         {
-            _metrics.UpdateCurrentMemory(-block.Memory.Length);
-            _metrics.EvictBlock(block.Memory.Length);
+            _metrics?.UpdateCurrentMemory(-block.Memory.Length);
+            _metrics?.EvictBlock(block.Memory.Length);
             Interlocked.Add(ref _currentMemory, -block.Memory.Length);
             Interlocked.Add(ref _evictedMemory, block.Memory.Length);
 
@@ -236,15 +231,4 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
 
     // Used for testing
     public int BlockCount() => _blocks.Count;
-
-    private sealed class NoopMeterFactory : IMeterFactory
-    {
-        public static NoopMeterFactory Instance { get; } = new();
-
-        public Meter Create(MeterOptions options) => new Meter(options);
-
-        public void Dispose()
-        {
-        }
-    }
 }
