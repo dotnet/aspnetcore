@@ -6,7 +6,7 @@
 
 <h1>Weather forecast</h1>
 
-@Guid.NewGuid().ToString()
+@_guid
 
 <p>This component demonstrates fetching data from a service.</p>
 
@@ -43,8 +43,11 @@ else
 
     [SupplyParameterFromPersistentComponentState] public WeatherForecast[]? Forecasts { get; set; }
 
+    private string _guid;
+
     protected override async Task OnInitializedAsync()
     {
+        _guid = Guid.NewGuid().ToString();
         Forecasts ??= await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
     }
 }
