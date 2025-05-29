@@ -891,6 +891,11 @@ internal partial class CircuitHost : IAsyncDisposable
         return result;
     }
 
+    internal async Task<bool> SendPersistedStateToClient(string rootComponents, string applicationState)
+    {
+        return Client.SendAsync("JS.SavePersistedState", rootComponents, applicationState);
+    }
+
     private static partial class Log
     {
         // 100s used for lifecycle stuff

@@ -287,14 +287,20 @@ internal partial class CircuitRegistry
 
         try
         {
-            await _circuitPersistenceManager.PauseCircuitAsync(entry.CircuitHost);
-            entry.CircuitHost.UnhandledException -= CircuitHost_UnhandledException;
-            await entry.CircuitHost.DisposeAsync();
+            var circuitHost = entry.CircuitHost;
+            await PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: false);
         }
         catch (Exception ex)
         {
             Log.UnhandledExceptionDisposingCircuitHost(_logger, ex);
         }
+    }
+
+    private async Task PauseAndDisposeCircuitHost(CircuitHost circuitHost, bool saveStateToClient)
+    {
+        await _circuitPersistenceManager.PauseCircuitAsync(circuitHost, saveStateToClient);
+        circuitHost.UnhandledException -= CircuitHost_UnhandledException;
+        await circuitHost.DisposeAsync();
     }
 
     private void DisposeTokenSource(DisconnectedCircuitEntry entry)
@@ -351,6 +357,62 @@ internal partial class CircuitRegistry
             // We don't expect TerminateAsync to throw, but we want exceptions here for completeness.
             Log.CircuitExceptionHandlerFailed(_logger, circuitHost.CircuitId, ex);
         }
+    }
+
+    internal Task PauseCircuitAsync(
+        CircuitHost circuitHost,
+        string connectionId)
+    {
+        Log.CircuitPauseStarted(_logger, circuitHost.CircuitId, connectionId);
+
+        Task circuitHandlerTask;
+        lock (CircuitRegistryLock)
+        {
+            if (PauseCore(circuitHost, connectionId))
+            {
+                circuitHandlerTask = circuitHost.Renderer.Dispatcher.InvokeAsync(() => circuitHost.OnConnectionDownAsync(default));
+            }
+            else
+            {
+                // DisconnectCore may fail to disconnect the circuit if it was previously marked inactive or
+                // has been transferred to a new connection. Do not invoke the circuit handlers in this instance.
+
+                // We have to do in this instance.
+                return Task.CompletedTask;
+            }
+        }
+
+        return circuitHandlerTask;
+    }
+
+    internal bool PauseCore(CircuitHost circuitHost, string connectionId)
+    {
+        var circuitId = circuitHost.CircuitId;
+        if (!ConnectedCircuits.TryGetValue(circuitId, out circuitHost))
+        {
+            Log.CircuitNotActive(_logger, circuitId);
+
+            // Circuit should be in the connected state for pausing.
+            return false;
+        }
+
+        if (!string.Equals(circuitHost.Client.ConnectionId, connectionId, StringComparison.Ordinal))
+        {
+            // Circuit should be connected to the same connection for pausing.
+            Log.CircuitConnectedToDifferentConnection(_logger, circuitId, circuitHost.Client.ConnectionId);
+
+            // The circuit is associated with a different connection. One way this could happen is when
+            // the client reconnects with a new connection before the OnDisconnect for the older
+            // connection is executed. Do nothing
+            return false;
+        }
+
+        var removeResult = ConnectedCircuits.TryRemove(circuitId, out _);
+        Debug.Assert(removeResult, "This operation operates inside of a lock. We expect the previously inspected value to be still here.");
+
+        _ = PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: true);
+
+        return removeResult;
     }
 
     private readonly struct DisconnectedCircuitEntry
@@ -417,5 +479,8 @@ internal partial class CircuitRegistry
 
         [LoggerMessage(115, LogLevel.Debug, "Reconnect to circuit with id {CircuitId} succeeded.", EventName = "ReconnectionSucceeded")]
         public static partial void ReconnectionSucceeded(ILogger logger, CircuitId circuitId);
+
+        [LoggerMessage(116, LogLevel.Debug, "Pausing circuit with id {CircuitId} from connection {ConnectionId}.", EventName = "CircuitPauseStarted")]
+        public static partial void CircuitPauseStarted(ILogger logger, CircuitId circuitId, string connectionId);
     }
 }

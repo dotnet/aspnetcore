@@ -238,6 +238,27 @@ internal sealed partial class ComponentHub : Hub
         return false;
     }
 
+    public async ValueTask<string> PauseCircuit()
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return null;
+        }
+
+        // What needs to happen
+        // Disconnect the circuit
+        // Evict the circuit from the registry
+        // Capture the state during eviction
+        // Return the state to the client
+        // Close the connection (or have the client do it)
+
+        // Dissociate the circuit from the connection. From this point any new calls to the hub will fail to find the circuit.
+        _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost: null);
+        _ = _circuitRegistry.PauseCircuitAsync(circuitHost, Context.ConnectionId);
+        return null;
+    }
+
     // This method drives the resumption of a circuit that has been previously paused and ejected out of memory.
     // Resuming a circuit is very similar to starting a new circuit.
     // We receive an existing circuit ID to look up the existing circuit state.
@@ -323,12 +344,13 @@ internal sealed partial class ComponentHub : Hub
                 return null;
             }
         }
-        else if (!string.IsNullOrEmpty(rootComponents) || !string.IsNullOrEmpty(applicationState))
+        else if ((rootComponents != "[]" && string.IsNullOrEmpty(applicationState)) ||
+            (rootComponents == "[]" && !string.IsNullOrEmpty(applicationState)))
         {
             Log.InvalidInputData(_logger);
             await NotifyClientError(
                 Clients.Caller,
-                string.IsNullOrEmpty(rootComponents) ?
+                rootComponents != "[]" ?
                 "The root components provided are invalid." :
                 "The application state provided is invalid."
             );

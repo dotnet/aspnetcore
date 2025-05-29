@@ -49,6 +49,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _disposed = false;
 
+  private _persistedCircuitState?: { components: string, applicationState: string };
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -235,17 +237,25 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   public async resume(): Promise<boolean> {
     if (!this._circuitId) {
-      throw new Error('Method not implemented.');
+      throw new Error('Circuit host not initialized.');
     }
+
+    if (this._connection!.state !== HubConnectionState.Connected) {
+      return false;
+    }
+
+    const persistedCircuitState = this._persistedCircuitState;
+    this._persistedCircuitState = undefined;
 
     const resume = await this._connection!.invoke<string>(
       'ResumeCircuit',
       this._circuitId,
       navigationManagerFunctions.getBaseURI(),
       navigationManagerFunctions.getLocationHref(),
-      '[]',
-      ''
+      persistedCircuitState?.components ?? '[]',
+      persistedCircuitState?.applicationState ?? '',
     );
+
     if (!resume) {
       return false;
     }
@@ -254,9 +264,33 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     this._renderQueue = new RenderQueue(this._logger);
     this._options.reconnectionHandler!.onCircuitResumed();
     this._options.reconnectionHandler!.onConnectionUp();
-    this._componentManager.onComponentReload?.();
+    this._componentManager.onComponentReload?.(WebRendererId.Server);
     return true;
   }
+
+  public async pause() {
+    if (!this._circuitId) {
+      throw new Error('Method not implemented.');
+    }
+
+    if (this._connection!.state !== HubConnectionState.Connected) {
+      return false;
+    }
+
+    const pauseResult = await this._connection!.invoke<string>(
+      'PauseCircuit',
+      this._circuitId,
+    );
+
+    if (!pauseResult) {
+      return false;
+    }
+
+    this._persistedCircuitState = JSON.parse(pauseResult);
+
+    this._options.reconnectionHandler!.onCircuitPaused();
+  }
+
 
   // Implements DotNet.DotNetCallDispatcher
   public beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {

@@ -55,6 +55,10 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
   onCircuitResumed(): void {
     return;
   }
+
+  onCircuitPaused(): void {
+    return;
+  }
 }
 
 class ReconnectionProcess {

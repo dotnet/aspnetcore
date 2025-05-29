@@ -464,8 +464,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
   }
 
-  public onComponentReload(): void {
+  public onComponentReload(browserRendererId: number): void {
     for (const [_, value] of this._rootComponentsBySsrComponentId.entries()) {
+      if (value.assignedRendererId !== browserRendererId) {
+        continue;
+      }
+
       value.assignedRendererId = undefined;
       setClearContentOnRootComponentRerender(value.descriptor.start as unknown as LogicalElement);
     }

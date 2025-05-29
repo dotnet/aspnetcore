@@ -19,7 +19,7 @@ internal partial class CircuitPersistenceManager(
     IDataProtectionProvider dataProtectionProvider)
 {
 
-    public async Task PauseCircuitAsync(CircuitHost circuit, CancellationToken cancellation = default)
+    public async Task PauseCircuitAsync(CircuitHost circuit, bool saveStateToClient, CancellationToken cancellation = default)
     {
         var renderer = circuit.Renderer;
         var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
@@ -29,10 +29,49 @@ internal partial class CircuitPersistenceManager(
         var store = new CircuitPersistenceManagerStore();
         await persistenceManager.PersistStateAsync(store, renderer);
 
+        if (saveStateToClient)
+        {
+            _ = SaveStateToClient(circuit, store.PersistedCircuitState, cancellation);
+        }
+
         await circuitPersistenceProvider.PersistCircuitAsync(
             circuit.CircuitId,
             store.PersistedCircuitState,
             cancellation);
+    }
+
+    private async Task SaveStateToClient(CircuitHost circuit, PersistedCircuitState state, CancellationToken cancellation = default)
+    {
+        var (rootComponents, applicationState) = ToProtectedState(state);
+        try
+        {
+            // Try to push the state to the client first, if that fails, we will persist it in the server-side store.
+            bool succeded = await circuit.SendPersistedStateToClient(rootComponents, applicationState);
+            if (!succeded)
+            {
+                try
+                {
+                    await circuitPersistenceProvider.PersistCircuitAsync(
+                        circuit.CircuitId,
+                        state,
+                        cancellation);
+                }
+                catch (Exception)
+                {
+                    // At this point, we give up as we haven't been able to save the state to the client nor the server.
+                    return;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // The call to save the state to the client failed, so fallback to saving it on the server.
+            // The client can still try to resume later without the state.
+            await circuitPersistenceProvider.PersistCircuitAsync(
+                circuit.CircuitId,
+                state,
+                cancellation);
+        }
     }
 
     private Task PersistRootComponents(RemoteRenderer renderer, PersistentComponentState state)
@@ -84,7 +123,7 @@ internal partial class CircuitPersistenceManager(
             return null;
         }
 
-        var data = JsonSerializer.Deserialize<Dictionary<int,ComponentMarker>>(
+        var data = JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(
             rootComponents,
             JsonSerializerOptionsProvider.Options);
 

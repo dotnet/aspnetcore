@@ -5,14 +5,14 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
-internal sealed class CircuitClientProxy : IClientProxy
+internal sealed class CircuitClientProxy : ISingleClientProxy
 {
     public CircuitClientProxy()
     {
         Connected = false;
     }
 
-    public CircuitClientProxy(IClientProxy clientProxy, string connectionId)
+    public CircuitClientProxy(ISingleClientProxy clientProxy, string connectionId)
     {
         Transfer(clientProxy, connectionId);
     }
@@ -21,9 +21,9 @@ internal sealed class CircuitClientProxy : IClientProxy
 
     public string ConnectionId { get; private set; }
 
-    public IClientProxy Client { get; private set; }
+    public ISingleClientProxy Client { get; private set; }
 
-    public void Transfer(IClientProxy clientProxy, string connectionId)
+    public void Transfer(ISingleClientProxy clientProxy, string connectionId)
     {
         Client = clientProxy ?? throw new ArgumentNullException(nameof(clientProxy));
         ConnectionId = connectionId ?? throw new ArgumentNullException(nameof(connectionId));
