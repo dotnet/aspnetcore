@@ -154,7 +154,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             if (routeAttributes.Length == 0)
             {
                 throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
-                    $"does not have a {typeof(RouteAttribu
+                    $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
+            }
         }
 
         if (!_onNavigateCalled)
