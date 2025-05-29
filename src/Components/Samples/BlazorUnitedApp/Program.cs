@@ -11,8 +11,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents()
     .AddInteractiveServerComponents(o =>
     {
-        o.DisconnectedCircuitMaxRetained = 5;
-        o.DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(2);
+        o.DisconnectedCircuitMaxRetained = 0;
+        o.DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(0);
     });
 
 builder.Services.AddSingleton<WeatherForecastService>();

@@ -17,17 +17,18 @@
     <Routes @rendermode="InteractiveServer" />
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
     <script>
-        Blazor.start({
-           circuit: {
-             reconnectionHandler: {
-               onConnectionDown: () => displayReconectButton(),
-               onConnectionUp: () => {
-                   // revertState();
-               }
-             },
-             detailedErrors: true
-           }
-         });
+        Blazor.start();
+        // Blazor.start({
+        //    circuit: {
+        //      reconnectionHandler: {
+        //        onConnectionDown: () =>  (),
+        //        onConnectionUp: () => {
+        //            // revertState();
+        //        }
+        //      },
+        //      detailedErrors: true
+        //    }
+        //  });
 
          function disconnect() {
             console.log("Disconnecting")
