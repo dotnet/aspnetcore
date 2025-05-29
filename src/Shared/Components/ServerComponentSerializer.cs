@@ -16,9 +16,15 @@ internal sealed class ServerComponentSerializer
             .CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
             .ToTimeLimitedDataProtector();
 
-    public void SerializeInvocation(ref ComponentMarker marker, ServerComponentInvocationSequence invocationId, Type type, ParameterView parameters)
+    public void SerializeInvocation(
+        ref ComponentMarker marker,
+        ServerComponentInvocationSequence invocationId,
+        Type type,
+        ParameterView parameters,
+        TimeSpan? dataExpiration = default)
     {
-        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters, marker.Key);
+        var expiration = dataExpiration ?? ServerComponentSerializationSettings.DataExpiration;
+        var (sequence, serverComponent) = CreateSerializedServerComponent(invocationId, type, parameters, marker.Key, expiration);
         marker.WriteServerData(sequence, serverComponent);
     }
 
@@ -26,7 +32,8 @@ internal sealed class ServerComponentSerializer
         ServerComponentInvocationSequence invocationId,
         Type rootComponent,
         ParameterView parameters,
-        ComponentMarkerKey? key)
+        ComponentMarkerKey? key,
+        TimeSpan dataExpiration)
     {
         var sequence = invocationId.Next();
 
@@ -42,7 +49,7 @@ internal sealed class ServerComponentSerializer
             invocationId.Value);
 
         var serializedServerComponentBytes = JsonSerializer.SerializeToUtf8Bytes(serverComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
-        var protectedBytes = _dataProtector.Protect(serializedServerComponentBytes, ServerComponentSerializationSettings.DataExpiration);
+        var protectedBytes = _dataProtector.Protect(serializedServerComponentBytes, dataExpiration);
         return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
     }
 }
