@@ -8,10 +8,12 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal partial class CircuitPersistenceManager(
+    IOptions<CircuitOptions> circuitOptions,
     ServerComponentSerializer serverComponentSerializer,
     ICircuitPersistenceProvider circuitPersistenceProvider,
     IDataProtectionProvider dataProtectionProvider)
@@ -40,8 +42,12 @@ internal partial class CircuitPersistenceManager(
         var invocation = new ServerComponentInvocationSequence();
         foreach (var (id, componentKey, (componentType, parameters)) in components)
         {
+            var distributedRetention = circuitOptions.Value.PersistedCircuitDistributedRetentionPeriod;
+            var localRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
+            var maxRetention = distributedRetention > localRetention ? distributedRetention : localRetention;
+
             var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, componentKey);
-            serverComponentSerializer.SerializeInvocation(ref marker, invocation, componentType, parameters);
+            serverComponentSerializer.SerializeInvocation(ref marker, invocation, componentType, parameters, maxRetention);
             persistedComponents.Add(id, marker);
         }
 
