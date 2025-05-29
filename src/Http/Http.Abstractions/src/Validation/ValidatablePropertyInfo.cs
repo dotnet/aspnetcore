@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 public abstract class ValidatablePropertyInfo : IValidatableInfo
 {
     private RequiredAttribute? _requiredAttribute;
+    private readonly bool _hasDisplayAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
@@ -31,6 +32,10 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         PropertyType = propertyType;
         Name = name;
         DisplayName = displayName;
+        
+        // Cache the HasDisplayAttribute result to avoid repeated reflection calls
+        var property = DeclaringType.GetProperty(Name);
+        _hasDisplayAttribute = property is not null && HasDisplayAttribute(property);
     }
 
     /// <summary>
@@ -81,8 +86,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
         // Format the display name and member name according to JsonPropertyName attribute first, then naming policy
         // If the property has a [Display] attribute (either on property or record parameter), use DisplayName directly without formatting
-        var hasDisplayAttribute = HasDisplayAttribute(property);
-        context.ValidationContext.DisplayName = hasDisplayAttribute
+        context.ValidationContext.DisplayName = _hasDisplayAttribute
             ? DisplayName
             : GetJsonPropertyName(DisplayName, property, context.SerializerOptions?.PropertyNamingPolicy);
         context.ValidationContext.MemberName = memberName;

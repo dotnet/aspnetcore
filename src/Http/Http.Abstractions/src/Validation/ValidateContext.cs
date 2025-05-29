@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Http.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
+    private JsonNamingPolicy? _cachedNamingPolicy;
+    private bool _namingPolicyCached;
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
     /// This context provides access to service provider and other validation metadata.
@@ -67,7 +69,34 @@ public sealed class ValidateContext
     /// When available, property names in validation errors will be formatted according to the
     /// PropertyNamingPolicy and JsonPropertyName attributes.
     /// </summary>
-    public JsonSerializerOptions? SerializerOptions { get; set; }
+    public JsonSerializerOptions? SerializerOptions 
+    { 
+        get => _serializerOptions;
+        set 
+        { 
+            _serializerOptions = value;
+            // Invalidate cache when SerializerOptions changes
+            _namingPolicyCached = false;
+            _cachedNamingPolicy = null;
+        } 
+    }
+    private JsonSerializerOptions? _serializerOptions;
+
+    /// <summary>
+    /// Gets the cached naming policy from SerializerOptions to avoid repeated property access.
+    /// </summary>
+    private JsonNamingPolicy? CachedNamingPolicy
+    {
+        get
+        {
+            if (!_namingPolicyCached)
+            {
+                _cachedNamingPolicy = _serializerOptions?.PropertyNamingPolicy;
+                _namingPolicyCached = true;
+            }
+            return _cachedNamingPolicy;
+        }
+    }
 
     internal void AddValidationError(string key, string[] errors)
     {
@@ -114,7 +143,8 @@ public sealed class ValidateContext
     
     private string FormatKey(string key)
     {
-        if (string.IsNullOrEmpty(key) || SerializerOptions?.PropertyNamingPolicy is null)
+        var namingPolicy = CachedNamingPolicy;
+        if (string.IsNullOrEmpty(key) || namingPolicy is null)
         {
             return key;
         }
@@ -123,21 +153,20 @@ public sealed class ValidateContext
         // apply the naming policy to each part of the path
         if (key.Contains('.') || key.Contains('['))
         {
-            return FormatComplexKey(key);
+            return FormatComplexKey(key, namingPolicy);
         }
 
         // Apply the naming policy directly
-        return SerializerOptions.PropertyNamingPolicy.ConvertName(key);
+        return namingPolicy.ConvertName(key);
     }
     
-    private string FormatComplexKey(string key)
+    private static string FormatComplexKey(string key, JsonNamingPolicy namingPolicy)
     {
         // Use a more direct approach for complex keys with dots and array indices
         var result = new System.Text.StringBuilder();
         int lastIndex = 0;
         int i = 0;
         bool inBracket = false;
-        var propertyNamingPolicy = SerializerOptions?.PropertyNamingPolicy;
 
         while (i < key.Length)
         {
@@ -149,9 +178,7 @@ public sealed class ValidateContext
                 if (i > lastIndex)
                 {
                     string segment = key.Substring(lastIndex, i - lastIndex);
-                    string formattedSegment = propertyNamingPolicy is not null 
-                        ? propertyNamingPolicy.ConvertName(segment) 
-                        : segment;
+                    string formattedSegment = namingPolicy.ConvertName(segment);
                     result.Append(formattedSegment);
                 }
                 
@@ -178,9 +205,7 @@ public sealed class ValidateContext
                 if (i > lastIndex)
                 {
                     string segment = key.Substring(lastIndex, i - lastIndex);
-                    string formattedSegment = propertyNamingPolicy is not null 
-                        ? propertyNamingPolicy.ConvertName(segment) 
-                        : segment;
+                    string formattedSegment = namingPolicy.ConvertName(segment);
                     result.Append(formattedSegment);
                 }
                 result.Append(c);
@@ -194,9 +219,9 @@ public sealed class ValidateContext
         if (lastIndex < key.Length)
         {
             string segment = key.Substring(lastIndex);
-            if (!inBracket && propertyNamingPolicy is not null)
+            if (!inBracket)
             {
-                segment = propertyNamingPolicy.ConvertName(segment);
+                segment = namingPolicy.ConvertName(segment);
             }
             result.Append(segment);
         }
