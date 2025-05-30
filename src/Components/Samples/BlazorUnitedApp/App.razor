@@ -15,32 +15,6 @@
 </head>
 <body>
     <Routes @rendermode="InteractiveServer" />
-    <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
-    <script>
-        Blazor.start();
-        // Blazor.start({
-        //    circuit: {
-        //      reconnectionHandler: {
-        //        onConnectionDown: () =>  (),
-        //        onConnectionUp: () => {
-        //            // revertState();
-        //        }
-        //      },
-        //      detailedErrors: true
-        //    }
-        //  });
-
-         function disconnect() {
-            console.log("Disconnecting")
-            Blazor._internal.forceCloseConnection();
-            document.getElementById("reconnect-button").style.visibility = "visible";
-            document.getElementById("close-connection").style.visibility = "hidden";
-         }
-         function revertState() {
-            console.log("Restoring connection")
-            document.getElementById("reconnect-button").style.visibility = "hidden";
-            document.getElementById("close-connection").style.visibility = "visible";
-         }
-    </script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 </html>

@@ -17,6 +17,8 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
 
   private _currentReconnectionProcess: ReconnectionProcess | null = null;
 
+  private _currentCircuitPauseProcess: CircuitPauseProcess | null = null;
+
   private _reconnectionDisplay?: ReconnectDisplay;
 
   constructor(logger: Logger, overrideDisplay?: ReconnectDisplay, reconnectCallback?: () => Promise<boolean>, resumeCallback?: () => Promise<boolean>) {
@@ -31,7 +33,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
         ? new UserSpecifiedDisplay(modal, document, options.maxRetries)
-        : new DefaultReconnectDisplay(options.dialogId, document, this._logger);
+        : new DefaultReconnectDisplay(options.dialogId, document, this._logger, false);
     }
 
     if (!this._currentReconnectionProcess) {
@@ -53,11 +55,27 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
   }
 
   onCircuitResumed(): void {
-    return;
+    if (this._currentCircuitPauseProcess) {
+      this._currentCircuitPauseProcess.dispose();
+      this._currentCircuitPauseProcess = null;
+    }
   }
 
-  onCircuitPaused(): void {
-    return;
+  onCircuitPaused(options: ReconnectionOptions): void {
+    if (!this._reconnectionDisplay) {
+      const modal = document.getElementById(options.dialogId);
+      this._reconnectionDisplay = modal
+        ? new UserSpecifiedDisplay(modal, document, options.maxRetries)
+        : new DefaultReconnectDisplay(options.dialogId, document, this._logger, true);
+    }
+
+    if (!this._currentCircuitPauseProcess) {
+      this._currentCircuitPauseProcess = new CircuitPauseProcess(
+        options,
+        this._logger,
+        this._reconnectionDisplay
+      );
+    }
   }
 }
 
@@ -186,5 +204,21 @@ class ReconnectionProcess {
     document.addEventListener('visibilitychange', stepIfDocumentIsVisible);
     await new Promise<void>(resolve => resolveTimerPromise = resolve);
     document.removeEventListener('visibilitychange', stepIfDocumentIsVisible);
+  }
+}
+
+class CircuitPauseProcess {
+  readonly reconnectDisplay: ReconnectDisplay;
+
+  isDisposed = false;
+
+  constructor(options: ReconnectionOptions, private logger: Logger, display: ReconnectDisplay) {
+    this.reconnectDisplay = display;
+    this.reconnectDisplay.show();
+  }
+
+  public dispose() {
+    this.isDisposed = true;
+    this.reconnectDisplay.hide();
   }
 }

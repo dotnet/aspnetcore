@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -31,46 +32,34 @@ internal partial class CircuitPersistenceManager(
 
         if (saveStateToClient)
         {
-            _ = SaveStateToClient(circuit, store.PersistedCircuitState, cancellation);
+            await SaveStateToClient(circuit, store.PersistedCircuitState, cancellation);
         }
-
-        await circuitPersistenceProvider.PersistCircuitAsync(
-            circuit.CircuitId,
-            store.PersistedCircuitState,
-            cancellation);
+        else
+        {
+            await circuitPersistenceProvider.PersistCircuitAsync(
+                circuit.CircuitId,
+                store.PersistedCircuitState,
+                cancellation);
+        }
     }
 
     private async Task SaveStateToClient(CircuitHost circuit, PersistedCircuitState state, CancellationToken cancellation = default)
     {
-        var (rootComponents, applicationState) = ToProtectedState(state);
-        try
+        var (rootComponents, applicationState) = await ToProtectedStateAsync(state);
+        if (!await circuit.SendPersistedStateToClient(rootComponents, applicationState, cancellation))
         {
-            // Try to push the state to the client first, if that fails, we will persist it in the server-side store.
-            bool succeded = await circuit.SendPersistedStateToClient(rootComponents, applicationState);
-            if (!succeded)
+            try
             {
-                try
-                {
-                    await circuitPersistenceProvider.PersistCircuitAsync(
-                        circuit.CircuitId,
-                        state,
-                        cancellation);
-                }
-                catch (Exception)
-                {
-                    // At this point, we give up as we haven't been able to save the state to the client nor the server.
-                    return;
-                }
+                await circuitPersistenceProvider.PersistCircuitAsync(
+                    circuit.CircuitId,
+                    state,
+                    cancellation);
             }
-        }
-        catch (Exception)
-        {
-            // The call to save the state to the client failed, so fallback to saving it on the server.
-            // The client can still try to resume later without the state.
-            await circuitPersistenceProvider.PersistCircuitAsync(
-                circuit.CircuitId,
-                state,
-                cancellation);
+            catch (Exception)
+            {
+                // At this point, we give up as we haven't been able to save the state to the client nor the server.
+                return;
+            }
         }
     }
 
@@ -100,7 +89,18 @@ internal partial class CircuitPersistenceManager(
         return await circuitPersistenceProvider.RestoreCircuitAsync(circuitId, cancellation);
     }
 
-    internal PersistedCircuitState FromProtectedState(string rootComponents, string applicationState) => throw new NotImplementedException();
+    internal PersistedCircuitState FromProtectedState(string rootComponents, string applicationState)
+    {
+        var rootComponentsBytes = Encoding.UTF8.GetBytes(rootComponents);
+        var prerenderedState = new ProtectedPrerenderComponentApplicationStore(applicationState, dataProtectionProvider);
+        var state = new PersistedCircuitState
+        {
+            RootComponents = rootComponentsBytes,
+            ApplicationState = prerenderedState.ExistingState
+        };
+
+        return state;
+    }
 
     // We are going to construct a RootComponentOperationBatch but we are going to replace the descriptors from the client with the
     // descriptors that we have persisted when pausing the circuit.
@@ -154,7 +154,17 @@ internal partial class CircuitPersistenceManager(
         return result;
     }
 
-    internal (string rootComponents, string applicationState) ToProtectedState(PersistedCircuitState state) => throw new NotImplementedException();
+    internal async Task<(string rootComponents, string applicationState)> ToProtectedStateAsync(PersistedCircuitState state)
+    {
+        // Root components descriptors are already protected and serialized as JSON, we just convert the bytes to a string.
+        var rootComponents = Encoding.UTF8.GetString(state.RootComponents);
+
+        // The application state we protect in the same way we do for prerendering.
+        var store = new ProtectedPrerenderComponentApplicationStore(dataProtectionProvider);
+        await store.PersistStateAsync(state.ApplicationState);
+
+        return (rootComponents, store.PersistedState);
+    }
 
     internal ProtectedPrerenderComponentApplicationStore ToComponentApplicationStore(Dictionary<string, byte[]> applicationState)
     {
@@ -198,7 +208,7 @@ internal partial class CircuitPersistenceManager(
         }
     }
 
-    [JsonSerializable(typeof(Dictionary<int, ComponentMarker>))]
+    [JsonSerializable(typeof(IDictionary<string, byte[]>))]
     internal partial class CircuitPersistenceManagerSerializerContext : JsonSerializerContext
     {
     }

@@ -169,7 +169,7 @@ internal partial class CircuitRegistry
     // 1. If the circuit is not found return null
     // 2. If the circuit is found, but fails to connect, we need to dispose it here and return null
     // 3. If everything goes well, return the circuit.
-    public virtual async Task<CircuitHost> ConnectAsync(CircuitId circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
+    public virtual async Task<CircuitHost> ConnectAsync(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
     {
         Log.CircuitConnectStarted(_logger, circuitId);
 
@@ -228,7 +228,7 @@ internal partial class CircuitRegistry
         }
     }
 
-    protected virtual (CircuitHost circuitHost, bool previouslyConnected) ConnectCore(CircuitId circuitId, IClientProxy clientProxy, string connectionId)
+    protected virtual (CircuitHost circuitHost, bool previouslyConnected) ConnectCore(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId)
     {
         if (ConnectedCircuits.TryGetValue(circuitId, out var connectedCircuitHost))
         {
@@ -363,29 +363,23 @@ internal partial class CircuitRegistry
         CircuitHost circuitHost,
         string connectionId)
     {
-        Log.CircuitPauseStarted(_logger, circuitHost.CircuitId, connectionId);
-
-        Task circuitHandlerTask;
-        lock (CircuitRegistryLock)
+        try
         {
-            if (PauseCore(circuitHost, connectionId))
-            {
-                circuitHandlerTask = circuitHost.Renderer.Dispatcher.InvokeAsync(() => circuitHost.OnConnectionDownAsync(default));
-            }
-            else
-            {
-                // DisconnectCore may fail to disconnect the circuit if it was previously marked inactive or
-                // has been transferred to a new connection. Do not invoke the circuit handlers in this instance.
+            Log.CircuitPauseStarted(_logger, circuitHost.CircuitId, connectionId);
 
-                // We have to do in this instance.
-                return Task.CompletedTask;
+            lock (CircuitRegistryLock)
+            {
+                return PauseCore(circuitHost, connectionId);
             }
         }
-
-        return circuitHandlerTask;
+        catch (Exception)
+        {
+            Log.CircuitPauseFailed(_logger, circuitHost.CircuitId, connectionId);
+            return Task.CompletedTask;
+        }
     }
 
-    internal bool PauseCore(CircuitHost circuitHost, string connectionId)
+    internal Task PauseCore(CircuitHost circuitHost, string connectionId)
     {
         var circuitId = circuitHost.CircuitId;
         if (!ConnectedCircuits.TryGetValue(circuitId, out circuitHost))
@@ -393,7 +387,7 @@ internal partial class CircuitRegistry
             Log.CircuitNotActive(_logger, circuitId);
 
             // Circuit should be in the connected state for pausing.
-            return false;
+            return Task.CompletedTask;
         }
 
         if (!string.Equals(circuitHost.Client.ConnectionId, connectionId, StringComparison.Ordinal))
@@ -404,15 +398,13 @@ internal partial class CircuitRegistry
             // The circuit is associated with a different connection. One way this could happen is when
             // the client reconnects with a new connection before the OnDisconnect for the older
             // connection is executed. Do nothing
-            return false;
+            return Task.CompletedTask;
         }
 
         var removeResult = ConnectedCircuits.TryRemove(circuitId, out _);
         Debug.Assert(removeResult, "This operation operates inside of a lock. We expect the previously inspected value to be still here.");
 
-        _ = PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: true);
-
-        return removeResult;
+        return PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: true);
     }
 
     private readonly struct DisconnectedCircuitEntry
@@ -482,5 +474,8 @@ internal partial class CircuitRegistry
 
         [LoggerMessage(116, LogLevel.Debug, "Pausing circuit with id {CircuitId} from connection {ConnectionId}.", EventName = "CircuitPauseStarted")]
         public static partial void CircuitPauseStarted(ILogger logger, CircuitId circuitId, string connectionId);
+
+        [LoggerMessage(117, LogLevel.Debug, "Failed to pause circuit with id {CircuitId} from connection {ConnectionId}.", EventName = "CircuitPauseFailed")]
+        public static partial void CircuitPauseFailed(ILogger logger, CircuitId circuitId, string connectionId);
     }
 }

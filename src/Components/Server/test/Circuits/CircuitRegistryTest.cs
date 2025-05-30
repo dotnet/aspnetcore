@@ -37,7 +37,7 @@ public class CircuitRegistryTest
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
         registry.Register(circuitHost);
 
-        var newClient = Mock.Of<IClientProxy>();
+        var newClient = Mock.Of<ISingleClientProxy>();
         var newConnectionId = "new-id";
 
         // Act
@@ -62,7 +62,7 @@ public class CircuitRegistryTest
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
         registry.RegisterDisconnectedCircuit(circuitHost);
 
-        var newClient = Mock.Of<IClientProxy>();
+        var newClient = Mock.Of<ISingleClientProxy>();
         var newConnectionId = "new-id";
 
         // Act
@@ -88,7 +88,7 @@ public class CircuitRegistryTest
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), handlers: new[] { handler.Object });
         registry.RegisterDisconnectedCircuit(circuitHost);
 
-        var newClient = Mock.Of<IClientProxy>();
+        var newClient = Mock.Of<ISingleClientProxy>();
         var newConnectionId = "new-id";
 
         // Act
@@ -112,7 +112,7 @@ public class CircuitRegistryTest
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), handlers: new[] { handler.Object });
         registry.Register(circuitHost);
 
-        var newClient = Mock.Of<IClientProxy>();
+        var newClient = Mock.Of<ISingleClientProxy>();
         var newConnectionId = "new-id";
 
         // Act
@@ -137,7 +137,7 @@ public class CircuitRegistryTest
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), handlers: new[] { handler.Object });
         registry.Register(circuitHost);
 
-        var newClient = Mock.Of<IClientProxy>();
+        var newClient = Mock.Of<ISingleClientProxy>();
         var newConnectionId = "new-id";
 
         // Act
@@ -234,7 +234,7 @@ public class CircuitRegistryTest
 
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
         registry.Register(circuitHost);
-        var client = Mock.Of<IClientProxy>();
+        var client = Mock.Of<ISingleClientProxy>();
         var newId = "new-connection";
 
         // Act
@@ -273,7 +273,7 @@ public class CircuitRegistryTest
         registry.BeforeConnect = new ManualResetEventSlim();
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
         registry.Register(circuitHost);
-        var client = Mock.Of<IClientProxy>();
+        var client = Mock.Of<ISingleClientProxy>();
         var oldId = circuitHost.Client.ConnectionId;
         var newId = "new-connection";
 
@@ -339,7 +339,7 @@ public class CircuitRegistryTest
         var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
 
         registry.RegisterDisconnectedCircuit(circuitHost);
-        await registry.ConnectAsync(circuitHost.CircuitId, Mock.Of<IClientProxy>(), "new-connection", default);
+        await registry.ConnectAsync(circuitHost.CircuitId, Mock.Of<ISingleClientProxy>(), "new-connection", default);
 
         // Act
         await Task.Run(() => tcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10)));
@@ -363,7 +363,7 @@ public class CircuitRegistryTest
 
         public Action OnAfterEntryEvicted { get; set; }
 
-        protected override (CircuitHost, bool) ConnectCore(CircuitId circuitId, IClientProxy clientProxy, string connectionId)
+        protected override (CircuitHost, bool) ConnectCore(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId)
         {
             if (BeforeConnect != null)
             {

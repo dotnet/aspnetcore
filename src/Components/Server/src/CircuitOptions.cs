@@ -52,6 +52,7 @@ public sealed class CircuitOptions
     /// When using a distributed cache like <see cref="Extensions.Caching.Hybrid.HybridCache"/> this value is ignored
     /// and the configuration from <see cref="Extensions.DependencyInjection.MemoryCacheServiceCollectionExtensions.AddMemoryCache(Extensions.DependencyInjection.IServiceCollection)"/>
     /// is used instead.
+    /// </remarks>
     public int PersistedCircuitMaxRetained { get; set; } = 100;
 
     /// <summary>
@@ -59,7 +60,7 @@ public sealed class CircuitOptions
     /// </summary>
     /// <remarks>This value is used for the default in-memory cache implementation as well as for the
     /// duration for which the persisted circuits are retained in the local in memory cache when using a
-    /// <see cref="Extensions.Caching.Hybrid.HybridCache"/>.</remarks>"/>
+    /// <see cref="Extensions.Caching.Hybrid.HybridCache"/>.</remarks>
     public TimeSpan PersistedCircuitInMemoryRetentionPeriod { get; set; } = TimeSpan.FromHours(1);
 
     /// <summary>

@@ -32,7 +32,12 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   retryWhenDocumentBecomesVisible: () => void;
 
-  constructor(dialogId: string, private readonly document: Document, private readonly logger: Logger) {
+  constructor(
+    dialogId: string,
+    private readonly document: Document,
+    private readonly logger: Logger,
+    private readonly pause: boolean
+  ) {
     this.style = this.document.createElement('style');
     this.style.innerHTML = DefaultReconnectDisplay.Css;
 
@@ -84,7 +89,11 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
     this.reloadButton.style.display = 'none';
     this.rejoiningAnimation.style.display = 'block';
-    this.status.innerHTML = 'Rejoining the server...';
+    if (this.pause) {
+      this.status.textContent = 'The application is temporarily unavailable. Please wait...';
+    } else {
+      this.status.innerHTML = 'Rejoining the server...';
+    }
     this.host.style.display = 'block';
     this.overlay.classList.add(DefaultReconnectDisplay.ReconnectVisibleClassName);
   }

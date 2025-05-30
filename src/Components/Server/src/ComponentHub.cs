@@ -238,25 +238,38 @@ internal sealed partial class ComponentHub : Hub
         return false;
     }
 
-    public async ValueTask<string> PauseCircuit()
+    // Client initiated pauses work as follows:
+    // * The client calls PauseCircuit, we dissasociate the circuit from the connection.
+    // * We trigger the circuit pause to collect the current root components and dispose the current circuit.
+    // * We push the current root components and application state to the client.
+    //   * If that succeeds, the client receives the state and we are done.
+    //   * If that fails, we will fall back to the server-side cache storage.
+    // * The client will disconnect after receiving the state or after a 30s timeout.
+    //   * From that point on, it can choose to resume the circuit by calling ResumeCircuit with or without the state
+    //     depending on whether the transfer was successful.
+    // * Most of the time we expect the state push to succeed, if that fails, the possibilites are:
+    //   * Client tries to resume before the state has been saved to the server-side cache storage.
+    //     * Resumption fails as the state is not there.
+    //     * The state eventually makes it to the server-side cache storage, but the client will have already given up and
+    //       the state will eventually go away by virtue of the cache expiration policy on it.
+    //   * The state has been saved to the server-side cache storage. This is what we expect to happen most of the time in the
+    //     rare event that the client push fails.
+    //     * This case becomes equivalent to the "ungraceful pause" case, where the client has no state and the server has the state.
+    public async ValueTask<bool> PauseCircuit()
     {
         var circuitHost = await GetActiveCircuitAsync();
         if (circuitHost == null)
         {
-            return null;
+            return false;
         }
 
-        // What needs to happen
-        // Disconnect the circuit
-        // Evict the circuit from the registry
-        // Capture the state during eviction
-        // Return the state to the client
-        // Close the connection (or have the client do it)
-
-        // Dissociate the circuit from the connection. From this point any new calls to the hub will fail to find the circuit.
-        _circuitHandleRegistry.SetCircuit(Context.Items, CircuitKey, circuitHost: null);
+        // This is guaranteed to not throw.
         _ = _circuitRegistry.PauseCircuitAsync(circuitHost, Context.ConnectionId);
-        return null;
+
+        // This only signals that pausing the circuit has started.
+        // The client will receive the root components and application state in a separate message
+        // from the server.
+        return true;
     }
 
     // This method drives the resumption of a circuit that has been previously paused and ejected out of memory.

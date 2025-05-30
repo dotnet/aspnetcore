@@ -44,4 +44,14 @@ internal sealed class CircuitClientProxy : ISingleClientProxy
 
         return Client.SendCoreAsync(method, args, cancellationToken);
     }
+
+    public Task<T> InvokeCoreAsync<T>(string method, object?[] args, CancellationToken cancellationToken)
+    {
+        if (Client == null)
+        {
+            throw new InvalidOperationException($"{nameof(SendCoreAsync)} cannot be invoked with an offline client.");
+        }
+
+        return Client.InvokeCoreAsync<T>(method, args, cancellationToken);
+    }
 }

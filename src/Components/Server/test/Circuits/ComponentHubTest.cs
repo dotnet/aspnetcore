@@ -184,6 +184,9 @@ public class ComponentHubTest
             operationsWithDescriptors = default;
             return true;
         }
+
+        public bool TryDeserializeWebRootComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out WebRootComponentDescriptor result)
+            => throw new NotImplementedException();
     }
 
     private class TestCircuitFactory : ICircuitFactory

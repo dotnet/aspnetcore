@@ -49,7 +49,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _disposed = false;
 
+  private _paused = false;
+
   private _persistedCircuitState?: { components: string, applicationState: string };
+
+  private _pauseResolve?: (result: boolean) => void;
+
+  private _pausePromise?: Promise<boolean>;
 
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
@@ -133,6 +139,17 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.BeginInvokeJS', this._dispatcher.beginInvokeJSFromDotNet.bind(this._dispatcher));
     connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
+    connection.on('JS.SavePersistedState', (circuitId: string, components: string, applicationState: string) => {
+      if (!this._circuitId) {
+        throw new Error('Circuit host not initialized.');
+      }
+      if (circuitId !== this._circuitId) {
+        throw new Error(`Received persisted state for circuit ID '${circuitId}', but the current circuit ID is '${this._circuitId}'.`);
+      }
+      this._persistedCircuitState = { components, applicationState };
+      const pauseResolve = this._pauseResolve;
+      pauseResolve!(true);
+    });
 
     connection.on('JS.BeginTransmitStream', (streamId: number) => {
       const readableStream = new ReadableStream({
@@ -162,7 +179,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
-      if (!this._disposed && !this._renderingFailed) {
+      if (!this._disposed && !this._renderingFailed && !this._paused) {
         this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
       }
     });
@@ -240,8 +257,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       throw new Error('Circuit host not initialized.');
     }
 
+    if (this._pausePromise) {
+      await this._pausePromise;
+    }
+
     if (this._connection!.state !== HubConnectionState.Connected) {
-      return false;
+      this._connection = await this.startConnection();
     }
 
     const persistedCircuitState = this._persistedCircuitState;
@@ -262,35 +283,83 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     this._circuitId = resume;
     this._renderQueue = new RenderQueue(this._logger);
-    this._options.reconnectionHandler!.onCircuitResumed();
-    this._options.reconnectionHandler!.onConnectionUp();
     this._componentManager.onComponentReload?.(WebRendererId.Server);
+
+    this._options.reconnectionHandler!.onCircuitResumed();
+
+    this._options.reconnectionHandler!.onConnectionUp();
+
     return true;
   }
 
-  public async pause() {
+  public async pause(): Promise<boolean> {
     if (!this._circuitId) {
-      throw new Error('Method not implemented.');
+      return false;
     }
 
     if (this._connection!.state !== HubConnectionState.Connected) {
       return false;
     }
 
-    const pauseResult = await this._connection!.invoke<string>(
-      'PauseCircuit',
-      this._circuitId,
-    );
-
-    if (!pauseResult) {
+    if (this._persistedCircuitState) {
       return false;
     }
 
-    this._persistedCircuitState = JSON.parse(pauseResult);
+    if (this._pausePromise) {
+      return this._pausePromise;
+    }
 
-    this._options.reconnectionHandler!.onCircuitPaused();
+    // Notify the reconnection handler that we are pausing the circuit.
+    // This is used to trigger the UI display.
+    this._options.reconnectionHandler?.onCircuitPaused(this._options.reconnectionOptions);
+
+    // Prepare to initiate the pause process and wait for the server to push the persisted state back to us.
+    // This is done via the 'JS.SavePersistedState' event.
+    // We will wait for up to 30 seconds for the server to respond with the persisted state.
+    this._pausePromise = new Promise<boolean>((resolve) => {
+      this._pauseResolve = resolve;
+    });
+    this._pausePromise.then((result: boolean) => {
+      if (result) {
+        this._paused = true;
+        // If we are connected, queue a microtask to disconnect.
+        // We need to do this because we might be resolving from a SignalR event handler.
+        if (this._connection!.state === HubConnectionState.Connected) {
+          setTimeout(() => this.disconnect(), 1000);
+        }
+      }
+
+      // Whether we succeeded or not, clean up the current state.
+      this._pauseResolve = undefined;
+      this._pausePromise = undefined;
+    });
+
+    // Indicate to the server that we want to pause the circuit.
+    // The server will initiate the pause on the circuit associated with the current connection.
+    const pauseResult = await this._connection!.invoke<boolean>('PauseCircuit');
+
+    if (!pauseResult) {
+      // No circuit was associated with the current connection.
+      this._pauseResolve!(false);
+      return false;
+    }
+
+    // Set a timeout to ensure we don't wait indefinitely for the server to respond.
+    setTimeout(() => {
+      const pauseResolve = this._pauseResolve;
+      if (!pauseResolve) {
+        return;
+      }
+
+      // At this point, the server has not reached out to us with the persisted state,
+      // but we don't care.
+      // If we start a resume operation and the state is not available, we will just
+      // try the resume as if the state was persisted on the server.
+      pauseResolve!(true);
+    }, 30000);
+
+    return this._pausePromise;
   }
-
 
   // Implements DotNet.DotNetCallDispatcher
   public beginInvokeDotNetFromJS(callId: number, assemblyName: string | null, methodIdentifier: string, dotNetObjectId: number | null, argsJson: string): void {
