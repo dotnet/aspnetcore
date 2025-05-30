@@ -31,7 +31,7 @@ public class Http1ConnectionTestsBase : LoggedTest, IDisposable
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
 
-        _pipelineFactory = PinnedBlockMemoryPoolFactory.Create();
+        _pipelineFactory = TestMemoryPoolFactory.Create();
         var options = new PipeOptions(_pipelineFactory, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
         var pair = DuplexPipe.CreateConnectionPair(options, options);
 
