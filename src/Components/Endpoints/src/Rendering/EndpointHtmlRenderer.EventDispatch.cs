@@ -91,7 +91,6 @@ internal partial class EndpointHtmlRenderer
         else
         {
             _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-            _httpContext.Response.ContentType = null;
         }
 
         // When the application triggers a NotFound event, we continue rendering the current batch.
