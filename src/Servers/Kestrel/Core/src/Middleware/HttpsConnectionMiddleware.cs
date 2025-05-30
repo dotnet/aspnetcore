@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Middleware;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -43,6 +44,9 @@ internal sealed class HttpsConnectionMiddleware
     // The following fields are only set by TlsHandshakeCallbackOptions ctor.
     private readonly Func<TlsHandshakeCallbackContext, ValueTask<SslServerAuthenticationOptions>>? _tlsCallbackOptions;
     private readonly object? _tlsCallbackOptionsState;
+
+    // Captures raw TLS client hello and invokes a user callback if any
+    private readonly TlsListener? _tlsListener;
 
     // Internal for testing
     internal readonly HttpProtocols _httpProtocols;
@@ -112,6 +116,11 @@ internal sealed class HttpsConnectionMiddleware
             (RemoteCertificateValidationCallback?)null : RemoteCertificateValidationCallback;
 
         _sslStreamFactory = s => new SslStream(s, leaveInnerStreamOpen: false, userCertificateValidationCallback: remoteCertificateValidationCallback);
+
+        if (options.TlsClientHelloBytesCallback is not null)
+        {
+            _tlsListener = new TlsListener(options.TlsClientHelloBytesCallback);
+        }
     }
 
     internal HttpsConnectionMiddleware(
@@ -162,6 +171,10 @@ internal sealed class HttpsConnectionMiddleware
             using var cancellationTokenSource = _ctsPool.Rent();
             cancellationTokenSource.CancelAfter(_handshakeTimeout);
 
+            if (_tlsListener is not null)
+            {
+                await _tlsListener.OnTlsClientHelloAsync(context, cancellationTokenSource.Token);
+            }
             if (_tlsCallbackOptions is null)
             {
                 await DoOptionsBasedHandshakeAsync(context, sslStream, feature, cancellationTokenSource.Token);
