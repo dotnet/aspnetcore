@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Microsoft.AspNetCore.JsonPatch.Converters;
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
@@ -15,6 +16,11 @@ using Microsoft.AspNetCore.Shared;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
+#if NET
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Metadata;
+#endif
+
 namespace Microsoft.AspNetCore.JsonPatch;
 
 // Implementation details: the purpose of this type of patch document is to ensure we can do type-checking
@@ -22,7 +28,11 @@ namespace Microsoft.AspNetCore.JsonPatch;
 // including type data in the JsonPatchDocument serialized as JSON (to allow for correct deserialization) - that's
 // not according to RFC 6902, and would thus break cross-platform compatibility.
 [JsonConverter(typeof(TypedJsonPatchDocumentConverter))]
+#if NET
+public class JsonPatchDocument<TModel> : IJsonPatchDocument, IEndpointParameterMetadataProvider where TModel : class
+#else
 public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
+#endif
 {
     public List<Operation<TModel>> Operations { get; private set; }
 
@@ -655,6 +665,21 @@ public class JsonPatchDocument<TModel> : IJsonPatchDocument where TModel : class
 
         return allOps;
     }
+
+#if NET
+    /// <summary>
+    /// Populates metadata for the related endpoint when this type is used as a parameter.
+    /// </summary>
+    /// <param name="parameter">The <see cref="ParameterInfo"/> for the endpoint parameter.</param>
+    /// <param name="builder">The endpoint builder for the endpoint being constructed.</param>
+    static void IEndpointParameterMetadataProvider.PopulateMetadata(ParameterInfo parameter, EndpointBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(parameter);
+        ArgumentNullException.ThrowIfNull(builder);
+
+        builder.Metadata.Add(new AcceptsMetadata(["application/json-patch+json"], typeof(TModel)));
+    }
+#endif
 
     // Internal for testing
     internal string GetPath<TProp>(Expression<Func<TModel, TProp>> expr, string position)
