@@ -1490,10 +1490,9 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [Theory]
     [InlineData("ServerNonPrerendered")]
     [InlineData("WebAssemblyNonPrerendered")]
-    public async Task DoesNotReExecuteIf404WasHandled_Interactive(string renderMode)
+    public void DoesNotReExecuteIf404WasHandled_Interactive(string renderMode)
     {
         Navigate($"{ServerPathBase}/reexecution/set-not-found?renderMode={renderMode}");
-        await Task.Delay(5000);
         AssertNotFoundFragmentRendered();
     }
 
