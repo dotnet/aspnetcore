@@ -7,28 +7,26 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Middleware;
 
-internal sealed class TlsListenerMiddleware
+internal sealed class TlsListener
 {
-    private readonly ConnectionDelegate _next;
     private readonly Action<ConnectionContext, ReadOnlySequence<byte>> _tlsClientHelloBytesCallback;
 
-    public TlsListenerMiddleware(ConnectionDelegate next, Action<ConnectionContext, ReadOnlySequence<byte>> tlsClientHelloBytesCallback)
+    public TlsListener(Action<ConnectionContext, ReadOnlySequence<byte>> tlsClientHelloBytesCallback)
     {
-        _next = next;
         _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
     }
 
     /// <summary>
     /// Sniffs the TLS Client Hello message, and invokes a callback if found.
     /// </summary>
-    internal async Task OnTlsClientHelloAsync(ConnectionContext connection)
+    internal async Task OnTlsClientHelloAsync(ConnectionContext connection, CancellationToken cancellationToken)
     {
         var input = connection.Transport.Input;
         ClientHelloParseState parseState = ClientHelloParseState.NotEnoughData;
 
         while (true)
         {
-            var result = await input.ReadAsync();
+            var result = await input.ReadAsync(cancellationToken);
             var buffer = result.Buffer;
 
             try
@@ -74,8 +72,6 @@ internal sealed class TlsListenerMiddleware
                 }
             }
         }
-
-        await _next(connection);
     }
 
     /// <summary>
