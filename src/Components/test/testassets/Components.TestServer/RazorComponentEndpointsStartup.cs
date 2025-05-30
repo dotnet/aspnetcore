@@ -75,6 +75,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             app.Map("/reexecution", reexecutionApp =>
             {
+                app.Map("/trigger-404", app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.StatusCode = 404;
+                        await context.Response.WriteAsync("Triggered a 404 status code.");
+                    });
+                });
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
                 reexecutionApp.UseRouting();
 
@@ -125,6 +133,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             }
 
             _ = endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("Components.Shared"))
                 .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                 .AddInteractiveServerRenderMode(options =>
                 {

@@ -1448,4 +1448,63 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     private void Assert404ReExecuted() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanRenderNotFoundPage_SSR(bool streamingStarted)
+    {
+        string streamingPath = streamingStarted ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomNotFoundPage=true");
+        AssertCustomNotFoundPageRendered()
+    }
+
+    [Theory]
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void CanRenderNotFoundPage_Interactive(string renderMode)
+    {
+        string streamingPath = streamingStarted ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/set-not-found?useCustomNotFoundPage=true&renderMode={renderMode}");
+        AssertCustomNotFoundPageRendered();
+    }
+
+    private void AssertCustomNotFoundPageRendered()
+    {
+        var infoText = Browser.FindElement(By.Id("test-info")).Text;
+        Assert.Contains("Welcome On Custom Not Found Page", infoText);
+        // custom page should have a custom layout
+        var aboutLink = Browser.FindElement(By.Id("about-link")).Text;
+        Assert.Contains("About", aboutLink);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DoesNotReExecuteIf404WasHandled_SSR(bool streamingStarted)
+    {
+        string streamingPath = streamingStarted ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/set-not-found-ssr{streamingPath}");
+        AssertNotFoundFragmentRendered();
+    }
+
+    [Theory]
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public async Task DoesNotReExecuteIf404WasHandled_Interactive(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/reexecution/set-not-found?renderMode={renderMode}");
+        await Task.Delay(5000);
+        AssertNotFoundFragmentRendered();
+    }
+
+    private void AssertNotFoundFragmentRendered() =>
+        Browser.Equal("There's nothing here", () => Browser.FindElement(By.CssSelector("body > p")).Text);
+
+    [Fact]
+    public void StatusCodePagesWithReExecution()
+    {
+        Navigate($"{ServerPathBase}/reexecution/trigger-404");
+        Assert404ReExecuted();
+    }
 }
