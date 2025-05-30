@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures;
 
@@ -36,7 +37,7 @@ public interface IHtmlGenerator
     /// <param name="value">The value to format.</param>
     /// <param name="format">The format to use.</param>
     /// <returns>The formatted value.</returns>
-    string FormatValue(object value, string format);
+    string FormatValue(object value, [StringSyntax(StringSyntaxAttribute.NumericFormat)] string format);
 
     /// <summary>
     /// Generate a &lt;a&gt; element for a link to an action.
@@ -503,7 +504,7 @@ public interface IHtmlGenerator
         ModelExplorer modelExplorer,
         string expression,
         object value,
-        string format,
+        [StringSyntax(StringSyntaxAttribute.NumericFormat)] string format,
         object htmlAttributes);
 
     /// <summary>
