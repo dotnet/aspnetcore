@@ -260,7 +260,7 @@ function GetDotNetInstallScript([string] $dotnetRoot) {
   if (!(Test-Path $installScript)) {
     Create-Directory $dotnetRoot
     $ProgressPreference = 'SilentlyContinue' # Don't display the console progress UI - it's a huge perf hit
-    $uri = "https://builds.dotnet.microsoft.com/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.ps1"
+    $uri = "https://raw.githubusercontent.com/dotnet/install-scripts/refs/heads/main/src/dotnet-install.ps1"
 
     Retry({
       Write-Host "GET $uri"
@@ -293,7 +293,7 @@ function InstallDotNet([string] $dotnetRoot,
     if ($runtime -eq "aspnetcore") { $runtimePath = $runtimePath + "\Microsoft.AspNetCore.App" }
     if ($runtime -eq "windowsdesktop") { $runtimePath = $runtimePath + "\Microsoft.WindowsDesktop.App" }
     $runtimePath = $runtimePath + "\" + $version
-  
+
     $dotnetVersionLabel = "runtime toolset '$runtime/$architecture v$version'"
 
     if (Test-Path $runtimePath) {
