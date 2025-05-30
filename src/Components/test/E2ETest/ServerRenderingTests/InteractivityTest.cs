@@ -1456,7 +1456,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     {
         string streamingPath = streamingStarted ? "-streaming" : "";
         Navigate($"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomNotFoundPage=true");
-        AssertCustomNotFoundPageRendered()
+        AssertCustomNotFoundPageRendered();
     }
 
     [Theory]
@@ -1464,7 +1464,6 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [InlineData("WebAssemblyNonPrerendered")]
     public void CanRenderNotFoundPage_Interactive(string renderMode)
     {
-        string streamingPath = streamingStarted ? "-streaming" : "";
         Navigate($"{ServerPathBase}/set-not-found?useCustomNotFoundPage=true&renderMode={renderMode}");
         AssertCustomNotFoundPageRendered();
     }
