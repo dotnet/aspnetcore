@@ -106,9 +106,17 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                         // Create a validation error for each member name that is provided
                         foreach (var memberName in validationResult.MemberNames)
                         {
+                            // Format the member name using JsonSerializerOptions naming policy if available
+                            // Note: we don't respect [JsonPropertyName] here because we have no context of the property being validated.
+                            var formattedMemberName = memberName;
+                            if (context.SerializerOptions?.PropertyNamingPolicy != null)
+                            {
+                                formattedMemberName = context.SerializerOptions.PropertyNamingPolicy.ConvertName(memberName);
+                            }
+
                             var key = string.IsNullOrEmpty(originalPrefix) ?
-                                memberName :
-                                $"{originalPrefix}.{memberName}";
+                                formattedMemberName :
+                                $"{originalPrefix}.{formattedMemberName}";
                             context.AddOrExtendValidationError(key, validationResult.ErrorMessage);
                         }
 

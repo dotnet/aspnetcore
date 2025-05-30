@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Http.Validation;
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public sealed class ValidateContext
 {
-    private JsonNamingPolicy? _cachedNamingPolicy;
-    private bool _namingPolicyCached;
     /// <summary>
     /// Gets or sets the validation context used for validating objects that implement <see cref="IValidatableObject"/> or have <see cref="ValidationAttribute"/>.
     /// This context provides access to service provider and other validation metadata.
@@ -63,65 +61,35 @@ public sealed class ValidateContext
     /// This is used to prevent stack overflows from circular references.
     /// </summary>
     public int CurrentDepth { get; set; }
-    
+
     /// <summary>
     /// Gets or sets the JSON serializer options to use for property name formatting.
     /// When available, property names in validation errors will be formatted according to the
     /// PropertyNamingPolicy and JsonPropertyName attributes.
     /// </summary>
-    public JsonSerializerOptions? SerializerOptions 
-    { 
-        get => _serializerOptions;
-        set 
-        { 
-            _serializerOptions = value;
-            // Invalidate cache when SerializerOptions changes
-            _namingPolicyCached = false;
-            _cachedNamingPolicy = null;
-        } 
-    }
-    private JsonSerializerOptions? _serializerOptions;
-
-    /// <summary>
-    /// Gets the cached naming policy from SerializerOptions to avoid repeated property access.
-    /// </summary>
-    private JsonNamingPolicy? CachedNamingPolicy
-    {
-        get
-        {
-            if (!_namingPolicyCached)
-            {
-                _cachedNamingPolicy = _serializerOptions?.PropertyNamingPolicy;
-                _namingPolicyCached = true;
-            }
-            return _cachedNamingPolicy;
-        }
-    }
+    public JsonSerializerOptions? SerializerOptions { get; set; }
 
     internal void AddValidationError(string key, string[] errors)
     {
         ValidationErrors ??= [];
 
-        var formattedKey = FormatKey(key);
-        ValidationErrors[formattedKey] = errors;
+        ValidationErrors[key] = errors;
     }
 
     internal void AddOrExtendValidationErrors(string key, string[] errors)
     {
         ValidationErrors ??= [];
 
-        var formattedKey = FormatKey(key);
-        
-        if (ValidationErrors.TryGetValue(formattedKey, out var existingErrors))
+        if (ValidationErrors.TryGetValue(key, out var existingErrors))
         {
             var newErrors = new string[existingErrors.Length + errors.Length];
             existingErrors.CopyTo(newErrors, 0);
             errors.CopyTo(newErrors, existingErrors.Length);
-            ValidationErrors[formattedKey] = newErrors;
+            ValidationErrors[key] = newErrors;
         }
         else
         {
-            ValidationErrors[formattedKey] = errors;
+            ValidationErrors[key] = errors;
         }
     }
 
@@ -129,105 +97,13 @@ public sealed class ValidateContext
     {
         ValidationErrors ??= [];
 
-        var formattedKey = FormatKey(key);
-        
-        if (ValidationErrors.TryGetValue(formattedKey, out var existingErrors) && !existingErrors.Contains(error))
+        if (ValidationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
         {
-            ValidationErrors[formattedKey] = [.. existingErrors, error];
+            ValidationErrors[key] = [..existingErrors, error];
         }
         else
         {
-            ValidationErrors[formattedKey] = [error];
+            ValidationErrors[key] = [error];
         }
     }
-    
-    private string FormatKey(string key)
-    {
-        var namingPolicy = CachedNamingPolicy;
-        if (string.IsNullOrEmpty(key) || namingPolicy is null)
-        {
-            return key;
-        }
-
-        // If the key contains a path (e.g., "Address.Street" or "Items[0].Name"), 
-        // apply the naming policy to each part of the path
-        if (key.Contains('.') || key.Contains('['))
-        {
-            return FormatComplexKey(key, namingPolicy);
-        }
-
-        // Apply the naming policy directly
-        return namingPolicy.ConvertName(key);
-    }
-    
-    private static string FormatComplexKey(string key, JsonNamingPolicy namingPolicy)
-    {
-        // Use a more direct approach for complex keys with dots and array indices
-        var result = new System.Text.StringBuilder();
-        int lastIndex = 0;
-        int i = 0;
-        bool inBracket = false;
-
-        while (i < key.Length)
-        {
-            char c = key[i];
-            
-            if (c == '[')
-            {
-                // Format the segment before the bracket
-                if (i > lastIndex)
-                {
-                    string segment = key.Substring(lastIndex, i - lastIndex);
-                    string formattedSegment = namingPolicy.ConvertName(segment);
-                    result.Append(formattedSegment);
-                }
-                
-                // Start collecting the bracket part
-                inBracket = true;
-                result.Append(c);
-                lastIndex = i + 1;
-            }
-            else if (c == ']')
-            {
-                // Add the content inside the bracket as-is
-                if (i > lastIndex)
-                {
-                    string segment = key.Substring(lastIndex, i - lastIndex);
-                    result.Append(segment);
-                }
-                result.Append(c);
-                inBracket = false;
-                lastIndex = i + 1;
-            }
-            else if (c == '.' && !inBracket)
-            {
-                // Format the segment before the dot
-                if (i > lastIndex)
-                {
-                    string segment = key.Substring(lastIndex, i - lastIndex);
-                    string formattedSegment = namingPolicy.ConvertName(segment);
-                    result.Append(formattedSegment);
-                }
-                result.Append(c);
-                lastIndex = i + 1;
-            }
-
-            i++;
-        }
-
-        // Format the last segment if there is one
-        if (lastIndex < key.Length)
-        {
-            string segment = key.Substring(lastIndex);
-            if (!inBracket)
-            {
-                segment = namingPolicy.ConvertName(segment);
-            }
-            result.Append(segment);
-        }
-
-        return result.ToString();
-    }
-    
-
 }
