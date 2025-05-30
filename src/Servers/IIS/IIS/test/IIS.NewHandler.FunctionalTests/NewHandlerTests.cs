@@ -12,7 +12,6 @@ using Xunit.Sdk;
 namespace Microsoft.AspNetCore.Server.IIS.NewHandler.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class NewHandlerTests : IISFunctionalTestBase
 {
     public NewHandlerTests(PublishedSitesFixture fixture) : base(fixture)

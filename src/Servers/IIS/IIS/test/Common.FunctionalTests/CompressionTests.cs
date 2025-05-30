@@ -26,7 +26,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(IISCompressionSiteCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class CompressionTests : FixtureLoggedTest
 {
     private readonly IISCompressionSiteFixture _fixture;
