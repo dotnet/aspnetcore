@@ -22,14 +22,28 @@ public class FormValueProviderFactory : IValueProviderFactory
         var request = context.ActionContext.HttpContext.Request;
         if (request.HasFormContentType)
         {
+            RegisterValueProvider(context);
+
             // Allocating a Task only when the body is form data.
-            return AddValueProviderAsync(context);
+            //return AddValueProviderAsync(context);
         }
 
         return Task.CompletedTask;
     }
 
+    private static void RegisterValueProvider(ValueProviderFactoryContext context)
+    {
+        var valueProvider = new FormValueProvider(
+            BindingSource.Form,
+            new FormCollection(fields: null, files: null),
+            CultureInfo.CurrentCulture);
+
+        context.ValueProviders.Add(valueProvider);
+    }
+
+#pragma warning disable IDE0051 // Remove unused private members
     private static async Task AddValueProviderAsync(ValueProviderFactoryContext context)
+#pragma warning restore IDE0051 // Remove unused private members
     {
         var request = context.ActionContext.HttpContext.Request;
         IFormCollection form;
