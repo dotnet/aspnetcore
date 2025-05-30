@@ -22,7 +22,7 @@
     }
 }
 
-<Router AppAssembly="@typeof(Program).Assembly" NotFoundPage="NotFoundPageType">
+<Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Components.Shared.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />

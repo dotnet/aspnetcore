@@ -29,7 +29,7 @@
     <HeadOutlet />
 </head>
 <body>
-    <Router AppAssembly="@typeof(App).Assembly" NotFoundPage="NotFoundPageType">
+    <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(Components.Shared.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
         <Found Context="routeData">
             <RouteView RouteData="@routeData" />
             <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />

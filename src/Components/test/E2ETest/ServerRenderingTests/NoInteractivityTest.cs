@@ -80,13 +80,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("Routing test cases", () => Browser.Exists(By.Id("test-info")).Text);
     }
 
-    [Fact]
-    public void CanRenderNotFoundPageAfterStreamingStarted()
-    {
-        Navigate($"{ServerPathBase}/streaming-set-not-found");
-        Browser.Equal("Default Not Found Page", () => Browser.Title);
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -127,36 +120,35 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public void CanRenderNotFoundPageNoStreaming(bool useCustomNotFoundPage)
+    public void CanRenderNotFoundPage(bool streamingStarted)
     {
-        string query = useCustomNotFoundPage ? "&useCustomNotFoundPage=true" : "";
-        Navigate($"{ServerPathBase}/set-not-found?shouldSet=true{query}");
+        string streamingPath = streamingStarted ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomNotFoundPage=true");
 
-        if (useCustomNotFoundPage)
-        {
-            var infoText = Browser.FindElement(By.Id("test-info")).Text;
-            Assert.Contains("Welcome On Custom Not Found Page", infoText);
-            // custom page should have a custom layout
-            var aboutLink = Browser.FindElement(By.Id("about-link")).Text;
-            Assert.Contains("About", aboutLink);
-        }
-        else
-        {
-            var bodyText = Browser.FindElement(By.TagName("body")).Text;
-            Assert.Contains("There's nothing here", bodyText);
-        }
+        var infoText = Browser.FindElement(By.Id("test-info")).Text;
+        Assert.Contains("Welcome On Custom Not Found Page", infoText);
+        // custom page should have a custom layout
+        var aboutLink = Browser.FindElement(By.Id("about-link")).Text;
+        Assert.Contains("About", aboutLink);
     }
 
     [Theory]
-    [InlineData(true)]
     [InlineData(false)]
-    public void CanRenderNotFoundPageWithStreaming(bool useCustomNotFoundPage)
+    [InlineData(true)]
+    public void DoesNotReExecuteIf404WasHandled(bool streamingStarted)
     {
-        // when streaming started, we always render page under "not-found" path
-        string query = useCustomNotFoundPage ? "?useCustomNotFoundPage=true" : "";
-        Navigate($"{ServerPathBase}/streaming-set-not-found{query}");
+        string streamingPath = streamingStarted ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/set-not-found-ssr{streamingPath}");
+        AssertNotFoundFragmentRendered();
+    }
 
-        string expectedTitle = "Default Not Found Page";
-        Browser.Equal(expectedTitle, () => Browser.Title);
+    private void AssertNotFoundFragmentRendered() =>
+        Browser.Equal("There's nothing here", () => Browser.FindElement(By.CssSelector("body > p")).Text);
+
+    [Fact]
+    public void StatusCodePagesWithReExecution()
+    {
+        Navigate($"{ServerPathBase}/reexecution/trigger-404");
+        Browser.Equal("Re-executed page", () => Browser.Title);
     }
 }
