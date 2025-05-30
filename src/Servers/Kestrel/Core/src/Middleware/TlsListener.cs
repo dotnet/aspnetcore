@@ -23,6 +23,7 @@ internal sealed class TlsListener
     {
         var input = connection.Transport.Input;
         ClientHelloParseState parseState = ClientHelloParseState.NotEnoughData;
+        short recordLength = -1; // remembers the length of TLS record to not re-parse header on every iteration
 
         while (true)
         {
@@ -38,7 +39,7 @@ internal sealed class TlsListener
                     break;
                 }
 
-                parseState = TryParseClientHello(buffer, out var clientHelloBytes);
+                parseState = TryParseClientHello(buffer, ref recordLength, out var clientHelloBytes);
                 if (parseState == ClientHelloParseState.NotEnoughData)
                 {
                     // if no data will be added, and we still lack enough bytes
@@ -81,9 +82,17 @@ internal sealed class TlsListener
     /// TLS 1.2: https://datatracker.ietf.org/doc/html/rfc5246#section-6.2
     /// TLS 1.3: https://datatracker.ietf.org/doc/html/rfc8446#section-5.1
     /// </summary>
-    private static ClientHelloParseState TryParseClientHello(ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> clientHelloBytes)
+    private static ClientHelloParseState TryParseClientHello(ReadOnlySequence<byte> buffer, ref short recordLength, out ReadOnlySequence<byte> clientHelloBytes)
     {
         clientHelloBytes = default;
+
+        // in case bad actor will be sending a TLS client hello one byte at a time
+        // and we know the expected length of TLS client hello,
+        // we can check and fail fastly here instead of re-parsing the TLS client hello "header" on each iteration
+        if (recordLength != -1 && buffer.Length < 5 + recordLength)
+        {
+            return ClientHelloParseState.NotEnoughData;
+        }
 
         if (buffer.Length < 6)
         {
@@ -105,7 +114,7 @@ internal sealed class TlsListener
         }
 
         // Record length
-        if (!reader.TryReadBigEndian(out short recordLength))
+        if (!reader.TryReadBigEndian(out recordLength))
         {
             return ClientHelloParseState.NotTlsClientHello;
         }
