@@ -40,7 +40,7 @@ public interface IAuthenticationService
     Task ForbidAsync(HttpContext context, string? scheme, AuthenticationProperties? properties);
 
     /// <summary>
-    /// Sign a principal in for the specified authentication scheme.
+    /// Sign in a principal in for the specified authentication scheme.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <param name="scheme">The name of the authentication scheme.</param>
