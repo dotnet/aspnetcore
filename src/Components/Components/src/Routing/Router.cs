@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 /// <summary>
 /// A component that supplies route data corresponding to the current navigation state.
 /// </summary>
+[StreamRendering]
 public partial class Router : IComponent, IHandleAfterRender, IDisposable
 {
     // Dictionary is intentionally used instead of ReadOnlyDictionary to reduce Blazor size
