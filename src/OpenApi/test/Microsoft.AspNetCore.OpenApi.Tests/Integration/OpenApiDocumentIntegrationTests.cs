@@ -6,26 +6,36 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 using Microsoft.OpenApi.Extensions;
-using System.Text.RegularExpressions;
 
 [UsesVerify]
 public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>
 {
+    public static TheoryData<string, OpenApiSpecVersion> OpenApiDocuments()
+    {
+        OpenApiSpecVersion[] versions =
+        [
+            OpenApiSpecVersion.OpenApi3_0,
+            OpenApiSpecVersion.OpenApi3_1,
+        ];
+
+        var testCases = new TheoryData<string, OpenApiSpecVersion>();
+
+        foreach (var version in versions)
+        {
+            testCases.Add("v1", version);
+            testCases.Add("v2", version);
+            testCases.Add("controllers", version);
+            testCases.Add("responses", version);
+            testCases.Add("forms", version);
+            testCases.Add("schemas-by-ref", version);
+            testCases.Add("xml", version);
+        }
+
+        return testCases;
+    }
+
     [Theory]
-    [InlineData("v1", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("v2", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("controllers", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("responses", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("forms", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("schemas-by-ref", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("xml", OpenApiSpecVersion.OpenApi3_0)]
-    [InlineData("v1", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("v2", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("controllers", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("responses", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("forms", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("schemas-by-ref", OpenApiSpecVersion.OpenApi3_1)]
-    [InlineData("xml", OpenApiSpecVersion.OpenApi3_1)]
+    [MemberData(nameof(OpenApiDocuments))]
     public async Task VerifyOpenApiDocument(string documentName, OpenApiSpecVersion version)
     {
         var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
@@ -36,7 +46,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
             ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
             : "snapshots";
         var outputDirectory = Path.Combine(baseSnapshotsDirectory, version.ToString());
-        await Verifier.Verify(json)
+        await Verify(json)
             .UseDirectory(outputDirectory)
             .UseParameters(documentName);
     }

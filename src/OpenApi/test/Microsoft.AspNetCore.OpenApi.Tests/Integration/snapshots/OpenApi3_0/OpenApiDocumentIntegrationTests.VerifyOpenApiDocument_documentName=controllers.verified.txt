@@ -105,10 +105,41 @@
           }
         }
       }
+    },
+    "/getcultureinvariant": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "CurrentWeather": {
+        "type": "object",
+        "properties": {
+          "temperature": {
+            "maximum": 100.5,
+            "minimum": -100.5,
+            "type": "number",
+            "format": "float",
+            "default": 0.1
+          }
+        }
+      },
       "MvcTodo": {
         "required": [
           "title",
