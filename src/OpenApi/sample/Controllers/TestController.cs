@@ -32,6 +32,13 @@ public class TestController : ControllerBase
         return Ok(todo);
     }
 
+    [HttpGet]
+    [Route("/getcultureinvariant")]
+    public Ok<CurrentWeather> PostTypedResult()
+    {
+        return TypedResults.Ok(new CurrentWeather(1.0f));
+    }
+
     public class RouteParamsContainer
     {
         [FromRoute]
@@ -44,4 +51,6 @@ public class TestController : ControllerBase
     }
 
     public record MvcTodo(string Title, string Description, bool IsCompleted);
+
+    public record CurrentWeather([property: Range(-100.5f, 100.5f)] float Temperature = 0.1f);
 }
