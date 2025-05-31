@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi.Models;
 using Sample.Transformers;
@@ -40,6 +41,32 @@ builder.Services.AddOpenApi("schemas-by-ref");
 builder.Services.AddOpenApi("xml");
 
 var app = builder.Build();
+
+// Run requests with a culture that uses commas to format decimals to
+// verify the invariant culture is used to generate the OpenAPI document.
+app.Use((next) =>
+{
+    return async context =>
+    {
+        var originalCulture = CultureInfo.CurrentCulture;
+        var originalUICulture = CultureInfo.CurrentUICulture;
+
+        var newCulture = new CultureInfo("fr-FR");
+
+        try
+        {
+            CultureInfo.CurrentCulture = newCulture;
+            CultureInfo.CurrentUICulture = newCulture;
+
+            await next(context);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUICulture;
+        }
+    };
+});
 
 app.MapOpenApi();
 app.MapOpenApi("/openapi/{documentName}.yaml");

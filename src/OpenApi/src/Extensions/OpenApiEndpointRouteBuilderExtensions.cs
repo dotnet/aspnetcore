@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.OpenApi;
@@ -54,7 +55,7 @@ public static class OpenApiEndpointRouteBuilderExtensions
                     var document = await documentService.GetOpenApiDocumentAsync(context.RequestServices, context.Request, context.RequestAborted);
                     var documentOptions = options.Get(lowercasedDocumentName);
 
-                    using var writer = new Utf8BufferTextWriter();
+                    using var writer = new Utf8BufferTextWriter(CultureInfo.InvariantCulture);
                     writer.SetWriter(context.Response.BodyWriter);
 
                     if (UseYaml(pattern))
