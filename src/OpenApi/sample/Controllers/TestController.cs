@@ -34,7 +34,7 @@ public class TestController : ControllerBase
 
     [HttpGet]
     [Route("/getcultureinvariant")]
-    public Ok<CurrentWeather> GetTypedResult()
+    public Ok<CurrentWeather> GetCurrentWeather()
     {
         return TypedResults.Ok(new CurrentWeather(1.0f));
     }
