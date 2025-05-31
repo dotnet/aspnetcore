@@ -27,6 +27,10 @@ public static class ValidationServiceCollectionExtensions
             // Support ParameterInfo resolution at runtime
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             options.Resolvers.Add(new RuntimeValidatableParameterInfoResolver());
+            // Support Type resolution at runtime
+#pragma warning disable IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
+            options.Resolvers.Add(new RuntimeValidatableTypeInfoResolver());
+#pragma warning restore IL2026 // Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         });
         return services;
