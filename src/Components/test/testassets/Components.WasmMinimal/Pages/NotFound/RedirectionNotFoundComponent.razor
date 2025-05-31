@@ -1,0 +1,38 @@
+﻿@inject NavigationManager NavigationManager
+
+@if (!WaitForInteractivity || RendererInfo.IsInteractive)
+{
+    <h1>Original page</h1>
+
+    <p id="test-info">Any content</p>
+    <a id="link-to-not-existing-page" href="@_nonExistingPath">
+        Go to not-existing-page
+    </a>
+}
+
+@code{
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "navigate-programmatically")]
+    public bool? NavigateProgrammatically { get; set; }
+
+    [Parameter]
+    public bool StartStreaming { get; set; } = false;
+
+    [Parameter]
+    public bool WaitForInteractivity { get; set; } = false;
+
+    private string _nonExistingPath = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (StartStreaming)
+        {
+            await Task.Yield();
+        }
+        _nonExistingPath = $"{NavigationManager.BaseUri}reexecution/not-existing-page";
+        if (NavigateProgrammatically == true)
+        {
+            NavigationManager.NavigateTo(_nonExistingPath);
+        }
+    }
+}
