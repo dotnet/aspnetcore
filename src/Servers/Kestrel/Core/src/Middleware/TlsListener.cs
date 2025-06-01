@@ -94,6 +94,13 @@ internal sealed class TlsListener
             return ClientHelloParseState.NotEnoughData;
         }
 
+        // this means we finally got a full tls record, so we can return without parsing again
+        if (recordLength != -1)
+        {
+            clientHelloBytes = buffer.Slice(0, 5 + recordLength);
+            return ClientHelloParseState.ValidTlsClientHello;
+        }
+
         if (buffer.Length < 6)
         {
             return ClientHelloParseState.NotEnoughData;

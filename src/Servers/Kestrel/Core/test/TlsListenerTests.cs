@@ -28,7 +28,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
-public class TlsListenerMiddlewareTests
+public class TlsListenerTests
 {
     [Theory]
     [MemberData(nameof(ValidClientHelloData))]
@@ -49,6 +49,29 @@ public class TlsListenerMiddlewareTests
     [MemberData(nameof(InvalidClientHelloData_Segmented))]
     public Task OnTlsClientHelloAsync_InvalidData_MultipleSegments(int id, List<byte[]> packets)
         => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, tlsClientHelloCallbackExpected: false);
+
+    [Fact]
+    public async Task RunTlsClientHelloCallbackTest_WithPreCancelledToken()
+    {
+        var serviceContext = new TestServiceContext();
+
+        var pipe = new Pipe();
+        var writer = pipe.Writer;
+        var reader = new ObservablePipeReader(pipe.Reader);
+
+        var transport = new DuplexPipe(reader, writer);
+        var transportConnection = new DefaultConnectionContext("test", transport, transport);
+
+        var tlsClientHelloCallbackInvoked = false;
+        var middleware = new TlsListener((ctx, data) => { tlsClientHelloCallbackInvoked = true; });
+
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await writer.WriteAsync(new byte[1] { 0x16 });
+        await middleware.OnTlsClientHelloAsync(transportConnection, cts.Token);
+        Assert.False(tlsClientHelloCallbackInvoked);
+    }
 
     [Fact]
     public async Task RunTlsClientHelloCallbackTest_DeterministicallyReads()
