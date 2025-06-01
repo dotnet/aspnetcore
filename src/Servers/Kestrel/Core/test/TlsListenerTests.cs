@@ -63,13 +63,41 @@ public class TlsListenerTests
         var transportConnection = new DefaultConnectionContext("test", transport, transport);
 
         var tlsClientHelloCallbackInvoked = false;
-        var middleware = new TlsListener((ctx, data) => { tlsClientHelloCallbackInvoked = true; });
+        var listener = new TlsListener((ctx, data) => { tlsClientHelloCallbackInvoked = true; });
 
         var cts = new CancellationTokenSource();
         cts.Cancel();
 
         await writer.WriteAsync(new byte[1] { 0x16 });
-        await middleware.OnTlsClientHelloAsync(transportConnection, cts.Token);
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        {
+            await listener.OnTlsClientHelloAsync(transportConnection, cts.Token);
+        });
+        Assert.False(tlsClientHelloCallbackInvoked);
+    }
+
+    [Fact]
+    public async Task RunTlsClientHelloCallbackTest_WithPendingCancellation()
+    {
+        var serviceContext = new TestServiceContext();
+
+        var pipe = new Pipe();
+        var writer = pipe.Writer;
+        var reader = new ObservablePipeReader(pipe.Reader);
+
+        var transport = new DuplexPipe(reader, writer);
+        var transportConnection = new DefaultConnectionContext("test", transport, transport);
+
+        var tlsClientHelloCallbackInvoked = false;
+        var listener = new TlsListener((ctx, data) => { tlsClientHelloCallbackInvoked = true; });
+
+        var cts = new CancellationTokenSource();
+        await writer.WriteAsync(new byte[1] { 0x16 });
+        var listenerTask = listener.OnTlsClientHelloAsync(transportConnection, cts.Token);
+        await writer.WriteAsync(new byte[2] { 0x03, 0x01 });
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await listenerTask);
         Assert.False(tlsClientHelloCallbackInvoked);
     }
 
@@ -90,15 +118,15 @@ public class TlsListenerTests
         var transportConnection = new DefaultConnectionContext("test", transport, transport);
 
         var tlsClientHelloCallbackInvoked = false;
-        var middleware = new TlsListener((ctx, data) => { tlsClientHelloCallbackInvoked = true; });
+        var listener = new TlsListener((ctx, data) => { tlsClientHelloCallbackInvoked = true; });
 
         await writer.WriteAsync(new byte[1] { 0x16 });
-        var middlewareTask = middleware.OnTlsClientHelloAsync(transportConnection, CancellationToken.None);
+        var listenerTask = listener.OnTlsClientHelloAsync(transportConnection, CancellationToken.None);
         await writer.WriteAsync(new byte[2] { 0x03, 0x01 });
         await writer.WriteAsync(new byte[2] { 0x00, 0x20 });
         await writer.CompleteAsync();
 
-        await middlewareTask;
+        await listenerTask;
         Assert.False(tlsClientHelloCallbackInvoked);
 
         var readResult = await reader.ReadAsync();
@@ -124,7 +152,7 @@ public class TlsListenerTests
 
         var fullLength = packets.Sum(p => p.Length);
 
-        var middleware = new TlsListener(
+        var listener = new TlsListener(
             tlsClientHelloBytesCallback: (ctx, data) =>
             {
                 tlsClientHelloCallbackActual = true;
@@ -137,7 +165,7 @@ public class TlsListenerTests
 
         // write first packet
         await writer.WriteAsync(packets[0]);
-        var middlewareTask = middleware.OnTlsClientHelloAsync(transportConnection, CancellationToken.None);
+        var listenerTask = listener.OnTlsClientHelloAsync(transportConnection, CancellationToken.None);
 
         /* It is a race condition (middleware's loop and writes here).
          * We don't know specifically how many packets will be read by middleware's loop
@@ -151,7 +179,7 @@ public class TlsListenerTests
             await writer.WriteAsync(packet);
         }
         await writer.CompleteAsync();
-        await middlewareTask;
+        await listenerTask;
 
         Assert.Equal(tlsClientHelloCallbackExpected, tlsClientHelloCallbackActual);
 
@@ -175,7 +203,7 @@ public class TlsListenerTests
 
         var tlsClientHelloCallbackActual = false;
 
-        var middleware = new TlsListener(
+        var listener = new TlsListener(
             tlsClientHelloBytesCallback: (ctx, data) =>
             {
                 tlsClientHelloCallbackActual = true;
@@ -190,7 +218,7 @@ public class TlsListenerTests
         await writer.CompleteAsync();
 
         // call middleware and expect a callback
-        await middleware.OnTlsClientHelloAsync(transportConnection, CancellationToken.None);
+        await listener.OnTlsClientHelloAsync(transportConnection, CancellationToken.None);
 
         Assert.Equal(tlsClientHelloCallbackExpected, tlsClientHelloCallbackActual);
 
