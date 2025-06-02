@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -35,7 +33,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
     public Request Request { get; private set; } = default!;
 
-    public Response Response { get; private set; } = default!;
+    public Response Response { get; private set; } = default!;  
 
     public WindowsPrincipal User => Request.User;
 
