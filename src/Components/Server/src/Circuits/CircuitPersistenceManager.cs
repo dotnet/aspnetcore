@@ -6,7 +6,6 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -15,9 +14,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 internal partial class CircuitPersistenceManager(
     IOptions<CircuitOptions> circuitOptions,
     ServerComponentSerializer serverComponentSerializer,
-    ICircuitPersistenceProvider circuitPersistenceProvider,
-    IDataProtectionProvider dataProtectionProvider)
+    ICircuitPersistenceProvider circuitPersistenceProvider)
 {
+    private const string CircuitPersistenceManagerKey = $"Microsoft.AspNetCore.Components.Server.Circuits.{nameof(CircuitPersistenceManager)}";
 
     public async Task PauseCircuitAsync(CircuitHost circuit, CancellationToken cancellation = default)
     {
@@ -42,7 +41,7 @@ internal partial class CircuitPersistenceManager(
         var invocation = new ServerComponentInvocationSequence();
         foreach (var (id, componentKey, (componentType, parameters)) in components)
         {
-            var distributedRetention = circuitOptions.Value.PersistedCircuitDistributedRetentionPeriod;
+            var distributedRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
             var localRetention = circuitOptions.Value.PersistedCircuitInMemoryRetentionPeriod;
             var maxRetention = distributedRetention > localRetention ? distributedRetention : localRetention;
 
@@ -51,7 +50,7 @@ internal partial class CircuitPersistenceManager(
             persistedComponents.Add(id, marker);
         }
 
-        state.PersistAsJson(typeof(CircuitPersistenceManager).FullName, persistedComponents);
+        state.PersistAsJson(CircuitPersistenceManagerKey, persistedComponents);
 
         return Task.CompletedTask;
     }
@@ -60,8 +59,6 @@ internal partial class CircuitPersistenceManager(
     {
         return await circuitPersistenceProvider.RestoreCircuitAsync(circuitId, cancellation);
     }
-
-    internal PersistedCircuitState FromProtectedState(string rootComponents, string applicationState) => throw new NotImplementedException();
 
     // We are going to construct a RootComponentOperationBatch but we are going to replace the descriptors from the client with the
     // descriptors that we have persisted when pausing the circuit.
@@ -115,13 +112,6 @@ internal partial class CircuitPersistenceManager(
         return result;
     }
 
-    internal (string rootComponents, string applicationState) ToProtectedState(PersistedCircuitState state) => throw new NotImplementedException();
-
-    internal ProtectedPrerenderComponentApplicationStore ToComponentApplicationStore(Dictionary<string, byte[]> applicationState)
-    {
-        return new ProtectedPrerenderComponentApplicationStore(applicationState, dataProtectionProvider);
-    }
-
     private class CircuitPersistenceManagerStore : IPersistentComponentStateStore
     {
         internal PersistedCircuitState PersistedCircuitState { get; private set; }
@@ -139,7 +129,7 @@ internal partial class CircuitPersistenceManager(
             byte[] rootComponentMarkers = null;
             foreach (var (key, value) in state)
             {
-                if (key == typeof(CircuitPersistenceManager).FullName)
+                if (key == CircuitPersistenceManagerKey)
                 {
                     rootComponentMarkers = value;
                 }

@@ -107,6 +107,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public IServiceProvider Services { get; }
 
+    internal bool HasPendingPersistedCircuitState => _persistedCircuitState != null;
+
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
     public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpContext, CancellationToken cancellationToken)

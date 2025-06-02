@@ -267,7 +267,7 @@ internal partial class CircuitRegistry
             case EvictionReason.Capacity:
                 // Kick off the dispose in the background.
                 var disconnectedEntry = (DisconnectedCircuitEntry)value;
-                Log.CircuitEvicted(_logger, disconnectedEntry.CircuitHost.CircuitId, reason);                
+                Log.CircuitEvicted(_logger, disconnectedEntry.CircuitHost.CircuitId, reason);
                 _ = PauseAndDisposeCircuitEntry(disconnectedEntry);
                 break;
 
@@ -287,7 +287,17 @@ internal partial class CircuitRegistry
 
         try
         {
-            await _circuitPersistenceManager.PauseCircuitAsync(entry.CircuitHost);
+            if (!entry.CircuitHost.HasPendingPersistedCircuitState)
+            {
+                // Only pause and persist the circuit state if it has been active at some point,
+                // meaning that the client called UpdateRootComponents on it.
+                await _circuitPersistenceManager.PauseCircuitAsync(entry.CircuitHost);
+            }
+            else
+            {
+                Log.PersistedCircuitStateDiscarded(_logger, entry.CircuitHost.CircuitId);
+            }
+
             entry.CircuitHost.UnhandledException -= CircuitHost_UnhandledException;
             await entry.CircuitHost.DisposeAsync();
         }
@@ -417,5 +427,8 @@ internal partial class CircuitRegistry
 
         [LoggerMessage(115, LogLevel.Debug, "Reconnect to circuit with id {CircuitId} succeeded.", EventName = "ReconnectionSucceeded")]
         public static partial void ReconnectionSucceeded(ILogger logger, CircuitId circuitId);
+
+        [LoggerMessage(116, LogLevel.Debug, "Circuit {CircuitId} was not resumed. Persisted circuit state for {CircuitId} discarded.", EventName = "PersistedCircuitStateDiscarded")]
+        public static partial void PersistedCircuitStateDiscarded(ILogger logger, CircuitId circuitId);
     }
 }

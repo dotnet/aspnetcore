@@ -52,23 +52,13 @@ public sealed class CircuitOptions
     /// When using a distributed cache like <see cref="Extensions.Caching.Hybrid.HybridCache"/> this value is ignored
     /// and the configuration from <see cref="Extensions.DependencyInjection.MemoryCacheServiceCollectionExtensions.AddMemoryCache(Extensions.DependencyInjection.IServiceCollection)"/>
     /// is used instead.
-    public int PersistedCircuitMaxRetained { get; set; } = 100;
+    /// </remarks>
+    public int PersistedCircuitInMemoryMaxRetained { get; set; } = 1000;
 
     /// <summary>
     /// Gets or sets the duration for which a persisted circuit is retained in memory.
     /// </summary>
-    /// <remarks>This value is used for the default in-memory cache implementation as well as for the
-    /// duration for which the persisted circuits are retained in the local in memory cache when using a
-    /// <see cref="Extensions.Caching.Hybrid.HybridCache"/>.</remarks>"/>
-    public TimeSpan PersistedCircuitInMemoryRetentionPeriod { get; set; } = TimeSpan.FromHours(1);
-
-    /// <summary>
-    /// Gets or sets the duration for which the persisted circuits are retained in the distributed cache when using a
-    /// <see cref="Extensions.Caching.Hybrid.HybridCache"/>.</summary>
-    /// <remarks>
-    /// The default value is 8 hours
-    /// </remarks>
-    public TimeSpan PersistedCircuitDistributedRetentionPeriod { get; set; } = TimeSpan.FromHours(8);
+    public TimeSpan PersistedCircuitInMemoryRetentionPeriod { get; set; } = TimeSpan.FromHours(2);
 
     /// <summary>
     /// Gets or sets a value that determines whether or not to send detailed exception messages to JavaScript when an unhandled exception
