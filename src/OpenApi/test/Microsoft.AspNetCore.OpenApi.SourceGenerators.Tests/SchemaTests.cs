@@ -19,7 +19,10 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder();
 
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options => {
+    var prevCreateSchemaReferenceId = options.CreateSchemaReferenceId;
+    options.CreateSchemaReferenceId = (x) => x.Type == typeof(AddressNested) ? null : prevCreateSchemaReferenceId(x);
+});
 
 var app = builder.Build();
 
@@ -31,6 +34,7 @@ app.MapPost("/project-record", (ProjectRecord project) => { });
 app.MapPost("/todo-with-description", (TodoWithDescription todo) => { });
 app.MapPost("/type-with-examples", (TypeWithExamples typeWithExamples) => { });
 app.MapPost("/user", (User user) => { });
+app.MapPost("/company", (Company company) => { });
 
 app.Run();
 
@@ -175,6 +179,60 @@ internal class User : IUser
     /// <inheritdoc/>
     public string Name { get; set; }
 }
+
+/// <summary>
+/// An address.
+/// </summary>
+public class AddressWithSummary
+{
+    public string Street { get; set; }
+}
+
+public class AddressWithoutSummary
+{
+    public string Street { get; set; }
+}
+
+/// <summary>
+/// An address.
+/// </summary>
+public class AddressNested
+{
+    public string Street { get; set; }
+}
+
+public class Company
+{
+    /// <summary>
+    /// Billing address.
+    /// </summary>
+    public AddressWithSummary BillingAddressClassWithSummary { get; set; }
+
+    /// <summary>
+    /// Billing address.
+    /// </summary>
+    public AddressWithoutSummary BillingAddressClassWithoutSummary { get; set; }
+
+    /// <summary>
+    /// Billing address.
+    /// </summary>
+    public AddressNested BillingAddressNested { get; set; }
+
+    /// <summary>
+    /// Visiting address.
+    /// </summary>
+    public AddressWithSummary VisitingAddressClassWithSummary { get; set; }
+
+    /// <summary>
+    /// Visiting address.
+    /// </summary>
+    public AddressWithoutSummary VisitingAddressClassWithoutSummary { get; set; }
+
+    /// <summary>
+    /// Visiting address.
+    /// </summary>
+    public AddressNested VisitingAddressNested { get; set; }
+}
 """;
         var generator = new XmlCommentGenerator();
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
@@ -258,6 +316,21 @@ internal class User : IUser
             var user = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("The unique identifier for the user.", user.Properties["id"].Description);
             Assert.Equal("The user's display name.", user.Properties["name"].Description);
+
+            path = document.Paths["/company"].Operations[HttpMethod.Post];
+            var company = path.RequestBody.Content["application/json"].Schema;
+            Assert.Equal("Billing address.", company.Properties["billingAddressClassWithSummary"].Description);
+            Assert.Equal("Billing address.", company.Properties["billingAddressClassWithoutSummary"].Description);
+            Assert.Equal("Billing address.", company.Properties["billingAddressNested"].Description);
+            Assert.Equal("Visiting address.", company.Properties["visitingAddressClassWithSummary"].Description);
+            Assert.Equal("Visiting address.", company.Properties["visitingAddressClassWithoutSummary"].Description);
+            Assert.Equal("Visiting address.", company.Properties["visitingAddressNested"].Description);
+
+            var addressWithSummary = document.Components.Schemas["AddressWithSummary"];
+            Assert.Equal("An address.", addressWithSummary.Description);
+
+            var addressWithoutSummary = document.Components.Schemas["AddressWithoutSummary"];
+            Assert.Null(addressWithSummary.Description);
         });
     }
 }
