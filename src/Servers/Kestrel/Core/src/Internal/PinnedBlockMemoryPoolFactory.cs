@@ -13,7 +13,8 @@ internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, I
 {
     private readonly IMeterFactory _meterFactory;
     private readonly TimeProvider _timeProvider;
-    private readonly ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool> _pools = new();
+    // micro-optimization: Using nuint as the value type to avoid GC write barriers; could replace with ConcurrentHashSet if that becomes available
+    private readonly ConcurrentDictionary<PinnedBlockMemoryPool, nuint> _pools = new();
 
     public PinnedBlockMemoryPoolFactory(IMeterFactory meterFactory, TimeProvider? timeProvider = null)
     {
@@ -25,11 +26,11 @@ internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, I
     {
         var pool = new PinnedBlockMemoryPool(_meterFactory);
 
-        _pools.TryAdd(pool, pool);
+        _pools.TryAdd(pool, nuint.Zero);
 
         pool.OnPoolDisposed(static (state, self) =>
         {
-            ((ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool>)state!).TryRemove(self, out _);
+            ((ConcurrentDictionary<PinnedBlockMemoryPool, nuint>)state!).TryRemove(self, out _);
         }, _pools);
 
         return pool;
@@ -40,7 +41,7 @@ internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, I
         var now = _timeProvider.GetUtcNow();
         foreach (var pool in _pools)
         {
-            pool.Value.TryScheduleEviction(now);
+            pool.Key.TryScheduleEviction(now);
         }
     }
 }

@@ -40,7 +40,7 @@ public class PinnedBlockMemoryPoolFactoryTests
         var pool = factory.Create();
         Assert.NotNull(pool);
 
-        var dict = (ConcurrentDictionary<PinnedBlockMemoryPool, PinnedBlockMemoryPool>)(typeof(PinnedBlockMemoryPoolFactory)
+        var dict = (ConcurrentDictionary<PinnedBlockMemoryPool, nuint>)(typeof(PinnedBlockMemoryPoolFactory)
             .GetField("_pools", BindingFlags.NonPublic | BindingFlags.Instance)
             ?.GetValue(factory));
         Assert.Single(dict);
