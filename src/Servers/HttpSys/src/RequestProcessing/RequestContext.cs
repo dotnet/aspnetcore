@@ -223,88 +223,56 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
     /// <summary>
     /// Attempts to get the client hello message bytes from the http.sys.
-    /// If not successful, will return false.
+    /// If successful writes the bytes into <paramref name="destination"/>, and shows how many bytes were written in <paramref name="bytesReturned"/>.
+    /// If not successful because <paramref name="destination"/> is not large enough, returns false and shows a size of <paramref name="destination"/> required in <paramref name="bytesReturned"/>.
+    /// If not successful for other reason - throws exception with message/errorCode.
     /// </summary>
-    internal unsafe bool GetAndInvokeTlsClientHelloMessageBytesCallback(IFeatureCollection features, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
+    internal unsafe bool TryGetTlsClientHelloMessageBytes(
+        Span<byte> destination,
+        out int bytesReturned)
     {
+        bytesReturned = default;
         if (!HttpApi.SupportsClientHello)
         {
             // not supported, so we just return and don't invoke the callback
-            return false;
+            throw new InvalidOperationException("HttpApi does not support client hello. See HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello");
         }
 
-        uint bytesReturnedValue = 0;
-        uint* bytesReturned = &bytesReturnedValue;
         uint statusCode;
-
         var requestId = PinsReleased ? Request.RequestId : RequestId;
 
-        // we will try with some "random" buffer size
-        var buffer = ArrayPool<byte>.Shared.Rent(512);
-        try
-        {
-            fixed (byte* pBuffer = buffer)
-            {
-                statusCode = HttpApi.HttpGetRequestProperty(
-                    requestQueueHandle: Server.RequestQueue.Handle,
-                    requestId,
-                    propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
-                    qualifier: null,
-                    qualifierSize: 0,
-                    output: pBuffer,
-                    outputSize: (uint)buffer.Length,
-                    bytesReturned: (IntPtr)bytesReturned,
-                    overlapped: IntPtr.Zero);
+        uint bytesReturnedValue = 0;
+        uint* bytesReturnedPointer = &bytesReturnedValue;
 
-                if (statusCode is ErrorCodes.ERROR_SUCCESS)
-                {
-                    tlsClientHelloBytesCallback(features, buffer.AsSpan(0, (int)bytesReturnedValue));
-                    return true;
-                }
+        fixed (byte* pBuffer = destination)
+        {
+            statusCode = HttpApi.HttpGetRequestProperty(
+                requestQueueHandle: Server.RequestQueue.Handle,
+                requestId,
+                propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                qualifier: null,
+                qualifierSize: 0,
+                output: pBuffer,
+                outputSize: (uint)destination.Length,
+                bytesReturned: (IntPtr)bytesReturnedPointer,
+                overlapped: IntPtr.Zero);
+
+            bytesReturned = (int)bytesReturnedValue;
+
+            if (statusCode is ErrorCodes.ERROR_SUCCESS)
+            {
+                return true;
             }
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
-        }
 
-        // if buffer supplied is too small, `bytesReturned` will have proper size
-        // so retry should succeed with the properly allocated buffer
-        if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
-        {
-            try
+            // if buffer supplied is too small, `bytesReturned` will have proper size
+            if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
             {
-                var correctSize = (int)bytesReturnedValue;
-                buffer = ArrayPool<byte>.Shared.Rent(correctSize);
-
-                fixed (byte* pBuffer = buffer)
-                {
-                    statusCode = HttpApi.HttpGetRequestProperty(
-                        requestQueueHandle: Server.RequestQueue.Handle,
-                        requestId,
-                        propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
-                        qualifier: null,
-                        qualifierSize: 0,
-                        output: pBuffer,
-                        outputSize: (uint)buffer.Length,
-                        bytesReturned: (IntPtr)bytesReturned,
-                        overlapped: IntPtr.Zero);
-
-                    if (statusCode is ErrorCodes.ERROR_SUCCESS)
-                    {
-                        tlsClientHelloBytesCallback(features, buffer.AsSpan(0, correctSize));
-                        return true;
-                    }
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+                return false;
             }
         }
 
         Log.TlsClientHelloRetrieveError(Logger, requestId, statusCode);
-        return false;
+        throw new HttpSysException((int)statusCode);
     }
 
     internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
