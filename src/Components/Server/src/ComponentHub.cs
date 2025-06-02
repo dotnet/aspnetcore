@@ -185,7 +185,7 @@ internal sealed partial class ComponentHub : Hub
                 persistedState.RootComponents,
                 serializedComponentOperations);
 
-            store = _circuitPersistenceManager.ToComponentApplicationStore(persistedState.ApplicationState);
+            store = new ProtectedPrerenderComponentApplicationStore(persistedState.ApplicationState, _dataProtectionProvider);
         }
         else
         {
@@ -337,15 +337,9 @@ internal sealed partial class ComponentHub : Hub
         }
         else
         {
-            persistedCircuitState = _circuitPersistenceManager.FromProtectedState(rootComponents, applicationState);
-            if (persistedCircuitState == null)
-            {
-                // If we couldn't deserialize the persisted state, signal that.
-                Log.InvalidInputData(_logger);
-                await NotifyClientError(Clients.Caller, "The root components or application state provided are invalid.");
-                Context.Abort();
-                return null;
-            }
+            // For now abort, since we currently don't support resuming circuits persisted to the client.
+            Context.Abort();
+            return null;
         }
 
         try
@@ -543,13 +537,6 @@ internal sealed partial class ComponentHub : Hub
     }
 
     private static Task NotifyClientError(IClientProxy client, string error) => client.SendAsync("JS.Error", error);
-
-    internal class ResumeCircuitResult
-    {
-        public string CircuitId { get; set; }
-        public string ApplicationState { get; set; }
-        public string Operations { get; set; }
-    }
 
     private static partial class Log
     {

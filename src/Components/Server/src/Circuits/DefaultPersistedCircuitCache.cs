@@ -28,7 +28,7 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
         _options = options.Value;
         _persistedCircuits = new MemoryCache(new MemoryCacheOptions
         {
-            SizeLimit = _options.PersistedCircuitMaxRetained,
+            SizeLimit = _options.PersistedCircuitInMemoryMaxRetained,
             Clock = clock
         });
 
