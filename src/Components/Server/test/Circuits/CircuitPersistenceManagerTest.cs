@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits;
@@ -31,6 +32,8 @@ public class CircuitPersistenceManagerTest
     {
         // Arrange
         var dataProtectionProvider = new EphemeralDataProtectionProvider();
+        var deserializer = CreateDeserializer(dataProtectionProvider);
+
         var options = Options.Create(new CircuitOptions());
         var components = new[]
         {
@@ -43,6 +46,7 @@ public class CircuitPersistenceManagerTest
         var circuitHost = await CreateCircuitHostAsync(
             options,
             dataProtectionProvider,
+            deserializer,
             components);
 
         var circuitPersistenceProvider = new TestCircuitPersistenceProvider();
@@ -56,41 +60,145 @@ public class CircuitPersistenceManagerTest
 
         // Assert
         Assert.NotNull(circuitPersistenceProvider.State);
+        var state = circuitPersistenceProvider.State;
+        Assert.Equal(2, state.ApplicationState.Count);
+
+        AssertRootComponents(
+            deserializer,
+            [
+                (
+                    Id: 1,
+                    Key: new ComponentMarkerKey("1", typeof(RootComponent).FullName!),
+                    (
+                        typeof(RootComponent),
+                        new Dictionary<string, object>
+                        {
+                            ["Count"] = 42
+                        }
+                    )
+                )
+            ],
+            state.RootComponents);
+    }
+
+    [Fact]
+    public async Task PauseCircuitAsync_CanPersistMultipleComponents_WithTheirParameters()
+    {
+        // Arrange
+        var dataProtectionProvider = new EphemeralDataProtectionProvider();
+        var deserializer = CreateDeserializer(dataProtectionProvider);
+        var options = Options.Create(new CircuitOptions());
+        var components = new[]
+        {
+            (RootComponentType: typeof(RootComponent), Parameters: new Dictionary<string, object>
+            {
+                ["Count"] = 42
+            }),
+            (RootComponentType: typeof(SecondRootComponent), Parameters: new Dictionary<string, object>
+            {
+                ["Count"] = 100
+            })
+        };
+        var circuitHost = await CreateCircuitHostAsync(
+            options,
+            dataProtectionProvider,
+            deserializer,
+            components);
+        var circuitPersistenceProvider = new TestCircuitPersistenceProvider();
+        var circuitPersistenceManager = new CircuitPersistenceManager(
+            options,
+            new ServerComponentSerializer(dataProtectionProvider),
+            circuitPersistenceProvider);
+        // Act
+        await circuitPersistenceManager.PauseCircuitAsync(circuitHost);
+        // Assert
+        Assert.NotNull(circuitPersistenceProvider.State);
+        var state = circuitPersistenceProvider.State;
+        Assert.Equal(3, state.ApplicationState.Count);
+        AssertRootComponents(
+            deserializer,
+            [
+                (
+                    Id: 1,
+                    Key: new ComponentMarkerKey("1", typeof(RootComponent).FullName!),
+                    (
+                        typeof(RootComponent),
+                        new Dictionary<string, object>
+                        {
+                            ["Count"] = 42
+                        }
+                    )
+                ),
+                (
+                    Id: 2,
+                    Key: new ComponentMarkerKey("2", typeof(SecondRootComponent).FullName!),
+                    (
+                        typeof(SecondRootComponent),
+                        new Dictionary<string, object>
+                        {
+                            ["Count"] = 100
+                        }
+                    )
+                )
+            ],
+            state.RootComponents);
+    }
+
+    private void AssertRootComponents(
+        ServerComponentDeserializer deserializer,
+        (int Id, ComponentMarkerKey Key, (Type ComponentType, Dictionary<string, object> Parameters))[] expected, byte[] rootComponents)
+    {
+        var actual = JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(rootComponents, SerializerOptions);
+        Assert.NotNull(actual);
+        Assert.Equal(expected.Length, actual.Count);
+        foreach (var (id, key, (componentType, parameters)) in expected)
+        {
+            Assert.True(actual.TryGetValue(id, out var marker), $"Expected marker with ID {id} not found.");
+            Assert.Equal(key.LocationHash, marker.Key.Value.LocationHash);
+            Assert.Equal(key.FormattedComponentKey, marker.Key.Value.FormattedComponentKey);
+            Assert.True(deserializer.TryDeserializeWebRootComponentDescriptor(marker, out var descriptor), $"Failed to deserialize marker with ID {id}.");
+            Assert.NotNull(descriptor);
+            Assert.Equal(componentType, descriptor.ComponentType);
+            var actualParameters = descriptor.Parameters.Parameters.ToDictionary();
+            Assert.NotNull(actualParameters);
+            Assert.Equal(parameters.Count, actualParameters.Count);
+            foreach (var (paramKey, paramValue) in parameters)
+            {
+                Assert.True(actualParameters.TryGetValue(paramKey, out var actualValue), $"Expected parameter '{paramKey}' not found.");
+                Assert.Equal(paramValue, actualValue);
+            }
+        }
     }
 
     private async Task<CircuitHost> CreateCircuitHostAsync(
         IOptions<CircuitOptions> options,
         EphemeralDataProtectionProvider dataProtectionProvider,
+        ServerComponentDeserializer deserializer,
         (Type RootComponentType, Dictionary<string, object> Parameters)[] components = null)
     {
         components ??= [];
         var circuitId = new CircuitIdFactory(dataProtectionProvider).CreateCircuitId();
-
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton(dataProtectionProvider)
-            .AddSingleton<ServerComponentSerializer>()
-            .AddSingleton(
-                sp => new ComponentStatePersistenceManager(
-                    NullLoggerFactory.Instance.CreateLogger<ComponentStatePersistenceManager>(),
-                    sp))
-            .BuildServiceProvider();
-
-        var scope = serviceProvider.CreateAsyncScope();
 
         var jsRuntime = new RemoteJSRuntime(
             options,
             Options.Create(new HubOptions<ComponentHub>()),
             NullLoggerFactory.Instance.CreateLogger<RemoteJSRuntime>());
 
-        var client = new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(dataProtectionProvider)
+            .AddSingleton<ServerComponentSerializer>()
+            .AddSupplyValueFromPersistentComponentStateProvider()
+            .AddSingleton(
+                sp => new ComponentStatePersistenceManager(
+                    NullLoggerFactory.Instance.CreateLogger<ComponentStatePersistenceManager>(),
+                    sp))
+            .AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State)
+            .AddSingleton<IJSRuntime>(jsRuntime)
+            .BuildServiceProvider();
 
-        var deserializer = new ServerComponentDeserializer(
-                dataProtectionProvider,
-                NullLoggerFactory.Instance.CreateLogger<ServerComponentDeserializer>(),
-                new RootTypeCache(),
-                new ComponentParameterDeserializer(
-                    NullLoggerFactory.Instance.CreateLogger<ComponentParameterDeserializer>(),
-                    new ComponentParametersTypeCache()));
+        var scope = serviceProvider.CreateAsyncScope();
+
+        var client = new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
 
         var renderer = new RemoteRenderer(
             scope.ServiceProvider,
@@ -128,32 +236,41 @@ public class CircuitPersistenceManagerTest
         default,
         default);
 
-        var store = new ProtectedPrerenderComponentApplicationStore("", dataProtectionProvider);
+        var store = new ProtectedPrerenderComponentApplicationStore(dataProtectionProvider);
         await circuitHost.UpdateRootComponents(
-            CreateBatch(components, deserializer),
+            CreateBatch(components, deserializer, dataProtectionProvider),
             store,
             default);
 
         return circuitHost;
     }
 
+    private static ServerComponentDeserializer CreateDeserializer(EphemeralDataProtectionProvider dataProtectionProvider) => new ServerComponentDeserializer(
+                    dataProtectionProvider,
+                    NullLoggerFactory.Instance.CreateLogger<ServerComponentDeserializer>(),
+                    new RootTypeCache(),
+                    new ComponentParameterDeserializer(
+                        NullLoggerFactory.Instance.CreateLogger<ComponentParameterDeserializer>(),
+                        new ComponentParametersTypeCache()));
+
     private static RootComponentOperationBatch CreateBatch(
         (Type RootComponentType, Dictionary<string, object> Parameters)[] components,
-        ServerComponentDeserializer deserializer)
+        ServerComponentDeserializer deserializer,
+        EphemeralDataProtectionProvider dataProtectionProvider)
     {
         var invocation = new ServerComponentInvocationSequence();
-        var serializer = new ServerComponentSerializer(new EphemeralDataProtectionProvider());
+        var serializer = new ServerComponentSerializer(dataProtectionProvider);
         var markers = new List<ComponentMarker>();
         for (var i = 0; i < components.Length; i++)
         {
-            var component = components[i];
-            var key = new ComponentMarkerKey((i + 1).ToString(CultureInfo.InvariantCulture), component.RootComponentType.FullName!);
+            var (rootComponentType, parameters) = components[i];
+            var key = new ComponentMarkerKey((i + 1).ToString(CultureInfo.InvariantCulture), rootComponentType.FullName!);
             var marker = ComponentMarker.Create(ComponentMarker.ServerMarkerType, false, key);
             serializer.SerializeInvocation(
                 ref marker,
                 invocation,
-                component.RootComponentType,
-                ParameterView.FromDictionary(component.Parameters),
+                rootComponentType,
+                ParameterView.FromDictionary(parameters),
                 TimeSpan.FromDays(365));
             markers.Add(marker);
         }
@@ -170,7 +287,7 @@ public class CircuitPersistenceManagerTest
                 })]
         };
 
-        var batchJson = JsonSerializer.Serialize(batch, SerializationOptions);
+        var batchJson = JsonSerializer.Serialize(batch, ServerComponentSerializationSettings.JsonSerializationOptions);
 
         deserializer.TryDeserializeRootComponentOperations(batchJson, out batch);
 
@@ -213,11 +330,49 @@ public class CircuitPersistenceManagerTest
             parameters.SetParameterProperties(this);
             Persisted ??= Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
 
+            _renderHandle.Render(rtb =>
+            {
+                rtb.OpenElement(0, "div");
+                rtb.AddContent(1, $"Persisted: {Persisted}, Count: {Count}");
+                rtb.CloseElement();
+            });
+
             return Task.CompletedTask;
         }
     }
 
-    public static readonly JsonSerializerOptions SerializationOptions = new()
+    public class SecondRootComponent : IComponent
+    {
+        private RenderHandle _renderHandle;
+
+        public void Attach(RenderHandle renderHandle)
+        {
+            _renderHandle = renderHandle;
+        }
+
+        [SupplyParameterFromPersistentComponentState]
+        public string Persisted { get; set; }
+
+        [Parameter]
+        public int Count { get; set; }
+
+        public Task SetParametersAsync(ParameterView parameters)
+        {
+            parameters.SetParameterProperties(this);
+            Persisted ??= Guid.NewGuid().ToString("N", CultureInfo.InvariantCulture);
+
+            _renderHandle.Render(rtb =>
+            {
+                rtb.OpenElement(0, "div");
+                rtb.AddContent(1, $"Persisted: {Persisted}, Count: {Count}");
+                rtb.CloseElement();
+            });
+
+            return Task.CompletedTask;
+        }
+    }
+
+    private static readonly JsonSerializerOptions SerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,

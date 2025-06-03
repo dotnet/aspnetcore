@@ -81,7 +81,7 @@ internal partial class CircuitPersistenceManager(
             return null;
         }
 
-        var data = JsonSerializer.Deserialize<Dictionary<int,ComponentMarker>>(
+        var data = JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(
             rootComponents,
             JsonSerializerOptionsProvider.Options);
 
