@@ -233,7 +233,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         if (!HttpApi.SupportsClientHello)
         {
             // not supported, so we just return and don't invoke the callback
-            throw new InvalidOperationException("HttpApi does not support client hello. See HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello");
+            throw new InvalidOperationException("Windows HTTP Server API does not support HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello or HttpQueryRequestProperty. See HTTP_FEATURE_ID for details.");
         }
 
         uint statusCode;
