@@ -1,11 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
@@ -264,6 +269,114 @@ public class CircuitRegistryTest
     }
 
     [Fact]
+    public async Task Connect_WhilePersistingEvictedCircuit_IsInProgress()
+    {
+        // Arrange
+        var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+        var options = new CircuitOptions
+        {
+            DisconnectedCircuitMaxRetained = 0, // This will automatically trigger eviction.
+        };
+
+        var persistenceCompletionSource = new TaskCompletionSource();
+        var circuitPersistenceProvider = new TestCircuitPersistenceProvider()
+        {
+            Persisting = persistenceCompletionSource.Task,
+        };
+
+        var registry = new TestCircuitRegistry(circuitIdFactory, options, circuitPersistenceProvider);
+        registry.BeforeDisconnect = new ManualResetEventSlim();
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(sp => new ComponentStatePersistenceManager(
+            NullLoggerFactory.Instance.CreateLogger<ComponentStatePersistenceManager>(),
+            sp));
+        serviceCollection.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+
+        var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), serviceProvider.CreateAsyncScope());
+        registry.Register(circuitHost);
+        var client = Mock.Of<IClientProxy>();
+        var newId = "new-connection";
+
+        // Act
+        var disconnect = Task.Run(() =>
+        {
+            var task = registry.DisconnectAsync(circuitHost, circuitHost.Client.ConnectionId);
+            return task;
+        });
+
+        var connect = Task.Run(async () =>
+        {
+            var connectCore = registry.ConnectAsync(circuitHost.CircuitId, client, newId, default);
+            await connectCore;
+        });
+
+        registry.BeforeDisconnect.Set();
+
+        await Task.WhenAll(disconnect, connect);
+        persistenceCompletionSource.SetResult();
+
+        // Assert
+        // We expect the reconnect to fail since the circuit has already been evicted and persisted.
+        Assert.Empty(registry.ConnectedCircuits.Values);
+        Assert.True(circuitPersistenceProvider.PersistCalled);
+        Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
+    }
+
+    [Fact]
+    public async Task Disconnect_DoesNotPersistCircuits_WithPendingState()
+    {
+        // Arrange
+        var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+        var options = new CircuitOptions
+        {
+            DisconnectedCircuitMaxRetained = 0, // This will automatically trigger eviction.
+        };
+
+        var circuitPersistenceProvider = new TestCircuitPersistenceProvider();
+
+        var registry = new TestCircuitRegistry(circuitIdFactory, options, circuitPersistenceProvider);
+        registry.BeforeDisconnect = new ManualResetEventSlim();
+
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(sp => new ComponentStatePersistenceManager(
+            NullLoggerFactory.Instance.CreateLogger<ComponentStatePersistenceManager>(),
+            sp));
+        serviceCollection.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+
+        var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), serviceProvider.CreateAsyncScope());
+        registry.Register(circuitHost);
+        circuitHost.AttachPersistedState(new PersistedCircuitState());
+        var client = Mock.Of<IClientProxy>();
+        var newId = "new-connection";
+
+        // Act
+        var disconnect = Task.Run(() =>
+        {
+            var task = registry.DisconnectAsync(circuitHost, circuitHost.Client.ConnectionId);
+            return task;
+        });
+
+        var connect = Task.Run(async () =>
+        {
+            var connectCore = registry.ConnectAsync(circuitHost.CircuitId, client, newId, default);
+            await connectCore;
+        });
+
+        registry.BeforeDisconnect.Set();
+
+        await Task.WhenAll(disconnect, connect);
+
+        // Assert
+        // We expect the reconnect to fail since the circuit has already been evicted and persisted.
+        Assert.Empty(registry.ConnectedCircuits.Values);
+        Assert.False(circuitPersistenceProvider.PersistCalled);
+        Assert.False(registry.DisconnectedCircuits.TryGetValue(circuitHost.CircuitId.Secret, out _));
+    }
+
+    [Fact]
     public async Task DisconnectWhenAConnectIsInProgress()
     {
         // Arrange
@@ -353,8 +466,15 @@ public class CircuitRegistryTest
 
     private class TestCircuitRegistry : CircuitRegistry
     {
-        public TestCircuitRegistry(CircuitIdFactory factory, CircuitOptions circuitOptions = null)
-            : base(Options.Create(circuitOptions ?? new CircuitOptions()), NullLogger<CircuitRegistry>.Instance, factory, Mock.Of<CircuitPersistenceManager>())
+        public TestCircuitRegistry(
+            CircuitIdFactory factory,
+            CircuitOptions circuitOptions = null,
+            TestCircuitPersistenceProvider persistenceProvider = null)
+            : base(
+                  Options.Create(circuitOptions ?? new CircuitOptions()),
+                  NullLogger<CircuitRegistry>.Instance,
+                  factory,
+                  CreatePersistenceManager(circuitOptions ?? new CircuitOptions(), persistenceProvider))
         {
         }
 
@@ -390,11 +510,46 @@ public class CircuitRegistryTest
         }
     }
 
+    private class TestCircuitPersistenceProvider : ICircuitPersistenceProvider
+    {
+        public Task Persisting { get; set; }
+        public bool PersistCalled { get; internal set; }
+
+        public Task PersistCircuitAsync(CircuitId circuitId, PersistedCircuitState persistedCircuitState, CancellationToken cancellation = default)
+        {
+            PersistCalled = true;
+            if (Persisting != null)
+            {
+                return Persisting;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task<PersistedCircuitState> RestoreCircuitAsync(CircuitId circuitId, CancellationToken cancellation = default)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    private static CircuitPersistenceManager CreatePersistenceManager(
+        CircuitOptions circuitOptions,
+        TestCircuitPersistenceProvider persistenceProvider)
+    {
+        var manager = new CircuitPersistenceManager(
+            Options.Create(circuitOptions),
+            new Endpoints.ServerComponentSerializer(new EphemeralDataProtectionProvider()),
+            persistenceProvider ?? new TestCircuitPersistenceProvider());
+
+        return manager;
+    }
+
     private static CircuitRegistry CreateRegistry(CircuitIdFactory factory = null)
     {
         return new CircuitRegistry(
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
-            factory ?? TestCircuitIdFactory.CreateTestFactory(), Mock.Of<CircuitPersistenceManager>());
+            factory ?? TestCircuitIdFactory.CreateTestFactory(),
+            CreatePersistenceManager(new CircuitOptions(), new TestCircuitPersistenceProvider()));
     }
 }
