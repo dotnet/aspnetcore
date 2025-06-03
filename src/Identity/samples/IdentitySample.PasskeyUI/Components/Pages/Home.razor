@@ -1,0 +1,131 @@
+﻿@page "/"
+
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity.Test
+
+@inject NavigationManager NavigationManager
+@inject SignInManager<PocoUser> SignInManager
+@inject UserManager<PocoUser> UserManager
+@inject IUserPasskeyStore<PocoUser> PasskeyStore
+
+<h1>Welcome!</h1>
+
+<h3>Log in or register here</h3>
+
+<form id="auth-form" method="post" @formname="auth" @onsubmit="OnSubmitAsync">
+    <AntiforgeryToken />
+    <input type="text" id="input-username" name="Username" placeholder="username" autocomplete="username webauthn"/>
+    <hr />
+    <input type="hidden" id="input-credential" name="CredentialJson" />
+    <input type="hidden" id="input-action" name="Action" />
+    <button type="submit" id="input-register">Register</button>
+    <button type="submit" id="input-authenticate">Authenticate</button>
+</form>
+
+<p id="status-message">@statusMessage</p>
+
+@code {
+    private string? statusMessage;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private string? Username { get; set; }
+
+    [SupplyParameterFromForm]
+    private string? CredentialJson { get; set; }
+
+    [SupplyParameterFromForm]
+    private string? Action { get; set; }
+
+    private Task OnSubmitAsync()
+        => Action switch
+        {
+            "register" => RegisterAsync(),
+            "authenticate" => AuthenticateAsync(),
+            var x => throw new InvalidOperationException($"Unknown action '{x}'"),
+        };
+
+    private async Task RegisterAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Username))
+        {
+            statusMessage = "Error: A username is required for registration.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(CredentialJson))
+        {
+            statusMessage = "Error: No credential was submitted by the browser.";
+            return;
+        }
+
+        var options = await SignInManager.RetrievePasskeyCreationOptionsAsync();
+        if (options is null)
+        {
+            statusMessage = "Error: There are no original passkey options present.";
+            return;
+        }
+
+        var attestationResult = await UserManager.PerformPasskeyAttestationAsync(CredentialJson, options);
+        if (!attestationResult.Succeeded)
+        {
+            statusMessage = $"Error: Could not validate credential: {attestationResult.Failure.Message}";
+            return;
+        }
+
+        // Create the user if they don't exist yet.
+        var userEntity = options.UserEntity;
+        var user = await UserManager.FindByIdAsync(userEntity.Id);
+        if (user is null)
+        {
+            user = new PocoUser(userName: userEntity.Name)
+            {
+                Id = userEntity.Id,
+            };
+            var createUserResult = await UserManager.CreateAsync(user);
+            if (!createUserResult.Succeeded)
+            {
+                statusMessage = "Error: Could not create a new user.";
+                return;
+            }
+        }
+
+        await PasskeyStore.SetPasskeyAsync(user, attestationResult.Passkey, CancellationToken.None);
+        var updateResult = await UserManager.UpdateAsync(user);
+        if (!updateResult.Succeeded)
+        {
+            statusMessage = "Error: Could not update the user with the new passkey.";
+            return;
+        }
+
+        statusMessage = "Registration successful! You can now authenticate with your passkey.";
+    }
+
+    private async Task AuthenticateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(CredentialJson))
+        {
+            statusMessage = "Error: No credential was submitted by the browser.";
+            return;
+        }
+
+        var options = await SignInManager.RetrievePasskeyRequestOptionsAsync();
+        if (options is null)
+        {
+            statusMessage = "Error: There are no original passkey options present.";
+            return;
+        }
+
+        var signInResult = await SignInManager.PasskeySignInAsync(CredentialJson, options);
+        if (!signInResult.Succeeded)
+        {
+            statusMessage = "Error: Could not sign in with the provided credential.";
+            return;
+        }
+
+        NavigationManager.NavigateTo("authenticated", forceLoad: true);
+    }
+}

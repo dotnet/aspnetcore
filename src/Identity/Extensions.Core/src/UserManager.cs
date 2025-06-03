@@ -2229,7 +2229,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var challenge = GetRandomChallenge(Options.Passkey.ChallengeSize);
         var options = new PublicKeyCredentialCreationOptions(rpEntity, userEntity, BufferSource.FromBytes(challenge))
         {
-            Timeout = (uint)Options.Passkey.Timeout.Milliseconds,
+            Timeout = (uint)Options.Passkey.Timeout.TotalMilliseconds,
             ExcludeCredentials = excludeCredentials,
             PubKeyCredParams = PublicKeyCredentialParameters.AllSupportedParameters,
             AuthenticatorSelection = creationArgs.AuthenticatorSelection,
@@ -2279,7 +2279,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var options = new PublicKeyCredentialRequestOptions(BufferSource.FromBytes(challenge))
         {
             RpId = requestContext.Domain,
-            Timeout = (uint)Options.Passkey.Timeout.Milliseconds,
+            Timeout = (uint)Options.Passkey.Timeout.TotalMilliseconds,
             AllowCredentials = allowCredentials,
         };
         if (requestArgs is not null)

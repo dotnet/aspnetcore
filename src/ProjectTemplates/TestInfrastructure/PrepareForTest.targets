@@ -30,7 +30,7 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-    <Target Name="GenerateTesDevCert" BeforeTargets="AssignTargetPaths">
+  <Target Name="GenerateTestDevCert" BeforeTargets="AssignTargetPaths">
 
     <PropertyGroup>
       <_DevCertFileName>aspnetcore-https.pfx</_DevCertFileName>
@@ -49,8 +49,8 @@
     <Error Condition="!Exists('$(_DevCertPath)') and '$(MSBuildRuntimeType)' != 'core'" Text="No dev cert exists at $(_DevCertPath). Ensure you follow the instructions from src/ProjectTemplates/README.md before running inside Visual Studio" />
 
     <ItemGroup>
-      <Content Include="$(_DevCertPath)" CopyToPublishDirectory="PreserveNewest" />
-      <Content Include="$(_DevCertJsonPath)" CopyToPublishDirectory="PreserveNewest" />
+      <Content Include="$(_DevCertPath)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" />
+      <Content Include="$(_DevCertJsonPath)" CopyToPublishDirectory="PreserveNewest" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
   </Target>
