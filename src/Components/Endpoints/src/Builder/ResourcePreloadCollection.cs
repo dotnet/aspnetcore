@@ -57,6 +57,7 @@ internal class ResourcePreloadCollection
     {
         headerBuilder.Clear();
         headerBuilder.Append('<');
+        headerBuilder.Append('/');
         headerBuilder.Append(url);
         headerBuilder.Append('>');
 
