@@ -48,19 +48,42 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
-            if (!env.IsDevelopment())
+            app.Map("/reexecution", reexecutionApp =>
             {
-                app.UseExceptionHandler("/Error", createScopeForErrors: true);
-            }
+                if (!env.IsDevelopment())
+                {
+                    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+                }
 
-            app.UseStaticFiles();
-            app.UseRouting();
-            RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(app);
-            app.UseAntiforgery();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorComponents<TRootComponent>();
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
+                reexecutionApp.UseStaticFiles();
+                reexecutionApp.UseRouting();
+                RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(reexecutionApp);
+                reexecutionApp.UseAntiforgery();
+                reexecutionApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorComponents<TRootComponent>();
+                });
             });
+
+            ConfigureSubdirPipeline(app, env);
+        });
+    }
+
+    private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (!env.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Error", createScopeForErrors: true);
+        }
+
+        app.UseStaticFiles();
+        app.UseRouting();
+        RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(app);
+        app.UseAntiforgery();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapRazorComponents<TRootComponent>();
         });
     }
 }
