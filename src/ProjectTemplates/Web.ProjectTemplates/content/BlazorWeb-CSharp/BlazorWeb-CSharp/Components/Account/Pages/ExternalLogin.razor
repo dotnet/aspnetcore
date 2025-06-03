@@ -72,12 +72,14 @@
         if (RemoteError is not null)
         {
             RedirectManager.RedirectToWithStatus("Account/Login", $"Error from external provider: {RemoteError}", HttpContext);
+            return;
         }
 
         var info = await SignInManager.GetExternalLoginInfoAsync();
         if (info is null)
         {
             RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", HttpContext);
+            return;
         }
 
         externalLoginInfo = info;
@@ -101,6 +103,7 @@
         if (externalLoginInfo is null)
         {
             RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information.", HttpContext);
+            return;
         }
 
         // Sign in the user with this external login provider if the user already has a login.
@@ -117,10 +120,12 @@
                 externalLoginInfo.Principal.Identity?.Name,
                 externalLoginInfo.LoginProvider);
             RedirectManager.RedirectTo(ReturnUrl);
+            return;
         }
         else if (result.IsLockedOut)
         {
             RedirectManager.RedirectTo("Account/Lockout");
+            return;
         }
 
         // If the user does not have an account, then ask the user to create an account.
@@ -135,6 +140,7 @@
         if (externalLoginInfo is null)
         {
             RedirectManager.RedirectToWithStatus("Account/Login", "Error loading external login information during confirmation.", HttpContext);
+            return;
         }
 
         var emailStore = GetEmailStore();
@@ -165,13 +171,17 @@
                 {
                     RedirectManager.RedirectTo("Account/RegisterConfirmation", new() { ["email"] = Input.Email });
                 }
-
-                await SignInManager.SignInAsync(user, isPersistent: false, externalLoginInfo.LoginProvider);
-                RedirectManager.RedirectTo(ReturnUrl);
+                else
+                {
+                    await SignInManager.SignInAsync(user, isPersistent: false, externalLoginInfo.LoginProvider);
+                    RedirectManager.RedirectTo(ReturnUrl);
+                }
             }
         }
-
-        message = $"Error: {string.Join(",", result.Errors.Select(error => error.Description))}";
+        else
+        {
+            message = $"Error: {string.Join(",", result.Errors.Select(error => error.Description))}";
+        }
     }
 
     private ApplicationUser CreateUser()

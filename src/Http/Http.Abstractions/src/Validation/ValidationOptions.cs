@@ -19,6 +19,7 @@ public class ValidationOptions
     /// Source-generated resolvers are typically inserted at the beginning of this list
     /// to ensure they are checked before any runtime-based resolvers.
     /// </remarks>
+    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public IList<IValidatableInfoResolver> Resolvers { get; } = [];
 
     /// <summary>
@@ -35,6 +36,7 @@ public class ValidationOptions
     /// <param name="validatableTypeInfo">When this method returns, contains the validation information for the specified type,
     /// if the type was found; otherwise, null.</param>
     /// <returns>true if validation information was found for the specified type; otherwise, false.</returns>
+    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableTypeInfo)
     {
         foreach (var resolver in Resolvers)
@@ -56,6 +58,7 @@ public class ValidationOptions
     /// <param name="validatableInfo">When this method returns, contains the validation information for the specified parameter,
     /// if validation information was found; otherwise, null.</param>
     /// <returns>true if validation information was found for the specified parameter; otherwise, false.</returns>
+    [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
     public bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
     {
         foreach (var resolver in Resolvers)

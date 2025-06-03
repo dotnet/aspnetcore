@@ -3,13 +3,17 @@
 
 using System.Net.Http;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Windows.Win32;
+using Windows.Win32.Foundation;
+using Windows.Win32.Security;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests;
 
@@ -263,6 +267,95 @@ public class DelegateTests : LoggedTest
         responseString = await SendRequestAsync(delegatorAddress);
         Assert.Equal(_expectedResponseString, responseString);
 
+        destination?.Dispose();
+    }
+
+    [ConditionalFact]
+    [DelegateSupportedCondition(true)]
+    public async Task DelegateRequestTestCanSetSecurityDescriptor()
+    {
+        // Create a new security descriptor
+        CommonSecurityDescriptor securityDescriptor = new CommonSecurityDescriptor(false, false, string.Empty);
+
+        // Create a discretionary access control list (DACL)
+        DiscretionaryAcl dacl = new DiscretionaryAcl(false, false, 2);
+        dacl.AddAccess(AccessControlType.Allow, new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null), -1, InheritanceFlags.None, PropagationFlags.None);
+        dacl.AddAccess(AccessControlType.Deny, new SecurityIdentifier(WellKnownSidType.BuiltinGuestsSid, null), -1, InheritanceFlags.None, PropagationFlags.None);
+
+        // Assign the DACL to the security descriptor
+        securityDescriptor.DiscretionaryAcl = dacl;
+
+        var queueName = Guid.NewGuid().ToString();
+        using var receiver = Utilities.CreateHttpServer(out var receiverAddress, async httpContext =>
+        {
+            await httpContext.Response.WriteAsync(_expectedResponseString);
+        },
+        options =>
+        {
+            options.RequestQueueName = queueName;
+            options.RequestQueueSecurityDescriptor = securityDescriptor;
+        }, LoggerFactory);
+
+        DelegationRule destination = default;
+
+        using var delegator = Utilities.CreateHttpServer(out var delegatorAddress, httpContext =>
+        {
+            var delegateFeature = httpContext.Features.Get<IHttpSysRequestDelegationFeature>();
+            delegateFeature.DelegateRequest(destination);
+            return Task.CompletedTask;
+        }, LoggerFactory);
+
+        var delegationProperty = delegator.Features.Get<IServerDelegationFeature>();
+        destination = delegationProperty.CreateDelegationRule(queueName, receiverAddress);
+
+        AssertPermissions(destination.Queue.Handle);
+        unsafe void AssertPermissions(SafeHandle handle)
+        {
+            PSECURITY_DESCRIPTOR pSecurityDescriptor = new();
+
+            WIN32_ERROR result = PInvoke.GetSecurityInfo(
+                handle,
+                Windows.Win32.Security.Authorization.SE_OBJECT_TYPE.SE_KERNEL_OBJECT,
+                4, // DACL_SECURITY_INFORMATION
+                null,
+                null,
+                null,
+                null,
+                &pSecurityDescriptor);
+
+            var length = (int)PInvoke.GetSecurityDescriptorLength(pSecurityDescriptor);
+
+            // Copy the security descriptor to a managed byte array
+            byte[] securityDescriptorBytes = new byte[length];
+            Marshal.Copy(new IntPtr(pSecurityDescriptor.Value), securityDescriptorBytes, 0, length);
+
+            // Convert the byte array to a RawSecurityDescriptor
+            var securityDescriptor = new RawSecurityDescriptor(securityDescriptorBytes, 0);
+
+            var checkedAllowUser = false;
+            var checkedDenyGuest = false;
+
+            foreach (CommonAce ace in securityDescriptor.DiscretionaryAcl)
+            {
+                if (ace.SecurityIdentifier.IsWellKnown(WellKnownSidType.BuiltinGuestsSid))
+                {
+                    Assert.Equal(AceType.AccessDenied, ace.AceType);
+                    checkedDenyGuest = true;
+                }
+                else if (ace.SecurityIdentifier.IsWellKnown(WellKnownSidType.BuiltinUsersSid))
+                {
+                    Assert.Equal(AceType.AccessAllowed, ace.AceType);
+                    checkedAllowUser = true;
+                }
+            }
+
+            PInvoke.LocalFree((HLOCAL)pSecurityDescriptor.Value);
+
+            Assert.True(checkedDenyGuest && checkedAllowUser, "DACL does not contain the expected ACEs");
+        }
+
+        var responseString = await SendRequestAsync(delegatorAddress);
+        Assert.Equal(_expectedResponseString, responseString);
         destination?.Dispose();
     }
 

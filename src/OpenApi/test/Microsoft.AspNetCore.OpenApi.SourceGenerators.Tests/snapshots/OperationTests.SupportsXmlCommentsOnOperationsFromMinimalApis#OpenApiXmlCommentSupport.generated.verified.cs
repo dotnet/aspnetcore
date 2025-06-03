@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using Microsoft.AspNetCore.Mvc.Controllers;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OpenApi.Models;
+    using Microsoft.OpenApi.Models.Interfaces;
     using Microsoft.OpenApi.Models.References;
-    using Microsoft.OpenApi.Any;
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file record XmlComment(
@@ -72,11 +72,11 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var cache = new Dictionary<string, XmlComment>();
 
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get~System.String", new XmlComment(@"A summary of the action.", @"A description of the action.", null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get~System.String", new XmlComment(@"A summary of the action.", @"A description of the action.", null, @"Returns the greeting.", null, false, null, null, null));
             cache.Add(@"M:RouteHandlerExtensionMethods.Get2(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get3(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get4~Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String}", new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get5~Microsoft.AspNetCore.Http.HttpResults.Results{Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String},Microsoft.AspNetCore.Http.HttpResults.Ok{System.String},Microsoft.AspNetCore.Http.HttpResults.Created}", new XmlComment(null, null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get3(System.String)~System.String", new XmlComment(null, null, null, @"Returns the greeting.", null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get4~Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String}", new XmlComment(null, null, null, @"Indicates that the value was not found.", null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get5~Microsoft.AspNetCore.Http.HttpResults.Results{Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String},Microsoft.AspNetCore.Http.HttpResults.Ok{System.String},Microsoft.AspNetCore.Http.HttpResults.Created}", new XmlComment(null, null, null, @"This gets ignored.", null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
             cache.Add(@"M:RouteHandlerExtensionMethods.Post6(User)~Microsoft.AspNetCore.Http.IResult", new XmlComment(@"Creates a new user.", null, @"Sample request:
     POST /6
     {
@@ -90,8 +90,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             cache.Add(@"M:RouteHandlerExtensionMethods.Get11~System.Threading.Tasks.ValueTask", new XmlComment(@"A summary of Get11.", null, null, null, null, false, null, null, null));
             cache.Add(@"M:RouteHandlerExtensionMethods.Get12~System.Threading.Tasks.Task{System.String}", new XmlComment(@"A summary of Get12.", null, null, null, null, false, null, null, null));
             cache.Add(@"M:RouteHandlerExtensionMethods.Get13~System.Threading.Tasks.ValueTask{System.String}", new XmlComment(@"A summary of Get13.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get14~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get14.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get15~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get15.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get14~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get14.", null, null, @"Returns the greeting.", null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get15~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get15.", null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
             cache.Add(@"M:RouteHandlerExtensionMethods.Post16(Example)", new XmlComment(@"A summary of Post16.", null, null, null, null, false, null, null, null));
             cache.Add(@"M:RouteHandlerExtensionMethods.Get17(System.Int32[])~System.Int32[][]", new XmlComment(@"A summary of Get17.", null, null, null, null, false, null, null, null));
 
@@ -345,9 +345,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         var operationParameter = operation.Parameters?.SingleOrDefault(parameter => parameter.Name == parameterComment.Name);
                         if (operationParameter is not null)
                         {
-                            var targetOperationParameter = operationParameter is OpenApiParameterReference reference
-                                ? reference.Target
-                                : (OpenApiParameter)operationParameter;
+                            var targetOperationParameter = UnwrapOpenApiParameter(operationParameter);
                             targetOperationParameter.Description = parameterComment.Description;
                             if (parameterComment.Example is { } jsonString)
                             {
@@ -363,7 +361,12 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                 requestBody.Description = parameterComment.Description;
                                 if (parameterComment.Example is { } jsonString)
                                 {
-                                    foreach (var mediaType in requestBody.Content.Values)
+                                    var content = requestBody?.Content?.Values;
+                                    if (content is null)
+                                    {
+                                        continue;
+                                    }
+                                    foreach (var mediaType in content)
                                     {
                                         mediaType.Example = jsonString.Parse();
                                     }
@@ -372,6 +375,13 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         }
                     }
                 }
+                // Applies `<returns>` on XML comments for operation with single response value.
+                if (methodComment.Returns is { } returns && operation.Responses is { Count: 1 })
+                {
+                    var response = operation.Responses.First();
+                    response.Value.Description = returns;
+                }
+                // Applies `<response>` on XML comments for operation with multiple response values.
                 if (methodComment.Responses is { Count: > 0} && operation.Responses is { Count: > 0 })
                 {
                     foreach (var response in operation.Responses)
@@ -386,6 +396,29 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             }
 
             return Task.CompletedTask;
+        }
+
+        private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
+        {
+            if (sourceParameter is OpenApiParameterReference parameterReference)
+            {
+                if (parameterReference.Target is OpenApiParameter target)
+                {
+                    return target;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+                }
+            }
+            else if (sourceParameter is OpenApiParameter directParameter)
+            {
+                return directParameter;
+            }
+            else
+            {
+                throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+            }
         }
     }
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.AspNetCore.InternalTesting;
 
@@ -1079,23 +1080,33 @@ public class DotNetDispatcherTest
         public string LastCompletionCallId { get; private set; }
         public DotNetInvocationResult LastCompletionResult { get; private set; }
 
-        protected override void BeginInvokeJS(long asyncHandle, string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(in JSInvocationInfo invocationInfo)
         {
-            LastInvocationAsyncHandle = asyncHandle;
-            LastInvocationIdentifier = identifier;
-            LastInvocationArgsJson = argsJson;
+            LastInvocationAsyncHandle = invocationInfo.AsyncHandle;
+            LastInvocationIdentifier = invocationInfo.Identifier;
+            LastInvocationArgsJson = invocationInfo.ArgsJson;
             _nextInvocationTcs.SetResult();
             _nextInvocationTcs = new TaskCompletionSource();
         }
 
-        protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        protected override void BeginInvokeJS(long taskId, string identifier, [StringSyntax("Json")] string argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected override string InvokeJS(in JSInvocationInfo invocationInfo)
         {
             LastInvocationAsyncHandle = default;
-            LastInvocationIdentifier = identifier;
-            LastInvocationArgsJson = argsJson;
+            LastInvocationIdentifier = invocationInfo.Identifier;
+            LastInvocationArgsJson = invocationInfo.ArgsJson;
             _nextInvocationTcs.SetResult();
             _nextInvocationTcs = new TaskCompletionSource();
             return null;
+        }
+
+        protected override string InvokeJS(string identifier, string argsJson, JSCallResultType resultType, long targetInstanceId)
+        {
+            throw new NotImplementedException();
         }
 
         protected internal override void EndInvokeDotNet(DotNetInvocationInfo invocationInfo, in DotNetInvocationResult invocationResult)

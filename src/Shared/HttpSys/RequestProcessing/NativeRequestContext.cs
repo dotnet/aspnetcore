@@ -34,8 +34,10 @@ internal unsafe class NativeRequestContext : IDisposable
     private MemoryHandle _memoryHandle;
     private readonly int _bufferAlignment;
     private readonly bool _permanentlyPinned;
-    private bool _disposed;
     private IReadOnlyDictionary<int, ReadOnlyMemory<byte>>? _requestInfo;
+
+    private bool _disposed;
+    private bool _pinsReleased;
 
     [MemberNotNullWhen(false, nameof(_backingBuffer))]
     private bool PermanentlyPinned => _permanentlyPinned;
@@ -171,6 +173,11 @@ internal unsafe class NativeRequestContext : IDisposable
         }
     }
 
+    /// <summary>
+    /// Shows whether <see cref="ReleasePins"/> was already invoked on this native request context
+    /// </summary>
+    internal bool PinsReleased => _pinsReleased;
+
     // ReleasePins() should be called exactly once.  It must be called before Dispose() is called, which means it must be called
     // before an object (Request) which closes the RequestContext on demand is returned to the application.
     internal void ReleasePins()
@@ -180,6 +187,7 @@ internal unsafe class NativeRequestContext : IDisposable
         _memoryHandle.Dispose();
         _memoryHandle = default;
         _nativeRequest = null;
+        _pinsReleased = true;
     }
 
     public bool TryGetTimestamp(HttpSysRequestTimingType timestampType, out long timestamp)

@@ -8,10 +8,10 @@
   <!-- needed to reference a specific version of NetCoreApp. Workaround https://github.com/dotnet/runtime/issues/81382 -->
   <ItemGroup>
     <FrameworkReference Update="Microsoft.NETCore.App"
-                        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimeVersion)" />
+                        RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRefVersion)" />
 
     <PackageReference Include="Microsoft.DotNet.ILCompiler"
-                      Version="$(MicrosoftNETCoreAppRuntimeVersion)" />
+                      Version="$(MicrosoftNETCoreAppRefVersion)" />
 
     <!-- Workaround when there is no vNext SDK available; copy known packs info from 9.0. -->
     <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net9.0'))"
@@ -37,7 +37,7 @@
 
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
       <LatestRuntimeFrameworkVersion
-          Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
+          Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRefVersion)</LatestRuntimeFrameworkVersion>
       <TargetingPackVersion
           Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRefVersion)</TargetingPackVersion>
       <!--
@@ -48,19 +48,19 @@
         e.g. tool projects (again, property not set) use latest.
       -->
       <DefaultRuntimeFrameworkVersion Condition=" '$(IsServicingBuild)' != 'true' AND
-          '%(TargetFramework)' == '$(TargetFramework)'">$(MicrosoftNETCoreAppRuntimeVersion)</DefaultRuntimeFrameworkVersion>
+          '%(TargetFramework)' == '$(TargetFramework)'">$(MicrosoftNETCoreAppRefVersion)</DefaultRuntimeFrameworkVersion>
       <RuntimePackRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</RuntimePackRuntimeIdentifiers>
     </KnownFrameworkReference>
 
     <KnownAppHostPack Update="Microsoft.NETCore.App">
       <AppHostPackVersion
-        Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</AppHostPackVersion>
+        Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRefVersion)</AppHostPackVersion>
       <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownAppHostPack>
 
     <KnownRuntimePack Update="Microsoft.NETCore.App">
       <LatestRuntimeFrameworkVersion
-        Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRuntimeVersion)</LatestRuntimeFrameworkVersion>
+        Condition=" '%(TargetFramework)' == '$(TargetFramework)' ">$(MicrosoftNETCoreAppRefVersion)</LatestRuntimeFrameworkVersion>
       <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownRuntimePack>
 

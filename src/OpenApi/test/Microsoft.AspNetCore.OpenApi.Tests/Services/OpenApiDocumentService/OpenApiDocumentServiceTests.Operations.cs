@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Equal(summary, operation.Summary);
         });
     }
@@ -41,7 +42,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Equal(summary + "1", operation.Summary);
         });
     }
@@ -59,7 +60,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Equal(description, operation.Description);
         });
     }
@@ -77,7 +78,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Equal(description + "1", operation.Description);
         });
     }
@@ -94,7 +95,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Collection(operation.Tags, tag =>
             {
                 Assert.Equal("todos", tag.Name);
@@ -118,7 +119,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Collection(operation.Tags, tag =>
             {
                 Assert.Equal("todos", tag.Name);
@@ -142,7 +143,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Collection(document.Tags, tag =>
             {
                 Assert.Equal(nameof(OpenApiDocumentServiceTests), tag.Name);
@@ -194,7 +195,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Equal("GetTodos", operation.OperationId);
 
         });
@@ -212,7 +213,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Equal("GetTodos", operation.OperationId);
 
         });
@@ -227,7 +228,7 @@ public partial class OpenApiDocumentServiceTests
         // Assert
         await VerifyOpenApiDocument(action, document =>
         {
-            var operation = document.Paths["/api/todos"].Operations[OperationType.Get];
+            var operation = document.Paths["/api/todos"].Operations[HttpMethod.Get];
             Assert.Equal("GetTodos", operation.OperationId);
 
         });

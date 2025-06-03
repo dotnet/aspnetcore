@@ -59,7 +59,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private readonly Lock _completionLock = new();
 
     protected RequestHeaderParsingState _requestHeaderParsingState;
-    protected readonly Http3RawFrame _incomingFrame = new();
 
     public bool EndStreamReceived => (_completionState & StreamCompletionFlags.EndStreamReceived) == StreamCompletionFlags.EndStreamReceived;
     public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
@@ -609,6 +608,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
+            var incomingFrame = new Http3RawFrame();
+            var isContinuedFrame = false;
             while (_isClosed == 0)
             {
                 var result = await Input.ReadAsync();
@@ -620,12 +621,19 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 {
                     if (!readableBuffer.IsEmpty)
                     {
-                        while (Http3FrameReader.TryReadFrame(ref readableBuffer, _incomingFrame, out var framePayload))
+                        while (Http3FrameReader.TryReadFrame(ref readableBuffer, incomingFrame, isContinuedFrame, out var framePayload))
                         {
-                            Log.Http3FrameReceived(ConnectionId, _streamIdFeature.StreamId, _incomingFrame);
+                            // Only log when parsing the beginning of the frame
+                            if (!isContinuedFrame)
+                            {
+                                Log.Http3FrameReceived(ConnectionId, _streamIdFeature.StreamId, incomingFrame);
+                            }
 
                             consumed = examined = framePayload.End;
-                            await ProcessHttp3Stream(application, framePayload, result.IsCompleted && readableBuffer.IsEmpty);
+                            await ProcessHttp3Stream(application, incomingFrame, isContinuedFrame, framePayload, result.IsCompleted && readableBuffer.IsEmpty);
+
+                            incomingFrame.RemainingLength -= framePayload.Length;
+                            isContinuedFrame = incomingFrame.RemainingLength > 0 ? true : false;
                         }
                     }
 
@@ -748,22 +756,23 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         return RequestBodyPipe.Writer.CompleteAsync();
     }
 
-    private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
+    private Task ProcessHttp3Stream<TContext>(IHttpApplication<TContext> application, Http3RawFrame incomingFrame, bool isContinuedFrame,
+        in ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
     {
-        return _incomingFrame.Type switch
+        return incomingFrame.Type switch
         {
             Http3FrameType.Data => ProcessDataFrameAsync(payload),
-            Http3FrameType.Headers => ProcessHeadersFrameAsync(application, payload, isCompleted),
+            Http3FrameType.Headers => ProcessHeadersFrameAsync(application, incomingFrame, isContinuedFrame, payload, isCompleted),
             // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-7.2.4
             // These frames need to be on a control stream
             Http3FrameType.Settings or
             Http3FrameType.CancelPush or
             Http3FrameType.GoAway or
             Http3FrameType.MaxPushId => throw new Http3ConnectionErrorException(
-                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnRequestStream(incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
             // The server should never receive push promise
             Http3FrameType.PushPromise => throw new Http3ConnectionErrorException(
-                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(_incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
+                CoreStrings.FormatHttp3ErrorUnsupportedFrameOnServer(incomingFrame.FormattedType), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame),
             _ => ProcessUnknownFrameAsync(),
         };
     }
@@ -775,11 +784,13 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         return Task.CompletedTask;
     }
 
-    private async Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
+    private async Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application, Http3RawFrame incomingFrame, bool isContinuedFrame,
+        ReadOnlySequence<byte> payload, bool isCompleted) where TContext : notnull
     {
         // HEADERS frame after trailing headers is invalid.
         // https://quicwg.org/base-drafts/draft-ietf-quic-http.html#section-4.1
-        if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+        // Since we parse data as we get it, we can receive partial frames which means we need to check that we're in the middle of handling the trailers header frame
+        if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers && !isContinuedFrame)
         {
             throw new Http3ConnectionErrorException(CoreStrings.FormatHttp3StreamErrorFrameReceivedAfterTrailers(Http3Formatting.ToFormattedType(Http3FrameType.Headers)), Http3ErrorCode.UnexpectedFrame, ConnectionEndReason.UnexpectedFrame);
         }
@@ -791,8 +802,17 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
         try
         {
-            QPackDecoder.Decode(payload, endHeaders: true, handler: this);
-            QPackDecoder.Reset();
+            var endHeaders = payload.Length == incomingFrame.RemainingLength;
+            QPackDecoder.Decode(payload, endHeaders, handler: this);
+            if (endHeaders)
+            {
+                QPackDecoder.Reset();
+            }
+            else
+            {
+                // Headers frame isn't complete, return to read more of the frame
+                return;
+            }
         }
         catch (QPackDecodingException ex)
         {

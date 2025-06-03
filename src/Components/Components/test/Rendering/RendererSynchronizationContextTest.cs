@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
@@ -156,6 +157,7 @@ public class RendererSynchronizationContextTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61639")]
     public async Task Post_CanRunAsynchronously_WhenBusy_Exception()
     {
         // Arrange

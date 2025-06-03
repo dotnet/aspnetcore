@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Http.Validation;
 /// Provides an interface for resolving the validation information associated
 /// with a given <seealso cref="Type"/> or <seealso cref="ParameterInfo"/>.
 /// </summary>
+[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public interface IValidatableInfoResolver
 {
     /// <summary>

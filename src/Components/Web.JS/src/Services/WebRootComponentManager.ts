@@ -470,10 +470,6 @@ function isDescriptorInDocument(descriptor: ComponentDescriptor): boolean {
 }
 
 function areWebAssemblyResourcesLikelyCached(config: MonoConfig): boolean {
-  if (!config.cacheBootResources) {
-    return false;
-  }
-
   const hash = getWebAssemblyResourceHash(config);
   if (!hash) {
     return false;

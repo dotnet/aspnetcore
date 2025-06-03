@@ -1,3 +1,5 @@
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
@@ -39,17 +41,16 @@ public class ValidatableTypeInfoTests
             { typeof(Address), addressType }
         });
 
-        var context = new ValidateContext
-        {
-            ValidationOptions = validationOptions,
-        };
-
         var personWithMissingRequiredFields = new Person
         {
             Age = 150, // Invalid age
             Address = new Address() // Missing required City and Street
         };
-        context.ValidationContext = new ValidationContext(personWithMissingRequiredFields);
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(personWithMissingRequiredFields)
+        };
 
         // Act
         await personType.ValidateAsync(personWithMissingRequiredFields, context, default);
@@ -94,21 +95,20 @@ public class ValidatableTypeInfoTests
                     [])
             ]);
 
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Employee), employeeType }
-            })
-        };
-
         var employee = new Employee
         {
             Name = "John Doe",
             Department = "IT",
             Salary = -5000 // Negative salary will trigger IValidatableObject validation
         };
-        context.ValidationContext = new ValidationContext(employee);
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Employee), employeeType }
+            }),
+            ValidationContext = new ValidationContext(employee)
+        };
 
         // Act
         await employeeType.ValidateAsync(employee, context, default);
@@ -140,21 +140,20 @@ public class ValidatableTypeInfoTests
                     [new RangeAttribute(2, 5)])
             ]);
 
+        var car = new Car
+        {
+            // Missing Make and Model (required in base type)
+            Doors = 7 // Invalid number of doors
+        };
         var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
                 { typeof(Vehicle), baseType },
                 { typeof(Car), derivedType }
-            })
+            }),
+            ValidationContext = new ValidationContext(car)
         };
-
-        var car = new Car
-        {
-            // Missing Make and Model (required in base type)
-            Doors = 7 // Invalid number of doors
-        };
-        context.ValidationContext = new ValidationContext(car);
 
         // Act
         await derivedType.ValidateAsync(car, context, default);
@@ -201,15 +200,6 @@ public class ValidatableTypeInfoTests
                     [])
             ]);
 
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(OrderItem), itemType },
-                { typeof(Order), orderType }
-            })
-        };
-
         var order = new Order
         {
             OrderNumber = "ORD-12345",
@@ -220,7 +210,15 @@ public class ValidatableTypeInfoTests
                 new OrderItem { ProductName = "Another Product", Quantity = 200 /* Invalid quantity */ }
             ]
         };
-        context.ValidationContext = new ValidationContext(order);
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(OrderItem), itemType },
+                { typeof(Order), orderType }
+            }),
+            ValidationContext = new ValidationContext(order)
+        };
 
         // Act
         await orderType.ValidateAsync(order, context, default);
@@ -258,20 +256,19 @@ public class ValidatableTypeInfoTests
                     [])
             ]);
 
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Person), personType }
-            })
-        };
-
         var person = new Person
         {
             Name = null,
             Address = null
         };
-        context.ValidationContext = new ValidationContext(person);
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(Person), personType }
+            }),
+            ValidationContext = new ValidationContext(person)
+        };
 
         // Act
         await personType.ValidateAsync(person, context, default);
@@ -303,12 +300,6 @@ public class ValidatableTypeInfoTests
         });
         validationOptions.MaxDepth = 3; // Set a small max depth to trigger the limit
 
-        var context = new ValidateContext
-        {
-            ValidationOptions = validationOptions,
-            ValidationErrors = []
-        };
-
         // Create a deep tree with circular references
         var rootNode = new TreeNode { Name = "Root" };
         var level1 = new TreeNode { Name = "Level1", Parent = rootNode };
@@ -326,7 +317,12 @@ public class ValidatableTypeInfoTests
         // Add a circular reference
         level5.Children.Add(rootNode);
 
-        context.ValidationContext = new ValidationContext(rootNode);
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationErrors = [],
+            ValidationContext = new ValidationContext(rootNode)
+        };
 
         // Act + Assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
@@ -347,16 +343,15 @@ public class ValidatableTypeInfoTests
                 CreatePropertyInfo(typeof(Product), typeof(string), "SKU", "SKU", [new RequiredAttribute(), new CustomSkuValidationAttribute()]),
             ]);
 
+        var product = new Product { SKU = "INVALID-SKU" };
         var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
                 { typeof(Product), productType }
-            })
+            }),
+            ValidationContext = new ValidationContext(product)
         };
-
-        var product = new Product { SKU = "INVALID-SKU" };
-        context.ValidationContext = new ValidationContext(product);
 
         // Act
         await productType.ValidateAsync(product, context, default);
@@ -383,16 +378,15 @@ public class ValidatableTypeInfoTests
                     ])
             ]);
 
+        var user = new User { Password = "abc" };  // Too short and not complex enough
         var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
                 { typeof(User), userType }
-            })
+            }),
+            ValidationContext = new ValidationContext(user)
         };
-
-        var user = new User { Password = "abc" };  // Too short and not complex enough
-        context.ValidationContext = new ValidationContext(user);
 
         // Act
         await userType.ValidateAsync(user, context, default);
@@ -427,6 +421,11 @@ public class ValidatableTypeInfoTests
                 CreatePropertyInfo(typeof(DerivedEntity), typeof(string), "Name", "Name", [new RequiredAttribute()])
             ]);
 
+        var entity = new DerivedEntity
+        {
+            Name = "",  // Invalid: required
+            CreatedAt = DateTime.Now.AddDays(1) // Invalid: future date
+        };
         var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
@@ -434,15 +433,9 @@ public class ValidatableTypeInfoTests
                 { typeof(BaseEntity), baseType },
                 { typeof(IntermediateEntity), intermediateType },
                 { typeof(DerivedEntity), derivedType }
-            })
+            }),
+            ValidationContext = new ValidationContext(entity)
         };
-
-        var entity = new DerivedEntity
-        {
-            Name = "",  // Invalid: required
-            CreatedAt = DateTime.Now.AddDays(1) // Invalid: future date
-        };
-        context.ValidationContext = new ValidationContext(entity);
 
         // Act
         await derivedType.ValidateAsync(entity, context, default);
@@ -473,16 +466,15 @@ public class ValidatableTypeInfoTests
                     [new RequiredAttribute(), new PasswordComplexityAttribute()])
             ]);
 
+        var user = new User { Password = null }; // Invalid: required
         var context = new ValidateContext
         {
             ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
                 { typeof(User), userType }
-            })
+            }),
+            ValidationContext = new ValidationContext(user) // Invalid: required
         };
-
-        var user = new User { Password = null };  // Invalid: required
-        context.ValidationContext = new ValidationContext(user);
 
         // Act
         await userType.ValidateAsync(user, context, default);
@@ -493,6 +485,94 @@ public class ValidatableTypeInfoTests
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Password", error.Key);
         Assert.Equal("The Password field is required.", error.Value.Single());
+    }
+
+    [Fact]
+    public async Task Validate_IValidatableObject_WithZeroAndMultipleMemberNames_BehavesAsExpected()
+    {
+        var globalType = new TestValidatableTypeInfo(
+            typeof(GlobalErrorObject),
+            []); // no properties – nothing sets MemberName
+        var globalErrorInstance = new GlobalErrorObject { Data = -1 };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(GlobalErrorObject), globalType }
+            }),
+            ValidationContext = new ValidationContext(globalErrorInstance)
+        };
+
+        await globalType.ValidateAsync(globalErrorInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        var globalError = Assert.Single(context.ValidationErrors);
+        Assert.Equal(string.Empty, globalError.Key);
+        Assert.Equal("Data must be positive.", globalError.Value.Single());
+
+        var multiType = new TestValidatableTypeInfo(
+            typeof(MultiMemberErrorObject),
+            [
+                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "FirstName", "FirstName", []),
+                CreatePropertyInfo(typeof(MultiMemberErrorObject), typeof(string), "LastName",  "LastName",  [])
+            ]);
+
+        context.ValidationErrors = [];
+        context.ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(MultiMemberErrorObject), multiType }
+        });
+
+        var multiErrorInstance = new MultiMemberErrorObject { FirstName = "", LastName = "" };
+        context.ValidationContext = new ValidationContext(multiErrorInstance);
+
+        await multiType.ValidateAsync(multiErrorInstance, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("FirstName", kvp.Key);
+                Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("LastName", kvp.Key);
+                Assert.Equal("FirstName and LastName are required.", kvp.Value.First());
+            });
+    }
+
+    // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739
+    private class GlobalErrorObject : IValidatableObject
+    {
+        public int Data { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Data <= 0)
+            {
+                yield return new ValidationResult("Data must be positive.");
+            }
+        }
+    }
+
+    // Returns multiple member names to validate https://github.com/dotnet/aspnetcore/issues/61739
+    private class MultiMemberErrorObject : IValidatableObject
+    {
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(LastName))
+            {
+                // MULTIPLE member names
+                yield return new ValidationResult(
+                    "FirstName and LastName are required.",
+                    [nameof(FirstName), nameof(LastName)]);
+            }
+        }
     }
 
     private ValidatablePropertyInfo CreatePropertyInfo(
@@ -534,7 +614,7 @@ public class ValidatableTypeInfoTests
         {
             if (Salary < 0)
             {
-                yield return new ValidationResult("Salary must be a positive value.", new[] { nameof(Salary) });
+                yield return new ValidationResult("Salary must be a positive value.", ["Salary"]);
             }
         }
     }

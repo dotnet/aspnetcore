@@ -795,6 +795,27 @@ public class HttpParserTests : LoggedTest
         Assert.Equal(StatusCodes.Status400BadRequest, exception.StatusCode);
     }
 
+    [Fact]
+    public void ParseMultispanHeaderWithCrAtSpanEnd()
+    {
+        var parser = CreateParser(CreateEnabledTrace(), false);
+
+        var buffer = ReadOnlySequenceFactory.CreateSegments(
+            Encoding.ASCII.GetBytes("Head\r"),
+            Encoding.ASCII.GetBytes("va\r"));
+        var requestHandler = new RequestHandler();
+
+        var reader = new SequenceReader<byte>(buffer);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var exception = Assert.Throws<BadHttpRequestException>(() =>
+#pragma warning restore CS0618 // Type or member is obsolete
+        {
+            var reader = new SequenceReader<byte>(buffer);
+            parser.ParseHeaders(requestHandler, ref reader);
+        });
+    }
+
     private bool ParseRequestLine(IHttpParser<RequestHandler> parser, RequestHandler requestHandler, ReadOnlySequence<byte> readableBuffer, out SequencePosition consumed, out SequencePosition examined)
     {
         var reader = new SequenceReader<byte>(readableBuffer);

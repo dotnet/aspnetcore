@@ -1,0 +1,30 @@
+﻿@page "/reexecution/streaming-set-not-found"
+@page "/streaming-set-not-found"
+@attribute [StreamRendering]
+@inject NavigationManager NavigationManager
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "shouldSet")]
+    public bool? ShouldSet { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "responseStarted")]
+    public bool? ResponseStarted { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        bool shouldSet = ShouldSet ?? true;
+        bool responseStarted = ResponseStarted ?? true;
+        if (responseStarted)
+        {
+            // Simulate some delay before triggering NotFound to start streaming response
+            await Task.Yield();
+        }
+
+        if (shouldSet)
+        {
+            NavigationManager.NotFound();
+        }
+    }
+}

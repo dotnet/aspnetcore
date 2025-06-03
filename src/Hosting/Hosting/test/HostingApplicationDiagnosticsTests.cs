@@ -740,13 +740,13 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         {
             Headers = new HeaderDictionary()
             {
-                {"Request-Id", "ParentId1"},
+                {"Request-Id", "ParentId1"}, // non-standard header, won't apply to Activity
                 {"baggage", "Key1=value1, Key2=value2"}
             }
         });
         hostingApplication.CreateContext(features);
         Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
-        Assert.Equal("ParentId1", Activity.Current.ParentId);
+        Assert.Null(Activity.Current.ParentId);
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1");
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
     }
@@ -928,7 +928,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             Headers = new HeaderDictionary()
             {
                 {"traceparent", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"},
-                {"tracestate", "TraceState1"},
+                {"tracestate", "tracestate=1"},
                 {"baggage", "Key1=value1, Key2=value2"}
             }
         });
@@ -937,7 +937,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         Assert.Equal(ActivityIdFormat.W3C, Activity.Current.IdFormat);
         Assert.Equal("0123456789abcdef0123456789abcdef", Activity.Current.TraceId.ToHexString());
         Assert.Equal("0123456789abcdef", Activity.Current.ParentSpanId.ToHexString());
-        Assert.Equal("TraceState1", Activity.Current.TraceStateString);
+        Assert.Equal("tracestate=1", Activity.Current.TraceStateString);
 
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1");
         Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");

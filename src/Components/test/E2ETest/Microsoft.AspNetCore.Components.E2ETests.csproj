@@ -11,6 +11,9 @@
         Condition=" '$(ContinuousIntegrationBuild)' != 'true' AND '$(SkipTestBuild)' != 'true' ">true</_BuildAndTest>
     <ExcludeFromBuild Condition=" !$(_BuildAndTest) ">true</ExcludeFromBuild>
     <SkipTests Condition=" !$(_BuildAndTest) ">true</SkipTests>
+
+    <!-- disable inline boot config for these tests -->
+    <WasmInlineBootConfig>false</WasmInlineBootConfig>
   </PropertyGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

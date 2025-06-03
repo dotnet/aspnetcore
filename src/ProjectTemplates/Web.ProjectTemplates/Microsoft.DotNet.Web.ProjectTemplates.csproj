@@ -23,7 +23,6 @@
       MicrosoftIdentityWebGraphServiceClientVersion=$(MicrosoftIdentityWebGraphServiceClientVersion);
       MicrosoftIdentityWebUIVersion=$(MicrosoftIdentityWebUIVersion);
       MicrosoftIdentityWebDownstreamApiVersion=$(MicrosoftIdentityWebDownstreamApiVersion);
-      MicrosoftNETCoreAppRuntimeVersion=$(MicrosoftNETCoreAppRuntimeVersion);
       SystemNetHttpJsonVersion=$(SystemNetHttpJsonVersion);
       MicrosoftGraphVersion=$(MicrosoftGraphVersion);
     </GeneratedContentProperties>

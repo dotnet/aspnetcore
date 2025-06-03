@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
@@ -18,7 +19,7 @@ internal partial class EndpointHtmlRenderer
 
     protected override IComponent ResolveComponentForRenderMode([DynamicallyAccessedMembers(Component)] Type componentType, int? parentComponentId, IComponentActivator componentActivator, IComponentRenderMode renderMode)
     {
-        if (_isHandlingErrors)
+        if (_isHandlingErrors || _isReExecuted)
         {
             // Ignore the render mode boundary in error scenarios.
             return componentActivator.CreateInstance(componentType);
@@ -166,7 +167,50 @@ internal partial class EndpointHtmlRenderer
         }
         else if (_nonStreamingPendingTasks.Count > 0)
         {
-            await WaitForNonStreamingPendingTasks();
+            if (_isReExecuted)
+            {
+                HandleNonStreamingTasks();
+            }
+            else
+            {
+                await WaitForNonStreamingPendingTasks();
+            }
+        }
+    }
+
+    public void HandleNonStreamingTasks()
+    {
+        if (NonStreamingPendingTasksCompletion == null)
+        {
+            foreach (var task in _nonStreamingPendingTasks)
+            {
+                _ = GetErrorHandledTask(task);
+            }
+
+            // Clear the pending tasks since we are handling them
+            _nonStreamingPendingTasks.Clear();
+
+            NonStreamingPendingTasksCompletion = Task.CompletedTask;
+        }
+    }
+
+    private async Task GetErrorHandledTask(Task taskToHandle)
+    {
+        try
+        {
+            await taskToHandle;
+        }
+        catch (Exception ex)
+        {
+            // Ignore errors due to task cancellations.
+            if (!taskToHandle.IsCanceled)
+            {
+                _logger.LogError(
+                    ex,
+                    "An exception occurred during non-streaming rendering. " +
+                    "This exception will be ignored because the response " +
+                    "is being discarded and the request is being re-executed.");
+            }
         }
     }
 
@@ -206,7 +250,15 @@ internal partial class EndpointHtmlRenderer
                 "response and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
                 navigationException);
         }
-        else if (IsPossibleExternalDestination(httpContext.Request, navigationException.Location)
+        else
+        {
+            return HandleNavigationBeforeResponseStarted(httpContext, navigationException.Location);
+        }
+    }
+
+    private static ValueTask<PrerenderedComponentHtmlContent> HandleNavigationBeforeResponseStarted(HttpContext httpContext, string destinationLocation)
+    {
+        if (IsPossibleExternalDestination(httpContext.Request, destinationLocation)
             && IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             // For progressively-enhanced nav, we prefer to use opaque redirections for external URLs rather than
@@ -214,12 +266,12 @@ internal partial class EndpointHtmlRenderer
             // duplicated request. The client can't rely on receiving this header, though, since non-Blazor endpoints
             // wouldn't return it.
             httpContext.Response.Headers.Add("blazor-enhanced-nav-redirect-location",
-                OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, navigationException.Location));
+                OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, destinationLocation));
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
         else
         {
-            httpContext.Response.Redirect(navigationException.Location);
+            httpContext.Response.Redirect(destinationLocation);
             return new ValueTask<PrerenderedComponentHtmlContent>(PrerenderedComponentHtmlContent.Empty);
         }
     }

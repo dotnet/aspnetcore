@@ -55,4 +55,11 @@ public class StatusCodePagesOptions
     /// The handler that generates the response body for the given <see cref="StatusCodeContext"/>. By default this produces a plain text response that includes the status code.
     /// </summary>
     public Func<StatusCodeContext, Task> HandleAsync { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the handler needs to create a separate <see cref="IServiceProvider"/> scope and
+    /// replace it on <see cref="HttpContext.RequestServices"/> when re-executing the request.
+    /// </summary>
+    /// <remarks>The default value is <see langword="false"/>.</remarks>
+    public bool CreateScopeForErrors { get; set; }
 }

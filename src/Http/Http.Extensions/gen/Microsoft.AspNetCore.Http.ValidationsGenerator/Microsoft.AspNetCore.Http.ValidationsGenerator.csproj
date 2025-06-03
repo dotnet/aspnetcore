@@ -28,6 +28,8 @@
     <Compile Include="$(SharedSourceRoot)RoslynUtils\CodeWriter.cs" LinkBase="Shared" />
     <Compile Include="$(RepoRoot)\src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.RequestDelegateGenerator\StaticRouteHandlerModel\InvocationOperationExtensions.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Diagnostics\AnalyzerDebug.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\ParsabilityHelper.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)RoslynUtils\SymbolExtensions.cs" LinkBase="Shared" />
   </ItemGroup>
 
 </Project>

@@ -6,6 +6,9 @@
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RootNamespace>Microsoft.AspNetCore.Routing</RootNamespace>
+
+    <!-- https://github.com/dotnet/aspnetcore/issues/61574 tracks re-enabling this -->
+    <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
   </PropertyGroup>
 
   <!--

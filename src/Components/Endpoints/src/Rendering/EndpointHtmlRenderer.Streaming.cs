@@ -23,11 +23,13 @@ internal partial class EndpointHtmlRenderer
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
     private bool _isHandlingErrors;
+    private bool _isReExecuted;
 
-    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler)
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler, bool isReExecuted)
     {
         _isHandlingErrors = isErrorHandler;
-        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        _isReExecuted = isReExecuted;
+        if (!isReExecuted && IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
             httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);

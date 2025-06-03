@@ -36,6 +36,7 @@ public static class RegisterPersistentComponentStateServiceCollectionExtensions
         // We resolve the service from the DI container.
         // We loop through the properties in the type and try to restore the properties that have SupplyParameterFromPersistentComponentState on them.
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IPersistentServiceRegistration>(new PersistentServiceRegistration<TService>(componentRenderMode)));
+        services.TryAddSingleton<RegisteredPersistentServiceRegistrationCollection>();
 
         return services;
     }

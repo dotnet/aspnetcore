@@ -426,7 +426,13 @@ public class Project : IDisposable
 
     public void Dispose()
     {
-        DeleteOutputDirectory();
+        var doNotCleanUpTemplates = typeof(ProjectFactoryFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(attribute => attribute.Key == "DoNotCleanUpTemplates")
+            .Value;
+        if (string.Equals(doNotCleanUpTemplates, "false", StringComparison.OrdinalIgnoreCase))
+        {
+            DeleteOutputDirectory();
+        }
     }
 
     public void DeleteOutputDirectory()

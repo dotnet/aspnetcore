@@ -9,6 +9,7 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Caching.SqlServer" ProjectPath="$(RepoRoot)src\Caching\SqlServer\src\Microsoft.Extensions.Caching.SqlServer.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Caching.StackExchangeRedis" ProjectPath="$(RepoRoot)src\Caching\StackExchangeRedis\src\Microsoft.Extensions.Caching.StackExchangeRedis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore" ProjectPath="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.JsonPatch.SystemTextJson" ProjectPath="$(RepoRoot)src\Features\JsonPatch.SystemTextJson\src\Microsoft.AspNetCore.JsonPatch.SystemTextJson.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.JsonPatch" ProjectPath="$(RepoRoot)src\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.Abstractions" ProjectPath="$(RepoRoot)src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Cryptography.Internal" ProjectPath="$(RepoRoot)src\DataProtection\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
