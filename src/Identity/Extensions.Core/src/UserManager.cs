@@ -2252,7 +2252,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             var excludeCredentials = passkeys
                 .Select(p => new PublicKeyCredentialDescriptor(type: "public-key", id: BufferSource.FromBytes(p.CredentialId))
                 {
-                    Transports = [] // TODO: Consider making this configurable.
+                    Transports = p.Transports ?? [],
                 });
             return [.. excludeCredentials];
         }
@@ -2305,7 +2305,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
             var allowCredentials = passkeys
                 .Select(p => new PublicKeyCredentialDescriptor(type: "public-key", id: BufferSource.FromBytes(p.CredentialId))
                 {
-                    Transports = [] // TODO: Consider making this configurable.
+                    Transports = p.Transports ?? [],
                 });
             return [.. allowCredentials];
         }

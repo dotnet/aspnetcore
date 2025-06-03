@@ -11,6 +11,19 @@
 
 <h1>Welcome!</h1>
 
+<p>
+    This app demonstrates how to use passkeys for authentication with ASP.NET Core Identity.
+</p>
+
+<p>
+    See <a href="https://learn.microsoft.com/microsoft-edge/devtools-guide-chromium/webauthn/" target="_blank">these docs</a>
+    to learn how to simplify passkey testing with a virtual authenticator.
+</p>
+
+<p>
+    <b>NOTE:</b> For simplicity, users are stored in memory, so passkeys will be lost when the app restarts.
+</p>
+
 <h3>Log in or register here</h3>
 
 <form id="auth-form" method="post" @formname="auth" @onsubmit="OnSubmitAsync">
