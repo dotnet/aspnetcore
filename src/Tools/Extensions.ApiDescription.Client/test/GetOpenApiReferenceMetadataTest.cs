@@ -11,6 +11,10 @@ namespace Microsoft.Extensions.ApiDescription.Client;
 
 public class GetOpenApiReferenceMetadataTest
 {
+    public string SortMetadata(string Metadata)
+    {
+        return string.Join("|", Metadata.Split('|').OrderBy(s => s));
+    }
     [Fact]
     public void Execute_AddsExpectedMetadata()
     {
@@ -60,9 +64,9 @@ public class GetOpenApiReferenceMetadataTest
             orderedMetadata.Add(key, metadata[key]);
         }
 
-       expectedMetadata["SerializedMetadata"] = string.Join("|", expectedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       orderedMetadata["SerializedMetadata"] = string.Join("|", orderedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       Assert.Equal(expectedMetadata, orderedMetadata);
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]); 
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
+        Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
     [Fact]
@@ -120,9 +124,9 @@ public class GetOpenApiReferenceMetadataTest
             orderedMetadata.Add(key, metadata[key]);
         }
 
-       expectedMetadata["SerializedMetadata"] = string.Join("|", expectedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       orderedMetadata["SerializedMetadata"] = string.Join("|", orderedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       Assert.Equal(expectedMetadata, orderedMetadata);
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
+        Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
     [Fact]
@@ -180,9 +184,9 @@ public class GetOpenApiReferenceMetadataTest
             orderedMetadata.Add(key, metadata[key]);
         }
 
-       expectedMetadata["SerializedMetadata"] = string.Join("|", expectedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       orderedMetadata["SerializedMetadata"] = string.Join("|", orderedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       Assert.Equal(expectedMetadata, orderedMetadata);
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
+        Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
     [Fact]
@@ -240,9 +244,8 @@ public class GetOpenApiReferenceMetadataTest
             orderedMetadata.Add(key, metadata[key]);
         }
        // sort the values, since order is undefined for Dictionary
-       expectedMetadata["SerializedMetadata"] = string.Join("|", expectedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       orderedMetadata["SerializedMetadata"] = string.Join("|", orderedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
         Assert.Equal<SortedDictionary<string, string>>(expectedMetadata, orderedMetadata);
     }
 
@@ -392,10 +395,9 @@ public class GetOpenApiReferenceMetadataTest
         {
             orderedMetadata.Add(key, metadata[key]);
         }
-
-       expectedMetadata["SerializedMetadata"] = string.Join("|", expectedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       orderedMetadata["SerializedMetadata"] = string.Join("|", orderedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       Assert.Equal(expectedMetadata, orderedMetadata);
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
+        Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
     [Theory]
@@ -457,9 +459,9 @@ public class GetOpenApiReferenceMetadataTest
         {
             orderedMetadata.Add(key, metadata[key]);
         }
-       expectedMetadata["SerializedMetadata"] = string.Join("|", expectedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       orderedMetadata["SerializedMetadata"] = string.Join("|", orderedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-       Assert.Equal(expectedMetadata, orderedMetadata);
+        expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
+        orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
+        Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
     [Fact]
@@ -557,9 +559,9 @@ public class GetOpenApiReferenceMetadataTest
                     orderedMetadata.Add(key, metadata[key]);
                 }
 
-               expectedMetadata1["SerializedMetadata"] = string.Join("|", expectedMetadata1["SerializedMetadata"].Split('|').OrderBy(s => s));
-               orderedMetadata["SerializedMetadata"] = string.Join("|", orderedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-               Assert.Equal(expectedMetadata1, orderedMetadata);
+                expectedMetadata1["SerializedMetadata"] = SortMetadata(expectedMetadata1["SerializedMetadata"]);
+                orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
+                Assert.Equal(expectedMetadata1, orderedMetadata);
             },
             output =>
             {
@@ -570,10 +572,9 @@ public class GetOpenApiReferenceMetadataTest
                 {
                     orderedMetadata.Add(key, metadata[key]);
                 }
-
-               expectedMetadata2["SerializedMetadata"] = string.Join("|", expectedMetadata2["SerializedMetadata"].Split('|').OrderBy(s => s));
-               orderedMetadata["SerializedMetadata"] = string.Join("|", orderedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-               Assert.Equal(expectedMetadata2, orderedMetadata);
+                expectedMetadata2["SerializedMetadata"] = SortMetadata(expectedMetadata2["SerializedMetadata"]);
+                orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
+                Assert.Equal(expectedMetadata2, orderedMetadata);
             },
             output =>
             {
@@ -585,9 +586,9 @@ public class GetOpenApiReferenceMetadataTest
                     orderedMetadata.Add(key, metadata[key]);
                 }
 
-               expectedMetadata3["SerializedMetadata"] = string.Join("|", expectedMetadata3["SerializedMetadata"].Split('|').OrderBy(s => s));
-               orderedMetadata["SerializedMetadata"] = string.Join("|", orderedMetadata["SerializedMetadata"].Split('|').OrderBy(s => s));
-               Assert.Equal(expectedMetadata3, orderedMetadata);
+                expectedMetadata3["SerializedMetadata"] = SortMetadata(expectedMetadata3["SerializedMetadata"]);
+                orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
+                Assert.Equal(expectedMetadata3, orderedMetadata);
             });
     }
 }
