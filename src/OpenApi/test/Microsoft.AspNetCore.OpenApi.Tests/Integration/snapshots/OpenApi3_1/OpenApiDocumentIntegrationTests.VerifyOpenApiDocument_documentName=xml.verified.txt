@@ -4,6 +4,11 @@
     "title": "Sample | xml",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost/"
+    }
+  ],
   "paths": {
     "/xml/type-with-examples": {
       "get": {

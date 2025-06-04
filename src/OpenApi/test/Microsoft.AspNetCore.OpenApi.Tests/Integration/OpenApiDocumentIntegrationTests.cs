@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.AspNetCore.OpenApi;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
 
 [UsesVerify]
@@ -37,10 +35,8 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
     [MemberData(nameof(OpenApiDocuments))]
     public async Task VerifyOpenApiDocument(string documentName, OpenApiSpecVersion version)
     {
-        var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
-        var scopedServiceProvider = fixture.Services.CreateScope();
-        var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
-        var json = await document.SerializeAsJsonAsync(version);
+        using var client = fixture.CreateClient();
+        var json = await client.GetStringAsync($"/openapi/{documentName}.json");
         var baseSnapshotsDirectory = SkipOnHelixAttribute.OnHelix()
             ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
             : "snapshots";
