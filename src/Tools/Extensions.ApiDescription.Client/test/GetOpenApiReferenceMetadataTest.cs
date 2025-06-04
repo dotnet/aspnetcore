@@ -11,10 +11,11 @@ namespace Microsoft.Extensions.ApiDescription.Client;
 
 public class GetOpenApiReferenceMetadataTest
 {
-    public string SortMetadata(string Metadata)
+    string SortMetadata(string metadata)
     {
-        return string.Join("|", Metadata.Split('|').OrderBy(s => s));
+        return string.Join("|", metadata.Split('|').OrderBy(s => s));
     }
+
     [Fact]
     public void Execute_AddsExpectedMetadata()
     {
@@ -243,10 +244,11 @@ public class GetOpenApiReferenceMetadataTest
         {
             orderedMetadata.Add(key, metadata[key]);
         }
-       // sort the values, since order is undefined for Dictionary
+
+        // sort the values, since order is undefined for Dictionary
         expectedMetadata["SerializedMetadata"] = SortMetadata(expectedMetadata["SerializedMetadata"]);
         orderedMetadata["SerializedMetadata"] = SortMetadata(orderedMetadata["SerializedMetadata"]);
-        Assert.Equal<SortedDictionary<string, string>>(expectedMetadata, orderedMetadata);
+        Assert.Equal(expectedMetadata, orderedMetadata);
     }
 
     [Fact]
