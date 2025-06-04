@@ -739,7 +739,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
     private void VerifyOptionalEnum(OpenApiDocument document)
     {
-        var operation = document.Paths["/optionalEnum"].Operations[OperationType.Post];
+        var operation = document.Paths["/optionalEnum"].Operations[HttpMethod.Post];
         var properties = operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.Properties;
         var property = properties["status"];
 
