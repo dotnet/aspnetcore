@@ -75,27 +75,35 @@ internal partial class CircuitPersistenceManager(
         // Deserialize the existing batch the client has sent but ignore the markers
         if (!serverComponentDeserializer.TryDeserializeRootComponentOperations(
             serializedComponentOperations,
-            out var result,
+            out var batch,
             deserializeDescriptors: false))
         {
             return null;
         }
 
-        var data = JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(
-            rootComponents,
-            JsonSerializerOptionsProvider.Options);
+        var persistedMarkers = TryDeserializeMarkers(rootComponents);
+
+        if (persistedMarkers == null)
+        {
+            return null;
+        }
+
+        if (batch.Operations.Length != persistedMarkers.Count)
+        {
+            return null;
+        }
 
         // Ensure that all operations in the batch are `Add` operations.
-        for (var i = 0; i < result.Operations.Length; i++)
+        for (var i = 0; i < batch.Operations.Length; i++)
         {
-            var operation = result.Operations[i];
+            var operation = batch.Operations[i];
             if (operation.Type != RootComponentOperationType.Add)
             {
                 return null;
             }
 
             // Retrieve the marker from the persisted root components, replace it and deserialize the descriptor
-            if (!data.TryGetValue(operation.SsrComponentId, out var marker))
+            if (!persistedMarkers.TryGetValue(operation.SsrComponentId, out var marker))
             {
                 return null;
             }
@@ -109,7 +117,26 @@ internal partial class CircuitPersistenceManager(
             operation.Descriptor = descriptor;
         }
 
-        return result;
+        return batch;
+
+        static Dictionary<int, ComponentMarker> TryDeserializeMarkers(byte[] rootComponents)
+        {
+            if (rootComponents == null || rootComponents.Length == 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                return JsonSerializer.Deserialize<Dictionary<int, ComponentMarker>>(
+                    rootComponents,
+                    JsonSerializerOptionsProvider.Options);
+            }
+            catch
+            {
+                return null;
+            }
+        }
     }
 
     private class CircuitPersistenceManagerStore : IPersistentComponentStateStore
