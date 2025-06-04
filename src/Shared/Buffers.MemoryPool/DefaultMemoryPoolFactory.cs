@@ -18,11 +18,13 @@ internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyn
     private readonly ConcurrentDictionary<PinnedBlockMemoryPool, bool> _pools = new();
     private readonly PeriodicTimer _timer;
     private readonly Task _timerTask;
+    private readonly ILogger? _logger;
 
     public DefaultMemoryPoolFactory(IMeterFactory? meterFactory = null, ILogger<DefaultMemoryPoolFactory>? logger = null)
     {
         _meterFactory = meterFactory;
-        _timer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        _logger = logger;
+        _timer = new PeriodicTimer(PinnedBlockMemoryPool.DefaultEvictionDelay);
         _timerTask = Task.Run(async () =>
         {
             try
@@ -37,14 +39,14 @@ internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyn
             }
             catch (Exception ex)
             {
-                logger?.LogCritical(ex, "Error while evicting memory from pools.");
+                _logger?.LogCritical(ex, "Error while evicting memory from pools.");
             }
         });
     }
 
     public MemoryPool<byte> Create()
     {
-        var pool = new PinnedBlockMemoryPool(_meterFactory);
+        var pool = new PinnedBlockMemoryPool(_meterFactory, _logger);
 
         _pools.TryAdd(pool, true);
 

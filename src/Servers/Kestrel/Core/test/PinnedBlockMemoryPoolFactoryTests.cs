@@ -94,6 +94,10 @@ public class PinnedBlockMemoryPoolFactoryTests
 
         static async Task VerifyPoolEviction(PinnedBlockMemoryPool pool, int previousCount)
         {
+            // Because the eviction happens on a thread pool thread, we need to wait for it to complete
+            // and the only way to do that (without adding a test hook in the pool code) is to delay.
+            // But we don't want to add an arbitrary delay, so we do a short delay with block count checks
+            // to reduce the wait time.
             var maxWait = TimeSpan.FromSeconds(5);
             while (pool.BlockCount() > previousCount - (previousCount / 30) && maxWait > TimeSpan.Zero)
             {
@@ -101,6 +105,8 @@ public class PinnedBlockMemoryPoolFactoryTests
                 maxWait -= TimeSpan.FromMilliseconds(50);
             }
 
+            // Assert that the block count has decreased by 3.3-10%.
+            // This relies on the current implementation of eviction logic which may change in the future.
             Assert.InRange(pool.BlockCount(), previousCount - (previousCount / 10), previousCount - (previousCount / 30));
         }
     }

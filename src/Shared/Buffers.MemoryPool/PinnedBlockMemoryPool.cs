@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Logging;
 
 #nullable enable
 
@@ -18,6 +19,12 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     /// The size of a block. 4096 is chosen because most operating systems use 4k pages.
     /// </summary>
     private const int _blockSize = 4096;
+
+    // 10 seconds chosen arbitrarily. Trying to avoid running eviction too frequently
+    // to avoid trashing if the server gets batches of requests, but want to run often
+    // enough to avoid memory bloat if the server is idle for a while.
+    // This can be tuned later if needed.
+    public static readonly TimeSpan DefaultEvictionDelay = TimeSpan.FromSeconds(10);
 
     /// <summary>
     /// Max allocation block size for pooled blocks,
@@ -42,10 +49,11 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     private bool _isDisposed; // To detect redundant calls
 
     private readonly PinnedBlockMemoryPoolMetrics? _metrics;
+    private readonly ILogger? _logger;
 
     private long _currentMemory;
     private long _evictedMemory;
-    private DateTimeOffset _nextEviction = DateTime.UtcNow.AddSeconds(10);
+    private DateTimeOffset _nextEviction = DateTime.UtcNow.Add(DefaultEvictionDelay);
 
     private uint _rentCount;
     private uint _returnCount;
@@ -60,9 +68,10 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     /// </summary>
     private const int AnySize = -1;
 
-    public PinnedBlockMemoryPool(IMeterFactory? meterFactory = null)
+    public PinnedBlockMemoryPool(IMeterFactory? meterFactory = null, ILogger? logger = null)
     {
         _metrics = meterFactory is null ? null : new PinnedBlockMemoryPoolMetrics(meterFactory);
+        _logger = logger;
     }
 
     /// <summary>
@@ -140,7 +149,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     {
         if (now >= _nextEviction)
         {
-            _nextEviction = now.AddSeconds(10);
+            _nextEviction = now.Add(DefaultEvictionDelay);
             ThreadPool.UnsafeQueueUserWorkItem(this, preferLocal: false);
             return true;
         }
@@ -150,7 +159,15 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
 
     void IThreadPoolWorkItem.Execute()
     {
-        PerformEviction();
+        try
+        {
+            PerformEviction();
+        }
+        catch (Exception ex)
+        {
+            // Log the exception, but don't let it crash the thread pool
+            _logger?.LogError(ex, "Error while performing eviction in PinnedBlockMemoryPool.");
+        }
     }
 
     /// <summary>
@@ -214,6 +231,11 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
 
         lock (_disposeSync)
         {
+            if (_isDisposed)
+            {
+                return;
+            }
+
             _isDisposed = true;
 
             _onPoolDisposed?.Invoke(_onPoolDisposedState, this);
