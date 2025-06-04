@@ -1,9 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
+using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Antiforgery;
@@ -21,6 +24,22 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
     }
 
     /// <inheritdoc />
+    public void ExtractClaimUid(ClaimsPrincipal claimsPrincipal, Span<byte> destination, out int bytesWritten)
+    {
+        Debug.Assert(claimsPrincipal != null);
+
+        var uniqueIdentifierParameters = GetUniqueIdentifierParameters(claimsPrincipal.Identities);
+        if (uniqueIdentifierParameters == null)
+        {
+            // No authenticated identities containing claims found.
+            bytesWritten = 0;
+            return;
+        }
+
+        ComputeSha256(uniqueIdentifierParameters, destination, out bytesWritten);
+    }
+
+    /// <inheritdoc />
     public string? ExtractClaimUid(ClaimsPrincipal claimsPrincipal)
     {
         Debug.Assert(claimsPrincipal != null);
@@ -32,6 +51,7 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
             return null;
         }
 
+        // todo skip allocations here as well
         var claimUidBytes = ComputeSha256(uniqueIdentifierParameters);
         return Convert.ToBase64String(claimUidBytes);
     }
@@ -117,6 +137,41 @@ internal sealed class DefaultClaimUidExtractor : IClaimUidExtractor
         }
 
         return identifierParameters;
+    }
+
+    private static void ComputeSha256(IEnumerable<string> parameters, Span<byte> output, out int bytesWritten)
+    {
+        int estimatedSize = 0;
+        foreach (var param in parameters)
+        {
+            int byteCount = Encoding.UTF8.GetByteCount(param);
+            estimatedSize += 5 + byteCount; // max 5 bytes for 7-bit length + content
+        }
+
+        byte[] buffer = ArrayPool<byte>.Shared.Rent(estimatedSize);
+
+        try
+        {
+            int offset = 0;
+            foreach (var param in parameters)
+            {
+                int byteCount = Encoding.UTF8.GetByteCount(param);
+
+                // Write 7-bit encoded length prefix
+                offset += buffer.AsSpan(offset).Write7BitEncodedInt(byteCount);
+
+                // Write UTF-8 bytes
+                Encoding.UTF8.GetBytes(param, buffer.AsSpan(offset, byteCount));
+                offset += byteCount;
+            }
+
+            SHA256.TryHashData(buffer.AsSpan(0, offset), output, out bytesWritten);
+            Debug.Assert(bytesWritten == 32);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(buffer);
+        }
     }
 
     private byte[] ComputeSha256(IEnumerable<string> parameters)

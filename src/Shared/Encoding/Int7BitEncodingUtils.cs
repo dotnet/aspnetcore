@@ -28,6 +28,37 @@ internal static class Int7BitEncodingUtils
 #endif
     }
 
+    public static int Read7BitEncodedInt(this ReadOnlySpan<byte> span, out int bytesRead)
+    {
+        int result = 0;
+        int shift = 0;
+        bytesRead = 0;
+
+        while (true)
+        {
+            if (bytesRead >= span.Length)
+            {
+                throw new InvalidOperationException("Invalid 7-bit encoded int.");
+            }
+
+            byte b = span[bytesRead++];
+            result |= (b & 0x7F) << shift;
+
+            if ((b & 0x80) == 0)
+            {
+                break;
+            }
+
+            shift += 7;
+            if (shift > 35)
+            {
+                throw new FormatException("7-bit encoded int too large.");
+            }
+        }
+
+        return result;
+    }
+
     public static int Write7BitEncodedInt(this Span<byte> target, int value)
         => Write7BitEncodedInt(target, (uint)value);
 
