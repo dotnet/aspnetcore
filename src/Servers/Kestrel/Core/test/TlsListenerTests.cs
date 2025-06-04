@@ -51,7 +51,7 @@ public class TlsListenerTests
         => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, tlsClientHelloCallbackExpected: false);
 
     [Fact]
-    public async Task RunTlsClientHelloCallbackTest_WithPreCancelledToken()
+    public async Task RunTlsClientHelloCallbackTest_WithPreCanceledToken()
     {
         var serviceContext = new TestServiceContext();
 

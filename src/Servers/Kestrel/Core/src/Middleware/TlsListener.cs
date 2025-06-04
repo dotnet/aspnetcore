@@ -88,7 +88,7 @@ internal sealed class TlsListener
 
         // in case bad actor will be sending a TLS client hello one byte at a time
         // and we know the expected length of TLS client hello,
-        // we can check and fail fastly here instead of re-parsing the TLS client hello "header" on each iteration
+        // we can check and fail quickly here instead of re-parsing the TLS client hello "header" on each iteration
         if (recordLength != -1 && buffer.Length < 5 + recordLength)
         {
             return ClientHelloParseState.NotEnoughData;
