@@ -280,7 +280,7 @@ internal sealed partial class ComponentHub : Hub
         if (!_circuitIdFactory.TryParseCircuitId(circuitIdSecret, out var circuitId))
         {
             // Invalid id.
-            Log.InvalidCircuitId(_logger, circuitIdSecret);
+            Log.ResumeInvalidCircuitId(_logger, circuitIdSecret);
             return null;
         }
 
@@ -323,12 +323,12 @@ internal sealed partial class ComponentHub : Hub
                 return null;
             }
         }
-        else if (!string.IsNullOrEmpty(rootComponents) || !string.IsNullOrEmpty(applicationState))
+        else if (!RootComponentIsEmpty(rootComponents) || !string.IsNullOrEmpty(applicationState))
         {
             Log.InvalidInputData(_logger);
             await NotifyClientError(
                 Clients.Caller,
-                string.IsNullOrEmpty(rootComponents) ?
+                RootComponentIsEmpty(rootComponents) ?
                 "The root components provided are invalid." :
                 "The application state provided is invalid."
             );
@@ -384,6 +384,9 @@ internal sealed partial class ComponentHub : Hub
             Context.Abort();
             return null;
         }
+
+        static bool RootComponentIsEmpty(string rootComponents) =>
+            string.IsNullOrEmpty(rootComponents) || rootComponents == "[]";
     }
 
     public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
@@ -575,6 +578,9 @@ internal sealed partial class ComponentHub : Hub
         [LoggerMessage(8, LogLevel.Debug, "ConnectAsync received an invalid circuit id '{CircuitIdSecret}'", EventName = "InvalidCircuitId")]
         private static partial void InvalidCircuitIdCore(ILogger logger, string circuitIdSecret);
 
+        [LoggerMessage(9, LogLevel.Debug, "ResumeCircuit received an invalid circuit id '{CircuitIdSecret}'", EventName = "ResumeInvalidCircuitId")]
+        private static partial void ResumeInvalidCircuitIdCore(ILogger logger, string circuitIdSecret);
+
         public static void InvalidCircuitId(ILogger logger, string circuitSecret)
         {
             // Redact the secret unless tracing is on.
@@ -584,6 +590,17 @@ internal sealed partial class ComponentHub : Hub
             }
 
             InvalidCircuitIdCore(logger, circuitSecret);
+        }
+
+        public static void ResumeInvalidCircuitId(ILogger logger, string circuitSecret)
+        {
+            // Redact the secret unless tracing is on.
+            if (!logger.IsEnabled(LogLevel.Trace))
+            {
+                circuitSecret = "(redacted)";
+            }
+
+            ResumeInvalidCircuitIdCore(logger, circuitSecret);
         }
     }
 }
