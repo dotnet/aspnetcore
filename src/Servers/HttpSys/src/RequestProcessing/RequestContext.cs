@@ -33,7 +33,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
     public Request Request { get; private set; } = default!;
 
-    public Response Response { get; private set; } = default!;  
+    public Response Response { get; private set; } = default!;
 
     public WindowsPrincipal User => Request.User;
 

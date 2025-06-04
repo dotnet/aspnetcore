@@ -1,3 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Features.IHttpSysRequestPropertyFeature
-Microsoft.AspNetCore.Http.Features.IHttpSysRequestPropertyFeature.TryGetTlsClientHello(System.Span<byte> tlsClientHelloBytesDestination, out int bytesReturned) -> bool
