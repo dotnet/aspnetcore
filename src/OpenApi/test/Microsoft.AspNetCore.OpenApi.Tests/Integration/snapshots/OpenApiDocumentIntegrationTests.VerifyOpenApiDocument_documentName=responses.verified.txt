@@ -4,6 +4,11 @@
     "title": "Sample | responses",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost/"
+    }
+  ],
   "paths": {
     "/responses/200-add-xml": {
       "get": {
