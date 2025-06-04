@@ -24,7 +24,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform;
 using Moq;
+using Xunit.Sdk;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -51,6 +53,30 @@ public class TlsListenerTests
         => RunTlsClientHelloCallbackTest_WithMultipleSegments(id, packets, tlsClientHelloCallbackExpected: false);
 
     [Fact]
+    public async Task RunTlsClientHelloCallbackTest_WithExtraShortLastingToken()
+    {
+        var serviceContext = new TestServiceContext();
+
+        var pipe = new Pipe();
+        var writer = pipe.Writer;
+        var reader = new ObservablePipeReader(pipe.Reader);
+
+        var transport = new DuplexPipe(reader, writer);
+        var transportConnection = new DefaultConnectionContext("test", transport, transport);
+
+        var tlsClientHelloCallbackInvoked = false;
+        var listener = new TlsListener((ctx, data) => { tlsClientHelloCallbackInvoked = true; });
+
+        var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(3));
+
+        await writer.WriteAsync(new byte[1] { 0x16 });
+        await VerifyThrowsAnyAsync(
+            async () => await listener.OnTlsClientHelloAsync(transportConnection, cts.Token),
+            typeof(OperationCanceledException), typeof(TaskCanceledException));
+        Assert.False(tlsClientHelloCallbackInvoked);
+    }
+
+    [Fact]
     public async Task RunTlsClientHelloCallbackTest_WithPreCanceledToken()
     {
         var serviceContext = new TestServiceContext();
@@ -69,10 +95,9 @@ public class TlsListenerTests
         cts.Cancel();
 
         await writer.WriteAsync(new byte[1] { 0x16 });
-        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-        {
-            await listener.OnTlsClientHelloAsync(transportConnection, cts.Token);
-        });
+        await VerifyThrowsAnyAsync(
+            async () => await listener.OnTlsClientHelloAsync(transportConnection, cts.Token),
+            typeof(OperationCanceledException), typeof(TaskCanceledException));
         Assert.False(tlsClientHelloCallbackInvoked);
     }
 
@@ -598,4 +623,28 @@ public class TlsListenerTests
         _invalidTlsClientHelloHeader, _invalid3BytesMessage, _invalid9BytesMessage,
         _invalidUnknownProtocolVersion1, _invalidUnknownProtocolVersion2, _invalidIncorrectHandshakeMessageType
     };
+
+    static async Task VerifyThrowsAnyAsync(Func<Task> code, params Type[] exceptionTypes)
+    {
+        if (exceptionTypes == null || exceptionTypes.Length == 0)
+        {
+            throw new ArgumentException("At least one exception type must be provided.", nameof(exceptionTypes));
+        }
+
+        try
+        {
+            await code();
+        }
+        catch (Exception ex)
+        {
+            if (exceptionTypes.Any(type => type.IsInstanceOfType(ex)))
+            {
+                return;
+            }
+
+            throw ThrowsException.ForIncorrectExceptionType(exceptionTypes.First(), ex);
+        }
+
+        throw ThrowsException.ForNoException(exceptionTypes.First());
+    }
 }
