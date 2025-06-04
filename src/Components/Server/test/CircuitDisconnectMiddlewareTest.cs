@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -25,7 +26,7 @@ public class CircuitDisconnectMiddlewareTest
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
             circuitIdFactory,
-            Mock.Of<CircuitPersistenceManager>());
+            CreatePersistenceManager());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -54,7 +55,7 @@ public class CircuitDisconnectMiddlewareTest
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
             circuitIdFactory,
-            Mock.Of<CircuitPersistenceManager>());
+            CreatePersistenceManager());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -82,7 +83,7 @@ public class CircuitDisconnectMiddlewareTest
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
             circuitIdFactory,
-            Mock.Of<CircuitPersistenceManager>());
+            CreatePersistenceManager());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -110,7 +111,7 @@ public class CircuitDisconnectMiddlewareTest
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
             circuitIdFactory,
-            Mock.Of<CircuitPersistenceManager>());
+            CreatePersistenceManager());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -144,7 +145,7 @@ public class CircuitDisconnectMiddlewareTest
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
             circuitIdFactory,
-            Mock.Of<CircuitPersistenceManager>());
+            CreatePersistenceManager());
 
         var middleware = new CircuitDisconnectMiddleware(
             NullLogger<CircuitDisconnectMiddleware>.Instance,
@@ -180,7 +181,7 @@ public class CircuitDisconnectMiddlewareTest
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
             circuitIdFactory,
-            Mock.Of<CircuitPersistenceManager>());
+            CreatePersistenceManager());
 
         registry.Register(testCircuitHost);
 
@@ -218,7 +219,7 @@ public class CircuitDisconnectMiddlewareTest
             Options.Create(new CircuitOptions()),
             NullLogger<CircuitRegistry>.Instance,
             circuitIdFactory,
-            Mock.Of<CircuitPersistenceManager>());
+            CreatePersistenceManager());
 
         registry.Register(circuitHost);
         await registry.DisconnectAsync(circuitHost, "1234");
@@ -243,5 +244,14 @@ public class CircuitDisconnectMiddlewareTest
 
         // Assert
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+    }
+
+    private static CircuitPersistenceManager CreatePersistenceManager()
+    {
+        var circuitPersistenceManager = new CircuitPersistenceManager(
+            Options.Create(new CircuitOptions()),
+            new Endpoints.ServerComponentSerializer(new EphemeralDataProtectionProvider()),
+            Mock.Of<ICircuitPersistenceProvider>());
+        return circuitPersistenceManager;
     }
 }

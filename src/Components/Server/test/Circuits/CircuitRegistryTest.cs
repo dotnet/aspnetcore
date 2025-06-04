@@ -316,7 +316,7 @@ public class CircuitRegistryTest
 
         await Task.WhenAll(disconnect, connect);
         persistenceCompletionSource.SetResult();
-
+        circuitPersistenceProvider.AfterPersist.Wait(TimeSpan.FromSeconds(10));
         // Assert
         // We expect the reconnect to fail since the circuit has already been evicted and persisted.
         Assert.Empty(registry.ConnectedCircuits.Values);
@@ -368,6 +368,7 @@ public class CircuitRegistryTest
         registry.BeforeDisconnect.Set();
 
         await Task.WhenAll(disconnect, connect);
+        circuitPersistenceProvider.AfterPersist.Wait(TimeSpan.FromSeconds(10));
 
         // Assert
         // We expect the reconnect to fail since the circuit has already been evicted and persisted.
@@ -513,17 +514,17 @@ public class CircuitRegistryTest
     private class TestCircuitPersistenceProvider : ICircuitPersistenceProvider
     {
         public Task Persisting { get; set; }
+        public ManualResetEventSlim AfterPersist { get; set; } = new ManualResetEventSlim();
         public bool PersistCalled { get; internal set; }
 
-        public Task PersistCircuitAsync(CircuitId circuitId, PersistedCircuitState persistedCircuitState, CancellationToken cancellation = default)
+        public async Task PersistCircuitAsync(CircuitId circuitId, PersistedCircuitState persistedCircuitState, CancellationToken cancellation = default)
         {
             PersistCalled = true;
             if (Persisting != null)
             {
-                return Persisting;
+                await Persisting;
             }
-
-            return Task.CompletedTask;
+            AfterPersist.Set();
         }
 
         public Task<PersistedCircuitState> RestoreCircuitAsync(CircuitId circuitId, CancellationToken cancellation = default)
