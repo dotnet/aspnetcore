@@ -74,6 +74,8 @@ private:
         const std::filesystem::path & requestedPath
     );
 
+    static BOOL IsX64(const WCHAR* dotnetPath);
+
     struct LocalFreeDeleter
     {
          void operator ()(_In_ LPWSTR* ptr) const
