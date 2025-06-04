@@ -17,8 +17,9 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
     private readonly CircuitOptions _options;
     private readonly MemoryCache _persistedCircuits;
     private readonly Task<PersistedCircuitState> _noMatch = Task.FromResult<PersistedCircuitState>(null);
-    private readonly PostEvictionCallbackRegistration _postEvictionCallback;
     private readonly ILogger<ICircuitPersistenceProvider> _logger;
+
+    public PostEvictionCallbackRegistration PostEvictionCallback { get; internal set; }
 
     public DefaultInMemoryCircuitPersistenceProvider(
         ISystemClock clock,
@@ -32,7 +33,7 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
             Clock = clock
         });
 
-        _postEvictionCallback = new PostEvictionCallbackRegistration
+        PostEvictionCallback = new PostEvictionCallbackRegistration
         {
             EvictionCallback = OnEntryEvicted
         };
@@ -58,7 +59,7 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
         var options = new MemoryCacheEntryOptions
         {
             Size = 1,
-            PostEvictionCallbacks = { _postEvictionCallback },
+            PostEvictionCallbacks = { PostEvictionCallback },
             ExpirationTokens = { new CancellationChangeToken(cancellationTokenSource.Token) },
         };
 
