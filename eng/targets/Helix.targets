@@ -18,9 +18,9 @@
     <SkipHelixQueues>
       $(HelixQueueAlmaLinux);
       $(HelixQueueAlpine);
-      $(HelixQueueAzureLinux);
       $(HelixQueueDebian);
       $(HelixQueueFedora40);
+      $(HelixQueueUbuntu);
       AzureLinux.3.Amd64.Open;
     </SkipHelixQueues>
     <SkipHelixArm>true</SkipHelixArm>
