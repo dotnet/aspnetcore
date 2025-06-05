@@ -82,7 +82,7 @@
             return;
         }
 
-        var attestationResult = await UserManager.PerformPasskeyAttestationAsync(CredentialJson, options);
+        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(CredentialJson, options);
         if (!attestationResult.Succeeded)
         {
             statusMessage = $"Error: Could not validate credential: {attestationResult.Failure.Message}";

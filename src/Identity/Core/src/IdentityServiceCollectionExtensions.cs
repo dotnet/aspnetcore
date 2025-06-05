@@ -102,7 +102,7 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
-        services.TryAddScoped<IPasskeyRequestContextProvider, HttpPasskeyRequestContextProvider>();
+        services.TryAddScoped<IPasskeyAttestationStatementVerifier, NoOpPasskeyAttestationStatementVerifier>();
         services.TryAddScoped<IPasskeyOriginValidator, DefaultPasskeyOriginValidator>();
         services.TryAddScoped<IPasskeyHandler<TUser>, DefaultPasskeyHandler<TUser>>();
         services.TryAddScoped<UserManager<TUser>>();

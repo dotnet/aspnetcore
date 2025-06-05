@@ -9,7 +9,6 @@ using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Shared;
@@ -49,8 +48,6 @@ public class UserManager<TUser> : IDisposable where TUser : class
     private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
     private readonly IServiceProvider _services;
-    private readonly IPasskeyHandler<TUser>? _passkeyHandler;
-    private readonly IPasskeyRequestContextProvider? _passkeyRequestContextProvider;
 
     /// <summary>
     /// The cancellation token used to cancel operations.
@@ -120,9 +117,6 @@ public class UserManager<TUser> : IDisposable where TUser : class
                     RegisterTokenProvider(providerName, provider);
                 }
             }
-
-            _passkeyHandler = services.GetService<IPasskeyHandler<TUser>>();
-            _passkeyRequestContextProvider = services.GetService<IPasskeyRequestContextProvider>();
         }
 
         if (Options.Stores.ProtectPersonalData)
@@ -2147,201 +2141,6 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ArgumentNullThrowHelper.ThrowIfNull(user);
 
         return store.CountCodesAsync(user, CancellationToken);
-    }
-
-    /// <summary>
-    /// Performs passkey attestation for the given <paramref name="credentialJson"/> and <paramref name="options"/>.
-    /// </summary>
-    /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.create()</c> JavaScript function.</param>
-    /// <param name="options">The original passkey creation options provided to the browser.</param>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyAttestationResult"/>.
-    /// </returns>
-    public virtual async Task<PasskeyAttestationResult> PerformPasskeyAttestationAsync(string credentialJson, PasskeyCreationOptions options)
-    {
-        ThrowIfDisposed();
-        ThrowIfNoPasskeyHandler();
-        ArgumentNullThrowHelper.ThrowIfNullOrEmpty(credentialJson);
-        ArgumentNullThrowHelper.ThrowIfNull(options);
-
-        var result = await _passkeyHandler.PerformAttestationAsync(credentialJson, options.AsJson(), this).ConfigureAwait(false);
-        if (!result.Succeeded)
-        {
-            Logger.LogDebug(LoggerEventIds.PasskeyAttestationFailed, "Passkey attestation failed: {message}", result.Failure.Message);
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Performs passkey assertion for the given <paramref name="credentialJson"/> and <paramref name="options"/>.
-    /// </summary>
-    /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
-    /// <param name="options">The original passkey creation options provided to the browser.</param>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyAssertionResult{TUser}"/>.
-    /// </returns>
-    public virtual async Task<PasskeyAssertionResult<TUser>> PerformPasskeyAssertionAsync(string credentialJson, PasskeyRequestOptions options)
-    {
-        ThrowIfDisposed();
-        ThrowIfNoPasskeyHandler();
-        ArgumentNullThrowHelper.ThrowIfNullOrEmpty(credentialJson);
-        ArgumentNullThrowHelper.ThrowIfNull(options);
-
-        var user = options.UserId is { Length: > 0 } userId
-            ? await FindByIdAsync(userId).ConfigureAwait(false)
-            : null;
-        var result = await _passkeyHandler.PerformAssertionAsync(user, credentialJson, options.AsJson(), this).ConfigureAwait(false);
-        if (!result.Succeeded)
-        {
-            Logger.LogDebug(LoggerEventIds.PasskeyAssertionFailed, "Passkey assertion failed: {message}", result.Failure.Message);
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Generates a <see cref="PasskeyCreationOptions"/> to create a new passkey for a user.
-    /// </summary>
-    /// <param name="creationArgs">Args for configuring the <see cref="PasskeyCreationOptions"/>.</param>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyCreationOptions"/>.
-    /// </returns>
-    public virtual async Task<PasskeyCreationOptions> GeneratePasskeyCreationOptionsAsync(PasskeyCreationArgs creationArgs)
-    {
-        ThrowIfDisposed();
-        ThrowIfNoPasskeyRequestContextProvider();
-        ArgumentNullThrowHelper.ThrowIfNull(creationArgs);
-
-        var requestContext = _passkeyRequestContextProvider.Context;
-        var serverDomain = requestContext.Domain
-            ?? throw new InvalidOperationException("A passkey server domain has not been configured and cannot be inferred from the request context.");
-
-        var excludeCredentials = await GetExcludeCredentialsAsync().ConfigureAwait(false);
-        var rpEntity = new PublicKeyCredentialRpEntity(name: serverDomain)
-        {
-            Id = serverDomain,
-        };
-        var userEntity = new PublicKeyCredentialUserEntity(
-            id: BufferSource.FromString(creationArgs.UserEntity.Id),
-            name: creationArgs.UserEntity.Name,
-            displayName: creationArgs.UserEntity.DisplayName);
-        var challenge = GetRandomChallenge(Options.Passkey.ChallengeSize);
-        var options = new PublicKeyCredentialCreationOptions(rpEntity, userEntity, BufferSource.FromBytes(challenge))
-        {
-            Timeout = (uint)Options.Passkey.Timeout.TotalMilliseconds,
-            ExcludeCredentials = excludeCredentials,
-            PubKeyCredParams = PublicKeyCredentialParameters.AllSupportedParameters,
-            AuthenticatorSelection = creationArgs.AuthenticatorSelection,
-            Attestation = creationArgs.Attestation,
-            Extensions = creationArgs.Extensions,
-        };
-        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.PublicKeyCredentialCreationOptions);
-        return new(creationArgs.UserEntity, optionsJson);
-
-        async Task<PublicKeyCredentialDescriptor[]> GetExcludeCredentialsAsync()
-        {
-            var existingUser = await FindByIdAsync(creationArgs.UserEntity.Id).ConfigureAwait(false);
-            if (existingUser is null)
-            {
-                return [];
-            }
-
-            var passkeyStore = GetUserPasskeyStore();
-            var passkeys = await passkeyStore.GetPasskeysAsync(existingUser, CancellationToken).ConfigureAwait(false);
-            var excludeCredentials = passkeys
-                .Select(p => new PublicKeyCredentialDescriptor(type: "public-key", id: BufferSource.FromBytes(p.CredentialId))
-                {
-                    Transports = p.Transports ?? [],
-                });
-            return [.. excludeCredentials];
-        }
-    }
-
-    /// <summary>
-    /// Generates a <see cref="PasskeyCreationOptions"/> to request an existing passkey for a user.
-    /// </summary>
-    /// <param name="requestArgs">Args for configuring the <see cref="PasskeyRequestOptions"/>.</param>
-    /// <returns>
-    /// A task object representing the asynchronous operation containing the <see cref="PasskeyRequestOptions"/>.
-    /// </returns>
-    public virtual async Task<PasskeyRequestOptions> GeneratePasskeyRequestOptionsAsync(PasskeyRequestArgs<TUser> requestArgs)
-    {
-        ThrowIfDisposed();
-        ThrowIfNoPasskeyRequestContextProvider();
-
-        var requestContext = _passkeyRequestContextProvider.Context;
-        var serverDomain = requestContext.Domain
-            ?? throw new InvalidOperationException("A passkey server domain has not been configured and cannot be inferred from the request context.");
-
-        var allowCredentials = await GetAllowCredentialsAsync().ConfigureAwait(false);
-        var challenge = GetRandomChallenge(Options.Passkey.ChallengeSize);
-        var options = new PublicKeyCredentialRequestOptions(BufferSource.FromBytes(challenge))
-        {
-            RpId = requestContext.Domain,
-            Timeout = (uint)Options.Passkey.Timeout.TotalMilliseconds,
-            AllowCredentials = allowCredentials,
-        };
-        if (requestArgs is not null)
-        {
-            options.UserVerification = requestArgs.UserVerification;
-            options.Extensions = requestArgs.Extensions;
-        }
-        var userId = requestArgs?.User is { } user
-            ? await GetUserIdAsync(user).ConfigureAwait(false)
-            : null;
-        var optionsJson = JsonSerializer.Serialize(options, IdentityJsonSerializerContext.Default.PublicKeyCredentialRequestOptions);
-        return new(userId, optionsJson);
-
-        async Task<PublicKeyCredentialDescriptor[]> GetAllowCredentialsAsync()
-        {
-            if (requestArgs?.User is not { } user)
-            {
-                return [];
-            }
-
-            var passkeyStore = GetUserPasskeyStore();
-            var passkeys = await passkeyStore.GetPasskeysAsync(user, CancellationToken).ConfigureAwait(false);
-            var allowCredentials = passkeys
-                .Select(p => new PublicKeyCredentialDescriptor(type: "public-key", id: BufferSource.FromBytes(p.CredentialId))
-                {
-                    Transports = p.Transports ?? [],
-                });
-            return [.. allowCredentials];
-        }
-    }
-
-    [MemberNotNull(nameof(_passkeyHandler))]
-    private void ThrowIfNoPasskeyHandler()
-    {
-        if (_passkeyHandler is null)
-        {
-            throw new InvalidOperationException(
-                $"This operation requires an {nameof(IPasskeyHandler<>)} service to be registered.");
-        }
-    }
-
-    [MemberNotNull(nameof(_passkeyRequestContextProvider))]
-    private void ThrowIfNoPasskeyRequestContextProvider()
-    {
-        if (_passkeyRequestContextProvider is null)
-        {
-            throw new InvalidOperationException(
-                $"This operation requires an {nameof(IPasskeyRequestContextProvider)} service to be registered.");
-        }
-    }
-
-    private static byte[] GetRandomChallenge(int challengeSize)
-    {
-        var resultBuffer = new byte[challengeSize];
-
-#if NETCOREAPP
-        RandomNumberGenerator.Fill(resultBuffer);
-#else
-        _rng.GetBytes(resultBuffer);
-#endif
-
-        return resultBuffer;
     }
 
     /// <summary>

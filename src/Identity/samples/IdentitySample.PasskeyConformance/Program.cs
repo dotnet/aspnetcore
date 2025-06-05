@@ -83,7 +83,7 @@ attestationGroup.MapPost("/result", async (
         return Results.BadRequest(new FailedResponse("There are no original passkey options present."));
     }
 
-    var attestationResult = await userManager.PerformPasskeyAttestationAsync(credentialJson, options);
+    var attestationResult = await signInManager.PerformPasskeyAttestationAsync(credentialJson, options);
     if (!attestationResult.Succeeded)
     {
         return Results.BadRequest(new FailedResponse($"Attestation failed: {attestationResult.Failure.Message}"));
@@ -154,7 +154,7 @@ assertionGroup.MapPost("/result", async (
         return Results.BadRequest(new FailedResponse("There are no original passkey options present."));
     }
 
-    var assertionResult = await userManager.PerformPasskeyAssertionAsync(credentialJson, options);
+    var assertionResult = await signInManager.PerformPasskeyAssertionAsync(credentialJson, options);
     if (!assertionResult.Succeeded)
     {
         return Results.BadRequest(new FailedResponse($"Assertion failed: {assertionResult.Failure.Message}"));

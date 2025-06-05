@@ -41,7 +41,9 @@ public static class IdentityBuilderExtensions
     private static void AddSignInManagerDeps(this IdentityBuilder builder)
     {
         builder.Services.AddHttpContextAccessor();
-        builder.Services.AddScoped<IPasskeyRequestContextProvider, HttpPasskeyRequestContextProvider>();
+        builder.Services.AddScoped<IPasskeyAttestationStatementVerifier, NoOpPasskeyAttestationStatementVerifier>();
+        builder.Services.AddScoped<IPasskeyOriginValidator, DefaultPasskeyOriginValidator>();
+        builder.Services.AddScoped(typeof(IPasskeyHandler<>).MakeGenericType(builder.UserType), typeof(DefaultPasskeyHandler<>).MakeGenericType(builder.UserType));
         builder.Services.AddScoped(typeof(ISecurityStampValidator), typeof(SecurityStampValidator<>).MakeGenericType(builder.UserType));
         builder.Services.AddScoped(typeof(ITwoFactorSecurityStampValidator), typeof(TwoFactorSecurityStampValidator<>).MakeGenericType(builder.UserType));
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<SecurityStampValidatorOptions>, PostConfigureSecurityStampValidatorOptions>());
