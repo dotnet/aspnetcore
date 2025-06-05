@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace InMemory.FunctionalTests;
 
-public class TlsListenerMiddlewareTests : TestApplicationErrorLoggerLoggedTest
+public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
