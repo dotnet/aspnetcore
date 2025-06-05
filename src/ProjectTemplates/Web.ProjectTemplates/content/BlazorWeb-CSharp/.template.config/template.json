@@ -116,7 +116,6 @@
           "exclude": [
             "BlazorWeb-CSharp/Components/Pages/Auth.*",
             "BlazorWeb-CSharp/Components/Pages/Counter.*",
-            "BlazorWeb-CSharp/Components/Pages/NotFound.*",
             "BlazorWeb-CSharp/Components/Pages/Weather.*",
             "BlazorWeb-CSharp/Components/Layout/NavMenu.*",
             "BlazorWeb-CSharp/wwwroot/lib/**",
