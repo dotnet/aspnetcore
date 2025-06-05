@@ -238,7 +238,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       throw new Error('Method not implemented.');
     }
 
-    const resume = await this._connection!.invoke<string>(
+    // When we get here we know the circuit is gone for good.
+    // Signal that we are about to start a new circuit so that
+    // any existing handlers can perform the necessary cleanup.
+    for (const handler of this._options.circuitHandlers) {
+      if (handler.onCircuitClosed) {
+        handler.onCircuitClosed();
+      }
+    }
+
+    const newCircuitId = await this._connection!.invoke<string>(
       'ResumeCircuit',
       this._circuitId,
       navigationManagerFunctions.getBaseURI(),
@@ -246,12 +255,18 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       '[]',
       ''
     );
-    if (!resume) {
+    if (!newCircuitId) {
       return false;
     }
 
-    this._circuitId = resume;
+    this._circuitId = newCircuitId;
     this._renderQueue = new RenderQueue(this._logger);
+    for (const handler of this._options.circuitHandlers) {
+      if (handler.onCircuitOpened) {
+        handler.onCircuitOpened();
+      }
+    }
+
     this._options.reconnectionHandler!.onCircuitResumed();
     this._options.reconnectionHandler!.onConnectionUp();
     this._componentManager.onComponentReload?.();
