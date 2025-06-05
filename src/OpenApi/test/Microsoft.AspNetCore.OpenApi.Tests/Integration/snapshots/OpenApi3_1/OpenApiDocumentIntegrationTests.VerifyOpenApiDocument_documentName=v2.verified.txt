@@ -1,7 +1,7 @@
 ﻿{
   "openapi": "3.1.1",
   "info": {
-    "title": "Sample | v2",
+    "title": "Sample | v2-openapi3_1",
     "contact": {
       "name": "OpenAPI Enthusiast",
       "email": "iloveopenapi@example.com"

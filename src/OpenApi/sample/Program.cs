@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Text.Json.Serialization;
+using Microsoft.OpenApi;
 using Microsoft.OpenApi.Models;
 using Sample.Transformers;
 
@@ -25,20 +26,65 @@ builder.Services.AddOpenApi("v1", options =>
     options.AddHeader("X-Version", "1.0");
     options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
 });
-builder.Services.AddOpenApi("v2", options => {
+builder.Services.AddOpenApi("v2", options =>
+{
     options.AddSchemaTransformer<AddExternalDocsTransformer>();
     options.AddOperationTransformer<AddExternalDocsTransformer>();
     options.AddDocumentTransformer(new AddContactTransformer());
-    options.AddDocumentTransformer((document, context, token) => {
+    options.AddDocumentTransformer((document, context, token) =>
+    {
         document.Info.License = new OpenApiLicense { Name = "MIT" };
         return Task.CompletedTask;
     });
 });
-builder.Services.AddOpenApi("controllers");
-builder.Services.AddOpenApi("responses");
-builder.Services.AddOpenApi("forms");
-builder.Services.AddOpenApi("schemas-by-ref");
-builder.Services.AddOpenApi("xml");
+
+var versions = new[]
+{
+    OpenApiSpecVersion.OpenApi3_0,
+    OpenApiSpecVersion.OpenApi3_1,
+};
+
+var documentNames = new[]
+{
+    "controllers",
+    "responses",
+    "forms",
+    "schemas-by-ref",
+    "xml",
+};
+
+foreach (var version in versions)
+{
+    builder.Services.AddOpenApi($"v1-{version}", options =>
+    {
+        options.OpenApiVersion = version;
+        options.ShouldInclude = (description) => description.GroupName == null || description.GroupName == "v1";
+        options.AddHeader("X-Version", "1.0");
+        options.AddDocumentTransformer<BearerSecuritySchemeTransformer>();
+    });
+    builder.Services.AddOpenApi($"v2-{version}", options =>
+    {
+        options.OpenApiVersion = version;
+        options.ShouldInclude = (description) => description.GroupName == null || description.GroupName == "v2";
+        options.AddSchemaTransformer<AddExternalDocsTransformer>();
+        options.AddOperationTransformer<AddExternalDocsTransformer>();
+        options.AddDocumentTransformer(new AddContactTransformer());
+        options.AddDocumentTransformer((document, context, token) =>
+        {
+            document.Info.License = new OpenApiLicense { Name = "MIT" };
+            return Task.CompletedTask;
+        });
+    });
+
+    foreach (var name in documentNames)
+    {
+        builder.Services.AddOpenApi($"{name}-{version}", options =>
+        {
+            options.OpenApiVersion = version;
+            options.ShouldInclude = (description) => description.GroupName == null || description.GroupName == name;
+        });
+    }
+}
 
 var app = builder.Build();
 
