@@ -9,11 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents()
-    .AddInteractiveServerComponents(o =>
-    {
-        o.DisconnectedCircuitMaxRetained = 0;
-        o.DisconnectedCircuitRetentionPeriod = TimeSpan.FromSeconds(0);
-    });
+    .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<WeatherForecastService>();
 
