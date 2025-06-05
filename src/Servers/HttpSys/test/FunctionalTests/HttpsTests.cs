@@ -241,7 +241,7 @@ public class HttpsTests : LoggedTest
 
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
-    public void Https_SetsIHttpSysRequestPropertyFeature()
+    public async Task Https_SetsIHttpSysRequestPropertyFeature()
     {
         using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
         {
@@ -256,7 +256,8 @@ public class HttpsTests : LoggedTest
             }
         }, LoggerFactory))
         {
-            // nothing
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
         }
     }
 

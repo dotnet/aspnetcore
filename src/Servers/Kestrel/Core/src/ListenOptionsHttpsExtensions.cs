@@ -188,7 +188,7 @@ public static class ListenOptionsHttpsExtensions
     /// <see cref="KestrelServerOptions.ConfigureHttpsDefaults(Action{HttpsConnectionAdapterOptions})"/>.
     /// </summary>
     /// <param name="listenOptions">The <see cref="ListenOptions"/> to configure.</param>
-    /// <param name="httpsOptions">Options to configure HTTPS.</param>  
+    /// <param name="httpsOptions">Options to configure HTTPS.</param>
     /// <returns>The <see cref="ListenOptions"/>.</returns>
     public static ListenOptions UseHttps(this ListenOptions listenOptions, HttpsConnectionAdapterOptions httpsOptions)
     {

@@ -255,7 +255,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 bytesReturned: (IntPtr)bytesReturnedPointer,
                 overlapped: IntPtr.Zero);
 
-            bytesReturned = (int)bytesReturnedValue;
+            bytesReturned = checked((int)bytesReturnedValue);
 
             if (statusCode is ErrorCodes.ERROR_SUCCESS)
             {
