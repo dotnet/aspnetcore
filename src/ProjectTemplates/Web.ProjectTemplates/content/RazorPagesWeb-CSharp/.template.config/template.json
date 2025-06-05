@@ -8,7 +8,7 @@
   ],
   "name": "ASP.NET Core Web App (Razor Pages)",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core Razor Pages content",
+  "description": "A web app with Razor Pages, ideal for building dynamic websites quickly",
   "groupIdentity": "Microsoft.Web.RazorPages",
   "precedence": "10000",
   "identity": "Microsoft.Web.RazorPages.CSharp.10.0",
