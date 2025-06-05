@@ -267,7 +267,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       }
     }
 
-    this._options.reconnectionHandler!.onCircuitResumed();
     this._options.reconnectionHandler!.onConnectionUp();
     this._componentManager.onComponentReload?.();
     return true;
