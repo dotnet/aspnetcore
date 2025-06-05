@@ -1,7 +1,7 @@
 ﻿{
   "openapi": "3.1.1",
   "info": {
-    "title": "Sample | forms",
+    "title": "Sample | forms-openapi3_1",
     "version": "1.0.0"
   },
   "servers": [
