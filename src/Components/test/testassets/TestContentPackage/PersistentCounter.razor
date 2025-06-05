@@ -21,7 +21,7 @@
         public int Count { get; set; } = 0;
     }
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         // State is preserved across disconnections
         State ??= new CounterState();

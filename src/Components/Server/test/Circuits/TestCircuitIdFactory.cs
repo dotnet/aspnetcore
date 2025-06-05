@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal class TestCircuitIdFactory
 {
-    public static CircuitIdFactory? Instance { get; } = CreateTestFactory();
+    public static CircuitIdFactory Instance { get; } = CreateTestFactory();
 
     public static CircuitIdFactory CreateTestFactory()
     {
