@@ -11,7 +11,7 @@ internal class ResourcePreloadCollection
 {
     private readonly Dictionary<string, StringValues> _storage = new();
 
-    public ResourcePreloadCollection(ResourceAssetCollection assets)
+    public ResourcePreloadCollection(ResourceAssetCollection assets, int relativeRootDistance)
     {
         var headerBuilder = new StringBuilder();
         var headers = new Dictionary<string, List<(int Order, string Value)>>();
@@ -38,7 +38,7 @@ internal class ResourcePreloadCollection
                 continue;
             }
 
-            var header = CreateHeader(headerBuilder, asset.Url, asset.Properties);
+            var header = CreateHeader(headerBuilder, relativeRootDistance, asset.Url, asset.Properties);
             if (!headers.TryGetValue(group, out var groupHeaders))
             {
                 groupHeaders = headers[group] = new List<(int Order, string Value)>();
@@ -53,11 +53,16 @@ internal class ResourcePreloadCollection
         }
     }
 
-    private static (int order, string header) CreateHeader(StringBuilder headerBuilder, string url, IEnumerable<ResourceAssetProperty> properties)
+    private static (int order, string header) CreateHeader(StringBuilder headerBuilder, int relativeRootDistance, string url, IEnumerable<ResourceAssetProperty> properties)
     {
         headerBuilder.Clear();
         headerBuilder.Append('<');
-        headerBuilder.Append('/');
+
+        for (int i = 0; i < relativeRootDistance; i++)
+        {
+            headerBuilder.Append("../");
+        }
+
         headerBuilder.Append(url);
         headerBuilder.Append('>');
 
