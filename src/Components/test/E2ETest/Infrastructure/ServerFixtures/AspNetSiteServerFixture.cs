@@ -26,8 +26,6 @@ public class AspNetSiteServerFixture : WebHostServerFixture
 
     public List<string> AdditionalArguments { get; set; } = new List<string> { "--test-execution-mode", "server" };
 
-    public Action<IServiceCollection> ConfigureAdditionalServices { get; set; } = _ => { };
-
     protected override IHost CreateWebHost()
     {
         if (BuildWebHostMethod == null)
@@ -45,14 +43,12 @@ public class AspNetSiteServerFixture : WebHostServerFixture
             host = E2ETestOptions.Instance.Sauce.HostName;
         }
 
-        var arguments = new[]
+        var result = BuildWebHostMethod(new[]
         {
-            "--urls", $"http://{host}:0",
-            "--contentroot", sampleSitePath,
-            "--environment", Environment.ToString(),
-        };
-
-        var result = BuildWebHostMethod([.. arguments, .. AdditionalArguments]);
+                "--urls", $"http://{host}:0",
+                "--contentroot", sampleSitePath,
+                "--environment", Environment.ToString(),
+            }.Concat(AdditionalArguments).ToArray());
 
         UpdateHostServices?.Invoke(result.Services);
 
