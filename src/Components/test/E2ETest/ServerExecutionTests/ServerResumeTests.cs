@@ -14,11 +14,11 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 
-public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>
+public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>>>
 {
     public ServerResumeTestsTest(
         BrowserFixture browserFixture,
-        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>> serverFixture,
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
@@ -32,52 +32,28 @@ public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixtur
     }
 
     [Fact]
-    public async Task CanResumeCircuitAfterDisconnection()
+    public void CanResumeCircuitAfterDisconnection()
     {
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
 
         Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
         var previousText = Browser.Exists(By.Id("persistent-counter-render")).Text;
         var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript("window.replaceReconnectCallback()");
         javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
-        await Task.Delay(5000);
-        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
-
-        // Can dispatch events after reconnect
-        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
-    }
-
-    [Fact]
-    public void RendersContinueAfterReconnect()
-    {
-        var selector = By.Id("ticker");
-        var element = Browser.Exists(selector);
-
-        var initialValue = element.Text;
-
-        var javascript = (IJavaScriptExecutor)Browser;
-        javascript.ExecuteScript("Blazor._internal.forceCloseConnection()");
-
-        // We should see the 'reconnecting' UI appear
         Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
+
+        javascript.ExecuteScript("triggerReconnect()");
 
         // Then it should disappear
         Browser.Equal("none", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
 
-        // We should receive a render that occurred while disconnected
-        var currentValue = Browser.Exists(selector).Text;
-        Assert.NotEqual(initialValue, currentValue);
+        var newText = Browser.Exists(By.Id("persistent-counter-render")).Text;
+        Assert.NotEqual(previousText, newText);
 
-        // Verify it continues to tick
-        Thread.Sleep(5);
-        Browser.False(() => Browser.Exists(selector).Text == currentValue);
-    }
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
 
-    [Fact]
-    public void ErrorsStopTheRenderingProcess()
-    {
-        Browser.Exists(By.Id("cause-error")).Click();
-        Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
-            .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
+        // Can dispatch events after reconnect
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 }

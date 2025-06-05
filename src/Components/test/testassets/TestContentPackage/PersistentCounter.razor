@@ -1,5 +1,7 @@
-﻿<!-- The render changes when the component is resumed because it runs in a separate circuit -->
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
 
+<!-- The render changes when the component is resumed because it runs in a separate circuit -->
 @if (RendererInfo.IsInteractive)
 {
     <p>Interactive <span id="render-mode-interactive">@RendererInfo.IsInteractive</span></p>    
@@ -19,8 +21,9 @@
         public int Count { get; set; } = 0;
     }
 
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        // State is preserved across disconnections
         State ??= new CounterState();
     }
 
