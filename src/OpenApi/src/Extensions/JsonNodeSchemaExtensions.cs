@@ -97,8 +97,8 @@ internal static class JsonNodeSchemaExtensions
                     ? CultureInfo.InvariantCulture
                     : CultureInfo.CurrentCulture;
 
-                var minString = string.Format(targetCulture, "{0}", rangeAttribute.Minimum);
-                var maxString = string.Format(targetCulture, "{0}", rangeAttribute.Maximum);
+                var minString = Convert.ToString(rangeAttribute.Minimum, targetCulture);
+                var maxString = Convert.ToString(rangeAttribute.Maximum, targetCulture);
 
                 if (decimal.TryParse(minString, NumberStyles.Any, targetCulture, out var minDecimal))
                 {
