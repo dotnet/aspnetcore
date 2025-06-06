@@ -90,22 +90,42 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (attribute is RangeAttribute rangeAttribute)
             {
-                // Use InvariantCulture if explicitly requested or if the range has been set via the
-                // RangeAttribute(double, double) or RangeAttribute(int, int) constructors.
-                var targetCulture = rangeAttribute.ParseLimitsInInvariantCulture || rangeAttribute.Minimum is double || rangeAttribute.Maximum is int
-                    ? CultureInfo.InvariantCulture
-                    : CultureInfo.CurrentCulture;
+                decimal? minDecimal = null;
+                decimal? maxDecimal = null;
 
-                var minString = Convert.ToString(rangeAttribute.Minimum, targetCulture);
-                var maxString = Convert.ToString(rangeAttribute.Maximum, targetCulture);
-
-                if (decimal.TryParse(minString, NumberStyles.Any, targetCulture, out var minDecimal))
+                if (rangeAttribute.Minimum is int minimumInteger)
                 {
-                    schema[rangeAttribute.MinimumIsExclusive ? OpenApiSchemaKeywords.ExclusiveMinimum : OpenApiSchemaKeywords.MinimumKeyword] = minDecimal;
+                    // The range was set with the RangeAttribute(int, int) constructor.
+                    minDecimal = minimumInteger;
+                    maxDecimal = (int)rangeAttribute.Maximum;
                 }
-                if (decimal.TryParse(maxString, NumberStyles.Any, targetCulture, out var maxDecimal))
+                else
                 {
-                    schema[rangeAttribute.MaximumIsExclusive ? OpenApiSchemaKeywords.ExclusiveMaximum : OpenApiSchemaKeywords.MaximumKeyword] = maxDecimal;
+                    // Use InvariantCulture if explicitly requested or if the range has been set via the RangeAttribute(double, double) constructor.
+                    var targetCulture = rangeAttribute.ParseLimitsInInvariantCulture || rangeAttribute.Minimum is double x
+                        ? CultureInfo.InvariantCulture
+                        : CultureInfo.CurrentCulture;
+
+                    var minString = Convert.ToString(rangeAttribute.Minimum, targetCulture);
+                    var maxString = Convert.ToString(rangeAttribute.Maximum, targetCulture);
+
+                    if (decimal.TryParse(minString, NumberStyles.Any, targetCulture, out var value))
+                    {
+                        minDecimal = value;
+                    }
+                    if (decimal.TryParse(maxString, NumberStyles.Any, targetCulture, out value))
+                    {
+                        maxDecimal = value;
+                    }
+                }
+
+                if (minDecimal is { } minValue)
+                {
+                    schema[rangeAttribute.MinimumIsExclusive ? OpenApiSchemaKeywords.ExclusiveMinimum : OpenApiSchemaKeywords.MinimumKeyword] = minValue;
+                }
+                if (maxDecimal is { } maxValue)
+                {
+                    schema[rangeAttribute.MaximumIsExclusive ? OpenApiSchemaKeywords.ExclusiveMaximum : OpenApiSchemaKeywords.MaximumKeyword] = maxValue;
                 }
             }
             else if (attribute is RegularExpressionAttribute regularExpressionAttribute)
