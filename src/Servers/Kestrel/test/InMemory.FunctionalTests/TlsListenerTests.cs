@@ -95,14 +95,11 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
         {
             using (var connection = server.CreateConnection())
             {
-                using (var sslStream = new SslStream(connection.Stream, false, (sender, cert, chain, errors) => true, null))
-                {
-                    await connection.TransportConnection.Input.WriteAsync(new byte[] { 0x16 });
-                    var readResult = await connection.TransportConnection.Output.ReadAsync();
+                await connection.TransportConnection.Input.WriteAsync(new byte[] { 0x16 });
+                var readResult = await connection.TransportConnection.Output.ReadAsync();
 
-                    // HttpsConnectionMiddleware catches the exception, so we can only check the effects of the timeout here
-                    Assert.True(readResult.IsCompleted);
-                }
+                // HttpsConnectionMiddleware catches the exception, so we can only check the effects of the timeout here
+                Assert.True(readResult.IsCompleted);
             }
         }
 
