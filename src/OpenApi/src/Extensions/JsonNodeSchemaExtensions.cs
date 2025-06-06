@@ -102,7 +102,7 @@ internal static class JsonNodeSchemaExtensions
                 else
                 {
                     // Use InvariantCulture if explicitly requested or if the range has been set via the RangeAttribute(double, double) constructor.
-                    var targetCulture = rangeAttribute.ParseLimitsInInvariantCulture || rangeAttribute.Minimum is double x
+                    var targetCulture = rangeAttribute.ParseLimitsInInvariantCulture || rangeAttribute.Minimum is double
                         ? CultureInfo.InvariantCulture
                         : CultureInfo.CurrentCulture;
 
