@@ -132,7 +132,7 @@ else
             return;
         }
 
-        var attestationResult = await UserManager.PerformPasskeyAttestationAsync(responseJson, options);
+        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(responseJson, options);
         if (!attestationResult.Succeeded)
         {
             RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add the passkey: {attestationResult.Failure.Message}.", HttpContext);
