@@ -420,8 +420,7 @@ internal sealed partial class ComponentHub : Hub
             return false;
         }
 
-        // This is guaranteed to not throw.
-        await _circuitRegistry.PauseCircuitAsync(circuitHost, Context.ConnectionId);
+        _ = _circuitRegistry.PauseCircuitAsync(circuitHost, Context.ConnectionId);
 
         // This only signals that pausing the circuit has started.
         // The client will receive the root components and application state in a separate message
