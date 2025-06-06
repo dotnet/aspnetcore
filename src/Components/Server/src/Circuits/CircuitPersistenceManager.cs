@@ -1,11 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -14,9 +16,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 internal partial class CircuitPersistenceManager(
     IOptions<CircuitOptions> circuitOptions,
     ServerComponentSerializer serverComponentSerializer,
-    ICircuitPersistenceProvider circuitPersistenceProvider)
+    ICircuitPersistenceProvider circuitPersistenceProvider,
+    IDataProtectionProvider dataProtectionProvider)
 {
-    public async Task PauseCircuitAsync(CircuitHost circuit, CancellationToken cancellation = default)
+    private const string CircuitPersistenceManagerKey = $"Microsoft.AspNetCore.Components.Server.Circuits.{nameof(CircuitPersistenceManager)}";
+
+    public async Task PauseCircuitAsync(CircuitHost circuit, bool saveStateToClient = false, CancellationToken cancellation = default)
     {
         var renderer = circuit.Renderer;
         var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
@@ -27,10 +32,67 @@ internal partial class CircuitPersistenceManager(
 
         await persistenceManager.PersistStateAsync(collector, renderer);
 
-        await circuitPersistenceProvider.PersistCircuitAsync(
-            circuit.CircuitId,
-            collector.PersistedCircuitState,
-            cancellation);
+        if (saveStateToClient)
+        {
+            await SaveStateToClient(circuit, collector.PersistedCircuitState, cancellation);
+        }
+        else
+        {
+            await circuitPersistenceProvider.PersistCircuitAsync(
+                circuit.CircuitId,
+                collector.PersistedCircuitState,
+                cancellation);
+        }
+    }
+
+    private async Task SaveStateToClient(CircuitHost circuit, PersistedCircuitState state, CancellationToken cancellation = default)
+    {
+        var (rootComponents, applicationState) = await ToProtectedStateAsync(state);
+        if (!await circuit.SendPersistedStateToClient(rootComponents, applicationState, cancellation))
+        {
+            try
+            {
+                await circuitPersistenceProvider.PersistCircuitAsync(
+                    circuit.CircuitId,
+                    state,
+                    cancellation);
+            }
+            catch (Exception)
+            {
+                // At this point, we give up as we haven't been able to save the state to the client nor the server.
+                return;
+            }
+        }
+    }
+
+    internal async Task<(string rootComponents, string applicationState)> ToProtectedStateAsync(PersistedCircuitState state)
+    {
+        // Root components descriptors are already protected and serialized as JSON, we just convert the bytes to a string.
+        var rootComponents = Encoding.UTF8.GetString(state.RootComponents);
+
+        // The application state we protect in the same way we do for prerendering.
+        var store = new ProtectedPrerenderComponentApplicationStore(dataProtectionProvider);
+        await store.PersistStateAsync(state.ApplicationState);
+
+        return (rootComponents, store.PersistedState);
+    }
+
+    internal PersistedCircuitState FromProtectedState(string rootComponents, string applicationState)
+    {
+        var rootComponentsBytes = Encoding.UTF8.GetBytes(rootComponents);
+        var prerenderedState = new ProtectedPrerenderComponentApplicationStore(applicationState, dataProtectionProvider);
+        var state = new PersistedCircuitState
+        {
+            RootComponents = rootComponentsBytes,
+            ApplicationState = prerenderedState.ExistingState
+        };
+
+        return state;
+    }
+
+    internal ProtectedPrerenderComponentApplicationStore ToComponentApplicationStore(Dictionary<string, byte[]> applicationState)
+    {
+        return new ProtectedPrerenderComponentApplicationStore(applicationState, dataProtectionProvider);
     }
 
     public async Task<PersistedCircuitState> ResumeCircuitAsync(CircuitId circuitId, CancellationToken cancellation = default)

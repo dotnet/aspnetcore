@@ -251,7 +251,8 @@ public class CircuitDisconnectMiddlewareTest
         var circuitPersistenceManager = new CircuitPersistenceManager(
             Options.Create(new CircuitOptions()),
             new Endpoints.ServerComponentSerializer(new EphemeralDataProtectionProvider()),
-            Mock.Of<ICircuitPersistenceProvider>());
+            Mock.Of<ICircuitPersistenceProvider>(),
+            new EphemeralDataProtectionProvider());
         return circuitPersistenceManager;
     }
 }

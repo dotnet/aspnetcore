@@ -646,7 +646,7 @@ public class CircuitHostTest
         serviceCollection.AddSingleton(new Mock<IJSRuntime>().Object);
         return new TestRemoteRenderer(
             serviceCollection.BuildServiceProvider(),
-            Mock.Of<IClientProxy>());
+            Mock.Of<ISingleClientProxy>());
     }
 
     private static void SetupMockInboundActivityHandlers(MockSequence sequence, params Mock<CircuitHandler>[] circuitHandlers)
@@ -705,7 +705,7 @@ public class CircuitHostTest
 
     private class TestRemoteRenderer : RemoteRenderer
     {
-        public TestRemoteRenderer(IServiceProvider serviceProvider, IClientProxy client)
+        public TestRemoteRenderer(IServiceProvider serviceProvider, ISingleClientProxy client)
             : base(
                   serviceProvider,
                   NullLoggerFactory.Instance,

@@ -385,7 +385,7 @@ export class BrowserRenderer {
   }
 }
 
-function markAsInteractiveRootComponentElement(element: LogicalElement, isInteractive: boolean) {
+export function markAsInteractiveRootComponentElement(element: LogicalElement, isInteractive: boolean) {
   element[interactiveRootComponentPropname] = isInteractive;
 }
 
