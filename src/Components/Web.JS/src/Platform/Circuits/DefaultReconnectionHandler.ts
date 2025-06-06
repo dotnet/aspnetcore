@@ -26,7 +26,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     this._resumeCallback = resumeCallback || Blazor.resume!;
   }
 
-  onConnectionDown(options: ReconnectionOptions, _error?: Error, isClientPause?: boolean): void {
+  onConnectionDown(options: ReconnectionOptions, _error?: Error, isClientPause?: boolean, remotePause?: boolean): void {
     if (!this._reconnectionDisplay) {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
@@ -41,7 +41,8 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
         this._reconnectCallback,
         this._resumeCallback,
         this._reconnectionDisplay,
-        isClientPause
+        isClientPause,
+        remotePause,
       );
     }
   }
@@ -67,12 +68,18 @@ class ReconnectionProcess {
     private reconnectCallback: () => Promise<boolean>,
     private resumeCallback: () => Promise<boolean>,
     display: ReconnectDisplay,
-    private isClientPause?: boolean
+    private isClientPause?: boolean,
+    private isRemote: boolean = false,
   ) {
     this.reconnectDisplay = display;
     this.reconnectDisplay.show();
     if (!this.isClientPause) {
       this.attemptPeriodicReconnection(options);
+    } else {
+      this.reconnectDisplay.update({
+        type: 'pause',
+        remote: this.isRemote,
+      });
     }
   }
 
@@ -97,7 +104,7 @@ class ReconnectionProcess {
       }
 
       await this.runTimer(retryInterval, /* intervalMs */ 1000, remainingMs => {
-        this.reconnectDisplay.update(i + 1, Math.round(remainingMs / 1000));
+        this.reconnectDisplay.update({ type: 'reconnect', currentAttempt: i + 1, secondsToNextAttempt: Math.round(remainingMs / 1000) });
       });
 
       if (this.isDisposed) {
@@ -112,13 +119,14 @@ class ReconnectionProcess {
         const result = await this.reconnectCallback();
         if (!result) {
           // Try to resume the circuit if the reconnect failed
+          // If the server responded and refused to reconnect, stop auto-retrying.
+          this.reconnectDisplay.update({ type: 'pause', remote: true });
           const resumeResult = await this.resumeCallback();
           if (resumeResult) {
             return;
           }
 
-          // If the server responded and refused to reconnect, stop auto-retrying.
-          this.reconnectDisplay.rejected();
+          this.reconnectDisplay.failed();
           return;
         }
         return;

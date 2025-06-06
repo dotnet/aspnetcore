@@ -3,6 +3,8 @@
 
 using BlazorUnitedApp;
 using BlazorUnitedApp.Data;
+using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,8 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<WeatherForecastService>();
+
+builder.Services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, CustomCircuitHandler>());
 
 var app = builder.Build();
 
@@ -34,3 +38,12 @@ app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode();
 
 app.Run();
+
+public class CustomCircuitHandler : CircuitHandler
+{
+    public override async Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken)
+    {
+        await Task.Delay(1000, cancellationToken); // Simulate some async work
+        circuit.PauseCircuit();
+    }
+}
