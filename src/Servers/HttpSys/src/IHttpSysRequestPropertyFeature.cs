@@ -12,7 +12,7 @@ public interface IHttpSysRequestPropertyFeature
     /// <summary>
     /// Reads the TLS client hello from HTTP.SYS
     /// </summary>
-    /// <param name="tlsClientHelloBytesDestination">Where the raw bytes of the TLS Client Hello message will be written.</param>
+    /// <param name="tlsClientHelloBytesDestination">Where the raw bytes of the TLS Client Hello message are written.</param>
     /// <param name="bytesReturned">
     /// Returns the number of bytes written to <paramref name="tlsClientHelloBytesDestination"/>.
     /// Or can return the size of the buffer needed if <paramref name="tlsClientHelloBytesDestination"/> wasn't large enough.
@@ -28,7 +28,7 @@ public interface IHttpSysRequestPropertyFeature
     /// </remarks>
     /// <returns>
     /// True, if fetching TLS client hello was successful, false if <paramref name="tlsClientHelloBytesDestination"/> size is not large enough.
-    /// If non-successful for other reason throws an exception.
+    /// If unsuccessful for other reason throws an exception.
     /// </returns>
     /// <exception cref="HttpSysException">Any HttpSys error except for ERROR_INSUFFICIENT_BUFFER or ERROR_MORE_DATA.</exception>
     /// <exception cref="InvalidOperationException">If HttpSys does not support querying the TLS Client Hello.</exception>

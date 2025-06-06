@@ -262,7 +262,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 return true;
             }
 
-            // if buffer supplied is too small, `bytesReturned` will have proper size
+            // if buffer supplied is too small, `bytesReturned` has proper size
             if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
             {
                 return false;
