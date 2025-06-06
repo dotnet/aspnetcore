@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 using Xunit.Sdk;
 
 namespace InMemory.FunctionalTests;
@@ -97,19 +98,59 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
                     var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
                     var token = cancellationTokenSource.Token;
 
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => sslStream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
+                    {
+                        TargetHost = "localhost",
+                        EnabledSslProtocols = SslProtocols.None
+                    }, token));
+                }
+            }
+        }
+
+        Assert.False(tlsClientHelloCallbackInvoked);
+    }
+
+    [Fact]
+    public async Task TlsClientHelloBytesCallback_UsesOptionsTimeout()
+    {
+        var testContext = new TestServiceContext(LoggerFactory);
+        await using (var server = new TestServer(context => Task.CompletedTask,
+            testContext,
+            listenOptions =>
+            {
+                listenOptions.UseHttps(_x509Certificate2, httpsOptions =>
+                {
+                    httpsOptions.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
+
+                    httpsOptions.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
+                    {
+                        Logger.LogDebug("[Received TlsClientHelloBytesCallback] Connection: {0}; TLS client hello buffer: {1}", connection.ConnectionId, clientHelloBytes.Length);
+                        Assert.True(clientHelloBytes.Length > 32);
+                        Assert.NotNull(connection);
+                    };
+                });
+            }))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                using (var sslStream = new SslStream(connection.Stream, false, (sender, cert, chain, errors) => true, null))
+                {
                     try
                     {
                         await sslStream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
                         {
                             TargetHost = "localhost",
                             EnabledSslProtocols = SslProtocols.None
-                        }, token);
+                        });
 
                         var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
-                        await sslStream.WriteAsync(request, 0, request.Length, token);
-                        await sslStream.ReadAsync(new Memory<byte>(new byte[1024]), token);
+                        await sslStream.WriteAsync(request, 0, request.Length);
+                        await sslStream.ReadAsync(new Memory<byte>(new byte[1024]));
                     }
-                    catch (Exception ex) when (ex is OperationCanceledException or TaskCanceledException)
+                    catch (Exception ex)
+                        when (ex is OperationCanceledException or TaskCanceledException // when cancellation comes from tls listener
+                                 or IOException // when the underlying stream is closed due to timeout
+                    )
                     {
                         // expected
                     }
@@ -120,7 +161,5 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
                 }
             }
         }
-
-        Assert.False(tlsClientHelloCallbackInvoked);
     }
 }
