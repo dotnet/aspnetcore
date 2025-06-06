@@ -164,7 +164,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     });
 
     connection.on('JS.RemotePause', () => {
-      this.pause();
+      this.pause(true);
     });
 
     connection.on('JS.RenderBatch', async (batchId: number, batchData: Uint8Array) => {
@@ -254,7 +254,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return true;
   }
 
-  public async pause(): Promise<boolean> {
+  public async pause(remote?: boolean): Promise<boolean> {
     if (!this._circuitId) {
       return false;
     }
@@ -273,7 +273,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     // Notify the reconnection handler that we are pausing the circuit.
     // This is used to trigger the UI display.
-    this._options.reconnectionHandler?.onConnectionDown(this._options.reconnectionOptions, undefined, true);
+    this._options.reconnectionHandler?.onConnectionDown(this._options.reconnectionOptions, undefined, true, remote);
 
     // Indicate to the server that we want to pause the circuit.
     // The server will initiate the pause on the circuit associated with the current connection.

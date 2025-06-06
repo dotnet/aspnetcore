@@ -45,7 +45,7 @@ export interface CircuitHandler {
 }
 
 export interface ReconnectionHandler {
-  onConnectionDown(options: ReconnectionOptions, error?: Error, isClientPause?: boolean): void;
+  onConnectionDown(options: ReconnectionOptions, error?: Error, isClientPause?: boolean, remotePause?: boolean): void;
   onConnectionUp(): void;
 }
 
