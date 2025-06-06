@@ -1,0 +1,37 @@
+<button type="submit" name="__passkey" @attributes="AdditionalAttributes">@ChildContent</button>
+<passkey-submit operation="@operation" credential-json-name="@credentialJsonName" error-name="@errorName" email-name="@EmailName"></passkey-submit>
+
+@code {
+    private string? operation;
+    private string? credentialJsonName;
+    private string? errorName;
+
+    [Parameter]
+    [EditorRequired]
+    public PasskeyOperation Operation { get; set; }
+
+    [Parameter]
+    [EditorRequired]
+    public string Name { get; set; } = default!;
+
+    [Parameter]
+    public string? EmailName { get; set; }
+
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        operation = Operation switch
+        {
+            PasskeyOperation.Create => "create",
+            PasskeyOperation.Request => "request",
+            _ => throw new InvalidOperationException($"Unsupported passkey operation '{Operation}'.")
+        };
+        credentialJsonName = $"{Name}.{nameof(PasskeyInputModel.CredentialJson)}";
+        errorName = $"{Name}.{nameof(PasskeyInputModel.Error)}";
+    }
+}
