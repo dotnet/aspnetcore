@@ -893,6 +893,42 @@ internal partial class CircuitHost : IAsyncDisposable
         return result;
     }
 
+    internal async Task<bool> SendPersistedStateToClient(string rootComponents, string applicationState, CancellationToken cancellation)
+    {
+        try
+        {
+            var succeded = await Client.InvokeAsync<bool>(
+                "JS.SavePersistedState",
+                CircuitId.Secret,
+                rootComponents,
+                applicationState,
+                cancellationToken: cancellation);
+            return succeded;
+        }
+        catch (Exception ex)
+        {
+            Log.FailedToSaveStateToClient(_logger, CircuitId, ex);
+            return false;
+        }
+    }
+
+    internal void TriggerCircuitPause()
+    {
+        _ = InvokeCircuitPauseFromServer();
+    }
+
+    private async Task InvokeCircuitPauseFromServer()
+    {
+        try
+        {
+            await Client.SendAsync("JS.RemotePause");
+        }
+        catch (Exception ex)
+        {
+            Log.FailedToTriggerRemoteCircuitPause(_logger, CircuitId, ex);
+        }
+    }
+
     private static partial class Log
     {
         // 100s used for lifecycle stuff
@@ -939,6 +975,9 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(113, LogLevel.Debug, "Update root components failed.", EventName = nameof(UpdateRootComponentsFailed))]
         public static partial void UpdateRootComponentsFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(114, LogLevel.Error, "Failed to trigger remote circuit pause in circuit '{CircuitId}'.", EventName = "FailedToTriggerRemoteCircuitPause")]
+        public static partial void FailedToTriggerRemoteCircuitPause(ILogger logger, CircuitId circuitId, Exception exception);
 
         public static void CircuitHandlerFailed(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
         {
@@ -1048,5 +1087,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailedInCircuit")]
         public static partial void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception);
+
+        [LoggerMessage(220, LogLevel.Debug, "Failed to save state to client in circuit '{CircuitId}'.", EventName = "FailedToSaveStateToClient")]
+        public static partial void FailedToSaveStateToClient(ILogger logger, CircuitId circuitId, Exception exception);
     }
 }

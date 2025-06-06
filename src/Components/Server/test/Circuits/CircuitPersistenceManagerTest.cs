@@ -53,7 +53,8 @@ public class CircuitPersistenceManagerTest
         var circuitPersistenceManager = new CircuitPersistenceManager(
             options,
             new ServerComponentSerializer(dataProtectionProvider),
-            circuitPersistenceProvider);
+            circuitPersistenceProvider,
+            dataProtectionProvider);
 
         // Act
         await circuitPersistenceManager.PauseCircuitAsync(circuitHost);
@@ -108,7 +109,8 @@ public class CircuitPersistenceManagerTest
         var circuitPersistenceManager = new CircuitPersistenceManager(
             options,
             new ServerComponentSerializer(dataProtectionProvider),
-            circuitPersistenceProvider);
+            circuitPersistenceProvider,
+            dataProtectionProvider);
         // Act
         await circuitPersistenceManager.PauseCircuitAsync(circuitHost);
         // Assert
@@ -284,7 +286,7 @@ public class CircuitPersistenceManagerTest
 
         var scope = serviceProvider.CreateAsyncScope();
 
-        var client = new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
+        var client = new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString());
 
         var renderer = new RemoteRenderer(
             scope.ServiceProvider,

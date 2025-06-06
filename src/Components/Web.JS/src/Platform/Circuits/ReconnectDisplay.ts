@@ -3,8 +3,21 @@
 
 export interface ReconnectDisplay {
   show(): void;
-  update(currentAttempt: number, secondsToNextAttempt: number): void;
+  update(options: ReconnectDisplayUpdateOptions): void;
   hide(): void;
   failed(): void;
   rejected(): void;
 }
+
+export type ReconnectDisplayUpdateOptions = ReconnectOptions | PauseOptions;
+
+type PauseOptions = {
+  type: 'pause',
+  remote: boolean
+};
+
+type ReconnectOptions = {
+  type: 'reconnect',
+  currentAttempt: number,
+  secondsToNextAttempt: number
+};

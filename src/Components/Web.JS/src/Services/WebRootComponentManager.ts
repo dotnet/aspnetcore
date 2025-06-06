@@ -11,7 +11,7 @@ import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
-import { setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
+import { markAsInteractiveRootComponentElement, setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
 
 type RootComponentOperationBatch = {
@@ -464,10 +464,13 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     }
   }
 
-  public onComponentReload(): void {
+  public onComponentReload(browserRendererId: number): void {
     for (const [_, value] of this._rootComponentsBySsrComponentId.entries()) {
-      value.assignedRendererId = undefined;
-      setClearContentOnRootComponentRerender(value.descriptor.start as unknown as LogicalElement);
+      if (value.assignedRendererId === browserRendererId) {
+        value.assignedRendererId = undefined;
+        markAsInteractiveRootComponentElement(value.descriptor.start as unknown as LogicalElement, false);
+        setClearContentOnRootComponentRerender(value.descriptor.start as unknown as LogicalElement);
+      }
     }
 
     this.rootComponentsMayRequireRefresh();
