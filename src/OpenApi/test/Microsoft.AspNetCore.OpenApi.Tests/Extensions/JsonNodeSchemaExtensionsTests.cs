@@ -130,4 +130,21 @@ public static class JsonNodeSchemaExtensionsTests
             Assert.False(schema.TryGetPropertyValue("exclusiveMaximum", out _));
         }
     }
+
+    [Fact]
+    public static void ApplyValidationAttributes_Handles_Invalid_RangeAttribute_Values()
+    {
+        // Arrange
+        var rangeAttribute = new RangeAttribute(typeof(int), "foo", "bar");
+        var schema = new JsonObject();
+
+        // Act
+        schema.ApplyValidationAttributes([rangeAttribute]);
+
+        // Assert
+        Assert.False(schema.TryGetPropertyValue("minimum", out _));
+        Assert.False(schema.TryGetPropertyValue("maximum", out _));
+        Assert.False(schema.TryGetPropertyValue("exclusiveMinimum", out _));
+        Assert.False(schema.TryGetPropertyValue("exclusiveMaximum", out _));
+    }
 }
