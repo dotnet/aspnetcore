@@ -26,7 +26,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     this._resumeCallback = resumeCallback || Blazor.resume!;
   }
 
-  onConnectionDown(options: ReconnectionOptions, _error?: Error): void {
+  onConnectionDown(options: ReconnectionOptions, _error?: Error, isClientPause?: boolean): void {
     if (!this._reconnectionDisplay) {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
@@ -40,7 +40,8 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
         this._logger,
         this._reconnectCallback,
         this._resumeCallback,
-        this._reconnectionDisplay
+        this._reconnectionDisplay,
+        isClientPause
       );
     }
   }
@@ -60,10 +61,19 @@ class ReconnectionProcess {
 
   isDisposed = false;
 
-  constructor(options: ReconnectionOptions, private logger: Logger, private reconnectCallback: () => Promise<boolean>, private resumeCallback: () => Promise<boolean>, display: ReconnectDisplay) {
+  constructor(
+    options: ReconnectionOptions,
+    private logger: Logger,
+    private reconnectCallback: () => Promise<boolean>,
+    private resumeCallback: () => Promise<boolean>,
+    display: ReconnectDisplay,
+    private isClientPause?: boolean
+  ) {
     this.reconnectDisplay = display;
     this.reconnectDisplay.show();
-    this.attemptPeriodicReconnection(options);
+    if (!this.isClientPause) {
+      this.attemptPeriodicReconnection(options);
+    }
   }
 
   public dispose() {

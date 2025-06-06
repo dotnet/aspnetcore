@@ -49,6 +49,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _disposed = false;
 
+  private _pausingPromise?: Promise<boolean>;
+
+  private _paused = false;
+
+  private _persistedCircuitState?: { components: string, applicationState: string };
+
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
     appState: string,
@@ -132,6 +138,17 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.on('JS.EndInvokeDotNet', this._dispatcher.endInvokeDotNetFromJS.bind(this._dispatcher));
     connection.on('JS.ReceiveByteArray', this._dispatcher.receiveByteArray.bind(this._dispatcher));
 
+    connection.on('JS.SavePersistedState', (circuitId: string, components: string, applicationState: string) => {
+      if (!this._circuitId) {
+        throw new Error('Circuit host not initialized.');
+      }
+      if (circuitId !== this._circuitId) {
+        throw new Error(`Received persisted state for circuit ID '${circuitId}', but the current circuit ID is '${this._circuitId}'.`);
+      }
+      this._persistedCircuitState = { components, applicationState };
+      return true;
+    });
+
     connection.on('JS.BeginTransmitStream', (streamId: number) => {
       const readableStream = new ReadableStream({
         start: (controller) => {
@@ -160,7 +177,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
-      if (!this._disposed && !this._renderingFailed) {
+      if (!this._disposed && !this._renderingFailed && !this._paused) {
         this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
       }
     });
@@ -233,9 +250,53 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return true;
   }
 
+  public async pause(): Promise<boolean> {
+    if (!this._circuitId) {
+      return false;
+    }
+
+    if (this._connection!.state !== HubConnectionState.Connected) {
+      return false;
+    }
+
+    if (this._persistedCircuitState) {
+      return false;
+    }
+
+    if (this._pausingPromise) {
+      return this._pausingPromise;
+    }
+
+    // Notify the reconnection handler that we are pausing the circuit.
+    // This is used to trigger the UI display.
+    this._options.reconnectionHandler?.onConnectionDown(this._options.reconnectionOptions, undefined, true);
+
+    // Indicate to the server that we want to pause the circuit.
+    // The server will initiate the pause on the circuit associated with the current connection.
+    this._pausingPromise = this._connection!.invoke<boolean>('PauseCircuit');
+    this._paused = (await this._pausingPromise)!;
+    this._pausingPromise = undefined;
+    await this.disconnect();
+
+    return this._paused;
+  }
+
   public async resume(): Promise<boolean> {
     if (!this._circuitId) {
-      throw new Error('Method not implemented.');
+      throw new Error('Circuit host not initialized.');
+    }
+
+    if (this._pausingPromise) {
+      await this._pausingPromise;
+    }
+
+    if (!this._paused) {
+      // The circuit is not paused, so we can't resume it.
+      return false;
+    }
+
+    if (this._connection!.state !== HubConnectionState.Connected) {
+      this._connection = await this.startConnection();
     }
 
     // When we get here we know the circuit is gone for good.
@@ -247,13 +308,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       }
     }
 
+    const persistedCircuitState = this._persistedCircuitState;
+    this._persistedCircuitState = undefined;
+
     const newCircuitId = await this._connection!.invoke<string>(
       'ResumeCircuit',
       this._circuitId,
       navigationManagerFunctions.getBaseURI(),
       navigationManagerFunctions.getLocationHref(),
-      '[]',
-      ''
+      persistedCircuitState?.components ?? '[]',
+      persistedCircuitState?.applicationState ?? '',
     );
     if (!newCircuitId) {
       return false;
@@ -268,7 +332,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     this._options.reconnectionHandler!.onConnectionUp();
-    this._componentManager.onComponentReload?.();
+    this._componentManager.onComponentReload?.(WebRendererId.Server);
     return true;
   }
 
