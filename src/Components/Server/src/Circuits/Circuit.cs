@@ -35,6 +35,7 @@ public sealed class Circuit
     /// operating normally, transitioning to a disconnected state and eventually
     /// performing an ungraceful pause if the client does not reconnect.
     /// </para>
+    /// </remarks>
     public void PauseCircuit()
     {
         _circuitHost.TriggerCircuitPause();
