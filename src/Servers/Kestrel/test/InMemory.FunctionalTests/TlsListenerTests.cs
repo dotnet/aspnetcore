@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Xunit.Sdk;
 
 namespace InMemory.FunctionalTests;
 
@@ -65,5 +66,61 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
         }
 
         Assert.True(tlsClientHelloCallbackInvoked);
+    }
+
+    [Fact]
+    public async Task TlsClientHelloBytesCallback_PreCanceledToken()
+    {
+        var tlsClientHelloCallbackInvoked = false;
+
+        var testContext = new TestServiceContext(LoggerFactory);
+        await using (var server = new TestServer(context => Task.CompletedTask,
+            testContext,
+            listenOptions =>
+            {
+                listenOptions.UseHttps(_x509Certificate2, httpsOptions =>
+                {
+                    httpsOptions.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
+                    {
+                        Logger.LogDebug("[Received TlsClientHelloBytesCallback] Connection: {0}; TLS client hello buffer: {1}", connection.ConnectionId, clientHelloBytes.Length);
+                        tlsClientHelloCallbackInvoked = true;
+                        Assert.True(clientHelloBytes.Length > 32);
+                        Assert.NotNull(connection);
+                    };
+                });
+            }))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                using (var sslStream = new SslStream(connection.Stream, false, (sender, cert, chain, errors) => true, null))
+                {
+                    var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
+                    var token = cancellationTokenSource.Token;
+
+                    try
+                    {
+                        await sslStream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
+                        {
+                            TargetHost = "localhost",
+                            EnabledSslProtocols = SslProtocols.None
+                        }, token);
+
+                        var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
+                        await sslStream.WriteAsync(request, 0, request.Length, token);
+                        await sslStream.ReadAsync(new Memory<byte>(new byte[1024]), token);
+                    }
+                    catch (Exception ex) when (ex is OperationCanceledException or TaskCanceledException)
+                    {
+                        // expected
+                    }
+                    catch (Exception ex)
+                    {
+                        ThrowsException.ForIncorrectExceptionType(typeof(OperationCanceledException), ex);
+                    }
+                }
+            }
+        }
+
+        Assert.False(tlsClientHelloCallbackInvoked);
     }
 }

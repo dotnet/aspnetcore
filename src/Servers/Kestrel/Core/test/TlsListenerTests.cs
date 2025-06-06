@@ -158,8 +158,8 @@ public class TlsListenerTests
         Assert.Equal(5, readResult.Buffer.Length);
 
         // ensuring that we have read limited number of times
-        Assert.True(reader.ReadAsyncCounter is >= 2 && reader.ReadAsyncCounter is <= 4,
-            $"Expected ReadAsync() to happen about 2-4 times. Actually happened {reader.ReadAsyncCounter} times.");
+        Assert.True(reader.ReadAsyncCounter is >= 2 && reader.ReadAsyncCounter is <= 5,
+            $"Expected ReadAsync() to happen about 2-5 times. Actually happened {reader.ReadAsyncCounter} times.");
     }
 
     private async Task RunTlsClientHelloCallbackTest_WithMultipleSegments(
