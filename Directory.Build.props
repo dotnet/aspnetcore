@@ -106,7 +106,10 @@
     <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
 
     <IncludeSymbols>true</IncludeSymbols>
+
     <DefaultNetFxTargetFramework>net462</DefaultNetFxTargetFramework>
+    <!-- Current xunit.runner.visualstudio supports net472+/net8.0+ only. So we can't use net462 -->
+    <DefaultNetFxTargetFramework Condition="'$(IsTestProject)'=='true'">net472</DefaultNetFxTargetFramework>
 
     <CrossgenOutput Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">false</CrossgenOutput>
   </PropertyGroup>
