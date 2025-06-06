@@ -115,6 +115,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     if (options.type === 'pause') {
       this.reconnect = false;
       this.remote = options.remote;
+      this.reloadButton.style.display = 'none';
       if (options.remote) {
         this.rejoiningAnimation.style.display = 'none';
         this.status.innerHTML = 'The session has been paused by the server.';
@@ -129,13 +130,15 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   }
 
   failed(): void {
-    this.reloadButton.style.display = 'block';
     this.rejoiningAnimation.style.display = 'none';
     if (this.reconnect) {
+      this.reloadButton.style.display = 'block';
       this.status.innerHTML = 'Failed to rejoin.<br />Please retry or reload the page.';
       this.document.addEventListener('visibilitychange', this.retryWhenDocumentBecomesVisible);
     } else {
       this.status.innerHTML = 'Failed to resume the session.<br />Please reload the page.';
+      this.resumeButton.style.display = 'none';
+      this.reloadButton.style.display = 'none';
     }
   }
 

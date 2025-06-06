@@ -11,11 +11,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveWebAssemblyComponents()
-    .AddInteractiveServerComponents();
+    .AddInteractiveServerComponents(o => o.DisconnectedCircuitMaxRetained = 0);
 
 builder.Services.AddSingleton<WeatherForecastService>();
 
-builder.Services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, CustomCircuitHandler>());
+//builder.Services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, CustomCircuitHandler>());
 
 var app = builder.Build();
 
