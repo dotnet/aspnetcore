@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -70,10 +71,9 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
     }
 
     [Fact]
-    public async Task TlsClientHelloBytesCallback_PreCanceledToken()
+    public async Task TlsClientHelloBytesCallback_UsesOptionsTimeout()
     {
         var tlsClientHelloCallbackInvoked = false;
-
         var testContext = new TestServiceContext(LoggerFactory);
         await using (var server = new TestServer(context => Task.CompletedTask,
             testContext,
@@ -81,6 +81,8 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
             {
                 listenOptions.UseHttps(_x509Certificate2, httpsOptions =>
                 {
+                    httpsOptions.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
+
                     httpsOptions.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
                     {
                         Logger.LogDebug("[Received TlsClientHelloBytesCallback] Connection: {0}; TLS client hello buffer: {1}", connection.ConnectionId, clientHelloBytes.Length);
@@ -95,71 +97,15 @@ public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
             {
                 using (var sslStream = new SslStream(connection.Stream, false, (sender, cert, chain, errors) => true, null))
                 {
-                    var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(1));
-                    var token = cancellationTokenSource.Token;
+                    await connection.TransportConnection.Input.WriteAsync(new byte[] { 0x16 });
+                    var readResult = await connection.TransportConnection.Output.ReadAsync();
 
-                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => sslStream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
-                    {
-                        TargetHost = "localhost",
-                        EnabledSslProtocols = SslProtocols.None
-                    }, token));
+                    // HttpsConnectionMiddleware catches the exception, so we can only check the effects of the timeout here
+                    Assert.True(readResult.IsCompleted);
                 }
             }
         }
 
         Assert.False(tlsClientHelloCallbackInvoked);
-    }
-
-    [Fact]
-    public async Task TlsClientHelloBytesCallback_UsesOptionsTimeout()
-    {
-        var testContext = new TestServiceContext(LoggerFactory);
-        await using (var server = new TestServer(context => Task.CompletedTask,
-            testContext,
-            listenOptions =>
-            {
-                listenOptions.UseHttps(_x509Certificate2, httpsOptions =>
-                {
-                    httpsOptions.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
-
-                    httpsOptions.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
-                    {
-                        Logger.LogDebug("[Received TlsClientHelloBytesCallback] Connection: {0}; TLS client hello buffer: {1}", connection.ConnectionId, clientHelloBytes.Length);
-                        Assert.True(clientHelloBytes.Length > 32);
-                        Assert.NotNull(connection);
-                    };
-                });
-            }))
-        {
-            using (var connection = server.CreateConnection())
-            {
-                using (var sslStream = new SslStream(connection.Stream, false, (sender, cert, chain, errors) => true, null))
-                {
-                    try
-                    {
-                        await sslStream.AuthenticateAsClientAsync(new SslClientAuthenticationOptions
-                        {
-                            TargetHost = "localhost",
-                            EnabledSslProtocols = SslProtocols.None
-                        });
-
-                        var request = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
-                        await sslStream.WriteAsync(request, 0, request.Length);
-                        await sslStream.ReadAsync(new Memory<byte>(new byte[1024]));
-                    }
-                    catch (Exception ex)
-                        when (ex is OperationCanceledException or TaskCanceledException // when cancellation comes from tls listener
-                                 or IOException // when the underlying stream is closed due to timeout
-                    )
-                    {
-                        // expected
-                    }
-                    catch (Exception ex)
-                    {
-                        ThrowsException.ForIncorrectExceptionType(typeof(OperationCanceledException), ex);
-                    }
-                }
-            }
-        }
     }
 }
