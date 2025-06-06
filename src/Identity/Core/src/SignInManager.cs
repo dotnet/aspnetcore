@@ -522,7 +522,7 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Attempts to sign in the user with a passkey, as an asynchronous operation.
+    /// Attempts to sign in the user with a passkey.
     /// </summary>
     /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
     /// <param name="options">The original passkey request options provided to the browser.</param>

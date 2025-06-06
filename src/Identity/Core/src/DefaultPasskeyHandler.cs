@@ -117,7 +117,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         }
 
         // 8. Verify that the value of clientData.challenge equals the base64url encoding of pkOptions.challenge.
-        if (!clientData.Challenge.Equals(originalOptions.Challenge))
+        if (!clientData.Challenge.FixedTimeEquals(originalOptions.Challenge))
         {
             throw PasskeyException.InvalidChallenge();
         }
@@ -162,7 +162,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
 
         // 14. Verify that the rpIdHash in authenticatorData is the SHA-256 hash of the RP ID expected by the Relying Party.
         var rpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(originalOptions.Rp.Id ?? string.Empty));
-        if (!authenticatorData.RpIdHash.Span.SequenceEqual(rpIdHash.AsSpan()))
+        if (!CryptographicOperations.FixedTimeEquals(authenticatorData.RpIdHash.Span, rpIdHash.AsSpan()))
         {
             throw PasskeyException.InvalidRelyingPartyIDHash();
         }
@@ -373,7 +373,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         }
 
         // 11. Verify that the value of C.challenge equals the base64url encoding of originalOptions.challenge.
-        if (!clientData.Challenge.Equals(originalOptions.Challenge))
+        if (!clientData.Challenge.FixedTimeEquals(originalOptions.Challenge))
         {
             throw PasskeyException.InvalidChallenge();
         }
@@ -403,7 +403,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
 
         // 15. Verify that the rpIdHash in authData is the SHA-256 hash of the RP ID expected by the Relying Party.
         var rpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(originalOptions.RpId ?? string.Empty));
-        if (!authenticatorData.RpIdHash.Span.SequenceEqual(rpIdHash.AsSpan()))
+        if (!CryptographicOperations.FixedTimeEquals(authenticatorData.RpIdHash.Span, rpIdHash.AsSpan()))
         {
             throw PasskeyException.InvalidRelyingPartyIDHash();
         }
