@@ -101,11 +101,11 @@ internal static class JsonNodeSchemaExtensions
 
                 if (decimal.TryParse(minString, NumberStyles.Any, targetCulture, out var minDecimal))
                 {
-                    schema[OpenApiSchemaKeywords.MinimumKeyword] = minDecimal;
+                    schema[rangeAttribute.MinimumIsExclusive ? OpenApiSchemaKeywords.ExclusiveMinimum : OpenApiSchemaKeywords.MinimumKeyword] = minDecimal;
                 }
                 if (decimal.TryParse(maxString, NumberStyles.Any, targetCulture, out var maxDecimal))
                 {
-                    schema[OpenApiSchemaKeywords.MaximumKeyword] = maxDecimal;
+                    schema[rangeAttribute.MaximumIsExclusive ? OpenApiSchemaKeywords.ExclusiveMaximum : OpenApiSchemaKeywords.MaximumKeyword] = maxDecimal;
                 }
             }
             else if (attribute is RegularExpressionAttribute regularExpressionAttribute)
