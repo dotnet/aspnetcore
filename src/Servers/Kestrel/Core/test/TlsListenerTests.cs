@@ -122,7 +122,7 @@ public class TlsListenerTests
         await writer.WriteAsync(new byte[2] { 0x03, 0x01 });
         cts.Cancel();
 
-        await Assert.ThrowsAsync<OperationCanceledException>(async () => await listenerTask);
+        await VerifyThrowsAnyAsync(() => listenerTask, typeof(OperationCanceledException), typeof(TaskCanceledException));
         Assert.False(tlsClientHelloCallbackInvoked);
     }
 
