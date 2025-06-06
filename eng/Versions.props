@@ -321,7 +321,6 @@
     <XunitAssertVersion>$(XunitVersion)</XunitAssertVersion>
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
     <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
-    <XUnitRunnerVisualStudioVersion>2.8.2</XUnitRunnerVisualStudioVersion>
     <MicrosoftDataSqlClientVersion>5.2.2</MicrosoftDataSqlClientVersion>
     <MicrosoftOpenApiVersion>2.0.0-preview.18</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiYamlReaderVersion>2.0.0-preview.18</MicrosoftOpenApiYamlReaderVersion>
