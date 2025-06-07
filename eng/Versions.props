@@ -115,6 +115,7 @@
     <SystemDiagnosticsEventLogVersion>10.0.0-preview.6.25303.102</SystemDiagnosticsEventLogVersion>
     <SystemDirectoryServicesProtocolsVersion>10.0.0-preview.6.25303.102</SystemDirectoryServicesProtocolsVersion>
     <SystemFormatsAsn1Version>10.0.0-preview.6.25303.102</SystemFormatsAsn1Version>
+    <SystemFormatsCborVersion>10.0.0-preview.6.25303.102</SystemFormatsCborVersion>
     <SystemIOPipelinesVersion>10.0.0-preview.6.25303.102</SystemIOPipelinesVersion>
     <SystemNetHttpJsonVersion>10.0.0-preview.6.25303.102</SystemNetHttpJsonVersion>
     <SystemNetHttpWinHttpHandlerVersion>10.0.0-preview.6.25303.102</SystemNetHttpWinHttpHandlerVersion>

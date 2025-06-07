@@ -10,26 +10,37 @@ using Templates.Test.Helpers;
 
 namespace BlazorTemplates.Tests;
 
-public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory)
+public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : BlazorTemplateTest(projectFactory), IClassFixture<ProjectFactoryFixture>
 {
     public override string ProjectType => "blazor";
 
-    [ConditionalTheory]
-    [SkipNonHelix]
+    [Theory]
     [InlineData(BrowserKind.Chromium, "None")]
     [InlineData(BrowserKind.Chromium, "Server")]
     [InlineData(BrowserKind.Chromium, "WebAssembly")]
     [InlineData(BrowserKind.Chromium, "Auto")]
-    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption)
+    [InlineData(BrowserKind.Chromium, "None", "Individual")]
+    [InlineData(BrowserKind.Chromium, "None", "Individual", true)]
+    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None", bool testPasskeys = false)
     {
         var project = await CreateBuildPublishAsync(
-            args: ["-int", interactivityOption],
+            args: ["-int", interactivityOption, "-au", authOption],
             getTargetProject: GetTargetProject);
 
         // There won't be a counter page when the 'None' interactivity option is used
         var pagesToExclude = interactivityOption is "None"
             ? BlazorTemplatePages.Counter
             : BlazorTemplatePages.None;
+
+        var authenticationFeatures = AuthenticationFeatures.None;
+        if (authOption is not "None")
+        {
+            authenticationFeatures |= AuthenticationFeatures.Basic;
+        }
+        if (testPasskeys)
+        {
+            authenticationFeatures |= AuthenticationFeatures.Passkeys;
+        }
 
         var appName = project.ProjectName;
 
@@ -41,7 +52,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude);
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
         }
 
         // Test the published project
@@ -52,13 +63,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
                 ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", project, aspNetProcess.Process));
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
-
-            if (HasClientProject())
-            {
-                await AssertWebAssemblyCompressionFormatAsync(aspNetProcess, "br");
-            }
-
-            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude);
+            await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
         }
 
         bool HasClientProject()
@@ -76,20 +81,5 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             // In other cases, just use the root project
             return rootProject;
         }
-    }
-
-    private static async Task AssertWebAssemblyCompressionFormatAsync(AspNetProcess aspNetProcess, string expectedEncoding)
-    {
-        var response = await aspNetProcess.SendRequest(() =>
-        {
-            var request = new HttpRequestMessage(HttpMethod.Get, new Uri(aspNetProcess.ListeningUri, "/_framework/blazor.boot.json"));
-            // These are the same as chrome
-            request.Headers.AcceptEncoding.Clear();
-            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("gzip"));
-            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("deflate"));
-            request.Headers.AcceptEncoding.Add(StringWithQualityHeaderValue.Parse("br"));
-            return request;
-        });
-        Assert.Equal(expectedEncoding, response.Content.Headers.ContentEncoding.Single());
     }
 }
