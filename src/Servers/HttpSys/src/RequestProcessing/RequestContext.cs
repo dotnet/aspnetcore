@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes;
@@ -237,6 +236,60 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         {
             // RequestQueueHandle may have been closed
         }
+    }
+
+    /// <summary>
+    /// Attempts to get the client hello message bytes from the http.sys.
+    /// If successful writes the bytes into <paramref name="destination"/>, and shows how many bytes were written in <paramref name="bytesReturned"/>.
+    /// If not successful because <paramref name="destination"/> is not large enough, returns false and shows a size of <paramref name="destination"/> required in <paramref name="bytesReturned"/>.
+    /// If not successful for other reason - throws exception with message/errorCode.
+    /// </summary>
+    internal unsafe bool TryGetTlsClientHelloMessageBytes(
+        Span<byte> destination,
+        out int bytesReturned)
+    {
+        bytesReturned = default;
+        if (!HttpApi.SupportsClientHello)
+        {
+            // not supported, so we just return and don't invoke the callback
+            throw new InvalidOperationException("Windows HTTP Server API does not support HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello or HttpQueryRequestProperty. See HTTP_FEATURE_ID for details.");
+        }
+
+        uint statusCode;
+        var requestId = PinsReleased ? Request.RequestId : RequestId;
+
+        uint bytesReturnedValue = 0;
+        uint* bytesReturnedPointer = &bytesReturnedValue;
+
+        fixed (byte* pBuffer = destination)
+        {
+            statusCode = HttpApi.HttpGetRequestProperty(
+                requestQueueHandle: Server.RequestQueue.Handle,
+                requestId,
+                propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                qualifier: null,
+                qualifierSize: 0,
+                output: pBuffer,
+                outputSize: (uint)destination.Length,
+                bytesReturned: (IntPtr)bytesReturnedPointer,
+                overlapped: IntPtr.Zero);
+
+            bytesReturned = checked((int)bytesReturnedValue);
+
+            if (statusCode is ErrorCodes.ERROR_SUCCESS)
+            {
+                return true;
+            }
+
+            // if buffer supplied is too small, `bytesReturned` has proper size
+            if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
+            {
+                return false;
+            }
+        }
+
+        Log.TlsClientHelloRetrieveError(Logger, requestId, statusCode);
+        throw new HttpSysException((int)statusCode);
     }
 
     /// <summary>

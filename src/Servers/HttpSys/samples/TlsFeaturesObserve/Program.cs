@@ -1,27 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Hosting;
-using TlsFeatureObserve;
 using TlsFeaturesObserve.HttpSys;
 
 HttpSysConfigurator.ConfigureCacheTlsClientHello();
-CreateHostBuilder(args).Build().Run();
 
-static IHostBuilder CreateHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
-        .ConfigureWebHost(webBuilder =>
-        {
-            webBuilder.UseStartup<Startup>()
-            .UseHttpSys(options =>
-            {
-                // If you want to use https locally: https://stackoverflow.com/a/51841893
-                options.UrlPrefixes.Add("https://*:6000"); // HTTPS
+var builder = WebApplication.CreateBuilder(args);
 
                 options.Authentication.Schemes = AuthenticationSchemes.None;
                 options.Authentication.AllowAnonymous = true;
@@ -50,20 +44,13 @@ public static class Holder
     }
 }
 
-public interface IMyTlsFeature
-{
-    string ConnectionId { get; }
-    int TlsClientHelloLength { get; }
-}
+    // rent with enough memory span and invoke
+    var bytes = ArrayPool<byte>.Shared.Rent(bytesReturned);
+    success = httpSysPropFeature.TryGetTlsClientHello(bytes, out _);
+    Debug.Assert(success);
 
-public class MyTlsFeature : IMyTlsFeature
-{
-    public string ConnectionId { get; }
-    public int TlsClientHelloLength { get; }
+    await context.Response.WriteAsync($"[Response] connectionId={connectionFeature.ConnectionId}; tlsClientHello.length={bytesReturned}; tlsclienthello start={string.Join(' ', bytes.AsSpan(0, 30).ToArray())}");
+    await next(context);
+});
 
-    public MyTlsFeature(string connectionId, int tlsClientHelloLength)
-    {
-        ConnectionId = connectionId;
-        TlsClientHelloLength = tlsClientHelloLength;
-    }
-}
+app.Run();
