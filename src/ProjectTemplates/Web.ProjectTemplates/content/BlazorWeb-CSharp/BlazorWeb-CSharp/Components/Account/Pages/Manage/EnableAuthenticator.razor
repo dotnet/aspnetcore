@@ -88,6 +88,8 @@ else
             RedirectManager.RedirectToInvalidUser(UserManager, HttpContext);
             return;
         }
+
+        await LoadSharedKeyAndQrCodeUriAsync(user);
     }
 
     private async Task OnValidSubmitAsync()
