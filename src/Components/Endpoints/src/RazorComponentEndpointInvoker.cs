@@ -175,11 +175,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
     {
         var processPost = HttpMethods.IsPost(context.Request.Method) &&
-            // Disable POST functionality during exception handling and reexecution.
+            // Disable POST functionality during exception handling.
             // The exception handler middleware will not update the request method, and we don't
             // want to run the form handling logic against the error page.
-            context.Features.Get<IExceptionHandlerFeature>() == null &&
-            context.Features.Get<IStatusCodePagesFeature>() == null;
+            context.Features.Get<IExceptionHandlerFeature>() == null;
 
         if (processPost)
         {
