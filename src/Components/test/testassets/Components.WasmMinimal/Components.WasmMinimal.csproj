@@ -16,6 +16,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NotReferencedInWasmCodePackage\NotReferencedInWasmCodePackage.csproj" />
     <ProjectReference Include="..\TestContentPackage\TestContentPackage.csproj" />
+    <ProjectReference Include="..\Components.Shared\Components.Shared.csproj" />
   </ItemGroup>
 
 </Project>

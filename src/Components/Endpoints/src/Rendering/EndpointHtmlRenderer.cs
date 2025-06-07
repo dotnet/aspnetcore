@@ -85,7 +85,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         if (navigationManager != null)
         {
-            navigationManager.OnNotFound += async (sender, args) => await SetNotFoundResponseAsync(navigationManager.BaseUri);
+            navigationManager.OnNotFound += SetNotFoundResponse;
         }
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
