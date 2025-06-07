@@ -413,6 +413,115 @@ public class CircuitHostTest
     }
 
     [Fact]
+    public async Task SendPersistedStateToClient_WithSuccessfulInvocation_ReturnsTrue()
+    {
+        // Arrange
+        var mockClientProxy = new Mock<ISingleClientProxy>();
+        mockClientProxy
+            .Setup(c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.IsAny<object[]>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        var client = new CircuitClientProxy(mockClientProxy.Object, "connection-id");
+        var circuitHost = TestCircuitHost.Create(clientProxy: client);
+
+        var rootComponents = "mock-root-components";
+        var applicationState = "mock-application-state";
+        var cancellationToken = new CancellationToken();
+
+        // Act
+        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken);
+
+        // Assert
+        Assert.True(result);
+        mockClientProxy.Verify(
+            c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.Is<object[]>(args => args[0].Equals(circuitHost.CircuitId.Secret) &&
+                                        args[1].Equals(rootComponents) &&
+                                        args[2].Equals(applicationState)),
+                cancellationToken),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SendPersistedStateToClient_WithFailedInvocation_ReturnsFalse()
+    {
+        // Arrange
+        var mockClientProxy = new Mock<ISingleClientProxy>();
+        mockClientProxy
+            .Setup(c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.IsAny<object[]>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false);
+
+        var client = new CircuitClientProxy(mockClientProxy.Object, "connection-id");
+        var circuitHost = TestCircuitHost.Create(clientProxy: client);
+
+        var rootComponents = "mock-root-components";
+        var applicationState = "mock-application-state";
+        var cancellationToken = new CancellationToken();
+
+        // Act
+        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken);
+
+        // Assert
+        Assert.False(result);
+    }
+
+    [Fact]
+    public async Task SendPersistedStateToClient_WithException_LogsAndReturnsFalse()
+    {
+        // Arrange
+        var expectedException = new InvalidOperationException("Test exception");
+        var mockClientProxy = new Mock<ISingleClientProxy>();
+        mockClientProxy
+            .Setup(c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.IsAny<object[]>(),
+                It.IsAny<CancellationToken>()))
+            .ThrowsAsync(expectedException);
+
+        var client = new CircuitClientProxy(mockClientProxy.Object, "connection-id");
+        var circuitHost = TestCircuitHost.Create(clientProxy: client);
+
+        var rootComponents = "mock-root-components";
+        var applicationState = "mock-application-state";
+        var cancellationToken = new CancellationToken();
+
+        // Act
+        var result = await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken);
+
+        // Assert
+        Assert.False(result);
+        mockClientProxy.Verify(
+            c => c.InvokeCoreAsync<bool>(
+                "JS.SavePersistedState",
+                It.IsAny<object[]>(),
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SendPersistedStateToClient_WithDisconnectedClient_ThrowsInvalidOperationException()
+    {
+        // Arrange
+        var client = new CircuitClientProxy(); // Creates a disconnected client
+        var circuitHost = TestCircuitHost.Create(clientProxy: client);
+
+        var rootComponents = "mock-root-components";
+        var applicationState = "mock-application-state";
+        var cancellationToken = new CancellationToken();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken));
+    }
+
+    [Fact]
     public async Task UpdateRootComponents_CanAddNewRootComponent()
     {
         // Arrange

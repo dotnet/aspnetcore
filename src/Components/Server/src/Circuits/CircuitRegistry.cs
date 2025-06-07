@@ -314,7 +314,7 @@ internal partial class CircuitRegistry
         await circuitHost.DisposeAsync();
     }
 
-    internal Task PauseCircuitAsync(
+    internal async Task PauseCircuitAsync(
     CircuitHost circuitHost,
     string connectionId)
     {
@@ -322,19 +322,20 @@ internal partial class CircuitRegistry
         {
             Log.CircuitPauseStarted(_logger, circuitHost.CircuitId, connectionId);
 
+            Task pauseTask;
             lock (CircuitRegistryLock)
             {
-                return PauseCore(circuitHost, connectionId);
+                pauseTask = PauseCore(circuitHost, connectionId);
             }
+            await pauseTask;
         }
         catch (Exception)
         {
             Log.CircuitPauseFailed(_logger, circuitHost.CircuitId, connectionId);
-            return Task.CompletedTask;
         }
     }
 
-    internal Task PauseCore(CircuitHost circuitHost, string connectionId)
+    internal virtual Task PauseCore(CircuitHost circuitHost, string connectionId)
     {
         var circuitId = circuitHost.CircuitId;
         if (!ConnectedCircuits.TryGetValue(circuitId, out circuitHost))

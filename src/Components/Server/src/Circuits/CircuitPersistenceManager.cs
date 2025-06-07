@@ -45,7 +45,7 @@ internal partial class CircuitPersistenceManager(
         }
     }
 
-    private async Task SaveStateToClient(CircuitHost circuit, PersistedCircuitState state, CancellationToken cancellation = default)
+    internal async Task SaveStateToClient(CircuitHost circuit, PersistedCircuitState state, CancellationToken cancellation = default)
     {
         var (rootComponents, applicationState) = await ToProtectedStateAsync(state);
         if (!await circuit.SendPersistedStateToClient(rootComponents, applicationState, cancellation))
