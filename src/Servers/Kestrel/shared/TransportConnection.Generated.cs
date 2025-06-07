@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Connections
                                                  IConnectionTransportFeature,
                                                  IConnectionItemsFeature,
                                                  IMemoryPoolFeature,
-                                                 IConnectionLifetimeFeature
+                                                 IConnectionLifetimeFeature,
+                                                 IConnectionEndPointFeature
     {
         // Implemented features
         internal protected IConnectionIdFeature? _currentIConnectionIdFeature;
@@ -26,6 +27,7 @@ namespace Microsoft.AspNetCore.Connections
         internal protected IConnectionItemsFeature? _currentIConnectionItemsFeature;
         internal protected IMemoryPoolFeature? _currentIMemoryPoolFeature;
         internal protected IConnectionLifetimeFeature? _currentIConnectionLifetimeFeature;
+        internal protected IConnectionEndPointFeature? _currentIConnectionEndPointFeature;
 
         // Other reserved feature slots
         internal protected IPersistentStateFeature? _currentIPersistentStateFeature;
@@ -48,6 +50,7 @@ namespace Microsoft.AspNetCore.Connections
             _currentIConnectionItemsFeature = this;
             _currentIMemoryPoolFeature = this;
             _currentIConnectionLifetimeFeature = this;
+            _currentIConnectionEndPointFeature = this;
 
             _currentIPersistentStateFeature = null;
             _currentIConnectionSocketFeature = null;
@@ -180,6 +183,10 @@ namespace Microsoft.AspNetCore.Connections
                 {
                     feature = _currentIConnectionMetricsTagsFeature;
                 }
+                else if (key == typeof(IConnectionEndPointFeature))
+                {
+                    feature = _currentIConnectionEndPointFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -243,6 +250,10 @@ namespace Microsoft.AspNetCore.Connections
                 else if (key == typeof(IConnectionMetricsTagsFeature))
                 {
                     _currentIConnectionMetricsTagsFeature = (IConnectionMetricsTagsFeature?)value;
+                }
+                else if (key == typeof(IConnectionEndPointFeature))
+                {
+                    _currentIConnectionEndPointFeature = (IConnectionEndPointFeature?)value;
                 }
                 else
                 {
@@ -309,6 +320,10 @@ namespace Microsoft.AspNetCore.Connections
             else if (typeof(TFeature) == typeof(IConnectionMetricsTagsFeature))
             {
                 feature = Unsafe.As<IConnectionMetricsTagsFeature?, TFeature?>(ref _currentIConnectionMetricsTagsFeature);
+            }
+            else if (typeof(TFeature) == typeof(IConnectionEndPointFeature))
+            {
+                feature = Unsafe.As<IConnectionEndPointFeature?, TFeature?>(ref _currentIConnectionEndPointFeature);
             }
             else if (MaybeExtra != null)
             {
@@ -382,6 +397,10 @@ namespace Microsoft.AspNetCore.Connections
             {
                 _currentIConnectionMetricsTagsFeature = Unsafe.As<TFeature?, IConnectionMetricsTagsFeature?>(ref feature);
             }
+            else if (typeof(TFeature) == typeof(IConnectionEndPointFeature))
+            {
+                _currentIConnectionEndPointFeature = Unsafe.As<TFeature?, IConnectionEndPointFeature?>(ref feature);
+            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -441,6 +460,10 @@ namespace Microsoft.AspNetCore.Connections
             if (_currentIConnectionMetricsTagsFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(typeof(IConnectionMetricsTagsFeature), _currentIConnectionMetricsTagsFeature);
+            }
+            if (_currentIConnectionEndPointFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(typeof(IConnectionEndPointFeature), _currentIConnectionEndPointFeature);
             }
 
             if (MaybeExtra != null)

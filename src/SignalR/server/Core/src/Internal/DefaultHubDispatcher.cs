@@ -92,7 +92,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             // OnConnectedAsync won't work with client results (ISingleClientProxy.InvokeAsync)
             InitializeHub(hub, connection, invokeAllowed: false);
 
-            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnConnectedAsync), headers: null, _logger);
+            activity = StartActivity(SignalRServerActivitySource.OnConnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnConnectedAsync), headers: null, _logger, connection);
 
             if (_onConnectedMiddleware != null)
             {
@@ -127,7 +127,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
         {
             InitializeHub(hub, connection);
 
-            activity = StartActivity(SignalRServerActivitySource.OnDisconnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync), headers: null, _logger);
+            activity = StartActivity(SignalRServerActivitySource.OnDisconnected, ActivityKind.Internal, linkedActivity: null, scope.ServiceProvider, nameof(hub.OnDisconnectedAsync), headers: null, _logger, connection);
 
             if (_onDisconnectedMiddleware != null)
             {
@@ -404,7 +404,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
                         // Use hubMethodInvocationMessage.Target instead of methodExecutor.MethodInfo.Name
                         // We want to take HubMethodNameAttribute into account which will be the same as what the invocation target is
-                        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, logger);
+                        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, logger, connection);
 
                         object? result;
                         try
@@ -522,7 +522,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             Activity.Current = null;
         }
 
-        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, _logger);
+        var activity = StartActivity(SignalRServerActivitySource.InvocationIn, ActivityKind.Server, connection.OriginalActivity, scope.ServiceProvider, hubMethodInvocationMessage.Target, hubMethodInvocationMessage.Headers, _logger, connection);
 
         try
         {
@@ -829,7 +829,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
 
     // Starts an Activity for a Hub method invocation and sets up all the tags and other state.
     // Make sure to call Activity.Stop() once the Hub method completes, and consider calling SetActivityError on exception.
-    private static Activity? StartActivity(string operationName, ActivityKind kind, Activity? linkedActivity, IServiceProvider serviceProvider, string methodName, IDictionary<string, string>? headers, ILogger logger)
+    private static Activity? StartActivity(string operationName, ActivityKind kind, Activity? linkedActivity, IServiceProvider serviceProvider, string methodName, IDictionary<string, string>? headers, ILogger logger, HubConnectionContext? connection = null)
     {
         var activitySource = serviceProvider.GetService<SignalRServerActivitySource>()?.ActivitySource;
         if (activitySource is null)
@@ -843,15 +843,20 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
             return null;
         }
 
-        IEnumerable<KeyValuePair<string, object?>> tags =
-        [
-            new("rpc.method", methodName),
-            new("rpc.system", "signalr"),
-            new("rpc.service", _fullHubName),
-            // See https://github.com/dotnet/aspnetcore/blob/027c60168383421750f01e427e4f749d0684bc02/src/Servers/Kestrel/Core/src/Internal/Infrastructure/KestrelMetrics.cs#L308
-            // And https://github.com/dotnet/aspnetcore/issues/43786
-            //new("server.address", ...),
-        ];
+        var tagList = new TagList
+        {
+            { "rpc.method", methodName },
+            { "rpc.system", "signalr" },
+            { "rpc.service", _fullHubName }
+        };
+        
+        // Add connection endpoint tags if connection is available
+        if (connection is not null)
+        {
+            ConnectionEndpointTags.AddConnectionEndpointTags(ref tagList, connection.Features);
+        }
+
+        IEnumerable<KeyValuePair<string, object?>> tags = tagList;
         IEnumerable<ActivityLink>? links = (linkedActivity is not null) ? [new ActivityLink(linkedActivity.Context)] : null;
 
         Activity? activity;
