@@ -3,8 +3,11 @@
 
 #nullable enable
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Components;
 
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 internal struct ComponentMarker
 {
     public const string ServerMarkerType = "server";
@@ -88,6 +91,21 @@ internal struct ComponentMarker
 
     private static string GeneratePrerenderId()
         => Guid.NewGuid().ToString("N");
+
+    private string GetDebuggerDisplay()
+    {
+        switch (Type)
+        {
+            case ServerMarkerType:
+                return $"Server Component: {TypeName}, Sequence: {Sequence}, Key: {Key?.FormattedComponentKey} Descriptor: {Descriptor?.Substring(5)}...";
+            case WebAssemblyMarkerType:
+                return $"WebAssembly Component: {TypeName}, Assembly: {Assembly}, Key: {Key?.FormattedComponentKey}";
+            case AutoMarkerType:
+                return $"Auto Component: {TypeName}, Assembly: {Assembly}, Key: {Key?.FormattedComponentKey}, Descriptor: {Descriptor?.Substring(5)}...";
+            default:
+                return $"Unknown Component Type: {Type}, Key: {Key?.FormattedComponentKey}";
+        }
+    }
 }
 
 internal struct ComponentEndMarker
