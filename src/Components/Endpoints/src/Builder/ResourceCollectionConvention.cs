@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -48,8 +49,15 @@ internal class ResourceCollectionConvention(ResourceCollectionResolver resolver)
         // The user called MapStaticAssets
         if (_collection != null && _collectionImportMap != null)
         {
+            int relativeRootDistance = 0;
+            if (eb is RouteEndpointBuilder reb)
+            {
+                // For routes like '/path/to/page' we need to make preload headers as '../../_framework/dotnet.js'
+                relativeRootDistance = reb.RoutePattern.PathSegments.Count - 1;
+            }
+
             eb.Metadata.Add(_collection);
-            eb.Metadata.Add(new ResourcePreloadCollection(_collection));
+            eb.Metadata.Add(new ResourcePreloadCollection(_collection, relativeRootDistance));
 
             if (_collectionUrl != null)
             {
