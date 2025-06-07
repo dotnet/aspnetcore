@@ -7,6 +7,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Net.Mime;
 using System.Reflection;
+using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
@@ -60,6 +61,10 @@ internal static class ValidationEndpointFilterFactory
         {
             ValidateContext? validateContext = null;
 
+            // Get JsonOptions from DI
+            var jsonOptions = context.HttpContext.RequestServices.GetService<IOptions<JsonOptions>>();
+            var serializerOptions = jsonOptions?.Value?.SerializerOptions;
+
             foreach (var entry in validatableParameters)
             {
                 if (entry.Index >= context.Arguments.Count)
@@ -80,7 +85,8 @@ internal static class ValidationEndpointFilterFactory
                     validateContext = new ValidateContext
                     {
                         ValidationOptions = options,
-                        ValidationContext = validationContext
+                        ValidationContext = validationContext,
+                        SerializerOptions = serializerOptions
                     };
                 }
                 else

@@ -170,8 +170,8 @@ public class ComplexType
             var problemDetails = await AssertBadRequest(context);
             Assert.Collection(problemDetails.Errors, kvp =>
             {
-                Assert.Equal("IntegerWithRange", kvp.Key);
-                Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                Assert.Equal("integerWithRange", kvp.Key);
+                Assert.Equal("The field integerWithRange must be between 10 and 100.", kvp.Value.Single());
             });
         });
     }

@@ -3,6 +3,8 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
@@ -60,11 +62,18 @@ public sealed class ValidateContext
     /// </summary>
     public int CurrentDepth { get; set; }
 
-    internal void AddValidationError(string key, string[] error)
+    /// <summary>
+    /// Gets or sets the JSON serializer options to use for property name formatting.
+    /// When available, property names in validation errors will be formatted according to the
+    /// PropertyNamingPolicy and JsonPropertyName attributes.
+    /// </summary>
+    public JsonSerializerOptions? SerializerOptions { get; set; }
+
+    internal void AddValidationError(string key, string[] errors)
     {
         ValidationErrors ??= [];
 
-        ValidationErrors[key] = error;
+        ValidationErrors[key] = errors;
     }
 
     internal void AddOrExtendValidationErrors(string key, string[] errors)
@@ -90,7 +99,7 @@ public sealed class ValidateContext
 
         if (ValidationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
         {
-            ValidationErrors[key] = [.. existingErrors, error];
+            ValidationErrors[key] = [..existingErrors, error];
         }
         else
         {
