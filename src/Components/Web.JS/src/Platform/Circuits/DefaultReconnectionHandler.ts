@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ReconnectionHandler, ReconnectionOptions } from './CircuitStartOptions';
-import { ReconnectDisplay } from './ReconnectDisplay';
+import { ReconnectDisplay, ReconnectDisplayUpdateOptions } from './ReconnectDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
 import { UserSpecifiedDisplay } from './UserSpecifiedDisplay';
 import { Logger, LogLevel } from '../Logging/Logger';
@@ -68,12 +68,18 @@ class ReconnectionProcess {
     private reconnectCallback: () => Promise<boolean>,
     private resumeCallback: () => Promise<boolean>,
     display: ReconnectDisplay,
-    private isClientPause?: boolean,
+    private isGracefulPause?: boolean,
     private isRemote: boolean = false,
   ) {
     this.reconnectDisplay = display;
-    this.reconnectDisplay.show();
-    if (!this.isClientPause) {
+    const displayOptions: ReconnectDisplayUpdateOptions = {
+      type: isGracefulPause ? 'pause' : 'reconnect',
+      remote: this.isRemote,
+      currentAttempt: 0,
+      secondsToNextAttempt: 0,
+    };
+    this.reconnectDisplay.show(displayOptions);
+    if (!this.isGracefulPause) {
       this.attemptPeriodicReconnection(options);
     } else {
       this.reconnectDisplay.update({

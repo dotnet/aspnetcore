@@ -70,4 +70,52 @@ public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixtur
 
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
     }
+
+    [Fact]
+    public void CanResumeCircuitFromJavaScript()
+    {
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        var previousText = Browser.Exists(By.Id("persistent-counter-render")).Text;
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript("Blazor.pause()");
+        Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
+        var shadowRoot = Browser.Exists(By.Id("components-reconnect-modal")).GetShadowRoot();
+
+        // Retry button should be hidden
+        Browser.Equal(
+            (false, true),
+            () => Browser.Exists(
+                () =>
+                {
+                    var buttons = Browser.Exists(By.Id("components-reconnect-modal"))
+                                            .GetShadowRoot()
+                                            .FindElements(By.CssSelector(".components-reconnect-dialog button"));
+                    Assert.Equal(2, buttons.Count);
+                    return (buttons[0].Displayed, buttons[1].Displayed);
+                },
+                TimeSpan.FromSeconds(1)));
+
+        Browser.Exists(
+                () =>
+                {
+                    var buttons = Browser.Exists(By.Id("components-reconnect-modal"))
+                                            .GetShadowRoot()
+                                            .FindElements(By.CssSelector(".components-reconnect-dialog button"));
+                    return buttons[1];
+                },
+                TimeSpan.FromSeconds(1)).Click();
+
+        // Then it should disappear
+        Browser.Equal("none", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
+
+        var newText = Browser.Exists(By.Id("persistent-counter-render")).Text;
+        Assert.NotEqual(previousText, newText);
+
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+
+        // Can dispatch events after reconnect
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+    }
 }

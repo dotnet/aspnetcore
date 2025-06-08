@@ -3,7 +3,7 @@
 
 import { Blazor } from '../../GlobalExports';
 import { LogLevel, Logger } from '../Logging/Logger';
-import { ReconnectDisplay, ReconnectDisplayUpdateOptions } from './ReconnectDisplay';
+import { ReconnectDisplay, ReconnectDisplayUpdateOptions, ReconnectOptions } from './ReconnectDisplay';
 
 export class DefaultReconnectDisplay implements ReconnectDisplay {
   static readonly ReconnectOverlayClassName = 'components-reconnect-overlay';
@@ -89,10 +89,12 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     };
   }
 
-  show(): void {
+  show(options?: ReconnectDisplayUpdateOptions): void {
     if (!this.document.contains(this.host)) {
       this.document.body.appendChild(this.host);
     }
+
+    this.reconnect = options?.type === 'reconnect';
 
     this.reloadButton.style.display = 'none';
     this.rejoiningAnimation.style.display = 'block';
@@ -102,25 +104,20 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   }
 
   update(options: ReconnectDisplayUpdateOptions): void {
-    if (options.type === 'reconnect') {
-      this.reconnect = true;
-      const { currentAttempt, secondsToNextAttempt } = options;
+    this.reconnect = options.type === 'reconnect';
+    if (this.reconnect) {
+      const { currentAttempt, secondsToNextAttempt } = options as ReconnectOptions;
       if (currentAttempt === 1 || secondsToNextAttempt === 0) {
         this.status.innerHTML = 'Rejoining the server...';
       } else {
         const unitText = secondsToNextAttempt === 1 ? 'second' : 'seconds';
         this.status.innerHTML = `Rejoin failed... trying again in ${secondsToNextAttempt} ${unitText}`;
       }
-    }
-    if (options.type === 'pause') {
-      this.reconnect = false;
-      this.remote = options.remote;
+    } else {
       this.reloadButton.style.display = 'none';
-      if (options.remote) {
-        this.rejoiningAnimation.style.display = 'none';
-        this.status.innerHTML = 'The session has been paused by the server.';
-        this.resumeButton.style.display = 'block';
-      }
+      this.rejoiningAnimation.style.display = 'none';
+      this.status.innerHTML = 'The session has been paused by the server.';
+      this.resumeButton.style.display = 'block';
     }
   }
 
