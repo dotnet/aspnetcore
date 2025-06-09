@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
@@ -28,6 +29,13 @@ public class ValidationOptions
     /// Default value is 32.
     /// </summary>
     public int MaxDepth { get; set; } = 32;
+
+    /// <summary>
+    /// Gets or sets the JSON serializer options to use for property name formatting.
+    /// When available, property names in validation errors will be formatted according to the
+    /// PropertyNamingPolicy and JsonPropertyName attributes.
+    /// </summary>
+    public JsonSerializerOptions? SerializerOptions { get; set; }
 
     /// <summary>
     /// Attempts to get validation information for the specified type.

@@ -32,7 +32,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         PropertyType = propertyType;
         Name = name;
         DisplayName = displayName;
-        
+
         // Cache the HasDisplayAttribute result to avoid repeated reflection calls
         var property = DeclaringType.GetProperty(Name);
         _hasDisplayAttribute = property is not null && HasDisplayAttribute(property);
@@ -73,7 +73,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         var validationAttributes = GetValidationAttributes();
 
         // Calculate and save the current path
-        var memberName = GetJsonPropertyName(Name, property, context.SerializerOptions?.PropertyNamingPolicy);
+        var memberName = GetJsonPropertyName(Name, property, context.ValidationOptions.SerializerOptions?.PropertyNamingPolicy);
         var originalPrefix = context.CurrentValidationPath;
         if (string.IsNullOrEmpty(originalPrefix))
         {
@@ -88,7 +88,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         // If the property has a [Display] attribute (either on property or record parameter), use DisplayName directly without formatting
         context.ValidationContext.DisplayName = _hasDisplayAttribute
             ? DisplayName
-            : GetJsonPropertyName(DisplayName, property, context.SerializerOptions?.PropertyNamingPolicy);
+            : GetJsonPropertyName(DisplayName, property, context.ValidationOptions.SerializerOptions?.PropertyNamingPolicy);
         context.ValidationContext.MemberName = memberName;
 
         // Check required attribute first

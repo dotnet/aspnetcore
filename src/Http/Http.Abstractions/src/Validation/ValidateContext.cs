@@ -4,7 +4,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Http.Validation;
 
@@ -61,13 +60,6 @@ public sealed class ValidateContext
     /// This is used to prevent stack overflows from circular references.
     /// </summary>
     public int CurrentDepth { get; set; }
-
-    /// <summary>
-    /// Gets or sets the JSON serializer options to use for property name formatting.
-    /// When available, property names in validation errors will be formatted according to the
-    /// PropertyNamingPolicy and JsonPropertyName attributes.
-    /// </summary>
-    public JsonSerializerOptions? SerializerOptions { get; set; }
 
     internal void AddValidationError(string key, string[] errors)
     {

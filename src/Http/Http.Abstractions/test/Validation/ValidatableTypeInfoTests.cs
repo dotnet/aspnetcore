@@ -123,11 +123,12 @@ public class ValidatableTypeInfoTests
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
+        validationOptions.SerializerOptions = jsonOptions;
+
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationContext = new ValidationContext(personWithMissingRequiredFields),
-            SerializerOptions = jsonOptions
+            ValidationContext = new ValidationContext(personWithMissingRequiredFields)
         };
 
         // Act
@@ -181,20 +182,23 @@ public class ValidatableTypeInfoTests
 
         var person = new PersonWithJsonNames(); // Missing required fields
 
-        var jsonOptions = new JsonSerializerOptions();
-        jsonOptions.PropertyNamingPolicy = policy switch
+        var jsonOptions = new JsonSerializerOptions
         {
-            "CamelCase" => JsonNamingPolicy.CamelCase,
-            "KebabCaseLower" => JsonNamingPolicy.KebabCaseLower,
-            "SnakeCaseLower" => JsonNamingPolicy.SnakeCaseLower,
-            _ => null
+            PropertyNamingPolicy = policy switch
+            {
+                "CamelCase" => JsonNamingPolicy.CamelCase,
+                "KebabCaseLower" => JsonNamingPolicy.KebabCaseLower,
+                "SnakeCaseLower" => JsonNamingPolicy.SnakeCaseLower,
+                _ => null
+            }
         };
+
+        validationOptions.SerializerOptions = jsonOptions;
 
         var context = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationContext = new ValidationContext(person),
-            SerializerOptions = jsonOptions
+            ValidationContext = new ValidationContext(person)
         };
 
         // Act
@@ -251,15 +255,19 @@ public class ValidatableTypeInfoTests
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
-        var context = new ValidateContext
-        {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
             {
                 { typeof(OrderItem), itemType },
                 { typeof(Order), orderType }
-            }),
-            ValidationContext = new ValidationContext(order),
+            })
+        {
             SerializerOptions = jsonOptions
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(order)
         };
 
         // Act
@@ -312,14 +320,18 @@ public class ValidatableTypeInfoTests
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(Employee), employeeType }
+        })
+        {
+            SerializerOptions = jsonOptions
+        };
+
         var context = new ValidateContext
         {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(Employee), employeeType }
-            }),
-            ValidationContext = new ValidationContext(employee),
-            SerializerOptions = jsonOptions
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(employee)
         };
 
         // Act
@@ -347,14 +359,18 @@ public class ValidatableTypeInfoTests
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
 
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(MultiMemberErrorObject), multiType }
+        })
+        {
+            SerializerOptions = jsonOptions
+        };
+
         var context = new ValidateContext
         {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(MultiMemberErrorObject), multiType }
-            }),
-            ValidationContext = new ValidationContext(new MultiMemberErrorObject { FirstName = "", LastName = "" }),
-            SerializerOptions = jsonOptions
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(new MultiMemberErrorObject { FirstName = "", LastName = "" })
         };
 
         await multiType.ValidateAsync(context.ValidationContext.ObjectInstance, context, default);
@@ -550,8 +566,10 @@ public class ValidatableTypeInfoTests
         var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
         {
             { typeof(TreeNode), nodeType }
-        });
-        validationOptions.MaxDepth = 3; // Set a small max depth to trigger the limit
+        })
+        {
+            MaxDepth = 3 // Set a small max depth to trigger the limit
+        };
 
         // Create a deep tree with circular references
         var rootNode = new TreeNode { Name = "Root" };
@@ -857,7 +875,7 @@ public class ValidatableTypeInfoTests
         public string? LastName { get; set; }
     }
 
-[Fact]
+    [Fact]
     public async Task Validate_RespectsJsonPropertyNameAttribute_ForValidationErrors()
     {
         // Arrange
@@ -872,18 +890,24 @@ public class ValidatableTypeInfoTests
 
         var model = new ModelWithJsonPropertyNames { EmailAddress = "invalid-email" }; // Missing username and invalid email
 
-        var jsonOptions = new JsonSerializerOptions();
-        // Add a custom converter that knows about JsonPropertyName attributes
-        jsonOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+        var jsonOptions = new JsonSerializerOptions
+        {
+            // Add a custom converter that knows about JsonPropertyName attributes
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(ModelWithJsonPropertyNames), modelType }
+            })
+        {
+            SerializerOptions = jsonOptions
+        };
 
         var context = new ValidateContext
         {
-            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
-            {
-                { typeof(ModelWithJsonPropertyNames), modelType }
-            }),
-            ValidationContext = new ValidationContext(model),
-            SerializerOptions = jsonOptions
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(model)
         };
 
         // Act
@@ -905,12 +929,78 @@ public class ValidatableTypeInfoTests
             });
     }
 
+    [Fact]
+    public async Task Validate_HandlesJsonPropertyNameAndDisplayAttribute_ForValidationErrors()
+    {
+        // Arrange
+        var modelType = new TestValidatableTypeInfo(
+            typeof(ModelWithJsonPropertyAndDisplayNames),
+            [
+                CreatePropertyInfo(typeof(ModelWithJsonPropertyAndDisplayNames), typeof(string), "UserName", "User Name",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(ModelWithJsonPropertyAndDisplayNames), typeof(string), "EmailAddress", "Email Address",
+                    [new EmailAddressAttribute()])
+            ]);
+
+        var model = new ModelWithJsonPropertyAndDisplayNames { EmailAddress = "invalid-email" }; // Missing username and invalid email
+
+        var jsonOptions = new JsonSerializerOptions
+        {
+            // Add a custom converter that knows about JsonPropertyName attributes
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+        };
+
+        var validationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+        {
+            { typeof(ModelWithJsonPropertyAndDisplayNames), modelType }
+        })
+        {
+            SerializerOptions = jsonOptions
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(model)
+        };
+
+        // Act
+        await modelType.ValidateAsync(model, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        // Use [JsonPropertyName] over naming policy for keys and the `[Display]` attribute for error messages
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("username", kvp.Key);
+                Assert.Equal("The User Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("email", kvp.Key);
+                Assert.Equal("The Email Address field is not a valid e-mail address.", kvp.Value.First());
+            });
+    }
+
     private class ModelWithJsonPropertyNames
     {
         [JsonPropertyName("username")]
         public string? UserName { get; set; }
 
         [JsonPropertyName("email")]
+        [EmailAddress]
+        public string? EmailAddress { get; set; }
+    }
+
+    private class ModelWithJsonPropertyAndDisplayNames
+    {
+        [JsonPropertyName("username")]
+        [Display(Name = "User Name")]
+        public string? UserName { get; set; }
+
+        [JsonPropertyName("email")]
+        [Display(Name = "Email Address")]
         [EmailAddress]
         public string? EmailAddress { get; set; }
     }
@@ -1106,21 +1196,23 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void Validate_FormatsErrorMessagesWithPropertyNamingPolicy()
+    public async Task Validate_FormatsErrorMessagesWithPropertyNamingPolicy()
     {
         // Arrange
-        var validationOptions = new ValidationOptions();
+        var validationOptions = new ValidationOptions
+        {
+            SerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            }
+        };
 
         var address = new Address();
         var validationContext = new ValidationContext(address);
         var validateContext = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationContext = validationContext,
-            SerializerOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }
+            ValidationContext = validationContext
         };
 
         var propertyInfo = CreatePropertyInfo(
@@ -1131,7 +1223,7 @@ public class ValidatableTypeInfoTests
             [new RequiredAttribute()]);
 
         // Act
-        propertyInfo.ValidateAsync(address, validateContext, CancellationToken.None);
+        await propertyInfo.ValidateAsync(address, validateContext, CancellationToken.None);
 
         // Assert
         var error = Assert.Single(validateContext.ValidationErrors!);
@@ -1140,21 +1232,23 @@ public class ValidatableTypeInfoTests
     }
 
     [Fact]
-    public void Validate_PreservesCustomErrorMessagesWithPropertyNamingPolicy()
+    public async Task Validate_PreservesCustomErrorMessagesWithPropertyNamingPolicy()
     {
         // Arrange
-        var validationOptions = new ValidationOptions();
+        var validationOptions = new ValidationOptions
+        {
+            SerializerOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            }
+        };
 
         var model = new TestModel();
         var validationContext = new ValidationContext(model);
         var validateContext = new ValidateContext
         {
             ValidationOptions = validationOptions,
-            ValidationContext = validationContext,
-            SerializerOptions = new JsonSerializerOptions
-            {
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            }
+            ValidationContext = validationContext
         };
 
         var propertyInfo = CreatePropertyInfo(
@@ -1165,7 +1259,7 @@ public class ValidatableTypeInfoTests
             [new RequiredAttribute { ErrorMessage = "Custom message without standard format." }]);
 
         // Act
-        propertyInfo.ValidateAsync(model, validateContext, CancellationToken.None);
+        await propertyInfo.ValidateAsync(model, validateContext, CancellationToken.None);
 
         // Assert
         var error = Assert.Single(validateContext.ValidationErrors!);

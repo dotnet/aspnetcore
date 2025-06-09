@@ -82,11 +82,11 @@ internal static class ValidationEndpointFilterFactory
 
                 if (validateContext == null)
                 {
+                    options.SerializerOptions = serializerOptions;
                     validateContext = new ValidateContext
                     {
                         ValidationOptions = options,
-                        ValidationContext = validationContext,
-                        SerializerOptions = serializerOptions
+                        ValidationContext = validationContext
                     };
                 }
                 else
