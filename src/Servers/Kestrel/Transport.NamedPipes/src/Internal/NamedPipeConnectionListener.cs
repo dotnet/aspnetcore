@@ -40,7 +40,7 @@ internal sealed class NamedPipeConnectionListener : IConnectionListener
         _log = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes");
         _endpoint = endpoint;
         _options = options;
-        _memoryPool = options.MemoryPoolFactory();
+        _memoryPool = options.MemoryPoolFactory.Create();
         _listeningToken = _listeningTokenSource.Token;
         // Have to create the pool here (instead of DI) because the pool is specific to an endpoint.
         _poolPolicy = new NamedPipeServerStreamPoolPolicy(endpoint, options);
