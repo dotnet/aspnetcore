@@ -71,13 +71,21 @@ internal static class ConnectionEndpointTags
     /// <param name="connectionContext">The connection context to get endpoint information from.</param>
     public static void AddConnectionEndpointTags(ref TagList tags, BaseConnectionContext connectionContext)
     {
+        EndPoint? localEndpoint = null;
+        
+        // Try to get the local endpoint from the feature first, then fall back to the direct property
         var endpointFeature = connectionContext.Features.Get<IConnectionEndPointFeature>();
-        if (endpointFeature is null)
+        if (endpointFeature is not null)
         {
-            return;
+            localEndpoint = endpointFeature.LocalEndPoint;
+        }
+        
+        // If the feature didn't provide an endpoint, fall back to the direct property
+        if (localEndpoint is null)
+        {
+            localEndpoint = connectionContext.LocalEndPoint;
         }
 
-        var localEndpoint = endpointFeature.LocalEndPoint;
         if (localEndpoint is IPEndPoint localIPEndPoint)
         {
             tags.Add("server.address", localIPEndPoint.Address.ToString());
