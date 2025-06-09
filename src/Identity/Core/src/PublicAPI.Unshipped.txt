@@ -49,12 +49,6 @@ Microsoft.AspNetCore.Identity.PasskeyRequestArgs<TUser>.User.get -> TUser?
 Microsoft.AspNetCore.Identity.PasskeyRequestArgs<TUser>.User.set -> void
 Microsoft.AspNetCore.Identity.PasskeyRequestArgs<TUser>.UserVerification.get -> string!
 Microsoft.AspNetCore.Identity.PasskeyRequestArgs<TUser>.UserVerification.set -> void
-Microsoft.AspNetCore.Identity.PasskeyRequestContext
-Microsoft.AspNetCore.Identity.PasskeyRequestContext.Domain.get -> string?
-Microsoft.AspNetCore.Identity.PasskeyRequestContext.Domain.set -> void
-Microsoft.AspNetCore.Identity.PasskeyRequestContext.Origin.get -> string?
-Microsoft.AspNetCore.Identity.PasskeyRequestContext.Origin.set -> void
-Microsoft.AspNetCore.Identity.PasskeyRequestContext.PasskeyRequestContext() -> void
 Microsoft.AspNetCore.Identity.PasskeyRequestOptions
 Microsoft.AspNetCore.Identity.PasskeyRequestOptions.AsJson() -> string!
 Microsoft.AspNetCore.Identity.PasskeyRequestOptions.PasskeyRequestOptions(string? userId, string! optionsJson) -> void
