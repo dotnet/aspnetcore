@@ -34,6 +34,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.Microbenchmarks" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.OpenApi.UnitTests" PublicKey="0024000004800000940000000602000000240000525341310004000001000100F33A29044FA9D740C9B3213A93E57C84B472C84E0B8A0E1AE48E67A9F8F6DE9D5F7F3D52AC23E48AC51801F1DC950ABE901DA34D2A9E3BAADB141A17C77EF3C565DD5EE5054B91CF63BB3C6AB83F72AB3AAFE93D0FC3C2348B764FAFB0B1C0733DE51459AEAB46580384BF9D74C4E28164B7CDE247F891BA07891C9D872AD2BB" />
   </ItemGroup>
 
   <ItemGroup>
@@ -49,11 +50,12 @@
   <!-- Required to bundle source generator related assets into build. -->
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)/src/OpenApi/gen/Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" ReferenceOutputAssembly="false" />
-    <None Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.OpenApi.SourceGenerators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll"
-      Pack="true"
-      PackagePath="analyzers/dotnet/cs"
-      Visible="false" />
+    <None Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.OpenApi.SourceGenerators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\build\Microsoft.AspNetCore.OpenApi.targets" Pack="true" PackagePath="build" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.OpenApi" />
   </ItemGroup>
 
 </Project>
