@@ -74,6 +74,7 @@
     <MicrosoftNETCoreBrowserDebugHostTransportVersion>10.0.0-preview.6.25311.102</MicrosoftNETCoreBrowserDebugHostTransportVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>10.0.0-preview.6.25311.102</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>10.0.0-preview.6.25311.102</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsCachingHybridVersion>10.0.0-alpha.2.24462.2</MicrosoftExtensionsCachingHybridVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0-preview.6.25311.102</MicrosoftExtensionsConfigurationAbstractionsVersion>
     <MicrosoftExtensionsConfigurationBinderVersion>10.0.0-preview.6.25311.102</MicrosoftExtensionsConfigurationBinderVersion>
     <MicrosoftExtensionsConfigurationCommandLineVersion>10.0.0-preview.6.25311.102</MicrosoftExtensionsConfigurationCommandLineVersion>

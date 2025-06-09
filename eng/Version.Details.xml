@@ -51,6 +51,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>20fdc50b34ee89e7c54eef0a193c30ed4816597a</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="10.0.0-alpha.2.24462.2">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>f485d74550db5bd91617accc1bb548ae6013756b</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0-preview.6.25311.102">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>20fdc50b34ee89e7c54eef0a193c30ed4816597a</Sha>

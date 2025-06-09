@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
@@ -77,11 +78,29 @@ public static class ComponentServiceCollectionExtensions
 
         services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
         services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
-
         services.TryAddSingleton<ISystemClock, SystemClock>();
         services.TryAddSingleton<CircuitRegistry>();
         services.TryAddSingleton<CircuitPersistenceManager>();
-        services.TryAddSingleton<ICircuitPersistenceProvider, DefaultInMemoryCircuitPersistenceProvider>();
+
+        // Register the circuit persistence provider conditionally based on HybridCache availability
+        services.TryAddSingleton<ICircuitPersistenceProvider>(serviceProvider =>
+        {
+            var circuitOptions = serviceProvider.GetRequiredService<IOptions<CircuitOptions>>();
+            if (circuitOptions.Value.HybridPersistenceCache is not null)
+            {
+                var logger = serviceProvider.GetRequiredService<ILogger<ICircuitPersistenceProvider>>();
+                return new HybridCacheCircuitPersistenceProvider(circuitOptions.Value.HybridPersistenceCache, logger, circuitOptions);
+            }
+            else
+            {
+                var logger = serviceProvider.GetRequiredService<ILogger<ICircuitPersistenceProvider>>();
+                var clock = serviceProvider.GetRequiredService<ISystemClock>();
+                return new DefaultInMemoryCircuitPersistenceProvider(clock, logger, circuitOptions);
+            }
+        });
+
+        // Register the configurator for HybridCache
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<CircuitOptions>, DefaultHybridCache>());
 
         // Standard blazor hosting services implementations
         //

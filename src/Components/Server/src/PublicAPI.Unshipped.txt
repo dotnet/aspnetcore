@@ -1,4 +1,8 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Server.CircuitOptions.HybridPersistenceCache.get -> Microsoft.Extensions.Caching.Hybrid.HybridCache?
+Microsoft.AspNetCore.Components.Server.CircuitOptions.HybridPersistenceCache.set -> void
+Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitDistributedRetentionPeriod.get -> System.TimeSpan?
+Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitDistributedRetentionPeriod.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryMaxRetained.get -> int
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryMaxRetained.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryRetentionPeriod.get -> System.TimeSpan

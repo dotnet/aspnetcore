@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 internal class PersistedCircuitState
 {
-    public IReadOnlyDictionary<string, byte[]> ApplicationState { get; internal set; }
+    public IReadOnlyDictionary<string, byte[]> ApplicationState { get; set; }
 
-    public byte[] RootComponents { get; internal set; }
+    public byte[] RootComponents { get; set; }
 
     private string GetDebuggerDisplay()
     {
