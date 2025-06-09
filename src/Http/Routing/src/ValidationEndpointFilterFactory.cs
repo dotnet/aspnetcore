@@ -29,6 +29,10 @@ internal static class ValidationEndpointFilterFactory
             return next;
         }
 
+        var jsonOptions = context.ApplicationServices.GetService<IOptions<JsonOptions>>();
+        var serializerOptions = jsonOptions?.Value?.SerializerOptions;
+        options.SerializerOptions = serializerOptions;
+
         var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
 
         // Use a list to only store validatable parameters instead of arrays for all parameters
@@ -61,10 +65,6 @@ internal static class ValidationEndpointFilterFactory
         {
             ValidateContext? validateContext = null;
 
-            // Get JsonOptions from DI
-            var jsonOptions = context.HttpContext.RequestServices.GetService<IOptions<JsonOptions>>();
-            var serializerOptions = jsonOptions?.Value?.SerializerOptions;
-
             foreach (var entry in validatableParameters)
             {
                 if (entry.Index >= context.Arguments.Count)
@@ -82,7 +82,6 @@ internal static class ValidationEndpointFilterFactory
 
                 if (validateContext == null)
                 {
-                    options.SerializerOptions = serializerOptions;
                     validateContext = new ValidateContext
                     {
                         ValidationOptions = options,
