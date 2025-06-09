@@ -9,7 +9,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits;
 
-public class DefaultPersistedCircuitCacheTest
+public class DefaultInMemoryCircuitPersistenceProviderTest
 {
     [Fact]
     public async Task PersistCircuitAsync_StoresCircuitState()

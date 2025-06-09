@@ -12,5 +12,5 @@ internal interface IServerComponentDeserializer
         out List<ComponentDescriptor> descriptors);
     bool TryDeserializeRootComponentOperations(string serializedComponentOperations, [NotNullWhen(true)] out RootComponentOperationBatch? operationBatch, bool deserializeDescriptors = true);
 
-    public bool TryDeserializeWebRootComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out WebRootComponentDescriptor? result);
+    bool TryDeserializeWebRootComponentDescriptor(ComponentMarker record, [NotNullWhen(true)] out WebRootComponentDescriptor? result);
 }

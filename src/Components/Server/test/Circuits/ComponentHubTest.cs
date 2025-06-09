@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
@@ -164,7 +165,7 @@ public class ComponentHubTest
             .ReturnsAsync(new PersistedCircuitState
             {
                 RootComponents = [.. """{}"""u8],
-                ApplicationState = []
+                ApplicationState = ReadOnlyDictionary<string, byte[]>.Empty
             });
 
         var (mockClientProxy, hub) = InitializeComponentHub(deserializer, handleRegistryMock.Object, providerMock.Object);
@@ -264,7 +265,7 @@ public class ComponentHubTest
             .ReturnsAsync(new PersistedCircuitState
             {
                 RootComponents = [],
-                ApplicationState = []
+                ApplicationState = ReadOnlyDictionary<string, byte[]>.Empty,
             });
 
         var (mockClientProxy, hub) = InitializeComponentHub(null, handleRegistryMock.Object, providerMock.Object);

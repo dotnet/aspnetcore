@@ -16,7 +16,7 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
     private readonly Lock _lock = new();
     private readonly CircuitOptions _options;
     private readonly MemoryCache _persistedCircuits;
-    private readonly Task<PersistedCircuitState> _noMatch = Task.FromResult<PersistedCircuitState>(null);
+    private static readonly Task<PersistedCircuitState> _noMatch = Task.FromResult<PersistedCircuitState>(null);
     private readonly ILogger<ICircuitPersistenceProvider> _logger;
 
     public PostEvictionCallbackRegistration PostEvictionCallback { get; internal set; }
@@ -66,7 +66,8 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
         var persistedCircuitEntry = new PersistedCircuitEntry
         {
             State = persistedCircuitState,
-            TokenSource = cancellationTokenSource
+            TokenSource = cancellationTokenSource,
+            CircuitId = circuitId
         };
 
         _persistedCircuits.Set(circuitId.Secret, persistedCircuitEntry, options);
@@ -81,13 +82,13 @@ internal sealed partial class DefaultInMemoryCircuitPersistenceProvider : ICircu
             // Happens after the circuit state times out, this is triggered by the CancellationTokenSource we register
             // with the entry, which is what controls the expiration
             case EvictionReason.Capacity:
-                // Happens when the cache is full
+            // Happens when the cache is full
                 var persistedCircuitEntry = (PersistedCircuitEntry)value;
                 Log.CircuitStateEvicted(_logger, persistedCircuitEntry.CircuitId, reason);
                 break;
 
             case EvictionReason.Removed:
-                // Happens when the entry is explicitly removed as part of resuming a circuit.
+            // Happens when the entry is explicitly removed as part of resuming a circuit.
                 return;
             default:
                 Debug.Fail($"Unexpected {nameof(EvictionReason)} {reason}");

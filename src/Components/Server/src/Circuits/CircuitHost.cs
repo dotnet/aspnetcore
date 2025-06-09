@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -161,7 +162,7 @@ internal partial class CircuitHost : IAsyncDisposable
                 // web service, preventing UI updates.
                 if (Descriptors.Count > 0)
                 {
-                    store.ExistingState.Clear();
+                    store.ExistingState = ReadOnlyDictionary<string, byte[]>.Empty;
                 }
 
                 // This variable is used to track that this is the first time we are updating components.
@@ -821,7 +822,7 @@ internal partial class CircuitHost : IAsyncDisposable
                     // At this point all components have successfully produced an initial render and we can clear the contents of the component
                     // application state store. This ensures the memory that was not used during the initial render of these components gets
                     // reclaimed since no-one else is holding on to it any longer.
-                    store.ExistingState.Clear();
+                    store.ExistingState = ReadOnlyDictionary<string, byte[]>.Empty;
                 }
             }
         });

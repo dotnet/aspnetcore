@@ -312,7 +312,7 @@ internal sealed partial class ComponentHub : Hub
         }
 
         PersistedCircuitState? persistedCircuitState;
-        if (rootComponents == "[]" && string.IsNullOrEmpty(applicationState))
+        if (RootComponentIsEmpty(rootComponents) && string.IsNullOrEmpty(applicationState))
         {
             persistedCircuitState = await _circuitPersistenceManager.ResumeCircuitAsync(circuitId, Context.ConnectionAborted);
             if (persistedCircuitState == null)

@@ -21,10 +21,10 @@ internal sealed class ProtectedPrerenderComponentApplicationStore : PrerenderCom
         DeserializeState(_protector.Unprotect(Convert.FromBase64String(existingState)));
     }
 
-    public ProtectedPrerenderComponentApplicationStore(Dictionary<string, byte[]> deserializedState, IDataProtectionProvider dataProtectionProvider)
+    public ProtectedPrerenderComponentApplicationStore(IReadOnlyDictionary<string, byte[]> deserializedState, IDataProtectionProvider dataProtectionProvider)
     {
         CreateProtector(dataProtectionProvider);
-        ExistingState = deserializedState;
+        ExistingState = new Dictionary<string, byte[]>(deserializedState);
     }
 
     protected override byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)
