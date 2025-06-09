@@ -4,8 +4,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
-using System.Net;
-using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Connections;
@@ -321,43 +319,7 @@ internal sealed class KestrelMetrics
 
     private static void InitializeConnectionTags(ref TagList tags, in ConnectionMetricsContext metricsContext)
     {
-        var localEndpoint = metricsContext.ConnectionContext.LocalEndPoint;
-        if (localEndpoint is IPEndPoint localIPEndPoint)
-        {
-            tags.Add("server.address", localIPEndPoint.Address.ToString());
-            tags.Add("server.port", localIPEndPoint.Port);
-
-            switch (localIPEndPoint.Address.AddressFamily)
-            {
-                case AddressFamily.InterNetwork:
-                    tags.Add("network.type", "ipv4");
-                    break;
-                case AddressFamily.InterNetworkV6:
-                    tags.Add("network.type", "ipv6");
-                    break;
-            }
-
-            // There isn't an easy way to detect whether QUIC is the underlying transport.
-            // This code assumes that a multiplexed connection is QUIC.
-            // Improve in the future if there are additional multiplexed connection types.
-            var transport = metricsContext.ConnectionContext is not MultiplexedConnectionContext ? "tcp" : "udp";
-            tags.Add("network.transport", transport);
-        }
-        else if (localEndpoint is UnixDomainSocketEndPoint udsEndPoint)
-        {
-            tags.Add("server.address", udsEndPoint.ToString());
-            tags.Add("network.transport", "unix");
-        }
-        else if (localEndpoint is NamedPipeEndPoint namedPipeEndPoint)
-        {
-            tags.Add("server.address", namedPipeEndPoint.ToString());
-            tags.Add("network.transport", "pipe");
-        }
-        else if (localEndpoint != null)
-        {
-            tags.Add("server.address", localEndpoint.ToString());
-            tags.Add("network.transport", localEndpoint.AddressFamily.ToString());
-        }
+        ConnectionEndpointTags.AddConnectionEndpointTags(ref tags, metricsContext.ConnectionContext);
     }
 
     public ConnectionMetricsContext CreateContext(BaseConnectionContext connection)

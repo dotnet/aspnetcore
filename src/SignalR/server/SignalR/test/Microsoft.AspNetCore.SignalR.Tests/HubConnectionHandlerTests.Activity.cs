@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Linq;
+using System.Net;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR.Internal;
@@ -521,6 +523,95 @@ public partial class HubConnectionHandlerTests
         if (linkedActivity != null)
         {
             Assert.Equal(linkedActivity.SpanId, Assert.Single(activity.Links).Context.SpanId);
+        }
+    }
+
+    [Fact]
+    public async Task HubMethodActivityIncludesConnectionEndpointTags()
+    {
+        using (StartVerifiableLog())
+        {
+            var serverChannel = Channel.CreateUnbounded<Activity>();
+            var testSource = new ActivitySource("test_source");
+
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(builder =>
+            {
+                // Provided by hosting layer normally
+                builder.AddSingleton(testSource);
+            }, LoggerFactory);
+            var signalrSource = serviceProvider.GetRequiredService<SignalRServerActivitySource>().ActivitySource;
+
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource) || ReferenceEquals(activitySource, signalrSource),
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllData,
+                ActivityStarted = a => serverChannel.Writer.TryWrite(a)
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            var mockHttpRequestActivity = new Activity("HttpRequest");
+            mockHttpRequestActivity.Start();
+            Activity.Current = mockHttpRequestActivity;
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                // Set up endpoint information on the connection to ensure the tags are added
+                client.Connection.LocalEndPoint = new IPEndPoint(IPAddress.Loopback, 5000);
+                client.Connection.RemoteEndPoint = new IPEndPoint(IPAddress.Parse("192.168.1.100"), 12345);
+
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).DefaultTimeout();
+
+                var connectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+                
+                // Verify that endpoint tags are included in the activity
+                var tags = connectActivity.Tags.ToArray();
+                
+                // Should have the standard 3 rpc tags plus endpoint tags
+                Assert.True(tags.Length >= 3, $"Expected at least 3 tags, but found {tags.Length}");
+                
+                // Verify the standard SignalR tags are present
+                var rpcMethodTag = tags.FirstOrDefault(t => t.Key == "rpc.method");
+                Assert.NotNull(rpcMethodTag.Key);
+                Assert.Equal(nameof(MethodHub.OnConnectedAsync), rpcMethodTag.Value);
+                
+                var rpcSystemTag = tags.FirstOrDefault(t => t.Key == "rpc.system");
+                Assert.NotNull(rpcSystemTag.Key);
+                Assert.Equal("signalr", rpcSystemTag.Value);
+                
+                var rpcServiceTag = tags.FirstOrDefault(t => t.Key == "rpc.service");
+                Assert.NotNull(rpcServiceTag.Key);
+                Assert.Equal(typeof(MethodHub).FullName, rpcServiceTag.Value);
+                
+                // Verify endpoint tags are present
+                var serverAddressTag = tags.FirstOrDefault(t => t.Key == "server.address");
+                Assert.NotNull(serverAddressTag.Key);
+                Assert.Equal("127.0.0.1", serverAddressTag.Value);
+                
+                var serverPortTag = tags.FirstOrDefault(t => t.Key == "server.port");
+                Assert.NotNull(serverPortTag.Key);
+                Assert.Equal(5000, serverPortTag.Value);
+                
+                var networkTypeTag = tags.FirstOrDefault(t => t.Key == "network.type");
+                Assert.NotNull(networkTypeTag.Key);
+                Assert.Equal("ipv4", networkTypeTag.Value);
+                
+                var networkTransportTag = tags.FirstOrDefault(t => t.Key == "network.transport");
+                Assert.NotNull(networkTransportTag.Key);
+                Assert.Equal("tcp", networkTransportTag.Value);
+
+                client.Dispose();
+                await connectionHandlerTask;
+            }
+
+            var disconnectActivity = await serverChannel.Reader.ReadAsync().DefaultTimeout();
+            
+            // Verify disconnect activity also has endpoint tags
+            var disconnectTags = disconnectActivity.Tags.ToArray();
+            var disconnectServerAddressTag = disconnectTags.FirstOrDefault(t => t.Key == "server.address");
+            Assert.NotNull(disconnectServerAddressTag.Key);
+            Assert.Equal("127.0.0.1", disconnectServerAddressTag.Value);
         }
     }
 }
