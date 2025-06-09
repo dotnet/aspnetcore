@@ -5,76 +5,31 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components;
 
+internal struct ComponentsActivityWrapper
+{
+    public Activity? Previous;
+    public Activity? Activity;
+}
+
 /// <summary>
 /// This is instance scoped per renderer
 /// </summary>
 internal class ComponentsActivitySource
 {
     internal const string Name = "Microsoft.AspNetCore.Components";
-    internal const string OnCircuitName = $"{Name}.CircuitStart";
     internal const string OnRouteName = $"{Name}.RouteChange";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
-    private ActivityContext _httpContext;
-    private ActivityContext _circuitContext;
-    private string? _circuitId;
+    internal ActivityContext _httpContext;
+    internal ActivityContext _circuitContext;
+    internal string? _circuitId;
+
     private ActivityContext _routeContext;
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
-    public static ActivityContext CaptureHttpContext()
+    public ComponentsActivityWrapper StartRouteActivity(string componentType, string route)
     {
-        var parentActivity = Activity.Current;
-        if (parentActivity is not null && parentActivity.OperationName == "Microsoft.AspNetCore.Hosting.HttpRequestIn" && parentActivity.Recorded)
-        {
-            return parentActivity.Context;
-        }
-        return default;
-    }
-
-    public Activity? StartCircuitActivity(string circuitId, ActivityContext httpContext)
-    {
-        _circuitId = circuitId;
-
-        var activity = ActivitySource.CreateActivity(OnCircuitName, ActivityKind.Internal, parentId: null, null, null);
-        if (activity is not null)
-        {
-            if (activity.IsAllDataRequested)
-            {
-                if (_circuitId != null)
-                {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
-                }
-                if (httpContext != default)
-                {
-                    activity.AddLink(new ActivityLink(httpContext));
-                }
-            }
-            activity.DisplayName = $"Circuit {circuitId ?? ""}";
-            activity.Start();
-            _circuitContext = activity.Context;
-        }
-        return activity;
-    }
-
-    public void FailCircuitActivity(Activity? activity, Exception ex)
-    {
-        _circuitContext = default;
-        if (activity != null && !activity.IsStopped)
-        {
-            activity.SetTag("error.type", ex.GetType().FullName);
-            activity.SetStatus(ActivityStatusCode.Error);
-            activity.Stop();
-        }
-    }
-
-    public Activity? StartRouteActivity(string componentType, string route)
-    {
-        if (_httpContext == default)
-        {
-            _httpContext = CaptureHttpContext();
-        }
-
         var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
         {
@@ -103,13 +58,16 @@ internal class ComponentsActivitySource
             }
 
             activity.DisplayName = $"Route {route ?? "[unknown path]"} -> {componentType ?? "[unknown component]"}";
+            var previousActivity = Activity.Current;
+            Activity.Current = null; // do not inherit the parent activity
             activity.Start();
             _routeContext = activity.Context;
+            return new ComponentsActivityWrapper { Activity = activity, Previous = previousActivity };
         }
-        return activity;
+        return default;
     }
 
-    public Activity? StartEventActivity(string? componentType, string? methodName, string? attributeName)
+    public ComponentsActivityWrapper StartEventActivity(string? componentType, string? methodName, string? attributeName)
     {
         var activity = ActivitySource.CreateActivity(OnEventName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
@@ -147,31 +105,42 @@ internal class ComponentsActivitySource
             }
 
             activity.DisplayName = $"Event {attributeName ?? "[unknown attribute]"} -> {componentType ?? "[unknown component]"}.{methodName ?? "[unknown method]"}";
+            var previousActivity = Activity.Current;
+            Activity.Current = null; // do not inherit the parent activity
             activity.Start();
+            return new ComponentsActivityWrapper { Activity = activity, Previous = previousActivity };
         }
-        return activity;
+        return default;
     }
 
-    public static void FailEventActivity(Activity? activity, Exception ex)
+    public static void StopComponentActivity(ComponentsActivityWrapper wrapper, Exception? ex)
     {
-        if (activity != null && !activity.IsStopped)
+        if (wrapper.Activity != null && !wrapper.Activity.IsStopped)
         {
-            activity.SetTag("error.type", ex.GetType().FullName);
-            activity.SetStatus(ActivityStatusCode.Error);
-            activity.Stop();
+            if (ex != null)
+            {
+                wrapper.Activity.SetTag("error.type", ex.GetType().FullName);
+                wrapper.Activity.SetStatus(ActivityStatusCode.Error);
+            }
+            wrapper.Activity.Stop();
+
+            if (Activity.Current == null && wrapper.Previous != null && !wrapper.Previous.IsStopped)
+            {
+                Activity.Current = wrapper.Previous;
+            }
         }
     }
 
-    public static async Task CaptureEventStopAsync(Task task, Activity? activity)
+    public static async Task CaptureEventStopAsync(Task task, ComponentsActivityWrapper wrapper)
     {
         try
         {
             await task;
-            activity?.Stop();
+            StopComponentActivity(wrapper, null);
         }
         catch (Exception ex)
         {
-            FailEventActivity(activity, ex);
+            StopComponentActivity(wrapper, ex);
         }
     }
 }

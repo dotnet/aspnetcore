@@ -96,7 +96,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _componentFactory = new ComponentFactory(componentActivator, this);
         _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
         _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
-
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
             : serviceProvider.GetServices<ICascadingValueSupplier>().ToArray();
@@ -113,6 +112,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         return serviceProvider.GetService<IComponentActivator>()
             ?? new DefaultComponentActivator(serviceProvider);
+    }
+
+    internal void SetCircuitActivityContext(ActivityContext httpContext, ActivityContext circuitContext, string circuitId)
+    {
+        if (ComponentActivitySource != null)
+        {
+            ComponentActivitySource._httpContext = httpContext;
+            ComponentActivitySource._circuitContext = circuitContext;
+            ComponentActivitySource._circuitId = circuitId;
+        }
     }
 
     /// <summary>
@@ -448,14 +457,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         var (renderedByComponentId, callback, attributeName) = GetRequiredEventBindingEntry(eventHandlerId);
 
         // collect trace
-        Activity? activity = null;
+        ComponentsActivityWrapper wrapper = default;
         string receiverName = null;
         string methodName = null;
         if (ComponentActivitySource != null)
         {
             receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
             methodName ??= callback.Delegate.Method?.Name;
-            activity = ComponentActivitySource.StartEventActivity(receiverName, methodName, attributeName);
+            wrapper = ComponentActivitySource.StartEventActivity(receiverName, methodName, attributeName);
         }
 
         var eventStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsEventEnabled ? Stopwatch.GetTimestamp() : 0;
@@ -506,13 +515,13 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             {
                 receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 methodName ??= callback.Delegate.Method?.Name;
-                _ = ComponentMetrics.CaptureEventDuration(task, eventStartTimestamp, receiverName, methodName, attributeName);
+                _ = ComponentMetrics.CaptureEventDuration(task, eventStartTimestamp, null, null, attributeName);
             }
 
             // stop activity/trace
-            if (ComponentActivitySource != null && activity != null)
+            if (ComponentActivitySource != null && wrapper.Activity != null)
             {
-                _ = ComponentsActivitySource.CaptureEventStopAsync(task, activity);
+                _ = ComponentsActivitySource.CaptureEventStopAsync(task, wrapper);
             }
         }
         catch (Exception e)
@@ -521,12 +530,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             {
                 receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 methodName ??= callback.Delegate.Method?.Name;
-                ComponentMetrics.FailEventSync(e, eventStartTimestamp, receiverName, methodName, attributeName);
+                ComponentMetrics.FailEventSync(e, eventStartTimestamp, null, null, attributeName);
             }
 
-            if (ComponentActivitySource != null && activity != null)
+            if (ComponentActivitySource != null && wrapper.Activity != null)
             {
-                ComponentsActivitySource.FailEventActivity(activity, e);
+                ComponentsActivitySource.StopComponentActivity(wrapper, e);
             }
 
             HandleExceptionViaErrorBoundary(e, receiverComponentState);

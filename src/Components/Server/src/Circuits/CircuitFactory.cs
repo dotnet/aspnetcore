@@ -20,13 +20,13 @@ internal sealed partial class CircuitFactory : ICircuitFactory
     private readonly CircuitIdFactory _circuitIdFactory;
     private readonly CircuitOptions _options;
     private readonly ILogger _logger;
-    private readonly CircuitMetrics? _circuitMetrics;
+    private readonly CircuitMetrics _circuitMetrics;
 
     public CircuitFactory(
         IServiceScopeFactory scopeFactory,
         ILoggerFactory loggerFactory,
         CircuitIdFactory circuitIdFactory,
-        CircuitMetrics? circuitMetrics,
+        CircuitMetrics circuitMetrics,
         IOptions<CircuitOptions> options)
     {
         _scopeFactory = scopeFactory;
@@ -54,6 +54,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
         var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
         var scrollToLocationHash = (RemoteScrollToLocationHash)scope.ServiceProvider.GetRequiredService<IScrollToLocationHash>();
+        var circuitActivitySource = scope.ServiceProvider.GetRequiredService<CircuitActivitySource>();
+
         if (client.Connected)
         {
             navigationManager.AttachJsRuntime(jsRuntime);
@@ -66,7 +68,6 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         {
             navigationManager.Initialize(baseUri, uri);
         }
-        var componentsActivitySource = scope.ServiceProvider.GetService<ComponentsActivitySource>();
 
         if (components.Count > 0)
         {
@@ -110,7 +111,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             navigationManager,
             circuitHandlers,
             _circuitMetrics,
-            componentsActivitySource,
+            circuitActivitySource,
             _loggerFactory.CreateLogger<CircuitHost>());
         Log.CreatedCircuit(_logger, circuitHost);
 

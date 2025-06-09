@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal class TestCircuitHost : CircuitHost
 {
-    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, CircuitHandler[] circuitHandlers, CircuitMetrics circuitMetrics, ComponentsActivitySource componentsActivitySource, ILogger logger)
-        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, circuitHandlers, circuitMetrics, componentsActivitySource, logger)
+    private TestCircuitHost(CircuitId circuitId, AsyncServiceScope scope, CircuitOptions options, CircuitClientProxy client, RemoteRenderer renderer, IReadOnlyList<ComponentDescriptor> descriptors, RemoteJSRuntime jsRuntime, RemoteNavigationManager navigationManager, CircuitHandler[] circuitHandlers, CircuitMetrics circuitMetrics, CircuitActivitySource circuitActivitySource, ILogger logger)
+        : base(circuitId, scope, options, client, renderer, descriptors, jsRuntime, navigationManager, circuitHandlers, circuitMetrics, circuitActivitySource, logger)
     {
     }
 
@@ -39,7 +39,7 @@ internal class TestCircuitHost : CircuitHost
             .Returns(jsRuntime);
         var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
         var circuitMetrics = new CircuitMetrics(new TestMeterFactory());
-        var componentsActivitySource = new ComponentsActivitySource();
+        var circuitActivitySource = new CircuitActivitySource();
 
         if (remoteRenderer == null)
         {
@@ -66,7 +66,7 @@ internal class TestCircuitHost : CircuitHost
             navigationManager,
             handlers,
             circuitMetrics,
-            componentsActivitySource,
+            circuitActivitySource,
             NullLogger<CircuitHost>.Instance);
     }
 }

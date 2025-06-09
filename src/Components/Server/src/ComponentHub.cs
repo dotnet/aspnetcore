@@ -7,6 +7,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
@@ -44,7 +45,6 @@ internal sealed partial class ComponentHub : Hub
     private readonly CircuitRegistry _circuitRegistry;
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
     private readonly ILogger _logger;
-    private readonly ActivityContext _httpContext;
 
     public ComponentHub(
         IServerComponentDeserializer serializer,
@@ -62,7 +62,6 @@ internal sealed partial class ComponentHub : Hub
         _circuitRegistry = circuitRegistry;
         _circuitHandleRegistry = circuitHandleRegistry;
         _logger = logger;
-        _httpContext = ComponentsActivitySource.CaptureHttpContext();
     }
 
     /// <summary>
@@ -140,7 +139,8 @@ internal sealed partial class ComponentHub : Hub
             // SignalR message loop (we'd get a deadlock if any of the initialization
             // logic relied on receiving a subsequent message from SignalR), and it will
             // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(store, _httpContext, Context.ConnectionAborted);
+            var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
+            _ = circuitHost.InitializeAsync(store, httpActivityContext, Context.ConnectionAborted);
 
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.
