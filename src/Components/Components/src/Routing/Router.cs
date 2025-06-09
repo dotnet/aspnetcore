@@ -3,7 +3,6 @@
 
 #nullable disable warnings
 
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
