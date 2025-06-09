@@ -15,7 +15,6 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
 
@@ -98,7 +97,8 @@ public static partial class SnapshotTestHelper
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "snapshots")
-                : "snapshots");
+                : "snapshots")
+            .AutoVerify();
     }
 
     public static async Task VerifyOpenApi(Compilation compilation, Action<OpenApiDocument> verifyFunc)

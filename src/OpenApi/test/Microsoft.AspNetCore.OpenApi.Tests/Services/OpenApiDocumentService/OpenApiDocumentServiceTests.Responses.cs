@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {

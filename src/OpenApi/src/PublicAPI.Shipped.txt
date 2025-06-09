@@ -2,11 +2,11 @@
 Microsoft.AspNetCore.Builder.OpenApiEndpointConventionBuilderExtensions
 Microsoft.AspNetCore.Builder.OpenApiEndpointRouteBuilderExtensions
 Microsoft.AspNetCore.OpenApi.IOpenApiDocumentTransformer
-Microsoft.AspNetCore.OpenApi.IOpenApiDocumentTransformer.TransformAsync(Microsoft.OpenApi.Models.OpenApiDocument! document, Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.OpenApi.IOpenApiDocumentTransformer.TransformAsync(Microsoft.OpenApi.OpenApiDocument! document, Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OpenApi.IOpenApiOperationTransformer
-Microsoft.AspNetCore.OpenApi.IOpenApiOperationTransformer.TransformAsync(Microsoft.OpenApi.Models.OpenApiOperation! operation, Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.OpenApi.IOpenApiOperationTransformer.TransformAsync(Microsoft.OpenApi.OpenApiOperation! operation, Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OpenApi.IOpenApiSchemaTransformer
-Microsoft.AspNetCore.OpenApi.IOpenApiSchemaTransformer.TransformAsync(Microsoft.OpenApi.Models.OpenApiSchema! schema, Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.OpenApi.IOpenApiSchemaTransformer.TransformAsync(Microsoft.OpenApi.OpenApiSchema! schema, Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext
 Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.ApplicationServices.init -> void
@@ -25,13 +25,13 @@ Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.DocumentName.ini
 Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.OpenApiOperationTransformerContext() -> void
 Microsoft.AspNetCore.OpenApi.OpenApiOptions
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddDocumentTransformer(Microsoft.AspNetCore.OpenApi.IOpenApiDocumentTransformer! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
-Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddDocumentTransformer(System.Func<Microsoft.OpenApi.Models.OpenApiDocument!, Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddDocumentTransformer(System.Func<Microsoft.OpenApi.OpenApiDocument!, Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddDocumentTransformer<TTransformerType>() -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddOperationTransformer(Microsoft.AspNetCore.OpenApi.IOpenApiOperationTransformer! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
-Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddOperationTransformer(System.Func<Microsoft.OpenApi.Models.OpenApiOperation!, Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddOperationTransformer(System.Func<Microsoft.OpenApi.OpenApiOperation!, Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddOperationTransformer<TTransformerType>() -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddSchemaTransformer(Microsoft.AspNetCore.OpenApi.IOpenApiSchemaTransformer! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
-Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddSchemaTransformer(System.Func<Microsoft.OpenApi.Models.OpenApiSchema!, Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
+Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddSchemaTransformer(System.Func<Microsoft.OpenApi.OpenApiSchema!, Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext!, System.Threading.CancellationToken, System.Threading.Tasks.Task!>! transformer) -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.AddSchemaTransformer<TTransformerType>() -> Microsoft.AspNetCore.OpenApi.OpenApiOptions!
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateSchemaReferenceId.get -> System.Func<System.Text.Json.Serialization.Metadata.JsonTypeInfo!, string?>!
 Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateSchemaReferenceId.set -> void
@@ -55,7 +55,7 @@ Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.ParameterDescriptio
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.ParameterDescription.init -> void
 Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions
 static Microsoft.AspNetCore.Builder.OpenApiEndpointConventionBuilderExtensions.WithOpenApi<TBuilder>(this TBuilder builder) -> TBuilder
-static Microsoft.AspNetCore.Builder.OpenApiEndpointConventionBuilderExtensions.WithOpenApi<TBuilder>(this TBuilder builder, System.Func<Microsoft.OpenApi.Models.OpenApiOperation!, Microsoft.OpenApi.Models.OpenApiOperation!>! configureOperation) -> TBuilder
+static Microsoft.AspNetCore.Builder.OpenApiEndpointConventionBuilderExtensions.WithOpenApi<TBuilder>(this TBuilder builder, System.Func<Microsoft.OpenApi.OpenApiOperation!, Microsoft.OpenApi.OpenApiOperation!>! configureOperation) -> TBuilder
 static Microsoft.AspNetCore.Builder.OpenApiEndpointRouteBuilderExtensions.MapOpenApi(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern = "/openapi/{documentName}.json") -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
 static Microsoft.AspNetCore.OpenApi.OpenApiOptions.CreateDefaultSchemaReferenceId(System.Text.Json.Serialization.Metadata.JsonTypeInfo! jsonTypeInfo) -> string?
 static Microsoft.Extensions.DependencyInjection.OpenApiServiceCollectionExtensions.AddOpenApi(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
