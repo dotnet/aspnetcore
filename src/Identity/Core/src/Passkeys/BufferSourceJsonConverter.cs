@@ -89,5 +89,11 @@ internal sealed class BufferSourceJsonConverter : JsonConverter<BufferSource>
 
         var base64UrlUtf8 = byteSpan[..bytesWritten];
         writer.WriteStringValue(base64UrlUtf8);
+
+        if (pooledArray != null)
+        {
+            byteSpan.Clear();
+            ArrayPool<byte>.Shared.Return(pooledArray);
+        }
     }
 }
