@@ -2,10 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.BrowserTesting;
-using Microsoft.AspNetCore.InternalTesting;
 using Templates.Test.Helpers;
 
 namespace BlazorTemplates.Tests;
@@ -20,8 +17,7 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
     [InlineData(BrowserKind.Chromium, "WebAssembly")]
     [InlineData(BrowserKind.Chromium, "Auto")]
     [InlineData(BrowserKind.Chromium, "None", "Individual")]
-    [InlineData(BrowserKind.Chromium, "None", "Individual", true)]
-    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None", bool testPasskeys = false)
+    public async Task BlazorWebTemplate_Works(BrowserKind browserKind, string interactivityOption, string authOption = "None")
     {
         var project = await CreateBuildPublishAsync(
             args: ["-int", interactivityOption, "-au", authOption],
@@ -32,16 +28,42 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
             ? BlazorTemplatePages.Counter
             : BlazorTemplatePages.None;
 
-        var authenticationFeatures = AuthenticationFeatures.None;
-        if (authOption is not "None")
-        {
-            authenticationFeatures |= AuthenticationFeatures.Basic;
-        }
-        if (testPasskeys)
-        {
-            authenticationFeatures |= AuthenticationFeatures.Passkeys;
-        }
+        var authenticationFeatures = authOption is "None"
+            ? AuthenticationFeatures.None
+            : AuthenticationFeatures.RegisterAndLogIn;
 
+        await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures);
+
+        bool HasClientProject()
+            => interactivityOption is "WebAssembly" or "Auto";
+
+        Project GetTargetProject(Project rootProject)
+        {
+            if (HasClientProject())
+            {
+                // Multiple projects were created, so we need to specifically select the server
+                // project to be used
+                return GetSubProject(rootProject, rootProject.ProjectName, rootProject.ProjectName);
+            }
+
+            // In other cases, just use the root project
+            return rootProject;
+        }
+    }
+
+    [Theory]
+    [InlineData(BrowserKind.Chromium)]
+    public async Task BlazorWebTemplate_CanUsePasskeys(BrowserKind browserKind)
+    {
+        var project = await CreateBuildPublishAsync(args: ["-int", "None", "-au", "Individual"]);
+        var pagesToExclude = BlazorTemplatePages.Counter;
+        var authenticationFeatures = AuthenticationFeatures.RegisterAndLogIn | AuthenticationFeatures.Passkeys;
+
+        await TestProjectCoreAsync(project, browserKind, pagesToExclude, authenticationFeatures);
+    }
+
+    private async Task TestProjectCoreAsync(Project project, BrowserKind browserKind, BlazorTemplatePages pagesToExclude, AuthenticationFeatures authenticationFeatures)
+    {
         var appName = project.ProjectName;
 
         // Test the built project
@@ -64,22 +86,6 @@ public class BlazorWebTemplateTest(ProjectFactoryFixture projectFactory) : Blazo
 
             await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
             await TestBasicInteractionInNewPageAsync(browserKind, aspNetProcess.ListeningUri.AbsoluteUri, appName, pagesToExclude, authenticationFeatures);
-        }
-
-        bool HasClientProject()
-            => interactivityOption is "WebAssembly" or "Auto";
-
-        Project GetTargetProject(Project rootProject)
-        {
-            if (HasClientProject())
-            {
-                // Multiple projects were created, so we need to specifically select the server
-                // project to be used
-                return GetSubProject(rootProject, rootProject.ProjectName, rootProject.ProjectName);
-            }
-
-            // In other cases, just use the root project
-            return rootProject;
         }
     }
 }

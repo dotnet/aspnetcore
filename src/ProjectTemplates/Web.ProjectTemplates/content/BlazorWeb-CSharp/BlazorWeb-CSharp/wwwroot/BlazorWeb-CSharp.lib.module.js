@@ -21,7 +21,7 @@ async function createCredential() {
 }
 
 async function requestCredential(email) {
-    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions?email=${email}`, {
+    const optionsResponse = await fetchWithErrorHandling(`/Account/PasskeyRequestOptions?username=${email}`, {
         method: 'POST',
     });
     const optionsJson = await optionsResponse.json();

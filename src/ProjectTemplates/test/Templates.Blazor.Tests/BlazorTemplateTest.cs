@@ -136,7 +136,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             await IncrementCounterAsync(page);
         }
 
-        if (authenticationFeatures.HasFlag(AuthenticationFeatures.Basic))
+        if (authenticationFeatures.HasFlag(AuthenticationFeatures.RegisterAndLogIn))
         {
             await Task.WhenAll(
                 page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
@@ -214,7 +214,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 await page.ClickAsync("text=Add a new passkey");
 
                 await page.WaitForSelectorAsync("text=Enter a name for your passkey");
-                await page.FillAsync("[name=\"RenameInput.DisplayName\"]", "My passkey");
+                await page.FillAsync("[name=\"Input.Name\"]", "My passkey");
                 await page.ClickAsync("text=Continue");
 
                 await page.WaitForSelectorAsync("text=Passkey updated successfully");
@@ -300,7 +300,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
     protected enum AuthenticationFeatures
     {
         None = 0,
-        Basic = 1,
+        RegisterAndLogIn = 1,
         Passkeys = 2,
     }
 }

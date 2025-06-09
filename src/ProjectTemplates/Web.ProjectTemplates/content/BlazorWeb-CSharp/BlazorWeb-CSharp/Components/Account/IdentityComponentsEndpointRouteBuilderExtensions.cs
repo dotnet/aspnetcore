@@ -71,9 +71,9 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
         accountGroup.MapPost("/PasskeyRequestOptions", async (
             [FromServices] UserManager<ApplicationUser> userManager,
             [FromServices] SignInManager<ApplicationUser> signInManager,
-            [FromQuery] string? email) =>
+            [FromQuery] string? username) =>
         {
-            var user = string.IsNullOrEmpty(email) ? null : await userManager.FindByEmailAsync(email);
+            var user = string.IsNullOrEmpty(username) ? null : await userManager.FindByNameAsync(username);
             var passkeyRequestArgs = new PasskeyRequestArgs<ApplicationUser>
             {
                 User = user,

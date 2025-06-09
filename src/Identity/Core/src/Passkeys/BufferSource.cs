@@ -122,7 +122,7 @@ internal sealed class BufferSource : IEquatable<BufferSource>
     /// <summary>
     /// Gets the UTF-8 string representation of the byte buffer.
     /// </summary>
-    public override unsafe string ToString()
+    public override string ToString()
     {
         var span = _bytes.Span;
 
@@ -131,9 +131,6 @@ internal sealed class BufferSource : IEquatable<BufferSource>
             return string.Empty;
         }
 
-        fixed (byte* ptr = span)
-        {
-            return Encoding.UTF8.GetString(ptr, span.Length);
-        }
+        return Encoding.UTF8.GetString(span);
     }
 }
