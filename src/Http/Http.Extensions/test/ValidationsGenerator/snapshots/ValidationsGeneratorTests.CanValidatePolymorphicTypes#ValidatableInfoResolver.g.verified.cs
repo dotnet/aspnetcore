@@ -64,27 +64,82 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             validatableInfo = null;
             if (type == typeof(global::DerivedType))
             {
-                validatableInfo = CreateDerivedType();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::DerivedType),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::DerivedType),
+                            propertyType: typeof(string),
+                            name: "Value3",
+                            displayName: "Value3"
+                        ),
+                    ]
+                );
                 return true;
             }
             if (type == typeof(global::BaseType))
             {
-                validatableInfo = CreateBaseType();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::BaseType),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::BaseType),
+                            propertyType: typeof(int),
+                            name: "Value1",
+                            displayName: "Value 1"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::BaseType),
+                            propertyType: typeof(string),
+                            name: "Value2",
+                            displayName: "Value2"
+                        ),
+                    ]
+                );
                 return true;
             }
             if (type == typeof(global::DerivedValidatableType))
             {
-                validatableInfo = CreateDerivedValidatableType();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::DerivedValidatableType),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::DerivedValidatableType),
+                            propertyType: typeof(string),
+                            name: "Value3",
+                            displayName: "Value3"
+                        ),
+                    ]
+                );
                 return true;
             }
             if (type == typeof(global::BaseValidatableType))
             {
-                validatableInfo = CreateBaseValidatableType();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::BaseValidatableType),
+                    members: []
+                );
                 return true;
             }
             if (type == typeof(global::ContainerType))
             {
-                validatableInfo = CreateContainerType();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::ContainerType),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ContainerType),
+                            propertyType: typeof(global::BaseType),
+                            name: "BaseType",
+                            displayName: "BaseType"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ContainerType),
+                            propertyType: typeof(global::BaseValidatableType),
+                            name: "BaseValidatableType",
+                            displayName: "BaseValidatableType"
+                        ),
+                    ]
+                );
                 return true;
             }
 
@@ -97,83 +152,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             validatableInfo = null;
             return false;
         }
-
-        private ValidatableTypeInfo CreateDerivedType()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::DerivedType),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::DerivedType),
-                        propertyType: typeof(string),
-                        name: "Value3",
-                        displayName: "Value3"
-                    ),
-                ]
-            );
-        }
-        private ValidatableTypeInfo CreateBaseType()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::BaseType),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::BaseType),
-                        propertyType: typeof(int),
-                        name: "Value1",
-                        displayName: "Value 1"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::BaseType),
-                        propertyType: typeof(string),
-                        name: "Value2",
-                        displayName: "Value2"
-                    ),
-                ]
-            );
-        }
-        private ValidatableTypeInfo CreateDerivedValidatableType()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::DerivedValidatableType),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::DerivedValidatableType),
-                        propertyType: typeof(string),
-                        name: "Value3",
-                        displayName: "Value3"
-                    ),
-                ]
-            );
-        }
-        private ValidatableTypeInfo CreateBaseValidatableType()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::BaseValidatableType),
-                members: []
-            );
-        }
-        private ValidatableTypeInfo CreateContainerType()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::ContainerType),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ContainerType),
-                        propertyType: typeof(global::BaseType),
-                        name: "BaseType",
-                        displayName: "BaseType"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ContainerType),
-                        propertyType: typeof(global::BaseValidatableType),
-                        name: "BaseValidatableType",
-                        displayName: "BaseValidatableType"
-                    ),
-                ]
-            );
-        }
-
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]

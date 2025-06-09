@@ -36,6 +36,7 @@
         {
             RedirectManager.RedirectToWithStatus(
                 "Account/Login", "Error: Invalid email change confirmation link.", HttpContext);
+            return;
         }
 
         var user = await UserManager.FindByIdAsync(UserId);

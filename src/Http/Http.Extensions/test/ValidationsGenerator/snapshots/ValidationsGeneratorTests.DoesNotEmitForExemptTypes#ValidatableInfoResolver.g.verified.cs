@@ -64,7 +64,17 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             validatableInfo = null;
             if (type == typeof(global::ComplexType))
             {
-                validatableInfo = CreateComplexType();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::ComplexType),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexType),
+                            propertyType: typeof(int),
+                            name: "IntegerWithRange",
+                            displayName: "IntegerWithRange"
+                        ),
+                    ]
+                );
                 return true;
             }
 
@@ -77,22 +87,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             validatableInfo = null;
             return false;
         }
-
-        private ValidatableTypeInfo CreateComplexType()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::ComplexType),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ComplexType),
-                        propertyType: typeof(int),
-                        name: "IntegerWithRange",
-                        displayName: "IntegerWithRange"
-                    ),
-                ]
-            );
-        }
-
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]

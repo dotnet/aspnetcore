@@ -7,28 +7,27 @@ using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Middleware;
 
-internal sealed class TlsListenerMiddleware
+internal sealed class TlsListener
 {
-    private readonly ConnectionDelegate _next;
     private readonly Action<ConnectionContext, ReadOnlySequence<byte>> _tlsClientHelloBytesCallback;
 
-    public TlsListenerMiddleware(ConnectionDelegate next, Action<ConnectionContext, ReadOnlySequence<byte>> tlsClientHelloBytesCallback)
+    public TlsListener(Action<ConnectionContext, ReadOnlySequence<byte>> tlsClientHelloBytesCallback)
     {
-        _next = next;
         _tlsClientHelloBytesCallback = tlsClientHelloBytesCallback;
     }
 
     /// <summary>
     /// Sniffs the TLS Client Hello message, and invokes a callback if found.
     /// </summary>
-    internal async Task OnTlsClientHelloAsync(ConnectionContext connection)
+    internal async Task OnTlsClientHelloAsync(ConnectionContext connection, CancellationToken cancellationToken)
     {
         var input = connection.Transport.Input;
         ClientHelloParseState parseState = ClientHelloParseState.NotEnoughData;
+        short recordLength = -1; // remembers the length of TLS record to not re-parse header on every iteration
 
         while (true)
         {
-            var result = await input.ReadAsync();
+            var result = await input.ReadAsync(cancellationToken);
             var buffer = result.Buffer;
 
             try
@@ -40,7 +39,7 @@ internal sealed class TlsListenerMiddleware
                     break;
                 }
 
-                parseState = TryParseClientHello(buffer, out var clientHelloBytes);
+                parseState = TryParseClientHello(buffer, ref recordLength, out var clientHelloBytes);
                 if (parseState == ClientHelloParseState.NotEnoughData)
                 {
                     // if no data will be added, and we still lack enough bytes
@@ -74,8 +73,6 @@ internal sealed class TlsListenerMiddleware
                 }
             }
         }
-
-        await _next(connection);
     }
 
     /// <summary>
@@ -85,9 +82,24 @@ internal sealed class TlsListenerMiddleware
     /// TLS 1.2: https://datatracker.ietf.org/doc/html/rfc5246#section-6.2
     /// TLS 1.3: https://datatracker.ietf.org/doc/html/rfc8446#section-5.1
     /// </summary>
-    private static ClientHelloParseState TryParseClientHello(ReadOnlySequence<byte> buffer, out ReadOnlySequence<byte> clientHelloBytes)
+    private static ClientHelloParseState TryParseClientHello(ReadOnlySequence<byte> buffer, ref short recordLength, out ReadOnlySequence<byte> clientHelloBytes)
     {
         clientHelloBytes = default;
+
+        // in case bad actor will be sending a TLS client hello one byte at a time
+        // and we know the expected length of TLS client hello,
+        // we can check and fail quickly here instead of re-parsing the TLS client hello "header" on each iteration
+        if (recordLength != -1 && buffer.Length < 5 + recordLength)
+        {
+            return ClientHelloParseState.NotEnoughData;
+        }
+
+        // this means we finally got a full tls record, so we can return without parsing again
+        if (recordLength != -1)
+        {
+            clientHelloBytes = buffer.Slice(0, 5 + recordLength);
+            return ClientHelloParseState.ValidTlsClientHello;
+        }
 
         if (buffer.Length < 6)
         {
@@ -109,7 +121,7 @@ internal sealed class TlsListenerMiddleware
         }
 
         // Record length
-        if (!reader.TryReadBigEndian(out short recordLength))
+        if (!reader.TryReadBigEndian(out recordLength))
         {
             return ClientHelloParseState.NotTlsClientHello;
         }

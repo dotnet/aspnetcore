@@ -28,7 +28,7 @@ builder.Services.AddKeyedSingleton<TestService>("serviceKey");
 
 var app = builder.Build();
 
-app.MapGet("/params", (
+app.MapPost("/params", (
     // Skipped from validation because it is resolved as a service by IServiceProviderIsService
     TestService testService,
     // Skipped from validation because it is marked as a [FromKeyedService] parameter
@@ -39,7 +39,8 @@ app.MapGet("/params", (
     [CustomValidation(ErrorMessage = "Value must be an even number")] int value4 = 4,
     [CustomValidation, Range(10, 100)] int value5 = 10,
     // Skipped from validation because it is marked as a [FromService] parameter
-    [FromServices] [Range(10, 100)] int? value6 = 4) => "OK");
+    [FromServices] [Range(10, 100)] int? value6 = 4,
+    Dictionary<string, TestService>? testDict = null) => "OK");
 
 app.Run();
 

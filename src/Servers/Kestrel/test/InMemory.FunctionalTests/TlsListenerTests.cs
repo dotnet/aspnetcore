@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Security;
 using System.Security.Authentication;
@@ -18,10 +19,12 @@ using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
+using Xunit.Sdk;
 
 namespace InMemory.FunctionalTests;
 
-public class TlsListenerMiddlewareTests : TestApplicationErrorLoggerLoggedTest
+public class TlsListenerTests : TestApplicationErrorLoggerLoggedTest
 {
     private static readonly X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
 
@@ -65,5 +68,41 @@ public class TlsListenerMiddlewareTests : TestApplicationErrorLoggerLoggedTest
         }
 
         Assert.True(tlsClientHelloCallbackInvoked);
+    }
+
+    [Fact]
+    public async Task TlsClientHelloBytesCallback_UsesOptionsTimeout()
+    {
+        var tlsClientHelloCallbackInvoked = false;
+        var testContext = new TestServiceContext(LoggerFactory);
+        await using (var server = new TestServer(context => Task.CompletedTask,
+            testContext,
+            listenOptions =>
+            {
+                listenOptions.UseHttps(_x509Certificate2, httpsOptions =>
+                {
+                    httpsOptions.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
+
+                    httpsOptions.TlsClientHelloBytesCallback = (connection, clientHelloBytes) =>
+                    {
+                        Logger.LogDebug("[Received TlsClientHelloBytesCallback] Connection: {0}; TLS client hello buffer: {1}", connection.ConnectionId, clientHelloBytes.Length);
+                        tlsClientHelloCallbackInvoked = true;
+                        Assert.True(clientHelloBytes.Length > 32);
+                        Assert.NotNull(connection);
+                    };
+                });
+            }))
+        {
+            using (var connection = server.CreateConnection())
+            {
+                await connection.TransportConnection.Input.WriteAsync(new byte[] { 0x16 });
+                var readResult = await connection.TransportConnection.Output.ReadAsync();
+
+                // HttpsConnectionMiddleware catches the exception, so we can only check the effects of the timeout here
+                Assert.True(readResult.IsCompleted);
+            }
+        }
+
+        Assert.False(tlsClientHelloCallbackInvoked);
     }
 }

@@ -12,7 +12,6 @@ internal sealed class CircuitMetrics : IDisposable
     public const string MeterName = "Microsoft.AspNetCore.Components.Server.Circuits";
 
     private readonly Meter _meter;
-    private readonly Counter<long> _circuitTotalCounter;
     private readonly UpDownCounter<long> _circuitActiveCounter;
     private readonly UpDownCounter<long> _circuitConnectedCounter;
     private readonly Histogram<double> _circuitDuration;
@@ -23,81 +22,63 @@ internal sealed class CircuitMetrics : IDisposable
 
         _meter = meterFactory.Create(MeterName);
 
-        _circuitTotalCounter = _meter.CreateCounter<long>(
-            "aspnetcore.components.circuits.count",
-            unit: "{circuits}",
-            description: "Number of active circuits.");
-
         _circuitActiveCounter = _meter.CreateUpDownCounter<long>(
-            "aspnetcore.components.circuits.active_circuits",
-            unit: "{circuits}",
-            description: "Number of active circuits.");
+            "aspnetcore.components.circuit.active",
+            unit: "{circuit}",
+            description: "Number of active circuits in memory.");
 
         _circuitConnectedCounter = _meter.CreateUpDownCounter<long>(
-            "aspnetcore.components.circuits.connected_circuits",
-            unit: "{circuits}",
-            description: "Number of disconnected circuits.");
+            "aspnetcore.components.circuit.connected",
+            unit: "{circuit}",
+            description: "Number of circuits connected to client.");
 
         _circuitDuration = _meter.CreateHistogram<double>(
-            "aspnetcore.components.circuits.duration",
+            "aspnetcore.components.circuit.duration",
             unit: "s",
-            description: "Duration of circuit.",
-            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.VeryLongSecondsBucketBoundaries });
+            description: "Duration of circuit lifetime and their total count.",
+            advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorCircuitSecondsBucketBoundaries });
     }
 
     public void OnCircuitOpened()
     {
-        var tags = new TagList();
-
         if (_circuitActiveCounter.Enabled)
         {
-            _circuitActiveCounter.Add(1, tags);
-        }
-        if (_circuitTotalCounter.Enabled)
-        {
-            _circuitTotalCounter.Add(1, tags);
+            _circuitActiveCounter.Add(1);
         }
     }
 
     public void OnConnectionUp()
     {
-        var tags = new TagList();
-
         if (_circuitConnectedCounter.Enabled)
         {
-            _circuitConnectedCounter.Add(1, tags);
+            _circuitConnectedCounter.Add(1);
         }
     }
 
     public void OnConnectionDown()
     {
-        var tags = new TagList();
-
         if (_circuitConnectedCounter.Enabled)
         {
-            _circuitConnectedCounter.Add(-1, tags);
+            _circuitConnectedCounter.Add(-1);
         }
     }
 
     public void OnCircuitDown(long startTimestamp, long currentTimestamp)
     {
-        // Tags must match request start.
-        var tags = new TagList();
-
         if (_circuitActiveCounter.Enabled)
         {
-            _circuitActiveCounter.Add(-1, tags);
+            _circuitActiveCounter.Add(-1);
         }
 
         if (_circuitConnectedCounter.Enabled)
         {
-            _circuitConnectedCounter.Add(-1, tags);
+            _circuitConnectedCounter.Add(-1);
         }
 
         if (_circuitDuration.Enabled)
         {
             var duration = Stopwatch.GetElapsedTime(startTimestamp, currentTimestamp);
-            _circuitDuration.Record(duration.TotalSeconds, tags);
+            _circuitDuration.Record(duration.TotalSeconds);
         }
     }
 

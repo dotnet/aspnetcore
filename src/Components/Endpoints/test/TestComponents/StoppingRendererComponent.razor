@@ -1,0 +1,17 @@
+﻿<h1>Hello from StoppingRendererComponent</h1>
+<p>State is @_state</p>
+
+@code {
+    private bool _state = true;
+
+    // expose a TCS so the test can control when OnInitializedAsync completes
+    public TaskCompletionSource<bool> TaskCompletionSource = new TaskCompletionSource<bool>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        // wait until the test signals
+        var result = await TaskCompletionSource.Task;
+        _state = result;
+        StateHasChanged();
+    }
+}

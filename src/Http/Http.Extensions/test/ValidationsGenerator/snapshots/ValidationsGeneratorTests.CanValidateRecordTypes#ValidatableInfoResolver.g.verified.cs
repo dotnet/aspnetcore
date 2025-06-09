@@ -64,22 +64,128 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             validatableInfo = null;
             if (type == typeof(global::SubType))
             {
-                validatableInfo = CreateSubType();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::SubType),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::SubType),
+                            propertyType: typeof(string),
+                            name: "RequiredProperty",
+                            displayName: "RequiredProperty"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::SubType),
+                            propertyType: typeof(string),
+                            name: "StringWithLength",
+                            displayName: "StringWithLength"
+                        ),
+                    ]
+                );
                 return true;
             }
             if (type == typeof(global::SubTypeWithInheritance))
             {
-                validatableInfo = CreateSubTypeWithInheritance();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::SubTypeWithInheritance),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::SubTypeWithInheritance),
+                            propertyType: typeof(string),
+                            name: "EmailString",
+                            displayName: "EmailString"
+                        ),
+                    ]
+                );
                 return true;
             }
             if (type == typeof(global::SubTypeWithoutConstructor))
             {
-                validatableInfo = CreateSubTypeWithoutConstructor();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::SubTypeWithoutConstructor),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::SubTypeWithoutConstructor),
+                            propertyType: typeof(string),
+                            name: "RequiredProperty",
+                            displayName: "RequiredProperty"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::SubTypeWithoutConstructor),
+                            propertyType: typeof(string),
+                            name: "StringWithLength",
+                            displayName: "StringWithLength"
+                        ),
+                    ]
+                );
                 return true;
             }
             if (type == typeof(global::ValidatableRecord))
             {
-                validatableInfo = CreateValidatableRecord();
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::ValidatableRecord),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(int),
+                            name: "IntegerWithRange",
+                            displayName: "IntegerWithRange"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(int),
+                            name: "IntegerWithRangeAndDisplayName",
+                            displayName: "Valid identifier"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(global::SubType),
+                            name: "PropertyWithMemberAttributes",
+                            displayName: "PropertyWithMemberAttributes"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(global::SubType),
+                            name: "PropertyWithoutMemberAttributes",
+                            displayName: "PropertyWithoutMemberAttributes"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(global::SubTypeWithInheritance),
+                            name: "PropertyWithInheritance",
+                            displayName: "PropertyWithInheritance"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(global::SubTypeWithoutConstructor),
+                            name: "PropertyOfSubtypeWithoutConstructor",
+                            displayName: "PropertyOfSubtypeWithoutConstructor"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(global::System.Collections.Generic.List<global::SubType>),
+                            name: "ListOfSubTypes",
+                            displayName: "ListOfSubTypes"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(int),
+                            name: "IntegerWithDerivedValidationAttribute",
+                            displayName: "IntegerWithDerivedValidationAttribute"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(int),
+                            name: "IntegerWithCustomValidation",
+                            displayName: "IntegerWithCustomValidation"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ValidatableRecord),
+                            propertyType: typeof(int),
+                            name: "PropertyWithMultipleAttributes",
+                            displayName: "PropertyWithMultipleAttributes"
+                        ),
+                    ]
+                );
                 return true;
             }
 
@@ -92,130 +198,6 @@ namespace Microsoft.AspNetCore.Http.Validation.Generated
             validatableInfo = null;
             return false;
         }
-
-        private ValidatableTypeInfo CreateSubType()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::SubType),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::SubType),
-                        propertyType: typeof(string),
-                        name: "RequiredProperty",
-                        displayName: "RequiredProperty"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::SubType),
-                        propertyType: typeof(string),
-                        name: "StringWithLength",
-                        displayName: "StringWithLength"
-                    ),
-                ]
-            );
-        }
-        private ValidatableTypeInfo CreateSubTypeWithInheritance()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::SubTypeWithInheritance),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::SubTypeWithInheritance),
-                        propertyType: typeof(string),
-                        name: "EmailString",
-                        displayName: "EmailString"
-                    ),
-                ]
-            );
-        }
-        private ValidatableTypeInfo CreateSubTypeWithoutConstructor()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::SubTypeWithoutConstructor),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::SubTypeWithoutConstructor),
-                        propertyType: typeof(string),
-                        name: "RequiredProperty",
-                        displayName: "RequiredProperty"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::SubTypeWithoutConstructor),
-                        propertyType: typeof(string),
-                        name: "StringWithLength",
-                        displayName: "StringWithLength"
-                    ),
-                ]
-            );
-        }
-        private ValidatableTypeInfo CreateValidatableRecord()
-        {
-            return new GeneratedValidatableTypeInfo(
-                type: typeof(global::ValidatableRecord),
-                members: [
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(int),
-                        name: "IntegerWithRange",
-                        displayName: "IntegerWithRange"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(int),
-                        name: "IntegerWithRangeAndDisplayName",
-                        displayName: "Valid identifier"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(global::SubType),
-                        name: "PropertyWithMemberAttributes",
-                        displayName: "PropertyWithMemberAttributes"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(global::SubType),
-                        name: "PropertyWithoutMemberAttributes",
-                        displayName: "PropertyWithoutMemberAttributes"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(global::SubTypeWithInheritance),
-                        name: "PropertyWithInheritance",
-                        displayName: "PropertyWithInheritance"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(global::SubTypeWithoutConstructor),
-                        name: "PropertyOfSubtypeWithoutConstructor",
-                        displayName: "PropertyOfSubtypeWithoutConstructor"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(global::System.Collections.Generic.List<global::SubType>),
-                        name: "ListOfSubTypes",
-                        displayName: "ListOfSubTypes"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(int),
-                        name: "IntegerWithDerivedValidationAttribute",
-                        displayName: "IntegerWithDerivedValidationAttribute"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(int),
-                        name: "IntegerWithCustomValidation",
-                        displayName: "IntegerWithCustomValidation"
-                    ),
-                    new GeneratedValidatablePropertyInfo(
-                        containingType: typeof(global::ValidatableRecord),
-                        propertyType: typeof(int),
-                        name: "PropertyWithMultipleAttributes",
-                        displayName: "PropertyWithMultipleAttributes"
-                    ),
-                ]
-            );
-        }
-
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.Http.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]

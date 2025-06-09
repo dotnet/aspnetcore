@@ -66,6 +66,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         {
             navigationManager.Initialize(baseUri, uri);
         }
+        var componentsActivitySource = scope.ServiceProvider.GetService<ComponentsActivitySource>();
 
         if (components.Count > 0)
         {
@@ -109,6 +110,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             navigationManager,
             circuitHandlers,
             _circuitMetrics,
+            componentsActivitySource,
             _loggerFactory.CreateLogger<CircuitHost>());
         Log.CreatedCircuit(_logger, circuitHost);
 

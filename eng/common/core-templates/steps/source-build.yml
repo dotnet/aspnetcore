@@ -51,13 +51,12 @@ steps:
     ${{ coalesce(parameters.platform.buildScript, './build.sh') }} --ci \
       --configuration $buildConfig \
       --restore --build --pack -bl \
+      --source-build \
       ${{ parameters.platform.buildArguments }} \
       $internalRuntimeDownloadArgs \
       $targetRidArgs \
       $baseRidArgs \
       $portableBuildArgs \
-      /p:DotNetBuildSourceOnly=true \
-      /p:DotNetBuildRepo=true \
   displayName: Build
 
 - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml

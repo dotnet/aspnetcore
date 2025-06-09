@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators;
 
-[Generator]
+[Generator(LanguageNames.CSharp)]
 public sealed partial class XmlCommentGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)

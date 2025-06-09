@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
@@ -43,6 +44,7 @@ internal sealed partial class ComponentHub : Hub
     private readonly CircuitRegistry _circuitRegistry;
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
     private readonly ILogger _logger;
+    private readonly ActivityContext _httpContext;
 
     public ComponentHub(
         IServerComponentDeserializer serializer,
@@ -60,6 +62,7 @@ internal sealed partial class ComponentHub : Hub
         _circuitRegistry = circuitRegistry;
         _circuitHandleRegistry = circuitHandleRegistry;
         _logger = logger;
+        _httpContext = ComponentsActivitySource.CaptureHttpContext();
     }
 
     /// <summary>
@@ -137,7 +140,7 @@ internal sealed partial class ComponentHub : Hub
             // SignalR message loop (we'd get a deadlock if any of the initialization
             // logic relied on receiving a subsequent message from SignalR), and it will
             // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(store, Context.ConnectionAborted);
+            _ = circuitHost.InitializeAsync(store, _httpContext, Context.ConnectionAborted);
 
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.

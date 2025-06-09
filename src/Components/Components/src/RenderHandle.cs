@@ -21,6 +21,9 @@ public readonly struct RenderHandle
         _componentId = componentId;
     }
 
+    internal ComponentsMetrics? ComponentMetrics => _renderer?.ComponentMetrics;
+    internal ComponentsActivitySource? ComponentActivitySource => _renderer?.ComponentActivitySource;
+
     /// <summary>
     /// Gets the <see cref="Components.Dispatcher" /> associated with the component.
     /// </summary>
