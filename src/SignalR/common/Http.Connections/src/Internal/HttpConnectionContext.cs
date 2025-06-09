@@ -31,6 +31,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
                                      IConnectionInherentKeepAliveFeature,
                                      IConnectionLifetimeFeature,
                                      IConnectionLifetimeNotificationFeature,
+                                     IConnectionEndPointFeature,
 #pragma warning disable CA2252 // This API requires opting into preview features
                                      IStatefulReconnectFeature
 #pragma warning restore CA2252 // This API requires opting into preview features
@@ -97,6 +98,7 @@ internal sealed partial class HttpConnectionContext : ConnectionContext,
         Features.Set<IConnectionInherentKeepAliveFeature>(this);
         Features.Set<IConnectionLifetimeFeature>(this);
         Features.Set<IConnectionLifetimeNotificationFeature>(this);
+        Features.Set<IConnectionEndPointFeature>(this);
 
         if (useStatefulReconnect)
         {
