@@ -17,12 +17,26 @@ public class Startup
 {
     public void Configure(IApplicationBuilder app)
     {
+        // recommended approach to fetch TLS client hello bytes
+        // is via on-demand API per request or by building own connection-lifecycle manager
         app.Run(async (HttpContext context) =>
         {
             context.Response.ContentType = "text/plain";
 
-            var tlsFeature = context.Features.Get<IMyTlsFeature>();
-            await context.Response.WriteAsync("TlsClientHello data: " + $"connectionId={tlsFeature?.ConnectionId}; length={tlsFeature?.TlsClientHelloLength}");
+            var httpSysAssembly = typeof(Microsoft.AspNetCore.Server.HttpSys.HttpSysOptions).Assembly;
+            var httpSysPropertyFeatureType = httpSysAssembly.GetType("Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestPropertyFeature");
+            var httpSysPropertyFeature = context.Features[httpSysPropertyFeatureType]!;
+
+            await context.Response.WriteAsync("");
         });
+
+        // middleware compatible with callback API
+        //app.Run(async (HttpContext context) =>
+        //{
+        //    context.Response.ContentType = "text/plain";
+
+        //    var tlsFeature = context.Features.Get<IMyTlsFeature>();
+        //    await context.Response.WriteAsync("TlsClientHello` data: " + $"connectionId={tlsFeature?.ConnectionId}; length={tlsFeature?.TlsClientHelloLength}");
+        //});
     }
 }

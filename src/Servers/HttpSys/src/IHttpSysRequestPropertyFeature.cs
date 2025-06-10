@@ -6,8 +6,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 /// <summary>
 /// Provides API to read HTTP_REQUEST_PROPERTY value from the HTTP.SYS request.
 /// <see href="https://learn.microsoft.com/windows/win32/api/http/ne-http-http_request_property"/>
+/// <br/>
+/// internal for backport
 /// </summary>
-public interface IHttpSysRequestPropertyFeature
+internal interface IHttpSysRequestPropertyFeature
 {
     /// <summary>
     /// Reads the TLS client hello from HTTP.SYS
