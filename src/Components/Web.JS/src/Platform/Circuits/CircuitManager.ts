@@ -49,9 +49,11 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _disposed = false;
 
-  private _pausingPromise?: Promise<boolean>;
+  private _pausingState = new CircuitState<boolean>('pausing', false, false);
 
-  private _paused = false;
+  private _resumingState = new CircuitState<boolean>('resuming', false, false);
+
+  private _disconnectingState = new CircuitState<void>('disconnecting');
 
   private _persistedCircuitState?: { components: string, applicationState: string };
 
@@ -181,7 +183,13 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     connection.onclose(error => {
       this._interopMethodsForReconnection = detachWebRendererInterop(WebRendererId.Server);
 
-      if (!this._disposed && !this._renderingFailed && !this._paused) {
+      const pausingWasInProgress = this._pausingState.isInprogress();
+      if (!pausingWasInProgress) {
+        // Mark the state as 'paused' since the connection got closed without us starting the pause process.
+        this._pausingState.transitionTo(true);
+      }
+
+      if (!this._disposed && !this._renderingFailed && !pausingWasInProgress) {
         this._options.reconnectionHandler!.onConnectionDown(this._options.reconnectionOptions, error);
       }
     });
@@ -226,7 +234,30 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public async disconnect(): Promise<void> {
-    await this._connection?.stop();
+    if (!this._circuitId) {
+      throw new Error('Circuit host not initialized.');
+    }
+
+    if (this._disconnectingState.isInprogress()) {
+      this._logger.log(LogLevel.Trace, 'Waiting for the circuit to finish disconnecting...');
+      return this._disconnectingState.currentProgress();
+    }
+
+    try {
+      this._disconnectingState.reset();
+      const disconnectingPromise = this._disconnectingState.currentProgress();
+
+      this._logger.log(LogLevel.Trace, 'Disconnecting the circuit...');
+
+      await this._connection!.stop();
+
+      this._disconnectingState.complete();
+      return disconnectingPromise;
+    } catch (error) {
+      this._logger.log(LogLevel.Error, `Failed to disconnect the circuit: ${error}`);
+      this._disconnectingState.fail(error);
+      throw error;
+    }
   }
 
   public async reconnect(): Promise<boolean> {
@@ -256,88 +287,137 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   public async pause(remote?: boolean): Promise<boolean> {
     if (!this._circuitId) {
+      this._logger.log(LogLevel.Error, 'Circuit host not initialized.');
       return false;
     }
 
     if (this._connection!.state !== HubConnectionState.Connected) {
+      this._logger.log(LogLevel.Trace, 'Pause can only be triggered on connected circuits.');
       return false;
     }
 
-    if (this._persistedCircuitState) {
+    if (this._resumingState.isInprogress()) {
+      this._logger.log(LogLevel.Trace, 'Circuit is currently resuming...');
       return false;
     }
 
-    if (this._pausingPromise) {
-      return this._pausingPromise;
+    if (this._pausingState.isInprogress()) {
+      this._logger.log(LogLevel.Trace, 'Waiting for the circuit to finish pausing...');
+      return this._pausingState.currentProgress();
     }
 
-    // Notify the reconnection handler that we are pausing the circuit.
-    // This is used to trigger the UI display.
-    this._options.reconnectionHandler?.onConnectionDown(this._options.reconnectionOptions, undefined, true, remote);
+    if (this._pausingState.lastValue() === true) {
+      // If the circuit is already paused, we don't need to do anything.
+      this._logger.log(LogLevel.Trace, 'Circuit is already paused.');
+      return true;
+    }
 
-    // Indicate to the server that we want to pause the circuit.
-    // The server will initiate the pause on the circuit associated with the current connection.
-    this._pausingPromise = this._connection!.invoke<boolean>('PauseCircuit');
-    this._paused = (await this._pausingPromise)!;
-    this._pausingPromise = undefined;
+    this._pausingState.reset();
+    const pausingPromise = this._pausingState.currentProgress();
+
+    try {
+      this._logger.log(LogLevel.Trace, 'Pausing the circuit...');
+
+      // Notify the reconnection handler that we are pausing the circuit.
+      // This is used to trigger the UI display.
+      this._options.reconnectionHandler?.onConnectionDown(this._options.reconnectionOptions, undefined, true, remote);
+
+      // Indicate to the server that we want to pause the circuit.
+      // The server will initiate the pause on the circuit associated with the current connection.
+      const paused = await this._connection!.invoke<boolean>('PauseCircuit')!;
+      this._pausingState.complete(paused);
+    } catch (error) {
+      this._logger.log(LogLevel.Error, `Failed to pause the circuit: ${error}`);
+      this._pausingState.fail(error);
+    }
+
     await this.disconnect();
 
-    return this._paused;
+    return pausingPromise;
   }
 
   public async resume(): Promise<boolean> {
     if (!this._circuitId) {
+      this._logger.log(LogLevel.Error, 'Circuit host not initialized.');
       throw new Error('Circuit host not initialized.');
     }
 
-    if (this._pausingPromise) {
-      await this._pausingPromise;
+    if (this._disconnectingState.isInprogress()) {
+      // The handler might run before the `onclose` handler gets a chance to run.
+      this._logger.log(LogLevel.Trace, 'Circuit is disconnecting, cannot resume.');
+      await this._disconnectingState.currentProgress();
     }
 
-    if (!this._paused) {
-      // The circuit is not paused, so we can't resume it.
+    if (this._pausingState.isInprogress()) {
+      this._logger.log(LogLevel.Trace, 'Waiting for the circuit to finish pausing...');
+      return false;
+    }
+
+    if (!this._pausingState.lastValue()) {
+      // If the circuit is not paused, we cannot resume it.
+      this._logger.log(LogLevel.Trace, 'Circuit is not paused.');
       return false;
     }
 
     if (this._connection!.state !== HubConnectionState.Connected) {
+      this._logger.log(LogLevel.Trace, 'Reestablishing SignalR connection...');
       this._connection = await this.startConnection();
     }
 
-    // When we get here we know the circuit is gone for good.
-    // Signal that we are about to start a new circuit so that
-    // any existing handlers can perform the necessary cleanup.
-    for (const handler of this._options.circuitHandlers) {
-      if (handler.onCircuitClosed) {
-        handler.onCircuitClosed();
+    if (this._resumingState.isInprogress()) {
+      // If we are already resuming, wait for the current resume operation to complete.
+      this._logger.log(LogLevel.Trace, 'Waiting for the circuit to finish resuming...');
+      return this._resumingState.currentProgress();
+    }
+
+    this._resumingState.reset();
+    const resumingPromise = this._resumingState.currentProgress();
+
+    try {
+      // When we get here we know the circuit is gone for good.
+      // Signal that we are about to start a new circuit so that
+      // any existing handlers can perform the necessary cleanup.
+      for (const handler of this._options.circuitHandlers) {
+        if (handler.onCircuitClosed) {
+          handler.onCircuitClosed();
+        }
       }
-    }
 
-    const persistedCircuitState = this._persistedCircuitState;
-    this._persistedCircuitState = undefined;
+      const persistedCircuitState = this._persistedCircuitState;
+      this._persistedCircuitState = undefined;
 
-    const newCircuitId = await this._connection!.invoke<string>(
-      'ResumeCircuit',
-      this._circuitId,
-      navigationManagerFunctions.getBaseURI(),
-      navigationManagerFunctions.getLocationHref(),
-      persistedCircuitState?.components ?? '[]',
-      persistedCircuitState?.applicationState ?? '',
-    );
-    if (!newCircuitId) {
-      return false;
-    }
-
-    this._circuitId = newCircuitId;
-    this._renderQueue = new RenderQueue(this._logger);
-    for (const handler of this._options.circuitHandlers) {
-      if (handler.onCircuitOpened) {
-        handler.onCircuitOpened();
+      const newCircuitId = await this._connection!.invoke<string>(
+        'ResumeCircuit',
+        this._circuitId,
+        navigationManagerFunctions.getBaseURI(),
+        navigationManagerFunctions.getLocationHref(),
+        persistedCircuitState?.components ?? '[]',
+        persistedCircuitState?.applicationState ?? '',
+      );
+      if (!newCircuitId) {
+        this._resumingState.complete(false);
+        return resumingPromise;
       }
-    }
 
-    this._options.reconnectionHandler!.onConnectionUp();
-    this._componentManager.onComponentReload?.(WebRendererId.Server);
-    return true;
+      this._pausingState.transitionTo(false);
+      this._resumingState.complete(true);
+
+      this._circuitId = newCircuitId;
+      this._renderQueue = new RenderQueue(this._logger);
+      for (const handler of this._options.circuitHandlers) {
+        if (handler.onCircuitOpened) {
+          handler.onCircuitOpened();
+        }
+      }
+
+      this._options.reconnectionHandler!.onConnectionUp();
+      this._componentManager.onComponentReload?.(WebRendererId.Server);
+      return resumingPromise;
+    } catch (error) {
+      this._logger.log(LogLevel.Error, `Failed to resume the circuit: ${error}`);
+      this._resumingState.fail(error);
+      return resumingPromise;
+    }
   }
 
   // Implements DotNet.DotNetCallDispatcher
@@ -465,5 +545,89 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
         handler.onCircuitClosed();
       }
     }
+  }
+}
+
+class CircuitState<T> {
+
+  public constructor(
+    private _stateName: string,
+    _initialValue?: T,
+    private _resetValue?: T
+  ) {
+    this._lastValue = _initialValue;
+  }
+
+  private _promise?: Promise<T>;
+
+  private _resolve?: (value: T | PromiseLike<T>) => void;
+
+  private _reject?: (reason: any) => void;
+
+  private _lastValue?: T;
+
+  public reset(): void {
+    if (this._promise) {
+      throw new Error(`Circuit state ${this._stateName} is already in progress`);
+    }
+
+    const { promise, resolve, reject } = Promise.withResolvers<T>();
+    this._promise = promise;
+    this._resolve = resolve;
+    this._reject = reject;
+    this._lastValue = this._resetValue;
+  }
+
+  public complete(value: T): void {
+    if (!this._resolve) {
+      throw new Error(`Circuit state ${this._stateName} not initialized`);
+    }
+
+    const resolve = this._resolve;
+    this._lastValue = value;
+
+    this._promise = undefined;
+    this._resolve = undefined;
+    this._reject = undefined;
+
+    resolve(value);
+  }
+
+  public fail(reason: any): void {
+    if (!this._reject) {
+      throw new Error(`Circuit state ${this._stateName} not initialized`);
+    }
+
+    const reject = this._reject;
+
+    this._promise = undefined;
+    this._resolve = undefined;
+    this._reject = undefined;
+
+    reject(reason);
+  }
+
+  public isInprogress(): boolean {
+    return !!this._promise;
+  }
+
+  public currentProgress(): Promise<T> {
+    if (!this.isInprogress()) {
+      throw new Error(`Circuit state ${this._stateName} is not in progress`);
+    }
+
+    return this._promise!;
+  }
+
+  public transitionTo(newState: T): void {
+    if (this._promise) {
+      throw new Error(`Circuit state ${this._stateName} is in progress`);
+    }
+
+    this._lastValue = newState;
+  }
+
+  public lastValue() {
+    return this._lastValue;
   }
 }
