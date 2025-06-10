@@ -3,9 +3,7 @@
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Server.Circuits;
 
 internal struct CircuitActivityWrapper
 {

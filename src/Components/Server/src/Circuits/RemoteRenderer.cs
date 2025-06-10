@@ -369,7 +369,7 @@ internal partial class RemoteRenderer : WebRenderer
         }
     }
 
-    private static new partial class Log
+    private static partial class Log
     {
         [LoggerMessage(100, LogLevel.Warning, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]
         private static partial void UnhandledExceptionRenderingComponent(ILogger logger, string message, Exception exception);
