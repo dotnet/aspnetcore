@@ -571,7 +571,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             TryClose();
         }
-
+        RequestBodyPipe.Reader.Complete();
         _http3Output.Complete();
 
         // Stream will be pooled after app completed.
@@ -978,6 +978,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     protected override MessageBody CreateMessageBody()
     {
+        if (ReceivedEmptyRequestBody)
+        {
+            return MessageBody.ZeroContentLengthClose;
+        }
+
         if (_messageBody != null)
         {
             _messageBody.Reset();
@@ -985,12 +990,6 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
         else
         {
             _messageBody = new Http3MessageBody(this);
-        }
-
-        if (ReceivedEmptyRequestBody)
-        {
-            _messageBody.Complete(exception: null);
-            return MessageBody.ZeroContentLengthClose;
         }
 
         return _messageBody;
