@@ -1,0 +1,47 @@
+{
+  "name": "@microsoft/dotnet-js-interop",
+  "version": "10.0.0-dev",
+  "description": "Provides abstractions and features for interop between .NET and JavaScript code.",
+  "main": "dist/src/Microsoft.JSInterop.js",
+  "types": "dist/src/Microsoft.JSInterop.d.ts",
+  "type": "module",
+  "scripts": {
+    "clean": "rimraf ./dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:debug": "node --nolazy --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --colors --verbose",
+    "build": "npm run clean && npm run build:esm",
+    "build:lint": "eslint -c .eslintrc.json --ext .ts ./src",
+    "build:esm": "tsc --project ./tsconfig.json",
+    "get-version": "node -e \"const { name, version } = require('./package.json'); console.log(`${name};${version}`);\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dotnet/extensions.git"
+  },
+  "author": "Microsoft",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dotnet/aspnetcore/issues"
+  },
+  "homepage": "https://github.com/dotnet/aspnetcore/tree/main/src/JSInterop",
+  "files": [
+    "dist/**"
+  ],
+  "devDependencies": {
+    "@babel/core": "^7.23.6",
+    "@babel/preset-env": "^7.23.6",
+    "@babel/preset-typescript": "^7.26.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "babel-jest": "^29.7.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-jsdoc": "^46.9.1",
+    "eslint-plugin-prefer-arrow": "^1.2.3",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jest-junit": "^16.0.0",
+    "rimraf": "^5.0.5",
+    "typescript": "^5.3.3"
+  }
+}

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -205,7 +204,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             });
 
             await initializationTcs.Task;
-            store.ExistingState = ReadOnlyDictionary<string, byte[]>.Empty;
+            store.ExistingState.Clear();
 
             await tcs.Task;
         }

@@ -41,7 +41,7 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     public string? PersistedState { get; private set; }
 #nullable disable
 
-    public IReadOnlyDictionary<string, byte[]> ExistingState { get; protected internal set; }
+    public Dictionary<string, byte[]> ExistingState { get; protected set; }
 
     public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
     {
