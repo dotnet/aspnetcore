@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Security.Authentication.ExtendedProtection;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.HttpSys.Internal.HttpApiTypes;
@@ -271,7 +272,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
                 qualifierSize: 0,
                 output: pBuffer,
                 outputSize: (uint)destination.Length,
-                bytesReturned: (IntPtr)bytesReturnedPointer,
+                bytesReturned: bytesReturnedPointer,
                 overlapped: IntPtr.Zero);
 
             bytesReturned = checked((int)bytesReturnedValue);
