@@ -259,7 +259,7 @@ public class CircuitHostTest
             .Returns(tcs.Task)
             .Verifiable();
 
-        var circuitHost = TestCircuitHost.Create(handlers: new[] { handler.Object }, descriptors: [new ComponentDescriptor() ]);
+        var circuitHost = TestCircuitHost.Create(handlers: new[] { handler.Object }, descriptors: [new ComponentDescriptor()]);
         circuitHost.UnhandledException += (sender, errorInfo) =>
         {
             Assert.Same(circuitHost, sender);
@@ -506,7 +506,7 @@ public class CircuitHostTest
     }
 
     [Fact]
-    public async Task SendPersistedStateToClient_WithDisconnectedClient_ThrowsInvalidOperationException()
+    public async Task SendPersistedStateToClient_WithDisconnectedClient_ReturnsFalse()
     {
         // Arrange
         var client = new CircuitClientProxy(); // Creates a disconnected client
@@ -517,8 +517,7 @@ public class CircuitHostTest
         var cancellationToken = new CancellationToken();
 
         // Act & Assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => 
-            circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken));
+        Assert.False(await circuitHost.SendPersistedStateToClient(rootComponents, applicationState, cancellationToken));
     }
 
     [Fact]
