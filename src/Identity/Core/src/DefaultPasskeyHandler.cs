@@ -89,10 +89,28 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         // NOTE: Quotes from the spec may have been modified.
         // NOTE: Steps 1-3 are expected to have been performed prior to the execution of this method.
 
-        var credential = JsonSerializer.Deserialize(credentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialAuthenticatorAttestationResponse)
-            ?? throw new InvalidOperationException("The attestation JSON was unexpectedly null.");
-        var originalOptions = JsonSerializer.Deserialize(originalOptionsJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialCreationOptions)
-            ?? throw new InvalidOperationException("The original passkey creation options were unexpectedly null.");
+        PublicKeyCredential<AuthenticatorAttestationResponse> credential;
+        PublicKeyCredentialCreationOptions originalOptions;
+
+        try
+        {
+            credential = JsonSerializer.Deserialize(credentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialAuthenticatorAttestationResponse)
+                ?? throw PasskeyException.NullAttestationCredentialJson();
+        }
+        catch (JsonException ex)
+        {
+            throw PasskeyException.InvalidAttestationCredentialJsonFormat(ex);
+        }
+
+        try
+        {
+            originalOptions = JsonSerializer.Deserialize(originalOptionsJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialCreationOptions)
+                ?? throw PasskeyException.NullOriginalCreationOptionsJson();
+        }
+        catch (JsonException ex)
+        {
+            throw PasskeyException.InvalidOriginalCreationOptionsJsonFormat(ex);
+        }
 
         if (!string.Equals("public-key", credential.Type, StringComparison.Ordinal))
         {
@@ -107,8 +125,16 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
 
         // 5. Let JSONtext be the result of running UTF-8 decode on the value of response.clientDataJSON.
         // 6. Let clientData, claimed as collected during the credential creation, be the result of running an implementation-specific JSON parser on JSONtext.
-        var clientData = JsonSerializer.Deserialize(response.ClientDataJSON.AsSpan(), IdentityJsonSerializerContext.Default.CollectedClientData)
-            ?? throw new InvalidOperationException("The client data JSON was unexpectedly null.");
+        CollectedClientData clientData;
+        try
+        {
+            clientData = JsonSerializer.Deserialize(response.ClientDataJSON.AsSpan(), IdentityJsonSerializerContext.Default.CollectedClientData)
+                ?? throw PasskeyException.NullClientDataJson();
+        }
+        catch (JsonException ex)
+        {
+            throw PasskeyException.InvalidClientDataJsonFormat(ex);
+        }
 
         // 7. Verify that the value of clientData.type is webauthn.create.
         if (!string.Equals("webauthn.create", clientData.Type, StringComparison.Ordinal))
@@ -151,14 +177,8 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         // 13. Perform CBOR decoding on the attestationObject field of the AuthenticatorAttestationResponse structure and obtain the
         //     the authenticator data authenticatorData.
         var attestationObjectMemory = response.AttestationObject.AsMemory();
-        if (!AttestationObject.TryParse(attestationObjectMemory, out var attestationObject))
-        {
-            throw PasskeyException.InvalidAttestationObject();
-        }
-        if (!AuthenticatorData.TryParse(attestationObject.AuthData, out var authenticatorData))
-        {
-            throw PasskeyException.InvalidAuthenticatorData();
-        }
+        var attestationObject = AttestationObject.Parse(attestationObjectMemory);
+        var authenticatorData = AuthenticatorData.Parse(attestationObject.AuthenticatorData);
 
         // 14. Verify that the rpIdHash in authenticatorData is the SHA-256 hash of the RP ID expected by the Relying Party.
         var rpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(originalOptions.Rp.Id ?? string.Empty));
@@ -216,9 +236,10 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         }
 
         // The attested credential data should always be non-null if the 'HasAttestedCredentialData' flag is set.
-        Debug.Assert(authenticatorData.AttestedCredentialData is not null);
+        var attestedCredentialData = authenticatorData.AttestedCredentialData;
+        Debug.Assert(attestedCredentialData is not null);
 
-        if (!originalOptions.PubKeyCredParams.Any(a => authenticatorData.AttestedCredentialData.CredentialPublicKey.Alg == a.Alg))
+        if (!originalOptions.PubKeyCredParams.Any(a => attestedCredentialData.CredentialPublicKey.Alg == a.Alg))
         {
             throw PasskeyException.UnsupportedCredentialPublicKeyAlgorithm();
         }
@@ -233,17 +254,15 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         }
 
         // 25. Verify that the credentialId is <= 1023 bytes.
-        if (credential.Id is not { } credentialIdBufferSource)
+        // NOTE: Handled while parsing the attested credential data.
+        if (!credential.Id.AsSpan().SequenceEqual(attestedCredentialData.CredentialId.Span))
         {
-            throw PasskeyException.MissingCredentialId();
-        }
-        if (credentialIdBufferSource.Length is not > 0 and <= 1023)
-        {
-            throw PasskeyException.InvalidCredentialIdLength(credentialIdBufferSource.Length);
+            throw PasskeyException.CredentialIdMismatch();
         }
 
+        var credentialId = attestedCredentialData.CredentialId.ToArray();
+
         // 26. Verify that the credentialId is not yet registered for any user.
-        var credentialId = credentialIdBufferSource.ToArray();
         var existingUser = await userManager.FindByPasskeyIdAsync(credentialId).ConfigureAwait(false);
         if (existingUser is not null)
         {
@@ -251,12 +270,11 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         }
 
         // 27. Let credentialRecord be a new credential record with the following contents:
-        var attestedCredentialData = authenticatorData.AttestedCredentialData;
         var credentialRecord = new UserPasskeyInfo(
-            credentialId: credentialId,
+            credentialId,
             publicKey: attestedCredentialData.CredentialPublicKey.ToArray(),
             name: null,
-            createdAt: DateTime.Now,
+            createdAt: DateTime.UtcNow,
             signCount: authenticatorData.SignCount,
             transports: response.Transports,
             isUserVerified: authenticatorData.IsUserVerified,
@@ -280,14 +298,32 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         string originalOptionsJson,
         UserManager<TUser> userManager)
     {
-        // See: https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential
+        // See https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential
         // NOTE: Quotes from the spec may have been modified.
         // NOTE: Steps 1-3 are expected to have been performed prior to the execution of this method.
 
-        var credential = JsonSerializer.Deserialize(credentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialAuthenticatorAssertionResponse)
-            ?? throw new InvalidOperationException("The assertion JSON was unexpectedly null.");
-        var originalOptions = JsonSerializer.Deserialize(originalOptionsJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialRequestOptions)
-            ?? throw new InvalidOperationException("The original passkey request options were unexpectedly null.");
+        PublicKeyCredential<AuthenticatorAssertionResponse> credential;
+        PublicKeyCredentialRequestOptions originalOptions;
+
+        try
+        {
+            credential = JsonSerializer.Deserialize(credentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialAuthenticatorAssertionResponse)
+                ?? throw PasskeyException.NullAssertionCredentialJson();
+        }
+        catch (JsonException ex)
+        {
+            throw PasskeyException.InvalidAssertionCredentialJsonFormat(ex);
+        }
+
+        try
+        {
+            originalOptions = JsonSerializer.Deserialize(originalOptionsJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialRequestOptions)
+                ?? throw PasskeyException.NullOriginalRequestOptionsJson();
+        }
+        catch (JsonException ex)
+        {
+            throw PasskeyException.InvalidOriginalRequestOptionsJsonFormat(ex);
+        }
 
         if (!string.Equals("public-key", credential.Type, StringComparison.Ordinal))
         {
@@ -357,14 +393,20 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         }
 
         // 7. Let cData, authData and sig denote the value of response’s clientDataJSON, authenticatorData, and signature respectively.
-        if (!AuthenticatorData.TryParse(response.AuthenticatorData.AsMemory(), out var authenticatorData))
-        {
-            throw PasskeyException.InvalidAuthenticatorData();
-        }
+        var authenticatorData = AuthenticatorData.Parse(response.AuthenticatorData.AsMemory());
+
         // 8. Let JSONtext be the result of running UTF-8 decode on the value of cData.
         // 9. Let C, the client data claimed as used for the signature, be the result of running an implementation-specific JSON parser on JSONtext.
-        var clientData = JsonSerializer.Deserialize(response.ClientDataJSON.AsSpan(), IdentityJsonSerializerContext.Default.CollectedClientData)
-            ?? throw new InvalidOperationException("The client data JSON was unexpectedly null.");
+        CollectedClientData clientData;
+        try
+        {
+            clientData = JsonSerializer.Deserialize(response.ClientDataJSON.AsSpan(), IdentityJsonSerializerContext.Default.CollectedClientData)
+                ?? throw PasskeyException.NullClientDataJson();
+        }
+        catch (JsonException ex)
+        {
+            throw PasskeyException.InvalidClientDataJsonFormat(ex);
+        }
 
         // 10. Verify that the value of C.type is the string webauthn.get.
         if (!string.Equals("webauthn.get", clientData.Type, StringComparison.Ordinal))

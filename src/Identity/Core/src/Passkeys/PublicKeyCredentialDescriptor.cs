@@ -9,20 +9,20 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialdescriptorjson"/>
 /// </remarks>
-internal sealed class PublicKeyCredentialDescriptor(string type, BufferSource id)
+internal sealed class PublicKeyCredentialDescriptor
 {
     /// <summary>
-    /// Gets the type of the public key credential.
+    /// Gets or sets the type of the public key credential.
     /// </summary>
-    public string Type { get; } = type;
+    public required string Type { get; init; }
 
     /// <summary>
-    /// Gets the identifier of the public key credential.
+    /// Gets or sets the identifier of the public key credential.
     /// </summary>
-    public BufferSource Id { get; } = id;
+    public required BufferSource Id { get; init; }
 
     /// <summary>
     /// Gets or sets hints as to how the client might communicate with the authenticator.
     /// </summary>
-    public IReadOnlyList<string> Transports { get; set; } = [];
+    public IReadOnlyList<string> Transports { get; init; } = [];
 }

@@ -587,17 +587,23 @@ public class SignInManager<TUser> where TUser : class
 
         var excludeCredentials = await GetExcludeCredentialsAsync();
         var serverDomain = Options.Passkey.ServerDomain ?? Context.Request.Host.Host;
-        var rpEntity = new PublicKeyCredentialRpEntity(name: serverDomain)
+        var rpEntity = new PublicKeyCredentialRpEntity
         {
+            Name = serverDomain,
             Id = serverDomain,
         };
-        var userEntity = new PublicKeyCredentialUserEntity(
-            id: BufferSource.FromString(creationArgs.UserEntity.Id),
-            name: creationArgs.UserEntity.Name,
-            displayName: creationArgs.UserEntity.DisplayName);
-        var challenge = RandomNumberGenerator.GetBytes(Options.Passkey.ChallengeSize);
-        var options = new PublicKeyCredentialCreationOptions(rpEntity, userEntity, BufferSource.FromBytes(challenge))
+        var userEntity = new PublicKeyCredentialUserEntity
         {
+            Id = BufferSource.FromString(creationArgs.UserEntity.Id),
+            Name = creationArgs.UserEntity.Name,
+            DisplayName = creationArgs.UserEntity.DisplayName,
+        };
+        var challenge = RandomNumberGenerator.GetBytes(Options.Passkey.ChallengeSize);
+        var options = new PublicKeyCredentialCreationOptions
+        {
+            Rp = rpEntity,
+            User = userEntity,
+            Challenge = BufferSource.FromBytes(challenge),
             Timeout = (uint)Options.Passkey.Timeout.TotalMilliseconds,
             ExcludeCredentials = excludeCredentials,
             PubKeyCredParams = PublicKeyCredentialParameters.AllSupportedParameters,
@@ -618,8 +624,10 @@ public class SignInManager<TUser> where TUser : class
 
             var passkeys = await UserManager.GetPasskeysAsync(existingUser);
             var excludeCredentials = passkeys
-                .Select(p => new PublicKeyCredentialDescriptor(type: "public-key", id: BufferSource.FromBytes(p.CredentialId))
+                .Select(p => new PublicKeyCredentialDescriptor
                 {
+                    Type = "public-key",
+                    Id = BufferSource.FromBytes(p.CredentialId),
                     Transports = p.Transports ?? [],
                 });
             return [.. excludeCredentials];
@@ -660,22 +668,22 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyRequestOptions"/>.
     /// </returns>
-    public virtual async Task<PasskeyRequestOptions> GeneratePasskeyRequestOptionsAsync(PasskeyRequestArgs<TUser>? requestArgs)
+    public virtual async Task<PasskeyRequestOptions> GeneratePasskeyRequestOptionsAsync(PasskeyRequestArgs<TUser> requestArgs)
     {
+        ArgumentNullException.ThrowIfNull(requestArgs);
+
         var allowCredentials = await GetAllowCredentialsAsync();
         var serverDomain = Options.Passkey.ServerDomain ?? Context.Request.Host.Host;
         var challenge = RandomNumberGenerator.GetBytes(Options.Passkey.ChallengeSize);
-        var options = new PublicKeyCredentialRequestOptions(BufferSource.FromBytes(challenge))
+        var options = new PublicKeyCredentialRequestOptions
         {
+            Challenge = BufferSource.FromBytes(challenge),
             RpId = serverDomain,
             Timeout = (uint)Options.Passkey.Timeout.TotalMilliseconds,
             AllowCredentials = allowCredentials,
+            UserVerification = requestArgs.UserVerification,
+            Extensions = requestArgs.Extensions,
         };
-        if (requestArgs is not null)
-        {
-            options.UserVerification = requestArgs.UserVerification;
-            options.Extensions = requestArgs.Extensions;
-        }
         var userId = requestArgs?.User is { } user
             ? await UserManager.GetUserIdAsync(user).ConfigureAwait(false)
             : null;
@@ -691,8 +699,10 @@ public class SignInManager<TUser> where TUser : class
 
             var passkeys = await UserManager.GetPasskeysAsync(user);
             var allowCredentials = passkeys
-                .Select(p => new PublicKeyCredentialDescriptor(type: "public-key", id: BufferSource.FromBytes(p.CredentialId))
+                .Select(p => new PublicKeyCredentialDescriptor
                 {
+                    Type = "public-key",
+                    Id = BufferSource.FromBytes(p.CredentialId),
                     Transports = p.Transports ?? [],
                 });
             return [.. allowCredentials];

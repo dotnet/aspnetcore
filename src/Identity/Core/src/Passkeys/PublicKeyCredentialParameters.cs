@@ -39,7 +39,19 @@ internal readonly struct PublicKeyCredentialParameters(string type, COSEAlgorith
     {
     }
 
+    /// <summary>
+    /// Gets the type of the credential.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialparameters-type"/>.
+    /// </remarks>
     public string Type { get; } = type;
 
+    /// <summary>
+    /// Gets or sets the cryptographic signature algorithm identifier.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#dom-publickeycredentialparameters-alg"/>.
+    /// </remarks>
     public COSEAlgorithmIdentifier Alg { get; } = alg;
 }

@@ -9,20 +9,20 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialuserentityjson"/>.
 /// </remarks>
-internal sealed class PublicKeyCredentialUserEntity(BufferSource id, string name, string displayName)
+internal sealed class PublicKeyCredentialUserEntity
 {
     /// <summary>
-    /// Gets the user handle of the user account.
+    /// Gets or sets the user handle of the user account.
     /// </summary>
-    public BufferSource Id { get; } = id;
+    public required BufferSource Id { get; init; }
 
     /// <summary>
-    /// Gets the human-palatable name for the entity.
+    /// Gets or sets the human-palatable name for the entity.
     /// </summary>
-    public string Name { get; } = name;
+    public required string Name { get; init; }
 
     /// <summary>
-    /// Gets the human-palatable name for the user account, intended only for display.
+    /// Gets or sets the human-palatable name for the user account, intended only for display.
     /// </summary>
-    public string DisplayName { get; } = displayName;
+    public required string DisplayName { get; init; }
 }

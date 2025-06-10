@@ -10,12 +10,12 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#authenticatorattestationresponse" />.
 /// </remarks>
-internal sealed class AuthenticatorAttestationResponse(BufferSource attestationObject, BufferSource clientDataJSON) : AuthenticatorResponse(clientDataJSON)
+internal sealed class AuthenticatorAttestationResponse : AuthenticatorResponse
 {
     /// <summary>
     /// Gets or sets the attestation object.
     /// </summary>
-    public BufferSource AttestationObject { get; set; } = attestationObject;
+    public required BufferSource AttestationObject { get; init; }
 
     /// <summary>
     /// Gets or sets the strings describing which transport methods (e.g., usb, nfc) are believed
@@ -24,5 +24,5 @@ internal sealed class AuthenticatorAttestationResponse(BufferSource attestationO
     /// <remarks>
     /// May be empty or <c>null</c> if the information is not available.
     /// </remarks>
-    public string[]? Transports { get; set; } = [];
+    public string[]? Transports { get; init; } = [];
 }

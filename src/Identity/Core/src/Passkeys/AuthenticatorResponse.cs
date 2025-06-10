@@ -7,11 +7,11 @@ namespace Microsoft.AspNetCore.Identity;
 /// Represents the base class for responses returned by an authenticator during credential creation or retrieval
 /// operations.
 /// </summary>
-internal abstract class AuthenticatorResponse(BufferSource clientDataJSON)
+internal abstract class AuthenticatorResponse
 {
     /// <summary>
     /// Gets or sets the client data passed to
     /// <c>navigator.credentials.create()</c> or <c>navigator.credentials.get()</c>.
     /// </summary>
-    public BufferSource ClientDataJSON { get; } = clientDataJSON;
+    public required BufferSource ClientDataJSON { get; init; }
 }

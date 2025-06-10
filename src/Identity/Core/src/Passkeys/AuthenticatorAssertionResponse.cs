@@ -10,20 +10,20 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#authenticatorassertionresponse"/>.
 /// </remarks>
-internal sealed class AuthenticatorAssertionResponse(BufferSource authenticatorData, BufferSource signature, BufferSource? userHandle, BufferSource clientDataJSON) : AuthenticatorResponse(clientDataJSON)
+internal sealed class AuthenticatorAssertionResponse : AuthenticatorResponse
 {
     /// <summary>
     /// Gets or sets the authenticator data.
     /// </summary>
-    public BufferSource AuthenticatorData { get; } = authenticatorData;
+    public required BufferSource AuthenticatorData { get; init; }
 
     /// <summary>
     /// Gets or sets the assertion signature.
     /// </summary>
-    public BufferSource Signature { get; } = signature;
+    public required BufferSource Signature { get; init; }
 
     /// <summary>
     /// Gets or sets the opaque user identifier.
     /// </summary>
-    public BufferSource? UserHandle { get; } = userHandle;
+    public BufferSource? UserHandle { get; init; }
 }

@@ -9,16 +9,15 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialrpentity"/>.
 /// </remarks>
-/// <param name="name"></param>
-internal sealed class PublicKeyCredentialRpEntity(string name)
+internal sealed class PublicKeyCredentialRpEntity
 {
     /// <summary>
-    /// Gets the human-palatable name for the entity.
+    /// Gets or sets the human-palatable name for the entity.
     /// </summary>
-    public string Name { get; } = name;
+    public required string Name { get; init; }
 
     /// <summary>
     /// Gets or sets the unique identifier for the replying party entity.
     /// </summary>
-    public string? Id { get; set; }
+    public string? Id { get; init; }
 }

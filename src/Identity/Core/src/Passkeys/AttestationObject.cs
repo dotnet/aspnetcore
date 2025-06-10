@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Formats.Cbor;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -12,22 +11,60 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#attestation-object"/>.
 /// </remarks>
-internal sealed class AttestationObject(string fmt, ReadOnlyMemory<byte> attStmt, ReadOnlyMemory<byte> authData)
+internal sealed class AttestationObject
 {
-    public string Fmt => fmt;
+    /// <summary>
+    /// Gets or sets the attestation statement format.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#attestation-statement-format"/>.
+    /// </remarks>
+    public required string Format { get; init; }
 
-    public ReadOnlyMemory<byte> AttStmt => attStmt;
+    /// <summary>
+    /// Gets or sets the attestation statement.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#attestation-statement"/>.
+    /// </remarks>
+    public required ReadOnlyMemory<byte> AttestationStatement { get; init; }
 
-    public ReadOnlyMemory<byte> AuthData => authData;
+    /// <summary>
+    /// Gets or sets the authenticator data.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#authenticator-data"/>.
+    /// </remarks>
+    public required ReadOnlyMemory<byte> AuthenticatorData { get; init; }
 
-    public static bool TryParse(ReadOnlyMemory<byte> data, [NotNullWhen(true)] out AttestationObject? result)
+    public static AttestationObject Parse(ReadOnlyMemory<byte> data)
+    {
+        try
+        {
+            return ParseCore(data);
+        }
+        catch (PasskeyException)
+        {
+            throw;
+        }
+        catch (CborContentException ex)
+        {
+            throw PasskeyException.InvalidAttestationObjectFormat(ex);
+        }
+        catch (Exception ex)
+        {
+            throw PasskeyException.InvalidAttestationObject(ex);
+        }
+    }
+
+    private static AttestationObject ParseCore(ReadOnlyMemory<byte> data)
     {
         var reader = new CborReader(data);
         _ = reader.ReadStartMap();
 
-        string? fmt = null;
-        ReadOnlyMemory<byte>? attStmt = default;
-        ReadOnlyMemory<byte>? authData = default;
+        string? format = null;
+        ReadOnlyMemory<byte>? attestationStatement = default;
+        ReadOnlyMemory<byte>? authenticatorData = default;
 
         while (reader.PeekState() != CborReaderState.EndMap)
         {
@@ -35,13 +72,13 @@ internal sealed class AttestationObject(string fmt, ReadOnlyMemory<byte> attStmt
             switch (key)
             {
                 case "fmt":
-                    fmt = reader.ReadTextString();
+                    format = reader.ReadTextString();
                     break;
                 case "attStmt":
-                    attStmt = reader.ReadEncodedValue();
+                    attestationStatement = reader.ReadEncodedValue();
                     break;
                 case "authData":
-                    authData = reader.ReadByteString();
+                    authenticatorData = reader.ReadByteString();
                     break;
                 default:
                     // Unknown key - skip.
@@ -50,13 +87,26 @@ internal sealed class AttestationObject(string fmt, ReadOnlyMemory<byte> attStmt
             }
         }
 
-        if (fmt is null || !attStmt.HasValue || !authData.HasValue)
+        if (format is null)
         {
-            result = null;
-            return false;
+            throw PasskeyException.MissingAttestationStatementFormat();
         }
 
-        result = new(fmt, attStmt.Value, authData.Value);
-        return true;
+        if (!attestationStatement.HasValue)
+        {
+            throw PasskeyException.MissingAttestationStatement();
+        }
+
+        if (!authenticatorData.HasValue)
+        {
+            throw PasskeyException.MissingAuthenticatorData();
+        }
+
+        return new()
+        {
+            Format = format,
+            AttestationStatement = attestationStatement.Value,
+            AuthenticatorData = authenticatorData.Value
+        };
     }
 }

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers.Binary;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -15,59 +14,73 @@ namespace Microsoft.AspNetCore.Identity;
 internal sealed class AttestedCredentialData
 {
     /// <summary>
-    /// Gets the AAGUID of the authenticator that created the credential.
+    /// Gets or sets the AAGUID of the authenticator that created the credential.
     /// </summary>
-    public ReadOnlyMemory<byte> Aaguid { get; }
+    public required ReadOnlyMemory<byte> Aaguid { get; init; }
 
     /// <summary>
-    /// Gets the credential ID.
+    /// Gets or sets the credential ID.
     /// </summary>
-    public ReadOnlyMemory<byte> CredentialId { get; }
+    public required ReadOnlyMemory<byte> CredentialId { get; init; }
 
     /// <summary>
-    /// Gets the credential public key.
+    /// Gets or sets the credential public key.
     /// </summary>
-    public CredentialPublicKey CredentialPublicKey { get; }
+    public required CredentialPublicKey CredentialPublicKey { get; init; }
 
-    private AttestedCredentialData(
-        ReadOnlyMemory<byte> aaguid,
-        ReadOnlyMemory<byte> credentialId,
-        CredentialPublicKey credentialPublicKey)
+    public static AttestedCredentialData Parse(ReadOnlyMemory<byte> data, out int bytesRead)
     {
-        Aaguid = aaguid;
-        CredentialId = credentialId;
-        CredentialPublicKey = credentialPublicKey;
+        try
+        {
+            return ParseCore(data, out bytesRead);
+        }
+        catch (PasskeyException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw PasskeyException.InvalidAttestedCredentialDataFormat(ex);
+        }
     }
 
-    public static bool TryParse(ReadOnlyMemory<byte> data, out int bytesRead, [NotNullWhen(true)] out AttestedCredentialData? result)
+    private static AttestedCredentialData ParseCore(ReadOnlyMemory<byte> data, out int bytesRead)
     {
-        const int MinLength = 18; // aaguid + credential ID length
+        const int AaguidLength = 16;
+        const int CredentialIdLengthLength = 2;
+        const int MinLength = AaguidLength + CredentialIdLengthLength;
         const int MaxCredentialIdLength = 1023;
 
-        result = null;
-        bytesRead = 0;
+        var offset = 0;
 
         if (data.Length < MinLength)
         {
-            return false;
+            throw PasskeyException.InvalidAttestedCredentialDataLength(data.Length);
         }
 
-        var aaguid = data.Slice(0, 16);
-        var credentialIDLen = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(start: 16, length: 2).Span);
-        if (credentialIDLen > MaxCredentialIdLength)
+        var aaguid = data.Slice(offset, AaguidLength);
+        offset += AaguidLength;
+
+        var credentialIdLength = BinaryPrimitives.ReadUInt16BigEndian(data.Slice(offset, CredentialIdLengthLength).Span);
+        offset += CredentialIdLengthLength;
+
+        if (credentialIdLength > MaxCredentialIdLength)
         {
-            return false;
+            throw PasskeyException.InvalidCredentialIdLength(credentialIdLength);
         }
 
-        var offset = 18;
-        var credentialID = data.Slice(offset, credentialIDLen).ToArray();
-        offset += credentialIDLen;
+        var credentialId = data.Slice(offset, credentialIdLength).ToArray();
+        offset += credentialIdLength;
 
-        var credentialPublicKey = CredentialPublicKey.Decode(data.Slice(offset), out int read);
+        var credentialPublicKey = CredentialPublicKey.Decode(data[offset..], out var read);
         offset += read;
 
         bytesRead = offset;
-        result = new AttestedCredentialData(aaguid, credentialID, credentialPublicKey);
-        return true;
+        return new()
+        {
+            Aaguid = aaguid,
+            CredentialId = credentialId,
+            CredentialPublicKey = credentialPublicKey,
+        };
     }
 }

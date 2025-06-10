@@ -11,63 +11,60 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-publickeycredentialcreationoptionsjson"/>.
 /// </remarks>
-internal sealed class PublicKeyCredentialCreationOptions(
-    PublicKeyCredentialRpEntity rp,
-    PublicKeyCredentialUserEntity user,
-    BufferSource challenge)
+internal sealed class PublicKeyCredentialCreationOptions
 {
     /// <summary>
-    /// Gets the name and identifier for the relying party requesting attestation.
+    /// Gets or sets the name and identifier for the relying party requesting attestation.
     /// </summary>
-    public PublicKeyCredentialRpEntity Rp { get; } = rp;
+    public required PublicKeyCredentialRpEntity Rp { get; init; }
 
     /// <summary>
-    /// Gets the names and and identifier for the user account performing the registration.
+    /// Gets or sets the names and and identifier for the user account performing the registration.
     /// </summary>
-    public PublicKeyCredentialUserEntity User { get; } = user;
+    public required PublicKeyCredentialUserEntity User { get; init; }
 
     /// <summary>
-    /// Gets a challenge that the authenticator signs when producing an attestation object for the newly created credential.
+    /// Gets or sets a challenge that the authenticator signs when producing an attestation object for the newly created credential.
     /// </summary>
-    public BufferSource Challenge { get; } = challenge;
+    public required BufferSource Challenge { get; init; }
 
     /// <summary>
-    /// Gets the key types and signature algorithms the relying party supports, ordered from most preferred to least preferred.
+    /// Gets or sets the key types and signature algorithms the relying party supports, ordered from most preferred to least preferred.
     /// </summary>
-    public IReadOnlyList<PublicKeyCredentialParameters> PubKeyCredParams { get; set; } = [];
+    public IReadOnlyList<PublicKeyCredentialParameters> PubKeyCredParams { get; init; } = [];
 
     /// <summary>
     /// Gets or sets the time, in milliseconds, that the relying party is willing to wait for the call to complete.
     /// </summary>
-    public ulong? Timeout { get; set; }
+    public ulong? Timeout { get; init; }
 
     /// <summary>
     /// Gets or sets the existing credentials mapped to the user account.
     /// </summary>
-    public IReadOnlyList<PublicKeyCredentialDescriptor> ExcludeCredentials { get; set; } = [];
+    public IReadOnlyList<PublicKeyCredentialDescriptor> ExcludeCredentials { get; init; } = [];
 
     /// <summary>
     /// Gets or sets settings that the authenticator should satisfy when creating a new credential.
     /// </summary>
-    public AuthenticatorSelectionCriteria? AuthenticatorSelection { get; set; }
+    public AuthenticatorSelectionCriteria? AuthenticatorSelection { get; init; }
 
     /// <summary>
     /// Gets or sets hints that guide the user agent in interacting with the user.
     /// </summary>
-    public IReadOnlyList<string> Hints { get; set; } = [];
+    public IReadOnlyList<string> Hints { get; init; } = [];
 
     /// <summary>
     /// Gets or sets the attestation conveyance preference for the relying party.
     /// </summary>
-    public string Attestation { get; set; } = "none";
+    public string Attestation { get; init; } = "none";
 
     /// <summary>
     /// Gets or sets the attestation statement format preferences of the relying party, ordered from most preferred to least preferred.
     /// </summary>
-    public IReadOnlyList<string> AttestationFormats { get; set; } = [];
+    public IReadOnlyList<string> AttestationFormats { get; init; } = [];
 
     /// <summary>
     /// Gets or sets the client extension inputs that the relying party supports.
     /// </summary>
-    public JsonElement? Extensions { get; set; }
+    public JsonElement? Extensions { get; init; }
 }

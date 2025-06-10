@@ -9,34 +9,34 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-collectedclientdata"/>
 /// </remarks>
-internal sealed class CollectedClientData(string type, BufferSource challenge, string origin)
+internal sealed class CollectedClientData
 {
     /// <summary>
-    /// Gets the type of the operation that produced the client data.
+    /// Gets or sets the type of the operation that produced the client data.
     /// </summary>
     /// <remarks>
     /// Will be either "webauthn.create" or "webauthn.get".
     /// </remarks>
-    public string Type { get; } = type;
+    public required string Type { get; init; }
 
     /// <summary>
-    /// Gets the challenge provided by the relying party.
+    /// Gets or sets the challenge provided by the relying party.
     /// </summary>
-    public BufferSource Challenge { get; } = challenge;
+    public required BufferSource Challenge { get; init; }
 
     /// <summary>
-    /// Gets the fully qualified origin of the requester.
+    /// Gets or sets the fully qualified origin of the requester.
     /// </summary>
-    public string Origin { get; } = origin;
+    public required string Origin { get; init; }
 
     /// <summary>
     /// Gets or sets whether the credential creation request was initiated from
     /// a different origin than the one associated with the relying party.
     /// </summary>
-    public bool? CrossOrigin { get; set; }
+    public bool? CrossOrigin { get; init; }
 
     /// <summary>
     /// Gets or sets information about the state of the token binding protocol.
     /// </summary>
-    public TokenBinding? TokenBinding { get; set; }
+    public TokenBinding? TokenBinding { get; init; }
 }

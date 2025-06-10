@@ -19,7 +19,7 @@ public sealed class PasskeyException : Exception
     /// <summary>
     /// Constructs a new <see cref="PasskeyException"/> instance.
     /// </summary>
-    public PasskeyException(string message, Exception innerException)
+    public PasskeyException(string message, Exception? innerException)
         : base(message, innerException)
     {
     }

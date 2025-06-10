@@ -9,15 +9,15 @@ namespace Microsoft.AspNetCore.Identity;
 /// Represents information about a public key/private key pair.
 /// </summary>
 /// <remarks>
-/// See <see href="https://developer.mozilla.org/docs/Web/API/PublicKeyCredential" />
+/// See <see href="https://www.w3.org/TR/webauthn-3/#typedefdef-publickeycredentialjson" />
 /// </remarks>
-internal sealed class PublicKeyCredential<TResponse>(BufferSource id, string type, JsonElement clientExtensionResults, TResponse response)
+internal sealed class PublicKeyCredential<TResponse>
     where TResponse : AuthenticatorResponse
 {
     /// <summary>
     /// Gets or sets the credential ID.
     /// </summary>
-    public BufferSource Id { get; } = id;
+    public required BufferSource Id { get; init; }
 
     /// <summary>
     /// Gets the type of the public key credential.
@@ -25,21 +25,21 @@ internal sealed class PublicKeyCredential<TResponse>(BufferSource id, string typ
     /// <remarks>
     /// This is always expected to have the value <c>"public-key"</c>.
     /// </remarks>
-    public string Type { get; } = type;
+    public required string Type { get; init; }
 
     /// <summary>
     /// Gets the client extensions map.
     /// </summary>
-    public JsonElement ClientExtensionResults { get; } = clientExtensionResults;
+    public required JsonElement ClientExtensionResults { get; init; }
 
     /// <summary>
     /// Gets or sets the authenticator response.
     /// </summary>
-    public TResponse Response { get; } = response;
+    public required TResponse Response { get; init; }
 
     /// <summary>
     /// Gets or sets a string indicating the mechanism by which the WebAuthn implementation
     /// is attached to the authenticator.
     /// </summary>
-    public string? AuthenticatorAttachment { get; set; }
+    public string? AuthenticatorAttachment { get; init; }
 }

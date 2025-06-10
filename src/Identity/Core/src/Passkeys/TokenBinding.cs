@@ -9,16 +9,16 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-tokenbinding"/>.
 /// </remarks>
-internal sealed class TokenBinding(string status)
+internal sealed class TokenBinding
 {
     /// <summary>
-    /// Gets the token binding status.
+    /// Gets or sets the token binding status.
     /// </summary>
     /// <remarks>
     /// Supported values are "supported", "present", and "not-supported".
     /// See <see href="https://www.w3.org/TR/webauthn-3/#dom-tokenbinding-status"/>.
     /// </remarks>
-    public string Status { get; } = status;
+    public required string Status { get; init; }
 
     /// <summary>
     /// Gets or sets the token binding ID.
@@ -26,5 +26,5 @@ internal sealed class TokenBinding(string status)
     /// <remarks>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#dom-tokenbinding-id"/>.
     /// </remarks>
-    public string? Id { get; set; }
+    public string? Id { get; init; }
 }

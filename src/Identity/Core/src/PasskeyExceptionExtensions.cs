@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Formats.Cbor;
+using System.Text.Json;
+
 namespace Microsoft.AspNetCore.Identity;
 
 internal static class PasskeyExceptionExtensions
@@ -55,6 +58,9 @@ internal static class PasskeyExceptionExtensions
         public static PasskeyException InvalidCredentialIdLength(int length)
             => new($"Expected the credential ID to have a length between 1 and 1023 bytes, but got {length}.");
 
+        public static PasskeyException CredentialIdMismatch()
+            => new("The provided credential ID does not match the credential ID in the attested credential data.");
+
         public static PasskeyException CredentialAlreadyRegistered()
             => new("The credential is already registered for a user.");
 
@@ -82,16 +88,64 @@ internal static class PasskeyExceptionExtensions
         public static PasskeyException SignCountLessThanStoredSignCount()
             => new("The authenticator's signature counter is unexpectedly less than or equal to the stored signature counter.");
 
-        public static PasskeyException InvalidAttestationObject()
-            => new("The attestation object was in an invalid format.");
+        public static PasskeyException InvalidAttestationObject(Exception ex)
+            => new($"An exception occurred while parsing the attestation object: {ex.Message}", ex);
 
-        public static PasskeyException InvalidAuthenticatorData()
-            => new("The authenticator data was in an invalid format.");
+        public static PasskeyException InvalidAttestationObjectFormat(CborContentException ex)
+            => new("The attestation object had an invalid format.", ex);
 
-        public static PasskeyException MissingCredentialId()
-            => new("The credential ID was missing.");
+        public static PasskeyException MissingAttestationStatementFormat()
+            => new("The attestation object did not include an attestation statement format.");
+
+        public static PasskeyException MissingAttestationStatement()
+            => new("The attestation object did not include an attestation statement.");
+
+        public static PasskeyException MissingAuthenticatorData()
+            => new("The attestation object did not include authenticator data.");
+
+        public static PasskeyException InvalidAuthenticatorDataLength(int length)
+            => new($"The authenticator data had an invalid length of {length} bytes.");
+
+        public static PasskeyException InvalidAuthenticatorDataFormat(Exception? ex = null)
+            => new($"The authenticator data had an invalid format.", ex);
+
+        public static PasskeyException InvalidAttestedCredentialDataLength(int length)
+            => new($"The attested credential data had an invalid length of {length} bytes.");
+
+        public static PasskeyException InvalidAttestedCredentialDataFormat(Exception? ex = null)
+            => new($"The attested credential data had an invalid format.", ex);
 
         public static PasskeyException InvalidTokenBindingStatus(string tokenBindingStatus)
             => new($"Invalid token binding status '{tokenBindingStatus}'.");
+
+        public static PasskeyException NullAttestationCredentialJson()
+            => new("The attestation credential JSON was unexpectedly null.");
+
+        public static PasskeyException InvalidAttestationCredentialJsonFormat(JsonException ex)
+            => new($"The attestation credential JSON had an invalid format: {ex.Message}", ex);
+
+        public static PasskeyException NullOriginalCreationOptionsJson()
+            => new("The original passkey creation options were unexpectedly null.");
+
+        public static PasskeyException InvalidOriginalCreationOptionsJsonFormat(JsonException ex)
+            => new($"The original passkey creation options had an invalid format: {ex.Message}", ex);
+
+        public static PasskeyException NullAssertionCredentialJson()
+            => new("The assertion credential JSON was unexpectedly null.");
+
+        public static PasskeyException InvalidAssertionCredentialJsonFormat(JsonException ex)
+            => new($"The assertion credential JSON had an invalid format: {ex.Message}", ex);
+
+        public static PasskeyException NullOriginalRequestOptionsJson()
+            => new("The original passkey request options were unexpectedly null.");
+
+        public static PasskeyException InvalidOriginalRequestOptionsJsonFormat(JsonException ex)
+            => new($"The original passkey request options had an invalid format: {ex.Message}", ex);
+
+        public static PasskeyException NullClientDataJson()
+            => new("The client data JSON was unexpectedly null.");
+
+        public static PasskeyException InvalidClientDataJsonFormat(JsonException ex)
+            => new($"The client data JSON had an invalid format: {ex.Message}", ex);
     }
 }
