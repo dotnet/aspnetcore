@@ -19,8 +19,6 @@ internal partial class CircuitPersistenceManager(
     ICircuitPersistenceProvider circuitPersistenceProvider,
     IDataProtectionProvider dataProtectionProvider)
 {
-    private const string CircuitPersistenceManagerKey = $"Microsoft.AspNetCore.Components.Server.Circuits.{nameof(CircuitPersistenceManager)}";
-
     public async Task PauseCircuitAsync(CircuitHost circuit, bool saveStateToClient = false, CancellationToken cancellation = default)
     {
         var renderer = circuit.Renderer;
