@@ -15,15 +15,20 @@
     <script>
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
 
-        let reconnectResolver = undefined;
-        const reconnectPromise = new Promise((resolve) => {
-            reconnectResolver = resolve;
-        });
+        let pwr = Promise.withResolvers();
+        let reconnectPromise = pwr.promise;
+        let reconnectResolver = pwr.resolve;
 
         function triggerReconnect() {
             if(reconnectResolver) {
                 reconnectResolver();
             }
+        }
+
+        function resetReconnect() {
+            pwr = Promise.withResolvers();
+            reconnectPromise = pwr.promise;
+            reconnectResolver = pwr.resolve;
         }
 
         function replaceReconnectCallback() {
