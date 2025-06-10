@@ -19,11 +19,6 @@
         let reconnectPromise = pwr.promise;
         let reconnectResolver = pwr.resolve;
 
-        let resumeResolver = undefined;
-        const resumePromise = new Promise((resolve) => {
-            resumeResolver = resolve;
-        });
-
         function triggerReconnect() {
             if(reconnectResolver) {
                 reconnectResolver();
@@ -36,24 +31,10 @@
             reconnectResolver = pwr.resolve;
         }
 
-        function triggerResume() {
-            if(resumeResolver) {
-                resumeResolver();
-            }
-        }
-
         function replaceReconnectCallback() {
             const originalCallback = Blazor.defaultReconnectionHandler._reconnectCallback;
             Blazor.defaultReconnectionHandler._reconnectCallback = async () => {
                 await reconnectPromise;
-                await originalCallback();
-            };
-        }
-
-        function replaceResumeCallback() {
-            const originalCallback = Blazor.defaultReconnectionHandler._resumeCallback;
-            Blazor.defaultReconnectionHandler._resumeCallback = async () => {
-                await resumePromise;
                 await originalCallback();
             };
         }

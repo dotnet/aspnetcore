@@ -53,6 +53,24 @@ public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixtur
         Browser.Equal("3", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 
+    [Fact]
+    public void CanResumeCircuitFromJavaScript()
+    {
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        var javascript = (IJavaScriptExecutor)Browser;
+        TriggerClientPauseAndInteract(javascript);
+
+        // Can dispatch events after reconnect
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        TriggerClientPauseAndInteract(javascript);
+
+        // Ensure that reconnection events are repeatable
+        Browser.Equal("3", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+    }
+
     private void TriggerReconnectAndInteract(IJavaScriptExecutor javascript)
     {
         var previousText = Browser.Exists(By.Id("persistent-counter-render")).Text;
@@ -71,14 +89,9 @@ public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixtur
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
     }
 
-    [Fact]
-    public void CanResumeCircuitFromJavaScript()
+    private void TriggerClientPauseAndInteract(IJavaScriptExecutor javascript)
     {
-        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
-
-        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
         var previousText = Browser.Exists(By.Id("persistent-counter-render")).Text;
-        var javascript = (IJavaScriptExecutor)Browser;
         javascript.ExecuteScript("Blazor.pause()");
         Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
         var shadowRoot = Browser.Exists(By.Id("components-reconnect-modal")).GetShadowRoot();
@@ -114,8 +127,5 @@ public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixtur
         Assert.NotEqual(previousText, newText);
 
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
-
-        // Can dispatch events after reconnect
-        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 }
