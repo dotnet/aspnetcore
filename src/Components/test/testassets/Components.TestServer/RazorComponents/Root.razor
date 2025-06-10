@@ -6,6 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <base href="/subdir/" />
+    <link rel="stylesheet" href="@Assets["Components.TestServer.styles.css"]" />
     <HeadOutlet />
 </head>
 <body>
@@ -64,7 +65,15 @@
             startButton.textContent = 'Call Blazor.start()';
             startButton.onclick = callBlazorStart;
             document.body.appendChild(startButton);
-        }
+        }        
     </script>
+
+    @if(CustomReconnectUI) {
+        <ReconnectModal></ReconnectModal>
+    }
 </body>
 </html>
+
+@code {
+    [SupplyParameterFromQuery(Name = "custom-reconnect-ui")] public bool CustomReconnectUI { get; set; }
+}

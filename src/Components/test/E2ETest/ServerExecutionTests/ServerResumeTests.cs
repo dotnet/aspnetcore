@@ -14,9 +14,9 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests;
 
-public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>>>
+public class ServerResumeTests : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>>>
 {
-    public ServerResumeTestsTest(
+    public ServerResumeTests(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>> serverFixture,
         ITestOutputHelper output)
@@ -27,9 +27,11 @@ public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixtur
 
     protected override void InitializeAsyncCore()
     {
-        Navigate("/subdir/persistent-state/disconnection");
+        Navigate(TestUrl);
         Browser.Exists(By.Id("render-mode-interactive"));
     }
+
+    public string TestUrl { get; set; } = "/subdir/persistent-state/disconnection";
 
     [Fact]
     public void CanResumeCircuitAfterDisconnection()
@@ -177,5 +179,17 @@ public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixtur
         Assert.NotEqual(previousText, newText);
 
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+    }
+}
+
+public class CustomUIServerResumeTests : ServerResumeTests
+{
+    public CustomUIServerResumeTests(
+        BrowserFixture browserFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>> serverFixture,
+        ITestOutputHelper output)
+        : base(browserFixture, serverFixture, output)
+    {
+        TestUrl = "/subdir/persistent-state/disconnection?use-custom-ui=true";
     }
 }
