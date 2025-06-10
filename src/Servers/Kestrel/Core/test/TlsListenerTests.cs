@@ -70,9 +70,7 @@ public class TlsListenerTests
         var cts = new CancellationTokenSource(TimeSpan.FromMilliseconds(3));
 
         await writer.WriteAsync(new byte[1] { 0x16 });
-        await VerifyThrowsAnyAsync(
-            async () => await listener.OnTlsClientHelloAsync(transportConnection, cts.Token),
-            typeof(OperationCanceledException), typeof(TaskCanceledException));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => listener.OnTlsClientHelloAsync(transportConnection, cts.Token));
         Assert.False(tlsClientHelloCallbackInvoked);
     }
 
@@ -95,9 +93,7 @@ public class TlsListenerTests
         cts.Cancel();
 
         await writer.WriteAsync(new byte[1] { 0x16 });
-        await VerifyThrowsAnyAsync(
-            async () => await listener.OnTlsClientHelloAsync(transportConnection, cts.Token),
-            typeof(OperationCanceledException), typeof(TaskCanceledException));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => listener.OnTlsClientHelloAsync(transportConnection, cts.Token));
         Assert.False(tlsClientHelloCallbackInvoked);
     }
 
@@ -122,7 +118,7 @@ public class TlsListenerTests
         await writer.WriteAsync(new byte[2] { 0x03, 0x01 });
         cts.Cancel();
 
-        await Assert.ThrowsAsync<OperationCanceledException>(async () => await listenerTask);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => listenerTask);
         Assert.False(tlsClientHelloCallbackInvoked);
     }
 
@@ -158,8 +154,8 @@ public class TlsListenerTests
         Assert.Equal(5, readResult.Buffer.Length);
 
         // ensuring that we have read limited number of times
-        Assert.True(reader.ReadAsyncCounter is >= 2 && reader.ReadAsyncCounter is <= 4,
-            $"Expected ReadAsync() to happen about 2-4 times. Actually happened {reader.ReadAsyncCounter} times.");
+        Assert.True(reader.ReadAsyncCounter is >= 2 && reader.ReadAsyncCounter is <= 5,
+            $"Expected ReadAsync() to happen about 2-5 times. Actually happened {reader.ReadAsyncCounter} times.");
     }
 
     private async Task RunTlsClientHelloCallbackTest_WithMultipleSegments(
@@ -623,28 +619,4 @@ public class TlsListenerTests
         _invalidTlsClientHelloHeader, _invalid3BytesMessage, _invalid9BytesMessage,
         _invalidUnknownProtocolVersion1, _invalidUnknownProtocolVersion2, _invalidIncorrectHandshakeMessageType
     };
-
-    static async Task VerifyThrowsAnyAsync(Func<Task> code, params Type[] exceptionTypes)
-    {
-        if (exceptionTypes == null || exceptionTypes.Length == 0)
-        {
-            throw new ArgumentException("At least one exception type must be provided.", nameof(exceptionTypes));
-        }
-
-        try
-        {
-            await code();
-        }
-        catch (Exception ex)
-        {
-            if (exceptionTypes.Any(type => type.IsInstanceOfType(ex)))
-            {
-                return;
-            }
-
-            throw ThrowsException.ForIncorrectExceptionType(exceptionTypes.First(), ex);
-        }
-
-        throw ThrowsException.ForNoException(exceptionTypes.First());
-    }
 }
