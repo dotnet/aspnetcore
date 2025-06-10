@@ -33,6 +33,8 @@ public class ServerResumeTests : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
     public string TestUrl { get; set; } = "/subdir/persistent-state/disconnection";
 
+    public bool UseShadowRoot { get; set; } = true;
+
     [Fact]
     public void CanResumeCircuitAfterDisconnection()
     {
@@ -146,7 +148,6 @@ public class ServerResumeTests : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         var previousText = Browser.Exists(By.Id("persistent-counter-render")).Text;
         javascript.ExecuteScript("Blazor.pause()");
         Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
-        var shadowRoot = Browser.Exists(By.Id("components-reconnect-modal")).GetShadowRoot();
 
         // Retry button should be hidden
         Browser.Equal(
@@ -154,9 +155,13 @@ public class ServerResumeTests : ServerTestBase<BasicTestAppServerSiteFixture<Ra
             () => Browser.Exists(
                 () =>
                 {
-                    var buttons = Browser.Exists(By.Id("components-reconnect-modal"))
-                                            .GetShadowRoot()
-                                            .FindElements(By.CssSelector(".components-reconnect-dialog button"));
+                    var buttons = UseShadowRoot ?
+                        Browser.Exists(By.Id("components-reconnect-modal"))
+                            .GetShadowRoot()
+                            .FindElements(By.CssSelector(".components-reconnect-dialog button")) :
+                        Browser.Exists(By.Id("components-reconnect-modal"))
+                            .FindElements(By.CssSelector(".components-reconnect-container button"));
+
                     Assert.Equal(2, buttons.Count);
                     return (buttons[0].Displayed, buttons[1].Displayed);
                 },
@@ -165,9 +170,12 @@ public class ServerResumeTests : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Exists(
                 () =>
                 {
-                    var buttons = Browser.Exists(By.Id("components-reconnect-modal"))
-                                            .GetShadowRoot()
-                                            .FindElements(By.CssSelector(".components-reconnect-dialog button"));
+                    var buttons = UseShadowRoot ?
+                        Browser.Exists(By.Id("components-reconnect-modal"))
+                            .GetShadowRoot()
+                            .FindElements(By.CssSelector(".components-reconnect-dialog button")) :
+                        Browser.Exists(By.Id("components-reconnect-modal"))
+                            .FindElements(By.CssSelector(".components-reconnect-container button"));
                     return buttons[1];
                 },
                 TimeSpan.FromSeconds(1)).Click();
@@ -190,6 +198,13 @@ public class CustomUIServerResumeTests : ServerResumeTests
         ITestOutputHelper output)
         : base(browserFixture, serverFixture, output)
     {
-        TestUrl = "/subdir/persistent-state/disconnection?use-custom-ui=true";
+        TestUrl = "/subdir/persistent-state/disconnection?custom-reconnect-ui=true";
+        UseShadowRoot = false; // Custom UI does not use shadow DOM
+    }
+
+    protected override void InitializeAsyncCore()
+    {
+        base.InitializeAsyncCore();
+        Browser.Exists(By.CssSelector("#components-reconnect-modal[data-nosnippet]"));
     }
 }
