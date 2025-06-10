@@ -36,6 +36,7 @@ internal partial class RequestContext :
     IHttpResponseTrailersFeature,
     IHttpResetFeature,
     IHttpSysRequestDelegationFeature,
+    IHttpSysRequestPropertyFeature,
     IConnectionLifetimeNotificationFeature
 {
     private IFeatureCollection? _features;
@@ -752,5 +753,10 @@ internal partial class RequestContext :
         {
             Response.Headers[HeaderNames.Connection] = "close";
         }
+    }
+
+    public bool TryGetTlsClientHello(Span<byte> tlsClientHelloBytesDestination, out int bytesReturned)
+    {
+        return TryGetTlsClientHelloMessageBytes(tlsClientHelloBytesDestination, out bytesReturned);
     }
 }

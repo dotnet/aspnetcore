@@ -9,11 +9,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWebApplicationFactory>
+public class RealServerUsingMinimalBackedIntegrationTests : IClassFixture<KestrelBasedWebApplicationFactoryForMinimal>
 {
-    public KestrelBasedWebApplicationFactory Factory { get; }
+    public KestrelBasedWebApplicationFactoryForMinimal Factory { get; }
 
-    public RealServerBackedIntegrationTests(KestrelBasedWebApplicationFactory factory)
+    public RealServerUsingMinimalBackedIntegrationTests(KestrelBasedWebApplicationFactoryForMinimal factory)
     {
         Factory = factory;
     }
@@ -22,7 +22,7 @@ public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWebApp
     public async Task RetrievesDataFromRealServer()
     {
         // Arrange
-        var expectedMediaType = MediaTypeHeaderValue.Parse("application/json; charset=utf-8");
+        var expectedMediaType = MediaTypeHeaderValue.Parse("text/plain; charset=utf-8");
 
         // Act
         var client = Factory.CreateClient();
@@ -33,10 +33,7 @@ public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWebApp
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(expectedMediaType, response.Content.Headers.ContentType);
 
-        Assert.Contains("first", responseContent);
-        Assert.Contains("second", responseContent);
-        Assert.Contains("wall", responseContent);
-        Assert.Contains("floor", responseContent);
+        Assert.Contains("Hello World", responseContent);
     }
 
     [Fact]
