@@ -315,12 +315,6 @@
     <SwashbuckleAspNetCoreVersion>6.6.2</SwashbuckleAspNetCoreVersion>
     <VerifySourceGeneratorsVersion>2.2.0</VerifySourceGeneratorsVersion>
     <VerifyXunitVersion>19.14.0</VerifyXunitVersion>
-    <XunitAbstractionsVersion>2.0.3</XunitAbstractionsVersion>
-    <XunitAnalyzersVersion>1.15.0</XunitAnalyzersVersion>
-    <XunitVersion>2.9.2</XunitVersion>
-    <XunitAssertVersion>$(XunitVersion)</XunitAssertVersion>
-    <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
-    <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
     <MicrosoftDataSqlClientVersion>5.2.2</MicrosoftDataSqlClientVersion>
     <MicrosoftOpenApiVersion>2.0.0-preview.18</MicrosoftOpenApiVersion>
     <MicrosoftOpenApiYamlReaderVersion>2.0.0-preview.18</MicrosoftOpenApiYamlReaderVersion>
