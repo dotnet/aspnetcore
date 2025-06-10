@@ -100,7 +100,7 @@ public class ComponentsActivitySourceTest
         var exception = new InvalidOperationException("Test exception");
 
         // Act
-        ComponentsActivitySource.StopComponentActivity(wrapper, exception);
+        componentsActivitySource.StopComponentActivity(wrapper, exception);
 
         // Assert
         Assert.True(activity!.IsStopped);
@@ -118,7 +118,7 @@ public class ComponentsActivitySourceTest
         var task = Task.CompletedTask;
 
         // Act
-        await ComponentsActivitySource.CaptureEventStopAsync(task, wrapper);
+        await componentsActivitySource.CaptureEventStopAsync(task, wrapper);
 
         // Assert
         Assert.True(activity!.IsStopped);
@@ -136,7 +136,7 @@ public class ComponentsActivitySourceTest
         var task = Task.FromException(exception);
 
         // Act
-        await ComponentsActivitySource.CaptureEventStopAsync(task, wrapper);
+        await componentsActivitySource.CaptureEventStopAsync(task, wrapper);
 
         // Assert
         Assert.True(activity!.IsStopped);

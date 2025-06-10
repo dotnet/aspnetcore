@@ -96,6 +96,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _componentFactory = new ComponentFactory(componentActivator, this);
         _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
         _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
+
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
             : serviceProvider.GetServices<ICascadingValueSupplier>().ToArray();
@@ -114,14 +115,16 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             ?? new DefaultComponentActivator(serviceProvider);
     }
 
-    internal void SetCircuitActivityContext(ActivityContext httpContext, ActivityContext circuitContext, string circuitId)
+    internal ActivityContext LinkActivityContexts(ActivityContext httpActivityContext, ActivityContext circuitActivityContext, string? circuitId)
     {
         if (ComponentActivitySource != null)
         {
-            ComponentActivitySource._httpContext = httpContext;
-            ComponentActivitySource._circuitContext = circuitContext;
+            ComponentActivitySource._httpActivityContext = httpActivityContext;
+            ComponentActivitySource._circuitActivityContext = circuitActivityContext;
             ComponentActivitySource._circuitId = circuitId;
+            return ComponentActivitySource._routeContext;
         }
+        return default;
     }
 
     /// <summary>
@@ -521,7 +524,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // stop activity/trace
             if (ComponentActivitySource != null && wrapper.Activity != null)
             {
-                _ = ComponentsActivitySource.CaptureEventStopAsync(task, wrapper);
+                _ = ComponentActivitySource.CaptureEventStopAsync(task, wrapper);
             }
         }
         catch (Exception e)
@@ -535,7 +538,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
             if (ComponentActivitySource != null && wrapper.Activity != null)
             {
-                ComponentsActivitySource.StopComponentActivity(wrapper, e);
+                ComponentActivitySource.StopComponentActivity(wrapper, e);
             }
 
             HandleExceptionViaErrorBoundary(e, receiverComponentState);

@@ -20,11 +20,11 @@ internal class ComponentsActivitySource
     internal const string OnRouteName = $"{Name}.RouteChange";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
-    internal ActivityContext _httpContext;
-    internal ActivityContext _circuitContext;
+    internal ActivityContext _httpActivityContext;
+    internal ActivityContext _routeContext;
+    internal ActivityContext _circuitActivityContext;
     internal string? _circuitId;
 
-    private ActivityContext _routeContext;
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
@@ -46,14 +46,6 @@ internal class ComponentsActivitySource
                 if (route != null)
                 {
                     activity.SetTag("aspnetcore.components.route", route);
-                }
-                if (_httpContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_httpContext));
-                }
-                if (_circuitContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_circuitContext));
                 }
             }
 
@@ -90,18 +82,6 @@ internal class ComponentsActivitySource
                 {
                     activity.SetTag("aspnetcore.components.attribute.name", attributeName);
                 }
-                if (_httpContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_httpContext));
-                }
-                if (_circuitContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_circuitContext));
-                }
-                if (_routeContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_routeContext));
-                }
             }
 
             activity.DisplayName = $"Event {attributeName ?? "[unknown attribute]"} -> {componentType ?? "[unknown component]"}.{methodName ?? "[unknown method]"}";
@@ -113,16 +93,36 @@ internal class ComponentsActivitySource
         return default;
     }
 
-    public static void StopComponentActivity(ComponentsActivityWrapper wrapper, Exception? ex)
+    public void StopComponentActivity(ComponentsActivityWrapper wrapper, Exception? ex)
     {
-        if (wrapper.Activity != null && !wrapper.Activity.IsStopped)
+        var activity = wrapper.Activity;
+        if (activity != null && !activity.IsStopped)
         {
+            if (activity.IsAllDataRequested)
+            {
+                if (_circuitId != null)
+                {
+                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
+                }
+                if (_httpActivityContext != default)
+                {
+                    activity.AddLink(new ActivityLink(_httpActivityContext));
+                }
+                if (_circuitActivityContext != default)
+                {
+                    activity.AddLink(new ActivityLink(_circuitActivityContext));
+                }
+                if (_routeContext != default && activity.Context != _routeContext)
+                {
+                    activity.AddLink(new ActivityLink(_routeContext));
+                }
+            }
             if (ex != null)
             {
-                wrapper.Activity.SetTag("error.type", ex.GetType().FullName);
-                wrapper.Activity.SetStatus(ActivityStatusCode.Error);
+                activity.SetTag("error.type", ex.GetType().FullName);
+                activity.SetStatus(ActivityStatusCode.Error);
             }
-            wrapper.Activity.Stop();
+            activity.Stop();
 
             if (Activity.Current == null && wrapper.Previous != null && !wrapper.Previous.IsStopped)
             {
@@ -131,7 +131,7 @@ internal class ComponentsActivitySource
         }
     }
 
-    public static async Task CaptureEventStopAsync(Task task, ComponentsActivityWrapper wrapper)
+    public async Task CaptureEventStopAsync(Task task, ComponentsActivityWrapper wrapper)
     {
         try
         {

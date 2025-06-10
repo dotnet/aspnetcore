@@ -240,7 +240,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
 
-            ComponentsActivitySource.StopComponentActivity(activityWrapper, null);
+            _renderHandle.ComponentActivitySource?.StopComponentActivity(activityWrapper, null);
             return;
         }
 
@@ -295,7 +295,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
-        ComponentsActivitySource.StopComponentActivity(activityWrapper, null);
+        _renderHandle.ComponentActivitySource?.StopComponentActivity(activityWrapper, null);
     }
 
     private ComponentsActivityWrapper RecordDiagnostics(string componentType, string template)

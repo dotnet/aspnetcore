@@ -13,7 +13,7 @@ internal struct CircuitActivityWrapper
 
 internal class CircuitActivitySource
 {
-    internal const string Name = "Microsoft.AspNetCore.Components";
+    internal const string Name = "Microsoft.AspNetCore.Components.Server.Circuits";
     internal const string OnCircuitName = $"{Name}.CircuitStart";
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
@@ -41,7 +41,11 @@ internal class CircuitActivitySource
 
             if (renderer != null)
             {
-                SetCircuitActivityContext(renderer, httpActivityContext, activity.Context, circuitId);
+                var routeActivityContext = LinkActivityContexts(renderer, httpActivityContext, activity.Context, circuitId);
+                if (routeActivityContext != default)
+                {
+                    activity.AddLink(new ActivityLink(routeActivityContext));
+                }
             }
             return new CircuitActivityWrapper { Previous = previousActivity, Activity = activity };
         }
@@ -66,6 +70,6 @@ internal class CircuitActivitySource
         }
     }
 
-    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "SetCircuitActivityContext")]
-    static extern void SetCircuitActivityContext(Renderer type, ActivityContext httpContext, ActivityContext circuitContext, string circuitId);
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "LinkActivityContexts")]
+    static extern ActivityContext LinkActivityContexts(Renderer type, ActivityContext httpContext, ActivityContext circuitContext, string? circuitId);
 }

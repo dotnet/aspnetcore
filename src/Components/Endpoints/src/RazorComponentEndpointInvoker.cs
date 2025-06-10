@@ -3,10 +3,12 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -41,6 +43,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
         var hasStatusCodePage = context.Features.Get<IStatusCodePagesFeature>() is not null;
         var isReExecuted = context.Features.Get<IStatusCodeReExecuteFeature>() is not null;
+        var httpActivityContext = context.Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
         if (isErrorHandler)
         {
             Log.InteractivityDisabledForErrorHandling(_logger);
@@ -79,6 +82,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             antiforgery!.GetAndStoreTokens(context);
             return Task.CompletedTask;
         });
+
+        if (httpActivityContext != default)
+        {
+            LinkActivityContexts(_renderer, default, httpActivityContext, null);
+        }
 
         await _renderer.InitializeStandardComponentServicesAsync(
             context,
@@ -272,6 +280,9 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         }
         return null;
     }
+
+    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "LinkActivityContexts")]
+    static extern ActivityContext LinkActivityContexts(Renderer type, ActivityContext httpContext, ActivityContext circuitContext, string? circuitId);
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     private readonly struct RequestValidationState(bool isValid, bool isPost, string? handlerName)
