@@ -32,6 +32,7 @@ internal class ComponentsActivitySource
         var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
         {
+            var previousActivity = Activity.Current;
             if (activity.IsAllDataRequested)
             {
                 if (_circuitId != null)
@@ -46,10 +47,13 @@ internal class ComponentsActivitySource
                 {
                     activity.SetTag("aspnetcore.components.route", route);
                 }
+                if (previousActivity != null)
+                {
+                    activity.AddLink(new ActivityLink(previousActivity.Context));
+                }
             }
 
             activity.DisplayName = $"Route {route ?? "[unknown path]"} -> {componentType ?? "[unknown component]"}";
-            var previousActivity = Activity.Current;
             Activity.Current = null; // do not inherit the parent activity
             activity.Start();
             _routeContext = activity.Context;

@@ -23,6 +23,8 @@ internal class CircuitActivitySource
         var activity = ActivitySource.CreateActivity(OnCircuitName, ActivityKind.Internal, parentId:null, null, null);
         if (activity is not null)
         {
+            var previousActivity = Activity.Current;
+
             if (activity.IsAllDataRequested)
             {
                 if (circuitId != null)
@@ -33,9 +35,12 @@ internal class CircuitActivitySource
                 {
                     activity.AddLink(new ActivityLink(httpActivityContext));
                 }
+                if (previousActivity != null)
+                {
+                    activity.AddLink(new ActivityLink(previousActivity.Context));
+                }
             }
             activity.DisplayName = $"Circuit {circuitId ?? ""}";
-            var previousActivity = Activity.Current;
             Activity.Current = null; // do not inherit the parent activity
             activity.Start();
 
