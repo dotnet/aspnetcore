@@ -143,7 +143,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     }
 
     private void AssertNotFoundFragmentRendered() =>
-        Browser.Equal("There's nothing here", () => Browser.FindElement(By.CssSelector("body > p")).Text);
+        Browser.Equal("There's nothing here", () => Browser.FindElement(By.Id("not-found-fragment")).Text);
 
     [Fact]
     public void StatusCodePagesWithReExecution()
