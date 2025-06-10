@@ -71,6 +71,56 @@ public class ServerResumeTestsTest : ServerTestBase<BasicTestAppServerSiteFixtur
         Browser.Equal("3", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
     }
 
+    [Fact]
+    public void CanResumeUngracefullyPauseGracefullyPauseUngracefullyAgain()
+    {
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript("window.replaceReconnectCallback()");
+        TriggerReconnectAndInteract(javascript);
+
+        // Can dispatch events after reconnect
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        TriggerClientPauseAndInteract(javascript);
+
+        // Ensure that reconnection events are repeatable
+        Browser.Equal("3", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        javascript.ExecuteScript("resetReconnect()");
+
+        TriggerReconnectAndInteract(javascript);
+
+        // Can dispatch events after reconnect
+        Browser.Equal("4", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+    }
+
+    [Fact]
+    public void CanPauseGracefullyUngracefulPauseGracefullyPauseAgain()
+    {
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript("window.replaceReconnectCallback()");
+        TriggerClientPauseAndInteract(javascript);
+
+        // Can dispatch events after reconnect
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        TriggerReconnectAndInteract(javascript);
+
+        // Ensure that reconnection events are repeatable
+        Browser.Equal("3", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        TriggerClientPauseAndInteract(javascript);
+
+        // Can dispatch events after reconnect
+        Browser.Equal("4", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+    }
+
     private void TriggerReconnectAndInteract(IJavaScriptExecutor javascript)
     {
         var previousText = Browser.Exists(By.Id("persistent-counter-render")).Text;
