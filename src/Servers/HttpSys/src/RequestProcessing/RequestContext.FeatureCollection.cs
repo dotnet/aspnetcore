@@ -753,8 +753,8 @@ internal partial class RequestContext :
         }
     }
 
-    public bool TryGetTlsClientHello(Span<byte> tlsClientHelloBytesDestination, out int bytesReturned)
+    public bool TryGetTlsClientHello(byte[] tlsClientHelloBytesDestination, out int bytesReturned)
     {
-        return TryGetTlsClientHelloMessageBytes(tlsClientHelloBytesDestination, out bytesReturned);
+        return TryGetTlsClientHelloMessageBytes(tlsClientHelloBytesDestination.AsSpan(), out bytesReturned);
     }
 }

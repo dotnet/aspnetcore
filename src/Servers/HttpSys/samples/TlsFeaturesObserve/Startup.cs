@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
+using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
@@ -27,7 +29,27 @@ public class Startup
             var httpSysPropertyFeatureType = httpSysAssembly.GetType("Microsoft.AspNetCore.Server.HttpSys.IHttpSysRequestPropertyFeature");
             var httpSysPropertyFeature = context.Features[httpSysPropertyFeatureType]!;
 
-            await context.Response.WriteAsync("");
+            var method = httpSysPropertyFeature.GetType().GetMethod(
+                "TryGetTlsClientHello",
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+            );
+
+            // invoke first time to get required size
+            byte[] bytes = Array.Empty<byte>();
+            var parameters = new object[] { bytes, 0 };
+            var res = (bool)method.Invoke(httpSysPropertyFeature, parameters);
+
+            // fetching out parameter only works by looking into parameters array of objects
+            var bytesReturned = (int)parameters[1];
+            bytes = ArrayPool<byte>.Shared.Rent(bytesReturned);
+            parameters = [bytes, 0]; // correct input now
+            res = (bool)method.Invoke(httpSysPropertyFeature, parameters);
+
+            // this is the span representing the TLS Client Hello bytes only
+            var tlsClientHelloBytes = ((byte[])parameters[0]).AsSpan(0, bytesReturned);
+            await context.Response.WriteAsync($"TlsBytes: {string.Join(" ", tlsClientHelloBytes.Slice(0, 10).ToArray())}; full length = {bytesReturned}");
+
+            ArrayPool<byte>.Shared.Return(bytes);
         });
 
         // middleware compatible with callback API

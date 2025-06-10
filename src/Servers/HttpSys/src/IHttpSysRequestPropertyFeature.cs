@@ -6,9 +6,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys;
 /// <summary>
 /// Provides API to read HTTP_REQUEST_PROPERTY value from the HTTP.SYS request.
 /// <see href="https://learn.microsoft.com/windows/win32/api/http/ne-http-http_request_property"/>
-/// <br/>
-/// internal for backport
 /// </summary>
+// internal for backport
 internal interface IHttpSysRequestPropertyFeature
 {
     /// <summary>
@@ -34,5 +33,6 @@ internal interface IHttpSysRequestPropertyFeature
     /// </returns>
     /// <exception cref="HttpSysException">Any HttpSys error except for ERROR_INSUFFICIENT_BUFFER or ERROR_MORE_DATA.</exception>
     /// <exception cref="InvalidOperationException">If HttpSys does not support querying the TLS Client Hello.</exception>
-    bool TryGetTlsClientHello(Span<byte> tlsClientHelloBytesDestination, out int bytesReturned);
+    // has byte[] (not Span<byte>) for reflection-based invocation
+    bool TryGetTlsClientHello(byte[] tlsClientHelloBytesDestination, out int bytesReturned);
 }
