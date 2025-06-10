@@ -108,11 +108,7 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                         {
                             // Format the member name using JsonSerializerOptions naming policy if available
                             // Note: we don't respect [JsonPropertyName] here because we have no context of the property being validated.
-                            var formattedMemberName = memberName;
-                            if (context.ValidationOptions.SerializerOptions?.PropertyNamingPolicy != null)
-                            {
-                                formattedMemberName = context.ValidationOptions.SerializerOptions.PropertyNamingPolicy.ConvertName(memberName);
-                            }
+                            var formattedMemberName = context.ValidationOptions.SerializerOptions?.PropertyNamingPolicy?.ConvertName(memberName) ?? memberName;
 
                             var key = string.IsNullOrEmpty(originalPrefix) ?
                                 formattedMemberName :

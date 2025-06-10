@@ -185,11 +185,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     }
 
     /// <summary>
-    /// Gets the effective member name for JSON serialization, considering JsonPropertyName attribute and naming policy.
+    /// Gets the effective member name for JSON serialization, considering <see cref="JsonPropertyNameAttribute"/> and naming policy.
     /// </summary>
     /// <param name="targetValue">The target value to get the name for.</param>
     /// <param name="property">The property info to get the name for.</param>
-    /// <param name="namingPolicy">The JSON naming policy to apply if no JsonPropertyName attribute is present.</param>
+    /// <param name="namingPolicy">The JSON naming policy to apply if no <see cref="JsonPropertyNameAttribute"/> is present.</param>
     /// <returns>The effective property name for JSON serialization.</returns>
     private static string GetJsonPropertyName(string targetValue, PropertyInfo property, JsonNamingPolicy? namingPolicy)
     {
@@ -209,11 +209,11 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     }
 
     /// <summary>
-    /// Determines whether the property has a DisplayAttribute, either directly on the property
+    /// Determines whether the property has a <see cref="DisplayAttribute"/>, either directly on the property
     /// or on the corresponding constructor parameter if the declaring type is a record.
     /// </summary>
     /// <param name="property">The property to check.</param>
-    /// <returns>True if the property has a DisplayAttribute, false otherwise.</returns>
+    /// <returns>True if the property has a <see cref="DisplayAttribute"/> , false otherwise.</returns>
     private bool HasDisplayAttribute(PropertyInfo property)
     {
         // Check if the property itself has the DisplayAttribute with a valid Name

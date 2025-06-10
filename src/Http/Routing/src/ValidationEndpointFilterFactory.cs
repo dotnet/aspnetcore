@@ -29,9 +29,13 @@ internal static class ValidationEndpointFilterFactory
             return next;
         }
 
-        var jsonOptions = context.ApplicationServices.GetService<IOptions<JsonOptions>>();
-        var serializerOptions = jsonOptions?.Value?.SerializerOptions;
-        options.SerializerOptions = serializerOptions;
+        // Only set serializer options if they are not already set.
+        if (options.SerializerOptions == null)
+        {
+            var jsonOptions = context.ApplicationServices.GetService<IOptions<JsonOptions>>();
+            var serializerOptions = jsonOptions?.Value?.SerializerOptions;
+            options.SerializerOptions ??= serializerOptions;
+        }
 
         var serviceProviderIsService = context.ApplicationServices.GetService<IServiceProviderIsService>();
 
