@@ -22,12 +22,12 @@ public class IdentityUserPasskey<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// Gets or sets the credential ID for this passkey.
     /// </summary>
-    public virtual byte[] CredentialId { get; set; } = [];
+    public virtual byte[] CredentialId { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the public key associated with this passkey.
     /// </summary>
-    public virtual byte[] PublicKey { get; set; } = [];
+    public virtual byte[] PublicKey { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the friendly name for this passkey.
@@ -73,7 +73,7 @@ public class IdentityUserPasskey<TKey> where TKey : IEquatable<TKey>
     /// <remarks>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#attestation-object"/>.
     /// </remarks>
-    public virtual byte[] AttestationObject { get; set; } = [];
+    public virtual byte[] AttestationObject { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the collected client data JSON associated with this passkey.
@@ -81,5 +81,5 @@ public class IdentityUserPasskey<TKey> where TKey : IEquatable<TKey>
     /// <remarks>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-collectedclientdata"/>.
     /// </remarks>
-    public virtual byte[] ClientDataJson { get; set; } = [];
+    public virtual byte[] ClientDataJson { get; set; } = default!;
 }

@@ -45,6 +45,11 @@ Microsoft.AspNetCore.Identity.UserPasskeyInfo.AttestationObject.get -> byte[]!
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.ClientDataJson.get -> byte[]!
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.CreatedAt.get -> System.DateTimeOffset
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.CredentialId.get -> byte[]!
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsBackedUp.get -> bool
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsBackedUp.set -> void
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsBackupEligible.get -> bool
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsUserVerified.get -> bool
+Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsUserVerified.set -> void
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.Name.get -> string?
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.Name.set -> void
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.PublicKey.get -> byte[]!
@@ -59,8 +64,3 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetPasskeysAsync(TUser!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.RemovePasskeyAsync(TUser! user, byte[]! credentialId) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetPasskeyAsync(TUser! user, Microsoft.AspNetCore.Identity.UserPasskeyInfo! passkey) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPasskey.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsBackedUp.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsBackedUp.set -> void
-virtual Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsBackupEligible.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsUserVerified.get -> bool
-virtual Microsoft.AspNetCore.Identity.UserPasskeyInfo.IsUserVerified.set -> void

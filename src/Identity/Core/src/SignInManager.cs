@@ -654,7 +654,7 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Generates a <see cref="PasskeyCreationOptions"/> to request an existing passkey for a user.
+    /// Generates a <see cref="PasskeyRequestOptions"/> to request an existing passkey for a user.
     /// </summary>
     /// <param name="requestArgs">Args for configuring the <see cref="PasskeyRequestOptions"/>.</param>
     /// <returns>

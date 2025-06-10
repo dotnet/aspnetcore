@@ -53,12 +53,12 @@ public class UserPasskeyInfo
     /// <summary>
     /// Gets the credential ID for this passkey.
     /// </summary>
-    public byte[] CredentialId { get; } = [];
+    public byte[] CredentialId { get; }
 
     /// <summary>
     /// Gets the public key associated with this passkey.
     /// </summary>
-    public byte[] PublicKey { get; } = [];
+    public byte[] PublicKey { get; }
 
     /// <summary>
     /// Gets or sets the friendly name for this passkey.
@@ -86,17 +86,17 @@ public class UserPasskeyInfo
     /// <summary>
     /// Gets or sets whether the passkey has a verified user.
     /// </summary>
-    public virtual bool IsUserVerified { get; set; }
+    public bool IsUserVerified { get; set; }
 
     /// <summary>
     /// Gets whether the passkey is eligible for backup.
     /// </summary>
-    public virtual bool IsBackupEligible { get; }
+    public bool IsBackupEligible { get; }
 
     /// <summary>
     /// Gets or sets whether the passkey is currently backed up.
     /// </summary>
-    public virtual bool IsBackedUp { get; set; }
+    public bool IsBackedUp { get; set; }
 
     /// <summary>
     /// Gets the attestation object associated with this passkey.
