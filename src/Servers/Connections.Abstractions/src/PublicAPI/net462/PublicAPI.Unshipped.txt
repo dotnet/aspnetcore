@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Connections.IMemoryPoolFactory<T>
+Microsoft.AspNetCore.Connections.IMemoryPoolFactory<T>.Create() -> System.Buffers.MemoryPool<T>!
