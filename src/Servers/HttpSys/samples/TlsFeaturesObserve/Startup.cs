@@ -45,12 +45,18 @@ public class Startup
             parameters = [bytes, 0]; // correct input now
             res = (bool)method.Invoke(httpSysPropertyFeature, parameters);
 
-            // this is the span representing the TLS Client Hello bytes only
-            var tlsClientHelloBytes = ((byte[])parameters[0]).AsSpan(0, bytesReturned);
-            await context.Response.WriteAsync($"TlsBytes: {string.Join(" ", tlsClientHelloBytes.Slice(0, 10).ToArray())}; full length = {bytesReturned}");
-
+            // to avoid CS4012 use a method which accepts a byte[] and length, where you can do Span<byte> slicing
+            // error CS4012: Parameters or locals of type 'Span<byte>' cannot be declared in async methods or async lambda expressions.
+            var message = ReadTlsClientHello(bytes, bytesReturned);
+            await context.Response.WriteAsync(message);
             ArrayPool<byte>.Shared.Return(bytes);
         });
+
+        static string ReadTlsClientHello(byte[] bytes, int bytesReturned)
+        {
+            var tlsClientHelloBytes = bytes.AsSpan(0, bytesReturned);
+            return $"TlsClientHello bytes: {string.Join(" ", tlsClientHelloBytes.ToArray())}, length={bytesReturned}";
+        }
 
         // middleware compatible with callback API
         //app.Run(async (HttpContext context) =>
