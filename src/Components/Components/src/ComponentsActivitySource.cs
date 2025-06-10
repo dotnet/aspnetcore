@@ -25,7 +25,6 @@ internal class ComponentsActivitySource
     internal ActivityContext _circuitActivityContext;
     internal string? _circuitId;
 
-
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
     public ComponentsActivityWrapper StartRouteActivity(string componentType, string route)
