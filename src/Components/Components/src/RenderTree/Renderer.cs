@@ -115,18 +115,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             ?? new DefaultComponentActivator(serviceProvider);
     }
 
-    internal ActivityContext LinkActivityContexts(ActivityContext httpActivityContext, ActivityContext circuitActivityContext, string? circuitId)
-    {
-        if (ComponentActivitySource != null)
-        {
-            ComponentActivitySource._httpActivityContext = httpActivityContext;
-            ComponentActivitySource._circuitActivityContext = circuitActivityContext;
-            ComponentActivitySource._circuitId = circuitId;
-            return ComponentActivitySource._routeContext;
-        }
-        return default;
-    }
-
     /// <summary>
     /// Gets the <see cref="Components.Dispatcher" /> associated with this <see cref="Renderer" />.
     /// </summary>
@@ -538,7 +526,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
             if (ComponentActivitySource != null && activityHandle.Activity != null)
             {
-                ComponentActivitySource.StopComponentActivity(activityHandle, e);
+                ComponentActivitySource.StopEventActivity(activityHandle, e);
             }
 
             HandleExceptionViaErrorBoundary(e, receiverComponentState);

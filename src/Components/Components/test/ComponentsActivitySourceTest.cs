@@ -27,7 +27,7 @@ public class ComponentsActivitySourceTest
     public void Constructor_CreatesActivitySourceCorrectly()
     {
         // Arrange & Act
-        var componentsActivitySource = new ComponentsActivitySource();
+        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
 
         // Assert
         Assert.NotNull(componentsActivitySource);
@@ -37,16 +37,17 @@ public class ComponentsActivitySourceTest
     public void StartRouteActivity_CreatesAndStartsActivity()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore();
+        var componentsActivitySource = new ComponentsActivitySource(linkstore);
         var componentType = "TestComponent";
         var route = "/test-route";
 
         // First set up a circuit context
-        componentsActivitySource._circuitId = "test-circuit-id";
+        linkstore.SetActivityContext(ComponentsActivityCategory.Circuit, new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded), new KeyValuePair<string, object>("aspnetcore.components.circuit.id", "test-circuit-id"));
 
         // Act
-        var wrapper = componentsActivitySource.StartRouteActivity(componentType, route);
-        var activity = wrapper.Activity;
+        var activityHandle = componentsActivitySource.StartRouteActivity(componentType, route);
+        var activity = activityHandle.Activity;
 
         // Assert
         Assert.NotNull(activity);
@@ -56,26 +57,32 @@ public class ComponentsActivitySourceTest
         Assert.True(activity.IsAllDataRequested);
         Assert.Equal(componentType, activity.GetTagItem("aspnetcore.components.type"));
         Assert.Equal(route, activity.GetTagItem("aspnetcore.components.route"));
-        Assert.Equal("test-circuit-id", activity.GetTagItem("aspnetcore.components.circuit.id"));
         Assert.False(activity.IsStopped);
+
+        componentsActivitySource.StopRouteActivity(activityHandle, null);
+        Assert.True(activity.IsStopped);
+        Assert.Equal("test-circuit-id", activity.GetTagItem("aspnetcore.components.circuit.id"));
+        Assert.Single(activity.Links);
+
     }
 
     [Fact]
     public void StartEventActivity_CreatesAndStartsActivity()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore();
+        var componentsActivitySource = new ComponentsActivitySource(linkstore);
         var componentType = "TestComponent";
         var methodName = "OnClick";
         var attributeName = "onclick";
 
         // First set up a circuit and route context
-        componentsActivitySource._circuitId = "test-circuit-id";
+        linkstore.SetActivityContext(ComponentsActivityCategory.Circuit, default, new KeyValuePair<string, object>("aspnetcore.components.circuit.id", "test-circuit-id"));
         componentsActivitySource.StartRouteActivity("ParentComponent", "/parent");
 
         // Act
-        var wrapper = componentsActivitySource.StartEventActivity(componentType, methodName, attributeName);
-        var activity = wrapper.Activity;
+        var activityHandle = componentsActivitySource.StartEventActivity(componentType, methodName, attributeName);
+        var activity = activityHandle.Activity;
 
         // Assert
         Assert.NotNull(activity);
@@ -86,21 +93,25 @@ public class ComponentsActivitySourceTest
         Assert.Equal(componentType, activity.GetTagItem("aspnetcore.components.type"));
         Assert.Equal(methodName, activity.GetTagItem("aspnetcore.components.method"));
         Assert.Equal(attributeName, activity.GetTagItem("aspnetcore.components.attribute.name"));
-        Assert.Equal("test-circuit-id", activity.GetTagItem("aspnetcore.components.circuit.id"));
         Assert.False(activity.IsStopped);
+
+        componentsActivitySource.StopRouteActivity(activityHandle, null);
+        Assert.True(activity.IsStopped);
+        Assert.Equal("test-circuit-id", activity.GetTagItem("aspnetcore.components.circuit.id"));
+        Assert.Empty(activity.Links);
     }
 
     [Fact]
     public void FailEventActivity_SetsErrorStatusAndStopsActivity()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource();
+        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
         var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
 
         // Act
-        componentsActivitySource.StopComponentActivity(activityHandle, exception);
+        componentsActivitySource.StopEventActivity(activityHandle, exception);
 
         // Assert
         Assert.True(activity!.IsStopped);
@@ -112,13 +123,13 @@ public class ComponentsActivitySourceTest
     public async Task CaptureEventStopAsync_StopsActivityOnSuccessfulTask()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource();
-        var wrapper = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
-        var activity = wrapper.Activity;
+        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
+        var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
+        var activity = activityHandle.Activity;
         var task = Task.CompletedTask;
 
         // Act
-        await componentsActivitySource.CaptureEventStopAsync(task, wrapper);
+        await componentsActivitySource.CaptureEventStopAsync(task, activityHandle);
 
         // Assert
         Assert.True(activity!.IsStopped);
@@ -129,14 +140,14 @@ public class ComponentsActivitySourceTest
     public async Task CaptureEventStopAsync_FailsActivityOnException()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource();
-        var wrapper = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
-        var activity = wrapper.Activity;
+        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
+        var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
+        var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
         var task = Task.FromException(exception);
 
         // Act
-        await componentsActivitySource.CaptureEventStopAsync(task, wrapper);
+        await componentsActivitySource.CaptureEventStopAsync(task, activityHandle);
 
         // Assert
         Assert.True(activity!.IsStopped);
@@ -148,11 +159,11 @@ public class ComponentsActivitySourceTest
     public void StartRouteActivity_HandlesNullValues()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource();
+        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
 
         // Act
-        var wrapper = componentsActivitySource.StartRouteActivity(null, null);
-        var activity = wrapper.Activity;
+        var activityHandle = componentsActivitySource.StartRouteActivity(null, null);
+        var activity = activityHandle.Activity;
 
         // Assert
         Assert.NotNull(activity);
@@ -163,11 +174,11 @@ public class ComponentsActivitySourceTest
     public void StartEventActivity_HandlesNullValues()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource();
+        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
 
         // Act
-        var wrapper = componentsActivitySource.StartEventActivity(null, null, null);
-        var activity = wrapper.Activity;
+        var activityHandle = componentsActivitySource.StartEventActivity(null, null, null);
+        var activity = activityHandle.Activity;
 
         // Assert
         Assert.NotNull(activity);

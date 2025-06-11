@@ -39,7 +39,8 @@ internal class TestCircuitHost : CircuitHost
             .Returns(jsRuntime);
         var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
         var circuitMetrics = new CircuitMetrics(new TestMeterFactory());
-        var circuitActivitySource = new CircuitActivitySource();
+        var linkstore = new ComponentsActivityLinkStore();
+        var circuitActivitySource = new CircuitActivitySource(linkstore);
 
         if (remoteRenderer == null)
         {

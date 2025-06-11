@@ -1,4 +1,12 @@
 #nullable enable
+Microsoft.AspNetCore.Components.IComponentsActivityLinkStore
+Microsoft.AspNetCore.Components.IComponentsActivityLinkStore.AddActivityContexts(int exceptCategory, System.Diagnostics.Activity! targetActivity) -> void
+Microsoft.AspNetCore.Components.IComponentsActivityLinkStore.SetActivityContext(int category, System.Diagnostics.ActivityContext activityLink, System.Collections.Generic.KeyValuePair<string!, object?>? tag) -> void
+Microsoft.AspNetCore.Components.ComponentsActivityCategory
+const Microsoft.AspNetCore.Components.ComponentsActivityCategory.Http = 0 -> int
+const Microsoft.AspNetCore.Components.ComponentsActivityCategory.SignalR = 1 -> int
+const Microsoft.AspNetCore.Components.ComponentsActivityCategory.Route = 2 -> int
+const Microsoft.AspNetCore.Components.ComponentsActivityCategory.Circuit = 3 -> int
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type!
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions

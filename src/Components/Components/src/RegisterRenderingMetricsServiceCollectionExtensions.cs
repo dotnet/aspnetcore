@@ -39,6 +39,7 @@ public static class ComponentsMetricsServiceCollectionExtensions
         IServiceCollection services)
     {
         services.TryAddScoped<ComponentsActivitySource>();
+        services.TryAddScoped<IComponentsActivityLinkStore, ComponentsActivityLinkStore>();
 
         return services;
     }

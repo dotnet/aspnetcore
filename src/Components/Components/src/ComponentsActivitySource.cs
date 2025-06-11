@@ -6,15 +6,6 @@ using System.Diagnostics;
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// Named tuple for restoring the previous activity after stopping the current one.
-/// </summary>
-internal struct ComponentsActivityHandle
-{
-    public Activity? Previous;
-    public Activity? Activity;
-}
-
-/// <summary>
 /// This is instance scoped per renderer
 /// </summary>
 internal class ComponentsActivitySource
@@ -23,12 +14,14 @@ internal class ComponentsActivitySource
     internal const string OnRouteName = $"{Name}.RouteChange";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
-    internal ActivityContext _httpActivityContext;
-    internal ActivityContext _routeContext;
-    internal ActivityContext _circuitActivityContext;
-    internal string? _circuitId;
+    private readonly IComponentsActivityLinkStore _activityLinkStore;
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
+
+    public ComponentsActivitySource(IComponentsActivityLinkStore activityLinkStore)
+    {
+        _activityLinkStore = activityLinkStore ?? throw new ArgumentNullException(nameof(activityLinkStore));
+    }
 
     public ComponentsActivityHandle StartRouteActivity(string componentType, string route)
     {
@@ -38,10 +31,6 @@ internal class ComponentsActivitySource
             var previousActivity = Activity.Current;
             if (activity.IsAllDataRequested)
             {
-                if (_circuitId != null)
-                {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
-                }
                 if (componentType != null)
                 {
                     activity.SetTag("aspnetcore.components.type", componentType);
@@ -54,15 +43,23 @@ internal class ComponentsActivitySource
                 {
                     activity.AddLink(new ActivityLink(previousActivity.Context));
                 }
+
+                // store the link
+                _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Route, activity.Context,
+                    new KeyValuePair<string, object?>("aspnetcore.components.route", route));
             }
 
             activity.DisplayName = $"Route {route ?? "[unknown path]"} -> {componentType ?? "[unknown component]"}";
             Activity.Current = null; // do not inherit the parent activity
             activity.Start();
-            _routeContext = activity.Context;
             return new ComponentsActivityHandle { Activity = activity, Previous = previousActivity };
         }
         return default;
+    }
+
+    public void StopRouteActivity(ComponentsActivityHandle activityHandle, Exception? ex)
+    {
+        StopComponentActivity(ComponentsActivityCategory.Route, activityHandle, ex);
     }
 
     public ComponentsActivityHandle StartEventActivity(string? componentType, string? methodName, string? attributeName)
@@ -72,10 +69,6 @@ internal class ComponentsActivitySource
         {
             if (activity.IsAllDataRequested)
             {
-                if (_circuitId != null)
-                {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
-                }
                 if (componentType != null)
                 {
                     activity.SetTag("aspnetcore.components.type", componentType);
@@ -99,34 +92,37 @@ internal class ComponentsActivitySource
         return default;
     }
 
-    public void StopComponentActivity(ComponentsActivityHandle activityHandle, Exception? ex)
+    public void StopEventActivity(ComponentsActivityHandle activityHandle, Exception? ex)
+    {
+        StopComponentActivity(ComponentsActivityCategory.Event, activityHandle, ex);
+    }
+
+    public async Task CaptureEventStopAsync(Task task, ComponentsActivityHandle activityHandle)
+    {
+        try
+        {
+            await task;
+            StopEventActivity(activityHandle, null);
+        }
+        catch (Exception ex)
+        {
+            StopEventActivity(activityHandle, ex);
+        }
+    }
+
+    private void StopComponentActivity(int category, ComponentsActivityHandle activityHandle, Exception? ex)
     {
         var activity = activityHandle.Activity;
         if (activity != null && !activity.IsStopped)
         {
-            if (activity.IsAllDataRequested)
-            {
-                if (_circuitId != null)
-                {
-                    activity.SetTag("aspnetcore.components.circuit.id", _circuitId);
-                }
-                if (_httpActivityContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_httpActivityContext));
-                }
-                if (_circuitActivityContext != default)
-                {
-                    activity.AddLink(new ActivityLink(_circuitActivityContext));
-                }
-                if (_routeContext != default && activity.Context != _routeContext)
-                {
-                    activity.AddLink(new ActivityLink(_routeContext));
-                }
-            }
             if (ex != null)
             {
                 activity.SetTag("error.type", ex.GetType().FullName);
                 activity.SetStatus(ActivityStatusCode.Error);
+            }
+            if (activity.IsAllDataRequested)
+            {
+                _activityLinkStore.AddActivityContexts(category, activity);
             }
             activity.Stop();
 
@@ -136,17 +132,13 @@ internal class ComponentsActivitySource
             }
         }
     }
+}
 
-    public async Task CaptureEventStopAsync(Task task, ComponentsActivityHandle activityHandle)
-    {
-        try
-        {
-            await task;
-            StopComponentActivity(activityHandle, null);
-        }
-        catch (Exception ex)
-        {
-            StopComponentActivity(activityHandle, ex);
-        }
-    }
+/// <summary>
+/// Named tuple for restoring the previous activity after stopping the current one.
+/// </summary>
+internal struct ComponentsActivityHandle
+{
+    public Activity? Previous;
+    public Activity? Activity;
 }

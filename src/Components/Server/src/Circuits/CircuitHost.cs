@@ -171,11 +171,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 Log.InitializationSucceeded(_logger);
 
-                CircuitActivitySource.StopCircuitActivity(activityHandle, null);
+                _circuitActivitySource.StopCircuitActivity(activityHandle, null);
             }
             catch (Exception ex)
             {
-                CircuitActivitySource.StopCircuitActivity(activityHandle, ex);
+                _circuitActivitySource.StopCircuitActivity(activityHandle, ex);
 
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);

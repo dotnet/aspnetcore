@@ -23,10 +23,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 {
     private readonly EndpointHtmlRenderer _renderer;
     private readonly ILogger<RazorComponentEndpointInvoker> _logger;
+    private readonly IComponentsActivityLinkStore _activityLinkStore;
 
-    public RazorComponentEndpointInvoker(EndpointHtmlRenderer renderer, ILogger<RazorComponentEndpointInvoker> logger)
+    public RazorComponentEndpointInvoker(EndpointHtmlRenderer renderer, IComponentsActivityLinkStore activityLinkStore, ILogger<RazorComponentEndpointInvoker> logger)
     {
         _renderer = renderer;
+        _activityLinkStore = activityLinkStore;
         _logger = logger;
     }
 
@@ -85,7 +87,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         if (httpActivityContext != default)
         {
-            LinkActivityContexts(_renderer, default, httpActivityContext, null);
+            _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Http, httpActivityContext, null);
         }
 
         await _renderer.InitializeStandardComponentServicesAsync(
@@ -280,9 +282,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         }
         return null;
     }
-
-    [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "LinkActivityContexts")]
-    static extern ActivityContext LinkActivityContexts(Renderer type, ActivityContext httpContext, ActivityContext circuitContext, string? circuitId);
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     private readonly struct RequestValidationState(bool isValid, bool isPost, string? handlerName)

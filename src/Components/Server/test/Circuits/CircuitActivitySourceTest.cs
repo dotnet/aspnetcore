@@ -36,7 +36,7 @@ public class CircuitActivitySourceTest
     public void StartCircuitActivity_CreatesAndStartsActivity()
     {
         // Arrange
-        var circuitActivitySource = new CircuitActivitySource();
+        var circuitActivitySource = new CircuitActivitySource(new ComponentsActivityLinkStore());
         var circuitId = "test-circuit-id";
         var httpContext = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
 
@@ -59,7 +59,7 @@ public class CircuitActivitySourceTest
     public void FailCircuitActivity_SetsErrorStatusAndStopsActivity()
     {
         // Arrange
-        var circuitActivitySource = new CircuitActivitySource();
+        var circuitActivitySource = new CircuitActivitySource(new ComponentsActivityLinkStore());
         var circuitId = "test-circuit-id";
         var httpContext = default(ActivityContext);
         var activityHandle = circuitActivitySource.StartCircuitActivity(circuitId, httpContext, null);
@@ -67,7 +67,7 @@ public class CircuitActivitySourceTest
         var exception = new InvalidOperationException("Test exception");
 
         // Act
-        CircuitActivitySource.StopCircuitActivity(activityHandle, exception);
+        circuitActivitySource.StopCircuitActivity(activityHandle, exception);
 
         // Assert
         Assert.True(activity!.IsStopped);
@@ -79,7 +79,7 @@ public class CircuitActivitySourceTest
     public void StartCircuitActivity_HandlesNullValues()
     {
         // Arrange
-        var circuitActivitySource = new CircuitActivitySource();
+        var circuitActivitySource = new CircuitActivitySource(new ComponentsActivityLinkStore());
 
         // Act
         var wrapper = circuitActivitySource.StartCircuitActivity(null, default, null);
