@@ -30,48 +30,51 @@ async function requestCredential(email) {
 }
 
 customElements.define('passkey-submit', class extends HTMLElement {
+    static formAssociated = true;
+
     connectedCallback() {
-        this.form = this.closest('form');
+        this.internals = this.attachInternals();
+        this.isObtainingCredentials = false;
         this.attrs = {
             operation: this.getAttribute('operation'),
-            credentialJsonName: this.getAttribute('credential-json-name'),
-            errorName: this.getAttribute('error-name'),
+            name: this.getAttribute('name'),
             emailName: this.getAttribute('email-name'),
         };
 
-        this.form.addEventListener('submit', (event) => {
-            if (event.submitter?.name === '__passkey') {
+        this.internals.form.addEventListener('submit', (event) => {
+            if (event.submitter?.name === '__passkeySubmit') {
                 event.preventDefault();
                 this.obtainCredentialAndReSubmit();
             }
         });
     }
 
-    addFormValue(name, value) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = name;
-        input.value = value;
-        this.form.appendChild(input);
-    }
-
     async obtainCredentialAndReSubmit() {
+        if (this.isObtainingCredentials) {
+            return;
+        }
+
+        this.isObtainingCredentials = true;
+        const formData = new FormData();
         try {
             let credential;
-            if (this.attrs.operation === 'create') {
+            if (this.attrs.operation === 'Create') {
                 credential = await createCredential();
-            } else if (this.attrs.operation === 'request') {
-                const email = new FormData(this.form).get(this.attrs.emailName);
+            } else if (this.attrs.operation === 'Request') {
+                const email = new FormData(this.internals.form).get(this.attrs.emailName);
                 credential = await requestCredential(email);
             } else {
-                throw new Error(`Unknown passkey operation '${operation}'`);
+                throw new Error(`Unknown passkey operation '${operation}'.`);
             }
             const credentialJson = JSON.stringify(credential);
-            this.addFormValue(this.attrs.credentialJsonName, credentialJson);
+            formData.append(`${this.attrs.name}.CredentialJson`, credentialJson);
         } catch (error) {
-            this.addFormValue(this.attrs.errorName, error.message);
+            formData.append(`${this.attrs.name}.Error`, error.message);
             console.error(error);
+        } finally {
+            this.isObtainingCredentials = false;
         }
-        this.form.submit();
+        this.internals.setFormValue(formData);
+        this.internals.form.submit();
     }
 });

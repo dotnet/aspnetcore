@@ -135,7 +135,6 @@
           "exclude": [
             "BlazorWeb-CSharp/Components/Account/**",
             "BlazorWeb-CSharp/Data/**",
-            "BlazorWeb-CSharp/wwwroot/BlazorWeb-CSharp.lib.module.js",
             "BlazorWeb-CSharp.Client/UserInfo.cs",
             "BlazorWeb-CSharp.Client/Pages/Auth.razor"
           ]
