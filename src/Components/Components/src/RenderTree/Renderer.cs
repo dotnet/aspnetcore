@@ -518,7 +518,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             {
                 receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 methodName ??= callback.Delegate.Method?.Name;
-                _ = ComponentMetrics.CaptureEventDuration(task, eventStartTimestamp, null, null, attributeName);
+                _ = ComponentMetrics.CaptureEventDuration(task, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
             // stop activity/trace
@@ -533,7 +533,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             {
                 receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
                 methodName ??= callback.Delegate.Method?.Name;
-                ComponentMetrics.FailEventSync(e, eventStartTimestamp, null, null, attributeName);
+                ComponentMetrics.FailEventSync(e, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
             if (ComponentActivitySource != null && wrapper.Activity != null)
