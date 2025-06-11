@@ -165,10 +165,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
       this._dispatcher.supplyDotNetStream(streamId, readableStream);
     });
 
-    connection.on('JS.RemotePause', () => {
-      this.pause(true);
-    });
-
     connection.on('JS.RenderBatch', async (batchId: number, batchData: Uint8Array) => {
       this._logger.log(LogLevel.Debug, `Received render batch with id ${batchId} and ${batchData.byteLength} bytes.`);
       await this._renderQueue.processBatch(batchId, batchData, this._connection!);

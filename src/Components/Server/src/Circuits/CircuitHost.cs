@@ -912,23 +912,6 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    internal void TriggerCircuitPause()
-    {
-        _ = InvokeCircuitPauseFromServer();
-    }
-
-    private async Task InvokeCircuitPauseFromServer()
-    {
-        try
-        {
-            await Client.SendAsync("JS.RemotePause");
-        }
-        catch (Exception ex)
-        {
-            Log.FailedToTriggerRemoteCircuitPause(_logger, CircuitId, ex);
-        }
-    }
-
     private static partial class Log
     {
         // 100s used for lifecycle stuff
@@ -975,9 +958,6 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(113, LogLevel.Debug, "Update root components failed.", EventName = nameof(UpdateRootComponentsFailed))]
         public static partial void UpdateRootComponentsFailed(ILogger logger, Exception exception);
-
-        [LoggerMessage(114, LogLevel.Error, "Failed to trigger remote circuit pause in circuit '{CircuitId}'.", EventName = "FailedToTriggerRemoteCircuitPause")]
-        public static partial void FailedToTriggerRemoteCircuitPause(ILogger logger, CircuitId circuitId, Exception exception);
 
         public static void CircuitHandlerFailed(ILogger logger, CircuitHandler handler, string handlerMethod, Exception exception)
         {
