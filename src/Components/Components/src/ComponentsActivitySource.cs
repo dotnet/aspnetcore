@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -14,13 +15,12 @@ internal class ComponentsActivitySource
     internal const string OnRouteName = $"{Name}.RouteChange";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
-    private readonly IComponentsActivityLinkStore _activityLinkStore;
-
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
+    private ComponentsActivityLinkStore? _componentsActivityLinkStore;
 
-    public ComponentsActivitySource(IComponentsActivityLinkStore activityLinkStore)
+    public void Init(ComponentsActivityLinkStore store)
     {
-        _activityLinkStore = activityLinkStore ?? throw new ArgumentNullException(nameof(activityLinkStore));
+        _componentsActivityLinkStore = store;
     }
 
     public ComponentsActivityHandle StartRouteActivity(string componentType, string route)
@@ -44,13 +44,13 @@ internal class ComponentsActivitySource
                     activity.SetTag("aspnetcore.components.route", route);
 
                     // store self link
-                    _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Route, activity.Context,
+                    _componentsActivityLinkStore!.SetActivityContext(ComponentsActivityLinkStore.Route, activity.Context,
                         new KeyValuePair<string, object?>("aspnetcore.components.route", route));
                 }
                 if (httpActivity != null && httpActivity.Source.Name == "Microsoft.AspNetCore")
                 {
                     // store the http link
-                    _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Http, httpActivity.Context, null);
+                    _componentsActivityLinkStore!.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivity.Context, null);
                 }
             }
 
@@ -61,7 +61,7 @@ internal class ComponentsActivitySource
 
     public void StopRouteActivity(ComponentsActivityHandle activityHandle, Exception? ex)
     {
-        StopComponentActivity(ComponentsActivityCategory.Route, activityHandle, ex);
+        StopComponentActivity(ComponentsActivityLinkStore.Route, activityHandle, ex);
     }
 
     public ComponentsActivityHandle StartEventActivity(string? componentType, string? methodName, string? attributeName)
@@ -98,7 +98,7 @@ internal class ComponentsActivitySource
 
     public void StopEventActivity(ComponentsActivityHandle activityHandle, Exception? ex)
     {
-        StopComponentActivity(ComponentsActivityCategory.Event, activityHandle, ex);
+        StopComponentActivity(ComponentsActivityLinkStore.Event, activityHandle, ex);
     }
 
     public async Task CaptureEventStopAsync(Task task, ComponentsActivityHandle activityHandle)
@@ -114,7 +114,7 @@ internal class ComponentsActivitySource
         }
     }
 
-    private void StopComponentActivity(int category, ComponentsActivityHandle activityHandle, Exception? ex)
+    private void StopComponentActivity(string category, ComponentsActivityHandle activityHandle, Exception? ex)
     {
         var activity = activityHandle.Activity;
         if (activity != null && !activity.IsStopped)
@@ -126,7 +126,7 @@ internal class ComponentsActivitySource
             }
             if (activity.IsAllDataRequested)
             {
-                _activityLinkStore.AddActivityContexts(category, activity);
+                _componentsActivityLinkStore!.AddActivityContexts(category, activity);
             }
             activity.Stop();
 

@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,8 +40,7 @@ internal class TestCircuitHost : CircuitHost
             .Returns(jsRuntime);
         var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
         var circuitMetrics = new CircuitMetrics(new TestMeterFactory());
-        var linkstore = new ComponentsActivityLinkStore();
-        var circuitActivitySource = new CircuitActivitySource(linkstore);
+        var circuitActivitySource = new CircuitActivitySource();
 
         if (remoteRenderer == null)
         {
@@ -54,6 +54,8 @@ internal class TestCircuitHost : CircuitHost
                 jsRuntime,
                 new CircuitJSComponentInterop(new CircuitOptions()));
         }
+        var linkstore = new Infrastructure.Server.ComponentsActivityLinkStore(remoteRenderer);
+        circuitActivitySource.Init(linkstore);
 
         handlers ??= Array.Empty<CircuitHandler>();
         return new TestCircuitHost(

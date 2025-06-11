@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.InternalTesting;
 using Moq;
+using Microsoft.AspNetCore.Components.Infrastructure.Server;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
@@ -36,7 +37,9 @@ public class CircuitActivitySourceTest
     public void StartCircuitActivity_CreatesAndStartsActivity()
     {
         // Arrange
-        var circuitActivitySource = new CircuitActivitySource(new ComponentsActivityLinkStore());
+        var circuitActivitySource = new CircuitActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        circuitActivitySource.Init(linkstore);
         var circuitId = "test-circuit-id";
         var httpContext = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
 
@@ -63,7 +66,9 @@ public class CircuitActivitySourceTest
     public void FailCircuitActivity_SetsErrorStatusAndStopsActivity()
     {
         // Arrange
-        var circuitActivitySource = new CircuitActivitySource(new ComponentsActivityLinkStore());
+        var circuitActivitySource = new CircuitActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        circuitActivitySource.Init(linkstore);
         var circuitId = "test-circuit-id";
         var httpContext = default(ActivityContext);
         var activityHandle = circuitActivitySource.StartCircuitActivity(circuitId, httpContext);
@@ -83,7 +88,9 @@ public class CircuitActivitySourceTest
     public void StartCircuitActivity_HandlesNullValues()
     {
         // Arrange
-        var circuitActivitySource = new CircuitActivitySource(new ComponentsActivityLinkStore());
+        var circuitActivitySource = new CircuitActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        circuitActivitySource.Init(linkstore);
 
         // Act
         var activityHandle = circuitActivitySource.StartCircuitActivity(null, default);

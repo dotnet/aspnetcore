@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.AspNetCore.Components.Infrastructure;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -27,7 +28,9 @@ public class ComponentsActivitySourceTest
     public void Constructor_CreatesActivitySourceCorrectly()
     {
         // Arrange & Act
-        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
+        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        componentsActivitySource.Init(linkstore);
 
         // Assert
         Assert.NotNull(componentsActivitySource);
@@ -37,13 +40,14 @@ public class ComponentsActivitySourceTest
     public void StartRouteActivity_CreatesAndStartsActivity()
     {
         // Arrange
-        var linkstore = new ComponentsActivityLinkStore();
-        var componentsActivitySource = new ComponentsActivitySource(linkstore);
+        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        componentsActivitySource.Init(linkstore);
         var componentType = "TestComponent";
         var route = "/test-route";
 
         // First set up a circuit context
-        linkstore.SetActivityContext(ComponentsActivityCategory.Circuit, new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded), new KeyValuePair<string, object>("aspnetcore.components.circuit.id", "test-circuit-id"));
+        linkstore.SetActivityContext(ComponentsActivityLinkStore.Circuit, new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded), new KeyValuePair<string, object>("aspnetcore.components.circuit.id", "test-circuit-id"));
 
         // Act
         var activityHandle = componentsActivitySource.StartRouteActivity(componentType, route);
@@ -70,14 +74,15 @@ public class ComponentsActivitySourceTest
     public void StartEventActivity_CreatesAndStartsActivity()
     {
         // Arrange
-        var linkstore = new ComponentsActivityLinkStore();
-        var componentsActivitySource = new ComponentsActivitySource(linkstore);
+        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        componentsActivitySource.Init(linkstore);
         var componentType = "TestComponent";
         var methodName = "OnClick";
         var attributeName = "onclick";
 
         // First set up a circuit and route context
-        linkstore.SetActivityContext(ComponentsActivityCategory.Circuit, default, new KeyValuePair<string, object>("aspnetcore.components.circuit.id", "test-circuit-id"));
+        linkstore.SetActivityContext(ComponentsActivityLinkStore.Circuit, default, new KeyValuePair<string, object>("aspnetcore.components.circuit.id", "test-circuit-id"));
         componentsActivitySource.StartRouteActivity("ParentComponent", "/parent");
 
         // Act
@@ -105,7 +110,9 @@ public class ComponentsActivitySourceTest
     public void FailEventActivity_SetsErrorStatusAndStopsActivity()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
+        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        componentsActivitySource.Init(linkstore);
         var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
@@ -123,7 +130,9 @@ public class ComponentsActivitySourceTest
     public async Task CaptureEventStopAsync_StopsActivityOnSuccessfulTask()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
+        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        componentsActivitySource.Init(linkstore);
         var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var task = Task.CompletedTask;
@@ -140,7 +149,9 @@ public class ComponentsActivitySourceTest
     public async Task CaptureEventStopAsync_FailsActivityOnException()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
+        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        componentsActivitySource.Init(linkstore);
         var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
@@ -159,7 +170,9 @@ public class ComponentsActivitySourceTest
     public void StartRouteActivity_HandlesNullValues()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
+        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        componentsActivitySource.Init(linkstore);
 
         // Act
         var activityHandle = componentsActivitySource.StartRouteActivity(null, null);
@@ -174,7 +187,9 @@ public class ComponentsActivitySourceTest
     public void StartEventActivity_HandlesNullValues()
     {
         // Arrange
-        var componentsActivitySource = new ComponentsActivitySource(new ComponentsActivityLinkStore());
+        var componentsActivitySource = new ComponentsActivitySource();
+        var linkstore = new ComponentsActivityLinkStore(null);
+        componentsActivitySource.Init(linkstore);
 
         // Act
         var activityHandle = componentsActivitySource.StartEventActivity(null, null, null);

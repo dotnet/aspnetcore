@@ -2,20 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Infrastructure.Server;
 
 internal class CircuitActivitySource
 {
     internal const string Name = "Microsoft.AspNetCore.Components.Server.Circuits";
     internal const string OnCircuitName = $"{Name}.CircuitStart";
 
-    private readonly IComponentsActivityLinkStore _activityLinkStore;
+    private ComponentsActivityLinkStore? _activityLinkStore;
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
-    public CircuitActivitySource(IComponentsActivityLinkStore activityLinkStore)
+    public void Init(ComponentsActivityLinkStore store)
     {
-        _activityLinkStore = activityLinkStore ?? throw new ArgumentNullException(nameof(activityLinkStore));
+        _activityLinkStore = store;
     }
 
     public CircuitActivityHandle StartCircuitActivity(string circuitId, ActivityContext httpActivityContext)
@@ -35,18 +35,18 @@ internal class CircuitActivitySource
                     activity.SetTag("aspnetcore.components.circuit.id", circuitId);
 
                     // store self link
-                    _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Circuit, activity.Context,
+                    _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.Circuit, activity.Context,
                         new KeyValuePair<string, object?>("aspnetcore.components.circuit.id", circuitId));
                 }
                 if (httpActivityContext != default)
                 {
                     // store the http link
-                    _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Http, httpActivityContext, null);
+                    _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivityContext, null);
                 }
                 if (signalRActivity != null && signalRActivity.Source.Name == "Microsoft.AspNetCore.SignalR.Server")
                 {
                     // store the SignalR link
-                    _activityLinkStore.SetActivityContext(ComponentsActivityCategory.SignalR, signalRActivity.Context, null);
+                    _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.SignalR, signalRActivity.Context, null);
                 }
             }
             return new CircuitActivityHandle { Previous = signalRActivity, Activity = activity };
@@ -66,7 +66,7 @@ internal class CircuitActivitySource
             }
             if (activity.IsAllDataRequested)
             {
-                _activityLinkStore.AddActivityContexts(ComponentsActivityCategory.Circuit, activity);
+                _activityLinkStore.AddActivityContexts(ComponentsActivityLinkStore.Circuit, activity);
             }
             activityHandle.Activity.Stop();
 

@@ -38,7 +38,6 @@ public static class ComponentsMetricsServiceCollectionExtensions
     public static IServiceCollection AddComponentsTracing(
         IServiceCollection services)
     {
-        services.TryAddScoped<IComponentsActivityLinkStore, ComponentsActivityLinkStore>();
         services.TryAddScoped<ComponentsActivitySource>();
 
         return services;

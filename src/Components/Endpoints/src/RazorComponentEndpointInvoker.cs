@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -21,12 +22,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 {
     private readonly EndpointHtmlRenderer _renderer;
     private readonly ILogger<RazorComponentEndpointInvoker> _logger;
-    private readonly IComponentsActivityLinkStore _activityLinkStore;
+    private readonly ComponentsActivityLinkStore _activityLinkStore;
 
-    public RazorComponentEndpointInvoker(EndpointHtmlRenderer renderer, IComponentsActivityLinkStore activityLinkStore, ILogger<RazorComponentEndpointInvoker> logger)
+    public RazorComponentEndpointInvoker(EndpointHtmlRenderer renderer, ILogger<RazorComponentEndpointInvoker> logger)
     {
         _renderer = renderer;
-        _activityLinkStore = activityLinkStore;
+        _activityLinkStore = new ComponentsActivityLinkStore(renderer);
         _logger = logger;
     }
 
@@ -85,7 +86,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         if (httpActivityContext != default)
         {
-            _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Http, httpActivityContext, null);
+            _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivityContext, null);
         }
 
         await _renderer.InitializeStandardComponentServicesAsync(
