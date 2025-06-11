@@ -2784,6 +2784,26 @@ class HubConnectionTest {
     }
 
     @Test
+    public void closeWithPendingNegotiate() {
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", (req) -> Single.just(new HttpResponse(404, "", TestUtils.emptyByteBuffer)).delay(200, TimeUnit.MILLISECONDS));
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withHttpClient(client)
+                .build();
+
+        Completable start = hubConnection.start();
+        assertEquals(HubConnectionState.CONNECTING, hubConnection.getConnectionState());
+        hubConnection.stop().timeout(3, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        HttpRequestException exception = assertThrows(HttpRequestException.class, () -> start.blockingAwait(10, TimeUnit.SECONDS));
+        assertEquals("Unexpected status code returned from negotiate: 404 .", exception.getMessage());
+        assertEquals(404, exception.getStatusCode());
+    }
+
+    @Test
     public void negotiateThatRedirectsForeverFailsAfter100Tries() {
         TestHttpClient client = new TestHttpClient().on("POST", "http://example.com/negotiate?negotiateVersion=1",
                 (req) -> Single.just(new HttpResponse(200, "", TestUtils.stringToByteBuffer("{\"url\":\"http://example.com\"}"))));
