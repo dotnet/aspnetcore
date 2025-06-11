@@ -55,7 +55,6 @@ internal sealed class BufferSourceJsonConverter : JsonConverter<BufferSource>
 
             if (pooledArray != null)
             {
-                byteSpan.Clear();
                 ArrayPool<byte>.Shared.Return(pooledArray);
             }
 
@@ -67,7 +66,6 @@ internal sealed class BufferSourceJsonConverter : JsonConverter<BufferSource>
 
         if (pooledArray != null)
         {
-            byteSpan.Clear();
             ArrayPool<byte>.Shared.Return(pooledArray);
         }
 
@@ -92,7 +90,6 @@ internal sealed class BufferSourceJsonConverter : JsonConverter<BufferSource>
 
         if (pooledArray != null)
         {
-            byteSpan.Clear();
             ArrayPool<byte>.Shared.Return(pooledArray);
         }
     }

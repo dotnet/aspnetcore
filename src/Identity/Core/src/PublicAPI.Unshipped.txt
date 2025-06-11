@@ -55,10 +55,10 @@ Microsoft.AspNetCore.Identity.PasskeyException
 Microsoft.AspNetCore.Identity.PasskeyException.PasskeyException(string! message) -> void
 Microsoft.AspNetCore.Identity.PasskeyException.PasskeyException(string! message, System.Exception? innerException) -> void
 Microsoft.AspNetCore.Identity.PasskeyOriginInfo
-Microsoft.AspNetCore.Identity.PasskeyOriginInfo.CrossOrigin.get -> bool?
+Microsoft.AspNetCore.Identity.PasskeyOriginInfo.CrossOrigin.get -> bool
 Microsoft.AspNetCore.Identity.PasskeyOriginInfo.Origin.get -> string!
 Microsoft.AspNetCore.Identity.PasskeyOriginInfo.PasskeyOriginInfo() -> void
-Microsoft.AspNetCore.Identity.PasskeyOriginInfo.PasskeyOriginInfo(string! origin, bool? crossOrigin) -> void
+Microsoft.AspNetCore.Identity.PasskeyOriginInfo.PasskeyOriginInfo(string! origin, bool crossOrigin) -> void
 Microsoft.AspNetCore.Identity.PasskeyRequestArgs<TUser>
 Microsoft.AspNetCore.Identity.PasskeyRequestArgs<TUser>.Extensions.get -> System.Text.Json.JsonElement?
 Microsoft.AspNetCore.Identity.PasskeyRequestArgs<TUser>.Extensions.set -> void

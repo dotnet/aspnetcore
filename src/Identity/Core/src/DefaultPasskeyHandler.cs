@@ -90,7 +90,7 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
                 return false;
             }
 
-            if (originInfo.CrossOrigin == true && !_passkeyOptions.AllowCrossOriginIframes)
+            if (originInfo.CrossOrigin && !_passkeyOptions.AllowCrossOriginIframes)
             {
                 return false;
             }
@@ -212,7 +212,7 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         // NOTE: The level 3 draft permits having multiple origins and validating the "top origin" when a cross-origin request is made.
         //       For future-proofing, we pass a PasskeyOriginInfo to the origin validator so that we're able to add more properties to
         //       it later.
-        var originInfo = new PasskeyOriginInfo(clientData.Origin, clientData.CrossOrigin);
+        var originInfo = new PasskeyOriginInfo(clientData.Origin, clientData.CrossOrigin == true);
         var isOriginValid = await IsValidOriginAsync(originInfo, context.HttpContext).ConfigureAwait(false);
         if (!isOriginValid)
         {
@@ -486,7 +486,7 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         // NOTE: The level 3 draft permits having multiple origins and validating the "top origin" when a cross-origin request is made.
         //       For future-proofing, we pass a PasskeyOriginInfo to the origin validator so that we're able to add more properties to
         //       it later.
-        var originInfo = new PasskeyOriginInfo(clientData.Origin, clientData.CrossOrigin);
+        var originInfo = new PasskeyOriginInfo(clientData.Origin, clientData.CrossOrigin == true);
         var isOriginValid = await IsValidOriginAsync(originInfo, context.HttpContext).ConfigureAwait(false);
         if (!isOriginValid)
         {

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// </summary>
 /// <param name="origin">The fully-qualified origin of the requester.</param>
 /// <param name="crossOrigin">Whether the request came from a cross-origin <c>&lt;iframe&gt;</c></param>
-public readonly struct PasskeyOriginInfo(string origin, bool? crossOrigin)
+public readonly struct PasskeyOriginInfo(string origin, bool crossOrigin)
 {
     /// <summary>
     /// Gets the fully-qualified origin of the requester.
@@ -18,5 +18,5 @@ public readonly struct PasskeyOriginInfo(string origin, bool? crossOrigin)
     /// <summary>
     /// Gets whether the request came from a cross-origin <c>&lt;iframe&gt;</c>.
     /// </summary>
-    public bool? CrossOrigin { get; } = crossOrigin;
+    public bool CrossOrigin { get; } = crossOrigin;
 }

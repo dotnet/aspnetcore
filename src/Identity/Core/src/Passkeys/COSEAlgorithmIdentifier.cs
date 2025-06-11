@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#typedefdef-cosealgorithmidentifier"/>.
 /// </remarks>
-internal enum COSEAlgorithmIdentifier : long
+internal enum COSEAlgorithmIdentifier : int
 {
     RS1 = -65535,
     RS512 = -259,
