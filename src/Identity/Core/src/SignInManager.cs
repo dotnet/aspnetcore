@@ -478,7 +478,14 @@ public class SignInManager<TUser> where TUser : class
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
         ArgumentNullException.ThrowIfNull(options);
 
-        var result = await _passkeyHandler.PerformAttestationAsync(credentialJson, options.AsJson(), UserManager).ConfigureAwait(false);
+        var context = new PasskeyAttestationContext<TUser>
+        {
+            CredentialJson = credentialJson,
+            OriginalOptionsJson = options.AsJson(),
+            UserManager = UserManager,
+            HttpContext = Context,
+        };
+        var result = await _passkeyHandler.PerformAttestationAsync(context).ConfigureAwait(false);
         if (!result.Succeeded)
         {
             Logger.LogDebug(EventIds.PasskeyAttestationFailed, "Passkey attestation failed: {message}", result.Failure.Message);
@@ -502,7 +509,15 @@ public class SignInManager<TUser> where TUser : class
         ArgumentNullException.ThrowIfNull(options);
 
         var user = options.UserId is { Length: > 0 } userId ? await UserManager.FindByIdAsync(userId) : null;
-        var result = await _passkeyHandler.PerformAssertionAsync(user, credentialJson, options.AsJson(), UserManager);
+        var context = new PasskeyAssertionContext<TUser>
+        {
+            User = user,
+            CredentialJson = credentialJson,
+            OriginalOptionsJson = options.AsJson(),
+            UserManager = UserManager,
+            HttpContext = Context,
+        };
+        var result = await _passkeyHandler.PerformAssertionAsync(context);
         if (!result.Succeeded)
         {
             Logger.LogDebug(EventIds.PasskeyAssertionFailed, "Passkey assertion failed: {message}", result.Failure.Message);

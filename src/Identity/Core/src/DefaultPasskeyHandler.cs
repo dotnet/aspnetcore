@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -13,35 +14,26 @@ namespace Microsoft.AspNetCore.Identity;
 /// <summary>
 /// The default passkey handler.
 /// </summary>
-public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
+public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
     where TUser : class
 {
-    private readonly IPasskeyOriginValidator _originValidator;
-    private readonly IPasskeyAttestationStatementVerifier _attestationStatementVerifier;
     private readonly PasskeyOptions _passkeyOptions;
 
     /// <summary>
     /// Constructs a new <see cref="DefaultPasskeyHandler{TUser}"/> instance.
     /// </summary>
     /// <param name="options">The <see cref="IdentityOptions"/>.</param>
-    /// <param name="originValidator">The <see cref="IPasskeyOriginValidator"/> for validating origins.</param>
-    /// <param name="attestationStatementVerifier">An optional <see cref="IPasskeyAttestationStatementVerifier"/> for verifying attestation statements.</param>
-    public DefaultPasskeyHandler(
-        IOptions<IdentityOptions> options,
-        IPasskeyOriginValidator originValidator,
-        IPasskeyAttestationStatementVerifier attestationStatementVerifier)
+    public DefaultPasskeyHandler(IOptions<IdentityOptions> options)
     {
-        _originValidator = originValidator;
-        _attestationStatementVerifier = attestationStatementVerifier;
         _passkeyOptions = options.Value.Passkey;
     }
 
     /// <inheritdoc/>
-    public async Task<PasskeyAttestationResult> PerformAttestationAsync(string credentialJson, string originalOptionsJson, UserManager<TUser> userManager)
+    public async Task<PasskeyAttestationResult> PerformAttestationAsync(PasskeyAttestationContext<TUser> context)
     {
         try
         {
-            return await PerformAttestationCoreAsync(credentialJson, originalOptionsJson, userManager).ConfigureAwait(false);
+            return await PerformAttestationCoreAsync(context).ConfigureAwait(false);
         }
         catch (PasskeyException ex)
         {
@@ -59,11 +51,11 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
     }
 
     /// <inheritdoc/>
-    public async Task<PasskeyAssertionResult<TUser>> PerformAssertionAsync(TUser? user, string credentialJson, string originalOptionsJson, UserManager<TUser> userManager)
+    public async Task<PasskeyAssertionResult<TUser>> PerformAssertionAsync(PasskeyAssertionContext<TUser> context)
     {
         try
         {
-            return await PerformAssertionCoreAsync(user, credentialJson, originalOptionsJson, userManager).ConfigureAwait(false);
+            return await PerformAssertionCoreAsync(context).ConfigureAwait(false);
         }
         catch (PasskeyException ex)
         {
@@ -80,10 +72,78 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         }
     }
 
-    private async Task<PasskeyAttestationResult> PerformAttestationCoreAsync(
-        string credentialJson,
-        string originalOptionsJson,
-        UserManager<TUser> userManager)
+    /// <summary>
+    /// Determines whether the specified origin is valid for passkey operations.
+    /// </summary>
+    /// <param name="originInfo">Information about the passkey's origin.</param>
+    /// <param name="httpContext">The HTTP context for the request.</param>
+    /// <returns><c>true</c> if the origin is valid; otherwise, <c>false</c>.</returns>
+    protected virtual Task<bool> IsValidOriginAsync(PasskeyOriginInfo originInfo, HttpContext httpContext)
+    {
+        var result = IsValidOrigin();
+        return Task.FromResult(result);
+
+        bool IsValidOrigin()
+        {
+            if (string.IsNullOrEmpty(originInfo.Origin))
+            {
+                return false;
+            }
+
+            if (originInfo.CrossOrigin == true && !_passkeyOptions.AllowCrossOriginIframes)
+            {
+                return false;
+            }
+
+            if (!Uri.TryCreate(originInfo.Origin, UriKind.Absolute, out var originUri))
+            {
+                return false;
+            }
+
+            if (_passkeyOptions.AllowedOrigins.Count > 0)
+            {
+                foreach (var allowedOrigin in _passkeyOptions.AllowedOrigins)
+                {
+                    // Uri.Equals correctly handles string comparands.
+                    if (originUri.Equals(allowedOrigin))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            if (_passkeyOptions.AllowCurrentOrigin && httpContext.Request.Headers.Origin is [var origin])
+            {
+                // Uri.Equals correctly handles string comparands.
+                if (originUri.Equals(origin))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// Verifies the attestation statement of a passkey.
+    /// </summary>
+    /// <remarks>
+    /// See <see href="https://www.w3.org/TR/webauthn-3/#verification-procedure"/>.
+    /// </remarks>
+    /// <param name="attestationObject">The attestation object to verify. See <see href="https://www.w3.org/TR/webauthn-3/#attestation-object"/>.</param>
+    /// <param name="clientDataHash">The hash of the client data used during registration.</param>
+    /// <param name="httpContext">The HTTP context for the request.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains true if the verification is successful; otherwise, false.</returns>
+    protected virtual Task<bool> VerifyAttestationStatementAsync(ReadOnlyMemory<byte> attestationObject, ReadOnlyMemory<byte> clientDataHash, HttpContext httpContext)
+        => Task.FromResult(true);
+
+    /// <summary>
+    /// Performs passkey attestation using the provided credential JSON and original options JSON.
+    /// </summary>
+    /// <param name="context">The context containing necessary information for passkey attestation.</param>
+    /// <returns>A task object representing the asynchronous operation containing the <see cref="PasskeyAttestationResult"/>.</returns>
+    protected virtual async Task<PasskeyAttestationResult> PerformAttestationCoreAsync(PasskeyAttestationContext<TUser> context)
     {
         // See: https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential
         // NOTE: Quotes from the spec may have been modified.
@@ -94,7 +154,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
 
         try
         {
-            credential = JsonSerializer.Deserialize(credentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialAuthenticatorAttestationResponse)
+            credential = JsonSerializer.Deserialize(context.CredentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialAuthenticatorAttestationResponse)
                 ?? throw PasskeyException.NullAttestationCredentialJson();
         }
         catch (JsonException ex)
@@ -104,7 +164,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
 
         try
         {
-            originalOptions = JsonSerializer.Deserialize(originalOptionsJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialCreationOptions)
+            originalOptions = JsonSerializer.Deserialize(context.OriginalOptionsJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialCreationOptions)
                 ?? throw PasskeyException.NullOriginalCreationOptionsJson();
         }
         catch (JsonException ex)
@@ -153,7 +213,8 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         //       For future-proofing, we pass a PasskeyOriginInfo to the origin validator so that we're able to add more properties to
         //       it later.
         var originInfo = new PasskeyOriginInfo(clientData.Origin, clientData.CrossOrigin);
-        if (!_originValidator.IsValidOrigin(originInfo))
+        var isOriginValid = await IsValidOriginAsync(originInfo, context.HttpContext).ConfigureAwait(false);
+        if (!isOriginValid)
         {
             throw PasskeyException.InvalidOrigin(clientData.Origin);
         }
@@ -247,7 +308,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         // 21-24. Determine the attestation statement format by performing a USASCII case-sensitive match on fmt against the set of supported WebAuthn
         //        Attestation Statement Format Identifier values...
         //        Handles all validation related to the attestation statement (21-24).
-        var isAttestationStatementValid = await _attestationStatementVerifier.VerifyAsync(attestationObjectMemory, clientDataHash).ConfigureAwait(false);
+        var isAttestationStatementValid = await VerifyAttestationStatementAsync(attestationObjectMemory, clientDataHash, context.HttpContext).ConfigureAwait(false);
         if (!isAttestationStatementValid)
         {
             throw PasskeyException.InvalidAttestationStatement();
@@ -263,7 +324,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         var credentialId = attestedCredentialData.CredentialId.ToArray();
 
         // 26. Verify that the credentialId is not yet registered for any user.
-        var existingUser = await userManager.FindByPasskeyIdAsync(credentialId).ConfigureAwait(false);
+        var existingUser = await context.UserManager.FindByPasskeyIdAsync(credentialId).ConfigureAwait(false);
         if (existingUser is not null)
         {
             throw PasskeyException.CredentialAlreadyRegistered();
@@ -292,11 +353,12 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         return PasskeyAttestationResult.Success(credentialRecord);
     }
 
-    private async Task<PasskeyAssertionResult<TUser>> PerformAssertionCoreAsync(
-        TUser? user,
-        string credentialJson,
-        string originalOptionsJson,
-        UserManager<TUser> userManager)
+    /// <summary>
+    /// Performs passkey assertion using the provided credential JSON, original options JSON, and optional user.
+    /// </summary>
+    /// <param name="context">The context containing necessary information for passkey assertion.</param>
+    /// <returns>A task object representing the asynchronous operation containing the <see cref="PasskeyAssertionResult{TUser}"/>.</returns>
+    protected virtual async Task<PasskeyAssertionResult<TUser>> PerformAssertionCoreAsync(PasskeyAssertionContext<TUser> context)
     {
         // See https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential
         // NOTE: Quotes from the spec may have been modified.
@@ -307,7 +369,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
 
         try
         {
-            credential = JsonSerializer.Deserialize(credentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialAuthenticatorAssertionResponse)
+            credential = JsonSerializer.Deserialize(context.CredentialJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialAuthenticatorAssertionResponse)
                 ?? throw PasskeyException.NullAssertionCredentialJson();
         }
         catch (JsonException ex)
@@ -317,7 +379,7 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
 
         try
         {
-            originalOptions = JsonSerializer.Deserialize(originalOptionsJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialRequestOptions)
+            originalOptions = JsonSerializer.Deserialize(context.OriginalOptionsJson, IdentityJsonSerializerContext.Default.PublicKeyCredentialRequestOptions)
                 ?? throw PasskeyException.NullOriginalRequestOptionsJson();
         }
         catch (JsonException ex)
@@ -349,20 +411,20 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         UserPasskeyInfo? storedPasskey;
 
         // 6. Identify the user being authenticated and let credentialRecord be the credential record for the credential:
-        if (user is not null)
+        if (context.User is { } user)
         {
             // * If the user was identified before the authentication ceremony was initiated, e.g., via a username or cookie,
             //   verify that the identified user account contains a credential record whose id equals
             //   credential.rawId. Let credentialRecord be that credential record. If response.userHandle is
             //   present, verify that it equals the user handle of the user account.
-            storedPasskey = await userManager.GetPasskeyAsync(user, credentialId).ConfigureAwait(false);
+            storedPasskey = await context.UserManager.GetPasskeyAsync(user, credentialId).ConfigureAwait(false);
             if (storedPasskey is null)
             {
                 throw PasskeyException.CredentialDoesNotBelongToUser();
             }
             if (userHandle is not null)
             {
-                var userId = await userManager.GetUserIdAsync(user).ConfigureAwait(false);
+                var userId = await context.UserManager.GetUserIdAsync(user).ConfigureAwait(false);
                 if (!string.Equals(userHandle, userId, StringComparison.Ordinal))
                 {
                     throw PasskeyException.UserHandleMismatch(userId, userHandle);
@@ -380,12 +442,12 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
                 throw PasskeyException.MissingUserHandle();
             }
 
-            user = await userManager.FindByIdAsync(userHandle).ConfigureAwait(false);
+            user = await context.UserManager.FindByIdAsync(userHandle).ConfigureAwait(false);
             if (user is null)
             {
                 throw PasskeyException.CredentialDoesNotBelongToUser();
             }
-            storedPasskey = await userManager.GetPasskeyAsync(user, credentialId).ConfigureAwait(false);
+            storedPasskey = await context.UserManager.GetPasskeyAsync(user, credentialId).ConfigureAwait(false);
             if (storedPasskey is null)
             {
                 throw PasskeyException.CredentialDoesNotBelongToUser();
@@ -425,7 +487,8 @@ public sealed partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser
         //       For future-proofing, we pass a PasskeyOriginInfo to the origin validator so that we're able to add more properties to
         //       it later.
         var originInfo = new PasskeyOriginInfo(clientData.Origin, clientData.CrossOrigin);
-        if (!_originValidator.IsValidOrigin(originInfo))
+        var isOriginValid = await IsValidOriginAsync(originInfo, context.HttpContext).ConfigureAwait(false);
+        if (!isOriginValid)
         {
             throw PasskeyException.InvalidOrigin(clientData.Origin);
         }

@@ -1,21 +1,39 @@
 #nullable enable
 Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>
-Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.DefaultPasskeyHandler(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions!>! options, Microsoft.AspNetCore.Identity.IPasskeyOriginValidator! originValidator, Microsoft.AspNetCore.Identity.IPasskeyAttestationStatementVerifier! attestationStatementVerifier) -> void
-Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.PerformAssertionAsync(TUser? user, string! credentialJson, string! originalOptionsJson, Microsoft.AspNetCore.Identity.UserManager<TUser!>! userManager) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser!>!>!
-Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.PerformAttestationAsync(string! credentialJson, string! originalOptionsJson, Microsoft.AspNetCore.Identity.UserManager<TUser!>! userManager) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAttestationResult!>!
-Microsoft.AspNetCore.Identity.IPasskeyAttestationStatementVerifier
-Microsoft.AspNetCore.Identity.IPasskeyAttestationStatementVerifier.VerifyAsync(System.ReadOnlyMemory<byte> attestationObject, System.ReadOnlyMemory<byte> clientDataHash) -> System.Threading.Tasks.Task<bool>!
+Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.DefaultPasskeyHandler(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions!>! options) -> void
+Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.PerformAssertionAsync(Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser!>! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser!>!>!
+Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.PerformAttestationAsync(Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser!>! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAttestationResult!>!
 Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>
-Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.PerformAssertionAsync(TUser? user, string! credentialJson, string! originalOptionsJson, Microsoft.AspNetCore.Identity.UserManager<TUser!>! userManager) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser!>!>!
-Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.PerformAttestationAsync(string! credentialJson, string! originalOptionsJson, Microsoft.AspNetCore.Identity.UserManager<TUser!>! userManager) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAttestationResult!>!
-Microsoft.AspNetCore.Identity.IPasskeyOriginValidator
-Microsoft.AspNetCore.Identity.IPasskeyOriginValidator.IsValidOrigin(Microsoft.AspNetCore.Identity.PasskeyOriginInfo originInfo) -> bool
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.PerformAssertionAsync(Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser!>! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser!>!>!
+Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser>.PerformAttestationAsync(Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser!>! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAttestationResult!>!
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.CredentialJson.get -> string!
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.CredentialJson.init -> void
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.HttpContext.init -> void
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.OriginalOptionsJson.get -> string!
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.OriginalOptionsJson.init -> void
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.PasskeyAssertionContext() -> void
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.User.get -> TUser?
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.User.init -> void
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.UserManager.get -> Microsoft.AspNetCore.Identity.UserManager<TUser!>!
+Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser>.UserManager.init -> void
 Microsoft.AspNetCore.Identity.PasskeyAssertionResult
 Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser>
 Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser>.Failure.get -> Microsoft.AspNetCore.Identity.PasskeyException?
 Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser>.Passkey.get -> Microsoft.AspNetCore.Identity.UserPasskeyInfo?
 Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser>.Succeeded.get -> bool
 Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser>.User.get -> TUser?
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>.CredentialJson.get -> string!
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>.CredentialJson.init -> void
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>.HttpContext.init -> void
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>.OriginalOptionsJson.get -> string!
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>.OriginalOptionsJson.init -> void
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>.PasskeyAttestationContext() -> void
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>.UserManager.get -> Microsoft.AspNetCore.Identity.UserManager<TUser!>!
+Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser>.UserManager.init -> void
 Microsoft.AspNetCore.Identity.PasskeyAttestationResult
 Microsoft.AspNetCore.Identity.PasskeyAttestationResult.Failure.get -> Microsoft.AspNetCore.Identity.PasskeyException?
 Microsoft.AspNetCore.Identity.PasskeyAttestationResult.Passkey.get -> Microsoft.AspNetCore.Identity.UserPasskeyInfo?
@@ -65,6 +83,10 @@ static Microsoft.AspNetCore.Identity.PasskeyAssertionResult.Fail<TUser>(Microsof
 static Microsoft.AspNetCore.Identity.PasskeyAssertionResult.Success<TUser>(Microsoft.AspNetCore.Identity.UserPasskeyInfo! passkey, TUser! user) -> Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser!>!
 static Microsoft.AspNetCore.Identity.PasskeyAttestationResult.Fail(Microsoft.AspNetCore.Identity.PasskeyException! failure) -> Microsoft.AspNetCore.Identity.PasskeyAttestationResult!
 static Microsoft.AspNetCore.Identity.PasskeyAttestationResult.Success(Microsoft.AspNetCore.Identity.UserPasskeyInfo! passkey) -> Microsoft.AspNetCore.Identity.PasskeyAttestationResult!
+virtual Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.IsValidOriginAsync(Microsoft.AspNetCore.Identity.PasskeyOriginInfo originInfo, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<bool>!
+virtual Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.PerformAssertionCoreAsync(Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser!>! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser!>!>!
+virtual Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.PerformAttestationCoreAsync(Microsoft.AspNetCore.Identity.PasskeyAttestationContext<TUser!>! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAttestationResult!>!
+virtual Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.VerifyAttestationStatementAsync(System.ReadOnlyMemory<byte> attestationObject, System.ReadOnlyMemory<byte> clientDataHash, Microsoft.AspNetCore.Http.HttpContext! httpContext) -> System.Threading.Tasks.Task<bool>!
 virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ConfigurePasskeyCreationOptionsAsync(Microsoft.AspNetCore.Identity.PasskeyCreationArgs! creationArgs) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyCreationOptions!>!
 virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.ConfigurePasskeyRequestOptionsAsync(Microsoft.AspNetCore.Identity.PasskeyRequestArgs<TUser!>! requestArgs) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyRequestOptions!>!
 virtual Microsoft.AspNetCore.Identity.SignInManager<TUser>.GeneratePasskeyCreationOptionsAsync(Microsoft.AspNetCore.Identity.PasskeyCreationArgs! creationArgs) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyCreationOptions!>!
