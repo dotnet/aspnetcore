@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using Microsoft.AspNetCore.Http.Validation;
+using Microsoft.Extensions.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 

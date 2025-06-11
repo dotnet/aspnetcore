@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components" />
-    <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Validation" />
   </ItemGroup>
 
   <ItemGroup>

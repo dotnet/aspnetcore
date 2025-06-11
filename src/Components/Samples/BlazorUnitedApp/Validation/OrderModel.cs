@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http.Validation;
+using Microsoft.Extensions.Validation;
 
 namespace BlazorUnitedApp.Validation;
 

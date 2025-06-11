@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <IsShippingPackage>false</IsShippingPackage>
     <Nullable>enable</Nullable>
 
-    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.Http.Validation.Generated</InterceptorsNamespaces>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.Http.Validation.Generated;Microsoft.Extensions.Validation.Generated</InterceptorsNamespaces>
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepoRoot)/src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.ValidationsGenerator/Microsoft.AspNetCore.Http.ValidationsGenerator.csproj"
+    <ProjectReference Include="$(RepoRoot)/src/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj"
      OutputItemType="Analyzer"
      ReferenceOutputAssembly="false" />
   </ItemGroup>
