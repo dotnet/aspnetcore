@@ -47,11 +47,6 @@ internal class ComponentsActivitySource
                     _componentsActivityLinkStore!.SetActivityContext(ComponentsActivityLinkStore.Route, activity.Context,
                         new KeyValuePair<string, object?>("aspnetcore.components.route", route));
                 }
-                if (httpActivity != null && httpActivity.Source.Name == "Microsoft.AspNetCore")
-                {
-                    // store the http link
-                    _componentsActivityLinkStore!.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivity.Context, null);
-                }
             }
 
             return new ComponentsActivityHandle { Activity = activity, Previous = httpActivity };
