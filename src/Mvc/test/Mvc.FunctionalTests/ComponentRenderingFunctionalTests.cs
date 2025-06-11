@@ -89,7 +89,7 @@ public class ComponentRenderingFunctionalTests : LoggedTest
         await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         var content = await response.Content.ReadAsStringAsync();
 
-        AssertComponent("Router component\n<p>Routed successfully</p>", "Routing", content);
+        AssertComponent("Router component\n<!--bl:3--><!--bl:4--><!--bl:5--><!--bl:6--><p>Routed successfully</p><!--/bl:6--><!--/bl:5--><!--/bl:4--><!--/bl:3-->", "Routing", content);
     }
 
     [Fact]
