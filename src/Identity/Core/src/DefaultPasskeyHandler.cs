@@ -360,7 +360,7 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
     /// <returns>A task object representing the asynchronous operation containing the <see cref="PasskeyAssertionResult{TUser}"/>.</returns>
     protected virtual async Task<PasskeyAssertionResult<TUser>> PerformAssertionCoreAsync(PasskeyAssertionContext<TUser> context)
     {
-        // See https://www.w3.org/TR/webauthn-3/#sctn-registering-a-new-credential
+        // See https://www.w3.org/TR/webauthn-3/#sctn-verifying-assertion
         // NOTE: Quotes from the spec may have been modified.
         // NOTE: Steps 1-3 are expected to have been performed prior to the execution of this method.
 
