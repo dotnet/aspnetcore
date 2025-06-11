@@ -26,13 +26,17 @@ static IHostBuilder CreateHostBuilder(string[] args) =>
                 options.Authentication.Schemes = AuthenticationSchemes.None;
                 options.Authentication.AllowAnonymous = true;
 
-                var property = typeof(HttpSysOptions).GetProperty("TlsClientHelloBytesCallback", BindingFlags.NonPublic | BindingFlags.Instance);
-                var delegateType = property.PropertyType; // Get the exact delegate type
+                // If you want to resolve a callback API, uncomment.
+                // Recommended approach is to use the on-demand API to fetch TLS client hello bytes,
+                // look into Startup.cs for details.
 
-                // Create a delegate of the correct type
-                var callbackDelegate = Delegate.CreateDelegate(delegateType, typeof(Holder).GetMethod(nameof(Holder.ProcessTlsClientHello), BindingFlags.Static | BindingFlags.Public));
+                //var property = typeof(HttpSysOptions).GetProperty("TlsClientHelloBytesCallback", BindingFlags.NonPublic | BindingFlags.Instance);
+                //var delegateType = property.PropertyType; // Get the exact delegate type
 
-                property?.SetValue(options, callbackDelegate);
+                //// Create a delegate of the correct type
+                //var callbackDelegate = Delegate.CreateDelegate(delegateType, typeof(Holder).GetMethod(nameof(Holder.ProcessTlsClientHello), BindingFlags.Static | BindingFlags.Public));
+
+                //property?.SetValue(options, callbackDelegate);
             });
         });
 
