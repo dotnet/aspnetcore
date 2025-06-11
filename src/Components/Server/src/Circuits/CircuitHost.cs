@@ -119,13 +119,13 @@ internal partial class CircuitHost : IAsyncDisposable
                 throw new InvalidOperationException("The circuit host is already initialized.");
             }
 
-            CircuitActivityWrapper circuitActivity = default;
+            CircuitActivityHandle activityHandle = default;
 
             try
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
-                circuitActivity = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext, Renderer);
+                activityHandle = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext, Renderer);
                 _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
 
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
@@ -171,11 +171,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 Log.InitializationSucceeded(_logger);
 
-                CircuitActivitySource.StopCircuitActivity(circuitActivity, null);
+                CircuitActivitySource.StopCircuitActivity(activityHandle, null);
             }
             catch (Exception ex)
             {
-                CircuitActivitySource.StopCircuitActivity(circuitActivity, ex);
+                CircuitActivitySource.StopCircuitActivity(activityHandle, ex);
 
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);

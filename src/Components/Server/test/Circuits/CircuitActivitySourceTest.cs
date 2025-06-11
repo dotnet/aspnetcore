@@ -62,12 +62,12 @@ public class CircuitActivitySourceTest
         var circuitActivitySource = new CircuitActivitySource();
         var circuitId = "test-circuit-id";
         var httpContext = default(ActivityContext);
-        var wrapper = circuitActivitySource.StartCircuitActivity(circuitId, httpContext, null);
-        var activity = wrapper.Activity;
+        var activityHandle = circuitActivitySource.StartCircuitActivity(circuitId, httpContext, null);
+        var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
 
         // Act
-        CircuitActivitySource.StopCircuitActivity(wrapper, exception);
+        CircuitActivitySource.StopCircuitActivity(activityHandle, exception);
 
         // Assert
         Assert.True(activity!.IsStopped);

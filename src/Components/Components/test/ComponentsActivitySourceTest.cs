@@ -95,12 +95,12 @@ public class ComponentsActivitySourceTest
     {
         // Arrange
         var componentsActivitySource = new ComponentsActivitySource();
-        var wrapper = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
-        var activity = wrapper.Activity;
+        var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
+        var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
 
         // Act
-        componentsActivitySource.StopComponentActivity(wrapper, exception);
+        componentsActivitySource.StopComponentActivity(activityHandle, exception);
 
         // Assert
         Assert.True(activity!.IsStopped);

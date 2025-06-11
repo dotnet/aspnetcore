@@ -5,7 +5,10 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components;
 
-internal struct ComponentsActivityWrapper
+/// <summary>
+/// Named tuple for restoring the previous activity after stopping the current one.
+/// </summary>
+internal struct ComponentsActivityHandle
 {
     public Activity? Previous;
     public Activity? Activity;
@@ -27,7 +30,7 @@ internal class ComponentsActivitySource
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
-    public ComponentsActivityWrapper StartRouteActivity(string componentType, string route)
+    public ComponentsActivityHandle StartRouteActivity(string componentType, string route)
     {
         var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
@@ -57,12 +60,12 @@ internal class ComponentsActivitySource
             Activity.Current = null; // do not inherit the parent activity
             activity.Start();
             _routeContext = activity.Context;
-            return new ComponentsActivityWrapper { Activity = activity, Previous = previousActivity };
+            return new ComponentsActivityHandle { Activity = activity, Previous = previousActivity };
         }
         return default;
     }
 
-    public ComponentsActivityWrapper StartEventActivity(string? componentType, string? methodName, string? attributeName)
+    public ComponentsActivityHandle StartEventActivity(string? componentType, string? methodName, string? attributeName)
     {
         var activity = ActivitySource.CreateActivity(OnEventName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
@@ -91,14 +94,14 @@ internal class ComponentsActivitySource
             var previousActivity = Activity.Current;
             Activity.Current = null; // do not inherit the parent activity
             activity.Start();
-            return new ComponentsActivityWrapper { Activity = activity, Previous = previousActivity };
+            return new ComponentsActivityHandle { Activity = activity, Previous = previousActivity };
         }
         return default;
     }
 
-    public void StopComponentActivity(ComponentsActivityWrapper wrapper, Exception? ex)
+    public void StopComponentActivity(ComponentsActivityHandle activityHandle, Exception? ex)
     {
-        var activity = wrapper.Activity;
+        var activity = activityHandle.Activity;
         if (activity != null && !activity.IsStopped)
         {
             if (activity.IsAllDataRequested)
@@ -127,23 +130,23 @@ internal class ComponentsActivitySource
             }
             activity.Stop();
 
-            if (Activity.Current == null && wrapper.Previous != null && !wrapper.Previous.IsStopped)
+            if (Activity.Current == null && activityHandle.Previous != null && !activityHandle.Previous.IsStopped)
             {
-                Activity.Current = wrapper.Previous;
+                Activity.Current = activityHandle.Previous;
             }
         }
     }
 
-    public async Task CaptureEventStopAsync(Task task, ComponentsActivityWrapper wrapper)
+    public async Task CaptureEventStopAsync(Task task, ComponentsActivityHandle activityHandle)
     {
         try
         {
             await task;
-            StopComponentActivity(wrapper, null);
+            StopComponentActivity(activityHandle, null);
         }
         catch (Exception ex)
         {
-            StopComponentActivity(wrapper, ex);
+            StopComponentActivity(activityHandle, ex);
         }
     }
 }

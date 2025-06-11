@@ -222,12 +222,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute.AsSpan());
         var locationPathSpan = TrimQueryOrHash(relativePath);
         var locationPath = $"/{locationPathSpan}";
-        ComponentsActivityWrapper activityWrapper;
+        ComponentsActivityHandle activityHandle;
 
         // In order to avoid routing twice we check for RouteData
         if (RoutingStateProvider?.RouteData is { } endpointRouteData)
         {
-            activityWrapper = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
+            activityHandle = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
 
             // Other routers shouldn't provide RouteData, this is specific to our router component
             // and must abide by our syntax and behaviors.
@@ -240,7 +240,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
 
-            _renderHandle.ComponentActivitySource?.StopComponentActivity(activityWrapper, null);
+            _renderHandle.ComponentActivitySource?.StopComponentActivity(activityHandle, null);
             return;
         }
 
@@ -257,7 +257,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                     $"does not implement {typeof(IComponent).FullName}.");
             }
 
-            activityWrapper = RecordDiagnostics(context.Handler.FullName, context.Entry.RoutePattern.RawText);
+            activityHandle = RecordDiagnostics(context.Handler.FullName, context.Entry.RoutePattern.RawText);
 
             Log.NavigatingToComponent(_logger, context.Handler, locationPath, _baseUri);
 
@@ -278,7 +278,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             if (!isNavigationIntercepted)
             {
-                activityWrapper = RecordDiagnostics("NotFound", "NotFound");
+                activityHandle = RecordDiagnostics("NotFound", "NotFound");
 
                 Log.DisplayingNotFound(_logger, locationPath, _baseUri);
 
@@ -289,18 +289,18 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             }
             else
             {
-                activityWrapper = RecordDiagnostics("External", "External");
+                activityHandle = RecordDiagnostics("External", "External");
 
                 Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
-        _renderHandle.ComponentActivitySource?.StopComponentActivity(activityWrapper, null);
+        _renderHandle.ComponentActivitySource?.StopComponentActivity(activityHandle, null);
     }
 
-    private ComponentsActivityWrapper RecordDiagnostics(string componentType, string template)
+    private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
     {
-        ComponentsActivityWrapper activityWrapper = default;
+        ComponentsActivityHandle activityWrapper = default;
         if (_renderHandle.ComponentActivitySource != null)
         {
             activityWrapper = _renderHandle.ComponentActivitySource.StartRouteActivity(componentType, template);

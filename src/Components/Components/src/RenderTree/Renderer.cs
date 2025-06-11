@@ -460,14 +460,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         var (renderedByComponentId, callback, attributeName) = GetRequiredEventBindingEntry(eventHandlerId);
 
         // collect trace
-        ComponentsActivityWrapper wrapper = default;
+        ComponentsActivityHandle activityHandle = default;
         string receiverName = null;
         string methodName = null;
         if (ComponentActivitySource != null)
         {
             receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
             methodName ??= callback.Delegate.Method?.Name;
-            wrapper = ComponentActivitySource.StartEventActivity(receiverName, methodName, attributeName);
+            activityHandle = ComponentActivitySource.StartEventActivity(receiverName, methodName, attributeName);
         }
 
         var eventStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsEventEnabled ? Stopwatch.GetTimestamp() : 0;
@@ -522,9 +522,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             }
 
             // stop activity/trace
-            if (ComponentActivitySource != null && wrapper.Activity != null)
+            if (ComponentActivitySource != null && activityHandle.Activity != null)
             {
-                _ = ComponentActivitySource.CaptureEventStopAsync(task, wrapper);
+                _ = ComponentActivitySource.CaptureEventStopAsync(task, activityHandle);
             }
         }
         catch (Exception e)
@@ -536,9 +536,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 ComponentMetrics.FailEventSync(e, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
-            if (ComponentActivitySource != null && wrapper.Activity != null)
+            if (ComponentActivitySource != null && activityHandle.Activity != null)
             {
-                ComponentActivitySource.StopComponentActivity(wrapper, e);
+                ComponentActivitySource.StopComponentActivity(activityHandle, e);
             }
 
             HandleExceptionViaErrorBoundary(e, receiverComponentState);

@@ -5,7 +5,10 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.RenderTree;
 
-internal struct CircuitActivityWrapper
+/// <summary>
+/// Named tuple for restoring the previous activity after stopping the current one.
+/// </summary>
+internal struct CircuitActivityHandle
 {
     public Activity? Previous;
     public Activity? Activity;
@@ -18,7 +21,7 @@ internal class CircuitActivitySource
 
     private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
-    public CircuitActivityWrapper StartCircuitActivity(string circuitId, ActivityContext httpActivityContext, Renderer? renderer)
+    public CircuitActivityHandle StartCircuitActivity(string circuitId, ActivityContext httpActivityContext, Renderer? renderer)
     {
         var activity = ActivitySource.CreateActivity(OnCircuitName, ActivityKind.Internal, parentId:null, null, null);
         if (activity is not null)
@@ -52,25 +55,25 @@ internal class CircuitActivitySource
                     activity.AddLink(new ActivityLink(routeActivityContext));
                 }
             }
-            return new CircuitActivityWrapper { Previous = previousActivity, Activity = activity };
+            return new CircuitActivityHandle { Previous = previousActivity, Activity = activity };
         }
         return default;
     }
 
-    public static void StopCircuitActivity(CircuitActivityWrapper wrapper, Exception? ex)
+    public static void StopCircuitActivity(CircuitActivityHandle activityHandle, Exception? ex)
     {
-        if (wrapper.Activity != null && !wrapper.Activity.IsStopped)
+        if (activityHandle.Activity != null && !activityHandle.Activity.IsStopped)
         {
             if (ex != null)
             {
-                wrapper.Activity.SetTag("error.type", ex.GetType().FullName);
-                wrapper.Activity.SetStatus(ActivityStatusCode.Error);
+                activityHandle.Activity.SetTag("error.type", ex.GetType().FullName);
+                activityHandle.Activity.SetStatus(ActivityStatusCode.Error);
             }
-            wrapper.Activity.Stop();
+            activityHandle.Activity.Stop();
 
-            if (Activity.Current == null && wrapper.Previous != null && !wrapper.Previous.IsStopped)
+            if (Activity.Current == null && activityHandle.Previous != null && !activityHandle.Previous.IsStopped)
             {
-                Activity.Current = wrapper.Previous;
+                Activity.Current = activityHandle.Previous;
             }
         }
     }
