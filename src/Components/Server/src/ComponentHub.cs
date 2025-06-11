@@ -354,11 +354,13 @@ internal sealed partial class ComponentHub : Hub
                 store: null,
                 resourceCollection);
 
+            var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
+
             // Fire-and-forget the initialization process, because we can't block the
             // SignalR message loop (we'd get a deadlock if any of the initialization
             // logic relied on receiving a subsequent message from SignalR), and it will
             // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(store: null, _httpContext, Context.ConnectionAborted);
+            _ = circuitHost.InitializeAsync(store: null, httpActivityContext, Context.ConnectionAborted);
 
             circuitHost.AttachPersistedState(persistedCircuitState);
 
