@@ -48,7 +48,7 @@ else
 
 <form @formname="add-passkey" @onsubmit="AddPasskey" method="post">
     <AntiforgeryToken />
-    <PasskeySubmit Operation="PasskeyOperation.Create" Name="AddPasskeyInput" class="btn btn-primary">Add a new passkey</PasskeySubmit>
+    <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
 </form>
 
 @code {
@@ -65,10 +65,12 @@ else
     private string? CredentialId { get; set; }
 
     [SupplyParameterFromForm(FormName = "add-passkey")]
-    private PasskeyInputModel AddPasskeyInput { get; set; } = new();
+    private PasskeyInputModel Input { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        Input ??= new();
+
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
@@ -86,13 +88,13 @@ else
             return;
         }
 
-        if (!string.IsNullOrEmpty(AddPasskeyInput.Error))
+        if (!string.IsNullOrEmpty(Input.Error))
         {
-            RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add a passkey: {AddPasskeyInput.Error}", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add a passkey: {Input.Error}", HttpContext);
             return;
         }
 
-        if (string.IsNullOrEmpty(AddPasskeyInput.CredentialJson))
+        if (string.IsNullOrEmpty(Input.CredentialJson))
         {
             RedirectManager.RedirectToCurrentPageWithStatus("Error: The browser did not provide a passkey.", HttpContext);
             return;
@@ -105,7 +107,7 @@ else
             return;
         }
 
-        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(AddPasskeyInput.CredentialJson, options);
+        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson, options);
         if (!attestationResult.Succeeded)
         {
             RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add the passkey: {attestationResult.Failure.Message}.", HttpContext);
