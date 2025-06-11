@@ -73,11 +73,13 @@ internal class ComponentsActivityLinkStore : IComponentsActivityLinkStore
         {
             if (i != exceptCategory)
             {
-                if (_activityLinks[i] != default)
-                {
-                    targetActivity.AddLink(new ActivityLink(_activityLinks[i]));
-                }
+                var link = _activityLinks[i];
                 var tag = _activityTags[i];
+
+                if (link != default)
+                {
+                    targetActivity.AddLink(new ActivityLink(link));
+                }
                 if (tag != null)
                 {
                     targetActivity.SetTag(tag.Value.Key, tag.Value.Value);

@@ -28,6 +28,7 @@ public class RazorComponentEndpointInvokerTest
             new EndpointHtmlRenderer(
                 services,
                 NullLoggerFactory.Instance),
+            new ComponentsActivityLinkStore(),
             NullLogger<RazorComponentEndpointInvoker>.Instance);
 
         var context = new DefaultHttpContext();

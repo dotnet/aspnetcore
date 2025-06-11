@@ -125,7 +125,7 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
-                activityHandle = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext, Renderer);
+                activityHandle = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext);
                 _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
 
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders

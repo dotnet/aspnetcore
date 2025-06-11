@@ -41,8 +41,8 @@ public class CircuitActivitySourceTest
         var httpContext = new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded);
 
         // Act
-        var wrapper = circuitActivitySource.StartCircuitActivity(circuitId, httpContext, null);
-        var activity = wrapper.Activity;
+        var activityHandle = circuitActivitySource.StartCircuitActivity(circuitId, httpContext);
+        var activity = activityHandle.Activity;
 
         // Assert
         Assert.NotNull(activity);
@@ -51,8 +51,12 @@ public class CircuitActivitySourceTest
         Assert.Equal(ActivityKind.Internal, activity.Kind);
         Assert.True(activity.IsAllDataRequested);
         Assert.Equal(circuitId, activity.GetTagItem("aspnetcore.components.circuit.id"));
-        Assert.Contains(activity.Links, link => link.Context == httpContext);
+        Assert.Empty(activity.Links);
         Assert.False(activity.IsStopped);
+
+        circuitActivitySource.StopCircuitActivity(activityHandle, null);
+        Assert.True(activity.IsStopped);
+        Assert.Contains(activity.Links, link => link.Context == httpContext);
     }
 
     [Fact]
@@ -62,7 +66,7 @@ public class CircuitActivitySourceTest
         var circuitActivitySource = new CircuitActivitySource(new ComponentsActivityLinkStore());
         var circuitId = "test-circuit-id";
         var httpContext = default(ActivityContext);
-        var activityHandle = circuitActivitySource.StartCircuitActivity(circuitId, httpContext, null);
+        var activityHandle = circuitActivitySource.StartCircuitActivity(circuitId, httpContext);
         var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
 
@@ -82,8 +86,8 @@ public class CircuitActivitySourceTest
         var circuitActivitySource = new CircuitActivitySource(new ComponentsActivityLinkStore());
 
         // Act
-        var wrapper = circuitActivitySource.StartCircuitActivity(null, default, null);
-        var activity = wrapper.Activity;
+        var activityHandle = circuitActivitySource.StartCircuitActivity(null, default);
+        var activity = activityHandle.Activity;
 
         // Assert
         Assert.NotNull(activity);

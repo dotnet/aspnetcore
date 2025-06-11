@@ -28,7 +28,11 @@ internal class ComponentsActivitySource
         var activity = ActivitySource.CreateActivity(OnRouteName, ActivityKind.Internal, parentId: null, null, null);
         if (activity is not null)
         {
-            var previousActivity = Activity.Current;
+            var httpActivity = Activity.Current;
+            activity.DisplayName = $"Route {route ?? "[unknown path]"} -> {componentType ?? "[unknown component]"}";
+            Activity.Current = null; // do not inherit the parent activity
+            activity.Start();
+
             if (activity.IsAllDataRequested)
             {
                 if (componentType != null)
@@ -38,21 +42,19 @@ internal class ComponentsActivitySource
                 if (route != null)
                 {
                     activity.SetTag("aspnetcore.components.route", route);
-                }
-                if (previousActivity != null)
-                {
-                    activity.AddLink(new ActivityLink(previousActivity.Context));
-                }
 
-                // store the link
-                _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Route, activity.Context,
-                    new KeyValuePair<string, object?>("aspnetcore.components.route", route));
+                    // store self link
+                    _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Route, activity.Context,
+                        new KeyValuePair<string, object?>("aspnetcore.components.route", route));
+                }
+                if (httpActivity != null && httpActivity.Source.Name == "Microsoft.AspNetCore")
+                {
+                    // store the http link
+                    _activityLinkStore.SetActivityContext(ComponentsActivityCategory.Http, httpActivity.Context, null);
+                }
             }
 
-            activity.DisplayName = $"Route {route ?? "[unknown path]"} -> {componentType ?? "[unknown component]"}";
-            Activity.Current = null; // do not inherit the parent activity
-            activity.Start();
-            return new ComponentsActivityHandle { Activity = activity, Previous = previousActivity };
+            return new ComponentsActivityHandle { Activity = activity, Previous = httpActivity };
         }
         return default;
     }
@@ -65,8 +67,14 @@ internal class ComponentsActivitySource
     public ComponentsActivityHandle StartEventActivity(string? componentType, string? methodName, string? attributeName)
     {
         var activity = ActivitySource.CreateActivity(OnEventName, ActivityKind.Internal, parentId: null, null, null);
+
         if (activity is not null)
         {
+            var previousActivity = Activity.Current;
+            activity.DisplayName = $"Event {attributeName ?? "[unknown attribute]"} -> {componentType ?? "[unknown component]"}.{methodName ?? "[unknown method]"}";
+            Activity.Current = null; // do not inherit the parent activity
+            activity.Start();
+
             if (activity.IsAllDataRequested)
             {
                 if (componentType != null)
@@ -83,10 +91,6 @@ internal class ComponentsActivitySource
                 }
             }
 
-            activity.DisplayName = $"Event {attributeName ?? "[unknown attribute]"} -> {componentType ?? "[unknown component]"}.{methodName ?? "[unknown method]"}";
-            var previousActivity = Activity.Current;
-            Activity.Current = null; // do not inherit the parent activity
-            activity.Start();
             return new ComponentsActivityHandle { Activity = activity, Previous = previousActivity };
         }
         return default;
