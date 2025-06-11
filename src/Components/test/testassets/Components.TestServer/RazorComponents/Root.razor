@@ -14,8 +14,32 @@
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
     <script>
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
-        sessionStorage.removeItem('suppress-enhanced-navigation');
 
+        let pwr = Promise.withResolvers();
+        let reconnectPromise = pwr.promise;
+        let reconnectResolver = pwr.resolve;
+
+        function triggerReconnect() {
+            if(reconnectResolver) {
+                reconnectResolver();
+            }
+        }
+
+        function resetReconnect() {
+            pwr = Promise.withResolvers();
+            reconnectPromise = pwr.promise;
+            reconnectResolver = pwr.resolve;
+        }
+
+        function replaceReconnectCallback() {
+            const originalCallback = Blazor.defaultReconnectionHandler._reconnectCallback;
+            Blazor.defaultReconnectionHandler._reconnectCallback = async () => {
+                await reconnectPromise;
+                await originalCallback();
+            };
+        }
+
+        sessionStorage.removeItem('suppress-enhanced-navigation');
         function callBlazorStart() {
             Blazor.start({
                 ssr: {

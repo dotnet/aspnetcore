@@ -20,6 +20,7 @@ import { attachWebRendererInterop, detachWebRendererInterop } from '../../Render
 import { sendJSDataStream } from './CircuitStreamingInterop';
 
 export class CircuitManager implements DotNet.DotNetCallDispatcher {
+
   private readonly _componentManager: RootComponentManager<ServerComponentDescriptor>;
 
   private _applicationState: string;
@@ -28,7 +29,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private readonly _logger: ConsoleLogger;
 
-  private readonly _renderQueue: RenderQueue;
+  private _renderQueue: RenderQueue;
 
   private readonly _dispatcher: DotNet.ICallDispatcher;
 
@@ -106,7 +107,7 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     for (const handler of this._options.circuitHandlers) {
-      if (handler.onCircuitOpened){
+      if (handler.onCircuitOpened) {
         handler.onCircuitOpened();
       }
     }
@@ -229,6 +230,45 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
     this._options.reconnectionHandler!.onConnectionUp();
 
+    return true;
+  }
+
+  public async resume(): Promise<boolean> {
+    if (!this._circuitId) {
+      throw new Error('Method not implemented.');
+    }
+
+    // When we get here we know the circuit is gone for good.
+    // Signal that we are about to start a new circuit so that
+    // any existing handlers can perform the necessary cleanup.
+    for (const handler of this._options.circuitHandlers) {
+      if (handler.onCircuitClosed) {
+        handler.onCircuitClosed();
+      }
+    }
+
+    const newCircuitId = await this._connection!.invoke<string>(
+      'ResumeCircuit',
+      this._circuitId,
+      navigationManagerFunctions.getBaseURI(),
+      navigationManagerFunctions.getLocationHref(),
+      '[]',
+      ''
+    );
+    if (!newCircuitId) {
+      return false;
+    }
+
+    this._circuitId = newCircuitId;
+    this._renderQueue = new RenderQueue(this._logger);
+    for (const handler of this._options.circuitHandlers) {
+      if (handler.onCircuitOpened) {
+        handler.onCircuitOpened();
+      }
+    }
+
+    this._options.reconnectionHandler!.onConnectionUp();
+    this._componentManager.onComponentReload?.();
     return true;
   }
 

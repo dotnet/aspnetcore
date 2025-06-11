@@ -32,6 +32,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private bool _isFirstUpdate = true;
     private bool _disposed;
     private long _startTime;
+    private PersistedCircuitState _persistedCircuitState;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
     // it need so be torn down. The registry listens to this even so that the circuit can
@@ -105,6 +106,8 @@ internal partial class CircuitHost : IAsyncDisposable
     public IReadOnlyList<ComponentDescriptor> Descriptors { get; }
 
     public IServiceProvider Services { get; }
+
+    internal bool HasPendingPersistedCircuitState => _persistedCircuitState != null;
 
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
@@ -872,6 +875,23 @@ internal partial class CircuitHost : IAsyncDisposable
         {
             await Task.WhenAll(pendingTasks);
         }
+    }
+
+    internal void AttachPersistedState(PersistedCircuitState persistedCircuitState)
+    {
+        if (_persistedCircuitState != null)
+        {
+            throw new InvalidOperationException("Persisted state has already been attached to this circuit.");
+        }
+
+        _persistedCircuitState = persistedCircuitState;
+    }
+
+    internal PersistedCircuitState TakePersistedCircuitState()
+    {
+        var result = _persistedCircuitState;
+        _persistedCircuitState = null;
+        return result;
     }
 
     private static partial class Log
