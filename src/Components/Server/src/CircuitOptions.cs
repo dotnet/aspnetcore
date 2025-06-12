@@ -68,6 +68,7 @@ public sealed class CircuitOptions
     /// </summary>
     /// <remarks>
     /// When using a <see cref="HybridCache"/> based implementation this value
+    /// is used for the local cache retention period.
     /// </remarks>
     public TimeSpan PersistedCircuitInMemoryRetentionPeriod { get; set; } = TimeSpan.FromHours(2);
 

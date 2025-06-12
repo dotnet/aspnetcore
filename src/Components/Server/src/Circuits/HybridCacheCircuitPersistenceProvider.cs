@@ -49,7 +49,6 @@ internal sealed partial class HybridCacheCircuitPersistenceProvider : ICircuitPe
         {
             await _lock.WaitAsync(cancellation);
             await _hybridCache.SetAsync(circuitId.Secret, persistedCircuitState, _cacheWriteOptions, _tags, cancellation);
-
         }
         catch (Exception ex)
         {
