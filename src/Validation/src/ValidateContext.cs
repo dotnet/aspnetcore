@@ -70,7 +70,13 @@ public sealed class ValidateContext
         ValidationErrors ??= [];
 
         ValidationErrors[key] = error;
-        OnValidationError?.Invoke(new(propertyName, key, error, container));
+        OnValidationError?.Invoke(new ValidationErrorContext
+        {
+            Name = propertyName,
+            Path = key,
+            Errors = error,
+            Container = container
+        });
     }
 
     internal void AddOrExtendValidationErrors(string propertyName, string key, string[] errors, object? container)
@@ -89,7 +95,13 @@ public sealed class ValidateContext
             ValidationErrors[key] = errors;
         }
 
-        OnValidationError?.Invoke(new(propertyName, key, errors, container));
+        OnValidationError?.Invoke(new ValidationErrorContext
+        {
+            Name = propertyName,
+            Path = key,
+            Errors = errors,
+            Container = container
+        });
     }
 
     internal void AddOrExtendValidationError(string name, string key, string error, object? container)
@@ -105,6 +117,12 @@ public sealed class ValidateContext
             ValidationErrors[key] = [error];
         }
 
-        OnValidationError?.Invoke(new(name, key, [error], container));
+        OnValidationError?.Invoke(new ValidationErrorContext
+        {
+            Name = name,
+            Path = key,
+            Errors = [error],
+            Container = container
+        });
     }
 }

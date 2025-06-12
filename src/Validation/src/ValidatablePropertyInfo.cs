@@ -92,7 +92,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, context.CurrentValidationPath, validationAttributes, value);
+        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -150,7 +150,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = originalPrefix;
         }
 
-        void ValidateValue(object? val, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
+        void ValidateValue(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
         {
             for (var i = 0; i < validationAttributes.Length; i++)
             {
@@ -161,13 +161,13 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
                     {
                         var key = errorPrefix.TrimStart('.');
-                        context.AddOrExtendValidationErrors(string.Empty, key, [result.ErrorMessage], container);
+                        context.AddOrExtendValidationErrors(name, key, [result.ErrorMessage], container);
                     }
                 }
                 catch (Exception ex)
                 {
                     var key = errorPrefix.TrimStart('.');
-                    context.AddOrExtendValidationErrors(string.Empty, key, [ex.Message], container);
+                    context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
                 }
             }
         }

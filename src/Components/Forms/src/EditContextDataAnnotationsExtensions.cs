@@ -75,7 +75,7 @@ public static partial class EditContextDataAnnotationsExtensions
 #pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         private readonly Dictionary<string, FieldIdentifier> _validationPathToFieldIdentifierMapping = new();
 
-
+        [UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         public DataAnnotationsEventSubscriptions(EditContext editContext, IServiceProvider serviceProvider)
         {
             _editContext = editContext ?? throw new ArgumentNullException(nameof(editContext));
