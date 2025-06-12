@@ -210,71 +210,6 @@ public static partial class EditContextDataAnnotationsExtensions
 
             return true;
         }
-#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-
-        // TODO(OR): Replace this with a more robust implementation or a different approach. E.g. collect references during the validation process itself.
-        [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
-        private static object GetFieldContainer(object obj, string fieldKey)
-        {
-            // The method does not check all possible null access and index bound errors as the path is constructed internally and assumed to be correct.
-            var dotSegments = fieldKey.Split('.')[..^1];
-            var currentObject = obj;
-
-            for (int i = 0; i < dotSegments.Length; i++)
-            {
-                string segment = dotSegments[i];
-
-                if (currentObject == null)
-                {
-                    string traversedPath = string.Join(".", dotSegments.Take(i));
-                    throw new ArgumentException($"Cannot access segment '{segment}' because the path '{traversedPath}' resolved to null.");
-                }
-
-                Match match = _pathSegmentRegex.Match(segment);
-                if (!match.Success)
-                {
-                    throw new ArgumentException($"Invalid path segment: '{segment}'.");
-                }
-
-                string propertyName = match.Groups[1].Value;
-                string? indexStr = match.Groups[2].Success ? match.Groups[2].Value : null;
-
-                Type currentType = currentObject.GetType();
-                PropertyInfo propertyInfo = currentType!.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance)!;
-                object propertyValue = propertyInfo!.GetValue(currentObject)!;
-
-                if (indexStr == null) // Simple property access
-                {
-                    currentObject = propertyValue;
-                }
-                else // Indexed access
-                {
-                    if (!int.TryParse(indexStr, out int index))
-                    {
-                        throw new ArgumentException($"Invalid index '{indexStr}' in segment '{segment}'.");
-                    }
-
-                    if (propertyValue is Array array)
-                    {
-                        currentObject = array.GetValue(index)!;
-                    }
-                    else if (propertyValue is IList list)
-                    {
-                        currentObject = list[index]!;
-                    }
-                    else if (propertyValue is IEnumerable enumerable)
-                    {
-                        currentObject = enumerable.Cast<object>().ElementAt(index);
-                    }
-                    else
-                    {
-                        throw new ArgumentException($"Property '{propertyName}' is not an array, list, or enumerable. Cannot access by index in segment '{segment}'.");
-                    }
-                }
-
-            }
-            return currentObject!;
-        }
 
         public void Dispose()
         {
@@ -310,11 +245,5 @@ public static partial class EditContextDataAnnotationsExtensions
         {
             _propertyInfoCache.Clear();
         }
-
-        private static readonly Regex _pathSegmentRegex = PathSegmentRegexGen();
-
-        // Regex to parse "PropertyName" or "PropertyName[index]"
-        [GeneratedRegex(@"^([a-zA-Z_]\w*)(?:\[(\d+)\])?$", RegexOptions.Compiled)]
-        private static partial Regex PathSegmentRegexGen();
     }
 }
