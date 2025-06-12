@@ -49,15 +49,8 @@ internal class ResourceCollectionConvention(ResourceCollectionResolver resolver)
         // The user called MapStaticAssets
         if (_collection != null && _collectionImportMap != null)
         {
-            int relativeRootDistance = 0;
-            if (eb is RouteEndpointBuilder reb)
-            {
-                // For routes like '/path/to/page' we need to make preload headers as '../../_framework/dotnet.js'
-                relativeRootDistance = reb.RoutePattern.PathSegments.Count - 1;
-            }
-
             eb.Metadata.Add(_collection);
-            eb.Metadata.Add(new ResourcePreloadCollection(_collection, relativeRootDistance));
+            eb.Metadata.Add(new ResourcePreloadCollection(_collection));
 
             if (_collectionUrl != null)
             {

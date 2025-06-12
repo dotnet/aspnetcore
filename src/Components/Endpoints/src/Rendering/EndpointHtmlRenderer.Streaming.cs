@@ -278,12 +278,6 @@ internal partial class EndpointHtmlRenderer
             {
                 if (_httpContext.RequestServices.GetRequiredService<WebAssemblySettingsEmitter>().TryGetSettingsOnce(out var settings))
                 {
-                    if (marker.Type is ComponentMarker.WebAssemblyMarkerType)
-                    {
-                        // Preload WebAssembly assets when using WebAssembly (not Auto) mode
-                        AppendWebAssemblyPreloadHeaders();
-                    }
-
                     var settingsJson = JsonSerializer.Serialize(settings, ServerComponentSerializationSettings.JsonSerializationOptions);
                     output.Write($"<!--Blazor-WebAssembly:{settingsJson}-->");
                 }
@@ -317,15 +311,6 @@ internal partial class EndpointHtmlRenderer
             output.Write("<!--Blazor:");
             output.Write(serializedEndRecord);
             output.Write("-->");
-        }
-    }
-
-    private void AppendWebAssemblyPreloadHeaders()
-    {
-        var preloads = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourcePreloadCollection>();
-        if (preloads != null && preloads.TryGetLinkHeaders("webassembly", out var linkHeaders))
-        {
-            _httpContext.Response.Headers.Link = StringValues.Concat(_httpContext.Response.Headers.Link, linkHeaders);
         }
     }
 
