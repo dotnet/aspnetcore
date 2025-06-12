@@ -11,7 +11,7 @@ import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
-import { setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
+import { markAsInteractiveRootComponentElement, setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
 
 type RootComponentOperationBatch = {
@@ -38,7 +38,7 @@ type RootComponentRemoveOperation = {
   ssrComponentId: number;
 };
 
-type RootComponentInfo = {
+export type RootComponentInfo = {
   descriptor: ComponentDescriptor;
   ssrComponentId: number;
   assignedRendererId?: WebRendererId;
@@ -206,10 +206,10 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     // The following timeout allows us to liberally call this function without
     // taking the small performance hit from requent repeated calls to
     // refreshRootComponents.
-    setTimeout(() => {
+    queueMicrotask(() => {
       this._isComponentRefreshPending = false;
       this.refreshRootComponents(this._rootComponentsBySsrComponentId.values());
-    }, 0);
+    });
   }
 
   private circuitMayHaveNoRootComponents() {
@@ -462,6 +462,18 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
         }
       }
     }
+  }
+
+  public onComponentReload(browserRendererId: number): void {
+    for (const [_, value] of this._rootComponentsBySsrComponentId.entries()) {
+      if (value.assignedRendererId === browserRendererId) {
+        value.assignedRendererId = undefined;
+        markAsInteractiveRootComponentElement(value.descriptor.start as unknown as LogicalElement, false);
+        setClearContentOnRootComponentRerender(value.descriptor.start as unknown as LogicalElement);
+      }
+    }
+
+    this.rootComponentsMayRequireRefresh();
   }
 }
 

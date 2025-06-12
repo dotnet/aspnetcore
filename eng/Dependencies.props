@@ -29,6 +29,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.DotNet.HotReload.Agent.Data" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <LatestPackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.Binder" />
     <LatestPackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
