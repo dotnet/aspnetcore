@@ -13,8 +13,6 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSingleton<WeatherForecastService>();
 
-builder.Services.AddValidation();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
