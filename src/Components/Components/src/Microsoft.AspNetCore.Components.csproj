@@ -24,6 +24,7 @@
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\UrlDecoder.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Metrics\MetricsConstants.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Components\ComponentsActivityLinkStore.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <Import Project="Microsoft.AspNetCore.Components.Routing.targets" />
@@ -79,7 +80,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web" />
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Server" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Blazor.Build.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Authorization.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Forms.Tests" />
