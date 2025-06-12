@@ -38,12 +38,25 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
             .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
             .AddInteractiveWebAssemblyComponents()
-            .AddInteractiveServerComponents()
+            .AddInteractiveServerComponents(options =>
+            {
+                if (Configuration.GetValue<bool>("DisableReconnectionCache"))
+                {
+                    // This disables the reconnection cache, which forces the server to persist the circuit state.
+                    options.DisconnectedCircuitMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+            })
             .AddAuthenticationStateSerialization(options =>
             {
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
+
+        if (Configuration.GetValue<bool>("UseHybridCache"))
+        {
+            services.AddHybridCache();
+        }
 
         services.AddScoped<InteractiveWebAssemblyService>();
         services.AddScoped<InteractiveServerService>();
@@ -76,20 +89,17 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             app.Map("/reexecution", reexecutionApp =>
             {
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
-
                 reexecutionApp.UseRouting();
+
                 reexecutionApp.UseAntiforgery();
-                reexecutionApp.UseEndpoints(endpoints =>
-                {
-                    endpoints.MapRazorComponents<TRootComponent>();
-                });
+                ConfigureEndpoints(reexecutionApp, env);
             });
 
             ConfigureSubdirPipeline(app, env);
         });
     }
 
-    protected virtual void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
+    private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
     {
         WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
 
@@ -106,11 +116,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             if (ctx.Request.Query.ContainsKey("add-csp"))
             {
-                 ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+                ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
             }
             return nxt();
         });
+        ConfigureEndpoints(app, env);
+    }
 
+    private void ConfigureEndpoints(IApplicationBuilder app, IWebHostEnvironment env)
+    {
         _ = app.UseEndpoints(endpoints =>
         {
             var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");

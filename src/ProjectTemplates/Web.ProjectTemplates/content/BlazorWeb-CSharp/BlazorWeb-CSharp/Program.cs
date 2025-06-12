@@ -96,6 +96,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 #endif
 }
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForErrors: true);
 
 #if (HasHttpsProfile)
 app.UseHttpsRedirection();

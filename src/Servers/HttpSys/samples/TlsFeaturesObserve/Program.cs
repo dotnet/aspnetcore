@@ -1,60 +1,48 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
+using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Hosting;
-using TlsFeatureObserve;
 using TlsFeaturesObserve.HttpSys;
 
 HttpSysConfigurator.ConfigureCacheTlsClientHello();
-CreateHostBuilder(args).Build().Run();
 
-static IHostBuilder CreateHostBuilder(string[] args) =>
-    Host.CreateDefaultBuilder(args)
-        .ConfigureWebHost(webBuilder =>
-        {
-            webBuilder.UseStartup<Startup>()
-            .UseHttpSys(options =>
-            {
-                // If you want to use https locally: https://stackoverflow.com/a/51841893
-                options.UrlPrefixes.Add("https://*:6000"); // HTTPS
+var builder = WebApplication.CreateBuilder(args);
 
-                options.Authentication.Schemes = AuthenticationSchemes.None;
-                options.Authentication.AllowAnonymous = true;
-
-                options.TlsClientHelloBytesCallback = ProcessTlsClientHello;
-            });
-        });
-
-static void ProcessTlsClientHello(IFeatureCollection features, ReadOnlySpan<byte> tlsClientHelloBytes)
+builder.WebHost.UseHttpSys(options =>
 {
-    var httpConnectionFeature = features.Get<IHttpConnectionFeature>();
+    options.UrlPrefixes.Add("https://*:6000");
+    options.Authentication.Schemes = AuthenticationSchemes.None;
+    options.Authentication.AllowAnonymous = true;
+});
 
-    var myTlsFeature = new MyTlsFeature(
-        connectionId: httpConnectionFeature.ConnectionId,
-        tlsClientHelloLength: tlsClientHelloBytes.Length);
+var app = builder.Build();
 
-    features.Set<IMyTlsFeature>(myTlsFeature);
-}
-
-public interface IMyTlsFeature
+app.Use(async (context, next) =>
 {
-    string ConnectionId { get; }
-    int TlsClientHelloLength { get; }
-}
+    var connectionFeature = context.Features.GetRequiredFeature<IHttpConnectionFeature>();
+    var httpSysPropFeature = context.Features.GetRequiredFeature<IHttpSysRequestPropertyFeature>();
 
-public class MyTlsFeature : IMyTlsFeature
-{
-    public string ConnectionId { get; }
-    public int TlsClientHelloLength { get; }
+    // first time invocation to find out required size
+    var success = httpSysPropFeature.TryGetTlsClientHello(Array.Empty<byte>(), out var bytesReturned);
+    Debug.Assert(!success);
+    Debug.Assert(bytesReturned > 0);
 
-    public MyTlsFeature(string connectionId, int tlsClientHelloLength)
-    {
-        ConnectionId = connectionId;
-        TlsClientHelloLength = tlsClientHelloLength;
-    }
-}
+    // rent with enough memory span and invoke
+    var bytes = ArrayPool<byte>.Shared.Rent(bytesReturned);
+    success = httpSysPropFeature.TryGetTlsClientHello(bytes, out _);
+    Debug.Assert(success);
+
+    await context.Response.WriteAsync($"[Response] connectionId={connectionFeature.ConnectionId}; tlsClientHello.length={bytesReturned}; tlsclienthello start={string.Join(' ', bytes.AsSpan(0, 30).ToArray())}");
+    await next(context);
+});
+
+app.Run();

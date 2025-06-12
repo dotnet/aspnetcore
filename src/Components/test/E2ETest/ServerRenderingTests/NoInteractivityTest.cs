@@ -90,6 +90,43 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void ProgrammaticNavigationToNotExistingPathReExecutesTo404(bool streaming)
+    {
+        string streamingPath = streaming ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}?navigate-programmatically=true");
+        Assert404ReExecuted();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void LinkNavigationToNotExistingPathReExecutesTo404(bool streaming)
+    {
+        string streamingPath = streaming ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}");
+        Browser.Click(By.Id("link-to-not-existing-page"));
+        Assert404ReExecuted();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void BrowserNavigationToNotExistingPathReExecutesTo404(bool streaming)
+    {
+        // non-existing path has to have re-execution middleware set up
+        // so it has to have "reexecution" prefix. Otherwise middleware mapping
+        // will not be activated, see configuration in Startup
+        string streamingPath = streaming ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/not-existing-page-ssr{streamingPath}");
+        Assert404ReExecuted();
+    }
+
+    private void Assert404ReExecuted() =>
+        Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void CanRenderNotFoundPageNoStreaming(bool useCustomNotFoundPage)
     {
         string query = useCustomNotFoundPage ? "&useCustomNotFoundPage=true" : "";
@@ -99,6 +136,9 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         {
             var infoText = Browser.FindElement(By.Id("test-info")).Text;
             Assert.Contains("Welcome On Custom Not Found Page", infoText);
+            // custom page should have a custom layout
+            var aboutLink = Browser.FindElement(By.Id("about-link")).Text;
+            Assert.Contains("About", aboutLink);
         }
         else
         {
