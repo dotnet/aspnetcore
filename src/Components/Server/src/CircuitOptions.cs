@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Extensions.Caching.Hybrid;
+
 namespace Microsoft.AspNetCore.Components.Server;
 
 /// <summary>
@@ -49,16 +51,39 @@ public sealed class CircuitOptions
     /// are retained in memory by the server when no distributed cache is configured.
     /// </summary>
     /// <remarks>
-    /// When using a distributed cache like <see cref="Extensions.Caching.Hybrid.HybridCache"/> this value is ignored
+    /// <para>
+    /// When using a distributed cache like <see cref="HybridCache"/> this value is ignored
     /// and the configuration from <see cref="Extensions.DependencyInjection.MemoryCacheServiceCollectionExtensions.AddMemoryCache(Extensions.DependencyInjection.IServiceCollection)"/>
     /// is used instead.
+    /// </para>
+    /// <para>
+    /// To explicitly control the in memory cache limits when using a distributed cache. Setup a separate instance in <see cref="HybridPersistenceCache"/> with
+    /// the desired configuration.
+    /// </para>
     /// </remarks>
     public int PersistedCircuitInMemoryMaxRetained { get; set; } = 1000;
 
     /// <summary>
     /// Gets or sets the duration for which a persisted circuit is retained in memory.
     /// </summary>
+    /// <remarks>
+    /// When using a <see cref="HybridCache"/> based implementation this value
+    /// is used for the local cache retention period.
+    /// </remarks>
     public TimeSpan PersistedCircuitInMemoryRetentionPeriod { get; set; } = TimeSpan.FromHours(2);
+
+    /// <summary>
+    /// Gets or sets the duration for which a persisted circuit is retained in the distributed cache.
+    /// </summary>
+    /// <remarks>
+    /// This setting is ignored when using an in-memory cache implementation.
+    /// </remarks>
+    public TimeSpan? PersistedCircuitDistributedRetentionPeriod { get; set; } = TimeSpan.FromHours(8);
+
+    /// <summary>
+    /// Gets or sets the <see cref="HybridCache"/> instance to use for persisting circuit state across servers.
+    /// </summary>
+    public HybridCache? HybridPersistenceCache { get; set; }
 
     /// <summary>
     /// Gets or sets a value that determines whether or not to send detailed exception messages to JavaScript when an unhandled exception

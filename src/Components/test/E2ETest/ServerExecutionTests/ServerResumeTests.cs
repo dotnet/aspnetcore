@@ -208,3 +208,15 @@ public class CustomUIServerResumeTests : ServerResumeTests
         Browser.Exists(By.CssSelector("#components-reconnect-modal[data-nosnippet]"));
     }
 }
+
+public class HybridCacheServerResumeTests : ServerResumeTests
+{
+    public HybridCacheServerResumeTests(
+        BrowserFixture browserFixture,
+        BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<Root>> serverFixture,
+        ITestOutputHelper output)
+        : base(browserFixture, serverFixture, output)
+    {
+        serverFixture.AdditionalArguments.AddRange("--UseHybridCache", "true");
+    }
+}
