@@ -32,6 +32,8 @@ public class Program
             ["Globalization + Localization (Server-side)"] = (BuildWebHost<InternationalizationStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Server-side blazor"] = (BuildWebHost<ServerStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Blazor web with server-side blazor root component"] = (BuildWebHost<RazorComponentEndpointsStartup<Root>>(CreateAdditionalArgs(args)), "/subdir"),
+            ["Blazor web with server-side reconnection disabled"] = (BuildWebHost<RazorComponentEndpointsStartup<Root>>(CreateAdditionalArgs([.. args, "--DisableReconnectionCache", "true"])), "/subdir"),
+            ["Blazor web with server-side hybrid cache"] = (BuildWebHost<RazorComponentEndpointsStartup<Root>>(CreateAdditionalArgs([.. args, "--DisableReconnectionCache", "true", "--UseHybridCache", "true"])), "/subdir"),
             ["Hosted client-side blazor"] = (BuildWebHost<ClientStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Hot Reload"] = (BuildWebHost<HotReloadStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Dev server client-side blazor"] = CreateDevServerHost(CreateAdditionalArgs(args)),
@@ -75,7 +77,7 @@ public class Program
     }
 
     private static string[] CreateAdditionalArgs(string[] args) =>
-        args.Concat(new[] { "--urls", $"http://127.0.0.1:{GetNextChildAppPortNumber()}" }).ToArray();
+        [.. args, .. new[] { "--urls", $"http://127.0.0.1:{GetNextChildAppPortNumber()}" }];
 
     public static IHost BuildWebHost(string[] args) => BuildWebHost<Startup>(args);
 

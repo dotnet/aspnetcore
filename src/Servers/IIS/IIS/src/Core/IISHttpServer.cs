@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -21,7 +22,7 @@ internal sealed class IISHttpServer : IServer
     private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
     private IISContextFactory? _iisContextFactory;
-    private readonly MemoryPool<byte> _memoryPool = new PinnedBlockMemoryPool();
+    private readonly MemoryPool<byte> _memoryPool;
     private GCHandle _httpServerHandle;
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly ILogger<IISHttpServer> _logger;
@@ -60,10 +61,12 @@ internal sealed class IISHttpServer : IServer
         IHostApplicationLifetime applicationLifetime,
         IAuthenticationSchemeProvider authentication,
         IConfiguration configuration,
+        IMemoryPoolFactory<byte> memoryPoolFactory,
         IOptions<IISServerOptions> options,
         ILogger<IISHttpServer> logger
         )
     {
+        _memoryPool = memoryPoolFactory.Create();
         _nativeApplication = nativeApplication;
         _applicationLifetime = applicationLifetime;
         _logger = logger;

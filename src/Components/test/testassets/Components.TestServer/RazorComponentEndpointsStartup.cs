@@ -38,12 +38,25 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
             .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
             .AddInteractiveWebAssemblyComponents()
-            .AddInteractiveServerComponents()
+            .AddInteractiveServerComponents(options =>
+            {
+                if (Configuration.GetValue<bool>("DisableReconnectionCache"))
+                {
+                    // This disables the reconnection cache, which forces the server to persist the circuit state.
+                    options.DisconnectedCircuitMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+            })
             .AddAuthenticationStateSerialization(options =>
             {
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
+
+        if (Configuration.GetValue<bool>("UseHybridCache"))
+        {
+            services.AddHybridCache();
+        }
 
         services.AddScoped<InteractiveWebAssemblyService>();
         services.AddScoped<InteractiveServerService>();
