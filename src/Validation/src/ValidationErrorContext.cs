@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -9,6 +10,7 @@ namespace Microsoft.Extensions.Validation;
 /// Represents the context of a validation error.
 /// </summary>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+[Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 public readonly struct ValidationErrorContext
 {
     /// <summary>
