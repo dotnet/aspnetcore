@@ -438,7 +438,7 @@ public class CircuitPersistenceManagerTest
             NullLoggerFactory.Instance.CreateLogger<RemoteNavigationManager>());
         var circuitHandlers = Array.Empty<CircuitHandler>();
         var circuitMetrics = new CircuitMetrics(new TestMeterFactory());
-        var componentsActivitySource = new ComponentsActivitySource();
+        var componentsActivitySource = new CircuitActivitySource();
         var logger = NullLoggerFactory.Instance.CreateLogger<CircuitHost>();
 
         var circuitHost = new CircuitHost(

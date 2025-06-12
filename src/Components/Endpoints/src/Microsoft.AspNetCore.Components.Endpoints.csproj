@@ -33,6 +33,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\ResourceCollectionProvider.cs" Link="Shared\ResourceCollectionProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Components\ComponentsActivityLinkStore.cs" LinkBase="Shared" />
 
     <Compile Include="$(SharedSourceRoot)PropertyHelper\**\*.cs" />
 

@@ -24,8 +24,8 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
-    private readonly CircuitMetrics? _circuitMetrics;
-    private readonly ComponentsActivitySource? _componentsActivitySource;
+    private readonly CircuitMetrics _circuitMetrics;
+    private readonly CircuitActivitySource _circuitActivitySource;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
@@ -52,8 +52,8 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
-        CircuitMetrics? circuitMetrics,
-        ComponentsActivitySource? componentsActivitySource,
+        CircuitMetrics circuitMetrics,
+        CircuitActivitySource circuitActivitySource,
         ILogger logger)
     {
         CircuitId = circuitId;
@@ -72,7 +72,7 @@ internal partial class CircuitHost : IAsyncDisposable
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _circuitMetrics = circuitMetrics;
-        _componentsActivitySource = componentsActivitySource;
+        _circuitActivitySource = circuitActivitySource;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         Services = scope.ServiceProvider;
@@ -111,7 +111,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpContext, CancellationToken cancellationToken)
+    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpActivityContext, CancellationToken cancellationToken)
     {
         Log.InitializationStarted(_logger);
 
@@ -121,13 +121,14 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 throw new InvalidOperationException("The circuit host is already initialized.");
             }
-            Activity? activity = null;
+
+            CircuitActivityHandle activityHandle = default;
 
             try
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
-                activity = _componentsActivitySource?.StartCircuitActivity(CircuitId.Id, httpContext);
+                activityHandle = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext);
                 _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
 
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
@@ -173,11 +174,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 Log.InitializationSucceeded(_logger);
 
-                activity?.Stop();
+                _circuitActivitySource.StopCircuitActivity(activityHandle, null);
             }
             catch (Exception ex)
             {
-                _componentsActivitySource?.FailCircuitActivity(activity, ex);
+                _circuitActivitySource.StopCircuitActivity(activityHandle, ex);
 
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);

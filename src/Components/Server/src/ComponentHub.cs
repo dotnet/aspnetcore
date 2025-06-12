@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
@@ -45,7 +45,6 @@ internal sealed partial class ComponentHub : Hub
     private readonly CircuitPersistenceManager _circuitPersistenceManager;
     private readonly ICircuitHandleRegistry _circuitHandleRegistry;
     private readonly ILogger _logger;
-    private readonly ActivityContext _httpContext;
 
     public ComponentHub(
         IServerComponentDeserializer serializer,
@@ -65,7 +64,6 @@ internal sealed partial class ComponentHub : Hub
         _circuitPersistenceManager = circuitPersistenceProvider;
         _circuitHandleRegistry = circuitHandleRegistry;
         _logger = logger;
-        _httpContext = ComponentsActivitySource.CaptureHttpContext();
     }
 
     /// <summary>
@@ -143,7 +141,8 @@ internal sealed partial class ComponentHub : Hub
             // SignalR message loop (we'd get a deadlock if any of the initialization
             // logic relied on receiving a subsequent message from SignalR), and it will
             // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(store, _httpContext, Context.ConnectionAborted);
+            var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
+            _ = circuitHost.InitializeAsync(store, httpActivityContext, Context.ConnectionAborted);
 
             // It's safe to *publish* the circuit now because nothing will be able
             // to run inside it until after InitializeAsync completes.
@@ -361,11 +360,13 @@ internal sealed partial class ComponentHub : Hub
                 store: null,
                 resourceCollection);
 
+            var httpActivityContext = Context.GetHttpContext().Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
+
             // Fire-and-forget the initialization process, because we can't block the
             // SignalR message loop (we'd get a deadlock if any of the initialization
             // logic relied on receiving a subsequent message from SignalR), and it will
             // take care of its own errors anyway.
-            _ = circuitHost.InitializeAsync(store: null, _httpContext, Context.ConnectionAborted);
+            _ = circuitHost.InitializeAsync(store: null, httpActivityContext, Context.ConnectionAborted);
 
             circuitHost.AttachPersistedState(persistedCircuitState);
 

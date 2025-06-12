@@ -95,6 +95,8 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJSInteropDetailedErrorsConfiguration>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<CircuitOptions>, CircuitOptionsJavaScriptInitializersConfiguration>());
 
+        services.TryAddScoped<CircuitActivitySource>();
+
         if (configure != null)
         {
             services.Configure(configure);
