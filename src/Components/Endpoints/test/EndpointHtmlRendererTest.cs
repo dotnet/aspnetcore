@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -147,7 +146,6 @@ public class EndpointHtmlRendererTest
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
 
         // Assert
-        Debugger.Launch();
         var output = writer.ToString();
 
         Assert.Contains("href=\"first.js\"", output);
