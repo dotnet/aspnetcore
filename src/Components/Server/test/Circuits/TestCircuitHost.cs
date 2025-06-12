@@ -34,13 +34,17 @@ internal class TestCircuitHost : CircuitHost
         clientProxy = clientProxy ?? new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
         var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
         var navigationManager = new RemoteNavigationManager(Mock.Of<ILogger<RemoteNavigationManager>>());
+        var componentsActivitySource = new ComponentsActivitySource();
+        var circuitActivitySource = new CircuitActivitySource();
         var serviceProvider = new Mock<IServiceProvider>();
         serviceProvider
             .Setup(services => services.GetService(typeof(IJSRuntime)))
             .Returns(jsRuntime);
+        serviceProvider
+            .Setup(services => services.GetService(typeof(ComponentsActivitySource)))
+            .Returns(componentsActivitySource);
         var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
         var circuitMetrics = new CircuitMetrics(new TestMeterFactory());
-        var circuitActivitySource = new CircuitActivitySource();
 
         if (remoteRenderer == null)
         {
