@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -172,10 +171,7 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
             throw PasskeyException.InvalidOriginalCreationOptionsJsonFormat(ex);
         }
 
-        if (!string.Equals("public-key", credential.Type, StringComparison.Ordinal))
-        {
-            throw PasskeyException.InvalidCredentialType("public-key", credential.Type);
-        }
+        VerifyCredentialType(credential);
 
         // 3. Let response be credential.response.
         var response = credential.Response;
@@ -185,52 +181,15 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
 
         // 5. Let JSONtext be the result of running UTF-8 decode on the value of response.clientDataJSON.
         // 6. Let clientData, claimed as collected during the credential creation, be the result of running an implementation-specific JSON parser on JSONtext.
-        CollectedClientData clientData;
-        try
-        {
-            clientData = JsonSerializer.Deserialize(response.ClientDataJSON.AsSpan(), IdentityJsonSerializerContext.Default.CollectedClientData)
-                ?? throw PasskeyException.NullClientDataJson();
-        }
-        catch (JsonException ex)
-        {
-            throw PasskeyException.InvalidClientDataJsonFormat(ex);
-        }
-
         // 7. Verify that the value of clientData.type is webauthn.create.
-        if (!string.Equals("webauthn.create", clientData.Type, StringComparison.Ordinal))
-        {
-            throw PasskeyException.InvalidClientDataType("webauthn.create", clientData.Type);
-        }
-
         // 8. Verify that the value of clientData.challenge equals the base64url encoding of pkOptions.challenge.
-        if (!clientData.Challenge.FixedTimeEquals(originalOptions.Challenge))
-        {
-            throw PasskeyException.InvalidChallenge();
-        }
-
         // 9-11. Verify that the value of C.origin matches the Relying Party's origin.
-        // NOTE: The level 3 draft permits having multiple origins and validating the "top origin" when a cross-origin request is made.
-        //       For future-proofing, we pass a PasskeyOriginInfo to the origin validator so that we're able to add more properties to
-        //       it later.
-        var originInfo = new PasskeyOriginInfo(clientData.Origin, clientData.CrossOrigin == true);
-        var isOriginValid = await IsValidOriginAsync(originInfo, context.HttpContext).ConfigureAwait(false);
-        if (!isOriginValid)
-        {
-            throw PasskeyException.InvalidOrigin(clientData.Origin);
-        }
-
-        // NOTE: The level 2 spec requires token binding validation, but the level 3 spec does not.
-        //       We'll just validate that the token binding object doesn't have an unexpected format.
-        if (clientData.TokenBinding is { } tokenBinding)
-        {
-            var status = tokenBinding.Status;
-            if (!string.Equals("supported", status, StringComparison.Ordinal) &&
-                !string.Equals("present", status, StringComparison.Ordinal) &&
-                !string.Equals("not-supported", status, StringComparison.Ordinal))
-            {
-                throw PasskeyException.InvalidTokenBindingStatus(status);
-            }
-        }
+        await VerifyClientDataAsync(
+            utf8Json: response.ClientDataJSON.AsMemory(),
+            originalChallenge: originalOptions.Challenge.AsMemory(),
+            expectedType: "webauthn.create",
+            context.HttpContext)
+            .ConfigureAwait(false);
 
         // 12. Let clientDataHash be the result of computing a hash over response.clientDataJSON using SHA-256.
         var clientDataHash = SHA256.HashData(response.ClientDataJSON.AsSpan());
@@ -242,64 +201,25 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         var authenticatorData = AuthenticatorData.Parse(attestationObject.AuthenticatorData);
 
         // 14. Verify that the rpIdHash in authenticatorData is the SHA-256 hash of the RP ID expected by the Relying Party.
-        var rpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(originalOptions.Rp.Id ?? string.Empty));
-        if (!CryptographicOperations.FixedTimeEquals(authenticatorData.RpIdHash.Span, rpIdHash.AsSpan()))
-        {
-            throw PasskeyException.InvalidRelyingPartyIDHash();
-        }
-
         // 15. If options.mediation is not set to conditional, verify that the UP bit of the flags in authData is set.
-        // NOTE: We currently check for the UserPresent flag unconditionally. Consider making this optional via options.mediation
-        //       after the level 3 draft becomes standard.
-        if (!authenticatorData.IsUserPresent)
-        {
-            throw PasskeyException.UserNotPresent();
-        }
-
         // 16. If user verification is required for this registration, verify that the User Verified bit of the flags in authData is set.
-        if (string.Equals("required", originalOptions.AuthenticatorSelection?.UserVerification, StringComparison.Ordinal) && !authenticatorData.IsUserVerified)
-        {
-            throw PasskeyException.UserNotVerified();
-        }
-
         // 17. If the BE bit of the flags in authData is not set, verify that the BS bit is not set.
-        if (!authenticatorData.IsBackupEligible && authenticatorData.IsBackedUp)
-        {
-            throw PasskeyException.NotBackupEligibleYetBackedUp();
-        }
-
         // 18. If the Relying Party uses the credential’s backup eligibility to inform its user experience flows and/or policies,
         //     evaluate the BE bit of the flags in authData.
-        if (authenticatorData.IsBackupEligible && _passkeyOptions.BackupEligibleCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Disallowed)
-        {
-            throw PasskeyException.BackupEligibilityDisallowedYetBackupEligible();
-        }
-        if (!authenticatorData.IsBackupEligible && _passkeyOptions.BackupEligibleCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Required)
-        {
-            throw PasskeyException.BackupEligibilityRequiredYetNotBackupEligible();
-        }
-
         // 19. If the Relying Party uses the credential’s backup state to inform its user experience flows and/or policies, evaluate the BS
         //     bit of the flags in authData.
-        if (authenticatorData.IsBackedUp && _passkeyOptions.BackedUpCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Disallowed)
-        {
-            throw PasskeyException.BackupDisallowedYetBackedUp();
-        }
-        if (!authenticatorData.IsBackedUp && _passkeyOptions.BackedUpCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Required)
-        {
-            throw PasskeyException.BackupRequiredYetNotBackedUp();
-        }
+        VerifyAuthenticatorData(
+            authenticatorData,
+            originalRpId: originalOptions.Rp.Id,
+            originalUserVerificationRequirement: originalOptions.AuthenticatorSelection?.UserVerification);
 
-        // 20. Verify that the "alg" parameter in the credential public key in authData matches the alg attribute of one of the items in pkOptions.pubKeyCredParams.
         if (!authenticatorData.HasAttestedCredentialData)
         {
             throw PasskeyException.MissingAttestedCredentialData();
         }
 
-        // The attested credential data should always be non-null if the 'HasAttestedCredentialData' flag is set.
+        // 20. Verify that the "alg" parameter in the credential public key in authData matches the alg attribute of one of the items in pkOptions.pubKeyCredParams.
         var attestedCredentialData = authenticatorData.AttestedCredentialData;
-        Debug.Assert(attestedCredentialData is not null);
-
         if (!originalOptions.PubKeyCredParams.Any(a => attestedCredentialData.CredentialPublicKey.Alg == a.Alg))
         {
             throw PasskeyException.UnsupportedCredentialPublicKeyAlgorithm();
@@ -387,10 +307,7 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
             throw PasskeyException.InvalidOriginalRequestOptionsJsonFormat(ex);
         }
 
-        if (!string.Equals("public-key", credential.Type, StringComparison.Ordinal))
-        {
-            throw PasskeyException.InvalidCredentialType("public-key", credential.Type);
-        }
+        VerifyCredentialType(credential);
 
         // 3. Let response be credential.response.
         var response = credential.Response;
@@ -459,78 +376,25 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
 
         // 8. Let JSONtext be the result of running UTF-8 decode on the value of cData.
         // 9. Let C, the client data claimed as used for the signature, be the result of running an implementation-specific JSON parser on JSONtext.
-        CollectedClientData clientData;
-        try
-        {
-            clientData = JsonSerializer.Deserialize(response.ClientDataJSON.AsSpan(), IdentityJsonSerializerContext.Default.CollectedClientData)
-                ?? throw PasskeyException.NullClientDataJson();
-        }
-        catch (JsonException ex)
-        {
-            throw PasskeyException.InvalidClientDataJsonFormat(ex);
-        }
-
         // 10. Verify that the value of C.type is the string webauthn.get.
-        if (!string.Equals("webauthn.get", clientData.Type, StringComparison.Ordinal))
-        {
-            throw PasskeyException.InvalidClientDataType("webauthn.get", clientData.Type);
-        }
-
         // 11. Verify that the value of C.challenge equals the base64url encoding of originalOptions.challenge.
-        if (!clientData.Challenge.FixedTimeEquals(originalOptions.Challenge))
-        {
-            throw PasskeyException.InvalidChallenge();
-        }
-
         // 12-14. Verify that the value of C.origin is an origin expected by the Relying Party.
-        // NOTE: The level 3 draft permits having multiple origins and validating the "top origin" when a cross-origin request is made.
-        //       For future-proofing, we pass a PasskeyOriginInfo to the origin validator so that we're able to add more properties to
-        //       it later.
-        var originInfo = new PasskeyOriginInfo(clientData.Origin, clientData.CrossOrigin == true);
-        var isOriginValid = await IsValidOriginAsync(originInfo, context.HttpContext).ConfigureAwait(false);
-        if (!isOriginValid)
-        {
-            throw PasskeyException.InvalidOrigin(clientData.Origin);
-        }
-
-        // NOTE: The level 2 spec requires token binding validation, but the level 3 spec does not.
-        //       We'll just validate that the token binding object doesn't have an unexpected format.
-        if (clientData.TokenBinding is { } tokenBinding)
-        {
-            var status = tokenBinding.Status;
-            if (!string.Equals("supported", status, StringComparison.Ordinal) &&
-                !string.Equals("present", status, StringComparison.Ordinal) &&
-                !string.Equals("not-supported", status, StringComparison.Ordinal))
-            {
-                throw PasskeyException.InvalidTokenBindingStatus(status);
-            }
-        }
+        await VerifyClientDataAsync(
+            utf8Json: response.ClientDataJSON.AsMemory(),
+            originalChallenge: originalOptions.Challenge.AsMemory(),
+            expectedType: "webauthn.get",
+            context.HttpContext)
+            .ConfigureAwait(false);
 
         // 15. Verify that the rpIdHash in authData is the SHA-256 hash of the RP ID expected by the Relying Party.
-        var rpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(originalOptions.RpId ?? string.Empty));
-        if (!CryptographicOperations.FixedTimeEquals(authenticatorData.RpIdHash.Span, rpIdHash.AsSpan()))
-        {
-            throw PasskeyException.InvalidRelyingPartyIDHash();
-        }
-
         // 16. Verify that the UP bit of the flags in authData is set.
-        if (!authenticatorData.IsUserPresent)
-        {
-            throw PasskeyException.UserNotPresent();
-        }
-
         // 17. If user verification was determined to be required, verify that the UV bit of the flags in authData is set.
         //     Otherwise, ignore the value of the UV flag.
-        if (string.Equals("required", originalOptions.UserVerification, StringComparison.Ordinal) && !authenticatorData.IsUserVerified)
-        {
-            throw PasskeyException.UserNotVerified();
-        }
-
         // 18. If the BE bit of the flags in authData is not set, verify that the BS bit is not set.
-        if (!authenticatorData.IsBackupEligible && authenticatorData.IsBackedUp)
-        {
-            throw PasskeyException.NotBackupEligibleYetBackedUp();
-        }
+        VerifyAuthenticatorData(
+            authenticatorData,
+            originalRpId: originalOptions.RpId,
+            originalUserVerificationRequirement: originalOptions.UserVerification);
 
         // 19. If the credential backup state is used as part of Relying Party business logic or policy, let currentBe and currentBs
         //     be the values of the BE and BS bits, respectively, of the flags in authData. Compare currentBe and currentBs with
@@ -538,6 +402,7 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         //     1. If credentialRecord.backupEligible is set, verify that currentBe is set.
         //     2. If credentialRecord.backupEligible is not set, verify that currentBe is not set.
         //     3. Apply Relying Party policy, if any.
+        //        NOTE: RP policy applied in VerifyAuthenticatorData() above.
         if (storedPasskey.IsBackupEligible && !authenticatorData.IsBackupEligible)
         {
             throw PasskeyException.ExpectedBackupEligibleCredential();
@@ -546,21 +411,13 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         {
             throw PasskeyException.ExpectedBackupIneligibleCredential();
         }
-        if (authenticatorData.IsBackedUp && _passkeyOptions.BackedUpCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Disallowed)
-        {
-            throw PasskeyException.BackupDisallowedYetBackedUp();
-        }
-        if (!authenticatorData.IsBackedUp && _passkeyOptions.BackedUpCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Required)
-        {
-            throw PasskeyException.BackupRequiredYetNotBackedUp();
-        }
 
         // 20. Let clientDataHash be the result of computing a hash over the cData using SHA-256.
         var clientDataHash = SHA256.HashData(response.ClientDataJSON.AsSpan());
 
         // 21. Using credentialRecord.publicKey, verify that sig is a valid signature over the binary concatenation of authData and hash.
         byte[] data = [.. response.AuthenticatorData.AsSpan(), .. clientDataHash];
-        var cpk = new CredentialPublicKey(storedPasskey.PublicKey);
+        var cpk = CredentialPublicKey.Decode(storedPasskey.PublicKey);
         if (!cpk.Verify(data, response.Signature.AsSpan()))
         {
             throw PasskeyException.InvalidAssertionSignature();
@@ -598,5 +455,127 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
 
         // 25. If all the above steps are successful, continue the authentication ceremony as appropriate.
         return PasskeyAssertionResult.Success(storedPasskey, user);
+    }
+
+    private static void VerifyCredentialType<TResponse>(PublicKeyCredential<TResponse> credential)
+        where TResponse : AuthenticatorResponse
+    {
+        const string ExpectedType = "public-key";
+        if (!string.Equals(ExpectedType, credential.Type, StringComparison.Ordinal))
+        {
+            throw PasskeyException.InvalidCredentialType(ExpectedType, credential.Type);
+        }
+    }
+
+    private async Task VerifyClientDataAsync(
+        ReadOnlyMemory<byte> utf8Json,
+        ReadOnlyMemory<byte> originalChallenge,
+        string expectedType,
+        HttpContext httpContext)
+    {
+        // Let JSONtext be the result of running UTF-8 decode on the value of cData.
+        // Let C, the client data claimed as used for the signature, be the result of running an implementation-specific JSON parser on JSONtext.
+        CollectedClientData clientData;
+        try
+        {
+            clientData = JsonSerializer.Deserialize(utf8Json.Span, IdentityJsonSerializerContext.Default.CollectedClientData)
+                ?? throw PasskeyException.NullClientDataJson();
+        }
+        catch (JsonException ex)
+        {
+            throw PasskeyException.InvalidClientDataJsonFormat(ex);
+        }
+
+        // Verify that the value of C.type is either the string webauthn.create or webauthn.get.
+        // NOTE: The expected value depends on whether we're performing attestation or assertion.
+        if (!string.Equals(expectedType, clientData.Type, StringComparison.Ordinal))
+        {
+            throw PasskeyException.InvalidClientDataType(expectedType, clientData.Type);
+        }
+
+        // Verify that the value of C.challenge equals the base64url encoding of originalOptions.challenge.
+        if (!CryptographicOperations.FixedTimeEquals(clientData.Challenge.AsSpan(), originalChallenge.Span))
+        {
+            throw PasskeyException.InvalidChallenge();
+        }
+
+        // Verify that the value of C.origin is an origin expected by the Relying Party.
+        // NOTE: The level 3 draft permits having multiple origins and validating the "top origin" when a cross-origin request is made.
+        //       For future-proofing, we pass a PasskeyOriginInfo to the origin validator so that we're able to add more properties to
+        //       it later.
+        var originInfo = new PasskeyOriginInfo(clientData.Origin, clientData.CrossOrigin == true);
+        var isOriginValid = await IsValidOriginAsync(originInfo, httpContext).ConfigureAwait(false);
+        if (!isOriginValid)
+        {
+            throw PasskeyException.InvalidOrigin(clientData.Origin);
+        }
+
+        // NOTE: The level 2 spec requires token binding validation, but the level 3 spec does not.
+        //       We'll just validate that the token binding object doesn't have an unexpected format.
+        if (clientData.TokenBinding is { } tokenBinding)
+        {
+            var status = tokenBinding.Status;
+            if (!string.Equals("supported", status, StringComparison.Ordinal) &&
+                !string.Equals("present", status, StringComparison.Ordinal) &&
+                !string.Equals("not-supported", status, StringComparison.Ordinal))
+            {
+                throw PasskeyException.InvalidTokenBindingStatus(status);
+            }
+        }
+    }
+
+    private void VerifyAuthenticatorData(
+        AuthenticatorData authenticatorData,
+        string? originalRpId,
+        string? originalUserVerificationRequirement)
+    {
+        // Verify that the rpIdHash in authenticatorData is the SHA-256 hash of the RP ID expected by the Relying Party.
+        var originalRpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(originalRpId ?? string.Empty));
+        if (!CryptographicOperations.FixedTimeEquals(authenticatorData.RpIdHash.Span, originalRpIdHash.AsSpan()))
+        {
+            throw PasskeyException.InvalidRelyingPartyIDHash();
+        }
+
+        // If options.mediation is not set to conditional, verify that the UP bit of the flags in authData is set.
+        // NOTE: We currently check for the UserPresent flag unconditionally. Consider making this optional via options.mediation
+        //       after the level 3 draft becomes standard.
+        if (!authenticatorData.IsUserPresent)
+        {
+            throw PasskeyException.UserNotPresent();
+        }
+
+        // If user verification is required for this registration, verify that the User Verified bit of the flags in authData is set.
+        if (string.Equals("required", originalUserVerificationRequirement, StringComparison.Ordinal) && !authenticatorData.IsUserVerified)
+        {
+            throw PasskeyException.UserNotVerified();
+        }
+
+        // If the BE bit of the flags in authData is not set, verify that the BS bit is not set.
+        if (!authenticatorData.IsBackupEligible && authenticatorData.IsBackedUp)
+        {
+            throw PasskeyException.NotBackupEligibleYetBackedUp();
+        }
+
+        // If the Relying Party uses the credential’s backup eligibility to inform its user experience flows and/or policies,
+        // evaluate the BE bit of the flags in authData.
+        if (authenticatorData.IsBackupEligible && _passkeyOptions.BackupEligibleCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Disallowed)
+        {
+            throw PasskeyException.BackupEligibilityDisallowedYetBackupEligible();
+        }
+        if (!authenticatorData.IsBackupEligible && _passkeyOptions.BackupEligibleCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Required)
+        {
+            throw PasskeyException.BackupEligibilityRequiredYetNotBackupEligible();
+        }
+
+        // If the Relying Party uses the credential’s backup state to inform its user experience flows and/or policies, evaluate the BS
+        // bit of the flags in authData.
+        if (authenticatorData.IsBackedUp && _passkeyOptions.BackedUpCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Disallowed)
+        {
+            throw PasskeyException.BackupDisallowedYetBackedUp();
+        }
+        if (!authenticatorData.IsBackedUp && _passkeyOptions.BackedUpCredentialPolicy is PasskeyOptions.CredentialBackupPolicy.Required)
+        {
+            throw PasskeyException.BackupRequiredYetNotBackedUp();
+        }
     }
 }

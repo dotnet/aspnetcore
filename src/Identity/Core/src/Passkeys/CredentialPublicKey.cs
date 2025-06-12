@@ -16,7 +16,7 @@ internal sealed class CredentialPublicKey
 
     public COSEAlgorithmIdentifier Alg => _alg;
 
-    public CredentialPublicKey(ReadOnlyMemory<byte> bytes)
+    private CredentialPublicKey(ReadOnlyMemory<byte> bytes)
     {
         var reader = Ctap2CborReader.Create(bytes);
 
@@ -38,7 +38,30 @@ internal sealed class CredentialPublicKey
         }
 
         var keyLength = bytes.Length - reader.BytesRemaining;
-        _bytes = bytes.Slice(0, keyLength);
+        _bytes = bytes[..keyLength];
+    }
+
+    public static CredentialPublicKey Decode(ReadOnlyMemory<byte> bytes)
+    {
+        try
+        {
+            return new CredentialPublicKey(bytes);
+        }
+        catch (PasskeyException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw PasskeyException.InvalidCredentialPublicKey(ex);
+        }
+    }
+
+    public static CredentialPublicKey Decode(ReadOnlyMemory<byte> bytes, out int bytesRead)
+    {
+        var key = Decode(bytes);
+        bytesRead = key._bytes.Length;
+        return key;
     }
 
     public bool Verify(ReadOnlySpan<byte> data, ReadOnlySpan<byte> signature)
@@ -185,13 +208,6 @@ internal sealed class CredentialPublicKey
             COSEAlgorithmIdentifier.EdDSA => HashAlgorithmName.SHA512,
             _ => throw new InvalidOperationException("Invalid COSE algorithm value."),
         };
-    }
-
-    public static CredentialPublicKey Decode(ReadOnlyMemory<byte> cpk, out int bytesRead)
-    {
-        var key = new CredentialPublicKey(cpk);
-        bytesRead = key._bytes.Length;
-        return key;
     }
 
     public ReadOnlyMemory<byte> AsMemory() => _bytes;

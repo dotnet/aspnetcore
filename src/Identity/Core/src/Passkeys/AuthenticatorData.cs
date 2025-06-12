@@ -3,6 +3,7 @@
 
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Formats.Cbor;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -68,6 +69,7 @@ internal sealed class AuthenticatorData
     /// <summary>
     /// Gets whether the authenticator added attested credential data.
     /// </summary>
+    [MemberNotNullWhen(true, nameof(AttestedCredentialData))]
     public bool HasAttestedCredentialData => Flags.HasFlag(AuthenticatorDataFlags.HasAttestedCredentialData);
 
     public static AuthenticatorData Parse(ReadOnlyMemory<byte> bytes)

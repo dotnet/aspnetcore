@@ -537,7 +537,7 @@ public class SignInManager<TUser> where TUser : class
     }
 
     /// <summary>
-    /// Attempts to sign in the user with a passkey.
+    /// Performs a passkey assertion and attempts to sign in the user.
     /// </summary>
     /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
     /// <param name="options">The original passkey request options provided to the browser.</param>
@@ -555,6 +555,8 @@ public class SignInManager<TUser> where TUser : class
             return SignInResult.Failed;
         }
 
+        // After a successful assertion, we need to update the passkey so that it has the latest
+        // sign count and authenticator data.
         var setPasskeyResult = await UserManager.SetPasskeyAsync(assertionResult.User, assertionResult.Passkey);
         if (!setPasskeyResult.Succeeded)
         {
@@ -568,6 +570,10 @@ public class SignInManager<TUser> where TUser : class
     /// Generates a <see cref="PasskeyCreationOptions"/> and stores it in the current <see cref="HttpContext"/> for later retrieval.
     /// </summary>
     /// <param name="creationArgs">Args for configuring the <see cref="PasskeyCreationOptions"/>.</param>
+    /// <remarks>
+    /// The returned options should be passed to the <c>navigator.credentials.create()</c> JavaScript function.
+    /// The credentials returned from that function can then be passed to the <see cref="PerformPasskeyAttestationAsync"/>.
+    /// </remarks>
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyCreationOptions"/>.
     /// </returns>
@@ -593,6 +599,10 @@ public class SignInManager<TUser> where TUser : class
     /// Generates a <see cref="PasskeyCreationOptions"/> to create a new passkey for a user.
     /// </summary>
     /// <param name="creationArgs">Args for configuring the <see cref="PasskeyCreationOptions"/>.</param>
+    /// <remarks>
+    /// The returned options should be passed to the <c>navigator.credentials.create()</c> JavaScript function.
+    /// The credentials returned from that function can then be passed to the <see cref="PerformPasskeyAttestationAsync"/>.
+    /// </remarks>
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyCreationOptions"/>.
     /// </returns>
@@ -653,6 +663,11 @@ public class SignInManager<TUser> where TUser : class
     /// Generates a <see cref="PasskeyRequestOptions"/> and stores it in the current <see cref="HttpContext"/> for later retrieval.
     /// </summary>
     /// <param name="requestArgs">Args for configuring the <see cref="PasskeyRequestOptions"/>.</param>
+    /// <remarks>
+    /// The returned options should be passed to the <c>navigator.credentials.get()</c> JavaScript function.
+    /// The credentials returned from that function can then be passed to the <see cref="PasskeySignInAsync"/> or
+    /// <see cref="PerformPasskeyAssertionAsync"/> methods.
+    /// </remarks>
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyRequestOptions"/>.
     /// </returns>
@@ -680,6 +695,10 @@ public class SignInManager<TUser> where TUser : class
     /// Generates a <see cref="PasskeyRequestOptions"/> to request an existing passkey for a user.
     /// </summary>
     /// <param name="requestArgs">Args for configuring the <see cref="PasskeyRequestOptions"/>.</param>
+    /// <remarks>
+    /// The returned options should be passed to the <c>navigator.credentials.get()</c> JavaScript function.
+    /// The credentials returned from that function can then be passed to the <see cref="PerformPasskeyAssertionAsync"/> method.
+    /// </remarks>
     /// <returns>
     /// A task object representing the asynchronous operation containing the <see cref="PasskeyRequestOptions"/>.
     /// </returns>

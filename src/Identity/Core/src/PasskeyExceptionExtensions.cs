@@ -147,5 +147,8 @@ internal static class PasskeyExceptionExtensions
 
         public static PasskeyException InvalidClientDataJsonFormat(JsonException ex)
             => new($"The client data JSON had an invalid format: {ex.Message}", ex);
+
+        public static PasskeyException InvalidCredentialPublicKey(Exception ex)
+            => new($"The credential public key was invalid.", ex);
     }
 }

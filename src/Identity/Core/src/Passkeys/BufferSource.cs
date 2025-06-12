@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -76,15 +75,6 @@ internal sealed class BufferSource : IEquatable<BufferSource>
         }
 
         return other is not null && _bytes.Span.SequenceEqual(other._bytes.Span);
-    }
-
-    /// <summary>
-    /// Performs a fixed-time value-based equality comparison with another <see cref="BufferSource"/> instance
-    /// using <see cref="CryptographicOperations.FixedTimeEquals"/>.
-    /// </summary>
-    public bool FixedTimeEquals(BufferSource? other)
-    {
-        return other is not null && CryptographicOperations.FixedTimeEquals(_bytes.Span, other._bytes.Span);
     }
 
     /// <inheritdoc/>
