@@ -31,12 +31,17 @@ public class AddValidationIntegrationTest : ServerTestBase<BasicTestAppServerSit
     {
         Browser.Exists(By.Id("submit-form")).Click();
 
+        Browser.Exists(By.Id("is-invalid"));
+
         // Validation summary
-        var messages = Browser.FindElements(By.CssSelector(".validation-errors > .validation-message"))
-            .Select(element => element.Text)
+        var messageElements = Browser.FindElements(By.CssSelector(".validation-errors > .validation-message"));
+
+        var messages = messageElements.Select(element => element.Text)
             .ToList();
 
-        var expected = new[] {"Order Name is required.",
+        var expected = new[]
+        {
+            "Order Name is required.",
             "Full Name is required.",
             "Email is required.",
             "Street is required.",

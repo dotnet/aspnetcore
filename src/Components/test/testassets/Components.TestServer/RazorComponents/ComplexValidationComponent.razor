@@ -6,6 +6,11 @@
     <p id="is-interactive"></p>
 }
 
+@if (_invalid)
+{
+    <p id="is-invalid"></p>
+}
+
 <EditForm id="add-validation-form" Model="@order" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
     <DataAnnotationsValidator />
 
@@ -88,12 +93,12 @@
             <p>No order items. Add one below.</p>
         }
 
-        <button type="button" id="submit-form" class="btn btn-success mb-3" @onclick="AddOrderItem">Add Order Item</button>
+        <button type="button" class="btn btn-success mb-3" @onclick="AddOrderItem">Add Order Item</button>
 
         <hr />
 
         <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Submit Order</button>
+            <button type="submit" id="submit-form" class="btn btn-primary">Submit Order</button>
         </div>
 
         <ValidationSummary />
@@ -102,6 +107,7 @@
 
 @code {
     private OrderModel order = new OrderModel();
+    private bool _invalid;
 
     private void HandleValidSubmit()
     {
@@ -109,7 +115,7 @@
 
     private void HandleInvalidSubmit()
     {
-        Console.WriteLine("Form submission failed due to validation errors.");
+        _invalid = true;
     }
 
     private void AddOrderItem()
