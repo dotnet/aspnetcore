@@ -160,12 +160,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
                     if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
                     {
-                        context.AddOrExtendValidationErrors([result.ErrorMessage], errorPrefix.TrimStart('.'), container);
+                        var key = errorPrefix.TrimStart('.');
+                        context.AddOrExtendValidationErrors(string.Empty, key, [result.ErrorMessage], container);
                     }
                 }
                 catch (Exception ex)
                 {
-                    context.AddOrExtendValidationErrors([ex.Message], errorPrefix.TrimStart('.'), container);
+                    var key = errorPrefix.TrimStart('.');
+                    context.AddOrExtendValidationErrors(string.Empty, key, [ex.Message], container);
                 }
             }
         }

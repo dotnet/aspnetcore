@@ -109,13 +109,13 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                             var key = string.IsNullOrEmpty(originalPrefix) ?
                                 memberName :
                                 $"{originalPrefix}.{memberName}";
-                            context.AddOrExtendValidationError(key, validationResult.ErrorMessage, value);
+                            context.AddOrExtendValidationError(memberName, key, validationResult.ErrorMessage, value);
                         }
 
                         if (!validationResult.MemberNames.Any())
                         {
                             // If no member names are specified, then treat this as a top-level error
-                            context.AddOrExtendValidationError(string.Empty, validationResult.ErrorMessage, value);
+                            context.AddOrExtendValidationError(string.Empty, string.Empty, validationResult.ErrorMessage, value);
                         }
                     }
                 }
