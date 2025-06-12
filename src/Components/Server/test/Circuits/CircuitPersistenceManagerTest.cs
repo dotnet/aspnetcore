@@ -22,6 +22,7 @@ using Microsoft.JSInterop;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits;
+
 public class CircuitPersistenceManagerTest
 {
     // Pause circuit registers with PersistentComponentStatemanager to persist root components.
@@ -53,7 +54,8 @@ public class CircuitPersistenceManagerTest
         var circuitPersistenceManager = new CircuitPersistenceManager(
             options,
             new ServerComponentSerializer(dataProtectionProvider),
-            circuitPersistenceProvider);
+            circuitPersistenceProvider,
+            dataProtectionProvider);
 
         // Act
         await circuitPersistenceManager.PauseCircuitAsync(circuitHost);
@@ -108,7 +110,8 @@ public class CircuitPersistenceManagerTest
         var circuitPersistenceManager = new CircuitPersistenceManager(
             options,
             new ServerComponentSerializer(dataProtectionProvider),
-            circuitPersistenceProvider);
+            circuitPersistenceProvider,
+            dataProtectionProvider);
         // Act
         await circuitPersistenceManager.PauseCircuitAsync(circuitHost);
         // Assert
@@ -142,6 +145,140 @@ public class CircuitPersistenceManagerTest
                 )
             ],
             state.RootComponents);
+    }
+
+    [Fact]
+    public async Task SaveStateToClient_PersistsStateToServer_WhenSendingToClientFails()
+    {
+        // Arrange
+        var dataProtectionProvider = new EphemeralDataProtectionProvider();
+        var deserializer = CreateDeserializer(dataProtectionProvider);
+        var options = Options.Create(new CircuitOptions());
+        var components = new[]
+        {
+            (RootComponentType: typeof(RootComponent), Parameters: new Dictionary<string, object>
+            {
+                ["Count"] = 42
+            })
+        };
+
+        var mockClientProxy = new Mock<ISingleClientProxy>();
+        mockClientProxy.Setup(c => c.InvokeCoreAsync<bool>(
+            It.IsAny<string>(),
+            It.IsAny<object[]>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false); // Simulate client failure
+
+        var client = new CircuitClientProxy(mockClientProxy.Object, Guid.NewGuid().ToString());
+        var circuitHost = await CreateCircuitHostAsync(
+            options,
+            dataProtectionProvider,
+            deserializer,
+            components,
+            client);
+
+        var circuitPersistenceProvider = new TestCircuitPersistenceProvider();
+        var circuitPersistenceManager = new CircuitPersistenceManager(
+            options,
+            new ServerComponentSerializer(dataProtectionProvider),
+            circuitPersistenceProvider,
+            dataProtectionProvider);
+
+        var store = new CircuitPersistenceManagerStore();
+
+        // Create a minimal persisted state for testing
+        var persistedState = new PersistedCircuitState
+        {
+            ApplicationState = new Dictionary<string, byte[]> { ["test"] = [1, 2, 3] },
+            RootComponents = [1, 2, 3, 4]
+        };
+
+        // Act
+        await circuitPersistenceManager.SaveStateToClient(
+            circuitHost,
+            persistedState,
+            default);
+
+        // Assert
+        Assert.NotNull(circuitPersistenceProvider.State);
+        Assert.Same(persistedState, circuitPersistenceProvider.State);
+
+        // Verify that InvokeAsync was called to attempt client-side storage
+        mockClientProxy.Verify(c => c.InvokeCoreAsync<bool>(
+            "JS.SavePersistedState",
+            It.IsAny<object[]>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task SaveStateToClient_CatchesException_WhenPersistingToServerFails()
+    {
+        // Arrange
+        var dataProtectionProvider = new EphemeralDataProtectionProvider();
+        var deserializer = CreateDeserializer(dataProtectionProvider);
+        var options = Options.Create(new CircuitOptions());
+        var components = new[]
+        {
+            (RootComponentType: typeof(RootComponent), Parameters: new Dictionary<string, object>
+            {
+                ["Count"] = 42
+            })
+        };
+
+        var mockClientProxy = new Mock<ISingleClientProxy>();
+        mockClientProxy.Setup(c => c.InvokeCoreAsync<bool>(
+            It.IsAny<string>(),
+            It.IsAny<object[]>(),
+            It.IsAny<CancellationToken>()))
+            .ReturnsAsync(false); // Simulate client failure
+
+        var client = new CircuitClientProxy(mockClientProxy.Object, Guid.NewGuid().ToString());
+        var circuitHost = await CreateCircuitHostAsync(
+            options,
+            dataProtectionProvider,
+            deserializer,
+            components,
+            client);
+
+        // Create a circuit persistence provider that throws an exception when PersistCircuitAsync is called
+        var circuitPersistenceProvider = new Mock<ICircuitPersistenceProvider>();
+        circuitPersistenceProvider
+            .Setup(p => p.PersistCircuitAsync(It.IsAny<CircuitId>(), It.IsAny<PersistedCircuitState>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Failed to persist circuit"));
+
+        var circuitPersistenceManager = new CircuitPersistenceManager(
+            options,
+            new ServerComponentSerializer(dataProtectionProvider),
+            circuitPersistenceProvider.Object,
+            dataProtectionProvider);
+
+        var persistedState = new PersistedCircuitState
+        {
+            ApplicationState = new Dictionary<string, byte[]> { ["test"] = [1, 2, 3] },
+            RootComponents = [1, 2, 3, 4]
+        };
+
+        // Act - This should not throw even though both client and server persistence fail
+        await circuitPersistenceManager.SaveStateToClient(
+            circuitHost,
+            persistedState,
+            default);
+
+        // Assert
+        // Verify that InvokeAsync was called to attempt client-side storage
+        mockClientProxy.Verify(c => c.InvokeCoreAsync<bool>(
+            "JS.SavePersistedState",
+            It.IsAny<object[]>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+
+        // Verify that PersistCircuitAsync was called when client-side storage failed
+        circuitPersistenceProvider.Verify(p => p.PersistCircuitAsync(
+            It.IsAny<CircuitId>(),
+            It.IsAny<PersistedCircuitState>(),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     [Fact]
@@ -260,7 +397,8 @@ public class CircuitPersistenceManagerTest
         IOptions<CircuitOptions> options,
         EphemeralDataProtectionProvider dataProtectionProvider,
         ServerComponentDeserializer deserializer,
-        (Type RootComponentType, Dictionary<string, object> Parameters)[] components = null)
+        (Type RootComponentType, Dictionary<string, object> Parameters)[] components = null,
+        CircuitClientProxy client = null)
     {
         components ??= [];
         var circuitId = new CircuitIdFactory(dataProtectionProvider).CreateCircuitId();
@@ -284,7 +422,7 @@ public class CircuitPersistenceManagerTest
 
         var scope = serviceProvider.CreateAsyncScope();
 
-        var client = new CircuitClientProxy(Mock.Of<IClientProxy>(), Guid.NewGuid().ToString());
+        client ??= new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString());
 
         var renderer = new RemoteRenderer(
             scope.ServiceProvider,
@@ -506,4 +644,23 @@ public class CircuitPersistenceManagerTest
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         PropertyNameCaseInsensitive = true,
     };
+
+    private class CircuitPersistenceManagerStore : IPersistentComponentStateStore
+    {
+        internal PersistedCircuitState PersistedCircuitState { get; private set; }
+
+        Task<IDictionary<string, byte[]>> IPersistentComponentStateStore.GetPersistedStateAsync() =>
+            throw new NotImplementedException();
+
+        Task IPersistentComponentStateStore.PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
+        {
+            PersistedCircuitState = new PersistedCircuitState
+            {
+                ApplicationState = new Dictionary<string, byte[]>(state),
+                RootComponents = null
+            };
+
+            return Task.CompletedTask;
+        }
+    }
 }

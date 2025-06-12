@@ -323,7 +323,19 @@ internal sealed partial class ComponentHub : Hub
                 return null;
             }
         }
-        else if (!RootComponentIsEmpty(rootComponents) || !string.IsNullOrEmpty(applicationState))
+        else if (!RootComponentIsEmpty(rootComponents) && !string.IsNullOrEmpty(applicationState))
+        {
+            persistedCircuitState = _circuitPersistenceManager.FromProtectedState(rootComponents, applicationState);
+            if (persistedCircuitState == null)
+            {
+                // If we couldn't deserialize the persisted state, signal that.
+                Log.InvalidInputData(_logger);
+                await NotifyClientError(Clients.Caller, "The root components or application state provided are invalid.");
+                Context.Abort();
+                return null;
+            }
+        }
+        else
         {
             Log.InvalidInputData(_logger);
             await NotifyClientError(
@@ -332,12 +344,6 @@ internal sealed partial class ComponentHub : Hub
                 "The root components provided are invalid." :
                 "The application state provided is invalid."
             );
-            Context.Abort();
-            return null;
-        }
-        else
-        {
-            // For now abort, since we currently don't support resuming circuits persisted to the client.
             Context.Abort();
             return null;
         }
@@ -387,6 +393,39 @@ internal sealed partial class ComponentHub : Hub
 
         static bool RootComponentIsEmpty(string rootComponents) =>
             string.IsNullOrEmpty(rootComponents) || rootComponents == "[]";
+    }
+
+    // Client initiated pauses work as follows:
+    // * The client calls PauseCircuit, we dissasociate the circuit from the connection.
+    // * We trigger the circuit pause to collect the current root components and dispose the current circuit.
+    // * We push the current root components and application state to the client.
+    //   * If that succeeds, the client receives the state and we are done.
+    //   * If that fails, we will fall back to the server-side cache storage.
+    // * The client will disconnect after receiving the state or after a 30s timeout.
+    //   * From that point on, it can choose to resume the circuit by calling ResumeCircuit with or without the state
+    //     depending on whether the transfer was successful.
+    // * Most of the time we expect the state push to succeed, if that fails, the possibilites are:
+    //   * Client tries to resume before the state has been saved to the server-side cache storage.
+    //     * Resumption fails as the state is not there.
+    //     * The state eventually makes it to the server-side cache storage, but the client will have already given up and
+    //       the state will eventually go away by virtue of the cache expiration policy on it.
+    //   * The state has been saved to the server-side cache storage. This is what we expect to happen most of the time in the
+    //     rare event that the client push fails.
+    //     * This case becomes equivalent to the "ungraceful pause" case, where the client has no state and the server has the state.
+    public async ValueTask<bool> PauseCircuit()
+    {
+        var circuitHost = await GetActiveCircuitAsync();
+        if (circuitHost == null)
+        {
+            return false;
+        }
+
+        _ = _circuitRegistry.PauseCircuitAsync(circuitHost, Context.ConnectionId);
+
+        // This only signals that pausing the circuit has started.
+        // The client will receive the root components and application state in a separate message
+        // from the server.
+        return true;
     }
 
     public async ValueTask BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)

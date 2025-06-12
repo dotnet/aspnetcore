@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { ReconnectionHandler, ReconnectionOptions } from './CircuitStartOptions';
-import { ReconnectDisplay } from './ReconnectDisplay';
+import { ReconnectDisplay, ReconnectDisplayUpdateOptions } from './ReconnectDisplay';
 import { DefaultReconnectDisplay } from './DefaultReconnectDisplay';
 import { UserSpecifiedDisplay } from './UserSpecifiedDisplay';
 import { Logger, LogLevel } from '../Logging/Logger';
@@ -26,7 +26,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     this._resumeCallback = resumeCallback || Blazor.resume!;
   }
 
-  onConnectionDown(options: ReconnectionOptions, _error?: Error): void {
+  onConnectionDown(options: ReconnectionOptions, _error?: Error, isClientPause?: boolean, remotePause?: boolean): void {
     if (!this._reconnectionDisplay) {
       const modal = document.getElementById(options.dialogId);
       this._reconnectionDisplay = modal
@@ -40,7 +40,9 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
         this._logger,
         this._reconnectCallback,
         this._resumeCallback,
-        this._reconnectionDisplay
+        this._reconnectionDisplay,
+        isClientPause,
+        remotePause,
       );
     }
   }
@@ -60,10 +62,31 @@ class ReconnectionProcess {
 
   isDisposed = false;
 
-  constructor(options: ReconnectionOptions, private logger: Logger, private reconnectCallback: () => Promise<boolean>, private resumeCallback: () => Promise<boolean>, display: ReconnectDisplay) {
+  constructor(
+    options: ReconnectionOptions,
+    private logger: Logger,
+    private reconnectCallback: () => Promise<boolean>,
+    private resumeCallback: () => Promise<boolean>,
+    display: ReconnectDisplay,
+    private isGracefulPause?: boolean,
+    private isRemote: boolean = false,
+  ) {
     this.reconnectDisplay = display;
-    this.reconnectDisplay.show();
-    this.attemptPeriodicReconnection(options);
+    const displayOptions: ReconnectDisplayUpdateOptions = {
+      type: isGracefulPause ? 'pause' : 'reconnect',
+      remote: this.isRemote,
+      currentAttempt: 0,
+      secondsToNextAttempt: 0,
+    };
+    this.reconnectDisplay.show(displayOptions);
+    if (!this.isGracefulPause) {
+      this.attemptPeriodicReconnection(options);
+    } else {
+      this.reconnectDisplay.update({
+        type: 'pause',
+        remote: this.isRemote,
+      });
+    }
   }
 
   public dispose() {
@@ -87,7 +110,7 @@ class ReconnectionProcess {
       }
 
       await this.runTimer(retryInterval, /* intervalMs */ 1000, remainingMs => {
-        this.reconnectDisplay.update(i + 1, Math.round(remainingMs / 1000));
+        this.reconnectDisplay.update({ type: 'reconnect', currentAttempt: i + 1, secondsToNextAttempt: Math.round(remainingMs / 1000) });
       });
 
       if (this.isDisposed) {
@@ -102,13 +125,14 @@ class ReconnectionProcess {
         const result = await this.reconnectCallback();
         if (!result) {
           // Try to resume the circuit if the reconnect failed
+          // If the server responded and refused to reconnect, stop auto-retrying.
+          this.reconnectDisplay.update({ type: 'pause', remote: true });
           const resumeResult = await this.resumeCallback();
           if (resumeResult) {
             return;
           }
 
-          // If the server responded and refused to reconnect, stop auto-retrying.
-          this.reconnectDisplay.rejected();
+          this.reconnectDisplay.failed();
           return;
         }
         return;

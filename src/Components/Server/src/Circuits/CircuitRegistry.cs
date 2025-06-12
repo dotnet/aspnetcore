@@ -169,7 +169,7 @@ internal partial class CircuitRegistry
     // 1. If the circuit is not found return null
     // 2. If the circuit is found, but fails to connect, we need to dispose it here and return null
     // 3. If everything goes well, return the circuit.
-    public virtual async Task<CircuitHost> ConnectAsync(CircuitId circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
+    public virtual async Task<CircuitHost> ConnectAsync(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
     {
         Log.CircuitConnectStarted(_logger, circuitId);
 
@@ -228,7 +228,7 @@ internal partial class CircuitRegistry
         }
     }
 
-    protected virtual (CircuitHost circuitHost, bool previouslyConnected) ConnectCore(CircuitId circuitId, IClientProxy clientProxy, string connectionId)
+    protected virtual (CircuitHost circuitHost, bool previouslyConnected) ConnectCore(CircuitId circuitId, ISingleClientProxy clientProxy, string connectionId)
     {
         if (ConnectedCircuits.TryGetValue(circuitId, out var connectedCircuitHost))
         {
@@ -281,7 +281,7 @@ internal partial class CircuitRegistry
         }
     }
 
-    private async Task PauseAndDisposeCircuitEntry(DisconnectedCircuitEntry entry)
+    private Task PauseAndDisposeCircuitEntry(DisconnectedCircuitEntry entry)
     {
         DisposeTokenSource(entry);
 
@@ -291,20 +291,76 @@ internal partial class CircuitRegistry
             {
                 // Only pause and persist the circuit state if it has been active at some point,
                 // meaning that the client called UpdateRootComponents on it.
-                await _circuitPersistenceManager.PauseCircuitAsync(entry.CircuitHost);
+                var circuitHost = entry.CircuitHost;
+                return PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: false);
             }
             else
             {
                 Log.PersistedCircuitStateDiscarded(_logger, entry.CircuitHost.CircuitId);
             }
-
-            entry.CircuitHost.UnhandledException -= CircuitHost_UnhandledException;
-            await entry.CircuitHost.DisposeAsync();
         }
         catch (Exception ex)
         {
             Log.UnhandledExceptionDisposingCircuitHost(_logger, ex);
         }
+
+        return Task.CompletedTask;
+    }
+
+    private async Task PauseAndDisposeCircuitHost(CircuitHost circuitHost, bool saveStateToClient)
+    {
+        await _circuitPersistenceManager.PauseCircuitAsync(circuitHost, saveStateToClient);
+        circuitHost.UnhandledException -= CircuitHost_UnhandledException;
+        await circuitHost.DisposeAsync();
+    }
+
+    internal async Task PauseCircuitAsync(
+    CircuitHost circuitHost,
+    string connectionId)
+    {
+        try
+        {
+            Log.CircuitPauseStarted(_logger, circuitHost.CircuitId, connectionId);
+
+            Task pauseTask;
+            lock (CircuitRegistryLock)
+            {
+                pauseTask = PauseCore(circuitHost, connectionId);
+            }
+            await pauseTask;
+        }
+        catch (Exception)
+        {
+            Log.CircuitPauseFailed(_logger, circuitHost.CircuitId, connectionId);
+        }
+    }
+
+    internal virtual Task PauseCore(CircuitHost circuitHost, string connectionId)
+    {
+        var circuitId = circuitHost.CircuitId;
+        if (!ConnectedCircuits.TryGetValue(circuitId, out circuitHost))
+        {
+            Log.CircuitNotActive(_logger, circuitId);
+
+            // Circuit should be in the connected state for pausing.
+            return Task.CompletedTask;
+        }
+
+        if (!string.Equals(circuitHost.Client.ConnectionId, connectionId, StringComparison.Ordinal))
+        {
+            // Circuit should be connected to the same connection for pausing.
+            Log.CircuitConnectedToDifferentConnection(_logger, circuitId, circuitHost.Client.ConnectionId);
+
+            // The circuit is associated with a different connection. One way this could happen is when
+            // the client reconnects with a new connection before the OnDisconnect for the older
+            // connection is executed. Do nothing
+            return Task.CompletedTask;
+        }
+
+        var removeResult = ConnectedCircuits.TryRemove(circuitId, out _);
+        Debug.Assert(removeResult, "This operation operates inside of a lock. We expect the previously inspected value to be still here.");
+
+        return PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: true);
     }
 
     private void DisposeTokenSource(DisconnectedCircuitEntry entry)
@@ -430,5 +486,11 @@ internal partial class CircuitRegistry
 
         [LoggerMessage(116, LogLevel.Debug, "Circuit {CircuitId} was not resumed. Persisted circuit state for {CircuitId} discarded.", EventName = "PersistedCircuitStateDiscarded")]
         public static partial void PersistedCircuitStateDiscarded(ILogger logger, CircuitId circuitId);
+
+        [LoggerMessage(117, LogLevel.Debug, "Pausing circuit with id {CircuitId} from connection {ConnectionId}.", EventName = "CircuitPauseStarted")]
+        public static partial void CircuitPauseStarted(ILogger logger, CircuitId circuitId, string connectionId);
+
+        [LoggerMessage(118, LogLevel.Debug, "Failed to pause circuit with id {CircuitId} from connection {ConnectionId}.", EventName = "CircuitPauseFailed")]
+        public static partial void CircuitPauseFailed(ILogger logger, CircuitId circuitId, string connectionId);
     }
 }

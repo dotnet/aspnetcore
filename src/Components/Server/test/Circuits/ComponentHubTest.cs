@@ -286,7 +286,8 @@ public class ComponentHubTest
         var circuitPersistenceManager = new CircuitPersistenceManager(
             Options.Create(new CircuitOptions()),
             new Endpoints.ServerComponentSerializer(ephemeralDataProtectionProvider),
-            provider ?? Mock.Of<ICircuitPersistenceProvider>());
+            provider ?? Mock.Of<ICircuitPersistenceProvider>(),
+            ephemeralDataProtectionProvider);
 
         var circuitIdFactory = TestCircuitIdFactory.Instance;
         var circuitFactory = new TestCircuitFactory(
@@ -412,7 +413,7 @@ public class ComponentHubTest
             IPersistentComponentStateStore store,
             ResourceAssetCollection resourceCollection)
         {
-            var clientProxy = new CircuitClientProxy(Mock.Of<IClientProxy>(), "123");
+            var clientProxy = new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), "123");
 
             var serviceScope = new Mock<IServiceScope>();
             var circuitHost = TestCircuitHost.Create(
