@@ -1,11 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.Extensions.Validation;
 
 /// <summary>
 /// Represents the context of a validation error.
 /// </summary>
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public readonly struct ValidationErrorContext
 {
     /// <summary>
@@ -27,4 +30,9 @@ public readonly struct ValidationErrorContext
     /// Gets a reference to the container object of the validated property.
     /// </summary>
     public required object? Container { get; init; }
+
+    private string GetDebuggerDisplay()
+    {
+        return $"{Path}: {string.Join(",", Errors)}";
+    }
 }
