@@ -8,6 +8,8 @@ import { synchronizeDomContent } from './DomMerging/DomSync';
 
 let enableDomPreservation = true;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
+let currentNotFoundRenderAbortController: AbortController | null;
+const acceptHeader = 'text/html; blazor-enhanced-nav=on';
 
 export function attachStreamingRenderingListener(options: SsrStartOptions | undefined, callbacks: NavigationEnhancementCallbacks) {
   navigationEnhancementCallbacks = callbacks;
@@ -75,6 +77,34 @@ class BlazorStreamingUpdate extends HTMLElement {
                 }
               }
               break;
+            case 'not-found':
+              const componentId = node.getAttribute('componentId');
+              if (!componentId) {
+                console.error('Streaming content for not-found response does not have a componentId attribute.');
+                break;
+              }
+              wrapDocumentInStreamingMarkers(componentId);
+              const notFoundUrl = toAbsoluteUri(node.content.textContent!);
+
+              if (componentId) {
+                currentNotFoundRenderAbortController?.abort();
+                currentNotFoundRenderAbortController = new AbortController();
+                const abortSignal = currentNotFoundRenderAbortController.signal;
+                fetch(notFoundUrl, Object.assign(<RequestInit>{
+                  signal: abortSignal,
+                  mode: 'no-cors',
+                  headers: {
+                    'accept': acceptHeader,
+                  },
+                }, undefined))
+                  .then(response => response.text())
+                  .then(html => {
+                    const docFrag = document.createRange().createContextualFragment(html);
+                    insertStreamingContentIntoDocument(componentId, docFrag);
+                  })
+                  .catch(error => console.error('Failed to fetch not-found content:', error));
+              }
+              break;
             case 'error':
               // This is kind of brutal but matches what happens without progressive enhancement
               replaceDocumentWithPlainText(node.content.textContent || 'Error');
@@ -83,6 +113,22 @@ class BlazorStreamingUpdate extends HTMLElement {
         }
       }
     });
+  }
+}
+
+function wrapDocumentInStreamingMarkers(componentIdAsString: string): void {
+  // Add a comment before the <head>
+  const markerStart = document.createComment(`bl:${componentIdAsString}`);
+  const head = document.querySelector('head');
+  document.documentElement.insertBefore(markerStart, head);
+
+  // Add a comment after the <body> or after the <head> if <body> is null
+  const markerEnd = document.createComment(`/bl:${componentIdAsString}`);
+  const body = document.querySelector('body');
+  if (body && body.parentNode) {
+    body.parentNode.insertBefore(markerEnd, body.nextSibling);
+  } else if (head && head.parentNode) {
+    head.parentNode.insertBefore(markerEnd, head.nextSibling);
   }
 }
 

@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -77,21 +78,42 @@ internal partial class EndpointHtmlRenderer
             : Task.CompletedTask;
     }
 
-    private void SetNotFoundResponse(object? sender, EventArgs args)
+    private async Task SetNotFoundResponseAsync(string baseUri, NotFoundEventArgs args)
     {
         if (_httpContext.Response.HasStarted)
         {
-            // We're expecting the Router to continue streaming the NotFound contents
+            if (args.NotFoundPageType == null || string.IsNullOrEmpty(args.Path))
+            {
+                throw new InvalidOperationException("The NotFoundPageType and Path must be specified in the NotFoundEventArgs to render NotFoundPage when the response has started.");
+            }
+            var instance = Activator.CreateInstance(args.NotFoundPageType) as IComponent;
+            if (instance == null)
+            {
+                throw new InvalidOperationException($"The type {args.NotFoundPageType.FullName} does not implement IComponent.");
+            }
+            if (_notFoundComponentId == -1)
+            {
+                _notFoundComponentId = AssignRootComponentId(instance);
+            }
+            if (string.IsNullOrEmpty(_notFoundUrl))
+            {
+                _notFoundUrl = $"{baseUri}{args.Path.TrimStart('/')}";
+            }
+            var defaultBufferSize = 16 * 1024;
+            await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            using var bufferWriter = new BufferedTextWriter(writer);
+            HandleNotFoundAfterResponseStarted(bufferWriter, _httpContext, _notFoundUrl, _notFoundComponentId);
+            await bufferWriter.FlushAsync();
         }
         else
         {
             _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-
-            // When the application triggers a NotFound event, we continue rendering the current batch.
-            // However, after completing this batch, we do not want to process any further UI updates,
-            // as we are going to return a 404 status and discard the UI updates generated so far.
-            SignalRendererToFinishRendering();
         }
+
+        // When the application triggers a NotFound event, we continue rendering the current batch.
+        // However, after completing this batch, we do not want to process any further UI updates,
+        // as we are going to return a 404 status and discard the UI updates generated so far.
+        SignalRendererToFinishRendering();
     }
 
     private async Task OnNavigateTo(string uri)

@@ -226,6 +226,15 @@ internal partial class EndpointHtmlRenderer
         writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
+    private static void HandleNotFoundAfterResponseStarted(TextWriter writer, HttpContext httpContext, string notFoundUrl, int componentId)
+    {
+        writer.Write("<blazor-ssr><template type=\"not-found\"");
+        writer.Write($" componentId=\"{componentId}\"");
+        writer.Write(">");
+        writer.Write(HtmlEncoder.Default.Encode(OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, notFoundUrl)));
+        writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
+    }
+
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
         writer.Write("<blazor-ssr><template type=\"redirection\"");
