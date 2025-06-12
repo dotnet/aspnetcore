@@ -7,7 +7,7 @@ internal class ResourcePreloadService
 {
     private Action<List<PreloadAsset>>? handler;
 
-    public void SetPreloadHook(Action<List<PreloadAsset>> handler)
+    public void SetPreloadingHandler(Action<List<PreloadAsset>> handler)
         => this.handler = handler;
 
     public void Preload(List<PreloadAsset> assets)

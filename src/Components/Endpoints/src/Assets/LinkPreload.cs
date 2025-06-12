@@ -1,38 +1,35 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-
-
-// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-
-
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components;
 
-public class LinkPreload : IComponent
+/// <summary>
+/// Represents link elements for preloading assets.
+/// </summary>
+public sealed class LinkPreload : IComponent
 {
     private RenderHandle renderHandle;
     private List<PreloadAsset>? assets;
 
     [Inject]
-    internal ResourcePreloadService Service { get; set; }
+    internal ResourcePreloadService? Service { get; set; }
 
-    public void Attach(RenderHandle renderHandle)
+    void IComponent.Attach(RenderHandle renderHandle)
     {
         this.renderHandle = renderHandle;
     }
 
-    public Task SetParametersAsync(ParameterView parameters)
+    Task IComponent.SetParametersAsync(ParameterView parameters)
     {
-        Service.SetPreloadHook(PreloadGroup);
+        Service?.SetPreloadingHandler(PreloadAssets);
         renderHandle.Render(RenderPreloadAssets);
         return Task.CompletedTask;
     }
 
-    private void PreloadGroup(List<PreloadAsset> assets)
+    private void PreloadAssets(List<PreloadAsset> assets)
     {
         if (this.assets != null)
         {

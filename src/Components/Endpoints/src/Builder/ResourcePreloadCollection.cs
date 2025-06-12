@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
 internal class ResourcePreloadCollection
@@ -94,7 +96,7 @@ internal class ResourcePreloadCollection
         return resourceAsset;
     }
 
-    public bool TryGetAssets(string group, out List<PreloadAsset> assets)
+    public bool TryGetAssets(string group, [MaybeNullWhen(false)] out List<PreloadAsset> assets)
         => _storage.TryGetValue(group, out assets);
 }
 

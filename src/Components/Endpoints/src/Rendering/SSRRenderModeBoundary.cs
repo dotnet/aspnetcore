@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web;
@@ -29,7 +28,7 @@ internal class SSRRenderModeBoundary : IComponent
     private RenderHandle _renderHandle;
     private IReadOnlyDictionary<string, object?>? _latestParameters;
     private ComponentMarkerKey? _markerKey;
-    private HttpContext _httpContext;
+    private readonly HttpContext _httpContext;
 
     public IComponentRenderMode RenderMode { get; }
 
@@ -109,10 +108,10 @@ internal class SSRRenderModeBoundary : IComponent
 
         ValidateParameters(_latestParameters);
 
-        // Preload WebAssembly assets when using WebAssembly (not Auto) mode
         if (RenderMode is InteractiveWebAssemblyRenderMode)
         {
-            AppendWebAssemblyPreloadAssets();
+            // Preload WebAssembly assets when using WebAssembly (not Auto) mode
+            PreloadWebAssemblyAssets();
         }
 
         if (_prerender)
@@ -123,7 +122,7 @@ internal class SSRRenderModeBoundary : IComponent
         return Task.CompletedTask;
     }
 
-    private void AppendWebAssemblyPreloadAssets()
+    private void PreloadWebAssemblyAssets()
     {
         var preloads = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourcePreloadCollection>();
         if (preloads != null && preloads.TryGetAssets("webassembly", out var preloadAssets))
