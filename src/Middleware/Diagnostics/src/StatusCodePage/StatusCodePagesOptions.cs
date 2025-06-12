@@ -62,4 +62,6 @@ public class StatusCodePagesOptions
     /// </summary>
     /// <remarks>The default value is <see langword="false"/>.</remarks>
     public bool CreateScopeForErrors { get; set; }
+
+    internal string? PathFormat { get; set; }
 }

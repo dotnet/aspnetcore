@@ -52,7 +52,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     // wait for the non-streaming tasks (these ones), then start streaming until full quiescence.
     private readonly List<Task> _nonStreamingPendingTasks = new();
 
-    private int _notFoundComponentId = -1;
     private string _notFoundUrl = string.Empty;
 
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)

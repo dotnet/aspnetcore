@@ -226,19 +226,20 @@ internal partial class EndpointHtmlRenderer
         writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
-    private static void HandleNotFoundAfterResponseStarted(TextWriter writer, HttpContext httpContext, string notFoundUrl, int componentId)
+    private static void HandleNotFoundAfterResponseStarted(TextWriter writer, HttpContext httpContext, string notFoundUrl)
     {
         writer.Write("<blazor-ssr><template type=\"not-found\"");
-        writer.Write($" componentId=\"{componentId}\"");
-        writer.Write(">");
-        writer.Write(HtmlEncoder.Default.Encode(OpaqueRedirection.CreateProtectedRedirectionUrl(httpContext, notFoundUrl)));
-        writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
+        WriteResponseTemplate(writer, httpContext, notFoundUrl);
     }
 
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
         writer.Write("<blazor-ssr><template type=\"redirection\"");
+        WriteResponseTemplate(writer, httpContext, destinationUrl);
+    }
 
+    private static void WriteResponseTemplate(TextWriter writer, HttpContext httpContext, string destinationUrl)
+    {
         if (string.Equals(httpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
         {
             writer.Write(" from=\"form-post\"");

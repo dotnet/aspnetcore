@@ -14,17 +14,11 @@ public sealed class NotFoundEventArgs : EventArgs
     public string Path { get; }
 
     /// <summary>
-    /// Gets the type of NotFoundPage component.
-    /// </summary>
-    public Type NotFoundPageType { get; }
-
-    /// <summary>
     /// Initializes a new instance of <see cref="NotFoundEventArgs" />.
     /// </summary>
-    public NotFoundEventArgs(string url, Type notFoundPageType)
+    public NotFoundEventArgs(string url)
     {
         Path = url;
-        NotFoundPageType = notFoundPageType;
     }
 
 }
