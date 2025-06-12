@@ -303,6 +303,7 @@ public static class TestData
                 { "Microsoft.Extensions.Options" },
                 { "Microsoft.Extensions.Primitives" },
                 { "Microsoft.Extensions.WebEncoders" },
+                { "Microsoft.Extensions.Validation" },
                 { "Microsoft.JSInterop" },
                 { "Microsoft.Net.Http.Headers" },
                 { "System.Diagnostics.EventLog" },
