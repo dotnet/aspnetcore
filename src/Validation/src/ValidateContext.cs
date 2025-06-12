@@ -63,17 +63,17 @@ public sealed class ValidateContext
     /// <summary>
     /// Optional event raised when a validation error is reported.
     /// </summary>
-    public event Action<string, string[], object?>? OnValidationError;
+    public event Action<ValidationErrorContext>? OnValidationError;
 
-    internal void AddValidationError(string key, string[] error, object? container)
+    internal void AddValidationError(string propertyName, string key, string[] error, object? container)
     {
         ValidationErrors ??= [];
 
         ValidationErrors[key] = error;
-        OnValidationError?.Invoke(key, error, container);
+        OnValidationError?.Invoke(new(propertyName, key, error, container));
     }
 
-    internal void AddOrExtendValidationErrors(string key, string[] errors, object? container)
+    internal void AddOrExtendValidationErrors(string propertyName, string key, string[] errors, object? container)
     {
         ValidationErrors ??= [];
 
@@ -89,10 +89,10 @@ public sealed class ValidateContext
             ValidationErrors[key] = errors;
         }
 
-        OnValidationError?.Invoke(key, errors, container);
+        OnValidationError?.Invoke(new(propertyName, key, errors, container));
     }
 
-    internal void AddOrExtendValidationError(string key, string error, object? container)
+    internal void AddOrExtendValidationError(string name, string key, string error, object? container)
     {
         ValidationErrors ??= [];
 
@@ -105,6 +105,6 @@ public sealed class ValidateContext
             ValidationErrors[key] = [error];
         }
 
-        OnValidationError?.Invoke(key, [error], container);
+        OnValidationError?.Invoke(new(name, key, [error], container));
     }
 }

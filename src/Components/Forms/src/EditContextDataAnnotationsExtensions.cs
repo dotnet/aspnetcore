@@ -1,18 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
-using System.Text.RegularExpressions;
-using Microsoft.Extensions.Validation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions))]
 
@@ -72,13 +69,24 @@ public static partial class EditContextDataAnnotationsExtensions
         private readonly EditContext _editContext;
         private readonly IServiceProvider? _serviceProvider;
         private readonly ValidationMessageStore _messages;
+        private readonly ValidationOptions? _validationOptions;
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        private readonly IValidatableInfo? _validatorTypeInfo;
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        private readonly Dictionary<string, FieldIdentifier> _validationPathToFieldIdentifierMapping = new();
+
 
         public DataAnnotationsEventSubscriptions(EditContext editContext, IServiceProvider serviceProvider)
         {
             _editContext = editContext ?? throw new ArgumentNullException(nameof(editContext));
             _serviceProvider = serviceProvider;
             _messages = new ValidationMessageStore(_editContext);
-
+            _validationOptions = _serviceProvider?.GetService<IOptions<ValidationOptions>>()?.Value;
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            _validatorTypeInfo = _validationOptions != null && _validationOptions.TryGetValidatableTypeInfo(_editContext.Model.GetType(), out var typeInfo)
+                ? typeInfo
+                : null;
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _editContext.OnFieldChanged += OnFieldChanged;
             _editContext.OnValidationRequested += OnValidationRequested;
 
@@ -88,7 +96,6 @@ public static partial class EditContextDataAnnotationsExtensions
             }
         }
 
-        // TODO(OR): Should this also use ValidatablePropertyInfo.ValidateAsync?
         [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         private void OnFieldChanged(object? sender, FieldChangedEventArgs eventArgs)
         {
@@ -160,55 +167,57 @@ public static partial class EditContextDataAnnotationsExtensions
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         private bool TryValidateTypeInfo(ValidationContext validationContext)
         {
-            var options = _serviceProvider?.GetService<IOptions<ValidationOptions>>()?.Value;
-
-            if (options == null || !options.TryGetValidatableTypeInfo(_editContext.Model.GetType(), out var typeInfo))
+            if (_validatorTypeInfo is null)
             {
                 return false;
             }
 
             var validateContext = new ValidateContext
             {
-                ValidationOptions = options,
+                ValidationOptions = _validationOptions!,
                 ValidationContext = validationContext,
             };
-
-            var containerMapping = new Dictionary<string, object?>();
-
-            validateContext.OnValidationError += (key, _, container) => containerMapping[key] = container;
-
-            var validationTask = typeInfo.ValidateAsync(_editContext.Model, validateContext, CancellationToken.None);
-
-            if (!validationTask.IsCompleted)
+            try
             {
-                throw new InvalidOperationException("Async validation is not supported");
-            }
+                validateContext.OnValidationError += AddMapping;
 
-            var validationErrors = validateContext.ValidationErrors;
-
-            // Transfer results to the ValidationMessageStore
-            _messages.Clear();
-
-            if (validationErrors is not null && validationErrors.Count > 0)
-            {
-                foreach (var (fieldKey, messages) in validationErrors)
+                var validationTask = _validatorTypeInfo.ValidateAsync(_editContext.Model, validateContext, CancellationToken.None);
+                if (!validationTask.IsCompleted)
                 {
-                    // Reverse mapping based on storing references during validation.
-                    // With this approach, we could skip iterating over ValidateContext.ValidationErrors and pass the errors
-                    // directly to ValidationMessageStore in the OnValidationError handler.
-                    var fieldContainer = containerMapping[fieldKey] ?? _editContext.Model;
-
-                    // Alternative: Reverse mapping based on object graph walk.
-                    //var fieldContainer = GetFieldContainer(_editContext.Model, fieldKey);
-
-                    var lastDotIndex = fieldKey.LastIndexOf('.');
-                    var fieldName = lastDotIndex >= 0 ? fieldKey[(lastDotIndex + 1)..] : fieldKey;
-
-                    _messages.Add(new FieldIdentifier(fieldContainer, fieldName), messages);
+                    throw new InvalidOperationException("Async validation is not supported");
                 }
+
+                var validationErrors = validateContext.ValidationErrors;
+
+                // Transfer results to the ValidationMessageStore
+                _messages.Clear();
+
+                if (validationErrors is not null && validationErrors.Count > 0)
+                {
+                    foreach (var (fieldKey, messages) in validationErrors)
+                    {
+                        var fieldIdentifier = _validationPathToFieldIdentifierMapping[fieldKey];
+                        _messages.Add(fieldIdentifier, messages);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                validateContext.OnValidationError -= AddMapping;
+                _validationPathToFieldIdentifierMapping.Clear();
             }
 
             return true;
+
+        }
+        private void AddMapping(ValidationErrorContext context)
+        {
+            _validationPathToFieldIdentifierMapping[context.Path] =
+                new FieldIdentifier(context.Container ?? _editContext.Model, context.Name);
         }
 
         public void Dispose()
