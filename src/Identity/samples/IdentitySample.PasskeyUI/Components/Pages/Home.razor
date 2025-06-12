@@ -7,7 +7,6 @@
 @inject NavigationManager NavigationManager
 @inject SignInManager<PocoUser> SignInManager
 @inject UserManager<PocoUser> UserManager
-@inject IUserPasskeyStore<PocoUser> PasskeyStore
 
 <h1>Welcome!</h1>
 
@@ -106,9 +105,8 @@
             }
         }
 
-        await PasskeyStore.SetPasskeyAsync(user, attestationResult.Passkey, CancellationToken.None);
-        var updateResult = await UserManager.UpdateAsync(user);
-        if (!updateResult.Succeeded)
+        var setPasskeyResult = await UserManager.SetPasskeyAsync(user, attestationResult.Passkey);
+        if (!setPasskeyResult.Succeeded)
         {
             statusMessage = "Error: Could not update the user with the new passkey.";
             return;
