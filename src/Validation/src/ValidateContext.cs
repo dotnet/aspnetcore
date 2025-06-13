@@ -3,6 +3,8 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.Json;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -60,10 +62,55 @@ public sealed class ValidateContext
     /// </summary>
     public int CurrentDepth { get; set; }
 
+    private JsonSerializerOptions? _cachedSerializerOptions;
+    private bool _serializerOptionsResolved;
+
+    internal JsonSerializerOptions? SerializerOptions
+    {
+        get
+        {
+            if (_serializerOptionsResolved)
+            {
+                return _cachedSerializerOptions;
+            }
+
+            _cachedSerializerOptions = ResolveSerializerOptions();
+            _serializerOptionsResolved = true;
+            return _cachedSerializerOptions;
+        }
+    }
+
+    /// <summary>
+    /// Attempts to resolve the <see cref="JsonSerializerOptions"/> used for serialization
+    /// using reflection to access JsonOptions from the ASP.NET Core shared framework.
+    /// </summary>
+    private JsonSerializerOptions? ResolveSerializerOptions()
+    {
+        var targetType = "Microsoft.AspNetCore.Http.Json.JsonOptions, Microsoft.AspNetCore.Http.Extensions";
+        var jsonOptionsType = Type.GetType(targetType, throwOnError: false);
+        if (jsonOptionsType is null)
+        {
+            return null;
+        }
+
+        var iOptionsType = typeof(IOptions<>).MakeGenericType(jsonOptionsType);
+
+        var optionsObj = ValidationContext.GetService(iOptionsType);
+        if (optionsObj is null)
+        {
+            return null;
+        }
+
+        var valueProp = iOptionsType.GetProperty("Value")!;
+        var jsonOptions = valueProp.GetValue(optionsObj);
+        var serializerProp = jsonOptionsType.GetProperty("SerializerOptions")!;
+
+        return serializerProp.GetValue(jsonOptions) as JsonSerializerOptions;
+    }
+
     internal void AddValidationError(string key, string[] error)
     {
         ValidationErrors ??= [];
-
         ValidationErrors[key] = error;
     }
 
@@ -90,7 +137,7 @@ public sealed class ValidateContext
 
         if (ValidationErrors.TryGetValue(key, out var existingErrors) && !existingErrors.Contains(error))
         {
-            ValidationErrors[key] = [.. existingErrors, error];
+            ValidationErrors[key] = [..existingErrors, error];
         }
         else
         {
