@@ -157,7 +157,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     // If the response has started, it matters how we arrive the the page setting the not found status code
     // because we are rendering client-side. In browser-initiated navigation and form submissions, the headers
     // don't contain enhanced-nav and we redirect to the not found page. In link clicking navigation,
-    // the headers contain enhanced-nav, redirection is not needed and the original url will be preserved.
+    // the headers contain enhanced-nav, redirection is not needed and the original url is preserved.
 
     [Theory]
     [InlineData(true, true)]
