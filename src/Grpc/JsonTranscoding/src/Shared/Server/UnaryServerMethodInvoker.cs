@@ -159,7 +159,7 @@ internal sealed class UnaryServerMethodInvoker<[DynamicallyAccessedMembers(Serve
         }
     }
 
-    private async Task<TResponse> AwaitServiceReleaseAndThrow(ValueTask releaseTask, ExceptionDispatchInfo ex)
+    private static async Task<TResponse> AwaitServiceReleaseAndThrow(ValueTask releaseTask, ExceptionDispatchInfo ex)
     {
         await releaseTask;
         ex.Throw();
