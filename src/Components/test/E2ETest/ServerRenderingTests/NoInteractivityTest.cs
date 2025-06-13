@@ -160,9 +160,9 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     // the headers contain enhanced-nav, redirection is not needed and the original url will be preserved.
 
     [Theory]
-    [InlineData(true, true)] // manual testing works, why Selenium does not?
+    [InlineData(true, true)]
     [InlineData(true, false)]
-    [InlineData(false, true)] // manual testing works, why Selenium does not?
+    [InlineData(false, true)]
     [InlineData(false, false)]
     // enhanced navigation is switched off for browser navigation
     public void NotFoundSetOnInitialization_ResponseStarted_BrowserNavigation_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
@@ -194,15 +194,15 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         }
         else
         {
-            // this throws an exception logged the server
+            // this throws an exception logged on the server
             AssertNotFoundContentNotRendered();
         }
     }
 
     [Theory]
-    //[InlineData(true, true)] // ActiveIssue("NotFoundPageRoute is not set in Router")
+    [InlineData(true, true)]
     [InlineData(true, false)]
-    //[InlineData(false, true)] // ActiveIssue("NotFoundPageRoute is not set in Router")
+    [InlineData(false, true)]
     [InlineData(false, false)]
     // enhanced navigation is switched on for link navigation
     public void NotFoundSetOnInitialization_ResponseStarted_LinkNavigation_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
@@ -225,9 +225,9 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     }
 
     [Theory]
-    //[InlineData(true, true)] // ActiveIssue("NotFoundPageRoute is not set in Router")
+    [InlineData(true, true)]
     [InlineData(true, false)]
-    //[InlineData(false, true)] // ActiveIssue("NotFoundPageRoute is not set in Router")
+    [InlineData(false, true)]
     [InlineData(false, false)]
     // NotFound triggered by POST cannot get rendered in the same batch and we rely on the client to render it
     // However, because it is triggered by form POST, it won't have enhanced-nav headers
@@ -251,9 +251,9 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     }
 
     [Theory]
-    //[InlineData(true, true)] // ActiveIssue("NotFoundPageRoute is not set in Router")
+    [InlineData(true, true)]
     [InlineData(true, false)]
-    //[InlineData(false, true)] // ActiveIssue("NotFoundPageRoute is not set in Router")
+    [InlineData(false, true)]
     [InlineData(false, false)]
     public void NotFoundSetOnFormSubmit_ResponseStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
