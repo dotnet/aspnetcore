@@ -33,6 +33,14 @@ public class IdentityOptions
     public PasswordOptions Password { get; set; } = new PasswordOptions();
 
     /// <summary>
+    /// Gets or sets the <see cref="PasskeyOptions"/> for the identity system.
+    /// </summary>
+    /// <value>
+    /// The <see cref="PasskeyOptions"/> for the identity system.
+    /// </value>
+    public PasskeyOptions Passkey { get; set; } = new PasskeyOptions();
+
+    /// <summary>
     /// Gets or sets the <see cref="LockoutOptions"/> for the identity system.
     /// </summary>
     /// <value>

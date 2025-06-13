@@ -78,7 +78,7 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
             await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
             using (serveProcess)
             {
-                await TestBasicInteractionAsync(page, project.ProjectName);
+                await TestBasicInteractionAsync(browser, page, project.ProjectName);
             }
 
             // The PWA template supports offline use. By now, the browser should have cached everything it needs,
@@ -86,7 +86,7 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
             await page.GotoAsync("about:blank");
             await browser.SetOfflineAsync(true);
             await page.GotoAsync(listeningUri);
-            await TestBasicInteractionAsync(page, project.ProjectName, pagesToExclude: BlazorTemplatePages.Weather);
+            await TestBasicInteractionAsync(browser, page, project.ProjectName, pagesToExclude: BlazorTemplatePages.Weather);
             await page.CloseAsync();
         }
         else

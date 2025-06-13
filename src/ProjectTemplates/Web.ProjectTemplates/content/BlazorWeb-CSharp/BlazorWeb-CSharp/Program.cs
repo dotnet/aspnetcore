@@ -21,21 +21,21 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents();
 #else
 builder.Services.AddRazorComponents()
-    #if (UseServer && UseWebAssembly && IndividualLocalAuth)
+#if (UseServer && UseWebAssembly && IndividualLocalAuth)
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents()
     .AddAuthenticationStateSerialization();
-    #elif (UseServer && UseWebAssembly)
+#elif (UseServer && UseWebAssembly)
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-    #elif (UseServer)
+#elif (UseServer)
     .AddInteractiveServerComponents();
-    #elif (UseWebAssembly && IndividualLocalAuth)
+#elif (UseWebAssembly && IndividualLocalAuth)
     .AddInteractiveWebAssemblyComponents()
     .AddAuthenticationStateSerialization();
-    #elif (UseWebAssembly)
+#elif (UseWebAssembly)
     .AddInteractiveWebAssemblyComponents();
-    #endif
+#endif
 #endif
 
 #if (IndividualLocalAuth)
@@ -64,7 +64,11 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 #endif
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+builder.Services.AddIdentityCore<ApplicationUser>(options =>
+    {
+        options.SignIn.RequireConfirmedAccount = true;
+        options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+    })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();

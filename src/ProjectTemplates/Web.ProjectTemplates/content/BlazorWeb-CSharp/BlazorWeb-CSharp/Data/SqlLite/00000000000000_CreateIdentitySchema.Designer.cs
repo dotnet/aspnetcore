@@ -18,7 +18,7 @@ namespace BlazorWeb_CSharp.Migrations
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.0");
 
             modelBuilder.Entity("BlazorWeb_CSharp.Data.ApplicationUser", b =>
                 {
@@ -57,6 +57,7 @@ namespace BlazorWeb_CSharp.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PhoneNumber")
+                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("PhoneNumberConfirmed")
@@ -159,9 +160,11 @@ namespace BlazorWeb_CSharp.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
                 {
                     b.Property<string>("LoginProvider")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderKey")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("ProviderDisplayName")
@@ -176,6 +179,57 @@ namespace BlazorWeb_CSharp.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserPasskey<string>", b =>
+                {
+                    b.Property<byte[]>("CredentialId")
+                        .HasMaxLength(1024)
+                        .HasColumnType("BLOB");
+
+                    b.Property<byte[]>("AttestationObject")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<byte[]>("ClientDataJson")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsBackedUp")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsBackupEligible")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<bool>("IsUserVerified")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("PublicKey")
+                        .IsRequired()
+                        .HasMaxLength(1024)
+                        .HasColumnType("BLOB");
+
+                    b.Property<uint>("SignCount")
+                        .HasColumnType("INTEGER");
+
+                    b.PrimitiveCollection<string>("Transports")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("CredentialId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserPasskeys", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
@@ -199,9 +253,11 @@ namespace BlazorWeb_CSharp.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<string>("LoginProvider")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
+                        .HasMaxLength(128)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
@@ -231,6 +287,15 @@ namespace BlazorWeb_CSharp.Migrations
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+                {
+                    b.HasOne("BlazorWeb_CSharp.Data.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserPasskey<string>", b =>
                 {
                     b.HasOne("BlazorWeb_CSharp.Data.ApplicationUser", null)
                         .WithMany()
