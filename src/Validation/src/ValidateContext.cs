@@ -60,14 +60,26 @@ public sealed class ValidateContext
     /// </summary>
     public int CurrentDepth { get; set; }
 
-    internal void AddValidationError(string key, string[] error)
+    /// <summary>
+    /// Optional event raised when a validation error is reported.
+    /// </summary>
+    public event Action<ValidationErrorContext>? OnValidationError;
+
+    internal void AddValidationError(string propertyName, string key, string[] error, object? container)
     {
         ValidationErrors ??= [];
 
         ValidationErrors[key] = error;
+        OnValidationError?.Invoke(new ValidationErrorContext
+        {
+            Name = propertyName,
+            Path = key,
+            Errors = error,
+            Container = container
+        });
     }
 
-    internal void AddOrExtendValidationErrors(string key, string[] errors)
+    internal void AddOrExtendValidationErrors(string propertyName, string key, string[] errors, object? container)
     {
         ValidationErrors ??= [];
 
@@ -82,9 +94,17 @@ public sealed class ValidateContext
         {
             ValidationErrors[key] = errors;
         }
+
+        OnValidationError?.Invoke(new ValidationErrorContext
+        {
+            Name = propertyName,
+            Path = key,
+            Errors = errors,
+            Container = container
+        });
     }
 
-    internal void AddOrExtendValidationError(string key, string error)
+    internal void AddOrExtendValidationError(string name, string key, string error, object? container)
     {
         ValidationErrors ??= [];
 
@@ -96,5 +116,13 @@ public sealed class ValidateContext
         {
             ValidationErrors[key] = [error];
         }
+
+        OnValidationError?.Invoke(new ValidationErrorContext
+        {
+            Name = name,
+            Path = key,
+            Errors = [error],
+            Container = container
+        });
     }
 }

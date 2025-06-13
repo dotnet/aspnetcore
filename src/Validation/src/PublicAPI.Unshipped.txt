@@ -18,6 +18,7 @@ Microsoft.Extensions.Validation.ValidateContext.CurrentDepth.get -> int
 Microsoft.Extensions.Validation.ValidateContext.CurrentDepth.set -> void
 Microsoft.Extensions.Validation.ValidateContext.CurrentValidationPath.get -> string!
 Microsoft.Extensions.Validation.ValidateContext.CurrentValidationPath.set -> void
+Microsoft.Extensions.Validation.ValidateContext.OnValidationError -> System.Action<Microsoft.Extensions.Validation.ValidationErrorContext>?
 Microsoft.Extensions.Validation.ValidateContext.ValidateContext() -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationContext.get -> System.ComponentModel.DataAnnotations.ValidationContext!
 Microsoft.Extensions.Validation.ValidateContext.ValidationContext.set -> void
@@ -25,6 +26,16 @@ Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.get -> System.C
 Microsoft.Extensions.Validation.ValidateContext.ValidationErrors.set -> void
 Microsoft.Extensions.Validation.ValidateContext.ValidationOptions.get -> Microsoft.Extensions.Validation.ValidationOptions!
 Microsoft.Extensions.Validation.ValidateContext.ValidationOptions.set -> void
+Microsoft.Extensions.Validation.ValidationErrorContext
+Microsoft.Extensions.Validation.ValidationErrorContext.Container.get -> object?
+Microsoft.Extensions.Validation.ValidationErrorContext.Container.init -> void
+Microsoft.Extensions.Validation.ValidationErrorContext.Errors.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.Extensions.Validation.ValidationErrorContext.Errors.init -> void
+Microsoft.Extensions.Validation.ValidationErrorContext.Name.get -> string!
+Microsoft.Extensions.Validation.ValidationErrorContext.Name.init -> void
+Microsoft.Extensions.Validation.ValidationErrorContext.Path.get -> string!
+Microsoft.Extensions.Validation.ValidationErrorContext.Path.init -> void
+Microsoft.Extensions.Validation.ValidationErrorContext.ValidationErrorContext() -> void
 Microsoft.Extensions.Validation.ValidationOptions
 Microsoft.Extensions.Validation.ValidationOptions.MaxDepth.get -> int
 Microsoft.Extensions.Validation.ValidationOptions.MaxDepth.set -> void
