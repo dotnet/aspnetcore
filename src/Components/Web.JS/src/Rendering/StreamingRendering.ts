@@ -47,10 +47,10 @@ class BlazorStreamingUpdate extends HTMLElement {
         } else {
           switch (node.getAttribute('type')) {
             case 'redirection':
-              redirect(node, false);
+              redirect(node, true);
               break;
             case 'not-found':
-              redirect(node, true);
+              redirect(node, false);
               break;
             case 'error':
               // This is kind of brutal but matches what happens without progressive enhancement
