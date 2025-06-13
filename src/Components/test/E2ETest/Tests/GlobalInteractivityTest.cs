@@ -37,7 +37,7 @@ public class GlobalInteractivityTest(
 
         if (useCustomNotFoundPage)
         {
-            AssertCustomNotFoundPageRendered();
+            AssertNotFoundPageRendered();
         }
         else
         {
@@ -144,7 +144,7 @@ public class GlobalInteractivityTest(
     {
         string streamingPath = streamingStarted ? "-streaming" : "";
         Navigate($"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomNotFoundPage=true");
-        AssertCustomNotFoundPageRendered();
+        AssertNotFoundPageRendered();
     }
 
     [Theory]
@@ -153,26 +153,31 @@ public class GlobalInteractivityTest(
     public void CanRenderNotFoundPage_Interactive(string renderMode)
     {
         Navigate($"{ServerPathBase}/set-not-found?useCustomNotFoundPage=true&renderMode={renderMode}");
-        AssertCustomNotFoundPageRendered();
+        AssertNotFoundPageRendered();
     }
 
-    private void AssertCustomNotFoundPageRendered()
+    private void AssertNotFoundPageRendered()
     {
-        var infoText = Browser.FindElement(By.Id("test-info")).Text;
-        Assert.Contains("Welcome On Custom Not Found Page", infoText);
+        Browser.Equal("Welcome On Custom Not Found Page", () => Browser.FindElement(By.Id("test-info")).Text);
         // custom page should have a custom layout
-        var aboutLink = Browser.FindElement(By.Id("about-link")).Text;
-        Assert.Contains("About", aboutLink);
+        Browser.Equal("About", () => Browser.FindElement(By.Id("about-link")).Text);
     }
 
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public void DoesNotReExecuteIf404WasHandled_SSR(bool streamingStarted)
+    public void CanRenderNotFoundIfNotFoundPageTypeNotProvided_SSR(bool streamingStarted)
     {
         string streamingPath = streamingStarted ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/set-not-found-ssr{streamingPath}");
-        AssertNotFoundFragmentRendered();
+        if (streamingStarted)
+        {
+            AssertReExecutedPageRendered();
+        }
+        else
+        {
+            AssertNotFoundFragmentRendered();
+        }
     }
 
     [Theory]
@@ -184,19 +189,15 @@ public class GlobalInteractivityTest(
         AssertNotFoundFragmentRendered();
     }
 
-    private void AssertNotFoundFragmentRendered()
-    {
-        var body = Browser.FindElement(By.TagName("body"));
-        var notFound = Browser.FindElement(By.Id("not-found-fragment")).Text;
+    private void AssertNotFoundFragmentRendered() =>
         Browser.Equal("There's nothing here", () => Browser.FindElement(By.Id("not-found-fragment")).Text);
-    }
 
     [Fact]
     public void StatusCodePagesWithReExecution()
     {
         Navigate($"{ServerPathBase}/reexecution/trigger-404");
-        Assert404ReExecuted();
+        AssertReExecutedPageRendered();
     }
-    private void Assert404ReExecuted() =>
+    private void AssertReExecutedPageRendered() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 }
