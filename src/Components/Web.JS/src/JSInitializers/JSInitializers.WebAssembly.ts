@@ -4,7 +4,7 @@
 import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { WebAssemblyStartOptions } from '../Platform/WebAssemblyStartOptions';
 import { WebRendererId } from '../Rendering/WebRendererId';
-import { JSInitializer } from './JSInitializers';
+import { JSAsset, JSInitializer } from './JSInitializers';
 
 export async function fetchAndInvokeInitializers(options: Partial<WebAssemblyStartOptions>, loadedConfig: MonoConfig): Promise<JSInitializer> {
   if (options.initializers) {
@@ -20,7 +20,18 @@ export async function fetchAndInvokeInitializers(options: Partial<WebAssemblySta
       undefined,
       WebRendererId.WebAssembly
     );
-    const initializers = Object.keys((loadedConfig?.resources?.['libraryInitializers']) || {});
+
+    let initializers : JSAsset[];
+    if (("length" in loadedConfig?.resources?.libraryInitializers)) {
+      // New boot config schema.
+      initializers = loadedConfig.resources.libraryInitializers || [];
+    } else {
+      // Old boot config schema.
+      initializers = Object.keys(loadedConfig?.resources?.['libraryInitializers'] || {}).map(name => ({
+        name,
+      })) as JSAsset[];
+    }
+
     await jsInitializer.importInitializersAsync(initializers, initializerArguments);
     return jsInitializer;
   }
