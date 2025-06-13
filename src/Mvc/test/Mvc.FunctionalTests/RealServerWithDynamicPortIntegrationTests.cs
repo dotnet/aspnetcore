@@ -3,7 +3,6 @@
 
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;

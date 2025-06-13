@@ -103,7 +103,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             StartServer();
             if (_useKestrel)
             {
-                return _webHost!.Services;
+                return _webHost?.Services ?? _host!.Services;
             }
 
             return _host?.Services ?? _server!.Host.Services;
@@ -263,8 +263,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             var deferredHostBuilder = new DeferredHostBuilder();
             deferredHostBuilder.UseEnvironment(Environments.Development);
-            // There's no helper for UseApplicationName, but we need to 
-            // set the application name to the target entry point 
+            // There's no helper for UseApplicationName, but we need to
+            // set the application name to the target entry point
             // assembly name.
             deferredHostBuilder.ConfigureHostConfiguration(config =>
             {

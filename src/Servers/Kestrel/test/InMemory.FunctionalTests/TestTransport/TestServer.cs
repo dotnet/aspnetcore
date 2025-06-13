@@ -70,7 +70,7 @@ internal class TestServer : IAsyncDisposable, IStartup
     {
         _app = app;
         Context = context;
-        _memoryPool = context.MemoryPoolFactory();
+        _memoryPool = context.MemoryPoolFactory.Create();
         _transportFactory = new InMemoryTransportFactory();
         HttpClientSlim = new InMemoryHttpClientSlim(this);
 
