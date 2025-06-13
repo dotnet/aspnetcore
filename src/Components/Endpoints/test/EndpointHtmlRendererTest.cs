@@ -949,8 +949,6 @@ public class EndpointHtmlRendererTest
         var renderer = GetEndpointHtmlRenderer();
         httpContext.Items[nameof(StatusCodePagesOptions)] = null; // simulate missing re-execution route
 
-        var component = new NotFoundComponent();
-        var id = renderer.AssignRootComponentId(component);
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await renderer.SetNotFoundResponseAsync(httpContext, new NotFoundEventArgs(""))
         );
