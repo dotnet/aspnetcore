@@ -423,6 +423,14 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
+            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
+            {
+                schema.Description = typeComment.Summary;
+                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
+                {
+                    schema.Example = jsonString.Parse();
+                }
+            }
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
                 if (XmlCommentCache.Cache.TryGetValue(propertyInfo.CreateDocumentationId(), out var propertyComment))
@@ -432,14 +440,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     {
                         schema.Example = jsonString.Parse();
                     }
-                }
-            }
-            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
-            {
-                schema.Description = typeComment.Summary;
-                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
-                {
-                    schema.Example = jsonString.Parse();
                 }
             }
             return Task.CompletedTask;
