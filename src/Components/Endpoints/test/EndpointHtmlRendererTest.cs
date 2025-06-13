@@ -142,25 +142,19 @@ public class EndpointHtmlRendererTest
         );
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(SimpleComponent), new InteractiveWebAssemblyRenderMode(prerender: false), ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(WebAssemblyPreloadWrapper), null, ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
 
         // Assert
-        Assert.Equal(2, httpContext.Response.Headers.Link.Count);
+        var output = writer.ToString();
 
-        var firstPreloadLink = httpContext.Response.Headers.Link[0];
-        Assert.Contains("<first.js>", firstPreloadLink);
-        Assert.Contains("rel=preload", firstPreloadLink);
-        Assert.Contains("as=script", firstPreloadLink);
-        Assert.Contains("fetchpriority=high", firstPreloadLink);
-        Assert.Contains("integrity=\"abcd\"", firstPreloadLink);
-
-        var secondPreloadLink = httpContext.Response.Headers.Link[1];
-        Assert.Contains("<second.js>", secondPreloadLink);
-        Assert.Contains("rel=preload", secondPreloadLink);
-        Assert.Contains("as=script", secondPreloadLink);
-        Assert.Contains("fetchpriority=high", secondPreloadLink);
-        Assert.Contains("integrity=\"abcd\"", secondPreloadLink);
+        Assert.Contains("href=\"first.js\"", output);
+        Assert.Contains("href=\"second.js\"", output);
+        Assert.DoesNotContain("nopreload.js", output);
+        Assert.Contains("rel=\"preload\"", output);
+        Assert.Contains("as=\"script\"", output);
+        Assert.Contains("fetchpriority=\"high\"", output);
+        Assert.Contains("integrity=\"abcd\"", output);
     }
 
     [Fact]
@@ -1835,6 +1829,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(null, ""));
         services.AddScoped<ResourceCollectionProvider>();
+        services.AddScoped<ResourcePreloadService>();
         services.AddSingleton(new WebAssemblySettingsEmitter(new TestEnvironment(Environments.Development)));
         return services;
     }
