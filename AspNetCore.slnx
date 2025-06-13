@@ -10,14 +10,6 @@
     <Project Path="eng/tools/BaselineGenerator/BaselineGenerator.csproj" />
     <Project Path="eng/tools/RepoTasks/RepoTasks.csproj" />
   </Folder>
-  <Folder Name="/Interop/" />
-  <Folder Name="/Interop/test/">
-    <Project Path="src/Grpc/Interop/test/InteropTests/InteropTests.csproj" />
-  </Folder>
-  <Folder Name="/Interop/test/testassets/">
-    <Project Path="src/Grpc/Interop/test/testassets/InteropClient/InteropClient.csproj" />
-    <Project Path="src/Grpc/Interop/test/testassets/InteropWebsite/InteropWebsite.csproj" />
-  </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/Analyzers/" />
   <Folder Name="/src/Analyzers/Analyzers/">
@@ -243,6 +235,32 @@
     <Project Path="src/Framework/AspNetCoreAnalyzers/src/CodeFixes/Microsoft.AspNetCore.App.CodeFixes.csproj">
       <Build Solution="*|arm64" Project="false" />
     </Project>
+  </Folder>
+  <Folder Name="/src/Grpc/" />
+  <Folder Name="/src/Grpc/Interop/" />
+  <Folder Name="/src/Grpc/Interop/test/">
+    <Project Path="src/Grpc/Interop/test/InteropTests/InteropTests.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/Interop/test/testassets/">
+    <Project Path="src/Grpc/Interop/test/testassets/InteropClient/InteropClient.csproj" />
+    <Project Path="src/Grpc/Interop/test/testassets/InteropWebsite/InteropWebsite.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/JsonTranscoding/" />
+  <Folder Name="/src/Grpc/JsonTranscoding/perf/">
+    <Project Path="src/Grpc/JsonTranscoding/perf/Microsoft.AspNetCore.Grpc.Microbenchmarks/Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/JsonTranscoding/src/">
+    <Project Path="src/Grpc/JsonTranscoding/src/Microsoft.AspNetCore.Grpc.JsonTranscoding/Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
+    <Project Path="src/Grpc/JsonTranscoding/src/Microsoft.AspNetCore.Grpc.Swagger/Microsoft.AspNetCore.Grpc.Swagger.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/JsonTranscoding/test/">
+    <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests/Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.csproj" />
+    <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests/Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.csproj" />
+    <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.Swagger.Tests/Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/JsonTranscoding/test/testassets/">
+    <Project Path="src/Grpc/JsonTranscoding/test/testassets/IntegrationTestsWebsite/IntegrationTestsWebsite.csproj" />
+    <Project Path="src/Grpc/JsonTranscoding/test/testassets/Sandbox/Sandbox.csproj" />
   </Folder>
   <Folder Name="/src/HealthChecks/" />
   <Folder Name="/src/HealthChecks/src/">
@@ -1211,14 +1229,6 @@
   <Project Path="src/DataProtection/samples/KeyManagementSimulator/KeyManagementSimulator.csproj" />
   <Project Path="src/Framework/AspNetCoreAnalyzers/samples/WebAppSample/WebAppSample.csproj" />
   <Project Path="src/Framework/AspNetCoreAnalyzers/src/SourceGenerators/Microsoft.AspNetCore.App.SourceGenerators.csproj" />
-  <Project Path="src/Grpc/JsonTranscoding/perf/Microsoft.AspNetCore.Grpc.Microbenchmarks/Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj" />
-  <Project Path="src/Grpc/JsonTranscoding/src/Microsoft.AspNetCore.Grpc.JsonTranscoding/Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
-  <Project Path="src/Grpc/JsonTranscoding/src/Microsoft.AspNetCore.Grpc.Swagger/Microsoft.AspNetCore.Grpc.Swagger.csproj" />
-  <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests/Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.csproj" />
-  <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests/Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.csproj" />
-  <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.Swagger.Tests/Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj" />
-  <Project Path="src/Grpc/JsonTranscoding/test/testassets/IntegrationTestsWebsite/IntegrationTestsWebsite.csproj" />
-  <Project Path="src/Grpc/JsonTranscoding/test/testassets/Sandbox/Sandbox.csproj" />
   <Project Path="src/Html.Abstractions/test/Microsoft.AspNetCore.Html.Abstractions.Tests.csproj" />
   <Project Path="src/Http/Http.Results/tools/ResultsOfTGenerator/ResultsOfTGenerator.csproj" />
   <Project Path="src/Identity/samples/IdentitySample.ApiEndpoints/IdentitySample.ApiEndpoints.csproj" />
