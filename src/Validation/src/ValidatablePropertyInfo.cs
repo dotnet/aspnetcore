@@ -3,6 +3,9 @@
 
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -13,12 +16,13 @@ namespace Microsoft.Extensions.Validation;
 public abstract class ValidatablePropertyInfo : IValidatableInfo
 {
     private RequiredAttribute? _requiredAttribute;
+    private readonly bool _hasDisplayAttribute;
 
     /// <summary>
     /// Creates a new instance of <see cref="ValidatablePropertyInfo"/>.
     /// </summary>
     protected ValidatablePropertyInfo(
-        [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+        [param: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)]
         Type declaringType,
         Type propertyType,
         string name,
@@ -28,12 +32,16 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         PropertyType = propertyType;
         Name = name;
         DisplayName = displayName;
+
+        // Cache the HasDisplayAttribute result to avoid repeated reflection calls
+        var property = DeclaringType.GetProperty(Name);
+        _hasDisplayAttribute = property is not null && HasDisplayAttribute(property);
     }
 
     /// <summary>
     /// Gets the member type.
     /// </summary>
-    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicConstructors)]
     internal Type DeclaringType { get; }
 
     /// <summary>
@@ -64,19 +72,27 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
+        // Get JsonSerializerOptions from DI container
+        var namingPolicy = context.SerializerOptions?.PropertyNamingPolicy;
+
         // Calculate and save the current path
+        var memberName = GetJsonPropertyName(Name, property, namingPolicy);
         var originalPrefix = context.CurrentValidationPath;
         if (string.IsNullOrEmpty(originalPrefix))
         {
-            context.CurrentValidationPath = Name;
+            context.CurrentValidationPath = memberName;
         }
         else
         {
-            context.CurrentValidationPath = $"{originalPrefix}.{Name}";
+            context.CurrentValidationPath = $"{originalPrefix}.{memberName}";
         }
 
-        context.ValidationContext.DisplayName = DisplayName;
-        context.ValidationContext.MemberName = Name;
+        // Format the display name and member name according to JsonPropertyName attribute first, then naming policy
+        // If the property has a [Display] attribute (either on property or record parameter), use DisplayName directly without formatting
+        context.ValidationContext.DisplayName = _hasDisplayAttribute
+            ? DisplayName
+            : GetJsonPropertyName(DisplayName, property, namingPolicy);
+        context.ValidationContext.MemberName = memberName;
 
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
@@ -169,5 +185,62 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Gets the effective member name for JSON serialization, considering <see cref="JsonPropertyNameAttribute"/> and naming policy.
+    /// </summary>
+    /// <param name="targetValue">The target value to get the name for.</param>
+    /// <param name="property">The property info to get the name for.</param>
+    /// <param name="namingPolicy">The JSON naming policy to apply if no <see cref="JsonPropertyNameAttribute"/> is present.</param>
+    /// <returns>The effective property name for JSON serialization.</returns>
+    private static string GetJsonPropertyName(string targetValue, PropertyInfo property, JsonNamingPolicy? namingPolicy)
+    {
+        var jsonPropertyName = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name;
+
+        if (jsonPropertyName is not null)
+        {
+            return jsonPropertyName;
+        }
+
+        if (namingPolicy is not null)
+        {
+            return namingPolicy.ConvertName(targetValue);
+        }
+
+        return targetValue;
+    }
+
+    /// <summary>
+    /// Determines whether the property has a <see cref="DisplayAttribute"/>, either directly on the property
+    /// or on the corresponding constructor parameter if the declaring type is a record.
+    /// </summary>
+    /// <param name="property">The property to check.</param>
+    /// <returns>True if the property has a <see cref="DisplayAttribute"/> , false otherwise.</returns>
+    private bool HasDisplayAttribute(PropertyInfo property)
+    {
+        // Check if the property itself has the DisplayAttribute with a valid Name
+        if (property.GetCustomAttribute<DisplayAttribute>() is { Name: not null })
+        {
+            return true;
+        }
+
+        // Look for a constructor parameter matching the property name (case-insensitive)
+        // to account for the record scenario
+        foreach (var constructor in DeclaringType.GetConstructors())
+        {
+            foreach (var parameter in constructor.GetParameters())
+            {
+                if (string.Equals(parameter.Name, property.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (parameter.GetCustomAttribute<DisplayAttribute>() is { Name: not null })
+                    {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 }
