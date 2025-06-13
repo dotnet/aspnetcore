@@ -22,9 +22,9 @@ export async function fetchAndInvokeInitializers(options: Partial<WebAssemblySta
     );
 
     let initializers : JSAsset[];
-    if (("length" in loadedConfig?.resources?.libraryInitializers)) {
+    if (("length" in loadedConfig?.resources?.['libraryInitializers'])) {
       // New boot config schema.
-      initializers = loadedConfig.resources.libraryInitializers || [];
+      initializers = loadedConfig.resources?.['libraryInitializers'] || [];
     } else {
       // Old boot config schema.
       initializers = Object.keys(loadedConfig?.resources?.['libraryInitializers'] || {}).map(name => ({
