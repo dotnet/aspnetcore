@@ -56,8 +56,9 @@ export class JSInitializer {
     }
 
     async function importAndInvokeInitializer(jsInitializer: JSInitializer, asset: JSAsset): Promise<void> {
+      let adjustedPath;
       if (!asset.moduleExports) {
-        const adjustedPath = adjustPath(asset.name!);
+        adjustedPath = adjustPath(asset.name!);
         asset.moduleExports = await import(/* webpackIgnore: true */ adjustedPath);
       }
 
