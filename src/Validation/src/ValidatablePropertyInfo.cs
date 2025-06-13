@@ -34,6 +34,8 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         DisplayName = displayName;
 
         // Cache the HasDisplayAttribute result to avoid repeated reflection calls
+        // We only check for the existence of the DisplayAttribute here and not the
+        // Name value itself since we rely on the source generator populating it
         var property = DeclaringType.GetProperty(Name);
         _hasDisplayAttribute = property is not null && HasDisplayAttribute(property);
     }
@@ -72,10 +74,8 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
 
-        // Get JsonSerializerOptions from DI container
-        var namingPolicy = context.SerializerOptions?.PropertyNamingPolicy;
-
         // Calculate and save the current path
+        var namingPolicy = context.SerializerOptions?.PropertyNamingPolicy;
         var memberName = GetJsonPropertyName(Name, property, namingPolicy);
         var originalPrefix = context.CurrentValidationPath;
         if (string.IsNullOrEmpty(originalPrefix))
