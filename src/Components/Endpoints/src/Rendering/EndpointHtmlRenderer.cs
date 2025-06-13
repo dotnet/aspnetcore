@@ -64,7 +64,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     internal HttpContext? HttpContext => _httpContext;
 
-    private void SetHttpContext(HttpContext httpContext)
+    internal void SetHttpContext(HttpContext httpContext)
     {
         if (_httpContext is null)
         {
@@ -87,7 +87,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         if (navigationManager != null)
         {
-            navigationManager.OnNotFound += async (sender, args) => await SetNotFoundResponseAsync(navigationManager.BaseUri, args);
+            navigationManager.OnNotFound += async (sender, args) =>
+                await GetErrorHandledTask(SetNotFoundResponseAsync(navigationManager.BaseUri, args));
         }
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();

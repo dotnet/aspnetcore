@@ -79,7 +79,7 @@ internal partial class EndpointHtmlRenderer
             : Task.CompletedTask;
     }
 
-    private async Task SetNotFoundResponseAsync(string baseUri, NotFoundEventArgs args)
+    internal async Task SetNotFoundResponseAsync(string baseUri, NotFoundEventArgs args)
     {
         if (_httpContext.Response.HasStarted)
         {
