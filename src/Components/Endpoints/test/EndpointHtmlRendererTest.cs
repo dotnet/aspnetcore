@@ -142,7 +142,7 @@ public class EndpointHtmlRendererTest
         );
 
         // Act
-        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(WebAssemblyPreloadComponent), new InteractiveWebAssemblyRenderMode(prerender: false), ParameterView.Empty);
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(WebAssemblyPreloadWrapper), null, ParameterView.Empty);
         await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
 
         // Assert
