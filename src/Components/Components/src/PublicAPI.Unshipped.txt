@@ -6,7 +6,8 @@ Microsoft.AspNetCore.Components.NavigationManager.OnNotFound -> System.EventHand
 Microsoft.AspNetCore.Components.NavigationManager.NotFound() -> void
 Microsoft.AspNetCore.Components.Routing.IHostEnvironmentNavigationManager.Initialize(string! baseUri, string! uri, System.Func<string!, System.Threading.Tasks.Task!>! onNavigateTo) -> void
 Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs
-Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs() -> void
+Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs(string! url) -> void
+Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.get -> string!
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger, System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.SetPlatformRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
 Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions
