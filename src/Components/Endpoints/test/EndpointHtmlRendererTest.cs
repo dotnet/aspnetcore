@@ -1829,6 +1829,7 @@ public class EndpointHtmlRendererTest
         services.AddSingleton<AntiforgeryStateProvider, EndpointAntiforgeryStateProvider>();
         services.AddSingleton<ICascadingValueSupplier>(_ => new SupplyParameterFromFormValueProvider(null, ""));
         services.AddScoped<ResourceCollectionProvider>();
+        services.AddScoped<ResourcePreloadService>();
         services.AddSingleton(new WebAssemblySettingsEmitter(new TestEnvironment(Environments.Development)));
         return services;
     }
