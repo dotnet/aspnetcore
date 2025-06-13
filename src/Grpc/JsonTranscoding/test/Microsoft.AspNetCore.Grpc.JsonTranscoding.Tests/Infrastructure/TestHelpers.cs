@@ -19,10 +19,7 @@ internal static class TestHelpers
 {
     public static DefaultHttpContext CreateHttpContext(CancellationToken cancellationToken = default, Stream? bodyStream = null)
     {
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddSingleton<JsonTranscodingGreeterService>();
-        serviceCollection.AddSingleton(typeof(IGrpcInterceptorActivator<>), typeof(TestInterceptorActivator<>));
-        var serviceProvider = serviceCollection.BuildServiceProvider();
+        var serviceProvider = CreateServiceProvider();
         var httpContext = new DefaultHttpContext();
         httpContext.Request.Host = new HostString("localhost");
         httpContext.RequestServices = serviceProvider;
@@ -30,6 +27,15 @@ internal static class TestHelpers
         httpContext.Connection.RemoteIpAddress = IPAddress.Parse("127.0.0.1");
         httpContext.Features.Set<IHttpRequestLifetimeFeature>(new HttpRequestLifetimeFeature(cancellationToken));
         return httpContext;
+    }
+
+    public static IServiceProvider CreateServiceProvider()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<JsonTranscodingGreeterService>();
+        serviceCollection.AddSingleton(typeof(IGrpcInterceptorActivator<>), typeof(TestInterceptorActivator<>));
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceProvider;
     }
 
     internal static MessageDescriptor GetMessageDescriptor(Type typeToConvert)
