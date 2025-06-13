@@ -31,8 +31,6 @@ async function requestCredential(email, mediation, signal) {
     return await navigator.credentials.get({ publicKey: options, mediation, signal });
 }
 
-let passkeySubmitAbortController;
-
 customElements.define('passkey-submit', class extends HTMLElement {
     static formAssociated = true;
 
@@ -54,10 +52,14 @@ customElements.define('passkey-submit', class extends HTMLElement {
         this.tryAutofillPasskey();
     }
 
+    disconnectedCallback() {
+        this.abortController?.abort();
+    }
+
     async obtainCredentialAndSubmit(useConditionalMediation = false) {
-        passkeySubmitAbortController?.abort();
-        passkeySubmitAbortController = new AbortController();
-        const signal = passkeySubmitAbortController.signal;
+        this.abortController?.abort();
+        this.abortController = new AbortController();
+        const signal = this.abortController.signal;
         const formData = new FormData();
         try {
             let credential;

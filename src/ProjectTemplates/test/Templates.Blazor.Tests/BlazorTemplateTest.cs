@@ -138,6 +138,27 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
         if (authenticationFeatures.HasFlag(AuthenticationFeatures.RegisterAndLogIn))
         {
+            // Start a new CDP session with WebAuthn enabled and add a virtual authenticator.
+            // We do this regardless of whether we're testing passkeys, because passkey
+            // gets attempted unconditionally on the login page, and this utilizes the WebAuthn API.
+            await using var cdpSession = await browser.NewCDPSessionAsync(page);
+            await cdpSession.SendAsync("WebAuthn.enable");
+            var result = await cdpSession.SendAsync("WebAuthn.addVirtualAuthenticator", new Dictionary<string, object>
+            {
+                ["options"] = new
+                {
+                    protocol = "ctap2",
+                    transport = "internal",
+                    hasResidentKey = false,
+                    hasUserIdentification = true,
+                    isUserVerified = true,
+                    automaticPresenceSimulation = true,
+                }
+            });
+
+            Assert.True(result.HasValue);
+            var authenticatorId = result.Value.GetProperty("authenticatorId").GetString();
+
             await Task.WhenAll(
                 page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Login"));
@@ -180,25 +201,6 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             if (authenticationFeatures.HasFlag(AuthenticationFeatures.Passkeys))
             {
-                // Start a new CDP session with WebAuthn enabled and add a virtual authenticator
-                await using var cdpSession = await browser.NewCDPSessionAsync(page);
-                await cdpSession.SendAsync("WebAuthn.enable");
-                var result = await cdpSession.SendAsync("WebAuthn.addVirtualAuthenticator", new Dictionary<string, object>
-                {
-                    ["options"] = new
-                    {
-                        protocol = "ctap2",
-                        transport = "internal",
-                        hasResidentKey = false,
-                        hasUserIdentification = true,
-                        isUserVerified = true,
-                        automaticPresenceSimulation = true,
-                    }
-                });
-
-                Assert.True(result.HasValue);
-                var authenticatorId = result.Value.GetProperty("authenticatorId").GetString();
-
                 // Navigate to the passkey management page
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Manage**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
