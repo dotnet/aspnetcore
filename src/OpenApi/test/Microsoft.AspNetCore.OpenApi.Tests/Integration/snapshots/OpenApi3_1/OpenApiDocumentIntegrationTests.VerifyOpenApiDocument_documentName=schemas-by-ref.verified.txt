@@ -547,7 +547,9 @@
           "parent": {
             "$ref": "#/components/schemas/Category"
           },
-          "tags": { }
+          "tags": {
+            "$ref": "#/components/schemas/Category/properties/parent/properties/tags"
+          }
         }
       },
       "ChildObject": {
@@ -579,14 +581,18 @@
           },
           "seq2": {
             "type": "array",
-            "items": { }
+            "items": {
+              "$ref": "#/components/schemas/ContainerType/properties/seq1/items"
+            }
           }
         }
       },
       "Item": {
         "type": "object",
         "properties": {
-          "name": { },
+          "name": {
+            "$ref": "#/components/schemas/Root/properties/item1/properties/name"
+          },
           "value": {
             "type": "integer",
             "format": "int32"
