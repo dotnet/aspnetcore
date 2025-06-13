@@ -10,7 +10,7 @@
 
     protected override void OnParametersSet()
     {
-        if (UseCustomNotFoundPage == "true")
+        if (string.Equals(UseCustomNotFoundPage, "true", StringComparison.OrdinalIgnoreCase))
         {
             NotFoundPageType = typeof(CustomNotFoundPage);
         }
