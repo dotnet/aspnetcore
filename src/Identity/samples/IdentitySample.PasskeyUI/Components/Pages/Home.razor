@@ -10,6 +10,8 @@
 
 <h1>Welcome!</h1>
 
+<PageTitle>Passkey sample</PageTitle>
+
 <p>
     This app demonstrates how to use passkeys for authentication with ASP.NET Core Identity.
 </p>
@@ -27,12 +29,13 @@
 
 <form id="auth-form" method="post" @formname="auth" @onsubmit="OnSubmitAsync">
     <AntiforgeryToken />
-    <input type="text" id="input-username" name="Username" placeholder="username" autocomplete="username webauthn"/>
-    <hr />
-    <input type="hidden" id="input-credential" name="CredentialJson" />
-    <input type="hidden" id="input-action" name="Action" />
-    <button type="submit" id="input-register">Register</button>
-    <button type="submit" id="input-authenticate">Authenticate</button>
+    <div>
+        <input type="text" id="input-username" name="username" placeholder="Username" autocomplete="username webauthn" />
+    </div>
+    <div>
+        <button type="submit" name="action" value="register" id="input-register">Register</button>
+        <button type="submit" name="action" value="authenticate" id="input-authenticate">Authenticate</button>
+    </div>
 </form>
 
 <p id="status-message">@statusMessage</p>
@@ -43,13 +46,13 @@
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromForm]
+    [SupplyParameterFromForm(Name = "username")]
     private string? Username { get; set; }
 
-    [SupplyParameterFromForm]
+    [SupplyParameterFromForm(Name = "credential")]
     private string? CredentialJson { get; set; }
 
-    [SupplyParameterFromForm]
+    [SupplyParameterFromForm(Name = "action")]
     private string? Action { get; set; }
 
     private Task OnSubmitAsync()
