@@ -1,14 +1,5 @@
 trigger: none
-pr:
-  branches:
-    include:
-    - main
-    - release/*
-  paths:
-    exclude:
-    - documentation/*
-    - README.md
-    - CODEOWNERS
+pr: none
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
