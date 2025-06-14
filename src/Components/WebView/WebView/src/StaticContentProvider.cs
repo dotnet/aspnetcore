@@ -27,6 +27,8 @@ internal sealed class StaticContentProvider
         {
             var relativePath = _appBaseUri.MakeRelativeUri(fileUri).ToString();
 
+            relativePath = Uri.UnescapeDataString(relativePath);
+
             // Content in the file provider takes first priority
             // Next we may fall back on supplying the host page to support deep linking
             // If there's no match, fall back on serving embedded framework content
