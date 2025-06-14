@@ -24,7 +24,7 @@
     <!-- HACK: We aren't self-contained but we need to say we are so the SDK lets us do composite R2R -->
     <SelfContained>true</SelfContained>
 
-    <InstructionSetSupport Condition="'$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'x86'">+x86-x64-v3</InstructionSetSupport>
+    <InstructionSetSupport Condition="'$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'x86'">+x86-64-v3</InstructionSetSupport>
     <PublishReadyToRunCrossgen2ExtraArgs Condition="'$(InstructionSetSupport)' != ''">$(PublishReadyToRunCrossgen2ExtraArgs);--instruction-set:$(InstructionSetSupport)</PublishReadyToRunCrossgen2ExtraArgs>
 
     <!-- Setting this suppresses getting documentation .xml files in the shared runtime output. -->
