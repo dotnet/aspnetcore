@@ -80,13 +80,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("Routing test cases", () => Browser.Exists(By.Id("test-info")).Text);
     }
 
-    [Fact]
-    public void CanRenderNotFoundPageAfterStreamingStarted()
-    {
-        Navigate($"{ServerPathBase}/streaming-set-not-found");
-        Browser.Equal("Default Not Found Page", () => Browser.Title);
-    }
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
@@ -94,7 +87,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     {
         string streamingPath = streaming ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}?navigate-programmatically=true");
-        Assert404ReExecuted();
+        AssertReExecutionPageRendered();
     }
 
     [Theory]
@@ -105,7 +98,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string streamingPath = streaming ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/redirection-not-found-ssr{streamingPath}");
         Browser.Click(By.Id("link-to-not-existing-page"));
-        Assert404ReExecuted();
+        AssertReExecutionPageRendered();
     }
 
     [Theory]
@@ -118,45 +111,179 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         // will not be activated, see configuration in Startup
         string streamingPath = streaming ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/not-existing-page-ssr{streamingPath}");
-        Assert404ReExecuted();
+        AssertReExecutionPageRendered();
     }
 
-    private void Assert404ReExecuted() =>
+    private void AssertReExecutionPageRendered() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 
-    [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void CanRenderNotFoundPageNoStreaming(bool useCustomNotFoundPage)
+    private void AssertNotFoundPageRendered()
     {
-        string query = useCustomNotFoundPage ? "&useCustomNotFoundPage=true" : "";
-        Navigate($"{ServerPathBase}/set-not-found?shouldSet=true{query}");
+        Browser.Equal("Welcome On Custom Not Found Page", () => Browser.FindElement(By.Id("test-info")).Text);
+        // custom page should have a custom layout
+        Browser.Equal("About", () => Browser.FindElement(By.Id("about-link")).Text);
+    }
 
-        if (useCustomNotFoundPage)
+    private void AssertUrlNotChanged(string expectedUrl) =>
+        Browser.True(() => Browser.Url.Contains(expectedUrl), $"Expected URL to contain '{expectedUrl}', but found '{Browser.Url}'");
+
+    private void AssertUrlChanged(string urlPart) =>
+        Browser.False(() => Browser.Url.Contains(urlPart), $"Expected URL not to contain '{urlPart}', but found '{Browser.Url}'");
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    // When response has not started, it does not matter how we arrive the the page setting the not found status code.
+    // We can navigate straight to the testing page, skipping the index page.
+    public void NotFoundSetOnInitialization_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        Navigate(testUrl);
+
+        if (hasCustomNotFoundPageSet)
         {
-            var infoText = Browser.FindElement(By.Id("test-info")).Text;
-            Assert.Contains("Welcome On Custom Not Found Page", infoText);
-            // custom page should have a custom layout
-            var aboutLink = Browser.FindElement(By.Id("about-link")).Text;
-            Assert.Contains("About", aboutLink);
+            AssertNotFoundPageRendered();
         }
         else
         {
-            var bodyText = Browser.FindElement(By.TagName("body")).Text;
-            Assert.Contains("There's nothing here", bodyText);
+            AssertNotFoundFragmentRendered();
+        }
+        AssertUrlNotChanged(testUrl);
+    }
+
+    // If the response has started, it matters how we arrive the the page setting the not found status code
+    // because we are rendering client-side. In browser-initiated navigation and form submissions, the headers
+    // don't contain enhanced-nav and we redirect to the not found page. In link clicking navigation,
+    // the headers contain enhanced-nav, redirection is not needed and the original url is preserved.
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    // enhanced navigation is switched off for browser navigation
+    public void NotFoundSetOnInitialization_ResponseStarted_BrowserNavigation_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        Navigate(testUrl);
+        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        bool throwsException = !hasCustomNotFoundPageSet && !hasReExecutionMiddleware;
+        if (throwsException)
+        {
+            AssertUrlNotChanged(testUrl);
+        }
+        else
+        {
+            AssertUrlChanged(testUrl);
+        }
+    }
+
+    private void AssertNotFoundRendered_ResponseStarted_Or_POST(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet, string testUrl)
+    {
+        if (hasCustomNotFoundPageSet)
+        {
+            AssertNotFoundPageRendered();
+        }
+        else if (hasReExecutionMiddleware)
+        {
+            AssertReExecutionPageRendered();
+        }
+        else
+        {
+            // this throws an exception logged on the server
+            AssertNotFoundContentNotRendered();
         }
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void CanRenderNotFoundPageWithStreaming(bool useCustomNotFoundPage)
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    // enhanced navigation is switched on for link navigation
+    public void NotFoundSetOnInitialization_ResponseStarted_LinkNavigation_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
-        // when streaming started, we always render page under "not-found" path
-        string query = useCustomNotFoundPage ? "?useCustomNotFoundPage=true" : "";
-        Navigate($"{ServerPathBase}/streaming-set-not-found{query}");
+        string testUrl = NavigateByLinkToPageTestingNotFound("Sets", hasReExecutionMiddleware, hasCustomNotFoundPageSet);
+        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertUrlNotChanged(testUrl);
+    }
 
-        string expectedTitle = "Default Not Found Page";
-        Browser.Equal(expectedTitle, () => Browser.Title);
+    private string NavigateByLinkToPageTestingNotFound(string action, bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        Navigate($"{ServerPathBase}/not-found-index?useCustomNotFoundPage={hasCustomNotFoundPageSet}");
+        Browser.Equal("List of Not Found test pages", () => Browser.FindElement(By.Id("test-info")).Text);
+        string reexecutionText = hasReExecutionMiddleware ? " with reexecution" : "";
+        var link = Browser.FindElement(By.LinkText($"PageThat{action}NotFound-streaming{reexecutionText}"));
+        var testUrl = link.GetAttribute("href");
+        link.Click();
+        return testUrl;
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    // NotFound triggered by POST cannot get rendered in the same batch and we rely on the client to render it
+    // However, because it is triggered by form POST, it won't have enhanced-nav headers
+    public void NotFoundSetOnFormSubmit_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/post-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        Navigate(testUrl);
+        Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
+
+        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        bool throwsException = !hasCustomNotFoundPageSet && !hasReExecutionMiddleware;
+        if (throwsException)
+        {
+            AssertUrlNotChanged(testUrl);
+        }
+        else
+        {
+            AssertUrlChanged(testUrl);
+        }
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void NotFoundSetOnFormSubmit_ResponseStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/post-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        Navigate(testUrl);
+        Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
+
+        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        bool throwsException = !hasCustomNotFoundPageSet && !hasReExecutionMiddleware;
+        if (throwsException)
+        {
+            AssertUrlNotChanged(testUrl);
+        }
+        else
+        {
+            AssertUrlChanged(testUrl);
+        }
+    }
+
+    private void AssertNotFoundFragmentRendered() =>
+        Browser.Equal("There's nothing here", () => Browser.FindElement(By.Id("not-found-fragment")).Text);
+
+    private void AssertNotFoundContentNotRendered() =>
+        Browser.Equal("Any content", () => Browser.FindElement(By.Id("test-info")).Text);
+
+    [Fact]
+    public void StatusCodePagesWithReExecution()
+    {
+        Navigate($"{ServerPathBase}/reexecution/trigger-404");
+        Browser.Equal("Re-executed page", () => Browser.Title);
     }
 }

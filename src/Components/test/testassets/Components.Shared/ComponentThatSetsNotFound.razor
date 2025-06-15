@@ -1,0 +1,26 @@
+@inject NavigationManager NavigationManager
+
+@if (!WaitForInteractivity || RendererInfo.IsInteractive)
+{
+    <PageTitle>Original page</PageTitle>
+
+    <p id="test-info">Any content</p>
+
+}
+
+@code{
+    [Parameter]
+    public bool StartStreaming { get; set; } = false;
+
+    [Parameter]
+    public bool WaitForInteractivity { get; set; } = false;
+
+    protected async override Task OnInitializedAsync()
+    {
+        if (StartStreaming)
+        {
+            await Task.Yield();
+        }
+        NavigationManager.NotFound();
+    }
+}

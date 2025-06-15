@@ -36,6 +36,7 @@
     <ProjectReference Include="..\BasicTestApp\BasicTestApp.csproj" />
     <ProjectReference Include="..\Components.WasmMinimal\Components.WasmMinimal.csproj" />
     <ProjectReference Include="..\Components.WasmRemoteAuthentication\Components.WasmRemoteAuthentication.csproj" />
+    <ProjectReference Include="..\Components.Shared\Components.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

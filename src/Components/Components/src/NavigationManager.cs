@@ -54,8 +54,6 @@ public abstract class NavigationManager
 
     private EventHandler<NotFoundEventArgs>? _notFound;
 
-    private static readonly NotFoundEventArgs _notFoundEventArgs = new NotFoundEventArgs();
-
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
     private Uri? _baseUri;
@@ -63,6 +61,7 @@ public abstract class NavigationManager
     // The URI. Always represented an absolute URI.
     private string? _uri;
     private bool _isInitialized;
+    internal string NotFoundPageRoute { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the current base URI. The <see cref="BaseUri" /> is always represented as an absolute URI in string form with trailing slash.
@@ -212,7 +211,7 @@ public abstract class NavigationManager
         }
         else
         {
-            _notFound.Invoke(this, _notFoundEventArgs);
+            _notFound.Invoke(this, new NotFoundEventArgs(NotFoundPageRoute));
         }
     }
 
