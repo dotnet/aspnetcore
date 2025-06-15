@@ -10,7 +10,12 @@
     <Nullable>annotations</Nullable>
     <RazorLangVersion>latest</RazorLangVersion>
     <BlazorRoutingEnableRegexConstraint>true</BlazorRoutingEnableRegexConstraint>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.Http.Validation.Generated;Microsoft.Extensions.Validation.Generated</InterceptorsNamespaces>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)/src/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />

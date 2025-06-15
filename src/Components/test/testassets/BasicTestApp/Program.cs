@@ -23,6 +23,9 @@ public class Program
         await SimulateErrorsIfNeededForTest();
 
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+        builder.Services.AddValidation();
+
         builder.RootComponents.Add<HeadOutlet>("head::after");
         builder.RootComponents.Add<Index>("root");
         builder.RootComponents.RegisterForJavaScript<DynamicallyAddedRootComponent>("my-dynamic-root-component");
