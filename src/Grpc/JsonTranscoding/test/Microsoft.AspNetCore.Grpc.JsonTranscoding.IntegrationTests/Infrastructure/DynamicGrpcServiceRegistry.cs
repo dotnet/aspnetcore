@@ -8,6 +8,7 @@ using Grpc.AspNetCore.Server;
 using Grpc.AspNetCore.Server.Model;
 using Grpc.Core;
 using Grpc.Shared;
+using Grpc.Shared.Server;
 using IntegrationTestsWebsite.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Binding;
@@ -151,7 +152,8 @@ public class DynamicGrpcServiceRegistry
             _serviceProvider.GetRequiredService<IOptions<GrpcServiceOptions<DynamicService>>>().Value,
             _serviceProvider.GetRequiredService<ILoggerFactory>(),
             _serviceProvider.GetRequiredService<IGrpcServiceActivator<DynamicService>>(),
-            JsonTranscodingOptions);
+            JsonTranscodingOptions,
+            new InterceptorActivators(_serviceProvider));
 
         return binder;
     }

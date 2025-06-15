@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>HTTP API for gRPC ASP.NET Core</Description>
     <PackageTags>gRPC RPC HTTP/2 REST</PackageTags>
@@ -18,6 +18,8 @@
     <Compile Include="..\Shared\Server\ServerMethodInvokerBase.cs" Link="Internal\Shared\Server\ServerMethodInvokerBase.cs" />
     <Compile Include="..\Shared\Server\ServerStreamingServerMethodInvoker.cs" Link="Internal\Shared\Server\ServerStreamingServerMethodInvoker.cs" />
     <Compile Include="..\Shared\Server\UnaryServerMethodInvoker.cs" Link="Internal\Shared\Server\UnaryServerMethodInvoker.cs" />
+    <Compile Include="..\Shared\Server\ServerDynamicAccessConstants.cs" Link="Internal\Shared\Server\ServerDynamicAccessConstants.cs" />
+    <Compile Include="..\Shared\Server\InterceptorActivators.cs" Link="Internal\Shared\Server\InterceptorActivators.cs" />
     <Compile Include="..\Shared\DescriptorRegistry.cs" Link="Internal\Shared\DescriptorRegistry.cs" />
     <Compile Include="..\Shared\AuthContextHelpers.cs" Link="Internal\Shared\AuthContextHelpers.cs" />
     <Compile Include="..\Shared\ServiceDescriptorHelpers.cs" Link="Internal\Shared\ServiceDescriptorHelpers.cs" />
