@@ -240,7 +240,7 @@ internal partial class EndpointHtmlRenderer
 
     private static void WriteResponseTemplate(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
-        if (string.Equals(httpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+        if (HttpMethods.IsPost(httpContext.Request.Method))
         {
             writer.Write(" from=\"form-post\"");
         }

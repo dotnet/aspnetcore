@@ -84,7 +84,7 @@ internal partial class EndpointHtmlRenderer
         if (_httpContext.Response.HasStarted ||
             // POST waits for quiescence -> rendering the NotFoundPage would be queued for the next batch
             // but we want to send the signal to the renderer to stop rendering future batches -> use client rendering
-            string.Equals(_httpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+            HttpMethods.IsPost(_httpContext.Request.Method))
         {
             if (string.IsNullOrEmpty(_notFoundUrl))
             {
