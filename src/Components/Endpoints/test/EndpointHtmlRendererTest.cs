@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Components.Forms;
@@ -12,6 +14,7 @@ using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.DataProtection;
@@ -929,6 +932,26 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task Renderer_WhenNoNotFoundPathProvided_Throws()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var responseMock = new Mock<IHttpResponseFeature>();
+        responseMock.Setup(r => r.HasStarted).Returns(true);
+        responseMock.Setup(r => r.Headers).Returns(new HeaderDictionary());
+        httpContext.Features.Set(responseMock.Object);
+        var renderer = GetEndpointHtmlRenderer();
+        httpContext.Items[nameof(StatusCodePagesOptions)] = null; // simulate missing re-execution route
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await renderer.SetNotFoundResponseAsync(httpContext, new NotFoundEventArgs(""))
+        );
+        string expectedError = "The NotFoundPage route must be specified or re-execution middleware has to be set to render NotFoundPage when the response has started.";
+
+        Assert.Equal(expectedError, exception.Message);
+    }
+
+    [Fact]
     public async Task CanRender_AsyncComponent()
     {
         // Arrange
@@ -1795,6 +1818,12 @@ public class EndpointHtmlRendererTest
         {
             _rendererIsStopped = true;
             base.SignalRendererToFinishRendering();
+        }
+
+        public async Task SetNotFoundResponseAsync(HttpContext httpContext, NotFoundEventArgs args)
+        {
+            SetHttpContext(httpContext);
+            await SetNotFoundResponseAsync(httpContext.Request.PathBase, args);
         }
     }
 

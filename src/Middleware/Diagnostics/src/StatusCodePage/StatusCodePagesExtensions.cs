@@ -187,9 +187,11 @@ public static class StatusCodePagesExtensions
             {
                 var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
                 return new StatusCodePagesMiddleware(next,
-                    Options.Create(new StatusCodePagesOptions() {
+                    Options.Create(new StatusCodePagesOptions()
+                    {
                         HandleAsync = CreateHandler(pathFormat, queryFormat, newNext),
-                        CreateScopeForErrors = createScopeForErrors
+                        CreateScopeForErrors = createScopeForErrors,
+                        PathFormat = pathFormat
                     })).Invoke;
             });
         }
@@ -197,7 +199,8 @@ public static class StatusCodePagesExtensions
         var options = new StatusCodePagesOptions
         {
             HandleAsync = CreateHandler(pathFormat, queryFormat),
-            CreateScopeForErrors = createScopeForErrors
+            CreateScopeForErrors = createScopeForErrors,
+            PathFormat = pathFormat
         };
         var wrappedOptions = new OptionsWrapper<StatusCodePagesOptions>(options);
         return app.UseMiddleware<StatusCodePagesMiddleware>(wrappedOptions);

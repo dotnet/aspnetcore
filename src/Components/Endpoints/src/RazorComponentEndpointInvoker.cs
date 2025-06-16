@@ -111,13 +111,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             ParameterView.Empty,
             waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted);
 
-        bool avoidStartingResponse = hasStatusCodePage && !isReExecuted && context.Response.StatusCode == StatusCodes.Status404NotFound;
-        if (avoidStartingResponse)
-        {
-            // the request is going to be re-executed, we should avoid writing to the response
-            return;
-        }
-
         Task quiesceTask;
         if (!result.IsPost)
         {
