@@ -37,11 +37,7 @@ public class GlobalInteractivityTest(
 
         if (useCustomNotFoundPage)
         {
-            var infoText = Browser.FindElement(By.Id("test-info")).Text;
-            Assert.Contains("Welcome On Custom Not Found Page", infoText);
-            // custom page should have a custom layout
-            var aboutLink = Browser.FindElement(By.Id("about-link")).Text;
-            Assert.Contains("About", aboutLink);
+            AssertNotFoundPageRendered();
         }
         else
         {
@@ -140,4 +136,68 @@ public class GlobalInteractivityTest(
         Browser.Equal("Global interactivity page: Static via attribute", () => h1.Text);
         Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanRenderNotFoundPage_SSR(bool streamingStarted)
+    {
+        string streamingPath = streamingStarted ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomNotFoundPage=true");
+        AssertNotFoundPageRendered();
+    }
+
+    [Theory]
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void CanRenderNotFoundPage_Interactive(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/set-not-found?useCustomNotFoundPage=true&renderMode={renderMode}");
+        AssertNotFoundPageRendered();
+    }
+
+    private void AssertNotFoundPageRendered()
+    {
+        Browser.Equal("Welcome On Custom Not Found Page", () => Browser.FindElement(By.Id("test-info")).Text);
+        // custom page should have a custom layout
+        Browser.Equal("About", () => Browser.FindElement(By.Id("about-link")).Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CanRenderNotFoundIfNotFoundPageTypeNotProvided_SSR(bool streamingStarted)
+    {
+        string streamingPath = streamingStarted ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/set-not-found-ssr{streamingPath}");
+        if (streamingStarted)
+        {
+            AssertReExecutedPageRendered();
+        }
+        else
+        {
+            AssertNotFoundFragmentRendered();
+        }
+    }
+
+    [Theory]
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void DoesNotReExecuteIf404WasHandled_Interactive(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/reexecution/set-not-found?renderMode={renderMode}");
+        AssertNotFoundFragmentRendered();
+    }
+
+    private void AssertNotFoundFragmentRendered() =>
+        Browser.Equal("There's nothing here", () => Browser.FindElement(By.Id("not-found-fragment")).Text);
+
+    [Fact]
+    public void StatusCodePagesWithReExecution()
+    {
+        Navigate($"{ServerPathBase}/reexecution/trigger-404");
+        AssertReExecutedPageRendered();
+    }
+    private void AssertReExecutedPageRendered() =>
+        Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 }

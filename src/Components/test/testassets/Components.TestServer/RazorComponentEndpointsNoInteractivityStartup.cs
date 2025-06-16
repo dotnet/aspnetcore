@@ -50,6 +50,15 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         {
             app.Map("/reexecution", reexecutionApp =>
             {
+                app.Map("/trigger-404", trigger404App =>
+                {
+                    trigger404App.Run(async context =>
+                    {
+                        context.Response.StatusCode = 404;
+                        await context.Response.WriteAsync("Triggered a 404 status code.");
+                    });
+                });
+
                 if (!env.IsDevelopment())
                 {
                     app.UseExceptionHandler("/Error", createScopeForErrors: true);
@@ -62,7 +71,8 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                 reexecutionApp.UseAntiforgery();
                 reexecutionApp.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapRazorComponents<TRootComponent>();
+                    endpoints.MapRazorComponents<TRootComponent>()
+                        .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
                 });
             });
 
@@ -83,7 +93,8 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         app.UseAntiforgery();
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapRazorComponents<TRootComponent>();
+            endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
         });
     }
 }

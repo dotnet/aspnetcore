@@ -101,14 +101,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
 
             if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
             {
-                context.AddValidationError(context.CurrentValidationPath, [result.ErrorMessage]);
+                context.AddValidationError(Name, context.CurrentValidationPath, [result.ErrorMessage], value);
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
                 return;
             }
         }
 
         // Validate any other attributes
-        ValidateValue(propertyValue, context.CurrentValidationPath, validationAttributes);
+        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -166,7 +166,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentValidationPath = originalPrefix;
         }
 
-        void ValidateValue(object? val, string errorPrefix, ValidationAttribute[] validationAttributes)
+        void ValidateValue(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
         {
             for (var i = 0; i < validationAttributes.Length; i++)
             {
@@ -176,12 +176,14 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
                     var result = attribute.GetValidationResult(val, context.ValidationContext);
                     if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
                     {
-                        context.AddOrExtendValidationErrors(errorPrefix.TrimStart('.'), [result.ErrorMessage]);
+                        var key = errorPrefix.TrimStart('.');
+                        context.AddOrExtendValidationErrors(name, key, [result.ErrorMessage], container);
                     }
                 }
                 catch (Exception ex)
                 {
-                    context.AddOrExtendValidationErrors(errorPrefix.TrimStart('.'), [ex.Message]);
+                    var key = errorPrefix.TrimStart('.');
+                    context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
                 }
             }
         }
