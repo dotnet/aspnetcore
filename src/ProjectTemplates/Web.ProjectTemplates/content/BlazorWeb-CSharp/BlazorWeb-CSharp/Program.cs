@@ -14,6 +14,8 @@ using BlazorWeb_CSharp.Components.Account;
 using BlazorWeb_CSharp.Data;
 #endif
 
+System.AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
