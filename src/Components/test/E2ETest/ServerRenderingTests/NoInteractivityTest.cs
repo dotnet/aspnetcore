@@ -127,16 +127,11 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     private void AssertUrlNotChanged(string expectedUrl) =>
         Browser.True(() => Browser.Url.Contains(expectedUrl), $"Expected URL to contain '{expectedUrl}', but found '{Browser.Url}'");
 
-    private void AssertUrlChanged(string urlPart) =>
-        Browser.False(() => Browser.Url.Contains(urlPart), $"Expected URL not to contain '{urlPart}', but found '{Browser.Url}'");
-
     [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    // When response has not started, it does not matter how we arrive the the page setting the not found status code.
-    // We can navigate straight to the testing page, skipping the index page.
     public void NotFoundSetOnInitialization_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
@@ -154,32 +149,18 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         AssertUrlNotChanged(testUrl);
     }
 
-    // If the response has started, it matters how we arrive the the page setting the not found status code
-    // because we are rendering client-side. In browser-initiated navigation and form submissions, the headers
-    // don't contain enhanced-nav and we redirect to the not found page. In link clicking navigation,
-    // the headers contain enhanced-nav, redirection is not needed and the original url is preserved.
-
     [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    // enhanced navigation is switched off for browser navigation
     public void NotFoundSetOnInitialization_ResponseStarted_BrowserNavigation_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
         AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
-        bool throwsException = !hasCustomNotFoundPageSet && !hasReExecutionMiddleware;
-        if (throwsException)
-        {
-            AssertUrlNotChanged(testUrl);
-        }
-        else
-        {
-            AssertUrlChanged(testUrl);
-        }
+        AssertUrlNotChanged(testUrl);
     }
 
     private void AssertNotFoundRendered_ResponseStarted_Or_POST(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet, string testUrl)
@@ -204,7 +185,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    // enhanced navigation is switched on for link navigation
     public void NotFoundSetOnInitialization_ResponseStarted_LinkNavigation_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
         string testUrl = NavigateByLinkToPageTestingNotFound("Sets", hasReExecutionMiddleware, hasCustomNotFoundPageSet);
@@ -229,8 +209,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    // NotFound triggered by POST cannot get rendered in the same batch and we rely on the client to render it
-    // However, because it is triggered by form POST, it won't have enhanced-nav headers
     public void NotFoundSetOnFormSubmit_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
@@ -239,15 +217,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
         AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
-        bool throwsException = !hasCustomNotFoundPageSet && !hasReExecutionMiddleware;
-        if (throwsException)
-        {
-            AssertUrlNotChanged(testUrl);
-        }
-        else
-        {
-            AssertUrlChanged(testUrl);
-        }
+        AssertUrlNotChanged(testUrl);
     }
 
     [Theory]
@@ -263,15 +233,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
         AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
-        bool throwsException = !hasCustomNotFoundPageSet && !hasReExecutionMiddleware;
-        if (throwsException)
-        {
-            AssertUrlNotChanged(testUrl);
-        }
-        else
-        {
-            AssertUrlChanged(testUrl);
-        }
+        AssertUrlNotChanged(testUrl);
     }
 
     private void AssertNotFoundFragmentRendered() =>

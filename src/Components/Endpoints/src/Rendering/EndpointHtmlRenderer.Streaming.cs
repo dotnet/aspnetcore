@@ -229,23 +229,24 @@ internal partial class EndpointHtmlRenderer
     private static void HandleNotFoundAfterResponseStarted(TextWriter writer, HttpContext httpContext, string notFoundUrl)
     {
         writer.Write("<blazor-ssr><template type=\"not-found\"");
-        WriteResponseTemplate(writer, httpContext, notFoundUrl);
+        WriteResponseTemplate(writer, httpContext, notFoundUrl, useEnhancedNav: true);
     }
 
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
         writer.Write("<blazor-ssr><template type=\"redirection\"");
-        WriteResponseTemplate(writer, httpContext, destinationUrl);
+        bool useEnhancedNav = IsProgressivelyEnhancedNavigation(httpContext.Request);
+        WriteResponseTemplate(writer, httpContext, destinationUrl, useEnhancedNav);
     }
 
-    private static void WriteResponseTemplate(TextWriter writer, HttpContext httpContext, string destinationUrl)
+    private static void WriteResponseTemplate(TextWriter writer, HttpContext httpContext, string destinationUrl, bool useEnhancedNav)
     {
         if (HttpMethods.IsPost(httpContext.Request.Method))
         {
             writer.Write(" from=\"form-post\"");
         }
 
-        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        if (useEnhancedNav)
         {
             writer.Write(" enhanced=\"true\"");
         }

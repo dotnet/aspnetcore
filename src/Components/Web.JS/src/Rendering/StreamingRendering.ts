@@ -45,12 +45,16 @@ class BlazorStreamingUpdate extends HTMLElement {
             insertStreamingContentIntoDocument(componentId, node.content);
           }
         } else {
+          const isEnhancedNav = node.getAttribute('enhanced') === 'true';
           switch (node.getAttribute('type')) {
             case 'redirection':
-              redirect(node, true);
+              redirect(node, true, isEnhancedNav);
               break;
             case 'not-found':
-              redirect(node, false);
+              // not-found template has enhanced nav set to true by default,
+              // check for the options to avoid overriding user settings
+              const useEnhancedNav = isEnhancedNav && enableDomPreservation;
+              redirect(node, false, useEnhancedNav);
               break;
             case 'error':
               // This is kind of brutal but matches what happens without progressive enhancement
@@ -63,12 +67,11 @@ class BlazorStreamingUpdate extends HTMLElement {
   }
 }
 
-function redirect(node: HTMLTemplateElement, changeUrl: boolean): void {
+function redirect(node: HTMLTemplateElement, changeUrl: boolean, isEnhancedNav: boolean): void {
   // We use 'replace' here because it's closest to the non-progressively-enhanced behavior, and will make the most sense
  // if the async delay was very short, as the user would not perceive having been on the intermediate page.
  const destinationUrl = toAbsoluteUri(node.content.textContent!);
  const isFormPost = node.getAttribute('from') === 'form-post';
- const isEnhancedNav = node.getAttribute('enhanced') === 'true';
  if (isEnhancedNav && isWithinBaseUriSpace(destinationUrl)) {
    // At this point the destinationUrl might be an opaque URL so we don't know whether it's internal/external or
    // whether it's even going to the same URL we're currently on. So we don't know how to update the history.
