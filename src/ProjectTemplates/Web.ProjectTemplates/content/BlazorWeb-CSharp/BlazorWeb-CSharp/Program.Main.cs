@@ -20,6 +20,7 @@ public class Program
 {
     public static void Main(string[] args)
     {
+        System.AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", true);
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
