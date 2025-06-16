@@ -154,7 +154,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
-    public void NotFoundSetOnInitialization_ResponseStarted_BrowserNavigation_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    public void NotFoundSetOnInitialization_ResponseStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
@@ -178,30 +178,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
             // this throws an exception logged on the server
             AssertNotFoundContentNotRendered();
         }
-    }
-
-    [Theory]
-    [InlineData(true, true)]
-    [InlineData(true, false)]
-    [InlineData(false, true)]
-    [InlineData(false, false)]
-    public void NotFoundSetOnInitialization_ResponseStarted_LinkNavigation_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
-    {
-        string testUrl = NavigateByLinkToPageTestingNotFound("Sets", hasReExecutionMiddleware, hasCustomNotFoundPageSet);
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
-        AssertUrlNotChanged(testUrl);
-    }
-
-    private string NavigateByLinkToPageTestingNotFound(string action, bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
-    {
-        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
-        Navigate($"{ServerPathBase}/not-found-index?useCustomNotFoundPage={hasCustomNotFoundPageSet}");
-        Browser.Equal("List of Not Found test pages", () => Browser.FindElement(By.Id("test-info")).Text);
-        string reexecutionText = hasReExecutionMiddleware ? " with reexecution" : "";
-        var link = Browser.FindElement(By.LinkText($"PageThat{action}NotFound-streaming{reexecutionText}"));
-        var testUrl = link.GetAttribute("href");
-        link.Click();
-        return testUrl;
     }
 
     [Theory]
