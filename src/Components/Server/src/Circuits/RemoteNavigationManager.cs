@@ -21,7 +21,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
     [FeatureSwitchDefinition(_disableThrowNavigationException)]
     private static bool _throwNavigationException =>
-        !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) && switchValue;
+        !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
     private Func<string, Task>? _onNavigateTo;
 
     public event EventHandler<Exception>? UnhandledException;

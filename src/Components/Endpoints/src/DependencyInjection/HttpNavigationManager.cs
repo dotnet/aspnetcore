@@ -12,7 +12,7 @@ internal sealed class HttpNavigationManager : NavigationManager, IHostEnvironmen
 
     [FeatureSwitchDefinition(_disableThrowNavigationException)]
     private static bool _throwNavigationException =>
-        !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) && switchValue;
+        !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
 
     private Func<string, Task>? _onNavigateTo;
 
