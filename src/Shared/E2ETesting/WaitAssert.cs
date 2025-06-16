@@ -40,6 +40,9 @@ public static class WaitAssert
     public static void True(this IWebDriver driver, Func<bool> actual, string message)
         => WaitAssertCore(driver, () => Assert.True(actual(), message));
 
+    public static void False(this IWebDriver driver, Func<bool> actual, string message)
+        => WaitAssertCore(driver, () => Assert.False(actual(), message));
+
     public static void False(this IWebDriver driver, Func<bool> actual)
         => WaitAssertCore(driver, () => Assert.False(actual()));
 

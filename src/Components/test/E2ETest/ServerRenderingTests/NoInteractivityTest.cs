@@ -127,6 +127,9 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     private void AssertUrlNotChanged(string expectedUrl) =>
         Browser.True(() => Browser.Url.Contains(expectedUrl), $"Expected URL to contain '{expectedUrl}', but found '{Browser.Url}'");
 
+    private void AssertUrlChanged(string urlPart) =>
+        Browser.False(() => Browser.Url.Contains(urlPart), $"Expected URL not to contain '{urlPart}', but found '{Browser.Url}'");
+
     [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]
@@ -161,6 +164,20 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Navigate(testUrl);
         AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
         AssertUrlNotChanged(testUrl);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void NotFoundSetOnInitialization_ResponseStarted_EnhancedNavigationDisabled_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, true, skipNavigation: true);
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        Navigate(testUrl);
+        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertUrlChanged(testUrl);
     }
 
     private void AssertNotFoundRendered_ResponseStarted_Or_POST(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet, string testUrl)
