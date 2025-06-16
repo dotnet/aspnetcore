@@ -867,7 +867,7 @@ public class EndpointHtmlRendererTest
         string redirectUri = "http://localhost/redirect";
 
         // Act
-        if (expectException)
+        if (allowException)
         {
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
                 httpContext,
