@@ -74,6 +74,13 @@ public class SimpleTypeModelBinder : IModelBinder
                 // Other than the StringConverter, converters Trim() the value then throw if the result is empty.
                 model = null;
             }
+            else if (bindingContext.ModelMetadata.IsNullableValueType && value == "null")
+            {
+                // Fix: This handles the issue where a URL parameter like `?age=null` cannot be bound to an `int?` type.
+                // This fix ensures that when the frontend sends a URL parameter with `null` value (e.g., `new URLSearchParams({ age: null }).toString()`),
+                // it correctly binds to a nullable integer (`int?`) instead of causing a binding error.
+                model = null;
+            }
             else
             {
                 model = _typeConverter.ConvertFrom(
