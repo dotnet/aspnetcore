@@ -146,7 +146,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             }
 
             _ = endpoints.MapRazorComponents<TRootComponent>()
-                .AddAdditionalAssemblies(Assembly.Load("Components.Shared"))
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"))
                 .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                 .AddInteractiveServerRenderMode(options =>
                 {

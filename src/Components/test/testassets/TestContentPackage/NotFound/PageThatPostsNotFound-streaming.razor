@@ -1,5 +1,5 @@
-@page "/reexecution/set-not-found-ssr-streaming"
-@page "/set-not-found-ssr-streaming"
+@page "/reexecution/post-not-found-ssr-streaming"
+@page "/post-not-found-ssr-streaming"
 @attribute [StreamRendering(true)]
 
 @*
@@ -8,4 +8,4 @@
     interactive later if interactivity was enabled in the app
 *@
 
-<Components.Shared.ComponentThatSetsNotFound StartStreaming="true"/>
+<TestContentPackage.NotFound.ComponentThatPostsNotFound StartStreaming="true"/>

@@ -72,7 +72,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                 reexecutionApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapRazorComponents<TRootComponent>()
-                        .AddAdditionalAssemblies(Assembly.Load("Components.Shared"));
+                        .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
                 });
             });
 
@@ -94,7 +94,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapRazorComponents<TRootComponent>()
-                .AddAdditionalAssemblies(Assembly.Load("Components.Shared"));
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
         });
     }
 }

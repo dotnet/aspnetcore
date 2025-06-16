@@ -1,6 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Components.Routing
 @using Components.WasmMinimal.Pages.NotFound
-@using Components.Shared
+@using TestContentPackage.NotFound
 @inject NavigationManager NavigationManager
 
 @code {
@@ -23,7 +23,7 @@
     }
 }
 
-<Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(Components.Shared.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
+<Router AppAssembly="@typeof(Program).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
     <Found Context="routeData">
         <RouteView RouteData="@routeData" />
         <FocusOnNavigate RouteData="@routeData" Selector="h1" />

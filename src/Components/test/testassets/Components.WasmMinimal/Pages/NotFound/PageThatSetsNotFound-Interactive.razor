@@ -6,7 +6,7 @@
     the component's content will be rendered when it becomes interactive
 *@
 
-<Components.Shared.ComponentThatSetsNotFound @rendermode="@RenderModeHelper.GetRenderMode(_renderMode)" WaitForInteractivity="true" />
+<TestContentPackage.NotFound.ComponentThatSetsNotFound @rendermode="@RenderModeHelper.GetRenderMode(_renderMode)" WaitForInteractivity="true" />
 
 @code{
     [Parameter, SupplyParameterFromQuery(Name = "renderMode")]
