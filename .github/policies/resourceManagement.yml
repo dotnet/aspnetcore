@@ -185,10 +185,8 @@ configuration:
       filters:
       - isPullRequest
       - isOpen
-      - targetsBranch:
-          branch: main
       - hasLabel:
-          label: 'Type: Dependency Update :arrow_up_small:'
+          label: 'build-ops'
       - noActivitySince:
           days: 1
       actions:
@@ -202,10 +200,8 @@ configuration:
       filters:
       - isPullRequest
       - isOpen
-      - targetsBranch:
-          branch: main
       - hasLabel:
-          label: 'Type: Dependency Update :arrow_up_small:'
+          label: 'build-ops'
       - noActivitySince:
           days: 3
       actions:
@@ -307,6 +303,8 @@ configuration:
           label: area-infrastructure
       - addLabel:
           label: 'Type: Merge Forward :fast_forward:'
+      - addLabel:
+          label: 'build-ops'
       - approvePullRequest:
           comment: Auto-approving branch merge.
       description: '[Infrastructure PRs] Add area-infrastructure label to auto-merge Pull Requests'
@@ -538,16 +536,16 @@ configuration:
       - isAction:
           action: Opened
       - targetsBranch:
-          branch: release/2.1
+          branch: release/2.3
       then:
       - addMilestone:
-          milestone: 2.1.x
+          milestone: 2.3.x
       - addReply:
           reply: >-
             Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
 
             Otherwise, please add `tell-mode` label.
-      description: Add release/2.1 targeting PRs to the servicing project
+      description: Add release/2.3 targeting PRs to the servicing project
     - if:
       - payloadType: Pull_Request
       - labelAdded:
@@ -694,6 +692,8 @@ configuration:
           label: area-infrastructure
       - addLabel:
           label: 'Type: Dependency Update :arrow_up_small:'
+      - addLabel:
+          label: 'build-ops'
       - approvePullRequest:
           comment: Auto-approving SDK update.
       - enableAutoMerge:
@@ -713,6 +713,8 @@ configuration:
           label: area-infrastructure
       - addLabel:
           label: 'Type: Dependency Update :arrow_up_small:'
+      - addLabel:
+          label: 'build-ops'
       - approvePullRequest:
           comment: Auto-approving dependabot update.
       - enableAutoMerge:
