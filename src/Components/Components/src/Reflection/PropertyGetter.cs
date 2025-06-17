@@ -43,22 +43,24 @@ internal sealed class PropertyGetter
             if (getMethod.DeclaringType!.IsValueType)
             {
                 // Create a delegate (ref TDeclaringType) -> TValue
-                var propertyGetterAsFunc =
-                    getMethod.CreateDelegate(typeof(ByRefFunc<,>).MakeGenericType(targetType, property.PropertyType));
-                var callPropertyGetterClosedGenericMethod =
-                    CallPropertyGetterByReferenceOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
-                _GetterDelegate = (Func<object, object?>)
-                    callPropertyGetterClosedGenericMethod.CreateDelegate(typeof(Func<object, object?>), propertyGetterAsFunc);
+                var delegateType = typeof(ByRefFunc<,>).MakeGenericType(targetType, property.PropertyType);
+                var propertyGetterDelegate = getMethod.CreateDelegate(delegateType);
+                var wrapperDelegateMethod = CallPropertyGetterByReferenceOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
+                var accessorDelegate = wrapperDelegateMethod.CreateDelegate(
+                    typeof(Func<object, object?>),
+                    propertyGetterDelegate);
+                _GetterDelegate = (Func<object, object?>)accessorDelegate;
             }
             else
             {
                 // Create a delegate TDeclaringType -> TValue
-                var propertyGetterAsFunc =
-                    getMethod.CreateDelegate(typeof(Func<,>).MakeGenericType(targetType, property.PropertyType));
-                var callPropertyGetterClosedGenericMethod =
-                    CallPropertyGetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
-                _GetterDelegate = (Func<object, object?>)
-                    callPropertyGetterClosedGenericMethod.CreateDelegate(typeof(Func<object, object?>), propertyGetterAsFunc);
+                var delegateType = typeof(Func<,>).MakeGenericType(targetType, property.PropertyType);
+                var propertyGetterDelegate = getMethod.CreateDelegate(delegateType);
+                var wrapperDelegateMethod = CallPropertyGetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
+                var accessorDelegate = wrapperDelegateMethod.CreateDelegate(
+                    typeof(Func<object, object?>),
+                    propertyGetterDelegate);
+                _GetterDelegate = (Func<object, object?>)accessorDelegate;
             }
         }
         else
@@ -69,20 +71,26 @@ internal sealed class PropertyGetter
 
     public object? GetValue(object target) => _GetterDelegate(target);
 
-    private static TValue CallPropertyGetter<TTarget, TValue>(
+    private static object? CallPropertyGetter<TTarget, TValue>(
         Func<TTarget, TValue> Getter,
         object target)
         where TTarget : notnull
     {
-        return Getter((TTarget)target);
+        Console.WriteLine($"CallPropertyGetter called: TTarget={typeof(TTarget)}, TValue={typeof(TValue)}, target={target}");
+        var result = Getter((TTarget)target);
+        Console.WriteLine($"CallPropertyGetter result: {result}");
+        return result;
     }
 
-    private static TValue CallPropertyGetterByReference<TTarget, TValue>(
+    private static object? CallPropertyGetterByReference<TTarget, TValue>(
         ByRefFunc<TTarget, TValue> Getter,
         object target)
         where TTarget : notnull
     {
+        Console.WriteLine($"CallPropertyGetterByReference called: TTarget={typeof(TTarget)}, TValue={typeof(TValue)}, target={target}");
         var unboxed = (TTarget)target;
-        return Getter(ref unboxed);
+        var result = Getter(ref unboxed);
+        Console.WriteLine($"CallPropertyGetterByReference result: {result}");
+        return result;
     }
 }
