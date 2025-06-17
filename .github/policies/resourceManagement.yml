@@ -191,7 +191,7 @@ configuration:
           days: 1
       actions:
       - addReply:
-          reply: This dependency PR has had no activity for 24 hours - @dotnet/aspnet-build please take a look if you are on build-ops.
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
     - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (weekend)'
       frequencies:
       - weekday:
@@ -206,7 +206,7 @@ configuration:
           days: 3
       actions:
       - addReply:
-          reply: This dependency PR has had no activity for 24 hours - @dotnet/aspnet-build please take a look if you are on build-ops.
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
     eventResponderTasks:
     - if:
       - payloadType: Issue_Comment
