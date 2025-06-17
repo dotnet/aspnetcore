@@ -349,7 +349,7 @@ public class ComponentState : IAsyncDisposable
     /// This is used for state persistence and component identification across render modes.
     /// </summary>
     /// <returns>The component key, or null if no key is available.</returns>
-    protected virtual object? GetComponentKey()
+    protected internal virtual object? GetComponentKey()
     {
         if (ParentComponentState is not { } parentComponentState)
         {
