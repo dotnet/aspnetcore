@@ -194,9 +194,14 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
     {
-        var markerKey = parentComponentState != null ? default : _webRootComponentManager!.GetRootComponentKey(componentId);
+        return new WebAssemblyComponentState(this, componentId, component, parentComponentState);
+    }
 
-        return new WebAssemblyComponentState(this, componentId, component, parentComponentState, markerKey);
+    internal ComponentMarkerKey GetMarkerKey(WebAssemblyComponentState webAssemblyComponentState)
+    {
+        return webAssemblyComponentState.ParentComponentState != null ?
+            default :
+            _webRootComponentManager!.GetRootComponentKey(webAssemblyComponentState.ComponentId);
     }
 
     private static partial class Log
