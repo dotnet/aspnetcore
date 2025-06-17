@@ -11,25 +11,26 @@ namespace Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 /// </summary>
 internal sealed class WebAssemblyComponentState : ComponentState
 {
-    private readonly ComponentMarkerKey _componentMarkerKey;
+    private readonly WebAssemblyRenderer _renderer;
 
     public WebAssemblyComponentState(
-        Renderer renderer,
+        WebAssemblyRenderer renderer,
         int componentId,
         IComponent component,
-        ComponentState? parentComponentState,
-        ComponentMarkerKey componentMarkerKey = default)
+        ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
-        _componentMarkerKey = componentMarkerKey;
+        _renderer = renderer;
     }
 
     protected override object? GetComponentKey()
     {
+        var markerKey = _renderer.GetMarkerKey(this);
+
         // If we have a ComponentMarkerKey, return it for state persistence consistency
-        if (_componentMarkerKey != default)
+        if (markerKey != default)
         {
-            return _componentMarkerKey;
+            return markerKey.Serialized();
         }
 
         // Fall back to the default implementation
