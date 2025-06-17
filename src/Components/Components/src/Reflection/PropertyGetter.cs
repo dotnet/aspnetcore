@@ -53,6 +53,6 @@ internal sealed class PropertyGetter
         object target)
         where TTarget : notnull
     {
-        return Getter((TTarget)target);
+        return (object?)Getter((TTarget)target);
     }
 }
