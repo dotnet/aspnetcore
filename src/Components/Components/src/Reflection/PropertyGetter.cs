@@ -76,10 +76,7 @@ internal sealed class PropertyGetter
         object target)
         where TTarget : notnull
     {
-        Console.WriteLine($"CallPropertyGetter called: TTarget={typeof(TTarget)}, TValue={typeof(TValue)}, target={target}");
-        var result = Getter((TTarget)target);
-        Console.WriteLine($"CallPropertyGetter result: {result}");
-        return result;
+        return Getter((TTarget)target);
     }
 
     private static object? CallPropertyGetterByReference<TTarget, TValue>(
@@ -87,10 +84,7 @@ internal sealed class PropertyGetter
         object target)
         where TTarget : notnull
     {
-        Console.WriteLine($"CallPropertyGetterByReference called: TTarget={typeof(TTarget)}, TValue={typeof(TValue)}, target={target}");
         var unboxed = (TTarget)target;
-        var result = Getter(ref unboxed);
-        Console.WriteLine($"CallPropertyGetterByReference result: {result}");
-        return result;
+        return Getter(ref unboxed);
     }
 }

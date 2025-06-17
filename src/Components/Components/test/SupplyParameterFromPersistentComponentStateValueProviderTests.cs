@@ -514,15 +514,8 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
 
         var renderer = new TestRenderer();
         var component = new ValueTypeTestComponent { TupleValue = ("test", 456) };
-        
-        // Debug: Verify the property value is set correctly
-        Console.WriteLine($"Component TupleValue before state creation: {component.TupleValue}");
-        
         var componentStates = CreateComponentState(renderer, [(component, null)], null);
         var componentState = componentStates.First();
-        
-        // Debug: Verify the component in the state has the right value
-        Console.WriteLine($"Component TupleValue after state creation: {((ValueTypeTestComponent)componentState.Component).TupleValue}");
 
         // Create the provider and subscribe the component
         var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
@@ -540,13 +533,6 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         newState.InitializeExistingState(store.State);
 
         var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
-        
-        // Debug: Check what's actually stored
-        Assert.True(store.State.ContainsKey(key), $"Key {key} not found in store. Available keys: {string.Join(", ", store.State.Keys)}");
-        var rawValue = store.State[key];
-        var stringValue = System.Text.Encoding.UTF8.GetString(rawValue);
-        Console.WriteLine($"Raw stored value: {stringValue}");
-        
         Assert.True(newState.TryTakeFromJson<(string, int)>(key, out var retrievedValue));
         Assert.Equal(("test", 456), retrievedValue);
     }
