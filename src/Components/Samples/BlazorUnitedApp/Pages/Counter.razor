@@ -4,32 +4,15 @@
 
 <h1>Counter</h1>
 
-<p role="status">Current count: @Current.Count</p>
+<p role="status">Current count: @currentCount</p>
 
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
-
-    [SupplyParameterFromPersistentComponentState]
-    public CounterState Current { get; set; } = new();
-
-    protected override void OnInitialized()
-    {
-        Current ??= new CounterState() { Count = RendererInfo.IsInteractive ? 0 : 5 };
-    }
+    private int currentCount = 0;
 
     private void IncrementCount()
     {
-        Current.Increment();
-    }
-
-    public class CounterState
-    {
-        public int Count { get; set; } = 0;
-
-        public void Increment()
-        {
-            Count++;
-        }
+        currentCount++;
     }
 }
