@@ -849,9 +849,9 @@ public class EndpointHtmlRendererTest
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted(bool expectException)
+    public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted(bool allowException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException", isEnabled: expectException);
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: !allowException);
         // Arrange
         var ctx = new DefaultHttpContext();
         ctx.Request.Scheme = "http";
@@ -867,7 +867,7 @@ public class EndpointHtmlRendererTest
         string redirectUri = "http://localhost/redirect";
 
         // Act
-        if (expectException)
+        if (allowException)
         {
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await renderer.PrerenderComponentAsync(
                 httpContext,
