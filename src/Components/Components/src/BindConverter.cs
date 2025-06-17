@@ -24,6 +24,7 @@ public static class BindConverter
     private static readonly object BoxedFalse = false;
 
     private delegate object? BindFormatter<T>(T value, CultureInfo? culture);
+
     internal delegate bool BindParser<T>(object? obj, CultureInfo? culture, [MaybeNullWhen(false)] out T value);
     internal delegate bool BindParserWithFormat<T>(object? obj, CultureInfo? culture, string? format, [MaybeNullWhen(false)] out T value);
 
