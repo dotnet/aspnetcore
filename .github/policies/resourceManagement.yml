@@ -168,6 +168,45 @@ configuration:
             To make sure no conflicting changes have occurred, please rerun validation before merging. You can do this by leaving an `/azp run` comment here (requires commit rights), or by simply closing and reopening.
       - addLabel:
           label: pending-ci-rerun
+    - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (non-weekend)'
+      frequencies:
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isPullRequest
+      - isOpen
+      - hasLabel:
+          label: 'Type: Dependency Update :arrow_up_small:'
+      - noActivitySince:
+          days: 1
+      actions:
+      - addReply:
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
+    - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (weekend)'
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      filters:
+      - isPullRequest
+      - isOpen
+      - hasLabel:
+          label: 'Type: Dependency Update :arrow_up_small:'
+      - noActivitySince:
+          days: 3
+      actions:
+      - addReply:
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
     eventResponderTasks:
     - if:
       - payloadType: Issue_Comment
