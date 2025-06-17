@@ -123,8 +123,8 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        // The key used for storing the property value is computed by the ComponentState
-        var key = componentState.ComputeKey(cascadingParameterInfo.PropertyName);
+        // The key used for storing the property value is computed by the SupplyParameterFromPersistentComponentStateValueProvider
+        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key, out var retrievedValue));
         Assert.Equal("testValue", retrievedValue);
     }
@@ -161,8 +161,8 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        // The key used for storing the property value is computed by the ComponentState
-        var key = componentState.ComputeKey(cascadingParameterInfo.PropertyName);
+        // The key used for storing the property value is computed by the SupplyParameterFromPersistentComponentStateValueProvider
+        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key, out var retrievedValue));
         Assert.Equal("testValue", retrievedValue);
     }
@@ -202,12 +202,12 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        // The key used for storing the property value is computed by the ComponentState
-        var key1 = componentState1.ComputeKey(cascadingParameterInfo.PropertyName);
+        // The key used for storing the property value is computed by the SupplyParameterFromPersistentComponentStateValueProvider
+        var key1 = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key1, out var retrievedValue));
         Assert.Equal("testValue1", retrievedValue);
 
-        var key2 = componentState2.ComputeKey(cascadingParameterInfo.PropertyName);
+        var key2 = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key2, out retrievedValue));
         Assert.Equal("testValue2", retrievedValue);
     }
@@ -275,12 +275,12 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        // The key used for storing the property value is computed by the ComponentState
-        var key1 = componentState1.ComputeKey(cascadingParameterInfo.PropertyName);
+        // The key used for storing the property value is computed by the SupplyParameterFromPersistentComponentStateValueProvider
+        var key1 = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key1, out var retrievedValue));
         Assert.Equal("testValue1", retrievedValue);
 
-        var key2 = componentState2.ComputeKey(cascadingParameterInfo.PropertyName);
+        var key2 = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key2, out retrievedValue));
         Assert.Equal("testValue2", retrievedValue);
     }
@@ -436,7 +436,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var dictionary = new Dictionary<string, byte[]>();
         foreach (var item in items)
         {
-            var key = item.componentState.ComputeKey(item.propertyName);
+            var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(item.componentState, item.propertyName);
             dictionary[key] = JsonSerializer.SerializeToUtf8Bytes(item.value, JsonSerializerOptions.Web);
         }
         state.InitializeExistingState(dictionary);
