@@ -327,7 +327,7 @@ internal partial class EndpointHtmlRenderer
                 ReferenceEquals(candidate, boundary))
             {
                 // This is the component marker frame, so we can use its sequence and key
-                return (i, frame.ComponentKey);
+                return (frame.Sequence, frame.ComponentKey);
             }
         }
 

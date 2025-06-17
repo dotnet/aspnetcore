@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using static Microsoft.AspNetCore.Components.Server.Circuits.RemoteRenderer;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
@@ -11,25 +13,26 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// </summary>
 internal sealed class RemoteComponentState : ComponentState
 {
-    private readonly ComponentMarkerKey _componentMarkerKey;
+    private readonly RemoteRenderer _renderer;
 
     public RemoteComponentState(
-        Renderer renderer,
+        RemoteRenderer renderer,
         int componentId,
         IComponent component,
-        ComponentState? parentComponentState,
-        ComponentMarkerKey componentMarkerKey = default)
+        ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
-        _componentMarkerKey = componentMarkerKey;
+        _renderer = renderer;
     }
 
     protected override object? GetComponentKey()
     {
+        var markerKey = _renderer.GetMarkerKey(this);
+
         // If we have a ComponentMarkerKey, return it for state persistence consistency
-        if (_componentMarkerKey != default)
+        if (markerKey != default)
         {
-            return _componentMarkerKey != default;
+            return markerKey.Serialized();
         }
 
         // Fall back to the default implementation

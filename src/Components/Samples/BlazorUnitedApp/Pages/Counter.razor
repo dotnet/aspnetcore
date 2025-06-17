@@ -15,7 +15,7 @@
 
     protected override void OnInitialized()
     {
-        Current ??= new CounterState();
+        Current ??= new CounterState() { Count = RendererInfo.IsInteractive ? 0 : 5 };
     }
 
     private void IncrementCount()

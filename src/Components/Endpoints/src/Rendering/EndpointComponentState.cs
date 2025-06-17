@@ -42,7 +42,8 @@ internal sealed class EndpointComponentState : ComponentState
         if (ParentComponentState != null && ParentComponentState.Component is SSRRenderModeBoundary boundary)
         {
             var (sequence, key) = _renderer.GetSequenceAndKey(ParentComponentState);
-            return boundary.GetComponentMarkerKey(sequence, key);
+            var marker = boundary.GetComponentMarkerKey(sequence, key);
+            return marker?.Serialized();
         }
 
         // Fall back to the default implementation
