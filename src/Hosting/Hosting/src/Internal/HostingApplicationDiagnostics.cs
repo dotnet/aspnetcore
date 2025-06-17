@@ -388,6 +388,7 @@ internal sealed class HostingApplicationDiagnostics
     private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
     {
         hasDiagnosticListener = false;
+        
         var tagsForCreation = httpContext.Features.Get<IHttpActivityCreationTagsFeature>()?.ActivityCreationTags;
         var headers = httpContext.Request.Headers;
         var activity = ActivityCreator.CreateFromRemote(
