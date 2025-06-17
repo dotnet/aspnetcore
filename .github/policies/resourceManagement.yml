@@ -156,8 +156,6 @@ configuration:
       - isNotDraftPullRequest
       - isPullRequest
       - isOpen
-      - targetsBranch:
-
       - noActivitySince:
           days: 7
       - isNotLabeledWith:
@@ -187,6 +185,8 @@ configuration:
       filters:
       - isPullRequest
       - isOpen
+      - targetsBranch:
+          branch: main
       - hasLabel:
           label: 'Type: Dependency Update :arrow_up_small:'
       - noActivitySince:
