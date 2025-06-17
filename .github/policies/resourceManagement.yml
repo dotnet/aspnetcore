@@ -189,6 +189,8 @@ configuration:
           label: 'Type: Dependency Update :arrow_up_small:'
       - noActivitySince:
           days: 1
+      - targetsBranch:
+          branch: main
       actions:
       - addReply:
           reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
@@ -204,6 +206,8 @@ configuration:
           label: 'Type: Dependency Update :arrow_up_small:'
       - noActivitySince:
           days: 3
+      - targetsBranch:
+          branch: main
       actions:
       - addReply:
           reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
