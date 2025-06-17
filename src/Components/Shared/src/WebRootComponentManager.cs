@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 #if COMPONENTS_SERVER
@@ -87,7 +86,7 @@ internal partial class WebAssemblyRenderer
 #if COMPONENTS_SERVER
         internal IEnumerable<(int id, ComponentMarkerKey key, (Type componentType, ParameterView parameters))> GetRootComponents()
         {
-            foreach (var (id, (key, type, parameters)) in _webRootComponents)
+            foreach (var (id, (_, key, type, parameters)) in _webRootComponents)
             {
                 yield return (id, key, (type, parameters));
             }
@@ -96,10 +95,13 @@ internal partial class WebAssemblyRenderer
 #endif
         internal ComponentMarkerKey GetRootComponentKey(int componentId)
         {
-            if (_webRootComponents.TryGetValue(componentId, out var component))
+            foreach (var (_, candidate) in _webRootComponents)
             {
-                var (key, _, _) = component;
-                return key;
+                var(id, key, _, _) = candidate;
+                if (id == componentId)
+                {
+                    return key;
+                }
             }
 
             return default;
@@ -148,10 +150,12 @@ internal partial class WebAssemblyRenderer
             }
 
             public void Deconstruct(
+                out int interactiveComponentId,
                 out ComponentMarkerKey key,
                 out Type componentType,
                 out ParameterView parameters)
             {
+                interactiveComponentId = _interactiveComponentId;
                 key = _key;
                 componentType = _componentType;
                 parameters = _latestParameters.Parameters;

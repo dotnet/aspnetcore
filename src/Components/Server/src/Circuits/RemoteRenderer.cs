@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -316,9 +317,14 @@ internal partial class RemoteRenderer : WebRenderer
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
     {
-        var markerKey = parentComponentState != null ? default : _webRootComponentManager.GetRootComponentKey(componentId);
+        return new RemoteComponentState(this, componentId, component, parentComponentState);
+    }
 
-        return new RemoteComponentState(this, componentId, component, parentComponentState, markerKey);
+    internal ComponentMarkerKey GetMarkerKey(RemoteComponentState remoteComponentState)
+    {
+        return remoteComponentState.ParentComponentState != null ?
+            default :
+            _webRootComponentManager!.GetRootComponentKey(remoteComponentState.ComponentId);
     }
 
     private void ProcessPendingBatch(string? errorMessageOrNull, UnacknowledgedRenderBatch entry)
