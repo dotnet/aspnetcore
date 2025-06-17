@@ -35,6 +35,34 @@ internal sealed class EndpointComponentState : ComponentState
 
     public bool StreamRendering { get; }
 
+    protected override object? GetComponentKey()
+    {
+        // Check if the parent Component is an SSRRenderModeBoundary instance.
+        // We do this by checking if the grandparent (.Parent.Parent) doesn't have a render mode,
+        // which means that .Parent is an SSRRenderModeBoundary component.
+        if (ParentComponentState?.ParentComponentState is { } grandParent)
+        {
+            var grandParentRenderMode = Renderer.GetComponentRenderMode(grandParent.Component);
+            if (grandParentRenderMode is null)
+            {
+                // The parent is likely an SSRRenderModeBoundary - we need to get the ComponentMarkerKey from it
+                if (ParentComponentState.Component is SSRRenderModeBoundary boundary)
+                {
+                    return GetComponentMarkerKeyFromBoundary(boundary);
+                }
+            }
+        }
+
+        // Fall back to the default implementation
+        return base.GetComponentKey();
+    }
+
+    private static object? GetComponentMarkerKeyFromBoundary(SSRRenderModeBoundary boundary)
+    {
+        // Get the ComponentMarkerKey from the SSRRenderModeBoundary
+        return boundary.GetComponentMarkerKey();
+    }
+
     /// <summary>
     /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.
     /// </summary>

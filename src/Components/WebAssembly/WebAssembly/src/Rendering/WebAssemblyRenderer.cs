@@ -191,6 +191,13 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by WebAssembly rendering."),
         };
 
+    protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
+    {
+        // For WebAssembly rendering, we create a specialized ComponentState that can handle ComponentMarkerKey
+        // The ComponentMarkerKey will be provided by the client-side code when components are initialized
+        return new WebAssemblyComponentState(this, componentId, component, parentComponentState);
+    }
+
     private static partial class Log
     {
         [LoggerMessage(100, LogLevel.Critical, "Unhandled exception rendering component: {Message}", EventName = "ExceptionRenderingComponent")]

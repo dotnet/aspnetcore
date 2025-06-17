@@ -313,6 +313,13 @@ internal partial class RemoteRenderer : WebRenderer
             _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by interactive server-side rendering."),
         };
 
+    protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
+    {
+        // For Server/Remote rendering, we create a specialized ComponentState that can handle ComponentMarkerKey
+        // The ComponentMarkerKey will be provided by the server-side serialization logic
+        return new RemoteComponentState(this, componentId, component, parentComponentState);
+    }
+
     private void ProcessPendingBatch(string? errorMessageOrNull, UnacknowledgedRenderBatch entry)
     {
         var elapsedTime = entry.ValueStopwatch.GetElapsedTime();

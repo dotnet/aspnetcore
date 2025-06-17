@@ -4,6 +4,11 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Sections;
+using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
+using System.Globalization;
+using System.Buffers;
 
 namespace Microsoft.AspNetCore.Components.Rendering;
 
@@ -337,6 +342,209 @@ public class ComponentState : IAsyncDisposable
         }
 
         return DisposeAsync();
+    }
+
+    /// <summary>
+    /// Gets the component key for this component instance.
+    /// This is used for state persistence and component identification across render modes.
+    /// </summary>
+    /// <returns>The component key, or null if no key is available.</returns>
+    protected virtual object? GetComponentKey()
+    {
+        if (ParentComponentState is not { } parentComponentState)
+        {
+            return null;
+        }
+
+        // Check if the parentComponentState has a `@key` directive applied to the current component.
+        var frames = parentComponentState.CurrentRenderTree.GetFrames();
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref var currentFrame = ref frames.Array[i];
+            if (currentFrame.FrameType != RenderTree.RenderTreeFrameType.Component ||
+                !ReferenceEquals(Component, currentFrame.Component))
+            {
+                // Skip any frame that is not the current component.
+                continue;
+            }
+
+            return currentFrame.ComponentKey;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Computes a pseudo-unique key for state persistence.
+    /// This considers the property name, component type, and position within the component tree.
+    /// </summary>
+    /// <param name="propertyName">The name of the property being persisted.</param>
+    /// <returns>A unique key for the property.</returns>
+    internal string ComputeKey(string propertyName)
+    {
+        var parentComponentType = GetParentComponentType();
+        var componentType = GetComponentType();
+
+        var preKey = ComputePreKey(parentComponentType, componentType, propertyName);
+        var finalKey = ComputeFinalKey(preKey);
+
+        return finalKey;
+    }
+
+    private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
+
+    private static byte[] ComputePreKey(string parentComponentType, string componentType, string propertyName)
+    {
+        return _keyCache.GetOrAdd((parentComponentType, componentType, propertyName), 
+            parts => SHA256.HashData(Encoding.UTF8.GetBytes(string.Join(".", parts.Item1, parts.Item2, parts.Item3))));
+    }
+
+    private string ComputeFinalKey(byte[] preKey)
+    {
+        Span<byte> keyHash = stackalloc byte[SHA256.HashSizeInBytes];
+
+        var key = GetSerializableKey();
+        byte[]? pool = null;
+        try
+        {
+            Span<byte> keyBuffer = stackalloc byte[1024];
+            var currentBuffer = keyBuffer;
+            preKey.CopyTo(keyBuffer);
+            
+            if (key is IUtf8SpanFormattable spanFormattable)
+            {
+                var wroteKey = false;
+                while (!wroteKey)
+                {
+                    currentBuffer = keyBuffer[preKey.Length..];
+                    wroteKey = spanFormattable.TryFormat(currentBuffer, out var written, "", CultureInfo.InvariantCulture);
+                    if (!wroteKey)
+                    {
+                        Debug.Assert(written == 0);
+                        GrowBuffer(ref pool, ref keyBuffer);
+                    }
+                    else
+                    {
+                        currentBuffer = currentBuffer[..written];
+                    }
+                }
+            }
+            else
+            {
+                var keySpan = ResolveKeySpan(key);
+                var wroteKey = false;
+                while (!wroteKey)
+                {
+                    currentBuffer = keyBuffer[preKey.Length..];
+                    wroteKey = Encoding.UTF8.TryGetBytes(keySpan, currentBuffer, out var written);
+                    if (!wroteKey)
+                    {
+                        Debug.Assert(written == 0);
+                        GrowBuffer(ref pool, ref keyBuffer, keySpan.Length * 4 + preKey.Length);
+                    }
+                    else
+                    {
+                        currentBuffer = currentBuffer[..written];
+                    }
+                }
+            }
+
+            keyBuffer = keyBuffer[..(preKey.Length + currentBuffer.Length)];
+
+            var hashSucceeded = SHA256.TryHashData(keyBuffer, keyHash, out _);
+            Debug.Assert(hashSucceeded);
+            return Convert.ToBase64String(keyHash);
+        }
+        finally
+        {
+            if (pool != null)
+            {
+                ArrayPool<byte>.Shared.Return(pool, clearArray: true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the serializable component key for this component instance.
+    /// Returns null if the component key is not serializable.
+    /// </summary>
+    /// <returns>The serializable component key, or null.</returns>
+    private object? GetSerializableKey()
+    {
+        var key = GetComponentKey();
+        return !IsSerializableKey(key) ? null : key;
+    }
+
+    private static bool IsSerializableKey(object? key)
+    {
+        if (key == null)
+        {
+            return false;
+        }
+        var keyType = key.GetType();
+        var result = Type.GetTypeCode(keyType) != TypeCode.Object
+            || keyType == typeof(Guid)
+            || keyType == typeof(DateTimeOffset)
+            || keyType == typeof(DateOnly)
+            || keyType == typeof(TimeOnly);
+
+        return result;
+    }
+
+    private static ReadOnlySpan<char> ResolveKeySpan(object? key)
+    {
+        if (key is IFormattable formattable)
+        {
+            var keyString = formattable.ToString("", CultureInfo.InvariantCulture);
+            return keyString.AsSpan();
+        }
+        else if (key is IConvertible convertible)
+        {
+            var keyString = convertible.ToString(CultureInfo.InvariantCulture);
+            return keyString.AsSpan();
+        }
+        return default;
+    }
+
+    private static void GrowBuffer(ref byte[]? pool, ref Span<byte> keyBuffer, int? size = null)
+    {
+        var newPool = pool == null ? ArrayPool<byte>.Shared.Rent(size ?? 2048) : ArrayPool<byte>.Shared.Rent(pool.Length * 2);
+        keyBuffer.CopyTo(newPool);
+        keyBuffer = newPool;
+        if (pool != null)
+        {
+            ArrayPool<byte>.Shared.Return(pool, clearArray: true);
+        }
+        pool = newPool;
+    }
+
+    private string GetComponentType() => Component.GetType().FullName!;
+
+    private string GetParentComponentType()
+    {
+        // Filter out SSRRenderModeBoundary from the parent component type calculation
+        // We walk up the parent chain until we find a component that is not SSRRenderModeBoundary
+        var current = ParentComponentState;
+        while (current != null)
+        {
+            // Check if this is an SSRRenderModeBoundary by checking if it doesn't have a render mode
+            // but its parent does (or is null)
+            if (current.ParentComponentState?.ParentComponentState is { } grandParent)
+            {
+                var grandParentRenderMode = _renderer.GetComponentRenderMode(grandParent.Component);
+                if (grandParentRenderMode is null)
+                {
+                    // This indicates current.ParentComponentState is likely an SSRRenderModeBoundary
+                    // Skip it and continue to the grandparent
+                    current = grandParent;
+                    continue;
+                }
+            }
+            
+            return current.Component.GetType().FullName!;
+        }
+
+        return "";
     }
 
     private string GetDebuggerDisplay()
