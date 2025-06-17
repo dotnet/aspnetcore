@@ -74,7 +74,7 @@
     <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>9.0.7</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
     <MicrosoftNETRuntimeWebAssemblySdkVersion>9.0.7</MicrosoftNETRuntimeWebAssemblySdkVersion>
     <MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>9.0.7</MicrosoftNETCoreAppRuntimeAOTwinx64CrossbrowserwasmVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportVersion>9.0.7-servicing.25311.18</MicrosoftNETCoreBrowserDebugHostTransportVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportVersion>9.0.7-servicing.25316.16</MicrosoftNETCoreBrowserDebugHostTransportVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>9.0.7</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>9.0.7</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>9.0.7</MicrosoftExtensionsConfigurationAbstractionsVersion>
@@ -95,7 +95,7 @@
     <MicrosoftExtensionsFileProvidersCompositeVersion>9.0.7</MicrosoftExtensionsFileProvidersCompositeVersion>
     <MicrosoftExtensionsFileProvidersPhysicalVersion>9.0.7</MicrosoftExtensionsFileProvidersPhysicalVersion>
     <MicrosoftExtensionsFileSystemGlobbingVersion>9.0.7</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>9.0.7-servicing.25311.18</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>9.0.7-servicing.25316.16</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
     <MicrosoftExtensionsHostingAbstractionsVersion>9.0.7</MicrosoftExtensionsHostingAbstractionsVersion>
     <MicrosoftExtensionsHostingVersion>9.0.7</MicrosoftExtensionsHostingVersion>
     <MicrosoftExtensionsHttpVersion>9.0.7</MicrosoftExtensionsHttpVersion>
@@ -111,8 +111,8 @@
     <MicrosoftExtensionsOptionsDataAnnotationsVersion>9.0.7</MicrosoftExtensionsOptionsDataAnnotationsVersion>
     <MicrosoftExtensionsOptionsVersion>9.0.7</MicrosoftExtensionsOptionsVersion>
     <MicrosoftExtensionsPrimitivesVersion>9.0.7</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>9.0.7-servicing.25311.18</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
-    <MicrosoftSourceBuildIntermediateruntimelinuxx64Version>9.0.7-servicing.25311.18</MicrosoftSourceBuildIntermediateruntimelinuxx64Version>
+    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>9.0.7-servicing.25316.16</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
+    <MicrosoftSourceBuildIntermediateruntimelinuxx64Version>9.0.7-servicing.25316.16</MicrosoftSourceBuildIntermediateruntimelinuxx64Version>
     <SystemCompositionVersion>9.0.7</SystemCompositionVersion>
     <SystemConfigurationConfigurationManagerVersion>9.0.7</SystemConfigurationConfigurationManagerVersion>
     <SystemDiagnosticsDiagnosticSourceVersion>9.0.7</SystemDiagnosticsDiagnosticSourceVersion>
@@ -134,7 +134,7 @@
     <SystemThreadingChannelsVersion>9.0.7</SystemThreadingChannelsVersion>
     <SystemThreadingRateLimitingVersion>9.0.7</SystemThreadingRateLimitingVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <MicrosoftNETCorePlatformsVersion>9.0.7-servicing.25311.18</MicrosoftNETCorePlatformsVersion>
+    <MicrosoftNETCorePlatformsVersion>9.0.7-servicing.25316.16</MicrosoftNETCorePlatformsVersion>
     <MicrosoftBclAsyncInterfacesVersion>9.0.7</MicrosoftBclAsyncInterfacesVersion>
     <!-- Transitive package to provide coherency in dotnet/extensions -->
     <MicrosoftBclTimeProviderVersion>9.0.7</MicrosoftBclTimeProviderVersion>
