@@ -429,6 +429,28 @@ public static class EventCallbackFactoryBinderExtensions
     /// <param name="receiver"></param>
     /// <param name="setter"></param>
     /// <param name="existingValue"></param>
+    /// <param name="format"></param>
+    /// <param name="culture"></param>
+    /// <returns></returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static EventCallback<ChangeEventArgs> CreateBinder(
+        this EventCallbackFactory factory,
+        object receiver,
+        Action<float> setter,
+        float existingValue,
+        string format,
+        CultureInfo? culture = null)
+    {
+        return CreateBinderCore<float>(factory, receiver, setter, culture, format, ConvertToFloatWithFormat);
+    }
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    /// <param name="factory"></param>
+    /// <param name="receiver"></param>
+    /// <param name="setter"></param>
+    /// <param name="existingValue"></param>
     /// <param name="culture"></param>
     /// <returns></returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
@@ -460,6 +482,28 @@ public static class EventCallbackFactoryBinderExtensions
         CultureInfo? culture = null)
     {
         return CreateBinderCoreAsync<float?>(factory, receiver, setter, culture, ConvertToNullableFloat);
+    }
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    /// <param name="factory"></param>
+    /// <param name="receiver"></param>
+    /// <param name="setter"></param>
+    /// <param name="existingValue"></param>
+    /// <param name="format"></param>
+    /// <param name="culture"></param>
+    /// <returns></returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static EventCallback<ChangeEventArgs> CreateBinder(
+        this EventCallbackFactory factory,
+        object receiver,
+        Action<float?> setter,
+        float? existingValue,
+        string format,
+        CultureInfo? culture = null)
+    {
+        return CreateBinderCore<float?>(factory, receiver, setter, culture, format, ConvertToNullableFloatWithFormat);
     }
 
     /// <summary>
@@ -509,6 +553,28 @@ public static class EventCallbackFactoryBinderExtensions
     /// <param name="receiver"></param>
     /// <param name="setter"></param>
     /// <param name="existingValue"></param>
+    /// <param name="format"></param>
+    /// <param name="culture"></param>
+    /// <returns></returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static EventCallback<ChangeEventArgs> CreateBinder(
+        this EventCallbackFactory factory,
+        object receiver,
+        Action<double> setter,
+        double existingValue,
+        string format,
+        CultureInfo? culture = null)
+    {
+        return CreateBinderCore<double>(factory, receiver, setter, culture, format, ConvertToDoubleWithFormat);
+    }
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    /// <param name="factory"></param>
+    /// <param name="receiver"></param>
+    /// <param name="setter"></param>
+    /// <param name="existingValue"></param>
     /// <param name="culture"></param>
     /// <returns></returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
@@ -540,6 +606,28 @@ public static class EventCallbackFactoryBinderExtensions
         CultureInfo? culture = null)
     {
         return CreateBinderCoreAsync<double?>(factory, receiver, setter, culture, ConvertToNullableDoubleDelegate);
+    }
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    /// <param name="factory"></param>
+    /// <param name="receiver"></param>
+    /// <param name="setter"></param>
+    /// <param name="existingValue"></param>
+    /// <param name="format"></param>
+    /// <param name="culture"></param>
+    /// <returns></returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static EventCallback<ChangeEventArgs> CreateBinder(
+        this EventCallbackFactory factory,
+        object receiver,
+        Action<double?> setter,
+        double? existingValue,
+        string format,
+        CultureInfo? culture = null)
+    {
+        return CreateBinderCore<double?>(factory, receiver, setter, culture, format, ConvertToNullableDoubleWithFormat);
     }
 
     /// <summary>
@@ -589,6 +677,28 @@ public static class EventCallbackFactoryBinderExtensions
     /// <param name="receiver"></param>
     /// <param name="setter"></param>
     /// <param name="existingValue"></param>
+    /// <param name="format"></param>
+    /// <param name="culture"></param>
+    /// <returns></returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static EventCallback<ChangeEventArgs> CreateBinder(
+        this EventCallbackFactory factory,
+        object receiver,
+        Action<decimal> setter,
+        decimal existingValue,
+        string format,
+        CultureInfo? culture = null)
+    {
+        return CreateBinderCore<decimal>(factory, receiver, setter, culture, format, ConvertToDecimalWithFormat);
+    }
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    /// <param name="factory"></param>
+    /// <param name="receiver"></param>
+    /// <param name="setter"></param>
+    /// <param name="existingValue"></param>
     /// <param name="culture"></param>
     /// <returns></returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
@@ -620,6 +730,28 @@ public static class EventCallbackFactoryBinderExtensions
         CultureInfo? culture = null)
     {
         return CreateBinderCoreAsync<decimal?>(factory, receiver, setter, culture, ConvertToNullableDecimal);
+    }
+
+    /// <summary>
+    /// For internal use only.
+    /// </summary>
+    /// <param name="factory"></param>
+    /// <param name="receiver"></param>
+    /// <param name="setter"></param>
+    /// <param name="existingValue"></param>
+    /// <param name="format"></param>
+    /// <param name="culture"></param>
+    /// <returns></returns>
+    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
+    public static EventCallback<ChangeEventArgs> CreateBinder(
+        this EventCallbackFactory factory,
+        object receiver,
+        Action<decimal?> setter,
+        decimal? existingValue,
+        string format,
+        CultureInfo? culture = null)
+    {
+        return CreateBinderCore<decimal?>(factory, receiver, setter, culture, format, ConvertToNullableDecimalWithFormat);
     }
 
     /// <summary>
