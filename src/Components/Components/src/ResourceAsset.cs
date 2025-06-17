@@ -12,8 +12,14 @@ namespace Microsoft.AspNetCore.Components;
 /// <param name="url">The URL of the resource.</param>
 /// <param name="properties">The properties associated to this resource.</param>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public sealed class ResourceAsset(string url, IReadOnlyList<ResourceAssetProperty>? properties = null)
+public sealed class ResourceAsset(string url, IReadOnlyList<ResourceAssetProperty>? properties)
 {
+    /// <summary>
+    /// Initializes a new instance of <see cref="ResourceAsset"/>.
+    /// </summary>
+    /// <param name="url">The URL of the resource.</param>
+    public ResourceAsset(string url) : this(url, null) { }
+
     /// <summary>
     /// Gets the URL that identifies this resource.
     /// </summary>
