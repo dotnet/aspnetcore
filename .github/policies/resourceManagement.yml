@@ -193,7 +193,6 @@ configuration:
       - addReply:
           reply: This dependency PR has had no activity for 24 hours - @dotnet/aspnet-build please take a look if you are on build-ops.
     - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (weekend)'
-
       frequencies:
       - weekday:
           day: Monday
