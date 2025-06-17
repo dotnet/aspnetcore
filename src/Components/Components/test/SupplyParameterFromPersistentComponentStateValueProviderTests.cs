@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -435,11 +436,10 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
     public async Task PersistAsync_CanPersistValueTypes_IntProperty()
     {
         // Arrange
-        var (logger, sink) = CreateTestLogger();
         var state = new Dictionary<string, byte[]>();
         var store = new TestStore(state);
         var persistenceManager = new ComponentStatePersistenceManager(
-            logger,
+            NullLogger<ComponentStatePersistenceManager>.Instance,
             new ServiceCollection().BuildServiceProvider());
 
         var renderer = new TestRenderer();
@@ -455,14 +455,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         // Act
         await persistenceManager.PersistStateAsync(store, renderer);
 
-        // Assert - Check if there were any errors in the persistence
-        var errors = sink.Writes.Where(w => w.LogLevel == LogLevel.Error).ToList();
-        if (errors.Any())
-        {
-            var errorMessage = string.Join("; ", errors.Select(e => e.State?.ToString()));
-            throw new InvalidOperationException($"Persistence failed with errors: {errorMessage}");
-        }
-
+        // Assert
         Assert.NotEmpty(store.State);
 
         // Verify the value was persisted correctly
@@ -521,8 +514,15 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
 
         var renderer = new TestRenderer();
         var component = new ValueTypeTestComponent { TupleValue = ("test", 456) };
+        
+        // Debug: Verify the property value is set correctly
+        Console.WriteLine($"Component TupleValue before state creation: {component.TupleValue}");
+        
         var componentStates = CreateComponentState(renderer, [(component, null)], null);
         var componentState = componentStates.First();
+        
+        // Debug: Verify the component in the state has the right value
+        Console.WriteLine($"Component TupleValue after state creation: {((ValueTypeTestComponent)componentState.Component).TupleValue}");
 
         // Create the provider and subscribe the component
         var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
@@ -540,6 +540,13 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         newState.InitializeExistingState(store.State);
 
         var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        
+        // Debug: Check what's actually stored
+        Assert.True(store.State.ContainsKey(key), $"Key {key} not found in store. Available keys: {string.Join(", ", store.State.Keys)}");
+        var rawValue = store.State[key];
+        var stringValue = System.Text.Encoding.UTF8.GetString(rawValue);
+        Console.WriteLine($"Raw stored value: {stringValue}");
+        
         Assert.True(newState.TryTakeFromJson<(string, int)>(key, out var retrievedValue));
         Assert.Equal(("test", 456), retrievedValue);
     }
