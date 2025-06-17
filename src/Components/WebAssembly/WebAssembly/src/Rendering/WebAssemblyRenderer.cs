@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
@@ -193,9 +194,9 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
     {
-        // For WebAssembly rendering, we create a specialized ComponentState that can handle ComponentMarkerKey
-        // The ComponentMarkerKey will be provided by the client-side code when components are initialized
-        return new WebAssemblyComponentState(this, componentId, component, parentComponentState);
+        var markerKey = parentComponentState != null ? default : _webRootComponentManager!.GetRootComponentKey(componentId);
+
+        return new WebAssemblyComponentState(this, componentId, component, parentComponentState, markerKey);
     }
 
     private static partial class Log

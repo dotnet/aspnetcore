@@ -15,10 +15,12 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal sealed class EndpointComponentState : ComponentState
 {
     private static readonly ConcurrentDictionary<Type, StreamRenderingAttribute?> _streamRenderingAttributeByComponentType = new();
-
+    private readonly EndpointHtmlRenderer _renderer;
     public EndpointComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
+        _renderer = (EndpointHtmlRenderer)renderer;
+
         var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(component.GetType(),
             type => type.GetCustomAttribute<StreamRenderingAttribute>());
 
@@ -37,30 +39,14 @@ internal sealed class EndpointComponentState : ComponentState
 
     protected override object? GetComponentKey()
     {
-        // Check if the parent Component is an SSRRenderModeBoundary instance.
-        // We do this by checking if the grandparent (.Parent.Parent) doesn't have a render mode,
-        // which means that .Parent is an SSRRenderModeBoundary component.
-        if (ParentComponentState?.ParentComponentState is { } grandParent)
+        if (ParentComponentState != null && ParentComponentState.Component is SSRRenderModeBoundary boundary)
         {
-            var grandParentRenderMode = Renderer.GetComponentRenderMode(grandParent.Component);
-            if (grandParentRenderMode is null)
-            {
-                // The parent is likely an SSRRenderModeBoundary - we need to get the ComponentMarkerKey from it
-                if (ParentComponentState.Component is SSRRenderModeBoundary boundary)
-                {
-                    return GetComponentMarkerKeyFromBoundary(boundary);
-                }
-            }
+            var (sequence, key) = _renderer.GetSequenceAndKey(ParentComponentState);
+            return boundary.GetComponentMarkerKey(sequence, key);
         }
 
         // Fall back to the default implementation
         return base.GetComponentKey();
-    }
-
-    private static object? GetComponentMarkerKeyFromBoundary(SSRRenderModeBoundary boundary)
-    {
-        // Get the ComponentMarkerKey from the SSRRenderModeBoundary
-        return boundary.GetComponentMarkerKey();
     }
 
     /// <summary>
