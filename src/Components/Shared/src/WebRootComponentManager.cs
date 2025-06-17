@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 #if COMPONENTS_SERVER
@@ -91,7 +92,18 @@ internal partial class WebAssemblyRenderer
                 yield return (id, key, (type, parameters));
             }
         }
+
 #endif
+        internal ComponentMarkerKey GetRootComponentKey(int componentId)
+        {
+            if (_webRootComponents.TryGetValue(componentId, out var component))
+            {
+                var (key, _, _) = component;
+                return key;
+            }
+
+            return default;
+        }
 
         private sealed class WebRootComponent
         {
@@ -135,7 +147,6 @@ internal partial class WebAssemblyRenderer
                 _latestParameters = initialParameters;
             }
 
-#if COMPONENTS_SERVER
             public void Deconstruct(
                 out ComponentMarkerKey key,
                 out Type componentType,
@@ -145,7 +156,6 @@ internal partial class WebAssemblyRenderer
                 componentType = _componentType;
                 parameters = _latestParameters.Parameters;
             }
-#endif
 
             public Task UpdateAsync(
                 Renderer renderer,

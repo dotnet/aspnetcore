@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.SignalR;
@@ -315,9 +316,9 @@ internal partial class RemoteRenderer : WebRenderer
 
     protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
     {
-        // For Server/Remote rendering, we create a specialized ComponentState that can handle ComponentMarkerKey
-        // The ComponentMarkerKey will be provided by the server-side serialization logic
-        return new RemoteComponentState(this, componentId, component, parentComponentState);
+        var markerKey = parentComponentState != null ? default : _webRootComponentManager.GetRootComponentKey(componentId);
+
+        return new RemoteComponentState(this, componentId, component, parentComponentState, markerKey);
     }
 
     private void ProcessPendingBatch(string? errorMessageOrNull, UnacknowledgedRenderBatch entry)
