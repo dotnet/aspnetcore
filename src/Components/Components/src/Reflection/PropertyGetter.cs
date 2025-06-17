@@ -12,9 +12,6 @@ internal sealed class PropertyGetter
     private static readonly MethodInfo CallPropertyGetterOpenGenericMethod =
         typeof(PropertyGetter).GetMethod(nameof(CallPropertyGetter), BindingFlags.NonPublic | BindingFlags.Static)!;
 
-    // Delegate type for a by-ref property getter
-    private delegate TValue ByRefFunc<TDeclaringType, TValue>(ref TDeclaringType arg);
-
     private readonly Func<object, object?> _GetterDelegate;
 
     [UnconditionalSuppressMessage(
