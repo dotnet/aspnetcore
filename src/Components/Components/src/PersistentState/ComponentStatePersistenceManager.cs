@@ -68,7 +68,7 @@ public class ComponentStatePersistenceManager
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
-        => PersistStateAsync(store, renderer, new PersistOnPrerendering());
+        => PersistStateAsync(store, renderer, DefaultPersistenceReason.Instance);
 
     /// <summary>
     /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
@@ -187,7 +187,7 @@ public class ComponentStatePersistenceManager
     }
 
     internal Task<bool> TryPauseAsync(IPersistentComponentStateStore store)
-        => TryPauseAsync(store, new PersistOnPrerendering());
+        => TryPauseAsync(store, DefaultPersistenceReason.Instance);
 
     internal Task<bool> TryPauseAsync(IPersistentComponentStateStore store, IPersistenceReason persistenceReason)
     {

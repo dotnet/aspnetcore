@@ -1,9 +1,18 @@
 #nullable enable
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
+Microsoft.AspNetCore.Components.Web.PersistOnCircuitPause
+Microsoft.AspNetCore.Components.Web.PersistOnCircuitPause.PersistByDefault.get -> bool
+Microsoft.AspNetCore.Components.Web.PersistOnCircuitPause.PersistOnCircuitPause() -> void
 Microsoft.AspNetCore.Components.Web.PersistOnCircuitPauseFilter
 Microsoft.AspNetCore.Components.Web.PersistOnCircuitPauseFilter.PersistOnCircuitPauseFilter(bool persist = true) -> void
+Microsoft.AspNetCore.Components.Web.PersistOnEnhancedNavigation
+Microsoft.AspNetCore.Components.Web.PersistOnEnhancedNavigation.PersistByDefault.get -> bool
+Microsoft.AspNetCore.Components.Web.PersistOnEnhancedNavigation.PersistOnEnhancedNavigation() -> void
 Microsoft.AspNetCore.Components.Web.PersistOnEnhancedNavigationFilter
 Microsoft.AspNetCore.Components.Web.PersistOnEnhancedNavigationFilter.PersistOnEnhancedNavigationFilter(bool persist = true) -> void
+Microsoft.AspNetCore.Components.Web.PersistOnPrerendering
+Microsoft.AspNetCore.Components.Web.PersistOnPrerendering.PersistByDefault.get -> bool
+Microsoft.AspNetCore.Components.Web.PersistOnPrerendering.PersistOnPrerendering() -> void
 Microsoft.AspNetCore.Components.Web.PersistOnPrerenderingFilter
 Microsoft.AspNetCore.Components.Web.PersistOnPrerenderingFilter.PersistOnPrerenderingFilter(bool persist = true) -> void
 virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool
