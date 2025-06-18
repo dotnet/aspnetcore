@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Formats.Cbor;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Identity;
@@ -14,7 +13,7 @@ internal static class PasskeyExceptionExtensions
             => new($"Expected credential type '{expectedType}', got '{actualType}'.");
 
         public static PasskeyException InvalidClientDataType(string expectedType, string actualType)
-            => new($"Expected the 'type' field of client data to be '{expectedType}', but it was actually '{actualType}'.");
+            => new($"Expected the client data JSON 'type' field to be '{expectedType}', got '{actualType}'.");
 
         public static PasskeyException InvalidChallenge()
             => new("The authenticator response challenge does not match original challenge.");
@@ -91,7 +90,7 @@ internal static class PasskeyExceptionExtensions
         public static PasskeyException InvalidAttestationObject(Exception ex)
             => new($"An exception occurred while parsing the attestation object: {ex.Message}", ex);
 
-        public static PasskeyException InvalidAttestationObjectFormat(CborContentException ex)
+        public static PasskeyException InvalidAttestationObjectFormat(Exception ex)
             => new("The attestation object had an invalid format.", ex);
 
         public static PasskeyException MissingAttestationStatementFormat()
@@ -104,13 +103,13 @@ internal static class PasskeyExceptionExtensions
             => new("The attestation object did not include authenticator data.");
 
         public static PasskeyException InvalidAuthenticatorDataLength(int length)
-            => new($"The authenticator data had an invalid length of {length} bytes.");
+            => new($"The authenticator data had an invalid byte count of {length}.");
 
         public static PasskeyException InvalidAuthenticatorDataFormat(Exception? ex = null)
             => new($"The authenticator data had an invalid format.", ex);
 
         public static PasskeyException InvalidAttestedCredentialDataLength(int length)
-            => new($"The attested credential data had an invalid length of {length} bytes.");
+            => new($"The attested credential data had an invalid byte count of {length}.");
 
         public static PasskeyException InvalidAttestedCredentialDataFormat(Exception? ex = null)
             => new($"The attested credential data had an invalid format.", ex);

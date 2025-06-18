@@ -585,7 +585,7 @@ public class SignInManager<TUser> where TUser : class
 
         var props = new AuthenticationProperties();
         props.Items[PasskeyCreationOptionsKey] = options.AsJson();
-        var claimsIdentity = new ClaimsIdentity(new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme));
+        var claimsIdentity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
         claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, options.UserEntity.Id));
         claimsIdentity.AddClaim(new Claim(ClaimTypes.Email, options.UserEntity.Name));
         claimsIdentity.AddClaim(new Claim(ClaimTypes.Name, options.UserEntity.DisplayName));
@@ -679,7 +679,7 @@ public class SignInManager<TUser> where TUser : class
 
         var props = new AuthenticationProperties();
         props.Items[PasskeyRequestOptionsKey] = options.AsJson();
-        var claimsIdentity = new ClaimsIdentity(new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme));
+        var claimsIdentity = new ClaimsIdentity(IdentityConstants.TwoFactorUserIdScheme);
 
         if (options.UserId is { } userId)
         {

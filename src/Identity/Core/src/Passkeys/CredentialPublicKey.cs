@@ -69,7 +69,7 @@ internal sealed class CredentialPublicKey
         return _type switch
         {
             COSEKeyType.EC2 => _ecdsa!.VerifyData(data, signature, HashAlgFromCOSEAlg(_alg), DSASignatureFormat.Rfc3279DerSequence),
-            COSEKeyType.RSA => _rsa!.VerifyData(data, signature, HashAlgFromCOSEAlg(_alg), Padding),
+            COSEKeyType.RSA => _rsa!.VerifyData(data, signature, HashAlgFromCOSEAlg(_alg), GetRSASignaturePadding()),
             _ => throw new InvalidOperationException($"Missing or unknown kty {_type}"),
         };
     }
@@ -159,31 +159,29 @@ internal sealed class CredentialPublicKey
         }
     }
 
-    internal RSASignaturePadding Padding
+    private RSASignaturePadding GetRSASignaturePadding()
     {
-        get
+        if (_type != COSEKeyType.RSA)
         {
-            if (_type != COSEKeyType.RSA)
-            {
-                throw new InvalidOperationException($"Must be a RSA key. Was {_type}");
-            }
-
-            switch (_alg) // https://www.iana.org/assignments/cose/cose.xhtml#algorithms
-            {
-                case COSEAlgorithmIdentifier.PS256:
-                case COSEAlgorithmIdentifier.PS384:
-                case COSEAlgorithmIdentifier.PS512:
-                    return RSASignaturePadding.Pss;
-
-                case COSEAlgorithmIdentifier.RS1:
-                case COSEAlgorithmIdentifier.RS256:
-                case COSEAlgorithmIdentifier.RS384:
-                case COSEAlgorithmIdentifier.RS512:
-                    return RSASignaturePadding.Pkcs1;
-                default:
-                    throw new InvalidOperationException($"Missing or unknown alg {_alg}");
-            }
+            throw new InvalidOperationException($"Cannot get RSA signature padding for key type {_type}.");
         }
+
+        // https://www.iana.org/assignments/cose/cose.xhtml#algorithms
+        return _alg switch
+        {
+            COSEAlgorithmIdentifier.PS256 or
+            COSEAlgorithmIdentifier.PS384 or
+            COSEAlgorithmIdentifier.PS512
+            => RSASignaturePadding.Pss,
+
+            COSEAlgorithmIdentifier.RS1 or
+            COSEAlgorithmIdentifier.RS256 or
+            COSEAlgorithmIdentifier.RS384 or
+            COSEAlgorithmIdentifier.RS512
+            => RSASignaturePadding.Pkcs1,
+
+            _ => throw new InvalidOperationException($"Missing or unknown alg {_alg}"),
+        };
     }
 
     private static HashAlgorithmName HashAlgFromCOSEAlg(COSEAlgorithmIdentifier alg)

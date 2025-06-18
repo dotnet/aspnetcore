@@ -1,14 +1,5 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Identity.UserLoginInfo.UserLoginInfo(string! loginProvider, string! providerKey, string? displayName) -> void
-Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria
-Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.AuthenticatorAttachment.get -> string?
-Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.AuthenticatorAttachment.set -> void
-Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.AuthenticatorSelectionCriteria() -> void
-Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.RequireResidentKey.get -> bool
-Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.ResidentKey.get -> string?
-Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.ResidentKey.set -> void
-Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.UserVerification.get -> string!
-Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.UserVerification.set -> void
 Microsoft.AspNetCore.Identity.IdentityOptions.Passkey.get -> Microsoft.AspNetCore.Identity.PasskeyOptions!
 Microsoft.AspNetCore.Identity.IdentityOptions.Passkey.set -> void
 Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>

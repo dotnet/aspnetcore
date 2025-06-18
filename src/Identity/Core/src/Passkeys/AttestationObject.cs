@@ -51,6 +51,10 @@ internal sealed class AttestationObject
         {
             throw PasskeyException.InvalidAttestationObjectFormat(ex);
         }
+        catch (InvalidOperationException ex)
+        {
+            throw PasskeyException.InvalidAttestationObjectFormat(ex);
+        }
         catch (Exception ex)
         {
             throw PasskeyException.InvalidAttestationObject(ex);

@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// See <see href="https://www.w3.org/TR/webauthn-3/#typedefdef-publickeycredentialjson" />
 /// </remarks>
 internal sealed class PublicKeyCredential<TResponse>
-    where TResponse : AuthenticatorResponse
+    where TResponse : notnull, AuthenticatorResponse
 {
     /// <summary>
     /// Gets or sets the credential ID.

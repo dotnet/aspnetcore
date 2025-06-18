@@ -1,4 +1,13 @@
 #nullable enable
+Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria
+Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.AuthenticatorAttachment.get -> string?
+Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.AuthenticatorAttachment.set -> void
+Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.AuthenticatorSelectionCriteria() -> void
+Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.RequireResidentKey.get -> bool
+Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.ResidentKey.get -> string?
+Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.ResidentKey.set -> void
+Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.UserVerification.get -> string!
+Microsoft.AspNetCore.Identity.AuthenticatorSelectionCriteria.UserVerification.set -> void
 Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>
 Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.DefaultPasskeyHandler(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions!>! options) -> void
 Microsoft.AspNetCore.Identity.DefaultPasskeyHandler<TUser>.PerformAssertionAsync(Microsoft.AspNetCore.Identity.PasskeyAssertionContext<TUser!>! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser!>!>!
