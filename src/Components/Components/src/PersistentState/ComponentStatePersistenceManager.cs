@@ -68,6 +68,16 @@ public class ComponentStatePersistenceManager
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
+        => PersistStateAsync(store, renderer, new PersistOnPrerendering());
+
+    /// <summary>
+    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
+    /// </summary>
+    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
+    /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
+    /// <param name="persistenceReason">The reason for persisting the state.</param>
+    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
+    public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer, IPersistenceReason persistenceReason)
     {
         if (_stateIsPersisted)
         {
@@ -113,7 +123,7 @@ public class ComponentStatePersistenceManager
 
         async Task<bool> TryPersistState(IPersistentComponentStateStore store)
         {
-            if (!await TryPauseAsync(store))
+            if (!await TryPauseAsync(store, persistenceReason))
             {
                 _currentState.Clear();
                 return false;
@@ -159,7 +169,7 @@ public class ComponentStatePersistenceManager
                 var componentRenderMode = renderer.GetComponentRenderMode(component);
                 if (componentRenderMode != null)
                 {
-                    _registeredCallbacks[i] = new PersistComponentStateRegistration(registration.Callback, componentRenderMode);
+                    _registeredCallbacks[i] = new PersistComponentStateRegistration(registration.Callback, componentRenderMode, registration.ReasonFilters);
                 }
                 else
                 {
@@ -177,6 +187,9 @@ public class ComponentStatePersistenceManager
     }
 
     internal Task<bool> TryPauseAsync(IPersistentComponentStateStore store)
+        => TryPauseAsync(store, new PersistOnPrerendering());
+
+    internal Task<bool> TryPauseAsync(IPersistentComponentStateStore store, IPersistenceReason persistenceReason)
     {
         List<Task<bool>>? pendingCallbackTasks = null;
 
@@ -196,6 +209,27 @@ public class ComponentStatePersistenceManager
                 // Otherwise, in a single store scenario, we just run the callback.
                 // If the registration callback is null, it's because it was associated with a component and we couldn't infer
                 // its render mode, which means is an SSR only component and we don't need to persist its state at all.
+                continue;
+            }
+
+            // Evaluate reason filters to determine if the callback should be executed for this persistence reason
+            if (registration.ReasonFilters != null)
+            {
+                var shouldPersist = EvaluateReasonFilters(registration.ReasonFilters, persistenceReason);
+                if (shouldPersist.HasValue && !shouldPersist.Value)
+                {
+                    // Filters explicitly indicate not to persist for this reason
+                    continue;
+                }
+                else if (!shouldPersist.HasValue && !persistenceReason.PersistByDefault)
+                {
+                    // No filter matched and default is not to persist
+                    continue;
+                }
+            }
+            else if (!persistenceReason.PersistByDefault)
+            {
+                // No filters defined and default is not to persist
                 continue;
             }
 
@@ -270,5 +304,20 @@ public class ComponentStatePersistenceManager
 
             return true;
         }
+    }
+
+    private static bool? EvaluateReasonFilters(IReadOnlyList<IPersistenceReasonFilter> reasonFilters, IPersistenceReason persistenceReason)
+    {
+        foreach (var reasonFilter in reasonFilters)
+        {
+            var shouldPersist = reasonFilter.ShouldPersist(persistenceReason);
+            if (shouldPersist.HasValue)
+            {
+                return shouldPersist.Value;
+            }
+        }
+        
+        // No filter matched
+        return null;
     }
 }

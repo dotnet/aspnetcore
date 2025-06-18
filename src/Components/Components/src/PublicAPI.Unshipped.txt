@@ -10,9 +10,27 @@ Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.NotFoundEventArgs(stri
 Microsoft.AspNetCore.Components.Routing.NotFoundEventArgs.Path.get -> string!
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.ComponentStatePersistenceManager(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager!>! logger, System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.SetPlatformRenderMode(Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.PersistStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.RenderTree.Renderer! renderer, Microsoft.AspNetCore.Components.IPersistenceReason! persistenceReason) -> System.Threading.Tasks.Task
 Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions
 Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateAttribute.SupplyParameterFromPersistentComponentStateAttribute() -> void
+Microsoft.AspNetCore.Components.IPersistenceReason
+Microsoft.AspNetCore.Components.IPersistenceReason.PersistByDefault.get -> bool
+Microsoft.AspNetCore.Components.IPersistenceReasonFilter
+Microsoft.AspNetCore.Components.IPersistenceReasonFilter.ShouldPersist(Microsoft.AspNetCore.Components.IPersistenceReason! reason) -> bool?
+Microsoft.AspNetCore.Components.PersistOnCircuitPause
+Microsoft.AspNetCore.Components.PersistOnCircuitPause.PersistByDefault.get -> bool
+Microsoft.AspNetCore.Components.PersistOnCircuitPause.PersistOnCircuitPause() -> void
+Microsoft.AspNetCore.Components.PersistOnEnhancedNavigation
+Microsoft.AspNetCore.Components.PersistOnEnhancedNavigation.PersistByDefault.get -> bool
+Microsoft.AspNetCore.Components.PersistOnEnhancedNavigation.PersistOnEnhancedNavigation() -> void
+Microsoft.AspNetCore.Components.PersistOnPrerendering
+Microsoft.AspNetCore.Components.PersistOnPrerendering.PersistByDefault.get -> bool
+Microsoft.AspNetCore.Components.PersistOnPrerendering.PersistOnPrerendering() -> void
+Microsoft.AspNetCore.Components.PersistReasonFilter<TReason>
+Microsoft.AspNetCore.Components.PersistReasonFilter<TReason>.PersistReasonFilter(bool persist) -> void
+Microsoft.AspNetCore.Components.PersistReasonFilter<TReason>.ShouldPersist(Microsoft.AspNetCore.Components.IPersistenceReason! reason) -> bool?
+Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.IPersistenceReasonFilter!>? reasonFilters) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.Extensions.DependencyInjection.SupplyParameterFromPersistentComponentStateProviderServiceCollectionExtensions
 static Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.IComponentRenderMode! componentRenderMode) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
