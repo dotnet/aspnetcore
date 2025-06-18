@@ -52,6 +52,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     // wait for the non-streaming tasks (these ones), then start streaming until full quiescence.
     private readonly List<Task> _nonStreamingPendingTasks = new();
 
+    private string _notFoundUrl = string.Empty;
+
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
@@ -62,7 +64,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     internal HttpContext? HttpContext => _httpContext;
 
-    private void SetHttpContext(HttpContext httpContext)
+    internal void SetHttpContext(HttpContext httpContext)
     {
         if (_httpContext is null)
         {
@@ -83,10 +85,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request), OnNavigateTo);
 
-        if (navigationManager != null)
+        navigationManager?.OnNotFound += (sender, args) =>
         {
-            navigationManager.OnNotFound += async (sender, args) => await SetNotFoundResponseAsync(navigationManager.BaseUri);
-        }
+            _ = GetErrorHandledTask(SetNotFoundResponseAsync(navigationManager.BaseUri, args));
+        };
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
         if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)

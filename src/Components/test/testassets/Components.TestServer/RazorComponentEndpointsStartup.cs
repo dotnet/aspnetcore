@@ -28,6 +28,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddValidation();
+
         services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
@@ -88,6 +90,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             app.Map("/reexecution", reexecutionApp =>
             {
+                app.Map("/trigger-404", app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.StatusCode = 404;
+                        await context.Response.WriteAsync("Triggered a 404 status code.");
+                    });
+                });
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
                 reexecutionApp.UseRouting();
 
@@ -138,6 +148,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             }
 
             _ = endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"))
                 .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                 .AddInteractiveServerRenderMode(options =>
                 {

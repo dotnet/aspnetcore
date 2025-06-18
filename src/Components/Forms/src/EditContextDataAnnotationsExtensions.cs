@@ -7,6 +7,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Validation;
 
 [assembly: MetadataUpdateHandler(typeof(Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions))]
 
@@ -15,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// <summary>
 /// Extension methods to add DataAnnotations validation to an <see cref="EditContext"/>.
 /// </summary>
-public static class EditContextDataAnnotationsExtensions
+public static partial class EditContextDataAnnotationsExtensions
 {
     /// <summary>
     /// Adds DataAnnotations validation support to the <see cref="EditContext"/>.
@@ -59,20 +62,31 @@ public static class EditContextDataAnnotationsExtensions
     }
 #pragma warning restore IDE0051 // Remove unused private members
 
-    private sealed class DataAnnotationsEventSubscriptions : IDisposable
+    private sealed partial class DataAnnotationsEventSubscriptions : IDisposable
     {
         private static readonly ConcurrentDictionary<(Type ModelType, string FieldName), PropertyInfo?> _propertyInfoCache = new();
 
         private readonly EditContext _editContext;
         private readonly IServiceProvider? _serviceProvider;
         private readonly ValidationMessageStore _messages;
+        private readonly ValidationOptions? _validationOptions;
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        private readonly IValidatableInfo? _validatorTypeInfo;
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        private readonly Dictionary<string, FieldIdentifier> _validationPathToFieldIdentifierMapping = new();
 
+        [UnconditionalSuppressMessage("Trimming", "IL2066", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
         public DataAnnotationsEventSubscriptions(EditContext editContext, IServiceProvider serviceProvider)
         {
             _editContext = editContext ?? throw new ArgumentNullException(nameof(editContext));
             _serviceProvider = serviceProvider;
             _messages = new ValidationMessageStore(_editContext);
-
+            _validationOptions = _serviceProvider?.GetService<IOptions<ValidationOptions>>()?.Value;
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+            _validatorTypeInfo = _validationOptions != null && _validationOptions.TryGetValidatableTypeInfo(_editContext.Model.GetType(), out var typeInfo)
+                ? typeInfo
+                : null;
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _editContext.OnFieldChanged += OnFieldChanged;
             _editContext.OnValidationRequested += OnValidationRequested;
 
@@ -112,6 +126,18 @@ public static class EditContextDataAnnotationsExtensions
         private void OnValidationRequested(object? sender, ValidationRequestedEventArgs e)
         {
             var validationContext = new ValidationContext(_editContext.Model, _serviceProvider, items: null);
+
+            if (!TryValidateTypeInfo(validationContext))
+            {
+                ValidateWithDefaultValidator(validationContext);
+            }
+
+            _editContext.NotifyValidationStateChanged();
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Model types are expected to be defined in assemblies that do not get trimmed.")]
+        private void ValidateWithDefaultValidator(ValidationContext validationContext)
+        {
             var validationResults = new List<ValidationResult>();
             Validator.TryValidateObject(_editContext.Model, validationContext, validationResults, true);
 
@@ -136,8 +162,62 @@ public static class EditContextDataAnnotationsExtensions
                     _messages.Add(new FieldIdentifier(_editContext.Model, fieldName: string.Empty), validationResult.ErrorMessage!);
                 }
             }
+        }
 
-            _editContext.NotifyValidationStateChanged();
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        private bool TryValidateTypeInfo(ValidationContext validationContext)
+        {
+            if (_validatorTypeInfo is null)
+            {
+                return false;
+            }
+
+            var validateContext = new ValidateContext
+            {
+                ValidationOptions = _validationOptions!,
+                ValidationContext = validationContext,
+            };
+            try
+            {
+                validateContext.OnValidationError += AddMapping;
+
+                var validationTask = _validatorTypeInfo.ValidateAsync(_editContext.Model, validateContext, CancellationToken.None);
+                if (!validationTask.IsCompleted)
+                {
+                    throw new InvalidOperationException("Async validation is not supported");
+                }
+
+                var validationErrors = validateContext.ValidationErrors;
+
+                // Transfer results to the ValidationMessageStore
+                _messages.Clear();
+
+                if (validationErrors is not null && validationErrors.Count > 0)
+                {
+                    foreach (var (fieldKey, messages) in validationErrors)
+                    {
+                        var fieldIdentifier = _validationPathToFieldIdentifierMapping[fieldKey];
+                        _messages.Add(fieldIdentifier, messages);
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                validateContext.OnValidationError -= AddMapping;
+                _validationPathToFieldIdentifierMapping.Clear();
+            }
+
+            return true;
+
+        }
+        private void AddMapping(ValidationErrorContext context)
+        {
+            _validationPathToFieldIdentifierMapping[context.Path] =
+                new FieldIdentifier(context.Container ?? _editContext.Model, context.Name);
         }
 
         public void Dispose()

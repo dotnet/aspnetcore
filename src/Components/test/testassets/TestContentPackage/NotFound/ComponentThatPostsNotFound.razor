@@ -1,0 +1,32 @@
+@using Microsoft.AspNetCore.Components.Forms
+
+@inject NavigationManager NavigationManager
+
+@if (!WaitForInteractivity || RendererInfo.IsInteractive)
+{
+    <PageTitle>Original page</PageTitle>
+
+    <form method="post" id="not-found-form" @onsubmit="HandleSubmit" @formname="PostNotFoundForm">
+        <AntiforgeryToken />
+        <button type="submit">Trigger NotFound</button>
+    </form>
+
+    <p id="test-info">Any content</p>
+}
+
+@code{
+    [Parameter]
+    public bool StartStreaming { get; set; } = false;
+
+    [Parameter]
+    public bool WaitForInteractivity { get; set; } = false;
+
+    private async Task HandleSubmit()
+    {
+        if (StartStreaming)
+        {
+            await Task.Yield();
+        }
+        NavigationManager.NotFound();
+    }
+}
