@@ -1,0 +1,147 @@
+@using Microsoft.AspNetCore.Components.Web
+
+<p>Filtered persistent state component</p>
+
+<p>This component demonstrates selective state persistence based on filtering criteria. It registers different callbacks with different filter combinations to test the filtering behavior.</p>
+
+<p id="interactive">Interactive: @(!RunningOnServer)</p>
+<p id="interactive-runtime">Interactive runtime: @_interactiveRuntime</p>
+<p id="prerendering-state-found">Prerendering state found:@_prerenderingStateFound</p>
+<p id="prerendering-state-value">Prerendering state value:@_prerenderingStateValue</p>
+<p id="enhanced-nav-state-found">Enhanced nav state found:@_enhancedNavStateFound</p>
+<p id="enhanced-nav-state-value">Enhanced nav state value:@_enhancedNavStateValue</p>
+<p id="circuit-pause-state-found">Circuit pause state found:@_circuitPauseStateFound</p>
+<p id="circuit-pause-state-value">Circuit pause state value:@_circuitPauseStateValue</p>
+<p id="combined-filters-state-found">Combined filters state found:@_combinedFiltersStateFound</p>
+<p id="combined-filters-state-value">Combined filters state value:@_combinedFiltersStateValue</p>
+
+@code {
+    private bool _prerenderingStateFound;
+    private string _prerenderingStateValue;
+    private bool _enhancedNavStateFound;
+    private string _enhancedNavStateValue;
+    private bool _circuitPauseStateFound;
+    private string _circuitPauseStateValue;
+    private bool _combinedFiltersStateFound;
+    private string _combinedFiltersStateValue;
+    private string _interactiveRuntime;
+
+    [Inject] public PersistentComponentState PersistentComponentState { get; set; }
+
+    [CascadingParameter(Name = nameof(RunningOnServer))] public bool RunningOnServer { get; set; }
+    
+    [Parameter] public string ServerState { get; set; }
+    [Parameter] public bool PersistOnPrerendering { get; set; } = true;
+    [Parameter] public bool PersistOnEnhancedNav { get; set; } = false;
+    [Parameter] public bool PersistOnCircuitPause { get; set; } = true;
+
+    protected override void OnInitialized()
+    {
+        // Register callback that only persists during prerendering
+        var prerenderingFilters = new List<IPersistenceReasonFilter>
+        {
+            new PersistOnPrerenderingFilter(PersistOnPrerendering),
+            new PersistOnEnhancedNavigationFilter(false),
+            new PersistOnCircuitPauseFilter(false)
+        };
+        PersistentComponentState.RegisterOnPersisting(PersistPrerenderingState, null, prerenderingFilters);
+
+        // Register callback that only persists during enhanced navigation
+        var enhancedNavFilters = new List<IPersistenceReasonFilter>
+        {
+            new PersistOnPrerenderingFilter(false),
+            new PersistOnEnhancedNavigationFilter(PersistOnEnhancedNav),
+            new PersistOnCircuitPauseFilter(false)
+        };
+        PersistentComponentState.RegisterOnPersisting(PersistEnhancedNavState, null, enhancedNavFilters);
+
+        // Register callback that only persists on circuit pause
+        var circuitPauseFilters = new List<IPersistenceReasonFilter>  
+        {
+            new PersistOnPrerenderingFilter(false),
+            new PersistOnEnhancedNavigationFilter(false),
+            new PersistOnCircuitPauseFilter(PersistOnCircuitPause)
+        };
+        PersistentComponentState.RegisterOnPersisting(PersistCircuitPauseState, null, circuitPauseFilters);
+
+        // Register callback with combined filters
+        var combinedFilters = new List<IPersistenceReasonFilter>
+        {
+            new PersistOnPrerenderingFilter(PersistOnPrerendering),
+            new PersistOnEnhancedNavigationFilter(PersistOnEnhancedNav),
+            new PersistOnCircuitPauseFilter(PersistOnCircuitPause)
+        };
+        PersistentComponentState.RegisterOnPersisting(PersistCombinedFiltersState, null, combinedFilters);
+
+        // Try to restore state
+        _prerenderingStateFound = PersistentComponentState.TryTakeFromJson<string>("PrerenderingState", out _prerenderingStateValue);
+        _enhancedNavStateFound = PersistentComponentState.TryTakeFromJson<string>("EnhancedNavState", out _enhancedNavStateValue);
+        _circuitPauseStateFound = PersistentComponentState.TryTakeFromJson<string>("CircuitPauseState", out _circuitPauseStateValue);
+        _combinedFiltersStateFound = PersistentComponentState.TryTakeFromJson<string>("CombinedFiltersState", out _combinedFiltersStateValue);
+
+        if (!_prerenderingStateFound)
+        {
+            _prerenderingStateValue = "fresh-prerendering";
+        }
+
+        if (!_enhancedNavStateFound)
+        {
+            _enhancedNavStateValue = "fresh-enhanced-nav";
+        }
+
+        if (!_circuitPauseStateFound)
+        {
+            _circuitPauseStateValue = "fresh-circuit-pause";
+        }
+
+        if (!_combinedFiltersStateFound)
+        {
+            _combinedFiltersStateValue = "fresh-combined";
+        }
+
+        if (RunningOnServer)
+        {
+            _interactiveRuntime = "none";
+            // Use server state if provided
+            if (!string.IsNullOrEmpty(ServerState))
+            {
+                _prerenderingStateFound = true;
+                _prerenderingStateValue = $"{ServerState}-prerendering";
+                _enhancedNavStateFound = true;
+                _enhancedNavStateValue = $"{ServerState}-enhanced-nav";
+                _circuitPauseStateFound = true;
+                _circuitPauseStateValue = $"{ServerState}-circuit-pause";
+                _combinedFiltersStateFound = true;
+                _combinedFiltersStateValue = $"{ServerState}-combined";
+            }
+        }
+        else
+        {
+            _interactiveRuntime = OperatingSystem.IsBrowser() ? "wasm" : "server";
+        }
+    }
+
+    Task PersistPrerenderingState()
+    {
+        PersistentComponentState.PersistAsJson("PrerenderingState", _prerenderingStateValue);
+        return Task.CompletedTask;
+    }
+
+    Task PersistEnhancedNavState()
+    {
+        PersistentComponentState.PersistAsJson("EnhancedNavState", _enhancedNavStateValue);
+        return Task.CompletedTask;
+    }
+
+    Task PersistCircuitPauseState()
+    {
+        PersistentComponentState.PersistAsJson("CircuitPauseState", _circuitPauseStateValue);
+        return Task.CompletedTask;
+    }
+
+    Task PersistCombinedFiltersState()
+    {
+        PersistentComponentState.PersistAsJson("CombinedFiltersState", _combinedFiltersStateValue);
+        return Task.CompletedTask;
+    }
+}

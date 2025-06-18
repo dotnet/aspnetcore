@@ -1,0 +1,57 @@
+@page "/persistent-state/filtering-test"
+@using TestContentPackage.PersistentComponents
+
+<h3>Filtered Persistent State Test Page</h3>
+
+<p>
+    This page tests selective state persistence based on filtering criteria.
+    It renders components with different filter configurations to validate that state is persisted or skipped based on the persistence reason.
+</p>
+
+<p id="render-mode">Render mode: @_renderMode?.GetType()?.Name</p>
+<p id="streaming-id">Streaming id:@StreamingId</p>
+
+@if (_renderMode != null)
+{
+    <CascadingValue Name="RunningOnServer" Value="true">
+        <FilteredPersistentStateComponent @rendermode="@_renderMode" 
+                                           ServerState="@ServerState"
+                                           PersistOnPrerendering="@PersistOnPrerendering"
+                                           PersistOnEnhancedNav="@PersistOnEnhancedNav"
+                                           PersistOnCircuitPause="@PersistOnCircuitPause" />
+    </CascadingValue>
+}
+
+<a id="page-no-components-link" href=@($"persistent-state/page-no-components?render-mode={RenderMode}&streaming-id={StreamingId}")>Go to page with no components</a>
+
+@code {
+    private IComponentRenderMode _renderMode;
+
+    [SupplyParameterFromQuery(Name = "render-mode")] public string RenderMode { get; set; }
+    [SupplyParameterFromQuery(Name = "streaming-id")] public string StreamingId { get; set; }
+    [SupplyParameterFromQuery(Name = "server-state")] public string ServerState { get; set; }
+    [SupplyParameterFromQuery(Name = "persist-prerendering")] public bool PersistOnPrerendering { get; set; } = true;
+    [SupplyParameterFromQuery(Name = "persist-enhanced-nav")] public bool PersistOnEnhancedNav { get; set; } = false;
+    [SupplyParameterFromQuery(Name = "persist-circuit-pause")] public bool PersistOnCircuitPause { get; set; } = true;
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrEmpty(RenderMode))
+        {
+            switch (RenderMode)
+            {
+                case "server":
+                    _renderMode = new InteractiveServerRenderMode(true);
+                    break;
+                case "wasm":
+                    _renderMode = new InteractiveWebAssemblyRenderMode(true);
+                    break;
+                case "auto":
+                    _renderMode = new InteractiveAutoRenderMode(true);
+                    break;
+                default:
+                    throw new ArgumentException($"Invalid render mode: {RenderMode}");
+            }
+        }
+    }
+}

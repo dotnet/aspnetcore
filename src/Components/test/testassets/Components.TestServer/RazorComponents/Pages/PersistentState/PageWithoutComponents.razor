@@ -6,6 +6,12 @@
 
 <a id="page-with-components-link-and-state" href=@($"persistent-state/page-with-components?render-mode={RenderMode}&streaming-id={StreamingId}&server-state=other")>Go to page with components and state</a>
 
+<a id="filtering-test-link" href=@($"persistent-state/filtering-test?render-mode={RenderMode}&streaming-id={StreamingId}")>Go to filtering test page</a>
+
+<a id="filtering-test-link-no-prerendering" href=@($"persistent-state/filtering-test?render-mode={RenderMode}&streaming-id={StreamingId}&persist-prerendering=false")>Go to filtering test page (no prerendering)</a>
+
+<a id="filtering-test-link-with-enhanced-nav" href=@($"persistent-state/filtering-test?render-mode={RenderMode}&streaming-id={StreamingId}&persist-enhanced-nav=true")>Go to filtering test page (with enhanced nav)</a>
+
 
 @code {
     [SupplyParameterFromQuery(Name = "render-mode")] public string RenderMode { get; set; }
