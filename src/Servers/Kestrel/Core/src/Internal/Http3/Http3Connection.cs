@@ -606,7 +606,7 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
             s is not Http3Stream<TContext> { CanReuse: true } reusableStream)
         {
             stream = new Http3Stream<TContext>(application, CreateHttpStreamContext(streamContext));
-            persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
+            persistentStateFeature.State[StreamPersistentStateKey] = stream;
         }
         else
         {
