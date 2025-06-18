@@ -43,7 +43,10 @@ internal sealed class EndpointComponentState : ComponentState
         {
             var (sequence, key) = _renderer.GetSequenceAndKey(ParentComponentState);
             var marker = boundary.GetComponentMarkerKey(sequence, key);
-            return marker?.Serialized();
+            if (!marker.Equals(default))
+            {
+                return marker.Serialized();
+            }
         }
 
         // Fall back to the default implementation
