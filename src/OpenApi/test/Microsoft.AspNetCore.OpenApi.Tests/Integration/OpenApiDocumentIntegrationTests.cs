@@ -36,7 +36,6 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         var outputDirectory = Path.Combine(baseSnapshotsDirectory, version.ToString());
         await Verifier.Verify(json)
             .UseDirectory(outputDirectory)
-            .UseParameters(documentName)
-            .AutoVerify();
+            .UseParameters(documentName);
     }
 }

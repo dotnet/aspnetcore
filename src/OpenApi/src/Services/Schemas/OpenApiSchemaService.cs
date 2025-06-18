@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
@@ -29,6 +30,7 @@ internal sealed class OpenApiSchemaService(
     IOptions<JsonOptions> jsonOptions,
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
+    private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
     private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
@@ -137,7 +139,15 @@ internal sealed class OpenApiSchemaService(
     internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
         var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
-        var baseSchemaId = optionsMonitor.Get(documentName).CreateSchemaReferenceId(_jsonSerializerOptions.GetTypeInfo(type));
+
+        // Cache the root schema IDs since we expect to be called
+        // on the same type multiple times within an API
+        var baseSchemaId = _schemaIdCache.GetOrAdd(type, t =>
+        {
+            var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(t);
+            return optionsMonitor.Get(documentName).CreateSchemaReferenceId(jsonTypeInfo);
+        });
+
         return ResolveReferenceForSchema(document, schema, baseSchemaId);
     }
 

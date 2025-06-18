@@ -97,8 +97,7 @@ public static partial class SnapshotTestHelper
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
             .UseDirectory(SkipOnHelixAttribute.OnHelix()
                 ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "snapshots")
-                : "snapshots")
-            .AutoVerify();
+                : "snapshots");
     }
 
     public static async Task VerifyOpenApi(Compilation compilation, Action<OpenApiDocument> verifyFunc)
