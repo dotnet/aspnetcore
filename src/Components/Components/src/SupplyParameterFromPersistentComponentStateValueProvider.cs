@@ -45,7 +45,9 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         return state.TryTakeFromJson(storageKey, parameterInfo.PropertyType, out var value) ? value : null;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")] [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")] [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
     public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
         var propertyName = parameterInfo.PropertyName;
@@ -221,25 +223,10 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
 
     private static object? GetSerializableKey(ComponentState componentState)
     {
-        if (componentState.ParentComponentState is not { } parentComponentState)
+        var componentKey = componentState.GetComponentKey();
+        if (componentKey != null && IsSerializableKey(componentKey))
         {
-            return null;
-        }
-
-        // Check if the parentComponentState has a `@key` directive applied to the current component.
-        var frames = parentComponentState.CurrentRenderTree.GetFrames();
-        for (var i = 0; i < frames.Count; i++)
-        {
-            ref var currentFrame = ref frames.Array[i];
-            if (currentFrame.FrameType != RenderTree.RenderTreeFrameType.Component ||
-                !ReferenceEquals(componentState.Component, currentFrame.Component))
-            {
-                // Skip any frame that is not the current component.
-                continue;
-            }
-
-            var componentKey = currentFrame.ComponentKey;
-            return !IsSerializableKey(componentKey) ? null : componentKey;
+            return componentKey;
         }
 
         return null;
@@ -247,8 +234,34 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
 
     private static string GetComponentType(ComponentState componentState) => componentState.Component.GetType().FullName!;
 
-    private static string GetParentComponentType(ComponentState componentState) =>
-        componentState.ParentComponentState == null ? "" : GetComponentType(componentState.ParentComponentState);
+    private static string GetParentComponentType(ComponentState componentState)
+    {
+        if (componentState.ParentComponentState == null)
+        {
+            return "";
+        }
+        if (componentState.ParentComponentState.Component == null)
+        {
+            return "";
+        }
+
+        if (componentState.ParentComponentState.ParentComponentState != null)
+        {
+            var renderer = componentState.Renderer;
+            var parentRenderMode = renderer.GetComponentRenderMode(componentState.ParentComponentState.Component);
+            var grandParentRenderMode = renderer.GetComponentRenderMode(componentState.ParentComponentState.ParentComponentState.Component);
+            if (parentRenderMode != grandParentRenderMode)
+            {
+                // This is the case when EndpointHtmlRenderer introduces an SSRRenderBoundary component.
+                // We want to return "" because the SSRRenderBoundary component is not a real component
+                // and won't appear on the component tree in the WebAssemblyRenderer and RemoteRenderer
+                // interactive scenarios.
+                return "";
+            }
+        }
+
+        return GetComponentType(componentState.ParentComponentState);
+    }
 
     private static byte[] KeyFactory((string parentComponentType, string componentType, string propertyName) parts) =>
         SHA256.HashData(Encoding.UTF8.GetBytes(string.Join(".", parts.parentComponentType, parts.componentType, parts.propertyName)));
