@@ -1,3 +1,5 @@
 #nullable enable
+Microsoft.AspNetCore.Components.LinkPreload
+Microsoft.AspNetCore.Components.LinkPreload.LinkPreload() -> void
 Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions
 static Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions.RegisterPersistentService<TPersistentService>(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

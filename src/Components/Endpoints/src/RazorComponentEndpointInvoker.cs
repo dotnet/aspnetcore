@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -21,10 +22,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 {
     private readonly EndpointHtmlRenderer _renderer;
     private readonly ILogger<RazorComponentEndpointInvoker> _logger;
+    private readonly ComponentsActivityLinkStore _activityLinkStore;
 
     public RazorComponentEndpointInvoker(EndpointHtmlRenderer renderer, ILogger<RazorComponentEndpointInvoker> logger)
     {
         _renderer = renderer;
+        _activityLinkStore = new ComponentsActivityLinkStore(renderer);
         _logger = logger;
     }
 
@@ -41,6 +44,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
         var hasStatusCodePage = context.Features.Get<IStatusCodePagesFeature>() is not null;
         var isReExecuted = context.Features.Get<IStatusCodeReExecuteFeature>() is not null;
+        var httpActivityContext = context.Features.Get<IHttpActivityFeature>()?.Activity.Context ?? default;
         if (isErrorHandler)
         {
             Log.InteractivityDisabledForErrorHandling(_logger);
@@ -80,6 +84,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             return Task.CompletedTask;
         });
 
+        if (httpActivityContext != default)
+        {
+            _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivityContext, null);
+        }
+
         await _renderer.InitializeStandardComponentServicesAsync(
             context,
             componentType: pageComponent,
@@ -101,13 +110,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             rootComponent,
             ParameterView.Empty,
             waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted);
-
-        bool avoidStartingResponse = hasStatusCodePage && !isReExecuted && context.Response.StatusCode == StatusCodes.Status404NotFound;
-        if (avoidStartingResponse)
-        {
-            // the request is going to be re-executed, we should avoid writing to the response
-            return;
-        }
 
         Task quiesceTask;
         if (!result.IsPost)
@@ -175,11 +177,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     private async Task<RequestValidationState> ValidateRequestAsync(HttpContext context, IAntiforgery? antiforgery)
     {
         var processPost = HttpMethods.IsPost(context.Request.Method) &&
-            // Disable POST functionality during exception handling and reexecution.
+            // Disable POST functionality during exception handling.
             // The exception handler middleware will not update the request method, and we don't
             // want to run the form handling logic against the error page.
-            context.Features.Get<IExceptionHandlerFeature>() == null &&
-            context.Features.Get<IStatusCodePagesFeature>() == null;
+            context.Features.Get<IExceptionHandlerFeature>() == null;
 
         if (processPost)
         {

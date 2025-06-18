@@ -3,7 +3,6 @@
 
 #nullable disable warnings
 
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -156,6 +155,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
                     $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
             }
+
+            var routeAttribute = (RouteAttribute)routeAttributes[0];
+            if (routeAttribute.Template != null)
+            {
+                NavigationManager.NotFoundPageRoute = routeAttribute.Template;
+            }
         }
 
         if (!_onNavigateCalled)
@@ -223,12 +228,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute.AsSpan());
         var locationPathSpan = TrimQueryOrHash(relativePath);
         var locationPath = $"/{locationPathSpan}";
-        Activity? activity;
+        ComponentsActivityHandle activityHandle;
 
         // In order to avoid routing twice we check for RouteData
         if (RoutingStateProvider?.RouteData is { } endpointRouteData)
         {
-            activity = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
+            activityHandle = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
 
             // Other routers shouldn't provide RouteData, this is specific to our router component
             // and must abide by our syntax and behaviors.
@@ -241,7 +246,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
 
-            activity?.Stop();
+            _renderHandle.ComponentActivitySource?.StopRouteActivity(activityHandle, null);
             return;
         }
 
@@ -258,7 +263,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                     $"does not implement {typeof(IComponent).FullName}.");
             }
 
-            activity = RecordDiagnostics(context.Handler.FullName, context.Entry.RoutePattern.RawText);
+            activityHandle = RecordDiagnostics(context.Handler.FullName, context.Entry.RoutePattern.RawText);
 
             Log.NavigatingToComponent(_logger, context.Handler, locationPath, _baseUri);
 
@@ -279,7 +284,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             if (!isNavigationIntercepted)
             {
-                activity = RecordDiagnostics("NotFound", "NotFound");
+                activityHandle = RecordDiagnostics("NotFound", "NotFound");
 
                 Log.DisplayingNotFound(_logger, locationPath, _baseUri);
 
@@ -290,22 +295,21 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             }
             else
             {
-                activity = RecordDiagnostics("External", "External");
+                activityHandle = RecordDiagnostics("External", "External");
 
                 Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
-        activity?.Stop();
-
+        _renderHandle.ComponentActivitySource?.StopRouteActivity(activityHandle, null);
     }
 
-    private Activity? RecordDiagnostics(string componentType, string template)
+    private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
     {
-        Activity? activity = null;
+        ComponentsActivityHandle activityHandle = default;
         if (_renderHandle.ComponentActivitySource != null)
         {
-            activity = _renderHandle.ComponentActivitySource.StartRouteActivity(componentType, template);
+            activityHandle = _renderHandle.ComponentActivitySource.StartRouteActivity(componentType, template);
         }
 
         if (_renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
@@ -313,7 +317,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             _renderHandle.ComponentMetrics.Navigation(componentType, template);
         }
 
-        return activity;
+        return activityHandle;
     }
 
     private static void DefaultNotFoundContent(RenderTreeBuilder builder)

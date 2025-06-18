@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.Components.HotReload;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,8 @@ using Microsoft.Extensions.Logging;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
 
 namespace Microsoft.AspNetCore.Components.RenderTree;
+
+using CategoryLink = Tuple<ActivityContext, KeyValuePair<string, object?>?>;
 
 /// <summary>
 /// Types in the Microsoft.AspNetCore.Components.RenderTree are not recommended for use outside
@@ -37,6 +40,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private readonly ComponentFactory _componentFactory;
     private readonly ComponentsMetrics? _componentsMetrics;
     private readonly ComponentsActivitySource? _componentsActivitySource;
+    private readonly object _activityLinksStore = new Dictionary<string, CategoryLink>(StringComparer.OrdinalIgnoreCase);
+    internal object ActivityLinksStore => _activityLinksStore;
 
     private Dictionary<int, ParameterView>? _rootComponentsLatestParameters;
     private Task? _ongoingQuiescenceTask;
@@ -96,6 +101,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         _componentFactory = new ComponentFactory(componentActivator, this);
         _componentsMetrics = serviceProvider.GetService<ComponentsMetrics>();
         _componentsActivitySource = serviceProvider.GetService<ComponentsActivitySource>();
+        _componentsActivitySource?.Init(new ComponentsActivityLinkStore(this));
 
         ServiceProviderCascadingValueSuppliers = serviceProvider.GetService<ICascadingValueSupplier>() is null
             ? Array.Empty<ICascadingValueSupplier>()
@@ -448,14 +454,14 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         var (renderedByComponentId, callback, attributeName) = GetRequiredEventBindingEntry(eventHandlerId);
 
         // collect trace
-        Activity? activity = null;
+        ComponentsActivityHandle activityHandle = default;
         string receiverName = null;
         string methodName = null;
         if (ComponentActivitySource != null)
         {
             receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
             methodName ??= callback.Delegate.Method?.Name;
-            activity = ComponentActivitySource.StartEventActivity(receiverName, methodName, attributeName);
+            activityHandle = ComponentActivitySource.StartEventActivity(receiverName, methodName, attributeName);
         }
 
         var eventStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsEventEnabled ? Stopwatch.GetTimestamp() : 0;
@@ -510,9 +516,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             }
 
             // stop activity/trace
-            if (ComponentActivitySource != null && activity != null)
+            if (ComponentActivitySource != null && activityHandle.Activity != null)
             {
-                _ = ComponentsActivitySource.CaptureEventStopAsync(task, activity);
+                _ = ComponentActivitySource.CaptureEventStopAsync(task, activityHandle);
             }
         }
         catch (Exception e)
@@ -524,9 +530,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 ComponentMetrics.FailEventSync(e, eventStartTimestamp, receiverName, methodName, attributeName);
             }
 
-            if (ComponentActivitySource != null && activity != null)
+            if (ComponentActivitySource != null && activityHandle.Activity != null)
             {
-                ComponentsActivitySource.FailEventActivity(activity, e);
+                ComponentActivitySource.StopEventActivity(activityHandle, e);
             }
 
             HandleExceptionViaErrorBoundary(e, receiverComponentState);
