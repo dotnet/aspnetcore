@@ -415,8 +415,9 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
             if (!_connectionAborted && _abortedCts is not null)
             {
                 // _connectionAborted is terminal and only set inside the _abortLock, so if it isn't set here,
-                // it has not been canceled yet.
-                Trace.Assert(_abortedCts.TryReset());
+                // _abortedCts has not been canceled yet.
+                var resetSuccess = _abortedCts.TryReset();
+                Debug.Assert(resetSuccess);
             }
         }
 

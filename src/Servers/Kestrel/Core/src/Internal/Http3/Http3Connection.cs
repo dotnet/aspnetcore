@@ -610,8 +610,8 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
         }
         else
         {
-            reusableStream.InitializeWithExistingContext(streamContext.Transport);
             stream = reusableStream;
+            reusableStream.InitializeWithExistingContext(streamContext.Transport);
         }
 
         _streamLifetimeHandler.OnStreamCreated(stream);
