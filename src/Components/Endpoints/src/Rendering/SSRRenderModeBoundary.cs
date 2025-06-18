@@ -226,7 +226,7 @@ internal class SSRRenderModeBoundary : IComponent
     /// This is used for state persistence across render modes.
     /// </summary>
     /// <returns>The ComponentMarkerKey if available, null otherwise.</returns>
-    internal ComponentMarkerKey? GetComponentMarkerKey(int sequence, object? componentKey)
+    internal ComponentMarkerKey GetComponentMarkerKey(int sequence, object? componentKey)
     {
         return _markerKey ??= GenerateMarkerKey(sequence, componentKey);
     }

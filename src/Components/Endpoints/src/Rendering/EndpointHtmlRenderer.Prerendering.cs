@@ -314,7 +314,7 @@ internal partial class EndpointHtmlRenderer
         }
 
         // Grab the parent of the boundary component. We need to find the SSRRenderModeBoundary component marker frame
-        // within it. AS when we do `@rendermode="InteractiveServer" @key="some-key" the sequence we are interested in
+        // within it. As when we do `@rendermode="InteractiveServer" @key="some-key" the sequence we are interested in
         // is the one on the SSRRenderModeBoundary component marker frame, not the one on the nested component frame.
         // Same for the key.
         var targetState = boundaryComponentState.ParentComponentState;
