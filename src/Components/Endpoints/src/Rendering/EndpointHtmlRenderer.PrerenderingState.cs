@@ -50,7 +50,7 @@ internal partial class EndpointHtmlRenderer
 
         if (store != null)
         {
-            await manager.PersistStateAsync(store, this);
+            await manager.PersistStateAsync(store, this, new PersistOnPrerendering());
             return store switch
             {
                 ProtectedPrerenderComponentApplicationStore protectedStore => new ComponentStateHtmlContent(protectedStore, null),
@@ -80,7 +80,7 @@ internal partial class EndpointHtmlRenderer
             var webAssembly = new CopyOnlyStore<InteractiveWebAssemblyRenderMode>();
             store = new CompositeStore(server, auto, webAssembly);
 
-            await manager.PersistStateAsync(store, this);
+            await manager.PersistStateAsync(store, this, new PersistOnPrerendering());
 
             foreach (var kvp in auto.Saved)
             {
