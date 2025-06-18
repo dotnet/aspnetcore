@@ -51,8 +51,8 @@ internal partial class EndpointHtmlRenderer
         if (store != null)
         {
             IPersistenceReason persistenceReason = IsProgressivelyEnhancedNavigation(httpContext.Request)
-                ? new PersistOnEnhancedNavigation()
-                : new PersistOnPrerendering();
+                ? PersistOnEnhancedNavigation.Instance
+                : PersistOnPrerendering.Instance;
             await manager.PersistStateAsync(store, this, persistenceReason);
             return store switch
             {
@@ -84,8 +84,8 @@ internal partial class EndpointHtmlRenderer
             store = new CompositeStore(server, auto, webAssembly);
 
             IPersistenceReason persistenceReason = IsProgressivelyEnhancedNavigation(httpContext.Request)
-                ? new PersistOnEnhancedNavigation()
-                : new PersistOnPrerendering();
+                ? PersistOnEnhancedNavigation.Instance
+                : PersistOnPrerendering.Instance;
             await manager.PersistStateAsync(store, this, persistenceReason);
 
             foreach (var kvp in auto.Saved)

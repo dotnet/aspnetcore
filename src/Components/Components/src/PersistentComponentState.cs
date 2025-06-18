@@ -43,7 +43,7 @@ public class PersistentComponentState
     /// <param name="callback">The callback to invoke when the application is being paused.</param>
     /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
     public PersistingComponentStateSubscription RegisterOnPersisting(Func<Task> callback)
-        => RegisterOnPersisting(callback, null);
+        => RegisterOnPersisting(callback, null, Array.Empty<IPersistenceReasonFilter>());
 
     /// <summary>
     /// Register a callback to persist the component state when the application is about to be paused.
@@ -53,7 +53,7 @@ public class PersistentComponentState
     /// <param name="renderMode"></param>
     /// <param name="reasonFilters">Filters to control when the callback should be invoked based on the persistence reason.</param>
     /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
-    public PersistingComponentStateSubscription RegisterOnPersisting(Func<Task> callback, IComponentRenderMode? renderMode, IReadOnlyList<IPersistenceReasonFilter>? reasonFilters)
+    public PersistingComponentStateSubscription RegisterOnPersisting(Func<Task> callback, IComponentRenderMode? renderMode, IReadOnlyList<IPersistenceReasonFilter> reasonFilters)
     {
         ArgumentNullException.ThrowIfNull(callback);
 
@@ -85,7 +85,7 @@ public class PersistentComponentState
             throw new InvalidOperationException("Registering a callback while persisting state is not allowed.");
         }
 
-        var persistenceCallback = new PersistComponentStateRegistration(callback, renderMode);
+        var persistenceCallback = new PersistComponentStateRegistration(callback, renderMode, Array.Empty<IPersistenceReasonFilter>());
 
         _registeredCallbacks.Add(persistenceCallback);
 

@@ -66,18 +66,9 @@ public class ComponentStatePersistenceManager
     /// </summary>
     /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
     /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
-    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer)
-        => PersistStateAsync(store, renderer, DefaultPersistenceReason.Instance);
-
-    /// <summary>
-    /// Persists the component application state into the given <see cref="IPersistentComponentStateStore"/>.
-    /// </summary>
-    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-    /// <param name="renderer">The <see cref="Renderer"/> that components are being rendered.</param>
     /// <param name="persistenceReason">The reason for persisting the state.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer, IPersistenceReason persistenceReason)
+    public Task PersistStateAsync(IPersistentComponentStateStore store, Renderer renderer, IPersistenceReason? persistenceReason = null)
     {
         if (_stateIsPersisted)
         {
@@ -186,10 +177,7 @@ public class ComponentStatePersistenceManager
         }
     }
 
-    internal Task<bool> TryPauseAsync(IPersistentComponentStateStore store)
-        => TryPauseAsync(store, DefaultPersistenceReason.Instance);
-
-    internal Task<bool> TryPauseAsync(IPersistentComponentStateStore store, IPersistenceReason persistenceReason)
+    internal Task<bool> TryPauseAsync(IPersistentComponentStateStore store, IPersistenceReason? persistenceReason = null)
     {
         List<Task<bool>>? pendingCallbackTasks = null;
 
@@ -213,7 +201,7 @@ public class ComponentStatePersistenceManager
             }
 
             // Evaluate reason filters to determine if the callback should be executed for this persistence reason
-            if (registration.ReasonFilters != null)
+            if (registration.ReasonFilters.Count > 0)
             {
                 var shouldPersist = EvaluateReasonFilters(registration.ReasonFilters, persistenceReason);
                 if (shouldPersist.HasValue && !shouldPersist.Value)
@@ -221,13 +209,13 @@ public class ComponentStatePersistenceManager
                     // Filters explicitly indicate not to persist for this reason
                     continue;
                 }
-                else if (!shouldPersist.HasValue && !persistenceReason.PersistByDefault)
+                else if (!shouldPersist.HasValue && !(persistenceReason?.PersistByDefault ?? true))
                 {
                     // No filter matched and default is not to persist
                     continue;
                 }
             }
-            else if (!persistenceReason.PersistByDefault)
+            else if (!(persistenceReason?.PersistByDefault ?? true))
             {
                 // No filters defined and default is not to persist
                 continue;
@@ -306,8 +294,14 @@ public class ComponentStatePersistenceManager
         }
     }
 
-    private static bool? EvaluateReasonFilters(IReadOnlyList<IPersistenceReasonFilter> reasonFilters, IPersistenceReason persistenceReason)
+    private static bool? EvaluateReasonFilters(IReadOnlyList<IPersistenceReasonFilter> reasonFilters, IPersistenceReason? persistenceReason)
     {
+        if (persistenceReason is null)
+        {
+            // No reason provided, can't evaluate filters
+            return null;
+        }
+        
         foreach (var reasonFilter in reasonFilters)
         {
             var shouldPersist = reasonFilter.ShouldPersist(persistenceReason);

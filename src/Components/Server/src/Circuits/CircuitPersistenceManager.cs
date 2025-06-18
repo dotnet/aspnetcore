@@ -28,7 +28,7 @@ internal partial class CircuitPersistenceManager(
             collector.PersistRootComponents,
             RenderMode.InteractiveServer);
 
-        await persistenceManager.PersistStateAsync(collector, renderer, new PersistOnCircuitPause());
+        await persistenceManager.PersistStateAsync(collector, renderer, PersistOnCircuitPause.Instance);
 
         if (saveStateToClient)
         {

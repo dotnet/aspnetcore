@@ -6,11 +6,11 @@ namespace Microsoft.AspNetCore.Components;
 internal readonly struct PersistComponentStateRegistration(
     Func<Task> callback,
     IComponentRenderMode? renderMode,
-    IReadOnlyList<IPersistenceReasonFilter>? reasonFilters = null)
+    IReadOnlyList<IPersistenceReasonFilter> reasonFilters)
 {
     public Func<Task> Callback { get; } = callback;
 
     public IComponentRenderMode? RenderMode { get; } = renderMode;
 
-    public IReadOnlyList<IPersistenceReasonFilter>? ReasonFilters { get; } = reasonFilters;
+    public IReadOnlyList<IPersistenceReasonFilter> ReasonFilters { get; } = reasonFilters ?? Array.Empty<IPersistenceReasonFilter>();
 }

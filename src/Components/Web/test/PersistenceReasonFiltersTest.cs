@@ -13,7 +13,7 @@ public class PersistenceReasonFiltersTest
     {
         // Arrange
         var filter = new PersistOnPrerenderingFilter();
-        var reason = new PersistOnPrerendering();
+        var reason = PersistOnPrerendering.Instance;
 
         // Act
         var result = filter.ShouldPersist(reason);
@@ -27,7 +27,7 @@ public class PersistenceReasonFiltersTest
     {
         // Arrange
         var filter = new PersistOnPrerenderingFilter(persist: false);
-        var reason = new PersistOnPrerendering();
+        var reason = PersistOnPrerendering.Instance;
 
         // Act
         var result = filter.ShouldPersist(reason);
@@ -41,7 +41,7 @@ public class PersistenceReasonFiltersTest
     {
         // Arrange
         var filter = new PersistOnEnhancedNavigationFilter();
-        var reason = new PersistOnEnhancedNavigation();
+        var reason = PersistOnEnhancedNavigation.Instance;
 
         // Act
         var result = filter.ShouldPersist(reason);
@@ -55,7 +55,7 @@ public class PersistenceReasonFiltersTest
     {
         // Arrange
         var filter = new PersistOnEnhancedNavigationFilter();
-        var reason = new PersistOnPrerendering();
+        var reason = PersistOnPrerendering.Instance;
 
         // Act
         var result = filter.ShouldPersist(reason);
@@ -69,7 +69,7 @@ public class PersistenceReasonFiltersTest
     {
         // Arrange
         var filter = new PersistOnCircuitPauseFilter();
-        var reason = new PersistOnCircuitPause();
+        var reason = PersistOnCircuitPause.Instance;
 
         // Act
         var result = filter.ShouldPersist(reason);
@@ -83,7 +83,7 @@ public class PersistenceReasonFiltersTest
     {
         // Arrange
         var filter = new PersistOnCircuitPauseFilter(persist: false);
-        var reason = new PersistOnCircuitPause();
+        var reason = PersistOnCircuitPause.Instance;
 
         // Act
         var result = filter.ShouldPersist(reason);
