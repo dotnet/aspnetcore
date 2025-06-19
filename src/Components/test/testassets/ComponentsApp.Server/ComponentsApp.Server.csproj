@@ -5,11 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Enable RespectRequiredConstructorParametersDefault to test compatibility -->
-    <RuntimeHostConfigurationOption Include="System.Text.Json.Serialization.RespectRequiredConstructorParametersDefault" Value="true" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
