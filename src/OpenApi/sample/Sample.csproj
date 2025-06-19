@@ -39,4 +39,8 @@
     <ProjectReference Include="../gen/Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Microsoft.OpenApi" />
+  </ItemGroup>
+
 </Project>

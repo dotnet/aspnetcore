@@ -40,4 +40,8 @@
       Include="$(MSBuildProjectDirectory)\Integration\snapshots\**"
       LinkBase="$(MSBuildThisFileDirectory)\Integration\snapshots"/>
   </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.OpenApi" />
+  </ItemGroup>
 </Project>
