@@ -21,13 +21,17 @@ export async function fetchAndInvokeInitializers(options: Partial<WebAssemblySta
       WebRendererId.WebAssembly
     );
 
+    const configInitializers = loadedConfig?.resources?.['libraryInitializers'];
     let initializers : JSAsset[];
-    if (("length" in loadedConfig?.resources?.['libraryInitializers'])) {
+    if (!configInitializers) {
+      initializers = [];
+    }
+    else if ("length" in configInitializers) {
       // New boot config schema.
-      initializers = loadedConfig.resources?.['libraryInitializers'] || [];
+      initializers = configInitializers;
     } else {
       // Old boot config schema.
-      initializers = Object.keys(loadedConfig?.resources?.['libraryInitializers'] || {}).map(name => ({
+      initializers = Object.keys(configInitializers).map(name => ({
         name,
       })) as JSAsset[];
     }
