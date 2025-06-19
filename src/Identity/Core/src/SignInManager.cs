@@ -759,13 +759,12 @@ public class SignInManager<TUser> where TUser : class
         var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
         await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
 
-        if (result?.Principal == null)
+        if (result?.Principal == null || result.Properties is not { } properties)
         {
             return null;
         }
 
-        var optionsJson = result.Properties?.Items[PasskeyCreationOptionsKey];
-        if (optionsJson == null)
+        if (!properties.Items.TryGetValue(PasskeyCreationOptionsKey, out var optionsJson) || optionsJson is null)
         {
             return null;
         }
@@ -798,13 +797,12 @@ public class SignInManager<TUser> where TUser : class
         var result = await Context.AuthenticateAsync(IdentityConstants.TwoFactorUserIdScheme);
         await Context.SignOutAsync(IdentityConstants.TwoFactorUserIdScheme);
 
-        if (result?.Principal == null)
+        if (result?.Principal == null || result.Properties is not { } properties)
         {
             return null;
         }
 
-        var optionsJson = result.Properties?.Items[PasskeyRequestOptionsKey];
-        if (optionsJson == null)
+        if (!properties.Items.TryGetValue(PasskeyRequestOptionsKey, out var optionsJson) || optionsJson is null)
         {
             return null;
         }
