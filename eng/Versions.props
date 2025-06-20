@@ -67,96 +67,96 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/runtime -->
-    <MicrosoftExtensionsDependencyModelVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsDependencyModelVersion>
-    <MicrosoftNETCoreAppRefVersion>10.0.0-preview.6.25318.110</MicrosoftNETCoreAppRefVersion>
-    <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>10.0.0-preview.6.25318.110</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
-    <MicrosoftNETRuntimeWebAssemblySdkVersion>10.0.0-preview.6.25318.110</MicrosoftNETRuntimeWebAssemblySdkVersion>
-    <MicrosoftNETCoreBrowserDebugHostTransportVersion>10.0.0-preview.6.25318.110</MicrosoftNETCoreBrowserDebugHostTransportVersion>
-    <MicrosoftExtensionsCachingAbstractionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsCachingAbstractionsVersion>
-    <MicrosoftExtensionsCachingMemoryVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsCachingMemoryVersion>
+    <MicrosoftExtensionsDependencyModelVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsDependencyModelVersion>
+    <MicrosoftNETCoreAppRefVersion>10.0.0-preview.6.25319.112</MicrosoftNETCoreAppRefVersion>
+    <MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>10.0.0-preview.6.25319.112</MicrosoftNETRuntimeMonoAOTCompilerTaskVersion>
+    <MicrosoftNETRuntimeWebAssemblySdkVersion>10.0.0-preview.6.25319.112</MicrosoftNETRuntimeWebAssemblySdkVersion>
+    <MicrosoftNETCoreBrowserDebugHostTransportVersion>10.0.0-preview.6.25319.112</MicrosoftNETCoreBrowserDebugHostTransportVersion>
+    <MicrosoftExtensionsCachingAbstractionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsCachingAbstractionsVersion>
+    <MicrosoftExtensionsCachingMemoryVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsCachingMemoryVersion>
     <MicrosoftExtensionsCachingHybridVersion>10.0.0-alpha.2.24462.2</MicrosoftExtensionsCachingHybridVersion>
-    <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationAbstractionsVersion>
-    <MicrosoftExtensionsConfigurationBinderVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationBinderVersion>
-    <MicrosoftExtensionsConfigurationCommandLineVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationCommandLineVersion>
-    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
-    <MicrosoftExtensionsConfigurationFileExtensionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationFileExtensionsVersion>
-    <MicrosoftExtensionsConfigurationIniVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationIniVersion>
-    <MicrosoftExtensionsConfigurationJsonVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationJsonVersion>
-    <MicrosoftExtensionsConfigurationVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationVersion>
-    <MicrosoftExtensionsConfigurationUserSecretsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationUserSecretsVersion>
-    <MicrosoftExtensionsConfigurationXmlVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsConfigurationXmlVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
-    <MicrosoftExtensionsDependencyInjectionVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsDependencyInjectionVersion>
-    <MicrosoftExtensionsDiagnosticsAbstractionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsDiagnosticsAbstractionsVersion>
-    <MicrosoftExtensionsDiagnosticsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsDiagnosticsVersion>
-    <MicrosoftExtensionsFileProvidersAbstractionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsFileProvidersAbstractionsVersion>
-    <MicrosoftExtensionsFileProvidersCompositeVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsFileProvidersCompositeVersion>
-    <MicrosoftExtensionsFileProvidersPhysicalVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsFileProvidersPhysicalVersion>
-    <MicrosoftExtensionsFileSystemGlobbingVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsFileSystemGlobbingVersion>
-    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
-    <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsHostingAbstractionsVersion>
-    <MicrosoftExtensionsHostingVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsHostingVersion>
-    <MicrosoftExtensionsHttpVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsHttpVersion>
-    <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsLoggingAbstractionsVersion>
-    <MicrosoftExtensionsLoggingConfigurationVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsLoggingConfigurationVersion>
-    <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsLoggingConsoleVersion>
-    <MicrosoftExtensionsLoggingDebugVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsLoggingDebugVersion>
-    <MicrosoftExtensionsLoggingEventSourceVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsLoggingEventSourceVersion>
-    <MicrosoftExtensionsLoggingEventLogVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsLoggingEventLogVersion>
-    <MicrosoftExtensionsLoggingVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsLoggingVersion>
-    <MicrosoftExtensionsLoggingTraceSourceVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsLoggingTraceSourceVersion>
-    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
-    <MicrosoftExtensionsOptionsDataAnnotationsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsOptionsDataAnnotationsVersion>
-    <MicrosoftExtensionsOptionsVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsOptionsVersion>
-    <MicrosoftExtensionsPrimitivesVersion>10.0.0-preview.6.25318.110</MicrosoftExtensionsPrimitivesVersion>
-    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>10.0.0-preview.6.25318.110</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
-    <SystemCompositionVersion>10.0.0-preview.6.25318.110</SystemCompositionVersion>
-    <SystemConfigurationConfigurationManagerVersion>10.0.0-preview.6.25318.110</SystemConfigurationConfigurationManagerVersion>
-    <SystemDiagnosticsDiagnosticSourceVersion>10.0.0-preview.6.25318.110</SystemDiagnosticsDiagnosticSourceVersion>
-    <SystemDiagnosticsEventLogVersion>10.0.0-preview.6.25318.110</SystemDiagnosticsEventLogVersion>
-    <SystemDirectoryServicesProtocolsVersion>10.0.0-preview.6.25318.110</SystemDirectoryServicesProtocolsVersion>
-    <SystemFormatsAsn1Version>10.0.0-preview.6.25318.110</SystemFormatsAsn1Version>
-    <SystemIOPipelinesVersion>10.0.0-preview.6.25318.110</SystemIOPipelinesVersion>
-    <SystemNetHttpJsonVersion>10.0.0-preview.6.25318.110</SystemNetHttpJsonVersion>
-    <SystemNetHttpWinHttpHandlerVersion>10.0.0-preview.6.25318.110</SystemNetHttpWinHttpHandlerVersion>
-    <SystemNetServerSentEventsVersion>10.0.0-preview.6.25318.110</SystemNetServerSentEventsVersion>
-    <SystemReflectionMetadataVersion>10.0.0-preview.6.25318.110</SystemReflectionMetadataVersion>
-    <SystemResourcesExtensionsVersion>10.0.0-preview.6.25318.110</SystemResourcesExtensionsVersion>
-    <SystemSecurityCryptographyPkcsVersion>10.0.0-preview.6.25318.110</SystemSecurityCryptographyPkcsVersion>
-    <SystemSecurityCryptographyXmlVersion>10.0.0-preview.6.25318.110</SystemSecurityCryptographyXmlVersion>
-    <SystemSecurityPermissionsVersion>10.0.0-preview.6.25318.110</SystemSecurityPermissionsVersion>
-    <SystemServiceProcessServiceControllerVersion>10.0.0-preview.6.25318.110</SystemServiceProcessServiceControllerVersion>
-    <SystemTextEncodingsWebVersion>10.0.0-preview.6.25318.110</SystemTextEncodingsWebVersion>
-    <SystemTextJsonVersion>10.0.0-preview.6.25318.110</SystemTextJsonVersion>
-    <SystemThreadingAccessControlVersion>10.0.0-preview.6.25318.110</SystemThreadingAccessControlVersion>
-    <SystemThreadingChannelsVersion>10.0.0-preview.6.25318.110</SystemThreadingChannelsVersion>
-    <SystemThreadingRateLimitingVersion>10.0.0-preview.6.25318.110</SystemThreadingRateLimitingVersion>
+    <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationAbstractionsVersion>
+    <MicrosoftExtensionsConfigurationBinderVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationBinderVersion>
+    <MicrosoftExtensionsConfigurationCommandLineVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationCommandLineVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
+    <MicrosoftExtensionsConfigurationFileExtensionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationFileExtensionsVersion>
+    <MicrosoftExtensionsConfigurationIniVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationIniVersion>
+    <MicrosoftExtensionsConfigurationJsonVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationJsonVersion>
+    <MicrosoftExtensionsConfigurationVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationVersion>
+    <MicrosoftExtensionsConfigurationUserSecretsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationUserSecretsVersion>
+    <MicrosoftExtensionsConfigurationXmlVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsConfigurationXmlVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
+    <MicrosoftExtensionsDependencyInjectionVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsDependencyInjectionVersion>
+    <MicrosoftExtensionsDiagnosticsAbstractionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsDiagnosticsAbstractionsVersion>
+    <MicrosoftExtensionsDiagnosticsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsDiagnosticsVersion>
+    <MicrosoftExtensionsFileProvidersAbstractionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsFileProvidersAbstractionsVersion>
+    <MicrosoftExtensionsFileProvidersCompositeVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsFileProvidersCompositeVersion>
+    <MicrosoftExtensionsFileProvidersPhysicalVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsFileProvidersPhysicalVersion>
+    <MicrosoftExtensionsFileSystemGlobbingVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsFileSystemGlobbingVersion>
+    <MicrosoftExtensionsHostFactoryResolverSourcesVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsHostFactoryResolverSourcesVersion>
+    <MicrosoftExtensionsHostingAbstractionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsHostingAbstractionsVersion>
+    <MicrosoftExtensionsHostingVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsHostingVersion>
+    <MicrosoftExtensionsHttpVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsHttpVersion>
+    <MicrosoftExtensionsLoggingAbstractionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsLoggingAbstractionsVersion>
+    <MicrosoftExtensionsLoggingConfigurationVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsLoggingConfigurationVersion>
+    <MicrosoftExtensionsLoggingConsoleVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsLoggingConsoleVersion>
+    <MicrosoftExtensionsLoggingDebugVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsLoggingDebugVersion>
+    <MicrosoftExtensionsLoggingEventSourceVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsLoggingEventSourceVersion>
+    <MicrosoftExtensionsLoggingEventLogVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsLoggingEventLogVersion>
+    <MicrosoftExtensionsLoggingVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsLoggingVersion>
+    <MicrosoftExtensionsLoggingTraceSourceVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsLoggingTraceSourceVersion>
+    <MicrosoftExtensionsOptionsConfigurationExtensionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsOptionsConfigurationExtensionsVersion>
+    <MicrosoftExtensionsOptionsDataAnnotationsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsOptionsDataAnnotationsVersion>
+    <MicrosoftExtensionsOptionsVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsOptionsVersion>
+    <MicrosoftExtensionsPrimitivesVersion>10.0.0-preview.6.25319.112</MicrosoftExtensionsPrimitivesVersion>
+    <MicrosoftInternalRuntimeAspNetCoreTransportVersion>10.0.0-preview.6.25319.112</MicrosoftInternalRuntimeAspNetCoreTransportVersion>
+    <SystemCompositionVersion>10.0.0-preview.6.25319.112</SystemCompositionVersion>
+    <SystemConfigurationConfigurationManagerVersion>10.0.0-preview.6.25319.112</SystemConfigurationConfigurationManagerVersion>
+    <SystemDiagnosticsDiagnosticSourceVersion>10.0.0-preview.6.25319.112</SystemDiagnosticsDiagnosticSourceVersion>
+    <SystemDiagnosticsEventLogVersion>10.0.0-preview.6.25319.112</SystemDiagnosticsEventLogVersion>
+    <SystemDirectoryServicesProtocolsVersion>10.0.0-preview.6.25319.112</SystemDirectoryServicesProtocolsVersion>
+    <SystemFormatsAsn1Version>10.0.0-preview.6.25319.112</SystemFormatsAsn1Version>
+    <SystemIOPipelinesVersion>10.0.0-preview.6.25319.112</SystemIOPipelinesVersion>
+    <SystemNetHttpJsonVersion>10.0.0-preview.6.25319.112</SystemNetHttpJsonVersion>
+    <SystemNetHttpWinHttpHandlerVersion>10.0.0-preview.6.25319.112</SystemNetHttpWinHttpHandlerVersion>
+    <SystemNetServerSentEventsVersion>10.0.0-preview.6.25319.112</SystemNetServerSentEventsVersion>
+    <SystemReflectionMetadataVersion>10.0.0-preview.6.25319.112</SystemReflectionMetadataVersion>
+    <SystemResourcesExtensionsVersion>10.0.0-preview.6.25319.112</SystemResourcesExtensionsVersion>
+    <SystemSecurityCryptographyPkcsVersion>10.0.0-preview.6.25319.112</SystemSecurityCryptographyPkcsVersion>
+    <SystemSecurityCryptographyXmlVersion>10.0.0-preview.6.25319.112</SystemSecurityCryptographyXmlVersion>
+    <SystemSecurityPermissionsVersion>10.0.0-preview.6.25319.112</SystemSecurityPermissionsVersion>
+    <SystemServiceProcessServiceControllerVersion>10.0.0-preview.6.25319.112</SystemServiceProcessServiceControllerVersion>
+    <SystemTextEncodingsWebVersion>10.0.0-preview.6.25319.112</SystemTextEncodingsWebVersion>
+    <SystemTextJsonVersion>10.0.0-preview.6.25319.112</SystemTextJsonVersion>
+    <SystemThreadingAccessControlVersion>10.0.0-preview.6.25319.112</SystemThreadingAccessControlVersion>
+    <SystemThreadingChannelsVersion>10.0.0-preview.6.25319.112</SystemThreadingChannelsVersion>
+    <SystemThreadingRateLimitingVersion>10.0.0-preview.6.25319.112</SystemThreadingRateLimitingVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <MicrosoftNETCorePlatformsVersion>10.0.0-preview.6.25318.110</MicrosoftNETCorePlatformsVersion>
-    <MicrosoftBclAsyncInterfacesVersion>10.0.0-preview.6.25318.110</MicrosoftBclAsyncInterfacesVersion>
+    <MicrosoftNETCorePlatformsVersion>10.0.0-preview.6.25319.112</MicrosoftNETCorePlatformsVersion>
+    <MicrosoftBclAsyncInterfacesVersion>10.0.0-preview.6.25319.112</MicrosoftBclAsyncInterfacesVersion>
     <!-- Transitive package to provide coherency in dotnet/extensions -->
-    <MicrosoftBclTimeProviderVersion>10.0.0-preview.6.25318.110</MicrosoftBclTimeProviderVersion>
-    <SystemCollectionsImmutableVersion>10.0.0-preview.6.25318.110</SystemCollectionsImmutableVersion>
-    <SystemDiagnosticsPerformanceCounterVersion>10.0.0-preview.6.25318.110</SystemDiagnosticsPerformanceCounterVersion>
-    <SystemIOHashingVersion>10.0.0-preview.6.25318.110</SystemIOHashingVersion>
-    <SystemMemoryDataVersion>10.0.0-preview.6.25318.110</SystemMemoryDataVersion>
-    <SystemNumericsTensorsVersion>10.0.0-preview.6.25318.110</SystemNumericsTensorsVersion>
-    <SystemRuntimeCachingVersion>10.0.0-preview.6.25318.110</SystemRuntimeCachingVersion>
+    <MicrosoftBclTimeProviderVersion>10.0.0-preview.6.25319.112</MicrosoftBclTimeProviderVersion>
+    <SystemCollectionsImmutableVersion>10.0.0-preview.6.25319.112</SystemCollectionsImmutableVersion>
+    <SystemDiagnosticsPerformanceCounterVersion>10.0.0-preview.6.25319.112</SystemDiagnosticsPerformanceCounterVersion>
+    <SystemIOHashingVersion>10.0.0-preview.6.25319.112</SystemIOHashingVersion>
+    <SystemMemoryDataVersion>10.0.0-preview.6.25319.112</SystemMemoryDataVersion>
+    <SystemNumericsTensorsVersion>10.0.0-preview.6.25319.112</SystemNumericsTensorsVersion>
+    <SystemRuntimeCachingVersion>10.0.0-preview.6.25319.112</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/extensions -->
     <MicrosoftExtensionsDiagnosticsTestingVersion>9.6.0-preview.1.25271.2</MicrosoftExtensionsDiagnosticsTestingVersion>
     <MicrosoftExtensionsTimeProviderTestingVersion>9.6.0-preview.1.25271.2</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
-    <dotnetefVersion>10.0.0-preview.6.25318.110</dotnetefVersion>
-    <MicrosoftEntityFrameworkCoreInMemoryVersion>10.0.0-preview.6.25318.110</MicrosoftEntityFrameworkCoreInMemoryVersion>
-    <MicrosoftEntityFrameworkCoreRelationalVersion>10.0.0-preview.6.25318.110</MicrosoftEntityFrameworkCoreRelationalVersion>
-    <MicrosoftEntityFrameworkCoreSqliteVersion>10.0.0-preview.6.25318.110</MicrosoftEntityFrameworkCoreSqliteVersion>
-    <MicrosoftEntityFrameworkCoreSqlServerVersion>10.0.0-preview.6.25318.110</MicrosoftEntityFrameworkCoreSqlServerVersion>
-    <MicrosoftEntityFrameworkCoreToolsVersion>10.0.0-preview.6.25318.110</MicrosoftEntityFrameworkCoreToolsVersion>
-    <MicrosoftEntityFrameworkCoreVersion>10.0.0-preview.6.25318.110</MicrosoftEntityFrameworkCoreVersion>
-    <MicrosoftEntityFrameworkCoreDesignVersion>10.0.0-preview.6.25318.110</MicrosoftEntityFrameworkCoreDesignVersion>
+    <dotnetefVersion>10.0.0-preview.6.25319.112</dotnetefVersion>
+    <MicrosoftEntityFrameworkCoreInMemoryVersion>10.0.0-preview.6.25319.112</MicrosoftEntityFrameworkCoreInMemoryVersion>
+    <MicrosoftEntityFrameworkCoreRelationalVersion>10.0.0-preview.6.25319.112</MicrosoftEntityFrameworkCoreRelationalVersion>
+    <MicrosoftEntityFrameworkCoreSqliteVersion>10.0.0-preview.6.25319.112</MicrosoftEntityFrameworkCoreSqliteVersion>
+    <MicrosoftEntityFrameworkCoreSqlServerVersion>10.0.0-preview.6.25319.112</MicrosoftEntityFrameworkCoreSqlServerVersion>
+    <MicrosoftEntityFrameworkCoreToolsVersion>10.0.0-preview.6.25319.112</MicrosoftEntityFrameworkCoreToolsVersion>
+    <MicrosoftEntityFrameworkCoreVersion>10.0.0-preview.6.25319.112</MicrosoftEntityFrameworkCoreVersion>
+    <MicrosoftEntityFrameworkCoreDesignVersion>10.0.0-preview.6.25319.112</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/sdk -->
-    <MicrosoftDotNetHotReloadAgentVersion>10.0.100-preview.6.25318.110</MicrosoftDotNetHotReloadAgentVersion>
-    <MicrosoftDotNetHotReloadAgentDataVersion>10.0.100-preview.6.25318.110</MicrosoftDotNetHotReloadAgentDataVersion>
+    <MicrosoftDotNetHotReloadAgentVersion>10.0.100-preview.6.25319.112</MicrosoftDotNetHotReloadAgentVersion>
+    <MicrosoftDotNetHotReloadAgentDataVersion>10.0.100-preview.6.25319.112</MicrosoftDotNetHotReloadAgentDataVersion>
     <!-- Packages from dotnet/roslyn -->
     <!-- Not updated automatically -->
     <MicrosoftCodeAnalysisCommonVersion>4.13.0-3.24613.7</MicrosoftCodeAnalysisCommonVersion>
@@ -169,12 +169,12 @@
     <NuGetVersioningVersion>6.2.4</NuGetVersioningVersion>
     <NuGetFrameworksVersion>6.2.4</NuGetFrameworksVersion>
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetBuildTasksArchivesVersion>10.0.0-beta.25318.110</MicrosoftDotNetBuildTasksArchivesVersion>
-    <MicrosoftDotNetBuildTasksInstallersVersion>10.0.0-beta.25318.110</MicrosoftDotNetBuildTasksInstallersVersion>
-    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.25318.110</MicrosoftDotNetBuildTasksTemplatingVersion>
-    <MicrosoftDotNetRemoteExecutorVersion>10.0.0-beta.25318.110</MicrosoftDotNetRemoteExecutorVersion>
+    <MicrosoftDotNetBuildTasksArchivesVersion>10.0.0-beta.25319.112</MicrosoftDotNetBuildTasksArchivesVersion>
+    <MicrosoftDotNetBuildTasksInstallersVersion>10.0.0-beta.25319.112</MicrosoftDotNetBuildTasksInstallersVersion>
+    <MicrosoftDotNetBuildTasksTemplatingVersion>10.0.0-beta.25319.112</MicrosoftDotNetBuildTasksTemplatingVersion>
+    <MicrosoftDotNetRemoteExecutorVersion>10.0.0-beta.25319.112</MicrosoftDotNetRemoteExecutorVersion>
     <!-- Packages from dotnet/xdt -->
-    <MicrosoftWebXdtVersion>10.0.0-preview.25318.110</MicrosoftWebXdtVersion>
+    <MicrosoftWebXdtVersion>10.0.0-preview.25319.112</MicrosoftWebXdtVersion>
     <!-- dotnet-optimization dependencies -->
     <optimizationwindows_ntx64MIBCRuntimeVersion>1.0.0-prerelease.25217.3</optimizationwindows_ntx64MIBCRuntimeVersion>
     <optimizationwindows_ntx86MIBCRuntimeVersion>1.0.0-prerelease.25217.3</optimizationwindows_ntx86MIBCRuntimeVersion>
