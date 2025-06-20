@@ -84,6 +84,38 @@ public class WebHostTests
     }
 
     [Fact]
+    public async Task WebHostConfiguration_EnablesForwardedHeaders_CustomHeaders_FromConfig()
+    {
+        using var host = WebHost.CreateDefaultBuilder()
+            .ConfigureAppConfiguration(configBuilder =>
+            {
+                configBuilder.AddInMemoryCollection(new[]
+                {
+                    new KeyValuePair<string, string>("FORWARDEDHEADERS_ENABLED", "true" ),
+                    new KeyValuePair<string, string>("FORWARDEDHEADERS_HEADERS", "All" ),
+                });
+            })
+            .UseTestServer()
+            .Configure(app =>
+            {
+                Assert.True(app.Properties.ContainsKey("ForwardedHeadersAdded"), "Forwarded Headers");
+                app.Run(context =>
+                {
+                    Assert.Equal("https", context.Request.Scheme);
+                    Assert.Equal("/test", context.Request.PathBase.Value);
+                    return Task.CompletedTask;
+                });
+            }).Build();
+
+        await host.StartAsync();
+        var client = host.GetTestClient();
+        client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
+        client.DefaultRequestHeaders.Add("x-forwarded-prefix", "/test");
+        var result = await client.GetAsync("http://localhost/");
+        result.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
     public void CreateDefaultBuilder_RegistersRouting()
     {
         var host = WebHost.CreateDefaultBuilder()
