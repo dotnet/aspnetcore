@@ -2781,6 +2781,29 @@ class HubConnectionTest {
         List<HttpRequest> sentRequests = client.getSentRequests();
         assertEquals(1, sentRequests.size());
         assertEquals("http://example.com/negotiate?negotiateVersion=1", sentRequests.get(0).getUrl());
+
+        hubConnection.stop().blockingAwait();
+        assertTrue(true);
+    }
+
+    @Test
+    public void closeWithPendingNegotiate() {
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", (req) -> Single.just(new HttpResponse(404, "", TestUtils.emptyByteBuffer)).delay(200, TimeUnit.MILLISECONDS));
+
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withHttpClient(client)
+                .build();
+
+        Completable start = hubConnection.start();
+        assertEquals(HubConnectionState.CONNECTING, hubConnection.getConnectionState());
+        hubConnection.stop().timeout(3, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
+
+        HttpRequestException exception = assertThrows(HttpRequestException.class, () -> start.blockingAwait(10, TimeUnit.SECONDS));
+        assertEquals("Unexpected status code returned from negotiate: 404 .", exception.getMessage());
+        assertEquals(404, exception.getStatusCode());
     }
 
     @Test
