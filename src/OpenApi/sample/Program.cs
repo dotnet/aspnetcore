@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using System.Text.Json.Serialization;
-using Microsoft.OpenApi;
 using Sample.Transformers;
 
 var builder = WebApplication.CreateBuilder(args);
