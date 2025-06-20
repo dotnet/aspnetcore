@@ -1,0 +1,11 @@
+@page "/reexecution/post-not-found-ssr-streaming"
+@page "/post-not-found-ssr-streaming"
+@attribute [StreamRendering(true)]
+
+@*
+    this page is used in global interactivity and no interactivity scenarios
+    the content is rendered on the server with streaming and might become
+    interactive later if interactivity was enabled in the app
+*@
+
+<TestContentPackage.NotFound.ComponentThatPostsNotFound StartStreaming="true"/>

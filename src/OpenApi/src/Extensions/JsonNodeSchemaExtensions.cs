@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi;
 

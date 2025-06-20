@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web.HtmlRendering;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -296,6 +297,42 @@ internal partial class EndpointHtmlRenderer
         }
 
         return (ServerComponentInvocationSequence)result!;
+    }
+
+    internal (int sequence, object? key) GetSequenceAndKey(ComponentState boundaryComponentState)
+    {
+        if (boundaryComponentState is null || boundaryComponentState.Component is not SSRRenderModeBoundary boundary)
+        {
+            throw new InvalidOperationException(
+                "The parent component state must be an SSRRenderModeBoundary to get the sequence and key.");
+        }
+
+        // The boundary is at the root (not supported, but we handle it gracefully)
+        if (boundaryComponentState.ParentComponentState is null)
+        {
+            return (0, null);
+        }
+
+        // Grab the parent of the boundary component. We need to find the SSRRenderModeBoundary component marker frame
+        // within it. As when we do `@rendermode="InteractiveServer" @key="some-key" the sequence we are interested in
+        // is the one on the SSRRenderModeBoundary component marker frame, not the one on the nested component frame.
+        // Same for the key.
+        var targetState = boundaryComponentState.ParentComponentState;
+        var frames = GetCurrentRenderTreeFrames(targetState.ComponentId);
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref var frame = ref frames.Array[i];
+            if (frame.FrameType == RenderTreeFrameType.Component &&
+                frame.Component is SSRRenderModeBoundary candidate &&
+                ReferenceEquals(candidate, boundary))
+            {
+                // This is the component marker frame, so we can use its sequence and key
+                return (frame.Sequence, frame.ComponentKey);
+            }
+        }
+
+        throw new InvalidOperationException(
+            "The parent component state does not have a valid SSRRenderModeBoundary component marker frame.");
     }
 
     // An implementation of IHtmlContent that holds a reference to a component until we're ready to emit it as HTML to the response.

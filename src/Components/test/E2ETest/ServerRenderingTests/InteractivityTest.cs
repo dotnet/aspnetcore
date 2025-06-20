@@ -1400,12 +1400,64 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto-2")).Text);
     }
 
+    [Fact]
+    public void CanPersistMultipleRootPrerenderedStateDeclaratively_WebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-multiple-root-component-state-declaratively?wasm=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("wasm-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("wasm-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm-2")).Text);
+    }
+
+    [Fact]
+    public void CanPersistMultipleRootPrerenderedStateDeclaratively_Server()
+    {
+        Navigate($"{ServerPathBase}/persist-multiple-root-component-state-declaratively?server=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("server-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("server-2")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server-2")).Text);
+    }
+
+    [Fact]
+    public void CanPersistMultipleRootPrerenderedStateDeclaratively_Auto_PersistsOnServer()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        BlockWebAssemblyResourceLoad();
+
+        Navigate($"{ServerPathBase}/persist-multiple-root-component-state-declaratively?auto=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("auto-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("auto-2")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto-2")).Text);
+    }
+
+    [Fact]
+    public void CanPersistMultipleRootPrerenderedStateDeclaratively_Auto_PersistsOnWebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-multiple-root-component-state-declaratively?auto=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("auto-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("auto-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto-2")).Text);
+    }
+
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void NavigatesWithInteractivityByRequestRedirection(bool controlFlowByException)
     {
-        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.EnableThrowNavigationException", isEnabled: controlFlowByException);
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: !controlFlowByException);
         Navigate($"{ServerPathBase}/routing/ssr-navigate-to");
         Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);
         Browser.Click(By.Id("redirectButton"));

@@ -15,6 +15,8 @@ public class ValidatableTypeInfoTests
     public async Task Validate_ValidatesComplexType_WithNestedProperties()
     {
         // Arrange
+        List<ValidationErrorContext> validationErrors = [];
+
         var personType = new TestValidatableTypeInfo(
             typeof(Person),
             [
@@ -52,6 +54,8 @@ public class ValidatableTypeInfoTests
             ValidationContext = new ValidationContext(personWithMissingRequiredFields)
         };
 
+        context.OnValidationError += validationErrors.Add;
+
         // Act
         await personType.ValidateAsync(personWithMissingRequiredFields, context, default);
 
@@ -78,12 +82,43 @@ public class ValidatableTypeInfoTests
                 Assert.Equal("Address.City", kvp.Key);
                 Assert.Equal("The City field is required.", kvp.Value.First());
             });
+
+        Assert.Collection(validationErrors,
+            context =>
+            {
+                Assert.Equal("Name", context.Name);
+                Assert.Equal("Name", context.Path);
+                Assert.Equal("The Name field is required.", context.Errors.Single());
+                Assert.Same(context.Container, personWithMissingRequiredFields);
+            },
+            context =>
+            {
+                Assert.Equal("Age", context.Name);
+                Assert.Equal("Age", context.Path);
+                Assert.Equal("The field Age must be between 0 and 120.", context.Errors.Single());
+                Assert.Same(context.Container, personWithMissingRequiredFields);
+            },
+            context =>
+            {
+                Assert.Equal("Street", context.Name);
+                Assert.Equal("Address.Street", context.Path);
+                Assert.Equal("The Street field is required.", context.Errors.Single());
+                Assert.Same(context.Container, personWithMissingRequiredFields.Address);
+            },
+            context =>
+            {
+                Assert.Equal("City", context.Name);
+                Assert.Equal("Address.City", context.Path);
+                Assert.Equal("The City field is required.", context.Errors.Single());
+                Assert.Same(context.Container, personWithMissingRequiredFields.Address);
+            });
     }
 
     [Fact]
     public async Task Validate_HandlesIValidatableObject_Implementation()
     {
         // Arrange
+        var validationErrors = new List<ValidationErrorContext>();
         var employeeType = new TestValidatableTypeInfo(
             typeof(Employee),
             [
@@ -110,6 +145,8 @@ public class ValidatableTypeInfoTests
             ValidationContext = new ValidationContext(employee)
         };
 
+        context.OnValidationError += validationErrors.Add;
+
         // Act
         await employeeType.ValidateAsync(employee, context, default);
 
@@ -118,6 +155,12 @@ public class ValidatableTypeInfoTests
         var error = Assert.Single(context.ValidationErrors);
         Assert.Equal("Salary", error.Key);
         Assert.Equal("Salary must be a positive value.", error.Value.First());
+
+        var errorContext = Assert.Single(validationErrors);
+        Assert.Equal("Salary", errorContext.Name);
+        Assert.Equal("Salary", errorContext.Path);
+        Assert.Equal("Salary must be a positive value.", errorContext.Errors.Single());
+        Assert.Same(errorContext.Container, employee);
     }
 
     [Fact]
