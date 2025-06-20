@@ -620,13 +620,13 @@ public class RequestResponseTests
     
         var expected = $"""
             IIS Version: 10.0
-            ApplicationId: /LM/W3SVC/1/ROOT
+            ApplicationId: /LM/W3SVC/{siteName}/ROOT
             Application Path: {_fixture.DeploymentResult.ContentRoot}\
             Application Virtual Path: /
             Application Config Path: MACHINE/WEBROOT/APPHOST/{siteName}
             AppPool ID: {_fixture.DeploymentResult.AppPoolName}
             AppPool Config File: {_fixture.DeploymentResult.DeploymentParameters.ServerConfigLocation}
-            Site ID: 1
+            Site ID: {siteName}
             Site Name: {siteName}
             """;
 
