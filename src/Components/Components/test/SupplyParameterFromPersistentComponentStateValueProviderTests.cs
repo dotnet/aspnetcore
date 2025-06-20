@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
@@ -431,6 +432,146 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         Assert.Contains(sink.Writes, w => w is { LogLevel: LogLevel.Error } && w.EventId == new EventId(1000, "PersistenceCallbackError"));
     }
 
+    [Fact]
+    public async Task PersistAsync_CanPersistValueTypes_IntProperty()
+    {
+        // Arrange
+        var state = new Dictionary<string, byte[]>();
+        var store = new TestStore(state);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+
+        var renderer = new TestRenderer();
+        var component = new ValueTypeTestComponent { IntValue = 42 };
+        var componentStates = CreateComponentState(renderer, [(component, null)], null);
+        var componentState = componentStates.First();
+
+        // Create the provider and subscribe the component
+        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.IntValue), typeof(int));
+        provider.Subscribe(componentState, cascadingParameterInfo);
+
+        // Act
+        await persistenceManager.PersistStateAsync(store, renderer);
+
+        // Assert
+        Assert.NotEmpty(store.State);
+
+        // Verify the value was persisted correctly
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        newState.InitializeExistingState(store.State);
+
+        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        Assert.True(newState.TryTakeFromJson<int>(key, out var retrievedValue));
+        Assert.Equal(42, retrievedValue);
+    }
+
+    [Fact]
+    public async Task PersistAsync_CanPersistValueTypes_NullableIntProperty()
+    {
+        // Arrange
+        var state = new Dictionary<string, byte[]>();
+        var store = new TestStore(state);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+
+        var renderer = new TestRenderer();
+        var component = new ValueTypeTestComponent { NullableIntValue = 123 };
+        var componentStates = CreateComponentState(renderer, [(component, null)], null);
+        var componentState = componentStates.First();
+
+        // Create the provider and subscribe the component
+        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.NullableIntValue), typeof(int?));
+        provider.Subscribe(componentState, cascadingParameterInfo);
+
+        // Act
+        await persistenceManager.PersistStateAsync(store, renderer);
+
+        // Assert
+        Assert.NotEmpty(store.State);
+
+        // Verify the value was persisted correctly
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        newState.InitializeExistingState(store.State);
+
+        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        Assert.True(newState.TryTakeFromJson<int?>(key, out var retrievedValue));
+        Assert.Equal(123, retrievedValue);
+    }
+
+    [Fact]
+    public async Task PersistAsync_CanPersistValueTypes_TupleProperty()
+    {
+        // Arrange
+        var state = new Dictionary<string, byte[]>();
+        var store = new TestStore(state);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+
+        var renderer = new TestRenderer();
+        var component = new ValueTypeTestComponent { TupleValue = ("test", 456) };
+        var componentStates = CreateComponentState(renderer, [(component, null)], null);
+        var componentState = componentStates.First();
+
+        // Create the provider and subscribe the component
+        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.TupleValue), typeof((string, int)));
+        provider.Subscribe(componentState, cascadingParameterInfo);
+
+        // Act
+        await persistenceManager.PersistStateAsync(store, renderer);
+
+        // Assert
+        Assert.NotEmpty(store.State);
+
+        // Verify the value was persisted correctly
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        newState.InitializeExistingState(store.State);
+
+        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        Assert.True(newState.TryTakeFromJson<(string, int)>(key, out var retrievedValue));
+        Assert.Equal(("test", 456), retrievedValue);
+    }
+
+    [Fact]
+    public async Task PersistAsync_CanPersistValueTypes_NullableTupleProperty()
+    {
+        // Arrange
+        var state = new Dictionary<string, byte[]>();
+        var store = new TestStore(state);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            new ServiceCollection().BuildServiceProvider());
+
+        var renderer = new TestRenderer();
+        var component = new ValueTypeTestComponent { NullableTupleValue = ("test2", 789) };
+        var componentStates = CreateComponentState(renderer, [(component, null)], null);
+        var componentState = componentStates.First();
+
+        // Create the provider and subscribe the component
+        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.NullableTupleValue), typeof((string, int)?));
+        provider.Subscribe(componentState, cascadingParameterInfo);
+
+        // Act
+        await persistenceManager.PersistStateAsync(store, renderer);
+
+        // Assert
+        Assert.NotEmpty(store.State);
+
+        // Verify the value was persisted correctly
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        newState.InitializeExistingState(store.State);
+
+        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        Assert.True(newState.TryTakeFromJson<(string, int)?>(key, out var retrievedValue));
+        Assert.Equal(("test2", 789), retrievedValue);
+    }
+
     private static void InitializeState(PersistentComponentState state, List<(ComponentState componentState, string propertyName, string value)> items)
     {
         var dictionary = new Dictionary<string, byte[]>();
@@ -452,7 +593,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
 
     private static List<ComponentState> CreateComponentState(
         TestRenderer renderer,
-        List<(TestComponent, object)> components,
+        List<(IComponent, object)> components,
         ParentComponent parentComponent = null)
     {
         var i = 1;
@@ -464,7 +605,20 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
             var componentState = new ComponentState(renderer, i++, component, parentComponentState);
             if (currentRenderTree != null && key != null)
             {
-                currentRenderTree.OpenComponent<TestComponent>(0);
+                // Open component based on the actual component type
+                if (component is TestComponent)
+                {
+                    currentRenderTree.OpenComponent<TestComponent>(0);
+                }
+                else if (component is ValueTypeTestComponent)
+                {
+                    currentRenderTree.OpenComponent<ValueTypeTestComponent>(0);
+                }
+                else
+                {
+                    currentRenderTree.OpenComponent<IComponent>(0);
+                }
+                
                 var frames = currentRenderTree.GetFrames();
                 frames.Array[frames.Count - 1].ComponentStateField = componentState;
                 if (key != null)
@@ -492,6 +646,24 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
     {
         [SupplyParameterFromPersistentComponentState]
         public string State { get; set; }
+
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    private class ValueTypeTestComponent : IComponent
+    {
+        [SupplyParameterFromPersistentComponentState]
+        public int IntValue { get; set; }
+
+        [SupplyParameterFromPersistentComponentState]
+        public int? NullableIntValue { get; set; }
+
+        [SupplyParameterFromPersistentComponentState]
+        public (string, int) TupleValue { get; set; }
+
+        [SupplyParameterFromPersistentComponentState]
+        public (string, int)? NullableTupleValue { get; set; }
 
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
         public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();

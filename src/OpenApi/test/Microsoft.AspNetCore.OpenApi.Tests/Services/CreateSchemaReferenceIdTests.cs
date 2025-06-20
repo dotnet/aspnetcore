@@ -6,8 +6,6 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
 {
