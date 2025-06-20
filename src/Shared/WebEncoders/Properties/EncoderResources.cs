@@ -12,6 +12,11 @@ internal static class EncoderResources
     /// <summary>
     /// Invalid {0}, {1} or {2} length.
     /// </summary>
+    internal const string WebEncoders_InvalidCountOrLength = "Invalid {0} or {1} length.";
+
+    /// <summary>
+    /// Invalid {0}, {1} or {2} length.
+    /// </summary>
     internal const string WebEncoders_InvalidCountOffsetOrLength = "Invalid {0}, {1} or {2} length.";
 
     /// <summary>
