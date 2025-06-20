@@ -94,7 +94,7 @@
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.pdb" />
   </ItemGroup>
 
-  <Target Name="_AddExtensionsSymbolsToRefPack" BeforeTargets="GetFilesToPackage">
+  <Target Name="_AddExtensionsSymbolsToSymbolPack" BeforeTargets="GetFilesToPackage">
     <!-- Explicitly include symbols for libraries we redistribute from runtime -->
     <ItemGroup>
       <_TransportPdbs Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.pdb"
