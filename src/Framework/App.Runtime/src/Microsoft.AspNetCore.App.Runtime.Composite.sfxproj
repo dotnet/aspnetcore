@@ -40,18 +40,6 @@
         GeneratePathProperty="true" />
   </ItemGroup>
 
-  <!-- Explicitly include symbols for libraries we redistribute from runtime -->
-  <ItemGroup>
-    <_TransportPdbs Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.pdb"
-        Exclude="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.ni.pdb" />
-
-    <_TransportPdbsWithName Include="@(_TransportPdbs)"
-        Name="%(Filename)" />
-
-    <_SymbolFilesToPackage Include="@(_TransportPdbsWithName)"
-        Condition="'@(ExternalAspNetCoreAppReference->AnyHaveMetadataValue('Identity', '%(Name)'))' == 'true'" />
-  </ItemGroup>
-
   <ItemGroup>
     <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)">
       <IncludeAssets>Runtime;Native</IncludeAssets>
@@ -104,6 +92,17 @@
     <NativeRuntimeAsset Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.pdb" />
   </ItemGroup>
+
+  <Target Name="_AddExtensionsSymbolsToRefPack" BeforeTargets="GetFilesToPackage">
+    <!-- Explicitly include symbols for libraries we redistribute from runtime -->
+    <ItemGroup>
+      <_TransportPdbs Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.pdb"
+          Exclude="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.ni.pdb" />
+
+      <_SymbolFilesToPackage Include="@(_TransportPdbs)"
+          Condition="'@(ExternalAspNetCoreAppReference->AnyHaveMetadataValue('Identity', '%(Filename)'))' == 'true'" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"
