@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/signalr-protocol-msgpack",
-  "version": "5.0.0-dev",
+  "version": "10.0.0-dev",
   "description": "MsgPack Protocol support for ASP.NET Core SignalR",
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
@@ -41,7 +41,7 @@
     "src/**/*"
   ],
   "dependencies": {
-    "@microsoft/signalr": "*",
+    "@microsoft/signalr": ">=10.0.0-dev",
     "@msgpack/msgpack": "^2.7.0"
   },
   "overrides": {
