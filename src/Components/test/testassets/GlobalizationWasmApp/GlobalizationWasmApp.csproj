@@ -7,6 +7,8 @@
 
     <!-- Resx generation on Resources.resx only -->
     <GenerateResxSource>false</GenerateResxSource>
+
+    <WasmApplicationEnvironmentName>Staging</WasmApplicationEnvironmentName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
