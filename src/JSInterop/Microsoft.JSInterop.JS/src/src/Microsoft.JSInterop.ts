@@ -573,7 +573,7 @@ export module DotNet {
   }
 
   /** Traverses the object hierarchy to find an object member specified by the identifier.
-   * 
+   *
    * @param obj Root object to search in.
    * @param identifier Complete identifier of the member to find, e.g. "document.location.href".
    * @returns A tuple containing the immediate parent of the member and the member name.
@@ -586,19 +586,19 @@ export module DotNet {
       // Error handling in case of undefined last key depends on the type of operation.
       for (let i = 0; i < keys.length - 1; i++) {
           const key = keys[i];
-  
+
           if (current && typeof current === 'object' && key in current) {
               current = current[key];
           } else {
               throw new Error(`Could not find '${identifier}' ('${key}' was undefined).`);
           }
       }
-  
+
       return [current, keys[keys.length - 1]];
   }
 
   /** Takes an object member and a call type and returns a function that performs the operation specified by the call type on the member.
-   * 
+   *
    * @param parent Immediate parent of the accessed object member.
    * @param memberName Name (key) of the accessed member.
    * @param callType The type of the operation to perform on the member.
@@ -640,50 +640,50 @@ export module DotNet {
       if (!(propName in obj)) {
           return false;
       }
-  
+
       // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
       while (obj !== undefined) {
           const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
-  
+
           if (descriptor) {
               // Return true for data property
               if (descriptor.hasOwnProperty('value')) {
                   return true
               }
-          
+
               // Return true for accessor property with defined getter.
               return descriptor.hasOwnProperty('get') && typeof descriptor.get === 'function';
           }
-  
+
           obj = Object.getPrototypeOf(obj);
       }
-  
+
       return false;
   }
-  
+
   function isWritableProperty(obj: any, propName: string) {
       // Return true for missing property if the property can be added.
       if (!(propName in obj)) {
           return Object.isExtensible(obj);
       }
-  
+
       // If the property is present we examine its descriptor, potentially needing to walk up the prototype chain.
       while (obj !== undefined) {
           const descriptor = Object.getOwnPropertyDescriptor(obj, propName);
-  
+
           if (descriptor) {
               // Return true for writable data property.
               if (descriptor.hasOwnProperty('value') && descriptor.writable) {
                   return true;
               }
-              
+
               // Return true for accessor property with defined setter.
               return descriptor.hasOwnProperty('set') && typeof descriptor.set === 'function';
           }
-  
+
           obj = Object.getPrototypeOf(obj);
       }
-  
+
       return false;
   }
 
@@ -759,6 +759,25 @@ export module DotNet {
        */
       async arrayBuffer(): Promise<ArrayBuffer> {
           return new Response(await this.stream()).arrayBuffer();
+      }
+
+      /**
+       * Returns a Blob from the stream. This uses the browser's stream reader.
+       * The returned value is a string.
+       */
+      async readableStreamToBlob(mimeType: string = "application/octet-stream"): Promise<string> {
+          const reader = (await this.stream()).getReader();
+          const chunks: BlobPart[] = [];
+
+          while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+          }
+
+          const blob = new Blob(chunks, {type: mimeType});
+          const url = URL.createObjectURL(blob);
+          return url;
       }
   }
 
