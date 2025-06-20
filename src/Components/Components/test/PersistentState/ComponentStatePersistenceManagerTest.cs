@@ -418,8 +418,116 @@ public class ComponentStatePersistenceManagerTest
         }
     }
 
+    [Fact]
+    public void PersistenceReasons_HaveCorrectDefaults()
+    {
+        // Arrange & Act
+        var prerenderingReason = new TestPersistOnPrerendering();
+        var enhancedNavReason = new TestPersistOnEnhancedNavigation();
+        var circuitPauseReason = new TestPersistOnCircuitPause();
+
+        // Assert
+        Assert.True(prerenderingReason.PersistByDefault);
+        Assert.False(enhancedNavReason.PersistByDefault);
+        Assert.True(circuitPauseReason.PersistByDefault);
+    }
+
+    [Fact]
+    public async Task PersistStateAsync_RespectsReasonFilters()
+    {
+        // Arrange
+        var logger = NullLogger<ComponentStatePersistenceManager>.Instance;
+        var manager = new ComponentStatePersistenceManager(logger);
+        var renderer = new TestRenderer();
+        var store = new TestStore([]);
+        var callbackExecuted = false;
+
+        // Register callback with filter that blocks enhanced navigation
+        var filters = new List<IPersistenceReasonFilter>
+        {
+            new TestPersistenceReasonFilter<TestPersistOnEnhancedNavigation>(false)
+        };
+
+        manager.State.RegisterOnPersisting(() =>
+        {
+            callbackExecuted = true;
+            return Task.CompletedTask;
+        }, new TestRenderMode(), filters);
+
+        // Act - persist with enhanced navigation reason
+        await manager.PersistStateAsync(store, renderer, new TestPersistOnEnhancedNavigation());
+
+        // Assert - callback should not be executed
+        Assert.False(callbackExecuted);
+    }
+
+    [Fact]
+    public async Task PersistStateAsync_AllowsWhenFilterMatches()
+    {
+        // Arrange
+        var logger = NullLogger<ComponentStatePersistenceManager>.Instance;
+        var manager = new ComponentStatePersistenceManager(logger);
+        var renderer = new TestRenderer();
+        var store = new TestStore([]);
+        var callbackExecuted = false;
+
+        // Register callback with filter that allows prerendering
+        var filters = new List<IPersistenceReasonFilter>
+        {
+            new TestPersistenceReasonFilter<TestPersistOnPrerendering>(true)
+        };
+
+        manager.State.RegisterOnPersisting(() =>
+        {
+            callbackExecuted = true;
+            return Task.CompletedTask;
+        }, new TestRenderMode(), filters);
+
+        // Act - persist with prerendering reason
+        await manager.PersistStateAsync(store, renderer, new TestPersistOnPrerendering());
+
+        // Assert - callback should be executed
+        Assert.True(callbackExecuted);
+    }
+
+    private class TestPersistenceReasonFilter<TReason> : IPersistenceReasonFilter
+        where TReason : IPersistenceReason
+    {
+        private readonly bool _allow;
+
+        public TestPersistenceReasonFilter(bool allow)
+        {
+            _allow = allow;
+        }
+
+        public bool? ShouldPersist(IPersistenceReason reason)
+        {
+            if (reason is TReason)
+            {
+                return _allow;
+            }
+            return null;
+        }
+    }
+
     private class TestRenderMode : IComponentRenderMode
     {
+    }
+
+    // Test implementations of persistence reasons
+    private class TestPersistOnPrerendering : IPersistenceReason
+    {
+        public bool PersistByDefault => true;
+    }
+
+    private class TestPersistOnEnhancedNavigation : IPersistenceReason
+    {
+        public bool PersistByDefault => false;
+    }
+
+    private class TestPersistOnCircuitPause : IPersistenceReason
+    {
+        public bool PersistByDefault => true;
     }
 
     private class PersistentService : IPersistentServiceRegistration

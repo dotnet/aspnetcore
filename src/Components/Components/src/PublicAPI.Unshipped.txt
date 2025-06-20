@@ -13,6 +13,14 @@ Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.
 Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions
 Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateAttribute
 Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateAttribute.SupplyParameterFromPersistentComponentStateAttribute() -> void
+Microsoft.AspNetCore.Components.IPersistenceReason
+Microsoft.AspNetCore.Components.IPersistenceReason.PersistByDefault.get -> bool
+Microsoft.AspNetCore.Components.IPersistenceReasonFilter
+Microsoft.AspNetCore.Components.IPersistenceReasonFilter.ShouldPersist(Microsoft.AspNetCore.Components.IPersistenceReason! reason) -> bool?
+Microsoft.AspNetCore.Components.PersistReasonFilter<TReason>
+Microsoft.AspNetCore.Components.PersistReasonFilter<TReason>.PersistReasonFilter(bool persist) -> void
+Microsoft.AspNetCore.Components.PersistReasonFilter<TReason>.ShouldPersist(Microsoft.AspNetCore.Components.IPersistenceReason! reason) -> bool?
+Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnPersisting(System.Func<System.Threading.Tasks.Task!>! callback, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.IPersistenceReasonFilter!>! reasonFilters) -> Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.Extensions.DependencyInjection.SupplyParameterFromPersistentComponentStateProviderServiceCollectionExtensions
 static Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.IComponentRenderMode! componentRenderMode) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

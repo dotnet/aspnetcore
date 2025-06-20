@@ -210,6 +210,286 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             interactiveRuntime: interactiveRuntime);
     }
 
+    [Theory]
+    [InlineData(true, typeof(InteractiveServerRenderMode), (string)null)]
+    [InlineData(true, typeof(InteractiveWebAssemblyRenderMode), (string)null)]
+    [InlineData(true, typeof(InteractiveAutoRenderMode), (string)null)]
+    [InlineData(false, typeof(InteractiveServerRenderMode), (string)null)]
+    public void CanFilterPersistentStateCallbacks(bool suppressEnhancedNavigation, Type renderMode, string streaming)
+    {
+        var mode = renderMode switch
+        {
+            var t when t == typeof(InteractiveServerRenderMode) => "server",
+            var t when t == typeof(InteractiveWebAssemblyRenderMode) => "wasm",
+            var t when t == typeof(InteractiveAutoRenderMode) => "auto",
+            _ => throw new ArgumentException($"Unknown render mode: {renderMode.Name}")
+        };
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Navigate to a page without components first to test enhanced navigation filtering
+            Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
+            if (mode == "auto")
+            {
+                BlockWebAssemblyResourceLoad();
+            }
+            Browser.Click(By.Id("call-blazor-start"));
+            Browser.Click(By.Id("filtering-test-link"));
+        }
+        else
+        {
+            EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, true);
+            if (mode == "auto")
+            {
+                BlockWebAssemblyResourceLoad();
+            }
+        }
+
+        if (mode != "auto")
+        {
+            ValidateFilteringBehavior(suppressEnhancedNavigation, mode, renderMode, streaming);
+        }
+        else
+        {
+            // For auto mode, validate both server and wasm behavior
+            ValidateFilteringBehavior(suppressEnhancedNavigation, mode, renderMode, streaming, interactiveRuntime: "server");
+
+            UnblockWebAssemblyResourceLoad();
+            Browser.Navigate().Refresh();
+
+            ValidateFilteringBehavior(suppressEnhancedNavigation, mode, renderMode, streaming, interactiveRuntime: "wasm");
+        }
+    }
+
+    [Theory]
+    [InlineData(true, typeof(InteractiveServerRenderMode))]
+    [InlineData(true, typeof(InteractiveWebAssemblyRenderMode))]
+    [InlineData(true, typeof(InteractiveAutoRenderMode))]
+    [InlineData(false, typeof(InteractiveServerRenderMode))]
+    public void CanFilterPersistentStateForEnhancedNavigation(bool suppressEnhancedNavigation, Type renderMode)
+    {
+        var mode = renderMode switch
+        {
+            var t when t == typeof(InteractiveServerRenderMode) => "server",
+            var t when t == typeof(InteractiveWebAssemblyRenderMode) => "wasm",
+            var t when t == typeof(InteractiveAutoRenderMode) => "auto",
+            _ => throw new ArgumentException($"Unknown render mode: {renderMode.Name}")
+        };
+
+        if (!suppressEnhancedNavigation)
+        {
+            // Navigate to a page without components first to test enhanced navigation filtering
+            Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
+            if (mode == "auto")
+            {
+                BlockWebAssemblyResourceLoad();
+            }
+            Browser.Click(By.Id("call-blazor-start"));
+            // Click link that enables persistence during enhanced navigation
+            Browser.Click(By.Id("filtering-test-link-with-enhanced-nav"));
+        }
+        else
+        {
+            EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, true);
+            if (mode == "auto")
+            {
+                BlockWebAssemblyResourceLoad();
+            }
+        }
+
+        if (mode != "auto")
+        {
+            ValidateEnhancedNavigationFiltering(suppressEnhancedNavigation, mode, renderMode);
+        }
+        else
+        {
+            // For auto mode, validate both server and wasm behavior
+            ValidateEnhancedNavigationFiltering(suppressEnhancedNavigation, mode, renderMode, interactiveRuntime: "server");
+
+            UnblockWebAssemblyResourceLoad();
+            Browser.Navigate().Refresh();
+
+            ValidateEnhancedNavigationFiltering(suppressEnhancedNavigation, mode, renderMode, interactiveRuntime: "wasm");
+        }
+    }
+
+    [Theory]
+    [InlineData(typeof(InteractiveServerRenderMode))]
+    [InlineData(typeof(InteractiveWebAssemblyRenderMode))]
+    [InlineData(typeof(InteractiveAutoRenderMode))]
+    public void CanDisablePersistenceForPrerendering(Type renderMode)
+    {
+        var mode = renderMode switch
+        {
+            var t when t == typeof(InteractiveServerRenderMode) => "server",
+            var t when t == typeof(InteractiveWebAssemblyRenderMode) => "wasm",
+            var t when t == typeof(InteractiveAutoRenderMode) => "auto",
+            _ => throw new ArgumentException($"Unknown render mode: {renderMode.Name}")
+        };
+
+        // Navigate to a page without components first
+        Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
+        if (mode == "auto")
+        {
+            BlockWebAssemblyResourceLoad();
+        }
+        Browser.Click(By.Id("call-blazor-start"));
+        // Click link that disables persistence during prerendering
+        Browser.Click(By.Id("filtering-test-link-no-prerendering"));
+
+        if (mode != "auto")
+        {
+            ValidatePrerenderingFilteringDisabled(mode, renderMode);
+        }
+        else
+        {
+            // For auto mode, validate both server and wasm behavior
+            ValidatePrerenderingFilteringDisabled(mode, renderMode, interactiveRuntime: "server");
+
+            UnblockWebAssemblyResourceLoad();
+            Browser.Navigate().Refresh();
+
+            ValidatePrerenderingFilteringDisabled(mode, renderMode, interactiveRuntime: "wasm");
+        }
+    }
+
+    private void ValidateFilteringBehavior(
+        bool suppressEnhancedNavigation,
+        string mode,
+        Type renderMode,
+        string streaming,
+        string interactiveRuntime = null)
+    {
+        if (suppressEnhancedNavigation)
+        {
+            Navigate($"subdir/persistent-state/filtering-test?render-mode={mode}&suppress-autostart");
+            
+            // Validate server-side state before Blazor starts
+            AssertFilteringPageState(
+                mode: mode,
+                renderMode: renderMode.Name,
+                interactive: false,
+                interactiveRuntime: interactiveRuntime);
+
+            Browser.Click(By.Id("call-blazor-start"));
+        }
+
+        // Validate state after Blazor is interactive
+        AssertFilteringPageState(
+            mode: mode,
+            renderMode: renderMode.Name,
+            interactive: true,
+            interactiveRuntime: interactiveRuntime);
+    }
+
+    private void ValidateEnhancedNavigationFiltering(
+        bool suppressEnhancedNavigation,
+        string mode,
+        Type renderMode,
+        string interactiveRuntime = null)
+    {
+        if (suppressEnhancedNavigation)
+        {
+            Navigate($"subdir/persistent-state/filtering-test?render-mode={mode}&persist-enhanced-nav=true&suppress-autostart");
+            
+            // Validate server-side state before Blazor starts
+            AssertEnhancedNavFilteringPageState(
+                mode: mode,
+                renderMode: renderMode.Name,
+                interactive: false,
+                interactiveRuntime: interactiveRuntime);
+
+            Browser.Click(By.Id("call-blazor-start"));
+        }
+
+        // Validate state after Blazor is interactive
+        AssertEnhancedNavFilteringPageState(
+            mode: mode,
+            renderMode: renderMode.Name,
+            interactive: true,
+            interactiveRuntime: interactiveRuntime);
+    }
+
+    private void ValidatePrerenderingFilteringDisabled(
+        string mode,
+        Type renderMode,
+        string interactiveRuntime = null)
+    {
+        // When prerendering persistence is disabled, components should show fresh state
+        AssertPrerenderingFilteringDisabledPageState(
+            mode: mode,
+            renderMode: renderMode.Name,
+            interactive: true,
+            interactiveRuntime: interactiveRuntime);
+    }
+
+    private void AssertFilteringPageState(
+        string mode,
+        string renderMode,
+        bool interactive,
+        string interactiveRuntime = null)
+    {
+        Browser.Equal($"Render mode: {renderMode}", () => Browser.FindElement(By.Id("render-mode")).Text);
+        Browser.Equal($"Interactive: {interactive}", () => Browser.FindElement(By.Id("interactive")).Text);
+        
+        if (interactive)
+        {
+            interactiveRuntime = mode == "server" || mode == "wasm" ? mode : (interactiveRuntime ?? throw new InvalidOperationException("Specify interactiveRuntime for auto mode"));
+            Browser.Equal($"Interactive runtime: {interactiveRuntime}", () => Browser.FindElement(By.Id("interactive-runtime")).Text);
+            
+            // Default behavior: persist during prerendering, not during enhanced navigation
+            Browser.Equal("Prerendering state found:true", () => Browser.FindElement(By.Id("prerendering-state-found")).Text);
+            Browser.Equal("Enhanced nav state found:false", () => Browser.FindElement(By.Id("enhanced-nav-state-found")).Text);
+            Browser.Equal("Circuit pause state found:false", () => Browser.FindElement(By.Id("circuit-pause-state-found")).Text);
+            Browser.Equal("Combined filters state found:true", () => Browser.FindElement(By.Id("combined-filters-state-found")).Text);
+        }
+    }
+
+    private void AssertEnhancedNavFilteringPageState(
+        string mode,
+        string renderMode,
+        bool interactive,
+        string interactiveRuntime = null)
+    {
+        Browser.Equal($"Render mode: {renderMode}", () => Browser.FindElement(By.Id("render-mode")).Text);
+        Browser.Equal($"Interactive: {interactive}", () => Browser.FindElement(By.Id("interactive")).Text);
+        
+        if (interactive)
+        {
+            interactiveRuntime = mode == "server" || mode == "wasm" ? mode : (interactiveRuntime ?? throw new InvalidOperationException("Specify interactiveRuntime for auto mode"));
+            Browser.Equal($"Interactive runtime: {interactiveRuntime}", () => Browser.FindElement(By.Id("interactive-runtime")).Text);
+            
+            // Enhanced navigation persistence enabled
+            Browser.Equal("Prerendering state found:true", () => Browser.FindElement(By.Id("prerendering-state-found")).Text);
+            Browser.Equal("Enhanced nav state found:true", () => Browser.FindElement(By.Id("enhanced-nav-state-found")).Text);
+            Browser.Equal("Circuit pause state found:false", () => Browser.FindElement(By.Id("circuit-pause-state-found")).Text);
+            Browser.Equal("Combined filters state found:true", () => Browser.FindElement(By.Id("combined-filters-state-found")).Text);
+        }
+    }
+
+    private void AssertPrerenderingFilteringDisabledPageState(
+        string mode,
+        string renderMode,
+        bool interactive,
+        string interactiveRuntime = null)
+    {
+        Browser.Equal($"Render mode: {renderMode}", () => Browser.FindElement(By.Id("render-mode")).Text);
+        Browser.Equal($"Interactive: {interactive}", () => Browser.FindElement(By.Id("interactive")).Text);
+        
+        if (interactive)
+        {
+            interactiveRuntime = mode == "server" || mode == "wasm" ? mode : (interactiveRuntime ?? throw new InvalidOperationException("Specify interactiveRuntime for auto mode"));
+            Browser.Equal($"Interactive runtime: {interactiveRuntime}", () => Browser.FindElement(By.Id("interactive-runtime")).Text);
+            
+            // Prerendering persistence disabled - should show fresh values
+            Browser.Equal("Prerendering state found:false", () => Browser.FindElement(By.Id("prerendering-state-found")).Text);
+            Browser.Equal("Prerendering state value:fresh-prerendering", () => Browser.FindElement(By.Id("prerendering-state-value")).Text);
+            Browser.Equal("Enhanced nav state found:false", () => Browser.FindElement(By.Id("enhanced-nav-state-found")).Text);
+            Browser.Equal("Circuit pause state found:false", () => Browser.FindElement(By.Id("circuit-pause-state-found")).Text);
+            Browser.Equal("Combined filters state found:false", () => Browser.FindElement(By.Id("combined-filters-state-found")).Text);
+        }
+    }
+
     private void AssertPageState(
         string mode,
         string renderMode,
