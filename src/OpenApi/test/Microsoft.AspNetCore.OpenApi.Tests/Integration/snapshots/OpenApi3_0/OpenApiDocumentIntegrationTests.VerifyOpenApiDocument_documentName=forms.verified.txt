@@ -1,9 +1,14 @@
 ﻿{
   "openapi": "3.0.4",
   "info": {
-    "title": "Sample | forms",
+    "title": "Sample | forms-openapi3_0",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost/"
+    }
+  ],
   "paths": {
     "/forms/form-file": {
       "post": {

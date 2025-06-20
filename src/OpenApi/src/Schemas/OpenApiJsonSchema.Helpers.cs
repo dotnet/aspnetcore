@@ -260,10 +260,20 @@ internal sealed partial class OpenApiJsonSchema
                 var minimum = reader.GetDecimal();
                 schema.Minimum = minimum.ToString(CultureInfo.InvariantCulture);
                 break;
+            case OpenApiSchemaKeywords.ExclusiveMinimum:
+                reader.Read();
+                var exclusiveMinimum = reader.GetDecimal();
+                schema.ExclusiveMinimum = exclusiveMinimum.ToString(CultureInfo.InvariantCulture);
+                break;
             case OpenApiSchemaKeywords.MaximumKeyword:
                 reader.Read();
                 var maximum = reader.GetDecimal();
                 schema.Maximum = maximum.ToString(CultureInfo.InvariantCulture);
+                break;
+            case OpenApiSchemaKeywords.ExclusiveMaximum:
+                reader.Read();
+                var exclusiveMaximum = reader.GetDecimal();
+                schema.ExclusiveMaximum = exclusiveMaximum.ToString(CultureInfo.InvariantCulture);
                 break;
             case OpenApiSchemaKeywords.PatternKeyword:
                 reader.Read();
