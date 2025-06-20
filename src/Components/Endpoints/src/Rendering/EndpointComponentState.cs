@@ -15,10 +15,12 @@ namespace Microsoft.AspNetCore.Components.Endpoints;
 internal sealed class EndpointComponentState : ComponentState
 {
     private static readonly ConcurrentDictionary<Type, StreamRenderingAttribute?> _streamRenderingAttributeByComponentType = new();
-
+    private readonly EndpointHtmlRenderer _renderer;
     public EndpointComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
+        _renderer = (EndpointHtmlRenderer)renderer;
+
         var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(component.GetType(),
             type => type.GetCustomAttribute<StreamRenderingAttribute>());
 
@@ -34,6 +36,22 @@ internal sealed class EndpointComponentState : ComponentState
     }
 
     public bool StreamRendering { get; }
+
+    protected override object? GetComponentKey()
+    {
+        if (ParentComponentState != null && ParentComponentState.Component is SSRRenderModeBoundary boundary)
+        {
+            var (sequence, key) = _renderer.GetSequenceAndKey(ParentComponentState);
+            var marker = boundary.GetComponentMarkerKey(sequence, key);
+            if (!marker.Equals(default))
+            {
+                return marker.Serialized();
+            }
+        }
+
+        // Fall back to the default implementation
+        return base.GetComponentKey();
+    }
 
     /// <summary>
     /// MetadataUpdateHandler event. This is invoked by the hot reload host via reflection.

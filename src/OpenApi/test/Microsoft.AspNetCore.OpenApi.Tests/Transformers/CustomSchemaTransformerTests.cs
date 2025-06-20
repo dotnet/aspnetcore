@@ -9,9 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
@@ -33,7 +30,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
                 operation.Responses["500"] = new OpenApiResponse
                 {
                     Description = "Error",
-                    Content = new()
+                    Content = new Dictionary<string, OpenApiMediaType>()
                     {
                         ["application/problem+json"] = new OpenApiMediaType
                         {
@@ -100,7 +97,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "Success",
-                Content = new()
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
@@ -112,7 +109,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["400"] = new OpenApiResponse
             {
                 Description = "Bad Request",
-                Content = new()
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/problem+json"] = new OpenApiMediaType
                     {
@@ -158,7 +155,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
                 context.Document.AddComponent("TriangleExample", exampleSchema);
 
                 // Add a reference to the example in the shape schema
-                schema.Extensions ??= [];
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
                 schema.Extensions["x-example-component"] = new JsonNodeExtension("#/components/schemas/TriangleExample");
                 schema.Description = "A shape with an example reference";
             }
@@ -263,7 +260,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
                     ["200"] = new OpenApiResponse
                     {
                         Description = "Success",
-                        Content = new()
+                        Content = new Dictionary<string, OpenApiMediaType>()
                         {
                             ["application/json"] = new OpenApiMediaType
                             {
@@ -321,7 +318,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Product))
             {
-                schema.Required ??= [];
+                schema.Required ??= new HashSet<string>();
                 schema.Required.Add("name");
                 schema.Required.Add("price");
                 transformerApplied = true;
@@ -349,7 +346,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "A product",
-                Content = new()
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
@@ -417,7 +414,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "Concurrent schema generation test",
-                Content = new()
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
@@ -470,7 +467,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "User with custom JSON options",
-                Content = new()
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {

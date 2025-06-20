@@ -21,7 +21,6 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi.Models;
 using Moq;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 

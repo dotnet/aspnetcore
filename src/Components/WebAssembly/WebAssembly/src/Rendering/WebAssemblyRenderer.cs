@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
@@ -190,6 +191,18 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             InteractiveWebAssemblyRenderMode or InteractiveAutoRenderMode => componentActivator.CreateInstance(componentType),
             _ => throw new NotSupportedException($"Cannot create a component of type '{componentType}' because its render mode '{renderMode}' is not supported by WebAssembly rendering."),
         };
+
+    protected override ComponentState CreateComponentState(int componentId, IComponent component, ComponentState? parentComponentState)
+    {
+        return new WebAssemblyComponentState(this, componentId, component, parentComponentState);
+    }
+
+    internal ComponentMarkerKey GetMarkerKey(WebAssemblyComponentState webAssemblyComponentState)
+    {
+        return webAssemblyComponentState.ParentComponentState != null ?
+            default :
+            _webRootComponentManager!.GetRootComponentKey(webAssemblyComponentState.ComponentId);
+    }
 
     private static partial class Log
     {

@@ -86,12 +86,26 @@ internal partial class WebAssemblyRenderer
 #if COMPONENTS_SERVER
         internal IEnumerable<(int id, ComponentMarkerKey key, (Type componentType, ParameterView parameters))> GetRootComponents()
         {
-            foreach (var (id, (key, type, parameters)) in _webRootComponents)
+            foreach (var (id, (_, key, type, parameters)) in _webRootComponents)
             {
                 yield return (id, key, (type, parameters));
             }
         }
+
 #endif
+        internal ComponentMarkerKey GetRootComponentKey(int componentId)
+        {
+            foreach (var (_, candidate) in _webRootComponents)
+            {
+                var(id, key, _, _) = candidate;
+                if (id == componentId)
+                {
+                    return key;
+                }
+            }
+
+            return default;
+        }
 
         private sealed class WebRootComponent
         {
@@ -135,17 +149,17 @@ internal partial class WebAssemblyRenderer
                 _latestParameters = initialParameters;
             }
 
-#if COMPONENTS_SERVER
             public void Deconstruct(
+                out int interactiveComponentId,
                 out ComponentMarkerKey key,
                 out Type componentType,
                 out ParameterView parameters)
             {
+                interactiveComponentId = _interactiveComponentId;
                 key = _key;
                 componentType = _componentType;
                 parameters = _latestParameters.Parameters;
             }
-#endif
 
             public Task UpdateAsync(
                 Renderer renderer,

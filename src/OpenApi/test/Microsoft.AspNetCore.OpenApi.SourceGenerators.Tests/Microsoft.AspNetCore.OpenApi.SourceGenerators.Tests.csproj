@@ -33,4 +33,8 @@
     <HelixContent Include="$(MSBuildProjectDirectory)\snapshots\**"/>
   </ItemGroup>
 
+  <ItemGroup>
+    <Using Include="Microsoft.OpenApi" />
+  </ItemGroup>
+
 </Project>

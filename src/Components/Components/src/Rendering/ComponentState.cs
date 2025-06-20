@@ -339,6 +339,36 @@ public class ComponentState : IAsyncDisposable
         return DisposeAsync();
     }
 
+    /// <summary>
+    /// Gets the component key for this component instance.
+    /// This is used for state persistence and component identification across render modes.
+    /// </summary>
+    /// <returns>The component key, or null if no key is available.</returns>
+    protected internal virtual object? GetComponentKey()
+    {
+        if (ParentComponentState is not { } parentComponentState)
+        {
+            return null;
+        }
+
+        // Check if the parentComponentState has a `@key` directive applied to the current component.
+        var frames = parentComponentState.CurrentRenderTree.GetFrames();
+        for (var i = 0; i < frames.Count; i++)
+        {
+            ref var currentFrame = ref frames.Array[i];
+            if (currentFrame.FrameType != RenderTreeFrameType.Component ||
+                !ReferenceEquals(Component, currentFrame.Component))
+            {
+                // Skip any frame that is not the current component.
+                continue;
+            }
+
+            return currentFrame.ComponentKey;
+        }
+
+        return null;
+    }
+
     private string GetDebuggerDisplay()
     {
         return $"ComponentId = {ComponentId}, Type = {Component.GetType().Name}, Disposed = {_componentWasDisposed}";

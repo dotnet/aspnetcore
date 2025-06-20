@@ -4,7 +4,6 @@
 using System.Globalization;
 using System.Text.Json.Serialization;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
 using Sample.Transformers;
 
 var builder = WebApplication.CreateBuilder(args);

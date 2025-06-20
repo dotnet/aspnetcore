@@ -113,6 +113,7 @@ internal struct ComponentEndMarker
     public string? PrerenderId { get; set; }
 }
 
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 internal struct ComponentMarkerKey : IEquatable<ComponentMarkerKey>
 {
     public ComponentMarkerKey(string locationHash, string? formattedComponentKey)
@@ -146,4 +147,13 @@ internal struct ComponentMarkerKey : IEquatable<ComponentMarkerKey>
 
     public override readonly int GetHashCode()
         => HashCode.Combine(LocationHash, FormattedComponentKey);
+
+    private readonly string GetDebuggerDisplay() => $"LocationHash: {LocationHash}, Key: {FormattedComponentKey ?? "null"}";
+
+    internal readonly string? Serialized()
+    {
+        return this == default
+            ? null
+            : $"{LocationHash}:{FormattedComponentKey}";
+    }
 }

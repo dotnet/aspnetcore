@@ -8,9 +8,6 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
@@ -155,14 +152,14 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            schema.Extensions ??= [];
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             schema.Extensions["x-my-extension"] = new JsonNodeExtension("1");
             schema.Format = "1";
             return Task.CompletedTask;
         });
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            schema.Extensions ??= [];
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             Assert.Equal("1", ((JsonNodeExtension)schema.Extensions["x-my-extension"]).Node.GetValue<string>());
             schema.Extensions["x-my-extension"] = new JsonNodeExtension("2");
             return Task.CompletedTask;
@@ -189,7 +186,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Todo))
             {
-                schema.Extensions ??= [];
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
                 schema.Extensions["x-my-extension"] = new JsonNodeExtension("1");
             }
             return Task.CompletedTask;
@@ -499,7 +496,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Triangle))
             {
-                schema.Extensions ??= [];
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
                 schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-triangle");
             }
             return Task.CompletedTask;
@@ -568,7 +565,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            schema.Extensions ??= [];
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             if (context.JsonTypeInfo.Type == typeof(Triangle))
             {
                 schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-triangle");
@@ -610,7 +607,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            schema.Extensions ??= [];
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             if (context.JsonTypeInfo.Type == typeof(Triangle))
             {
                 schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-triangle");
@@ -652,7 +649,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            schema.Extensions ??= [];
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             if (context.JsonTypeInfo.Type == typeof(Triangle))
             {
                 schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-triangle");
@@ -741,7 +738,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         });
         UseNotSchemaTransformer(options, (schema, context, cancellationToken) =>
         {
-            schema.Extensions ??= [];
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             schema.Extensions["modified-by-not-schema-transformer"] = new JsonNodeExtension(true);
             return Task.CompletedTask;
         });
@@ -957,7 +954,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Todo))
             {
-                schema.Extensions ??= [];
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
                 schema.Extensions["x-my-extension"] = new JsonNodeExtension("1");
             }
             return Task.CompletedTask;
@@ -1006,7 +1003,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
             dependency.TestMethod();
-            schema.Extensions ??= [];
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             schema.Extensions["x-my-extension"] = new JsonNodeExtension(Dependency.InstantiationCount.ToString(CultureInfo.InvariantCulture));
             return Task.CompletedTask;
         }

@@ -14,8 +14,6 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {

@@ -49,11 +49,12 @@
   <!-- Required to bundle source generator related assets into build. -->
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)/src/OpenApi/gen/Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" ReferenceOutputAssembly="false" />
-    <None Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.OpenApi.SourceGenerators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll"
-      Pack="true"
-      PackagePath="analyzers/dotnet/cs"
-      Visible="false" />
+    <None Include="$(ArtifactsBinDir)\Microsoft.AspNetCore.OpenApi.SourceGenerators\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.OpenApi.SourceGenerators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     <None Include="..\build\Microsoft.AspNetCore.OpenApi.targets" Pack="true" PackagePath="build" Visible="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.OpenApi" />
   </ItemGroup>
 
 </Project>

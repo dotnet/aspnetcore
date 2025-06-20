@@ -8,9 +8,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.Interfaces;
-using Microsoft.OpenApi.Models.References;
+
 using OpenApiConstants = Microsoft.AspNetCore.OpenApi.OpenApiConstants;
 
 internal sealed partial class OpenApiJsonSchema
@@ -319,14 +317,14 @@ internal sealed partial class OpenApiJsonSchema
                     schema.Discriminator ??= new OpenApiDiscriminator();
                     foreach (var kvp in mappings)
                     {
-                        schema.Discriminator.Mapping ??= [];
+                        schema.Discriminator.Mapping ??= new Dictionary<string, OpenApiSchemaReference>();
                         schema.Discriminator.Mapping[kvp.Key] = new OpenApiSchemaReference(kvp.Value);
                     }
                 }
                 break;
             case OpenApiConstants.SchemaId:
                 reader.Read();
-                schema.Metadata ??= [];
+                schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata.Add(OpenApiConstants.SchemaId, reader.GetString() ?? string.Empty);
                 break;
             // OpenAPI does not support the `const` keyword in its schema implementation, so
@@ -338,7 +336,7 @@ internal sealed partial class OpenApiJsonSchema
                 break;
             case OpenApiSchemaKeywords.RefKeyword:
                 reader.Read();
-                schema.Metadata ??= [];
+                schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata[OpenApiConstants.RefId] = reader.GetString() ?? string.Empty;
                 break;
             default:

@@ -5,7 +5,6 @@ using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
 public class OpenApiDocumentProviderTests : OpenApiDocumentServiceTestBase

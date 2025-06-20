@@ -7,7 +7,6 @@ using Microsoft.Extensions.ApiDescription.Tool.Commands;
 using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Tests;
 

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
@@ -16,9 +17,6 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.Interfaces;
-using Microsoft.OpenApi.Models.References;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -32,6 +30,7 @@ internal sealed class OpenApiSchemaService(
     IOptions<JsonOptions> jsonOptions,
     IOptionsMonitor<OpenApiOptions> optionsMonitor)
 {
+    private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
     private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
     private readonly JsonSerializerOptions _jsonSerializerOptions = new(jsonOptions.Value.SerializerOptions)
     {
@@ -140,10 +139,19 @@ internal sealed class OpenApiSchemaService(
     internal async Task<IOpenApiSchema> GetOrCreateSchemaAsync(OpenApiDocument document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
         var schema = await GetOrCreateUnresolvedSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, parameterDescription, cancellationToken);
-        return ResolveReferenceForSchema(document, schema);
+
+        // Cache the root schema IDs since we expect to be called
+        // on the same type multiple times within an API
+        var baseSchemaId = _schemaIdCache.GetOrAdd(type, t =>
+        {
+            var jsonTypeInfo = _jsonSerializerOptions.GetTypeInfo(t);
+            return optionsMonitor.Get(documentName).CreateSchemaReferenceId(jsonTypeInfo);
+        });
+
+        return ResolveReferenceForSchema(document, schema, baseSchemaId);
     }
 
-    internal static IOpenApiSchema ResolveReferenceForSchema(OpenApiDocument document, IOpenApiSchema inputSchema, string? baseSchemaId = null)
+    internal static IOpenApiSchema ResolveReferenceForSchema(OpenApiDocument document, IOpenApiSchema inputSchema, string? rootSchemaId, string? baseSchemaId = null)
     {
         var schema = UnwrapOpenApiSchema(inputSchema);
 
@@ -154,7 +162,7 @@ internal sealed class OpenApiSchemaService(
             {
                 for (var i = 0; i < schema.AnyOf.Count; i++)
                 {
-                    schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], resolvedBaseSchemaId?.ToString());
+                    schema.AnyOf[i] = ResolveReferenceForSchema(document, schema.AnyOf[i], rootSchemaId, resolvedBaseSchemaId?.ToString());
                 }
             }
         }
@@ -163,7 +171,7 @@ internal sealed class OpenApiSchemaService(
         {
             foreach (var property in schema.Properties)
             {
-                schema.Properties[property.Key] = ResolveReferenceForSchema(document, property.Value);
+                schema.Properties[property.Key] = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
             }
         }
 
@@ -171,7 +179,7 @@ internal sealed class OpenApiSchemaService(
         {
             for (var i = 0; i < schema.AllOf.Count; i++)
             {
-                schema.AllOf[i] = ResolveReferenceForSchema(document, schema.AllOf[i]);
+                schema.AllOf[i] = ResolveReferenceForSchema(document, schema.AllOf[i], rootSchemaId);
             }
         }
 
@@ -179,23 +187,23 @@ internal sealed class OpenApiSchemaService(
         {
             for (var i = 0; i < schema.OneOf.Count; i++)
             {
-                schema.OneOf[i] = ResolveReferenceForSchema(document, schema.OneOf[i]);
+                schema.OneOf[i] = ResolveReferenceForSchema(document, schema.OneOf[i], rootSchemaId);
             }
         }
 
         if (schema.AdditionalProperties is not null)
         {
-            schema.AdditionalProperties = ResolveReferenceForSchema(document, schema.AdditionalProperties);
+            schema.AdditionalProperties = ResolveReferenceForSchema(document, schema.AdditionalProperties, rootSchemaId);
         }
 
         if (schema.Items is not null)
         {
-            schema.Items = ResolveReferenceForSchema(document, schema.Items);
+            schema.Items = ResolveReferenceForSchema(document, schema.Items, rootSchemaId);
         }
 
         if (schema.Not is not null)
         {
-            schema.Not = ResolveReferenceForSchema(document, schema.Not);
+            schema.Not = ResolveReferenceForSchema(document, schema.Not, rootSchemaId);
         }
 
         // Handle schemas where the references have been inlined by the JsonSchemaExporter. In this case,
@@ -203,11 +211,16 @@ internal sealed class OpenApiSchemaService(
         // case we we want to replace the reference ID with the schema ID that was generated by the
         // `CreateSchemaReferenceId` method in the OpenApiSchemaService.
         if (schema.Metadata is not null &&
-            schema.Metadata.ContainsKey(OpenApiConstants.RefId) &&
-            schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var schemaId) &&
-            schemaId is string schemaIdString)
+            schema.Metadata.TryGetValue(OpenApiConstants.RefId, out var refId) &&
+            refId is string refIdString)
         {
-            return document.AddOpenApiSchemaByReference(schemaIdString, schema);
+            if (schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var schemaId) &&
+                schemaId is string schemaIdString)
+            {
+                return document.AddOpenApiSchemaByReference(schemaIdString, schema);
+            }
+            var relativeSchemaId = $"#/components/schemas/{rootSchemaId}{refIdString.Replace("#", string.Empty)}";
+            return new OpenApiSchemaReference(relativeSchemaId, document);
         }
 
         // If we're resolving schemas for a top-level schema being referenced in the `components.schema` property

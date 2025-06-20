@@ -7,8 +7,6 @@ using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {

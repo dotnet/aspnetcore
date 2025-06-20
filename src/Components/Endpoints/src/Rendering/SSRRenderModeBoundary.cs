@@ -220,4 +220,14 @@ internal class SSRRenderModeBoundary : IComponent
             FormattedComponentKey = formattedComponentKey,
         };
     }
+
+    /// <summary>
+    /// Gets the ComponentMarkerKey for this boundary if it has been computed.
+    /// This is used for state persistence across render modes.
+    /// </summary>
+    /// <returns>The ComponentMarkerKey if available, null otherwise.</returns>
+    internal ComponentMarkerKey GetComponentMarkerKey(int sequence, object? componentKey)
+    {
+        return _markerKey ??= GenerateMarkerKey(sequence, componentKey);
+    }
 }
