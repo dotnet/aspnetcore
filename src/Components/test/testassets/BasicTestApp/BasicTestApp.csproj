@@ -13,13 +13,12 @@
     <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
 
     <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-
+    
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TestTrimmedOrMultithreadingApps)' == 'true'">
     <!-- Avoid spending time brotli compression publish output.-->
     <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
-    <WasmApplicationEnvironmentName>Staging</WasmApplicationEnvironmentName>
   </PropertyGroup>
 
   <ItemGroup>
