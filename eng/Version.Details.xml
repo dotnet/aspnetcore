@@ -215,6 +215,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>005f36cd1953e1308c1882a9d2e1fc1e84e6b2e4</Sha>
     </Dependency>
+    <Dependency Name="System.Formats.Cbor" Version="10.0.0-preview.6.25314.101">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>005f36cd1953e1308c1882a9d2e1fc1e84e6b2e4</Sha>
+    </Dependency>
     <Dependency Name="System.IO.Pipelines" Version="10.0.0-preview.6.25314.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>005f36cd1953e1308c1882a9d2e1fc1e84e6b2e4</Sha>

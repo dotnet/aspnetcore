@@ -102,6 +102,7 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<TUser>>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
+        services.TryAddScoped<IPasskeyHandler<TUser>, DefaultPasskeyHandler<TUser>>();
         services.TryAddScoped<UserManager<TUser>>();
         services.TryAddScoped<SignInManager<TUser>>();
         services.TryAddScoped<RoleManager<TRole>>();
