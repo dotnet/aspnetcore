@@ -255,4 +255,23 @@ public class DefaultHubLifetimeManagerTests : HubLifetimeManagerTestsBase<Hub>
             Assert.False(connection1.ConnectionAborted.IsCancellationRequested);
         }
     }
+
+    [Fact]
+    public async Task ConnectionInMultipleGroups_ReceivesMessageOnlyOnce()
+    {
+        using (var client1 = new TestClient())
+        {
+            var manager = CreateNewHubLifetimeManager();
+            var connection1 = HubConnectionContextUtils.Create(client1.Connection);
+            await manager.OnConnectedAsync(connection1).DefaultTimeout();
+            await manager.AddToGroupAsync(connection1.ConnectionId, "group1").DefaultTimeout();
+            await manager.AddToGroupAsync(connection1.ConnectionId, "group2").DefaultTimeout();
+            await manager.SendGroupsAsync(new List<string> { "group1", "group2" }, "Hello", new object[] { "World" }).DefaultTimeout();
+            var message = Assert.IsType<InvocationMessage>(client1.TryRead());
+            Assert.Equal("Hello", message.Target);
+            Assert.Single(message.Arguments);
+            Assert.Equal("World", (string)message.Arguments[0]);
+            Assert.Null(client1.TryRead());
+        }
+    }
 }
