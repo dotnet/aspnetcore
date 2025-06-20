@@ -138,8 +138,11 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfi
   const config: MonoConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
-    applicationEnvironment: options.environment,
   };
+
+  if (options.environment) {
+    config.applicationEnvironment = options.environment;
+  }
 
   const onConfigLoaded = async (loadedConfig: MonoConfig) => {
     if (!loadedConfig.environmentVariables) {
