@@ -886,6 +886,38 @@ public class NavigationManagerTest
         // Assert
         Assert.True(notFoundTriggered, "The OnNotFound event was not triggered as expected.");
     }
+
+    [Fact]
+    public void OnNavigateToCallback_WhenThrows_ShouldBeHandledGracefully()
+    {
+        // Arrange
+        var baseUri = "scheme://host/";
+        var uri = "scheme://host/test";
+        var testNavManager = new TestNavigationManagerWithCallback();
+        var exceptionThrown = false;
+        var expectedException = new InvalidOperationException("Test exception from OnNavigateTo");
+
+        // Configure the onNavigateTo callback to throw an exception
+        testNavManager.ConfigureOnNavigateToCallback(throwingUri =>
+        {
+            exceptionThrown = true;
+            throw expectedException;
+        });
+
+        // Act
+        // Initialize the navigation manager with the callback
+        testNavManager.Initialize(baseUri, uri, testNavManager.GetOnNavigateToCallback());
+
+        // Assert
+        Assert.True(testNavManager.IsInitialized);
+
+        // When navigation is triggered, the exception should be handled gracefully
+        var thrownException = testNavManager.TriggerOnNavigateToCallback(uri);
+
+        // Assert
+        Assert.True(exceptionThrown, "The OnNavigateTo callback should have been called and thrown an exception.");
+        Assert.Same(expectedException, thrownException);
+    }
  
     private class TestNavigationManager : NavigationManager
     {
@@ -930,6 +962,66 @@ public class NavigationManagerTest
         protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
         {
             _exceptionsThrownFromLocationChangingHandlers.Add(ex);
+        }
+    }
+
+    private class TestNavigationManagerWithCallback : TestNavigationManager, IHostEnvironmentNavigationManager
+    {
+        private Func<string, Task> _onNavigateToCallback;
+
+        public TestNavigationManagerWithCallback()
+        {
+        }
+
+        public void Initialize(string baseUri, string uri, Func<string, Task> onNavigateTo)
+        {
+            _onNavigateToCallback = onNavigateTo;
+            base.Initialize(baseUri, uri);
+        }
+
+        public void ConfigureOnNavigateToCallback(Func<string, Task> callback)
+        {
+            _onNavigateToCallback = callback;
+        }
+
+        public Func<string, Task> GetOnNavigateToCallback()
+        {
+            return _onNavigateToCallback;
+        }
+
+        public Exception TriggerOnNavigateToCallback(string uri)
+        {
+            if (_onNavigateToCallback == null)
+            {
+                return null;
+            }
+
+            try
+            {
+                // Simulate the fire-and-forget pattern used in RemoteNavigationManager
+                _ = _onNavigateToCallback(uri);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                return ex;
+            }
+        }
+
+        public bool IsInitialized 
+        {
+            get
+            {
+                try
+                {
+                    _ = BaseUri; // This will throw if not initialized
+                    return true;
+                }
+                catch (InvalidOperationException)
+                {
+                    return false;
+                }
+            }
         }
     }
 }
