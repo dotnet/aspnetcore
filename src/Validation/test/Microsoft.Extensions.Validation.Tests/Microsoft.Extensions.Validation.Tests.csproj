@@ -8,6 +8,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Validation" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
+    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <Reference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
 </Project>

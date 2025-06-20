@@ -69,8 +69,8 @@ namespace NamespaceTwo {
                 var problemDetails = await AssertBadRequest(context);
                 Assert.Collection(problemDetails.Errors, kvp =>
                 {
-                    Assert.Equal("StringWithLength", kvp.Key);
-                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
+                    Assert.Equal("stringWithLength", kvp.Key);
+                    Assert.Equal("The field stringWithLength must be a string with a maximum length of 10.", kvp.Value.Single());
                 });
             }
 
@@ -106,8 +106,8 @@ namespace NamespaceTwo {
                 var problemDetails = await AssertBadRequest(context);
                 Assert.Collection(problemDetails.Errors, kvp =>
                 {
-                    Assert.Equal("StringWithLength", kvp.Key);
-                    Assert.Equal("The field StringWithLength must be a string with a maximum length of 20.", kvp.Value.Single());
+                    Assert.Equal("stringWithLength", kvp.Key);
+                    Assert.Equal("The field stringWithLength must be a string with a maximum length of 20.", kvp.Value.Single());
                 });
             }
 
