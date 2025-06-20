@@ -40,13 +40,13 @@ public class WebAssemblyConfigurationTest : ServerTestBase<BlazorWasmTestAppFixt
         if (_serverFixture.TestTrimmedOrMultithreadingApps)
         {
             // Verify that the environment gets detected as 'Production'.
-            Browser.Equal("Production", () => _appElement.FindElement(By.Id("environment")).Text);
+            Browser.Equal("Staging", () => _appElement.FindElement(By.Id("environment")).Text);
 
             // Verify values overriden by an environment specific 'appsettings.$(Environment).json are read
-            Assert.Equal("Prod key2-value", _appElement.FindElement(By.Id("key2")).Text);
+            Assert.Equal("Staging key2-value", _appElement.FindElement(By.Id("key2")).Text);
 
             // Lastly for sanity, make sure values specified in an environment specific 'appsettings.$(Environment).json are read
-            Assert.Equal("Prod key3-value", _appElement.FindElement(By.Id("key3")).Text);
+            Assert.Equal("Staging key3-value", _appElement.FindElement(By.Id("key3")).Text);
         }
         else
         {
