@@ -31,6 +31,7 @@
     <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
 
     <PartialCompositeAssemblyListPath>PartialCompositeAssemblyListPath.txt</PartialCompositeAssemblyListPath>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
