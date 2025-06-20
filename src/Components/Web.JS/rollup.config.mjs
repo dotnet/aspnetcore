@@ -14,6 +14,16 @@ export default createBaseConfig({
   },
   dir: __dirname,
   updateConfig: (config, environment, _, input) => {
+    config.plugins.push({
+      name: 'Resolve dotnet.js dynamic import',
+      resolveDynamicImport(source, importer) {
+        if (source === './dotnet.js') {
+          return { id: './dotnet.js', moduleSideEffects: false, external: 'relative' };
+        }
+        return null;
+      }
+    });
+
     if (input.includes("WebView")) {
       config.output.sourcemap = 'inline';
     } else {

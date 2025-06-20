@@ -24,6 +24,11 @@ export type BlazorInitializer = {
   afterServerStarted: AfterBlazorServerStartedCallback,
 };
 
+export type JSAsset = {
+    moduleExports?: any | Promise<any>,
+    name?: string; // actually URL
+}
+
 export class JSInitializer {
   private afterStartedCallbacks: AfterBlazorStartedCallback[] = [];
 
@@ -38,7 +43,7 @@ export class JSInitializer {
     }
   }
 
-  async importInitializersAsync(initializerFiles: string[], initializerArguments: unknown[]): Promise<void> {
+  async importInitializersAsync(initializerFiles: JSAsset[], initializerArguments: unknown[]): Promise<void> {
     // This code is not called on WASM, because library intializers are imported by runtime.
 
     await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));
@@ -50,9 +55,14 @@ export class JSInitializer {
       return path;
     }
 
-    async function importAndInvokeInitializer(jsInitializer: JSInitializer, path: string): Promise<void> {
-      const adjustedPath = adjustPath(path);
-      const initializer = await import(/* webpackIgnore: true */ adjustedPath) as Partial<BlazorInitializer>;
+    async function importAndInvokeInitializer(jsInitializer: JSInitializer, asset: JSAsset): Promise<void> {
+      let adjustedPath;
+      if (!asset.moduleExports) {
+        adjustedPath = adjustPath(asset.name!);
+        asset.moduleExports = await import(/* webpackIgnore: true */ adjustedPath);
+      }
+
+      const initializer = asset.moduleExports as Partial<BlazorInitializer>;
       if (initializer === undefined) {
         return;
       }
