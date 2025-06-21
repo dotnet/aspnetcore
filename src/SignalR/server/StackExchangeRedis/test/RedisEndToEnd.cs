@@ -55,6 +55,7 @@ public class RedisEndToEndTests : VerifiableLoggedTest
     [ConditionalTheory]
     [SkipIfDockerNotPresent]
     [MemberData(nameof(TransportTypesAndProtocolTypes))]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/62435")]
     public async Task HubConnectionCanSendAndReceiveGroupMessages(HttpTransportType transportType, string protocolName)
     {
         using (StartVerifiableLog())
