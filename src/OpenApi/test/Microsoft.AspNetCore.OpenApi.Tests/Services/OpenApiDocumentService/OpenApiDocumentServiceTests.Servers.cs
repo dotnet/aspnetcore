@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting.Internal;
-using Microsoft.Extensions.Options;
 using Moq;
 
 public partial class OpenApiDocumentServiceTests

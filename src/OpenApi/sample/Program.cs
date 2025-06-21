@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Serialization;
-using Microsoft.OpenApi.Models;
 using Sample.Transformers;
 
 var builder = WebApplication.CreateBuilder(args);
