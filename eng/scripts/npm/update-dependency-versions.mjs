@@ -52,9 +52,18 @@ function applyPackageVersion(packagesToPack, defaultPackageVersion) {
     renames.push([`${packagePath}.bak`, packagePath]);
 
     process.chdir(packageDir);
-    execSync(`npm version ${packageVersion} --no-git-tag-version --allow-same-version`, { stdio: 'inherit' });
+    try {
+      execSync(`npm version ${packageVersion} --no-git-tag-version --allow-same-version`, { stdio: 'inherit' });
+      console.log(`Applied version ${packageVersion} to ${packageName} in ${packageDir}...`);
+    } catch (error) {
+      console.warn(`Failed to run npm version command for ${packageName}, falling back to manual version update...`);
+      // Fallback: manually update the version in package.json
+      const packageJson = fs.readJsonSync(packagePath);
+      packageJson.version = packageVersion;
+      fs.writeJsonSync(packagePath, packageJson, { spaces: 2 });
+      console.log(`Manually applied version ${packageVersion} to ${packageName} in ${packageDir}...`);
+    }
     process.chdir(currentDir);
-    console.log(`Applied version ${packageVersion} to ${packageName} in ${packageDir}...`);
   }
 
   return renames;
