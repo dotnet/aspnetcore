@@ -66,7 +66,7 @@ internal sealed class HostingMetrics : IDisposable
 
             // Add information gathered during request.
             tags.Add("http.response.status_code", GetBoxedStatusCode(statusCode));
-            if (route != null)
+            if (!string.IsNullOrEmpty(route))
             {
                 tags.Add("http.route", route);
             }
