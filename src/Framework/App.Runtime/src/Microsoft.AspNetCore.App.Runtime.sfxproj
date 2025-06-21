@@ -50,6 +50,13 @@
     <GenerateVSInsertionPackages>true</GenerateVSInsertionPackages>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <GetSharedFrameworkFilesForReadyToRunDependsOn>
+      $(GetSharedFrameworkFilesForReadyToRunDependsOn);
+      _AddExtensionsSymbolsToSymbolPack;
+    </GetSharedFrameworkFilesForReadyToRunDependsOn>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
         Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
@@ -90,7 +97,7 @@
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.pdb" />
   </ItemGroup>
 
-  <Target Name="_AddExtensionsSymbolsToSymbolPack" BeforeTargets="GetFilesToPackage">
+  <Target Name="_AddExtensionsSymbolsToSymbolPack">
     <!-- Explicitly include symbols for libraries we redistribute from runtime -->
     <ItemGroup>
       <_TransportPdbs Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.pdb"
