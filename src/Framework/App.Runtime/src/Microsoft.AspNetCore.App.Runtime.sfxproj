@@ -52,7 +52,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
-        Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
+        Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)" />
   </ItemGroup>
 
   <ItemGroup>
