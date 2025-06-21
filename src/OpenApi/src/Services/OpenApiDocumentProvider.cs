@@ -4,9 +4,6 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Writers;
 using System.Linq;
 
 namespace Microsoft.Extensions.ApiDescriptions;

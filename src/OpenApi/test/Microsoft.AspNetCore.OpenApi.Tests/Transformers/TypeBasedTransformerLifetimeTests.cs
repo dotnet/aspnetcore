@@ -4,8 +4,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
 
 public class TypeBasedTransformerLifetimeTests : OpenApiDocumentServiceTestBase
 {
@@ -348,7 +346,7 @@ public class TypeBasedTransformerLifetimeTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Todo))
             {
-                schema.Extensions ??= [];
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
                 schema.Extensions["x-my-extension"] = new JsonNodeExtension("1");
             }
             return Task.CompletedTask;
