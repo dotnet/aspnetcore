@@ -538,6 +538,7 @@ public partial class DefaultPasskeyHandlerTest
         });
 
         var result = await test.RunAsync();
+
         Assert.True(result.Succeeded);
     }
 
@@ -551,6 +552,7 @@ public partial class DefaultPasskeyHandlerTest
         });
 
         var result = await test.RunAsync();
+
         Assert.False(result.Succeeded);
         Assert.StartsWith("The credential is backed up, but the authenticator data flags did not have the 'BackupEligible' flag", result.Failure.Message);
     }
@@ -620,6 +622,7 @@ public partial class DefaultPasskeyHandlerTest
         });
 
         var result = await test.RunAsync();
+
         Assert.True(result.Succeeded);
     }
 
