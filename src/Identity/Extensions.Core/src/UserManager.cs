@@ -2188,6 +2188,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         ThrowIfDisposed();
         var passkeyStore = GetUserPasskeyStore();
+        ArgumentNullThrowHelper.ThrowIfNull(user);
         ArgumentNullThrowHelper.ThrowIfNull(credentialId);
 
         return passkeyStore.FindPasskeyAsync(user, credentialId, CancellationToken);

@@ -145,6 +145,7 @@ public partial class DefaultPasskeyHandlerTest
         public required ReadOnlyMemory<byte>? AuthenticatorData { get; init; }
     }
 
+    // Represents a test scenario for a passkey operation (attestation or assertion)
     private abstract class PasskeyTestBase<TResult>
     {
         private bool _hasStarted;
@@ -163,6 +164,10 @@ public partial class DefaultPasskeyHandlerTest
         protected abstract Task<TResult> RunCoreAsync();
     }
 
+    // While some test configuration can be set directly on scenario classes (AttestationTest and AssertionTest),
+    // individual tests may need to modify values computed during execution (e.g., JSON payloads, hashes).
+    // This helper enables trivial customization of test scenarios by allowing injection of custom logic to
+    // transform runtime values.
     private class ComputedValue<TValue>
     {
         private bool _isComputed;
