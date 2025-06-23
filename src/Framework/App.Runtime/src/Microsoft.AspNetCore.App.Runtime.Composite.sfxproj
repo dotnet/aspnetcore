@@ -55,6 +55,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <_AllExternalAspNetCoreAppReferences Include="@(ExternalAspNetCoreAppReference);@(_TransitiveExternalAspNetCoreAppReference)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <IgnoredDuplicateType Include="Microsoft.AspNetCore.Hosting.WebHostBuilderIISExtensions" />
     <IgnoredDuplicateType Include="Microsoft.Extensions.DependencyInjection.SignalRDependencyInjectionExtensions" />
     <IgnoredDuplicateType Include="Microsoft.Extensions.DependencyInjection.IdentityServiceCollectionExtensions" />
@@ -103,9 +107,9 @@
 
   <!-- Explicitly include symbols for libraries we redistribute from runtime -->
   <Target Name="_AddExtensionsSymbolsToSymbolPack">
-    <!-- Flatten ExternalAspNetCoreAppReference into a property -->
+    <!-- Flatten _AllExternalAspNetCoreAppReferences into a property -->
     <PropertyGroup>
-      <FileNameList>@(ExternalAspNetCoreAppReference, ';')</FileNameList>
+      <FileNameList>@(_AllExternalAspNetCoreAppReferences, ';')</FileNameList>
       <!-- Add trailing semicolon -->
       <FileNameList>$(FileNameList);</FileNameList>
     </PropertyGroup>
