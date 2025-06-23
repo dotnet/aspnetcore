@@ -417,7 +417,6 @@ Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Region = 5 -> Mic
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Text = 2 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.ResourceAsset
 Microsoft.AspNetCore.Components.ResourceAsset.Properties.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>?
-Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
 Microsoft.AspNetCore.Components.ResourceAsset.Url.get -> string!
 Microsoft.AspNetCore.Components.ResourceAssetCollection
 Microsoft.AspNetCore.Components.ResourceAssetCollection.IsContentSpecificUrl(string! path) -> bool
