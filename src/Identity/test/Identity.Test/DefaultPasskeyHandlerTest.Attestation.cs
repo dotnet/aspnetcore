@@ -68,9 +68,7 @@ public partial class DefaultPasskeyHandlerTest
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
         {
             var base64UrlCredentialId = (string)credentialJson["id"]!;
-            var rawCredentialId = Base64Url.DecodeFromChars(base64UrlCredentialId);
-            var base64CredentialId = Convert.ToBase64String(rawCredentialId) + "==";
-            credentialJson["id"] = base64CredentialId;
+            credentialJson["id"] = GetInvalidBase64UrlValue(base64UrlCredentialId);
         });
 
         var result = await test.RunAsync();
@@ -161,6 +159,248 @@ public partial class DefaultPasskeyHandlerTest
 
         Assert.False(result.Succeeded);
         Assert.StartsWith("The attestation credential JSON had an invalid format", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenOriginalOptionsRpNameIsMissing()
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            var rp = originalOptionsJson["rp"]!.AsObject();
+            Assert.True(rp.Remove("name"));
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.Contains("was missing required properties including: 'name'", result.Failure.Message);
+    }
+
+    [Theory]
+    [InlineData("42")]
+    [InlineData("null")]
+    [InlineData("{}")]
+    public async Task Attestation_Fails_WhenOriginalOptionsRpNameIsNotString(string jsonValue)
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            originalOptionsJson["rp"]!["name"] = JsonNode.Parse(jsonValue);
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenOriginalOptionsRpIsMissing()
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            Assert.True(originalOptionsJson.Remove("rp"));
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.Contains("was missing required properties including: 'rp'", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenOriginalOptionsUserIdIsMissing()
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            var user = originalOptionsJson["user"]!.AsObject();
+            Assert.True(user.Remove("id"));
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.Contains("was missing required properties including: 'id'", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenOriginalOptionsUserIdIsNotBase64UrlEncoded()
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            var base64UrlUserId = (string)originalOptionsJson["user"]!["id"]!;
+            originalOptionsJson["user"]!["id"] = GetInvalidBase64UrlValue(base64UrlUserId);
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.Contains("base64url string", result.Failure.Message);
+    }
+
+    [Theory]
+    [InlineData("42")]
+    [InlineData("null")]
+    [InlineData("{}")]
+    public async Task Attestation_Fails_WhenOriginalOptionsUserIdIsNotString(string jsonValue)
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            originalOptionsJson["user"]!["id"] = JsonNode.Parse(jsonValue);
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenOriginalOptionsUserNameIsMissing()
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            var user = originalOptionsJson["user"]!.AsObject();
+            Assert.True(user.Remove("name"));
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.Contains("was missing required properties including: 'name'", result.Failure.Message);
+    }
+
+    [Theory]
+    [InlineData("42")]
+    [InlineData("null")]
+    [InlineData("{}")]
+    public async Task Attestation_Fails_WhenOriginalOptionsUserNameIsNotString(string jsonValue)
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            originalOptionsJson["user"]!["name"] = JsonNode.Parse(jsonValue);
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenOriginalOptionsUserDisplayNameIsMissing()
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            var user = originalOptionsJson["user"]!.AsObject();
+            Assert.True(user.Remove("displayName"));
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.Contains("was missing required properties including: 'displayName'", result.Failure.Message);
+    }
+
+    [Theory]
+    [InlineData("42")]
+    [InlineData("null")]
+    [InlineData("{}")]
+    public async Task Attestation_Fails_WhenOriginalOptionsUserDisplayNameIsNotString(string jsonValue)
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            originalOptionsJson["user"]!["displayName"] = JsonNode.Parse(jsonValue);
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenOriginalOptionsUserIsMissing()
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            Assert.True(originalOptionsJson.Remove("user"));
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.Contains("was missing required properties including: 'user'", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenOriginalOptionsChallengeIsMissing()
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            Assert.True(originalOptionsJson.Remove("challenge"));
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.Contains("was missing required properties including: 'challenge'", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenOriginalOptionsChallengeIsNotBase64UrlEncoded()
+    {
+        var test = new AttestationTest();
+
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            var base64UrlChallenge = (string)originalOptionsJson["challenge"]!;
+            originalOptionsJson["challenge"] = GetInvalidBase64UrlValue(base64UrlChallenge);
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.Contains("base64url string", result.Failure.Message);
+    }
+
+    [Theory]
+    [InlineData("42")]
+    [InlineData("null")]
+    [InlineData("{}")]
+    public async Task Attestation_Fails_WhenOriginalOptionsChallengeIsNotString(string jsonValue)
+    {
+        var test = new AttestationTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            originalOptionsJson["challenge"] = JsonNode.Parse(jsonValue);
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
     }
 
     [Fact]
@@ -371,9 +611,7 @@ public partial class DefaultPasskeyHandlerTest
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
         {
             var base64UrlChallenge = (string)clientDataJson["challenge"]!;
-            var rawChallenge = Base64Url.DecodeFromChars(base64UrlChallenge);
-            var base64Challenge = Convert.ToBase64String(rawChallenge) + "==";
-            clientDataJson["challenge"] = base64Challenge;
+            clientDataJson["challenge"] = GetInvalidBase64UrlValue(base64UrlChallenge);
         });
 
         var result = await test.RunAsync();
@@ -854,10 +1092,75 @@ public partial class DefaultPasskeyHandlerTest
         Assert.StartsWith("The credential public key algorithm does not match any of the supported algorithms", result.Failure.Message);
     }
 
+    [Fact]
+    public async Task Attestation_Fails_WhenVerifyAttestationStatementAsyncReturnsFalse()
+    {
+        var test = new AttestationTest
+        {
+            ShouldFailAttestationStatementVerification = true,
+        };
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The attestation statement was not valid", result.Failure.Message);
+    }
+
+    [Theory]
+    [InlineData(1024)]
+    [InlineData(2048)]
+    public async Task Attestation_Fails_WhenCredentialIdIsTooLong(int length)
+    {
+        var test = new AttestationTest
+        {
+            CredentialId = RandomNumberGenerator.GetBytes(length),
+        };
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("Expected the credential ID to have a length between 1 and 1023 bytes", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenCredentialIdDoesNotMatchAttestedCredentialId()
+    {
+        var test = new AttestationTest();
+        test.AttestedCredentialDataArgs.Transform(args =>
+        {
+            var newCredentialId = args.CredentialId.ToArray();
+            newCredentialId[0]++;
+            return args with { CredentialId = newCredentialId };
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith(
+            "The provided credential ID does not match the credential ID in the attested credential data",
+            result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Attestation_Fails_WhenCredentialIdAlreadyExistsForAnotherUser()
+    {
+        var test = new AttestationTest
+        {
+            DoesCredentialAlreadyExistForAnotherUser = true,
+        };
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The credential is already registered for a user", result.Failure.Message);
+    }
+
     private sealed class AttestationTest : PasskeyTestBase<PasskeyAttestationResult>
     {
         private static readonly byte[] _defaultChallenge = [1, 2, 3, 4, 5, 6, 7, 8];
         private static readonly byte[] _defaultCredentialId = [1, 2, 3, 4, 5, 6, 7, 8];
+        private static readonly byte[] _defaultAaguid = new byte[16];
+        private static readonly byte[] _defaultAttestationStatement = [0xA0]; // Empty CBOR map
 
         public IdentityOptions IdentityOptions { get; } = new();
         public string? RpId { get; set; } = "example.com";
@@ -866,6 +1169,8 @@ public partial class DefaultPasskeyHandlerTest
         public string? UserName { get; set; } = "johndoe";
         public string? UserDisplayName { get; set; } = "John Doe";
         public string? Origin { get; set; } = "https://example.com";
+        public bool ShouldFailAttestationStatementVerification { get; set; }
+        public bool DoesCredentialAlreadyExistForAnotherUser { get; set; }
         public COSEAlgorithmIdentifier Algorithm { get; set; } = COSEAlgorithmIdentifier.ES256;
         public ReadOnlyMemory<byte> Challenge { get; set; } = _defaultChallenge;
         public ReadOnlyMemory<byte> CredentialId { get; set; } = _defaultCredentialId;
@@ -883,7 +1188,10 @@ public partial class DefaultPasskeyHandlerTest
         protected override async Task<PasskeyAttestationResult> RunCoreAsync()
         {
             var identityOptions = Options.Create(IdentityOptions);
-            var handler = new DefaultPasskeyHandler<PocoUser>(identityOptions);
+            var handler = new TestPasskeyHandler(identityOptions)
+            {
+                ShouldFailAttestationStatementVerification = ShouldFailAttestationStatementVerification,
+            };
             var supportedPublicKeyCredentialParameters = SupportedPublicKeyCredentialParameters.Compute(
                 PublicKeyCredentialParameters.AllSupportedParameters);
             var pubKeyCredParamsJson = JsonSerializer.Serialize(
@@ -913,12 +1221,14 @@ public partial class DefaultPasskeyHandlerTest
             var credentialPublicKey = credential.EncodePublicKeyCbor();
             var attestedCredentialDataArgs = AttestedCredentialDataArgs.Compute(new()
             {
+                Aaguid = _defaultAaguid,
                 CredentialId = CredentialId,
                 CredentialPublicKey = credentialPublicKey,
             });
             var attestedCredentialData = AttestedCredentialData.Compute(MakeAttestedCredentialData(attestedCredentialDataArgs));
             var authenticatorDataArgs = AuthenticatorDataArgs.Compute(new()
             {
+                SignCount = 1,
                 RpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(RpId ?? string.Empty)),
                 AttestedCredentialData = attestedCredentialData,
                 Flags = AuthenticatorDataFlags.UserPresent | AuthenticatorDataFlags.HasAttestedCredentialData,
@@ -926,7 +1236,10 @@ public partial class DefaultPasskeyHandlerTest
             var authenticatorData = AuthenticatorData.Compute(MakeAuthenticatorData(authenticatorDataArgs));
             var attestationObjectArgs = AttestationObjectArgs.Compute(new()
             {
+                CborMapLength = 3, // Format, AuthenticatorData, AttestationStatement
+                Format = "none",
                 AuthenticatorData = authenticatorData,
+                AttestationStatement = _defaultAttestationStatement,
             });
             var attestationObject = AttestationObject.Compute(MakeAttestationObject(attestationObjectArgs));
             var clientDataJson = ClientDataJson.Compute($$"""
@@ -957,6 +1270,22 @@ public partial class DefaultPasskeyHandlerTest
 
             var userManager = MockHelpers.MockUserManager<PocoUser>();
 
+            if (DoesCredentialAlreadyExistForAnotherUser)
+            {
+                var existingUser = new PocoUser(userName: "existing_user");
+                userManager
+                    .Setup(m => m.FindByPasskeyIdAsync(It.IsAny<byte[]>()))
+                    .Returns((byte[] credentialId) =>
+                    {
+                        if (CredentialId.Span.SequenceEqual(credentialId))
+                        {
+                            return Task.FromResult<PocoUser?>(existingUser);
+                        }
+
+                        return Task.FromResult<PocoUser?>(null);
+                    });
+            }
+
             var context = new PasskeyAttestationContext<PocoUser>
             {
                 CredentialJson = credentialJson,
@@ -966,6 +1295,27 @@ public partial class DefaultPasskeyHandlerTest
             };
 
             return await handler.PerformAttestationAsync(context);
+        }
+
+        private sealed class TestPasskeyHandler(IOptions<IdentityOptions> options) : DefaultPasskeyHandler<PocoUser>(options)
+        {
+            public bool ShouldFailAttestationStatementVerification { get; init; }
+
+            protected override Task<bool> VerifyAttestationStatementAsync(
+                ReadOnlyMemory<byte> attestationObject,
+                ReadOnlyMemory<byte> clientDataHash,
+                HttpContext httpContext)
+            {
+                if (ShouldFailAttestationStatementVerification)
+                {
+                    return Task.FromResult(false);
+                }
+
+                return base.VerifyAttestationStatementAsync(
+                    attestationObject,
+                    clientDataHash,
+                    httpContext);
+            }
         }
     }
 }

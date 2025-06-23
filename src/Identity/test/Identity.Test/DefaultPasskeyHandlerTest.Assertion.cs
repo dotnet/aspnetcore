@@ -69,9 +69,7 @@ public partial class DefaultPasskeyHandlerTest
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
         {
             var base64UrlCredentialId = (string)credentialJson["id"]!;
-            var rawCredentialId = Base64Url.DecodeFromChars(base64UrlCredentialId);
-            var base64CredentialId = Convert.ToBase64String(rawCredentialId) + "==";
-            credentialJson["id"] = base64CredentialId;
+            credentialJson["id"] = GetInvalidBase64UrlValue(base64UrlCredentialId);
         });
 
         var result = await test.RunAsync();
@@ -162,6 +160,58 @@ public partial class DefaultPasskeyHandlerTest
 
         Assert.False(result.Succeeded);
         Assert.StartsWith("The assertion credential JSON had an invalid format", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Assertion_Fails_WhenOriginalOptionsChallengeIsMissing()
+    {
+        var test = new AssertionTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            Assert.True(originalOptionsJson.Remove("challenge"));
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+
+        Assert.StartsWith("The original passkey request options had an invalid format", result.Failure.Message);
+        Assert.Contains("was missing required properties including: 'challenge'", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Assertion_Fails_WhenOriginalOptionsChallengeIsNotBase64UrlEncoded()
+    {
+        var test = new AssertionTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            var base64UrlChallenge = (string)originalOptionsJson["challenge"]!;
+            originalOptionsJson["challenge"] = GetInvalidBase64UrlValue(base64UrlChallenge);
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey request options had an invalid format", result.Failure.Message);
+        Assert.Contains("base64url string", result.Failure.Message);
+    }
+
+    [Theory]
+    [InlineData("42")]
+    [InlineData("null")]
+    [InlineData("{}")]
+    public async Task Assertion_Fails_WhenOriginalOptionsChallengeIsNotString(string jsonValue)
+    {
+        var test = new AssertionTest();
+        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        {
+            originalOptionsJson["challenge"] = JsonNode.Parse(jsonValue);
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The original passkey request options had an invalid format", result.Failure.Message);
     }
 
     [Fact]
@@ -256,9 +306,7 @@ public partial class DefaultPasskeyHandlerTest
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
         {
             var base64UrlAuthenticatorData = (string)credentialJson["response"]!["authenticatorData"]!;
-            var rawAuthenticatorData = Base64Url.DecodeFromChars(base64UrlAuthenticatorData);
-            var base64AuthenticatorData = Convert.ToBase64String(rawAuthenticatorData) + "==";
-            credentialJson["response"]!["authenticatorData"] = base64AuthenticatorData;
+            credentialJson["response"]!["authenticatorData"] = GetInvalidBase64UrlValue(base64UrlAuthenticatorData);
         });
 
         var result = await test.RunAsync();
@@ -325,9 +373,7 @@ public partial class DefaultPasskeyHandlerTest
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
         {
             var base64UrlSignature = (string)credentialJson["response"]!["signature"]!;
-            var rawSignature = Base64Url.DecodeFromChars(base64UrlSignature);
-            var base64Signature = Convert.ToBase64String(rawSignature) + "==";
-            credentialJson["response"]!["signature"] = base64Signature;
+            credentialJson["response"]!["signature"] = GetInvalidBase64UrlValue(base64UrlSignature);
         });
 
         var result = await test.RunAsync();
@@ -399,6 +445,25 @@ public partial class DefaultPasskeyHandlerTest
 
         Assert.False(result.Succeeded);
         Assert.StartsWith("The authenticator response was missing a user handle", result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Assertion_Fails_WhenResponseUserHandleDoesNotMatchUserId()
+    {
+        var test = new AssertionTest
+        {
+            IsUserIdentified = true,
+        };
+        test.CredentialJson.TransformAsJsonObject(credentialJson =>
+        {
+            var newUserId = test.User.Id[..^1];
+            credentialJson["response"]!["userHandle"] = Base64Url.EncodeToString(Encoding.UTF8.GetBytes(newUserId));
+        });
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The provided user handle", result.Failure.Message);
     }
 
     [Fact]
@@ -509,9 +574,7 @@ public partial class DefaultPasskeyHandlerTest
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
         {
             var base64UrlChallenge = (string)clientDataJson["challenge"]!;
-            var rawChallenge = Base64Url.DecodeFromChars(base64UrlChallenge);
-            var base64Challenge = Convert.ToBase64String(rawChallenge) + "==";
-            clientDataJson["challenge"] = base64Challenge;
+            clientDataJson["challenge"] = GetInvalidBase64UrlValue(base64UrlChallenge);
         });
 
         var result = await test.RunAsync();
@@ -803,7 +866,7 @@ public partial class DefaultPasskeyHandlerTest
         var test = new AssertionTest();
         test.AuthenticatorDataArgs.Transform(args => args with
         {
-            SignCount = 0, // Normally 1
+            SignCount = 0, // Usually 1 by default
         });
 
         var result = await test.RunAsync();
@@ -1057,6 +1120,53 @@ public partial class DefaultPasskeyHandlerTest
             result.Failure.Message);
     }
 
+    [Fact]
+    public async Task Assertion_Fails_WhenProvidedCredentialIsNotInAllowedCredentials()
+    {
+        var test = new AssertionTest();
+        var allowedCredentialId = test.CredentialId.ToArray();
+        allowedCredentialId[0]++;
+        test.AddAllowedCredential(allowedCredentialId);
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith(
+            "The provided credential ID was not in the list of allowed credentials",
+            result.Failure.Message);
+    }
+
+    [Fact]
+    public async Task Assertion_Succeeds_WhenProvidedCredentialIsInAllowedCredentials()
+    {
+        var test = new AssertionTest();
+        var otherAllowedCredentialId = test.CredentialId.ToArray();
+        otherAllowedCredentialId[0]++;
+        test.AddAllowedCredential(test.CredentialId);
+        test.AddAllowedCredential(otherAllowedCredentialId);
+
+        var result = await test.RunAsync();
+
+        Assert.True(result.Succeeded);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Assertion_Fails_WhenCredentialDoesNotExistOnTheUser(bool isUserIdentified)
+    {
+        var test = new AssertionTest
+        {
+            IsUserIdentified = isUserIdentified,
+            DoesCredentialExistOnUser = false
+        };
+
+        var result = await test.RunAsync();
+
+        Assert.False(result.Succeeded);
+        Assert.StartsWith("The provided credential does not belong to the specified user", result.Failure.Message);
+    }
+
     private sealed class AssertionTest : PasskeyTestBase<PasskeyAssertionResult<PocoUser>>
     {
         private static readonly byte[] _defaultChallenge = [1, 2, 3, 4, 5, 6, 7, 8];
@@ -1075,6 +1185,7 @@ public partial class DefaultPasskeyHandlerTest
         public bool IsUserIdentified { get; set; }
         public bool IsStoredPasskeyBackupEligible { get; set; }
         public bool IsStoredPasskeyBackedUp { get; set; }
+        public bool DoesCredentialExistOnUser { get; set; } = true;
         public COSEAlgorithmIdentifier Algorithm { get; set; } = COSEAlgorithmIdentifier.ES256;
         public ReadOnlyMemory<byte> Challenge { get; set; } = _defaultChallenge;
         public ReadOnlyMemory<byte> CredentialId { get; set; } = _defaultCredentialId;
@@ -1087,11 +1198,11 @@ public partial class DefaultPasskeyHandlerTest
         public ComputedJsonObject CredentialJson { get; } = new();
         public ComputedValue<UserPasskeyInfo> StoredPasskey { get; } = new();
 
-        public void AddAllowCredentials(string userId)
+        public void AddAllowedCredential(ReadOnlyMemory<byte> credentialId)
         {
             _allowCredentials.Add(new()
             {
-                Id = BufferSource.FromString(userId),
+                Id = BufferSource.FromBytes(credentialId),
                 Type = "public-key",
                 Transports = ["internal"],
             });
@@ -1119,6 +1230,7 @@ public partial class DefaultPasskeyHandlerTest
             {
                 RpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(RpId ?? string.Empty)),
                 Flags = AuthenticatorDataFlags.UserPresent,
+                SignCount = 1,
             });
             var authenticatorData = AuthenticatorData.Compute(MakeAuthenticatorData(authenticatorDataArgs));
             var clientDataJson = ClientDataJson.Compute($$"""
@@ -1171,7 +1283,7 @@ public partial class DefaultPasskeyHandlerTest
             userManager
                 .Setup(m => m.GetPasskeyAsync(It.IsAny<PocoUser>(), It.IsAny<byte[]>()))
                 .Returns((PocoUser user, byte[] credentialId) => Task.FromResult(
-                    user == User && CredentialId.Span.SequenceEqual(credentialId)
+                    DoesCredentialExistOnUser && user == User && CredentialId.Span.SequenceEqual(credentialId)
                         ? storedPasskey
                         : null));
 

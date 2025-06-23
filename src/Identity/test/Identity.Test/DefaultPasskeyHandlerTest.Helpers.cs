@@ -23,6 +23,12 @@ public partial class DefaultPasskeyHandlerTest
     private static string ToBase64UrlJsonValue(string? value)
         => value is null ? "null" : $"\"{Base64Url.EncodeToString(Encoding.UTF8.GetBytes(value))}\"";
 
+    private static string GetInvalidBase64UrlValue(string base64UrlValue)
+    {
+        var rawValue = Base64Url.DecodeFromChars(base64UrlValue);
+        return Convert.ToBase64String(rawValue) + "==";
+    }
+
     private static ReadOnlyMemory<byte> MakeAttestedCredentialData(in AttestedCredentialDataArgs args)
     {
         const int AaguidLength = 16;
@@ -117,31 +123,27 @@ public partial class DefaultPasskeyHandlerTest
         return writer.Encode();
     }
 
-    private readonly struct AttestedCredentialDataArgs()
+    private readonly struct AttestedCredentialDataArgs
     {
-        private static readonly ReadOnlyMemory<byte> _defaultAaguid = new byte[16];
-
-        public ReadOnlyMemory<byte> Aaguid { get; init; } = _defaultAaguid;
+        public required ReadOnlyMemory<byte> Aaguid { get; init; }
         public required ReadOnlyMemory<byte> CredentialId { get; init; }
         public required ReadOnlyMemory<byte> CredentialPublicKey { get; init; }
     }
 
-    private readonly struct AuthenticatorDataArgs()
+    private readonly struct AuthenticatorDataArgs
     {
         public required AuthenticatorDataFlags Flags { get; init; }
         public required ReadOnlyMemory<byte> RpIdHash { get; init; }
+        public required uint SignCount { get; init; }
         public ReadOnlyMemory<byte>? AttestedCredentialData { get; init; }
         public ReadOnlyMemory<byte>? Extensions { get; init; }
-        public uint SignCount { get; init; } = 1;
     }
 
-    private readonly struct AttestationObjectArgs()
+    private readonly struct AttestationObjectArgs
     {
-        private static readonly byte[] _defaultAttestationStatement = [0xA0]; // Empty CBOR map
-
-        public int? CborMapLength { get; init; } = 3;
-        public string? Format { get; init; } = "none";
-        public ReadOnlyMemory<byte>? AttestationStatement { get; init; } = _defaultAttestationStatement;
+        public required int? CborMapLength { get; init; }
+        public required string? Format { get; init; }
+        public required ReadOnlyMemory<byte>? AttestationStatement { get; init; }
         public required ReadOnlyMemory<byte>? AuthenticatorData { get; init; }
     }
 
