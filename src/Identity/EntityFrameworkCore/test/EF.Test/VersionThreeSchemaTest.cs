@@ -20,7 +20,7 @@ public class VersionThreeSchemaTest : IClassFixture<ScratchDatabaseFixture>
 
         services
             .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
-            .AddDbContext<VersionTwoDbContext>(o =>
+            .AddDbContext<VersionThreeDbContext>(o =>
                 o.UseSqlite(fixture.Connection)
                     .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)))
             .AddIdentity<IdentityUser, IdentityRole>(o =>
@@ -28,13 +28,13 @@ public class VersionThreeSchemaTest : IClassFixture<ScratchDatabaseFixture>
                 // MaxKeyLength does not need to be set in version 3
                 o.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
             })
-            .AddEntityFrameworkStores<VersionTwoDbContext>();
+            .AddEntityFrameworkStores<VersionThreeDbContext>();
 
         services.AddLogging();
 
         _builder = new ApplicationBuilder(services.BuildServiceProvider());
         var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<VersionTwoDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<VersionThreeDbContext>();
         db.Database.EnsureCreated();
     }
 
@@ -42,7 +42,7 @@ public class VersionThreeSchemaTest : IClassFixture<ScratchDatabaseFixture>
     public void EnsureDefaultSchema()
     {
         using var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<VersionTwoDbContext>();
+        var db = scope.ServiceProvider.GetRequiredService<VersionThreeDbContext>();
         VerifyVersion3Schema(db);
     }
 
