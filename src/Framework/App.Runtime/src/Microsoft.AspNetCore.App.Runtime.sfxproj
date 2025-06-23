@@ -69,6 +69,11 @@
       <IncludeAssets>Runtime;Native</IncludeAssets>
     </Reference>
   </ItemGroup>
+
+  <ItemGroup>
+    <_AllExternalAspNetCoreAppReferences Include="@(ExternalAspNetCoreAppReference);@(_TransitiveExternalAspNetCoreAppReference)" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Condition="'$(GenerateInstallers)' == 'true'" Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersVersion)" />
     <LinuxPackageDependency Include="dotnet-runtime-$(DotnetRuntimeDependencyMajorMinorVersion)" Version="$(DotnetRuntimeDependencyVersion)" />
@@ -99,9 +104,9 @@
 
   <!-- Explicitly include symbols for libraries we redistribute from runtime -->
   <Target Name="_AddExtensionsSymbolsToSymbolPack">
-    <!-- Flatten ExternalAspNetCoreAppReference into a property -->
+    <!-- Flatten _AllExternalAspNetCoreAppReferences into a property -->
     <PropertyGroup>
-      <FileNameList>@(ExternalAspNetCoreAppReference, ';')</FileNameList>
+      <FileNameList>@(_AllExternalAspNetCoreAppReferences, ';')</FileNameList>
       <!-- Add trailing semicolon -->
       <FileNameList>$(FileNameList);</FileNameList>
     </PropertyGroup>
