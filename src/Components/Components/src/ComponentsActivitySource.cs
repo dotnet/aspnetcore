@@ -15,7 +15,7 @@ internal class ComponentsActivitySource
     internal const string OnRouteName = $"{Name}.RouteChange";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
-    private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
+    private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
     private ComponentsActivityLinkStore? _componentsActivityLinkStore;
 
     public void Init(ComponentsActivityLinkStore store)
