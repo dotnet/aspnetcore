@@ -106,6 +106,8 @@
     <!-- Flatten ExternalAspNetCoreAppReference into a property -->
     <PropertyGroup>
       <FileNameList>@(ExternalAspNetCoreAppReference, ';')</FileNameList>
+      <!-- Add trailing semicolon -->
+      <FileNameList>$(FileNameList);</FileNameList>
     </PropertyGroup>
 
     <ItemGroup>
@@ -113,7 +115,7 @@
           Exclude="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.ni.pdb" />
 
       <_SymbolFilesToPackage Include="@(_TransportPdbs)"
-          Condition="'$(FileNameList)' != '' and $(FileNameList.Contains('%(Filename)'))" />
+          Condition="'$(FileNameList)' != '' and $(FileNameList.Contains('%(Filename);'))" />
     </ItemGroup>
   </Target>
 
