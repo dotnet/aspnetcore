@@ -33,7 +33,15 @@ public static class WebHostBuilderNamedPipeExtensions
         {
             services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             services.AddSingleton<IConnectionListenerFactory, NamedPipeTransportFactory>();
+
+            services.TryAddSingleton<IMemoryPoolFactory<byte>, DefaultMemoryPoolFactory>();
+            services.AddOptions<NamedPipeTransportOptions>().Configure((NamedPipeTransportOptions options, IMemoryPoolFactory<byte> factory) =>
+            {
+                // Set the IMemoryPoolFactory from DI on NamedPipeTransportOptions. Usually this should be the PinnedBlockMemoryPoolFactory from UseKestrelCore.
+                options.MemoryPoolFactory = factory;
+            });
         });
+
         return hostBuilder;
     }
 

@@ -27,7 +27,6 @@
   <PropertyGroup>
     <!-- Use the BrowserDebugHost as a sentinel for the nonshipping version for .NETCoreApp -->
     <DotNetRuntimeArchiveFileName>dotnet-runtime-$(MicrosoftNETCoreAppRefVersion)-$(TargetRuntimeIdentifier).$(ArchiveFormat)</DotNetRuntimeArchiveFileName>
-    <DotNetRuntimeArchiveFileName Condition="'$(PgoInstrument)' == 'true'">dotnet-runtime-pgo-$(MicrosoftNETCoreAppRefVersion)-$(TargetRuntimeIdentifier)$(ArchiveExtension)</DotNetRuntimeArchiveFileName>
     <DotNetRuntimeDownloadPath>Runtime/$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)/$(DotNetRuntimeArchiveFileName)</DotNetRuntimeDownloadPath>
     <DotNetRuntimeArchive>$(BaseIntermediateOutputPath)$(DotNetRuntimeArchiveFileName)</DotNetRuntimeArchive>
   </PropertyGroup>

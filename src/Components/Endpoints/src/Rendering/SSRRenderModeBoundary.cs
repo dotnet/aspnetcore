@@ -28,6 +28,7 @@ internal class SSRRenderModeBoundary : IComponent
     private RenderHandle _renderHandle;
     private IReadOnlyDictionary<string, object?>? _latestParameters;
     private ComponentMarkerKey? _markerKey;
+    private readonly HttpContext _httpContext;
 
     public IComponentRenderMode RenderMode { get; }
 
@@ -38,6 +39,7 @@ internal class SSRRenderModeBoundary : IComponent
     {
         AssertRenderModeIsConfigured(httpContext, componentType, renderMode);
 
+        _httpContext = httpContext;
         _componentType = componentType;
         RenderMode = renderMode;
         _prerender = renderMode switch
@@ -106,12 +108,28 @@ internal class SSRRenderModeBoundary : IComponent
 
         ValidateParameters(_latestParameters);
 
+        if (RenderMode is InteractiveWebAssemblyRenderMode)
+        {
+            // Preload WebAssembly assets when using WebAssembly (not Auto) mode
+            PreloadWebAssemblyAssets();
+        }
+
         if (_prerender)
         {
             _renderHandle.Render(Prerender);
         }
 
         return Task.CompletedTask;
+    }
+
+    private void PreloadWebAssemblyAssets()
+    {
+        var preloads = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourcePreloadCollection>();
+        if (preloads != null && preloads.TryGetAssets("webassembly", out var preloadAssets))
+        {
+            var service = _httpContext.RequestServices.GetRequiredService<ResourcePreloadService>();
+            service.Preload(preloadAssets);
+        }
     }
 
     private void ValidateParameters(IReadOnlyDictionary<string, object?> latestParameters)
@@ -201,5 +219,15 @@ internal class SSRRenderModeBoundary : IComponent
             LocationHash = locationHash,
             FormattedComponentKey = formattedComponentKey,
         };
+    }
+
+    /// <summary>
+    /// Gets the ComponentMarkerKey for this boundary if it has been computed.
+    /// This is used for state persistence across render modes.
+    /// </summary>
+    /// <returns>The ComponentMarkerKey if available, null otherwise.</returns>
+    internal ComponentMarkerKey GetComponentMarkerKey(int sequence, object? componentKey)
+    {
+        return _markerKey ??= GenerateMarkerKey(sequence, componentKey);
     }
 }

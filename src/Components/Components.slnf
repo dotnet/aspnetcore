@@ -154,6 +154,10 @@
       "src\\StaticAssets\\src\\Microsoft.AspNetCore.StaticAssets.csproj",
       "src\\StaticAssets\\test\\Microsoft.AspNetCore.StaticAssets.Tests.csproj",
       "src\\Testing\\src\\Microsoft.AspNetCore.InternalTesting.csproj",
+      "src\\Validation\\gen\\Microsoft.Extensions.Validation.ValidationsGenerator.csproj",
+      "src\\Validation\\src\\Microsoft.Extensions.Validation.csproj",
+      "src\\Validation\\test\\Microsoft.Extensions.Validation.GeneratorTests\\Microsoft.Extensions.Validation.GeneratorTests.csproj",
+      "src\\Validation\\test\\Microsoft.Extensions.Validation.Tests\\Microsoft.Extensions.Validation.Tests.csproj",
       "src\\WebEncoders\\src\\Microsoft.Extensions.WebEncoders.csproj"
     ]
   }
