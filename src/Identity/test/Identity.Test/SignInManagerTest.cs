@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers.Text;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
@@ -1373,6 +1376,114 @@ public class SignInManagerTest
         Assert.Same(expectedSignInResult, result);
         manager.Verify();
         auth.Verify();
+    }
+
+    [Fact]
+    public async Task GeneratePasskeyCreationOptionsAsyncReturnsExpectedOptions()
+    {
+        // Arrange
+        var user = new PocoUser { UserName = "Foo" };
+        var userManager = SetupUserManager(user);
+        var context = new DefaultHttpContext();
+        var identityOptions = new IdentityOptions()
+        {
+            Passkey = new()
+            {
+                ChallengeSize = 32,
+                Timeout = TimeSpan.FromMinutes(10),
+                ServerDomain = "example.com",
+            },
+        };
+        var signInManager = SetupSignInManager(userManager.Object, context, identityOptions: identityOptions);
+        var userEntity = new PasskeyUserEntity(id: "1234", name: "Foo", displayName: "Foo");
+        var creationArgs = new PasskeyCreationArgs(userEntity)
+        {
+            Attestation = "some-attestation-value",
+            AuthenticatorSelection = new AuthenticatorSelectionCriteria
+            {
+                AuthenticatorAttachment = "cross-platform",
+                ResidentKey = "required",
+                UserVerification = "preferred"
+            },
+            Extensions = JsonElement.Parse("""
+                {
+                    "my.bool.extension": true,
+                    "my.object.extension": {
+                        "key": "value"
+                    }
+                }
+                """),
+        };
+
+        // Act
+        var options = await signInManager.GeneratePasskeyCreationOptionsAsync(creationArgs);
+        var optionsJson = JsonNode.Parse(options.AsJson()).AsObject();
+        var challenge = Base64Url.DecodeFromChars(optionsJson["challenge"].ToString());
+
+        // Assert
+        Assert.NotNull(options);
+        Assert.Same(userEntity, options.UserEntity);
+        Assert.Equal(identityOptions.Passkey.ServerDomain, optionsJson["rp"]["id"].ToString());
+        Assert.Equal(identityOptions.Passkey.ServerDomain, optionsJson["rp"]["name"].ToString());
+        Assert.Equal(identityOptions.Passkey.ChallengeSize, challenge.Length);
+        Assert.Equal((uint)identityOptions.Passkey.Timeout.TotalMilliseconds, (uint)optionsJson["timeout"]);
+        Assert.Equal(creationArgs.Attestation, optionsJson["attestation"].ToString());
+        Assert.Equal(
+            creationArgs.AuthenticatorSelection.AuthenticatorAttachment,
+            optionsJson["authenticatorSelection"]["authenticatorAttachment"].ToString());
+        Assert.Equal(
+            creationArgs.AuthenticatorSelection.ResidentKey,
+            optionsJson["authenticatorSelection"]["residentKey"].ToString());
+        Assert.Equal(
+            creationArgs.AuthenticatorSelection.UserVerification,
+            optionsJson["authenticatorSelection"]["userVerification"].ToString());
+        Assert.True((bool)optionsJson["extensions"]["my.bool.extension"]);
+        Assert.Equal("value", optionsJson["extensions"]["my.object.extension"]["key"].ToString());
+    }
+
+    [Fact]
+    public async Task GeneratePasskeyRequestOptionsAsyncReturnsExpectedOptions()
+    {
+        // Arrange
+        var user = new PocoUser { UserName = "Foo" };
+        var userManager = SetupUserManager(user);
+        var context = new DefaultHttpContext();
+        var identityOptions = new IdentityOptions()
+        {
+            Passkey = new()
+            {
+                ChallengeSize = 32,
+                Timeout = TimeSpan.FromMinutes(10),
+                ServerDomain = "example.com",
+            },
+        };
+        var signInManager = SetupSignInManager(userManager.Object, context, identityOptions: identityOptions);
+        var requestArgs = new PasskeyRequestArgs<PocoUser>
+        {
+            UserVerification = "preferred",
+            Extensions = JsonElement.Parse("""
+                {
+                    "my.bool.extension": true,
+                    "my.object.extension": {
+                        "key": "value"
+                    }
+                }
+                """),
+        };
+
+        // Act
+        var options = await signInManager.GeneratePasskeyRequestOptionsAsync(requestArgs);
+        var optionsJson = JsonNode.Parse(options.AsJson()).AsObject();
+        var challenge = Base64Url.DecodeFromChars(optionsJson["challenge"].ToString());
+
+        // Assert
+        Assert.NotNull(options);
+        Assert.Equal(identityOptions.Passkey.ServerDomain, optionsJson["rpId"].ToString());
+        Assert.Equal(identityOptions.Passkey.ChallengeSize, challenge.Length);
+        Assert.Equal((uint)identityOptions.Passkey.Timeout.TotalMilliseconds, (uint)optionsJson["timeout"]);
+        Assert.Equal(requestArgs.UserVerification, optionsJson["userVerification"].ToString());
+        Assert.True((bool)optionsJson["extensions"]["my.bool.extension"]);
+        Assert.Equal("value", optionsJson["extensions"]["my.object.extension"]["key"].ToString());
     }
 
     private static SignInManager<PocoUser> SetupSignInManagerType(UserManager<PocoUser> manager, HttpContext context, string typeName)
