@@ -101,17 +101,19 @@
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.pdb" />
   </ItemGroup>
 
+  <!-- Explicitly include symbols for libraries we redistribute from runtime -->
   <Target Name="_AddExtensionsSymbolsToSymbolPack">
-    <!-- Explicitly include symbols for libraries we redistribute from runtime -->
+    <!-- Flatten ExternalAspNetCoreAppReference into a property -->
+    <PropertyGroup>
+      <FileNameList>@(ExternalAspNetCoreAppReference, ';')</FileNameList>
+    </PropertyGroup>
+
     <ItemGroup>
       <_TransportPdbs Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.pdb"
           Exclude="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.ni.pdb" />
 
-      <_TransportPdbsWithName Include="@(_TransportPdbs)"
-          Name="%(Filename)" />
-
-      <_SymbolFilesToPackage Include="@(_TransportPdbsWithName)"
-          Condition="'@(ExternalAspNetCoreAppReference->AnyHaveMetadataValue('Identity', '%(Name)'))' == 'true'" />
+      <_SymbolFilesToPackage Include="@(_TransportPdbs)"
+          Condition="'$(FileNameList)' != '' and $(FileNameList.Contains('%(Filename)'))" />
     </ItemGroup>
   </Target>
 
