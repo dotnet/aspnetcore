@@ -614,6 +614,9 @@
         var testClassRef = await JSRuntime.InvokeNewAsync("jsInteropTests.TestClass", "abraka");
         await testClassRef.SetValueAsync("getTextLength", funcRef);
         ReturnValues["changeFunctionViaObjectReferenceAsync"] = (await testClassRef.InvokeAsync<int>("getTextLength")).ToString();
+
+        var funcDelegate = funcRef.AsAsyncFunction<Func<Task<int>>>();
+        ReturnValues["invokeDelegateFromAsAsyncFunction"] = (await funcDelegate()).ToString();
     }
 
     private void FunctionReferenceTests()

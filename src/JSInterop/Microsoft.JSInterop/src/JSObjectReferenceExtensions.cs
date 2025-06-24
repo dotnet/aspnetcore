@@ -167,4 +167,19 @@ public static class JSObjectReferenceExtensions
 
         return jsObjectReference.InvokeNewAsync(identifier, cancellationToken, args);
     }
+
+    /// <summary>
+    /// Converts a JavaScript function reference into a .NET delegate of the specified type.
+    /// </summary>
+    /// <typeparam name="T">The type of the delegate to create. Must be a Func with the result type <see cref="Task"/>, <see cref="Task{R}"/>, <see cref="ValueTask"/>, or <see cref="ValueTask{R}"/>.</typeparam>
+    /// <param name="jsObjectReference">The JavaScript object reference that represents the function to be invoked.</param>
+    /// <returns>A Func delegate of type <typeparamref name="T"/> that can be used to invoke the JavaScript function.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsObjectReference"/> is null.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when <typeparamref name="T"/> is not a valid Func type.</exception>
+    public static T AsAsyncFunction<T>(this IJSObjectReference jsObjectReference) where T : Delegate
+    {
+        ArgumentNullException.ThrowIfNull(jsObjectReference);
+
+        return JSFunctionReference.CreateInvocationDelegate<T>(jsObjectReference);
+    }
 }
