@@ -86,7 +86,7 @@ public class ComponentsActivitySourceTest
         componentsActivitySource.StartRouteActivity("ParentComponent", "/parent");
 
         // Act
-        var activityHandle = componentsActivitySource.StartEventActivity(componentType, methodName, attributeName);
+        var activityHandle = ComponentsActivitySource.StartEventActivity(componentType, methodName, attributeName);
         var activity = activityHandle.Activity;
 
         // Assert
@@ -113,7 +113,7 @@ public class ComponentsActivitySourceTest
         var componentsActivitySource = new ComponentsActivitySource();
         var linkstore = new ComponentsActivityLinkStore(null);
         componentsActivitySource.Init(linkstore);
-        var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
+        var activityHandle = ComponentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
 
@@ -133,7 +133,7 @@ public class ComponentsActivitySourceTest
         var componentsActivitySource = new ComponentsActivitySource();
         var linkstore = new ComponentsActivityLinkStore(null);
         componentsActivitySource.Init(linkstore);
-        var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
+        var activityHandle = ComponentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var task = Task.CompletedTask;
 
@@ -152,7 +152,7 @@ public class ComponentsActivitySourceTest
         var componentsActivitySource = new ComponentsActivitySource();
         var linkstore = new ComponentsActivityLinkStore(null);
         componentsActivitySource.Init(linkstore);
-        var activityHandle = componentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
+        var activityHandle = ComponentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
         var task = Task.FromException(exception);
@@ -192,7 +192,7 @@ public class ComponentsActivitySourceTest
         componentsActivitySource.Init(linkstore);
 
         // Act
-        var activityHandle = componentsActivitySource.StartEventActivity(null, null, null);
+        var activityHandle = ComponentsActivitySource.StartEventActivity(null, null, null);
         var activity = activityHandle.Activity;
 
         // Assert
