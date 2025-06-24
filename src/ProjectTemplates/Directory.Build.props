@@ -4,6 +4,8 @@
   <PropertyGroup>
     <!-- The .csproj files in this folder do not actually produce .dll's. They are only present to produce .nupkgs and enable Visual Studio support -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
+
+    <SkipTests>true</SkipTests>
   </PropertyGroup>
 
   <Import Project="TemplateProjects.props" Condition=" !$(IsTestProject) AND '$(IsTestAssetProject)' != 'true'" />
