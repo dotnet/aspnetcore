@@ -1818,15 +1818,30 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var store = GetUserLockoutStore();
         ArgumentNullThrowHelper.ThrowIfNull(user);
 
-        // If this puts the user over the threshold for lockout, lock them out and reset the access failed count
+        // If PermanentLockout is enabled, lock the user indefinitely
+        if (Options.Lockout.PermanentLockout)
+        {
+            Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is permanently locked out.");
+            await store.SetLockoutEndDateAsync(user, DateTimeOffset.MaxValue, CancellationToken).ConfigureAwait(false);
+            return await UpdateUserAsync(user).ConfigureAwait(false);
+        }
+
+        // Increment access failed count
         var count = await store.IncrementAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
         if (count < Options.Lockout.MaxFailedAccessAttempts)
         {
             return await UpdateUserAsync(user).ConfigureAwait(false);
         }
+
         Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
-        await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
-            CancellationToken).ConfigureAwait(false);
+
+        // Set the lockout time based on configuration.
+        var now = DateTimeOffset.UtcNow;
+        DateTimeOffset lockoutEnd = Options.Lockout.DefaultLockoutTimeSpan == TimeSpan.MaxValue
+            ? DateTimeOffset.MaxValue
+            : now.Add(Options.Lockout.DefaultLockoutTimeSpan);
+
+        await store.SetLockoutEndDateAsync(user, lockoutEnd, CancellationToken).ConfigureAwait(false);
         await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
         return await UpdateUserAsync(user).ConfigureAwait(false);
     }
