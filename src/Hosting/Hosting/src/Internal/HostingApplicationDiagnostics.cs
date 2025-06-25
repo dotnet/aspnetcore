@@ -392,7 +392,8 @@ internal sealed class HostingApplicationDiagnostics
         var tagsForCreation = new TagList();
         if (_activitySource.HasListeners() && httpContext.Request.Host.HasValue)
         {
-            var (host, port) = httpContext.Request.Host.HostAndPort;
+            var host = httpContext.Request.Host.Host;
+            var port = httpContext.Request.Host.Port;
             tags.Add("server.address", host);
             if (port is not null)
             {

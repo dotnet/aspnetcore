@@ -332,22 +332,22 @@ public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, 
 
     private static (string host, int? port) GetHostAndPort(HttpContext httpContext)
     {
-        var (host, port) = httpContext.Request.Host.HostAndPort;
-        if (port != null)
+        var hostString = httpContext.Request.Host;
+        if (hostString.Port != null)
         {
-            return (host, port);
+            return (hostString.Host, hostString.Port);
         }
         else if (string.Equals("https", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
         {
-            return (host, 443);
+            return (hostString.Host, 443);
         }
         else if (string.Equals("http", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
         {
-            return (host, 80);
+            return (hostString.Host, 80);
         }
         else
         {
-            return (host, null);
+            return (hostString.Host, null);
         }
     }
 
