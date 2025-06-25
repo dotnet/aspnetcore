@@ -22,6 +22,13 @@
   <PropertyGroup>
     <NpmWorkspaceRoot>$(MSBuildThisFileDirectory)..</NpmWorkspaceRoot>
     <NodeModulesMarkerFile>$(NpmWorkspaceRoot)\node_modules\.package-lock.json</NodeModulesMarkerFile>
+    <!-- Common exclude patterns for NPM build input/output files -->
+    <NpmCommonExcludePatterns>
+      **\pkg-version.ts;
+      $(NpmWorkspaceRoot)\src\**\node_modules\**\*;
+      $(NpmWorkspaceRoot)\src\**\bin\**\*;
+      $(NpmWorkspaceRoot)\src\**\obj\**\*
+    </NpmCommonExcludePatterns>
   </PropertyGroup>
 
   <!-- Input files for incremental restore check -->
@@ -55,16 +62,16 @@
   <!-- Input files for incremental build check -->
   <ItemGroup>
     <!-- Source files -->
-    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.ts" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
-    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.js" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;**\samples\**\wwwroot\lib\**\*;**\FunctionalTests\wwwroot\lib\**\*;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\dist\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
-    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.mjs" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\dist\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.ts" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.js" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns);**\samples\**\wwwroot\lib\**\*;**\FunctionalTests\wwwroot\lib\**\*;$(NpmWorkspaceRoot)\src\**\dist\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.mjs" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns);$(NpmWorkspaceRoot)\src\**\dist\**\*" />
 
     <!-- Configuration files -->
-    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\package.json" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\package.json;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
-    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\tsconfig*.json" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
-    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\rollup.config.*" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
-    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\webpack.config.*" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
-    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\jest.config.*" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\package.json" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns);$(NpmWorkspaceRoot)\src\**\node_modules\**\package.json" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\tsconfig*.json" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\rollup.config.*" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\webpack.config.*" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\jest.config.*" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
 
     <!-- Root workspace configuration files that affect build -->
     <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\package.json" />
