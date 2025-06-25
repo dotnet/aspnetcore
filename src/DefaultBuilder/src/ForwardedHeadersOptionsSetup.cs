@@ -53,10 +53,10 @@ internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<Forwarded
             options.KnownNetworks.Add(IPNetwork.Parse(network));
         }
 
-        var knownProxy = _configuration["ForwardedHeaders_KnownProxies"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
-        foreach (var network in knownNetworks)
+        var knownProxies = _configuration["ForwardedHeaders_KnownProxies"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+        foreach (var proxy in knownProxies)
         {
-            options.KnownNetworks.Add(IPAddress.Parse(network));
+            options.KnownProxies.Add(IPAddress.Parse(proxy));
         }
     }
 }
