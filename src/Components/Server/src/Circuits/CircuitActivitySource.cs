@@ -11,7 +11,7 @@ internal class CircuitActivitySource
 
     private ComponentsActivityLinkStore? _activityLinkStore;
 
-    private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
+    private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
     public void Init(ComponentsActivityLinkStore store)
     {
