@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Moq;
-using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Antiforgery.Internal;
 
@@ -154,6 +156,70 @@ public class DefaultAntiforgeryTest
         Assert.Equal(context.TestTokenSet.NewCookieTokenString, antiforgeryFeature.NewCookieTokenString);
         Assert.Equal(context.TestTokenSet.RequestToken, antiforgeryFeature.NewRequestToken);
         Assert.Equal(context.TestTokenSet.FormTokenString, antiforgeryFeature.NewRequestTokenString);
+    }
+
+    [Fact]
+    public async Task ValidateRequestAsync_DoesNotThrow_OnBuiltHttpContext()
+    {
+        var serviceCollection = new ServiceCollection()
+                .AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance)
+                .AddSingleton(typeof(ILogger<>), typeof(NullLogger<>))
+                .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>()
+                .AddAntiforgery();
+
+        serviceCollection.Configure<AntiforgeryOptions>(options => {
+            options.HeaderName = "XSRF-TOKEN";
+        });
+
+        var services = serviceCollection.BuildServiceProvider();
+        var antiforgery = services.GetRequiredService<IAntiforgery>();
+
+        var cookieName = services.GetRequiredService<IOptions<AntiforgeryOptions>>().Value.Cookie.Name!;
+
+        var incomingRequestWithUserCtx = PrepareRequest(antiforgery, cookieName, withIdentity: true);
+
+        // act - no exception expected
+        await antiforgery.ValidateRequestAsync(incomingRequestWithUserCtx);
+    }
+
+    private static HttpContext PrepareRequest(IAntiforgery antiforgery, string cookieName, bool withIdentity = false)
+    {
+        // Simulate initial request to get tokens and capture Set-Cookie header
+        var ctx = new DefaultHttpContext();
+        if (withIdentity)
+        {
+            ctx.User = new ClaimsPrincipal(GetAuthenticatedIdentity("the-user"));
+        }
+
+        var tokens = antiforgery.GetAndStoreTokens(ctx);
+
+        // Extract the Set-Cookie header from the response (written by GetAndStoreTokens)
+        var setCookieHeader = ctx.Response.Headers["Set-Cookie"];
+        var cookieValue = setCookieHeader
+            .FirstOrDefault(h => h!.StartsWith(cookieName + "=", StringComparison.InvariantCultureIgnoreCase))?
+            .Split(';')[0]  // e.g. XSRF-TOKEN=abc123...
+            .Substring(cookieName.Length + 1); // Just the value
+        if (cookieValue == null)
+        {
+            throw new InvalidOperationException("Failed to extract antiforgery cookie.");
+        }
+
+        // Set headers on your test context
+        var context = new DefaultHttpContext();
+        context.Request.Headers["XSRF-TOKEN"] = tokens.RequestToken;
+        context.Request.Headers["Cookie"] = $"{cookieName}={cookieValue}";
+        if (withIdentity)
+        {
+            context.User = ctx.User;
+        }
+
+        return context;
+
+        ClaimsIdentity GetAuthenticatedIdentity(string identityUsername)
+        {
+            var claim = new Claim(ClaimsIdentity.DefaultNameClaimType, identityUsername);
+            return new ClaimsIdentity(new[] { claim }, "Some-Authentication");
+        }
     }
 
     [Fact]

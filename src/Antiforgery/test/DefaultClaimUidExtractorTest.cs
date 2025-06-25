@@ -30,6 +30,25 @@ public class DefaultClaimUidExtractorTest
     }
 
     [Fact]
+    public void ExtractClaimUid_Unauthenticated_Span()
+    {
+        // Arrange
+        var extractor = new DefaultClaimUidExtractor(_pool);
+
+        var mockIdentity = new Mock<ClaimsIdentity>();
+        mockIdentity.Setup(o => o.IsAuthenticated)
+                    .Returns(false);
+
+        var destination = new byte[32];
+
+        // Act
+        extractor.ExtractClaimUid(new ClaimsPrincipal(mockIdentity.Object), destination, out var bytesWritten);
+
+        // Assert
+        Assert.Equal(0, bytesWritten);
+    }
+
+    [Fact]
     public void ExtractClaimUid_ClaimsIdentity()
     {
         // Arrange
@@ -46,6 +65,27 @@ public class DefaultClaimUidExtractorTest
         // Assert
         Assert.NotNull(claimUid);
         Assert.Equal("yhXE+2v4zSXHtRHmzm4cmrhZca2J0g7yTUwtUerdeF4=", claimUid);
+    }
+
+    [Fact]
+    public void ExtractClaimUid_ClaimsIdentity_Span()
+    {
+        // Arrange
+        var mockIdentity = new Mock<ClaimsIdentity>();
+        mockIdentity.Setup(o => o.IsAuthenticated)
+                    .Returns(true);
+        mockIdentity.Setup(o => o.Claims).Returns(new Claim[] { new Claim(ClaimTypes.Name, "someName") });
+
+        var extractor = new DefaultClaimUidExtractor(_pool);
+
+        // Act
+        var destination = new byte[1024];
+        extractor.ExtractClaimUid(new ClaimsPrincipal(mockIdentity.Object), destination, out var bytesWritten);
+
+        // Assert
+        Assert.True(bytesWritten > 0);
+        var base64Bytes = Convert.ToBase64String(destination[..bytesWritten]);
+        Assert.Equal("yhXE+2v4zSXHtRHmzm4cmrhZca2J0g7yTUwtUerdeF4=", base64Bytes);
     }
 
     [Fact]
