@@ -24,7 +24,7 @@
     <NodeModulesMarkerFile>$(NpmWorkspaceRoot)\node_modules\.package-lock.json</NodeModulesMarkerFile>
   </PropertyGroup>
 
-  <!-- Input files for incremental check -->
+  <!-- Input files for incremental restore check -->
   <ItemGroup>
     <NpmInputFiles Include="$(NpmWorkspaceRoot)\package.json" />
     <NpmInputFiles Include="$(NpmWorkspaceRoot)\package-lock.json" Condition="Exists('$(NpmWorkspaceRoot)\package-lock.json')" />
@@ -32,10 +32,45 @@
     <NpmInputFiles Include="$(NpmWorkspaceRoot)\.npmrc" Condition="Exists('$(NpmWorkspaceRoot)\.npmrc')" />
   </ItemGroup>
 
-  <!-- Output files for incremental check -->
+  <!-- Output files for incremental restore check -->
   <ItemGroup>
     <NpmOutputFiles Include="$(NodeModulesMarkerFile)" />
   </ItemGroup>
+
+  <!-- Output files for incremental build check -->
+  <ItemGroup>
+    <!-- Main build outputs - dist directories in workspace projects -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\**\*" Exclude="**\.gitignore;**\.gitattributes"  />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\**\*" Exclude="**\.gitignore;**\.gitattributes" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\**\*" Exclude="**\.gitignore;**\.gitattributes" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\**\*" Exclude="**\.gitignore;**\.gitattributes" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\WebAssembly.Authentication\src\Interop\dist\**\*" Exclude="**\.gitignore;**\.gitattributes" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\Authentication.Msal\src\Interop\dist\**\*" Exclude="**\.gitignore;**\.gitattributes" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\CustomElements\src\js\dist\**\*" Exclude="**\.gitignore;**\.gitattributes" />
+
+    <!-- FunctionalTests outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\FunctionalTests\wwwroot\dist\**\*" />
+  </ItemGroup>
+
+  <!-- Input files for incremental build check -->
+  <ItemGroup>
+    <!-- Source files -->
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.ts" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.js" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;**\samples\**\wwwroot\lib\**\*;**\FunctionalTests\wwwroot\lib\**\*;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\dist\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.mjs" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\dist\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+
+    <!-- Configuration files -->
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\package.json" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\package.json;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\tsconfig*.json" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\rollup.config.*" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\webpack.config.*" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\jest.config.*" Exclude="@(NpmBuildOutputFiles);**\pkg-version.ts;$(NpmWorkspaceRoot)\src\**\node_modules\**\*;$(NpmWorkspaceRoot)\src\**\bin\**\*;$(NpmWorkspaceRoot)\src\**\obj\**\*" />
+
+    <!-- Root workspace configuration files that affect build -->
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\package.json" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\tsconfig*.json" />
+  </ItemGroup>
+
 
   <Target Name="Restore" Inputs="@(NpmInputFiles)" Outputs="@(NpmOutputFiles)">
     <Message Text="Restoring NPM packages..." Importance="high" />
@@ -45,7 +80,7 @@
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
   </Target>
 
-  <Target Name="Build" DependsOnTargets="Restore">
+  <Target Name="Build" DependsOnTargets="Restore" Inputs="@(NpmBuildInputFiles)" Outputs="@(NpmBuildOutputFiles)">
     <PropertyGroup>
       <PackageVersion>$(VersionPrefix)</PackageVersion>
       <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
