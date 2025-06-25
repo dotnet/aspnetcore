@@ -44,6 +44,9 @@
     <ReconnectModal />
     ##endif*@
     <script src="@Assets["_framework/blazor.web.js"]"></script>
+    @*#if (IndividualLocalAuth)
+    <script src="@Assets["Components/Account/Shared/PasskeySubmit.razor.js"]" type="module"></script>
+    ##endif*@
 </body>
 
 </html>
