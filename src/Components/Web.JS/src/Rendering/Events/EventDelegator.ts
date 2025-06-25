@@ -121,6 +121,11 @@ export class EventDelegator {
       for (const handlerInfo of infosForElement.enumerateHandlers()) {
         this.eventInfoStore.remove(handlerInfo.eventHandlerId);
       }
+
+      for (const eventName of infosForElement.enumeratedEventNamesForEnabledFlags()) {
+        this.eventInfoStore.decrementCountByEventName(eventName);
+      }
+
       delete element[this.eventsCollectionKey];
     }
   }
@@ -135,12 +140,26 @@ export class EventDelegator {
 
   public setStopPropagation(element: Element, eventName: string, value: boolean): void {
     const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    const currentValue = infoForElement.stopPropagation(eventName);
     infoForElement.stopPropagation(eventName, value);
+
+    if (!currentValue && value) {
+      this.eventInfoStore.addGlobalListener(eventName);
+    } else if (currentValue && !value) {
+      this.eventInfoStore.decrementCountByEventName(eventName);
+    }
   }
 
   public setPreventDefault(element: Element, eventName: string, value: boolean): void {
     const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    const currentValue = infoForElement.preventDefault(eventName);
     infoForElement.preventDefault(eventName, value);
+
+    if (!currentValue && value) {
+      this.eventInfoStore.addGlobalListener(eventName);
+    } else if (currentValue && !value) {
+      this.eventInfoStore.decrementCountByEventName(eventName);
+    }
   }
 
   private onGlobalEvent(evt: Event) {
@@ -298,14 +317,17 @@ class EventInfoStore {
 
       // If this event name is an alias, update the global listener for the corresponding browser event
       const eventName = getBrowserEventName(info.eventName);
-
-      if (--this.countByEventName[eventName] === 0) {
-        delete this.countByEventName[eventName];
-        document.removeEventListener(eventName, this.globalListener);
-      }
+      this.decrementCountByEventName(eventName);
     }
 
     return info;
+  }
+
+  public decrementCountByEventName(eventName: string) {
+    if (--this.countByEventName[eventName] === 0) {
+      delete this.countByEventName[eventName];
+      document.removeEventListener(eventName, this.globalListener);
+    }
   }
 
   private handleEventNameAliasAdded(aliasEventName, browserEventName) {
@@ -338,10 +360,24 @@ class EventHandlerInfosForElement {
 
   private stopPropagationFlags: { [eventName: string]: boolean } | null = null;
 
-  public *enumerateHandlers() : IterableIterator<EventHandlerInfo> {
+  public *enumerateHandlers(): IterableIterator<EventHandlerInfo> {
     for (const eventName in this.handlers) {
       if (Object.prototype.hasOwnProperty.call(this.handlers, eventName)) {
         yield this.handlers[eventName];
+      }
+    }
+  }
+
+  public *enumeratedEventNamesForEnabledFlags(): IterableIterator<string> {
+    for (const eventName in this.preventDefaultFlags) {
+      if (this.preventDefaultFlags[eventName] === true) {
+        yield eventName;
+      }
+    }
+
+    for (const eventName in this.stopPropagationFlags) {
+      if (this.stopPropagationFlags[eventName] === true) {
+        yield eventName;
       }
     }
   }
