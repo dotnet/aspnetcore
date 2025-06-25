@@ -56,7 +56,7 @@ internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<Forwarded
         var knownProxies = _configuration["ForwardedHeaders_KnownProxies"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
         foreach (var proxy in knownProxies)
         {
-            options.KnownProxies.Add(IPAddress.Parse(proxy));
+            options.KnownProxies.Add(System.Net.IPAddress.Parse(proxy));
         }
     }
 }
