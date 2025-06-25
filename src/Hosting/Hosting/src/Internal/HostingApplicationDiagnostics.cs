@@ -394,18 +394,18 @@ internal sealed class HostingApplicationDiagnostics
         {
             var host = httpContext.Request.Host.Host;
             var port = httpContext.Request.Host.Port;
-            tags.Add("server.address", host);
+            tagsForCreation.Add("server.address", host);
             if (port is not null)
             {
-                tags.Add("server.port", port);
+                tagsForCreation.Add("server.port", port);
             }
             else if (string.Equals("https", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
             {
-                tags.Add("server.port", 443);
+                tagsForCreation.Add("server.port", 443);
             }
             else if (string.Equals("http", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
             {
-                tags.Add("server.port", 80);
+                tagsForCreation.Add("server.port", 80);
             }
         }
 
