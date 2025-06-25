@@ -158,7 +158,6 @@ public static class TestData
                 "System.Diagnostics.EventLog.Messages",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
-                "System.Threading.AccessControl",
                 "System.Threading.RateLimiting",
             };
 
@@ -308,8 +307,8 @@ public static class TestData
                 { "Microsoft.JSInterop" },
                 { "Microsoft.Net.Http.Headers" },
                 { "System.Diagnostics.EventLog" },
+                { "System.Formats.Cbor" },
                 { "System.Security.Cryptography.Xml" },
-                { "System.Threading.AccessControl" },
                 { "System.Threading.RateLimiting" },
             };
 
