@@ -97,11 +97,16 @@ function updateDependencyVersions(packagesToPack) {
         // Find the dependency in packagesToPack, load the package.json and update the dependency version
         const dependencyPackage = seenPackagesAndVersions.find(([_, packageJson]) => packageJson.name === dependency);
         if (dependencyPackage) {
-          modified = true;
           const dependencyPackagePath = dependencyPackage[0];
           const dependencyPackageJson = JSON.parse(fs.readFileSync(dependencyPackagePath, 'utf-8'));
-          dependencies[dependency] = `>=${dependencyPackageJson.version}`;
-          console.log(`Updated dependency ${dependency} to ${dependencyPackageJson.version} in ${packageJson.name}.`);
+          const newDependencyVersion = `>=${dependencyPackageJson.version}`;
+
+          // Only update if the dependency version is actually different
+          if (dependencies[dependency] !== newDependencyVersion) {
+            modified = true;
+            dependencies[dependency] = newDependencyVersion;
+            console.log(`Updated dependency ${dependency} to ${dependencyPackageJson.version} in ${packageJson.name}.`);
+          }
         }
       }
       if (modified) {
