@@ -31,12 +31,31 @@
     <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>
 
     <PartialCompositeAssemblyListPath>PartialCompositeAssemblyListPath.txt</PartialCompositeAssemblyListPath>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <GetSharedFrameworkFilesForReadyToRunDependsOn>
+      $(GetSharedFrameworkFilesForReadyToRunDependsOn);
+      _AddExtensionsSymbolsToSymbolPack;
+    </GetSharedFrameworkFilesForReadyToRunDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Internal.Runtime.AspNetCore.Transport"
+        Version="$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
+        ExcludeAssets="All"
+        GeneratePathProperty="true" />
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="@(AspNetCoreAppReference);@(AspNetCoreAppReferenceAndPackage);@(ExternalAspNetCoreAppReference)">
       <IncludeAssets>Runtime;Native</IncludeAssets>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <_AllExternalAspNetCoreAppReferences Include="@(ExternalAspNetCoreAppReference);@(_TransitiveExternalAspNetCoreAppReference)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -85,6 +104,24 @@
     <NativeRuntimeAsset Condition=" '$(UseIisNativeAssets)' == 'true' AND !$(BuildNative) "
         Include="$(ArtifactsBinDir)InProcessRequestHandler\$(NativePlatform)\$(Configuration)\aspnetcorev2_inprocess.pdb" />
   </ItemGroup>
+
+  <!-- Explicitly include symbols for libraries we redistribute from runtime -->
+  <Target Name="_AddExtensionsSymbolsToSymbolPack">
+    <!-- Flatten _AllExternalAspNetCoreAppReferences into a property -->
+    <PropertyGroup>
+      <FileNameList>@(_AllExternalAspNetCoreAppReferences, ';')</FileNameList>
+      <!-- Add trailing semicolon -->
+      <FileNameList>$(FileNameList);</FileNameList>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_TransportPdbs Include="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.pdb"
+          Exclude="$(PkgMicrosoft_Internal_Runtime_AspNetCore_Transport)\**\*.ni.pdb" />
+
+      <_SymbolFilesToPackage Include="@(_TransportPdbs)"
+          Condition="'$(FileNameList)' != '' and $(FileNameList.Contains('%(Filename);'))" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_WarnAboutUnbuiltNativeDependencies"
           BeforeTargets="Build"
