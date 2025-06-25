@@ -388,8 +388,26 @@ internal sealed class HostingApplicationDiagnostics
     private Activity? StartActivity(HttpContext httpContext, bool loggingEnabled, bool diagnosticListenerActivityCreationEnabled, out bool hasDiagnosticListener)
     {
         hasDiagnosticListener = false;
-        
-        var tagsForCreation = httpContext.Features.Get<IHttpActivityCreationTagsFeature>()?.ActivityCreationTags;
+
+        var tagsForCreation = new TagList();
+        if (_activitySource.HasListeners() && _context.Request.Host.HasValue)
+        {
+            var (host, port) = _context.Request.Host.HostAndPort;
+            tags.Add("server.address", host);
+            if (port is not null)
+            {
+                tags.Add("server.port", port);
+            }
+            else if (string.Equals("https", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
+            {
+                tags.Add("server.port", 443);
+            }
+            else if (string.Equals("http", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
+            {
+                tags.Add("server.port", 80);
+            }
+        }
+
         var headers = httpContext.Request.Headers;
         var activity = ActivityCreator.CreateFromRemote(
             _activitySource,
