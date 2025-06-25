@@ -46,5 +46,17 @@ internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<Forwarded
         // being enabled by explicit configuration.
         options.KnownNetworks.Clear();
         options.KnownProxies.Clear();
+
+        var knownNetworks = _configuration["ForwardedHeaders_KnownNetworks"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+        foreach (var network in knownNetworks)
+        {
+            options.KnownNetworks.Add(IPNetwork.Parse(network));
+        }
+
+        var knownProxy = _configuration["ForwardedHeaders_KnownProxies"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
+        foreach (var network in knownNetworks)
+        {
+            options.KnownNetworks.Add(IPAddress.Parse(network));
+        }
     }
 }
