@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Writers;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -25,10 +23,10 @@ public static class OpenApiEndpointRouteBuilderExtensions
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
     /// <param name="pattern">The route to register the endpoint on. Must include the 'documentName' route parameter.</param>
     /// <returns>An <see cref="IEndpointRouteBuilder"/> that can be used to further customize the endpoint.</returns>
-    public static IEndpointConventionBuilder MapOpenApi(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern = OpenApiConstants.DefaultOpenApiRoute)
+    public static IEndpointConventionBuilder MapOpenApi(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern = OpenApi.OpenApiConstants.DefaultOpenApiRoute)
     {
         var options = endpoints.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenApiOptions>>();
-        return endpoints.MapGet(pattern, async (HttpContext context, string documentName = OpenApiConstants.DefaultDocumentName) =>
+        return endpoints.MapGet(pattern, async (HttpContext context, string documentName = OpenApi.OpenApiConstants.DefaultDocumentName) =>
             {
                 // We need to retrieve the document name in a case-insensitive manner to support case-insensitive document name resolution.
                 // The document service is registered with a key equal to the document name, but in lowercase.

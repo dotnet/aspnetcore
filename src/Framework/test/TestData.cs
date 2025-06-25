@@ -159,7 +159,6 @@ public static class TestData
                 "System.Formats.Cbor",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
-                "System.Threading.AccessControl",
                 "System.Threading.RateLimiting",
             };
 
@@ -311,7 +310,6 @@ public static class TestData
                 { "System.Diagnostics.EventLog" },
                 { "System.Formats.Cbor" },
                 { "System.Security.Cryptography.Xml" },
-                { "System.Threading.AccessControl" },
                 { "System.Threading.RateLimiting" },
             };
 

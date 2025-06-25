@@ -1,4 +1,6 @@
 #nullable enable
+*REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties = null) -> void
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type!
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions

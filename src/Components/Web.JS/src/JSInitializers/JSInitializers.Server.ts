@@ -3,7 +3,7 @@
 
 import { CircuitStartOptions } from '../Platform/Circuits/CircuitStartOptions';
 import { WebRendererId } from '../Rendering/WebRendererId';
-import { JSInitializer } from './JSInitializers';
+import { JSAsset, JSInitializer } from './JSInitializers';
 
 export async function fetchAndInvokeInitializers(options: Partial<CircuitStartOptions>) : Promise<JSInitializer> {
   if (options.initializers) {
@@ -19,7 +19,9 @@ export async function fetchAndInvokeInitializers(options: Partial<CircuitStartOp
     cache: 'no-cache',
   });
 
-  const initializers: string[] = await jsInitializersResponse.json();
+  const initializers = (await jsInitializersResponse.json()).map(name => ({
+    name,
+  })) as JSAsset[];
   const jsInitializer = new JSInitializer(/* singleRuntime: */ true, undefined, undefined, WebRendererId.Server);
   await jsInitializer.importInitializersAsync(initializers, [options]);
   return jsInitializer;
