@@ -19,11 +19,29 @@
     <_NpmAdditionalEnvironmentVariables>PUPPETEER_SKIP_DOWNLOAD=1</_NpmAdditionalEnvironmentVariables>
   </PropertyGroup>
 
-  <Target Name="Restore">
+  <PropertyGroup>
+    <NpmWorkspaceRoot>$(MSBuildThisFileDirectory)..</NpmWorkspaceRoot>
+    <NodeModulesMarkerFile>$(NpmWorkspaceRoot)\node_modules\.package-lock.json</NodeModulesMarkerFile>
+  </PropertyGroup>
+
+  <!-- Input files for incremental check -->
+  <ItemGroup>
+    <NpmInputFiles Include="$(NpmWorkspaceRoot)\package.json" />
+    <NpmInputFiles Include="$(NpmWorkspaceRoot)\package-lock.json" Condition="Exists('$(NpmWorkspaceRoot)\package-lock.json')" />
+    <NpmInputFiles Include="$(NpmWorkspaceRoot)\src\**\package.json" />
+    <NpmInputFiles Include="$(NpmWorkspaceRoot)\.npmrc" Condition="Exists('$(NpmWorkspaceRoot)\.npmrc')" />
+  </ItemGroup>
+
+  <!-- Output files for incremental check -->
+  <ItemGroup>
+    <NpmOutputFiles Include="$(NodeModulesMarkerFile)" />
+  </ItemGroup>
+
+  <Target Name="Restore" Inputs="@(NpmInputFiles)" Outputs="@(NpmOutputFiles)">
     <Message Text="Restoring NPM packages..." Importance="high" />
     <Exec
       Command="npm ci"
-      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      WorkingDirectory="$(NpmWorkspaceRoot)"
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
   </Target>
 
