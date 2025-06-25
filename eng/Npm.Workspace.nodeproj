@@ -28,7 +28,7 @@
   <ItemGroup>
     <NpmInputFiles Include="$(NpmWorkspaceRoot)\package.json" />
     <NpmInputFiles Include="$(NpmWorkspaceRoot)\package-lock.json" Condition="Exists('$(NpmWorkspaceRoot)\package-lock.json')" />
-    <NpmInputFiles Include="$(NpmWorkspaceRoot)\src\**\package.json" />
+    <NpmInputFiles Include="$(NpmWorkspaceRoot)\src\**\package.json" Exclude="$(NpmWorkspaceRoot)\src\**\node_modules\**\package.json" />
     <NpmInputFiles Include="$(NpmWorkspaceRoot)\.npmrc" Condition="Exists('$(NpmWorkspaceRoot)\.npmrc')" />
   </ItemGroup>
 
