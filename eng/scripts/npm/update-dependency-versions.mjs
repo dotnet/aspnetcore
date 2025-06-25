@@ -45,6 +45,13 @@ function applyPackageVersion(packagesToPack, defaultPackageVersion) {
     const packageName = packageJson.name;
     const packageVersion = defaultPackageVersion;
     const packageDir = path.dirname(packagePath);
+
+    // Check if the version is already correct
+    if (packageJson.version === packageVersion) {
+      console.log(`Skipping ${packageName} - version ${packageVersion} already applied.`);
+      continue;
+    }
+
     // Run npm version packageVersion --no-git-tag-version
     // This will update the package.json version to the specified version without creating a git tag
     // Make a backup of the package.json

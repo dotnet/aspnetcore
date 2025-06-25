@@ -45,7 +45,7 @@
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
   </Target>
 
-  <Target Name="Build">
+  <Target Name="Build" DependsOnTargets="Restore">
     <PropertyGroup>
       <PackageVersion>$(VersionPrefix)</PackageVersion>
       <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
