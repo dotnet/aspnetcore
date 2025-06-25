@@ -6,6 +6,7 @@
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
 
     <SkipTests>true</SkipTests>
+    <RunTemplateTests>true</RunTemplateTests>
   </PropertyGroup>
 
   <Import Project="TemplateProjects.props" Condition=" !$(IsTestProject) AND '$(IsTestAssetProject)' != 'true'" />
