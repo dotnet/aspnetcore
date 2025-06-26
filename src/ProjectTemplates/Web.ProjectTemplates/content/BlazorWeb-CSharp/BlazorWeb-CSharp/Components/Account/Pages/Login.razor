@@ -5,6 +5,7 @@
 @using Microsoft.AspNetCore.Identity
 @using BlazorWeb_CSharp.Data
 
+@inject UserManager<ApplicationUser> UserManager
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
@@ -17,13 +18,13 @@
     <div class="col-lg-6">
         <section>
             <StatusMessage Message="@errorMessage" />
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+            <EditForm EditContext="editContext" method="post" OnSubmit="LoginUser" FormName="login">
                 <DataAnnotationsValidator />
                 <h2>Use a local account to log in.</h2>
                 <hr />
                 <ValidationSummary class="text-danger" role="alert" />
                 <div class="form-floating mb-3">
-                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                    <InputText @bind-Value="Input.Email" id="Input.Email" class="form-control" autocomplete="username webauthn" aria-required="true" placeholder="name@example.com" />
                     <label for="Input.Email" class="form-label">Email</label>
                     <ValidationMessage For="() => Input.Email" class="text-danger" />
                 </div>
@@ -41,6 +42,12 @@
                 <div>
                     <button type="submit" class="w-100 btn btn-lg btn-primary">Log in</button>
                 </div>
+                <hr />
+                <div class="d-flex flex-column">
+                    <span class="text-secondary mx-auto mt-2">OR</span>
+                    <PasskeySubmit Operation="PasskeyOperation.Request" Name="Input.Passkey" EmailName="Input.Email" class="btn btn-link mx-auto">Log in with a passkey</PasskeySubmit>
+                </div>
+                <hr />
                 <div>
                     <p>
                         <a href="Account/ForgotPassword">Forgot your password?</a>
@@ -66,18 +73,23 @@
 
 @code {
     private string? errorMessage;
+    private EditContext editContext = default!;
 
     [CascadingParameter]
     private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    private InputModel Input { get; set; } = default!;
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
+        Input ??= new();
+
+        editContext = new EditContext(Input);
+
         if (HttpMethods.IsGet(HttpContext.Request.Method))
         {
             // Clear the existing external cookie to ensure a clean login process
@@ -87,9 +99,38 @@
 
     public async Task LoginUser()
     {
-        // This doesn't count login failures towards account lockout
-        // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        if (!string.IsNullOrEmpty(Input.Passkey?.Error))
+        {
+            errorMessage = $"Error: Could not log in using the provided passkey: {Input.Passkey.Error}";
+            return;
+        }
+
+        SignInResult result;
+        if (!string.IsNullOrEmpty(Input.Passkey?.CredentialJson))
+        {
+            // When performing passkey sign-in, don't perform form validation.
+            var options = await SignInManager.RetrievePasskeyRequestOptionsAsync();
+            if (options is null)
+            {
+                errorMessage = "Error: Could not complete passkey login. Please try again.";
+                return;
+            }
+
+            result = await SignInManager.PasskeySignInAsync(Input.Passkey.CredentialJson, options);
+        }
+        else
+        {
+            // If doing a password sign-in, validate the form.
+            if (!editContext.Validate())
+            {
+                return;
+            }
+
+            // This doesn't count login failures towards account lockout
+            // To enable password failures to trigger account lockout, set lockoutOnFailure: true
+            result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        }
+
         if (result.Succeeded)
         {
             Logger.LogInformation("User logged in.");
@@ -124,5 +165,7 @@
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
+
+        public PasskeyInputModel? Passkey { get; set; }
     }
 }

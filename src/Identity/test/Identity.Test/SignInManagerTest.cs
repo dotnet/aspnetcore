@@ -97,7 +97,13 @@ public class SignInManagerTest
         return manager;
     }
 
-    private static SignInManager<PocoUser> SetupSignInManager(UserManager<PocoUser> manager, HttpContext context, ILogger logger = null, IdentityOptions identityOptions = null, IAuthenticationSchemeProvider schemeProvider = null)
+    private static SignInManager<PocoUser> SetupSignInManager(
+        UserManager<PocoUser> manager,
+        HttpContext context,
+        ILogger logger = null,
+        IdentityOptions identityOptions = null,
+        IAuthenticationSchemeProvider schemeProvider = null,
+        IPasskeyHandler<PocoUser> passkeyHandler = null)
     {
         var contextAccessor = new Mock<IHttpContextAccessor>();
         contextAccessor.Setup(a => a.HttpContext).Returns(context);
@@ -107,7 +113,16 @@ public class SignInManagerTest
         options.Setup(a => a.Value).Returns(identityOptions);
         var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager, roleManager.Object, options.Object);
         schemeProvider = schemeProvider ?? new MockSchemeProvider();
-        var sm = new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, schemeProvider, new DefaultUserConfirmation<PocoUser>());
+        passkeyHandler = passkeyHandler ?? Mock.Of<IPasskeyHandler<PocoUser>>();
+        var sm = new SignInManager<PocoUser>(
+            manager,
+            contextAccessor.Object,
+            claimsFactory,
+            options.Object,
+            null,
+            schemeProvider,
+            new DefaultUserConfirmation<PocoUser>(),
+            passkeyHandler);
         sm.Logger = logger ?? NullLogger<SignInManager<PocoUser>>.Instance;
         return sm;
     }
@@ -335,6 +350,38 @@ public class SignInManagerTest
         // Assert
         Assert.Equal(bypass, result.Succeeded);
         Assert.Equal(!bypass, result.RequiresTwoFactor);
+        manager.Verify();
+        auth.Verify();
+    }
+
+    [Fact]
+    public async Task CanPasskeySignIn()
+    {
+        // Setup
+        var user = new PocoUser { UserName = "Foo" };
+        var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
+        var assertionResult = PasskeyAssertionResult.Success(passkey, user);
+        var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        passkeyHandler
+            .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext<PocoUser>>()))
+            .Returns(Task.FromResult(assertionResult));
+        var manager = SetupUserManager(user);
+        manager
+            .Setup(m => m.SetPasskeyAsync(user, passkey))
+            .Returns(Task.FromResult(IdentityResult.Success))
+            .Verifiable();
+        var context = new DefaultHttpContext();
+        var auth = MockAuth(context);
+        SetupSignIn(context, auth, user.Id, isPersistent: false, loginProvider: null);
+        var helper = SetupSignInManager(manager.Object, context, passkeyHandler: passkeyHandler.Object);
+
+        // Act
+        var passkeyRequestOptions = new PasskeyRequestOptions(userId: user.Id, "<some-options>");
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>", passkeyRequestOptions);
+
+        // Assert
+        Assert.True(assertionResult.Succeeded);
+        Assert.Same(SignInResult.Success, signInResult);
         manager.Verify();
         auth.Verify();
     }

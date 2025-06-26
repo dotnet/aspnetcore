@@ -156,6 +156,7 @@ public static class TestData
                 "Microsoft.Net.Http.Headers",
                 "System.Diagnostics.EventLog",
                 "System.Diagnostics.EventLog.Messages",
+                "System.Formats.Cbor",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
                 "System.Threading.AccessControl",
