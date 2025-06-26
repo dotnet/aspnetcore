@@ -45,7 +45,7 @@ customElements.define('passkey-submit', class extends HTMLElement {
         this.internals.form.addEventListener('submit', (event) => {
             if (event.submitter?.name === '__passkeySubmit') {
                 event.preventDefault();
-                this.obtainCredentialAndSubmit();
+                this.obtainAndSubmitCredential();
             }
         });
 
@@ -56,31 +56,37 @@ customElements.define('passkey-submit', class extends HTMLElement {
         this.abortController?.abort();
     }
 
-    async obtainCredentialAndSubmit(useConditionalMediation = false) {
+    async obtainCredential(useConditionalMediation, signal) {
+        if (this.attrs.operation === 'Create') {
+            return await createCredential(signal);
+        } else if (this.attrs.operation === 'Request') {
+            const email = new FormData(this.internals.form).get(this.attrs.emailName);
+            const mediation = useConditionalMediation ? 'conditional' : undefined;
+            return await requestCredential(email, mediation, signal);
+        } else {
+            throw new Error(`Unknown passkey operation '${this.attrs.operation}'.`);
+        }
+    }
+
+    async obtainAndSubmitCredential(useConditionalMediation = false) {
         this.abortController?.abort();
         this.abortController = new AbortController();
         const signal = this.abortController.signal;
         const formData = new FormData();
         try {
-            let credential;
-            if (this.attrs.operation === 'Create') {
-                credential = await createCredential(signal);
-            } else if (this.attrs.operation === 'Request') {
-                const email = new FormData(this.internals.form).get(this.attrs.emailName);
-                const mediation = useConditionalMediation ? 'conditional' : undefined;
-                credential = await requestCredential(email, mediation, signal);
-            } else {
-                throw new Error(`Unknown passkey operation '${operation}'.`);
-            }
+            const credential = await this.obtainCredential(useConditionalMediation, signal);
             const credentialJson = JSON.stringify(credential);
             formData.append(`${this.attrs.name}.CredentialJson`, credentialJson);
         } catch (error) {
-            if (error.name === 'AbortError') {
-                // Canceled by user action, do not submit the form
+            console.error(error);
+            if (useConditionalMediation || error.name === 'AbortError') {
+                // We do not relay the error to the user if:
+                // 1. We are attempting conditional mediation, meaning the user did not initiate the operation.
+                // 2. The user explicitly canceled the operation and aborting the operation is expected.
                 return;
             }
-            formData.append(`${this.attrs.name}.Error`, error.message);
-            console.error(error);
+            const errorMessage = error.name === 'NotAllowedError' ? 'Unable to authenticate.' : error.message;
+            formData.append(`${this.attrs.name}.Error`, errorMessage);
         }
         this.internals.setFormValue(formData);
         this.internals.form.submit();
@@ -88,7 +94,7 @@ customElements.define('passkey-submit', class extends HTMLElement {
 
     async tryAutofillPasskey() {
         if (this.attrs.operation === 'Request' && await PublicKeyCredential.isConditionalMediationAvailable()) {
-            await this.obtainCredentialAndSubmit(/* useConditionalMediation */ true);
+            await this.obtainAndSubmitCredential(/* useConditionalMediation */ true);
         }
     }
 });
