@@ -101,7 +101,7 @@
     {
         if (!string.IsNullOrEmpty(Input.Passkey?.Error))
         {
-            errorMessage = $"Error: Could not log in using the provided passkey: {Input.Passkey.Error}";
+            errorMessage = $"Error: {Input.Passkey.Error}";
             return;
         }
 
