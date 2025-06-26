@@ -78,10 +78,12 @@ else
     private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    private InputModel Input { get; set; } = default!;
 
     protected override async Task OnInitializedAsync()
     {
+        Input ??= new();
+
         user = await UserManager.GetUserAsync(HttpContext.User);
         if (user is null)
         {
