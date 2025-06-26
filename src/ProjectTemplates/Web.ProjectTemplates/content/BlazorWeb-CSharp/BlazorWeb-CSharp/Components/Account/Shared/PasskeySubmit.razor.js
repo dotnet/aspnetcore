@@ -1,4 +1,10 @@
-﻿async function fetchWithErrorHandling(url, options = {}) {
+﻿const browserSupportsPasskeys =
+    typeof navigator.credentials !== 'undefined' &&
+    typeof window.PublicKeyCredential !== 'undefined' &&
+    typeof window.PublicKeyCredential.parseCreationOptionsFromJSON === 'function' &&
+    typeof window.PublicKeyCredential.parseRequestOptionsFromJSON === 'function';
+
+async function fetchWithErrorHandling(url, options = {}) {
     const response = await fetch(url, {
         credentials: 'include',
         ...options
@@ -57,6 +63,10 @@ customElements.define('passkey-submit', class extends HTMLElement {
     }
 
     async obtainCredential(useConditionalMediation, signal) {
+        if (!browserSupportsPasskeys) {
+            throw new Error('Some passkey features are missing. Please update your browser.');
+        }
+
         if (this.attrs.operation === 'Create') {
             return await createCredential(signal);
         } else if (this.attrs.operation === 'Request') {
@@ -93,7 +103,7 @@ customElements.define('passkey-submit', class extends HTMLElement {
     }
 
     async tryAutofillPasskey() {
-        if (this.attrs.operation === 'Request' && await PublicKeyCredential.isConditionalMediationAvailable()) {
+        if (browserSupportsPasskeys && this.attrs.operation === 'Request' && await PublicKeyCredential.isConditionalMediationAvailable?.()) {
             await this.obtainAndSubmitCredential(/* useConditionalMediation */ true);
         }
     }
