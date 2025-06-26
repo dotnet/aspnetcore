@@ -150,7 +150,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                     protocol = "ctap2",
                     transport = "internal",
                     hasResidentKey = false,
-                    hasUserIdentification = true,
+                    hasUserVerification = true,
                     isUserVerified = true,
                     automaticPresenceSimulation = true,
                 }
@@ -208,11 +208,26 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 await page.WaitForSelectorAsync("text=Manage your account");
 
+                // Check that an error is displayed if passkey creation fails
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Manage/Passkeys**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("a[href=\"Account/Manage/Passkeys\"]"));
 
-                // Register a new passkey
+                await page.EvaluateAsync("""
+                    () => {
+                        navigator.credentials.create = () => {
+                            const error = new Error("Simulated passkey creation failure");
+                            error.name = "NotAllowedError";
+                            return Promise.reject(error);
+                        };
+                    }
+                    """);
+
+                await page.ClickAsync("text=Add a new passkey");
+                await page.WaitForSelectorAsync("text=Error: No passkey was provided by the authenticator.");
+
+                // Now check that we can successfully register a passkey
+                await page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
                 await page.ClickAsync("text=Add a new passkey");
 
                 await page.WaitForSelectorAsync("text=Enter a name for your passkey");
@@ -221,11 +236,26 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 await page.WaitForSelectorAsync("text=Passkey updated successfully");
 
-                // Login with the passkey
+                // Check that an error is displayed if passkey retrieval fails
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("text=Logout"));
 
+                await page.EvaluateAsync("""
+                    () => {
+                        navigator.credentials.get = () => {
+                            const error = new Error("Simulated passkey retrieval failure");
+                            error.name = "NotAllowedError";
+                            return Promise.reject(error);
+                        };
+                    }
+                    """);
+
+                await page.ClickAsync("text=Log in with a passkey");
+                await page.WaitForSelectorAsync("text=Error: No passkey was provided by the authenticator.");
+
+                // Now check that we can successfully login with the passkey
+                await page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
                 await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
                 await page.FillAsync("[name=\"Input.Email\"]", userName);
 

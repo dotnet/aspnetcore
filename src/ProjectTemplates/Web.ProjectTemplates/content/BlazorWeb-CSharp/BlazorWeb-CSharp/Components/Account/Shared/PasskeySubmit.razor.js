@@ -95,7 +95,9 @@ customElements.define('passkey-submit', class extends HTMLElement {
                 // 2. The user explicitly canceled the operation.
                 return;
             }
-            const errorMessage = error.name === 'NotAllowedError' ? 'Unable to authenticate.' : error.message;
+            const errorMessage = error.name === 'NotAllowedError'
+                ? 'No passkey was provided by the authenticator.'
+                : error.message;
             formData.append(`${this.attrs.name}.Error`, errorMessage);
         }
         this.internals.setFormValue(formData);
