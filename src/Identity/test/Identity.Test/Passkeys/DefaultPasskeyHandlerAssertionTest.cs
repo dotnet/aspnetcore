@@ -15,10 +15,13 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
 
-public partial class DefaultPasskeyHandlerTest
+using static JsonHelpers;
+using static CredentialHelpers;
+
+public class DefaultPasskeyHandlerAssertionTest
 {
     [Fact]
-    public async Task Assertion_CanSucceed()
+    public async Task CanSucceed()
     {
         var test = new AssertionTest();
 
@@ -28,10 +31,9 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenCredentialIdIsMissing()
+    public async Task Fails_WhenCredentialIdIsMissing()
     {
         var test = new AssertionTest();
-
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
         {
             Assert.True(credentialJson.Remove("id"));
@@ -48,7 +50,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenCredentialIdIsNotString(string jsonValue)
+    public async Task Fails_WhenCredentialIdIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -63,7 +65,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenCredentialIdIsNotBase64UrlEncoded()
+    public async Task Fails_WhenCredentialIdIsNotBase64UrlEncoded()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -80,7 +82,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenCredentialTypeIsMissing()
+    public async Task Fails_WhenCredentialTypeIsMissing()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -99,7 +101,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenCredentialTypeIsNotString(string jsonValue)
+    public async Task Fails_WhenCredentialTypeIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -114,7 +116,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenCredentialTypeIsNotPublicKey()
+    public async Task Fails_WhenCredentialTypeIsNotPublicKey()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -129,7 +131,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenCredentialResponseIsMissing()
+    public async Task Fails_WhenCredentialResponseIsMissing()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -148,7 +150,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("\"hello\"")]
-    public async Task Assertion_Fails_WhenCredentialResponseIsNotAnObject(string jsonValue)
+    public async Task Fails_WhenCredentialResponseIsNotAnObject(string jsonValue)
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -163,7 +165,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenOriginalOptionsChallengeIsMissing()
+    public async Task Fails_WhenOriginalOptionsChallengeIsMissing()
     {
         var test = new AssertionTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -180,7 +182,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenOriginalOptionsChallengeIsNotBase64UrlEncoded()
+    public async Task Fails_WhenOriginalOptionsChallengeIsNotBase64UrlEncoded()
     {
         var test = new AssertionTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -200,7 +202,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenOriginalOptionsChallengeIsNotString(string jsonValue)
+    public async Task Fails_WhenOriginalOptionsChallengeIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -215,7 +217,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonIsMissing()
+    public async Task Fails_WhenClientDataJsonIsMissing()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -235,7 +237,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenClientDataJsonIsNotString(string jsonValue)
+    public async Task Fails_WhenClientDataJsonIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -250,7 +252,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonIsEmptyString()
+    public async Task Fails_WhenClientDataJsonIsEmptyString()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -265,7 +267,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsMissing()
+    public async Task Fails_WhenAuthenticatorDataIsMissing()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -285,7 +287,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsNotString(string jsonValue)
+    public async Task Fails_WhenAuthenticatorDataIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -300,7 +302,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsNotBase64UrlEncoded()
+    public async Task Fails_WhenAuthenticatorDataIsNotBase64UrlEncoded()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -317,7 +319,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsEmptyString()
+    public async Task Fails_WhenAuthenticatorDataIsEmptyString()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -332,7 +334,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenResponseSignatureIsMissing()
+    public async Task Fails_WhenResponseSignatureIsMissing()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -352,7 +354,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenResponseSignatureIsNotString(string jsonValue)
+    public async Task Fails_WhenResponseSignatureIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -367,7 +369,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenResponseSignatureIsNotBase64UrlEncoded()
+    public async Task Fails_WhenResponseSignatureIsNotBase64UrlEncoded()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -384,7 +386,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenResponseSignatureIsEmptyString()
+    public async Task Fails_WhenResponseSignatureIsEmptyString()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -399,7 +401,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenResponseSignatureIsInvalid()
+    public async Task Fails_WhenResponseSignatureIsInvalid()
     {
         var test = new AssertionTest();
         test.Signature.Transform(signature =>
@@ -418,7 +420,7 @@ public partial class DefaultPasskeyHandlerTest
     [Theory]
     [InlineData("42")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenResponseUserHandleIsNotString(string jsonValue)
+    public async Task Fails_WhenResponseUserHandleIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -433,7 +435,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenResponseUserHandleIsNull()
+    public async Task Fails_WhenResponseUserHandleIsNull()
     {
         var test = new AssertionTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -448,7 +450,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenResponseUserHandleDoesNotMatchUserId()
+    public async Task Fails_WhenResponseUserHandleDoesNotMatchUserId()
     {
         var test = new AssertionTest
         {
@@ -467,7 +469,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonTypeIsMissing()
+    public async Task Fails_WhenClientDataJsonTypeIsMissing()
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -486,7 +488,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenClientDataJsonTypeIsNotString(string jsonValue)
+    public async Task Fails_WhenClientDataJsonTypeIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -504,7 +506,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("")]
     [InlineData("webauthn.create")]
     [InlineData("unexpected-value")]
-    public async Task Assertion_Fails_WhenClientDataJsonTypeIsNotExpected(string value)
+    public async Task Fails_WhenClientDataJsonTypeIsNotExpected(string value)
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -519,7 +521,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonChallengeIsMissing()
+    public async Task Fails_WhenClientDataJsonChallengeIsMissing()
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -538,7 +540,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenClientDataJsonChallengeIsNotString(string jsonValue)
+    public async Task Fails_WhenClientDataJsonChallengeIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -553,7 +555,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonChallengeIsEmptyString()
+    public async Task Fails_WhenClientDataJsonChallengeIsEmptyString()
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -568,7 +570,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonChallengeIsNotBase64UrlEncoded()
+    public async Task Fails_WhenClientDataJsonChallengeIsNotBase64UrlEncoded()
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -585,7 +587,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonChallengeIsNotRequestChallenge()
+    public async Task Fails_WhenClientDataJsonChallengeIsNotRequestChallenge()
     {
         var test = new AssertionTest();
         var modifiedChallenge = (byte[])[.. test.Challenge.Span];
@@ -606,7 +608,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonOriginIsMissing()
+    public async Task Fails_WhenClientDataJsonOriginIsMissing()
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -625,7 +627,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Assertion_Fails_WhenClientDataJsonOriginIsNotString(string jsonValue)
+    public async Task Fails_WhenClientDataJsonOriginIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -640,7 +642,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonOriginIsEmptyString()
+    public async Task Fails_WhenClientDataJsonOriginIsEmptyString()
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -659,7 +661,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("http://example.com", "https://example.com")]
     [InlineData("https://example.com", "https://foo.example.com")]
     [InlineData("https://example.com", "https://example.com:5000")]
-    public async Task Assertion_Fails_WhenClientDataJsonOriginDoesNotMatchTheExpectedOrigin(string expectedOrigin, string returnedOrigin)
+    public async Task Fails_WhenClientDataJsonOriginDoesNotMatchTheExpectedOrigin(string expectedOrigin, string returnedOrigin)
     {
         var test = new AssertionTest
         {
@@ -679,7 +681,7 @@ public partial class DefaultPasskeyHandlerTest
     [Theory]
     [InlineData("42")]
     [InlineData("\"hello\"")]
-    public async Task Assertion_Fails_WhenClientDataJsonTokenBindingIsNotObject(string jsonValue)
+    public async Task Fails_WhenClientDataJsonTokenBindingIsNotObject(string jsonValue)
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -694,7 +696,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonTokenBindingStatusIsMissing()
+    public async Task Fails_WhenClientDataJsonTokenBindingStatusIsMissing()
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -710,7 +712,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenClientDataJsonTokenBindingStatusIsInvalid()
+    public async Task Fails_WhenClientDataJsonTokenBindingStatusIsInvalid()
     {
         var test = new AssertionTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -729,7 +731,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Succeeds_WhenUserVerificationIsRequiredAndUserIsVerified()
+    public async Task Succeeds_WhenUserVerificationIsRequiredAndUserIsVerified()
     {
         var test = new AssertionTest();
         test.OriginalOptionsJson.TransformAsJsonObject(optionsJson =>
@@ -747,7 +749,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Succeeds_WhenUserVerificationIsDiscouragedAndUserIsVerified()
+    public async Task Succeeds_WhenUserVerificationIsDiscouragedAndUserIsVerified()
     {
         var test = new AssertionTest();
         test.OriginalOptionsJson.TransformAsJsonObject(optionsJson =>
@@ -765,7 +767,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenUserVerificationIsRequiredAndUserIsNotVerified()
+    public async Task Fails_WhenUserVerificationIsRequiredAndUserIsNotVerified()
     {
         var test = new AssertionTest();
         test.OriginalOptionsJson.TransformAsJsonObject(optionsJson =>
@@ -782,7 +784,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenUserIsNotPresent()
+    public async Task Fails_WhenUserIsNotPresent()
     {
         var test = new AssertionTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -797,7 +799,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Succeeds_WhenAuthenticatorDataContainsExtensionData()
+    public async Task Succeeds_WhenAuthenticatorDataContainsExtensionData()
     {
         var test = new AssertionTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -812,7 +814,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataContainsExtraBytes()
+    public async Task Fails_WhenAuthenticatorDataContainsExtraBytes()
     {
         var test = new AssertionTest();
         test.AuthenticatorData.Transform(authenticatorData =>
@@ -827,7 +829,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataRpIdHashIsInvalid()
+    public async Task Fails_WhenAuthenticatorDataRpIdHashIsInvalid()
     {
         var test = new AssertionTest();
         test.AuthenticatorDataArgs.Transform(args =>
@@ -844,7 +846,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataClientDataHashIsInvalid()
+    public async Task Fails_WhenAuthenticatorDataClientDataHashIsInvalid()
     {
         var test = new AssertionTest();
         test.ClientDataHash.Transform(clientDataHash =>
@@ -861,7 +863,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Succeeds_WhenSignCountIsZero()
+    public async Task Succeeds_WhenSignCountIsZero()
     {
         var test = new AssertionTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -880,7 +882,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData(42, 42)]
     [InlineData(41, 42)]
     [InlineData(0, 1)]
-    public async Task Assertion_Fails_WhenAuthenticatorDataSignCountLessThanOrEqualToStoredSignCount(
+    public async Task Fails_WhenAuthenticatorDataSignCountLessThanOrEqualToStoredSignCount(
         uint authenticatorDataSignCount,
         uint storedSignCount)
     {
@@ -913,7 +915,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData((int)COSEAlgorithmIdentifier.ES256)]
     [InlineData((int)COSEAlgorithmIdentifier.ES384)]
     [InlineData((int)COSEAlgorithmIdentifier.ES512)]
-    public async Task Assertion_Succeeds_WithSupportedAlgorithms(int algorithm)
+    public async Task Succeeds_WithSupportedAlgorithms(int algorithm)
     {
         var test = new AssertionTest
         {
@@ -926,7 +928,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsNotBackupEligibleButBackedUp()
+    public async Task Fails_WhenAuthenticatorDataIsNotBackupEligibleButBackedUp()
     {
         var test = new AssertionTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -949,7 +951,7 @@ public partial class DefaultPasskeyHandlerTest
     [Theory]
     [InlineData(PasskeyOptions.CredentialBackupPolicy.Allowed)]
     [InlineData(PasskeyOptions.CredentialBackupPolicy.Required)]
-    public async Task Assertion_Succeeds_WhenAuthenticatorDataIsBackupEligible(PasskeyOptions.CredentialBackupPolicy backupEligibility)
+    public async Task Succeeds_WhenAuthenticatorDataIsBackupEligible(PasskeyOptions.CredentialBackupPolicy backupEligibility)
     {
         var test = new AssertionTest();
         test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = backupEligibility;
@@ -969,7 +971,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsBackupEligibleButDisallowed()
+    public async Task Fails_WhenAuthenticatorDataIsBackupEligibleButDisallowed()
     {
         var test = new AssertionTest();
         test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Disallowed;
@@ -992,7 +994,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsNotBackupEligibleButRequired()
+    public async Task Fails_WhenAuthenticatorDataIsNotBackupEligibleButRequired()
     {
         var test = new AssertionTest();
         test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Required;
@@ -1038,7 +1040,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsBackedUpButDisallowed()
+    public async Task Fails_WhenAuthenticatorDataIsBackedUpButDisallowed()
     {
         var test = new AssertionTest();
         test.IdentityOptions.Passkey.BackedUpCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Disallowed;
@@ -1062,7 +1064,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsNotBackedUpButRequired()
+    public async Task Fails_WhenAuthenticatorDataIsNotBackedUpButRequired()
     {
         var test = new AssertionTest();
         test.IdentityOptions.Passkey.BackedUpCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Required;
@@ -1085,7 +1087,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsNotBackupEligibleButStoredPasskeyIs()
+    public async Task Fails_WhenAuthenticatorDataIsNotBackupEligibleButStoredPasskeyIs()
     {
         var test = new AssertionTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -1103,7 +1105,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenAuthenticatorDataIsBackupEligibleButStoredPasskeyIsNot()
+    public async Task Fails_WhenAuthenticatorDataIsBackupEligibleButStoredPasskeyIsNot()
     {
         var test = new AssertionTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -1121,7 +1123,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Fails_WhenProvidedCredentialIsNotInAllowedCredentials()
+    public async Task Fails_WhenProvidedCredentialIsNotInAllowedCredentials()
     {
         var test = new AssertionTest();
         var allowedCredentialId = test.CredentialId.ToArray();
@@ -1137,7 +1139,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Assertion_Succeeds_WhenProvidedCredentialIsInAllowedCredentials()
+    public async Task Succeeds_WhenProvidedCredentialIsInAllowedCredentials()
     {
         var test = new AssertionTest();
         var otherAllowedCredentialId = test.CredentialId.ToArray();
@@ -1153,7 +1155,7 @@ public partial class DefaultPasskeyHandlerTest
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
-    public async Task Assertion_Fails_WhenCredentialDoesNotExistOnTheUser(bool isUserIdentified)
+    public async Task Fails_WhenCredentialDoesNotExistOnTheUser(bool isUserIdentified)
     {
         var test = new AssertionTest
         {
@@ -1167,7 +1169,13 @@ public partial class DefaultPasskeyHandlerTest
         Assert.StartsWith("The provided credential does not belong to the specified user", result.Failure.Message);
     }
 
-    private sealed class AssertionTest : PasskeyTestBase<PasskeyAssertionResult<PocoUser>>
+    private static string GetInvalidBase64UrlValue(string base64UrlValue)
+    {
+        var rawValue = Base64Url.DecodeFromChars(base64UrlValue);
+        return Convert.ToBase64String(rawValue) + "==";
+    }
+
+    private sealed class AssertionTest : PasskeyScenarioTest<PasskeyAssertionResult<PocoUser>>
     {
         private static readonly byte[] _defaultChallenge = [1, 2, 3, 4, 5, 6, 7, 8];
         private static readonly byte[] _defaultCredentialId = [1, 2, 3, 4, 5, 6, 7, 8];

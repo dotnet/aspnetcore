@@ -15,10 +15,13 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Identity.Test;
 
-public partial class DefaultPasskeyHandlerTest
+using static JsonHelpers;
+using static CredentialHelpers;
+
+public class DefaultPasskeyHandlerAttestationTest
 {
     [Fact]
-    public async Task Attestation_CanSucceed()
+    public async Task CanSucceed()
     {
         var test = new AttestationTest();
 
@@ -28,7 +31,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenCredentialIdIsMissing()
+    public async Task Fails_WhenCredentialIdIsMissing()
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -47,7 +50,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenCredentialIdIsNotString(string jsonValue)
+    public async Task Fails_WhenCredentialIdIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -62,7 +65,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenCredentialIdIsNotBase64UrlEncoded()
+    public async Task Fails_WhenCredentialIdIsNotBase64UrlEncoded()
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -79,7 +82,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenCredentialTypeIsMissing()
+    public async Task Fails_WhenCredentialTypeIsMissing()
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -98,7 +101,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenCredentialTypeIsNotString(string jsonValue)
+    public async Task Fails_WhenCredentialTypeIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -113,7 +116,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenCredentialTypeIsNotPublicKey()
+    public async Task Fails_WhenCredentialTypeIsNotPublicKey()
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -128,7 +131,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenCredentialResponseIsMissing()
+    public async Task Fails_WhenCredentialResponseIsMissing()
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -147,7 +150,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("\"hello\"")]
-    public async Task Attestation_Fails_WhenCredentialResponseIsNotAnObject(string jsonValue)
+    public async Task Fails_WhenCredentialResponseIsNotAnObject(string jsonValue)
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -162,7 +165,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenOriginalOptionsRpNameIsMissing()
+    public async Task Fails_WhenOriginalOptionsRpNameIsMissing()
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -182,7 +185,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenOriginalOptionsRpNameIsNotString(string jsonValue)
+    public async Task Fails_WhenOriginalOptionsRpNameIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -197,7 +200,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenOriginalOptionsRpIsMissing()
+    public async Task Fails_WhenOriginalOptionsRpIsMissing()
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -213,7 +216,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenOriginalOptionsUserIdIsMissing()
+    public async Task Fails_WhenOriginalOptionsUserIdIsMissing()
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -230,7 +233,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenOriginalOptionsUserIdIsNotBase64UrlEncoded()
+    public async Task Fails_WhenOriginalOptionsUserIdIsNotBase64UrlEncoded()
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -250,7 +253,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenOriginalOptionsUserIdIsNotString(string jsonValue)
+    public async Task Fails_WhenOriginalOptionsUserIdIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -265,7 +268,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenOriginalOptionsUserNameIsMissing()
+    public async Task Fails_WhenOriginalOptionsUserNameIsMissing()
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -285,7 +288,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenOriginalOptionsUserNameIsNotString(string jsonValue)
+    public async Task Fails_WhenOriginalOptionsUserNameIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -300,7 +303,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenOriginalOptionsUserDisplayNameIsMissing()
+    public async Task Fails_WhenOriginalOptionsUserDisplayNameIsMissing()
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -320,7 +323,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenOriginalOptionsUserDisplayNameIsNotString(string jsonValue)
+    public async Task Fails_WhenOriginalOptionsUserDisplayNameIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -335,7 +338,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenOriginalOptionsUserIsMissing()
+    public async Task Fails_WhenOriginalOptionsUserIsMissing()
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -351,7 +354,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenOriginalOptionsChallengeIsMissing()
+    public async Task Fails_WhenOriginalOptionsChallengeIsMissing()
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -368,7 +371,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenOriginalOptionsChallengeIsNotBase64UrlEncoded()
+    public async Task Fails_WhenOriginalOptionsChallengeIsNotBase64UrlEncoded()
     {
         var test = new AttestationTest();
 
@@ -389,7 +392,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenOriginalOptionsChallengeIsNotString(string jsonValue)
+    public async Task Fails_WhenOriginalOptionsChallengeIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
@@ -404,7 +407,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonIsMissing()
+    public async Task Fails_WhenClientDataJsonIsMissing()
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -424,7 +427,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenClientDataJsonIsNotString(string jsonValue)
+    public async Task Fails_WhenClientDataJsonIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -439,7 +442,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonIsEmptyString()
+    public async Task Fails_WhenClientDataJsonIsEmptyString()
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -454,7 +457,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestationObjectIsMissing()
+    public async Task Fails_WhenAttestationObjectIsMissing()
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -474,7 +477,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenAttestationObjectIsNotString(string jsonValue)
+    public async Task Fails_WhenAttestationObjectIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -489,7 +492,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestationObjectIsEmptyString()
+    public async Task Fails_WhenAttestationObjectIsEmptyString()
     {
         var test = new AttestationTest();
         test.CredentialJson.TransformAsJsonObject(credentialJson =>
@@ -504,7 +507,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonTypeIsMissing()
+    public async Task Fails_WhenClientDataJsonTypeIsMissing()
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -523,7 +526,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenClientDataJsonTypeIsNotString(string jsonValue)
+    public async Task Fails_WhenClientDataJsonTypeIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -541,7 +544,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("")]
     [InlineData("webauthn.get")]
     [InlineData("unexpected-value")]
-    public async Task Attestation_Fails_WhenClientDataJsonTypeIsNotExpected(string value)
+    public async Task Fails_WhenClientDataJsonTypeIsNotExpected(string value)
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -556,7 +559,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonChallengeIsMissing()
+    public async Task Fails_WhenClientDataJsonChallengeIsMissing()
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -575,7 +578,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenClientDataJsonChallengeIsNotString(string jsonValue)
+    public async Task Fails_WhenClientDataJsonChallengeIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -590,7 +593,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonChallengeIsEmptyString()
+    public async Task Fails_WhenClientDataJsonChallengeIsEmptyString()
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -605,7 +608,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonChallengeIsNotBase64UrlEncoded()
+    public async Task Fails_WhenClientDataJsonChallengeIsNotBase64UrlEncoded()
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -622,7 +625,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonChallengeIsNotRequestChallenge()
+    public async Task Fails_WhenClientDataJsonChallengeIsNotRequestChallenge()
     {
         var test = new AttestationTest();
         var modifiedChallenge = (byte[])[.. test.Challenge.Span];
@@ -643,7 +646,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonOriginIsMissing()
+    public async Task Fails_WhenClientDataJsonOriginIsMissing()
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -662,7 +665,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Attestation_Fails_WhenClientDataJsonOriginIsNotString(string jsonValue)
+    public async Task Fails_WhenClientDataJsonOriginIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -677,7 +680,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonOriginIsEmptyString()
+    public async Task Fails_WhenClientDataJsonOriginIsEmptyString()
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -696,7 +699,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData("http://example.com", "https://example.com")]
     [InlineData("https://example.com", "https://foo.example.com")]
     [InlineData("https://example.com", "https://example.com:5000")]
-    public async Task Attestation_Fails_WhenClientDataJsonOriginDoesNotMatchTheExpectedOrigin(string expectedOrigin, string returnedOrigin)
+    public async Task Fails_WhenClientDataJsonOriginDoesNotMatchTheExpectedOrigin(string expectedOrigin, string returnedOrigin)
     {
         var test = new AttestationTest
         {
@@ -716,7 +719,7 @@ public partial class DefaultPasskeyHandlerTest
     [Theory]
     [InlineData("42")]
     [InlineData("\"hello\"")]
-    public async Task Attestation_Fails_WhenClientDataJsonTokenBindingIsNotObject(string jsonValue)
+    public async Task Fails_WhenClientDataJsonTokenBindingIsNotObject(string jsonValue)
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -731,7 +734,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonTokenBindingStatusIsMissing()
+    public async Task Fails_WhenClientDataJsonTokenBindingStatusIsMissing()
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -747,7 +750,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenClientDataJsonTokenBindingStatusIsInvalid()
+    public async Task Fails_WhenClientDataJsonTokenBindingStatusIsInvalid()
     {
         var test = new AttestationTest();
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
@@ -766,7 +769,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Succeeds_WhenAuthDataContainsExtensionData()
+    public async Task Succeeds_WhenAuthDataContainsExtensionData()
     {
         var test = new AttestationTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -781,7 +784,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAuthDataIsNotBackupEligibleButBackedUp()
+    public async Task Fails_WhenAuthDataIsNotBackupEligibleButBackedUp()
     {
         var test = new AttestationTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -798,7 +801,7 @@ public partial class DefaultPasskeyHandlerTest
     [Theory]
     [InlineData(PasskeyOptions.CredentialBackupPolicy.Allowed)]
     [InlineData(PasskeyOptions.CredentialBackupPolicy.Required)]
-    public async Task Attestation_Succeeds_WhenAuthDataIsBackupEligible(PasskeyOptions.CredentialBackupPolicy backupEligibility)
+    public async Task Succeeds_WhenAuthDataIsBackupEligible(PasskeyOptions.CredentialBackupPolicy backupEligibility)
     {
         var test = new AttestationTest();
         test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = backupEligibility;
@@ -812,7 +815,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAuthDataIsBackupEligibleButDisallowed()
+    public async Task Fails_WhenAuthDataIsBackupEligibleButDisallowed()
     {
         var test = new AttestationTest();
         test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Disallowed;
@@ -830,7 +833,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAuthDataIsNotBackupEligibleButRequired()
+    public async Task Fails_WhenAuthDataIsNotBackupEligibleButRequired()
     {
         var test = new AttestationTest();
         test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Required;
@@ -850,7 +853,7 @@ public partial class DefaultPasskeyHandlerTest
     [Theory]
     [InlineData(PasskeyOptions.CredentialBackupPolicy.Allowed)]
     [InlineData(PasskeyOptions.CredentialBackupPolicy.Required)]
-    public async Task Attestation_Fails_WhenAuthDataIsBackedUp(PasskeyOptions.CredentialBackupPolicy backedUpPolicy)
+    public async Task Fails_WhenAuthDataIsBackedUp(PasskeyOptions.CredentialBackupPolicy backedUpPolicy)
     {
         var test = new AttestationTest();
         test.IdentityOptions.Passkey.BackedUpCredentialPolicy = backedUpPolicy;
@@ -865,7 +868,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAuthDataIsBackedUpButDisallowed()
+    public async Task Fails_WhenAuthDataIsBackedUpButDisallowed()
     {
         var test = new AttestationTest();
         test.IdentityOptions.Passkey.BackedUpCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Disallowed;
@@ -883,7 +886,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAuthDataIsNotBackedUpButRequired()
+    public async Task Fails_WhenAuthDataIsNotBackedUpButRequired()
     {
         var test = new AttestationTest();
         test.IdentityOptions.Passkey.BackedUpCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Required;
@@ -901,7 +904,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestationObjectIsNotCborEncoded()
+    public async Task Fails_WhenAttestationObjectIsNotCborEncoded()
     {
         var test = new AttestationTest();
         test.AttestationObject.Transform(bytes => Encoding.UTF8.GetBytes("Not a CBOR map"));
@@ -913,7 +916,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestationObjectFmtIsMissing()
+    public async Task Fails_WhenAttestationObjectFmtIsMissing()
     {
         var test = new AttestationTest();
         test.AttestationObjectArgs.Transform(args => args with
@@ -929,7 +932,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestationObjectStmtFieldIsMissing()
+    public async Task Fails_WhenAttestationObjectStmtFieldIsMissing()
     {
         var test = new AttestationTest();
         test.AttestationObjectArgs.Transform(args => args with
@@ -945,7 +948,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestationObjectAuthDataFieldIsMissing()
+    public async Task Fails_WhenAttestationObjectAuthDataFieldIsMissing()
     {
         var test = new AttestationTest();
         test.AttestationObjectArgs.Transform(args => args with
@@ -961,7 +964,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestationObjectAuthDataFieldIsEmpty()
+    public async Task Fails_WhenAttestationObjectAuthDataFieldIsEmpty()
     {
         var test = new AttestationTest();
         test.AttestationObjectArgs.Transform(args => args with
@@ -976,7 +979,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestedCredentialDataIsPresentButWithoutFlag()
+    public async Task Fails_WhenAttestedCredentialDataIsPresentButWithoutFlag()
     {
         var test = new AttestationTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -992,7 +995,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestedCredentialDataIsNotPresentButWithFlag()
+    public async Task Fails_WhenAttestedCredentialDataIsNotPresentButWithFlag()
     {
         var test = new AttestationTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -1008,7 +1011,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestedCredentialDataIsNotPresent()
+    public async Task Fails_WhenAttestedCredentialDataIsNotPresent()
     {
         var test = new AttestationTest();
         test.AuthenticatorDataArgs.Transform(args => args with
@@ -1024,7 +1027,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenAttestedCredentialDataHasExtraBytes()
+    public async Task Fails_WhenAttestedCredentialDataHasExtraBytes()
     {
         var test = new AttestationTest();
         test.AttestedCredentialData.Transform(attestedCredentialData =>
@@ -1048,7 +1051,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData((int)COSEAlgorithmIdentifier.ES256)]
     [InlineData((int)COSEAlgorithmIdentifier.ES384)]
     [InlineData((int)COSEAlgorithmIdentifier.ES512)]
-    public async Task Attestation_Succeeds_WithSupportedAlgorithms(int algorithm)
+    public async Task Succeeds_WithSupportedAlgorithms(int algorithm)
     {
         var test = new AttestationTest
         {
@@ -1074,7 +1077,7 @@ public partial class DefaultPasskeyHandlerTest
     [InlineData((int)COSEAlgorithmIdentifier.ES256)]
     [InlineData((int)COSEAlgorithmIdentifier.ES384)]
     [InlineData((int)COSEAlgorithmIdentifier.ES512)]
-    public async Task Attestation_Fails_WhenAlgorithmIsNotSupported(int algorithm)
+    public async Task Fails_WhenAlgorithmIsNotSupported(int algorithm)
     {
         var test = new AttestationTest
         {
@@ -1093,7 +1096,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenVerifyAttestationStatementAsyncReturnsFalse()
+    public async Task Fails_WhenVerifyAttestationStatementAsyncReturnsFalse()
     {
         var test = new AttestationTest
         {
@@ -1109,7 +1112,7 @@ public partial class DefaultPasskeyHandlerTest
     [Theory]
     [InlineData(1024)]
     [InlineData(2048)]
-    public async Task Attestation_Fails_WhenCredentialIdIsTooLong(int length)
+    public async Task Fails_WhenCredentialIdIsTooLong(int length)
     {
         var test = new AttestationTest
         {
@@ -1123,7 +1126,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenCredentialIdDoesNotMatchAttestedCredentialId()
+    public async Task Fails_WhenCredentialIdDoesNotMatchAttestedCredentialId()
     {
         var test = new AttestationTest();
         test.AttestedCredentialDataArgs.Transform(args =>
@@ -1142,7 +1145,7 @@ public partial class DefaultPasskeyHandlerTest
     }
 
     [Fact]
-    public async Task Attestation_Fails_WhenCredentialIdAlreadyExistsForAnotherUser()
+    public async Task Fails_WhenCredentialIdAlreadyExistsForAnotherUser()
     {
         var test = new AttestationTest
         {
@@ -1155,7 +1158,13 @@ public partial class DefaultPasskeyHandlerTest
         Assert.StartsWith("The credential is already registered for a user", result.Failure.Message);
     }
 
-    private sealed class AttestationTest : PasskeyTestBase<PasskeyAttestationResult>
+    private static string GetInvalidBase64UrlValue(string base64UrlValue)
+    {
+        var rawValue = Base64Url.DecodeFromChars(base64UrlValue);
+        return Convert.ToBase64String(rawValue) + "==";
+    }
+
+    private sealed class AttestationTest : PasskeyScenarioTest<PasskeyAttestationResult>
     {
         private static readonly byte[] _defaultChallenge = [1, 2, 3, 4, 5, 6, 7, 8];
         private static readonly byte[] _defaultCredentialId = [1, 2, 3, 4, 5, 6, 7, 8];
