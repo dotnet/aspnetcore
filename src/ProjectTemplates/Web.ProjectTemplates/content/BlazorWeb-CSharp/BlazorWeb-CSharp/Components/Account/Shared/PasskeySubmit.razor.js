@@ -92,7 +92,7 @@ customElements.define('passkey-submit', class extends HTMLElement {
             if (useConditionalMediation || error.name === 'AbortError') {
                 // We do not relay the error to the user if:
                 // 1. We are attempting conditional mediation, meaning the user did not initiate the operation.
-                // 2. The user explicitly canceled the operation and aborting the operation is expected.
+                // 2. The user explicitly canceled the operation.
                 return;
             }
             const errorMessage = error.name === 'NotAllowedError' ? 'Unable to authenticate.' : error.message;
