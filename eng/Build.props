@@ -9,7 +9,7 @@
     the format is correct) and undo any temporary changes. When complete, only BuildAfterTargetingPack.csproj and
     other @(RequiresDelayedBuild) projects should mention projects listed in RequiresDelayedBuildProjects.props.
   -->
-  <Import Project="RequiresDelayedBuildProjects.props" />
+  <Import Project="RequiresDelayedBuildProjects.props" Condition="'$(OnlyTestProjectTemplates)' != 'true'" />
 
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
