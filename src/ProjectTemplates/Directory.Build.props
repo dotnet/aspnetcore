@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <!-- The .csproj files in this folder do not actually produce .dll's. They are only present to produce .nupkgs and enable Visual Studio support -->
+    <!-- This is a test change -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
