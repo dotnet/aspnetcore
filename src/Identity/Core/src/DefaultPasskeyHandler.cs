@@ -433,7 +433,7 @@ public partial class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
             //       NOTE: We simply fail the ceremony in this case.
             if (authenticatorData.SignCount <= storedPasskey.SignCount)
             {
-                throw PasskeyException.SignCountLessThanStoredSignCount();
+                throw PasskeyException.SignCountLessThanOrEqualToStoredSignCount();
             }
         }
 

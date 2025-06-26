@@ -669,6 +669,81 @@ public class UserManagerTest
     }
 
     [Fact]
+    public async Task SetPasskeyAsyncCallsStore()
+    {
+        // Setup
+        var store = new Mock<IUserPasskeyStore<PocoUser>>();
+        var user = new PocoUser { UserName = "Foo" };
+        var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
+        store.Setup(s => s.SetPasskeyAsync(user, passkey, CancellationToken.None)).Returns(Task.CompletedTask).Verifiable();
+        store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+        var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
+
+        // Act
+        var result = await userManager.SetPasskeyAsync(user, passkey);
+
+        // Assert
+        Assert.True(result.Succeeded);
+        store.VerifyAll();
+    }
+
+    [Fact]
+    public async Task GetPasskeysAsyncCallsStore()
+    {
+        // Setup
+        var store = new Mock<IUserPasskeyStore<PocoUser>>();
+        var user = new PocoUser { UserName = "Foo" };
+        var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
+        var passkeys = (IList<UserPasskeyInfo>)[passkey];
+        store.Setup(s => s.GetPasskeysAsync(user, CancellationToken.None)).Returns(Task.FromResult(passkeys)).Verifiable();
+        var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
+
+        // Act
+        var result = await userManager.GetPasskeysAsync(user);
+
+        // Assert
+        Assert.Same(passkeys, result);
+        store.VerifyAll();
+    }
+
+    [Fact]
+    public async Task FindByPasskeyIdCallsStore()
+    {
+        // Setup
+        var store = new Mock<IUserPasskeyStore<PocoUser>>();
+        var user = new PocoUser { UserName = "Foo" };
+        var credentialId = (byte[])[1, 2, 3, 4, 5, 6, 7, 8];
+        store.Setup(s => s.FindByPasskeyIdAsync(credentialId, CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+        var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
+
+        // Act
+        var result = await userManager.FindByPasskeyIdAsync(credentialId);
+
+        // Assert
+        Assert.Equal(user, result);
+        store.VerifyAll();
+    }
+
+    [Fact]
+    public async Task RemovePasskeyAsyncCallsStore()
+    {
+        // Setup
+        var store = new Mock<IUserPasskeyStore<PocoUser>>();
+        var user = new PocoUser { UserName = "Foo" };
+        var credentialId = (byte[])[1, 2, 3, 4, 5, 6, 7, 8];
+        store.Setup(s => s.RemovePasskeyAsync(user, credentialId, CancellationToken.None)).Returns(Task.CompletedTask).Verifiable();
+        store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+        var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
+
+        // Act
+        var result = await userManager.RemovePasskeyAsync(user, credentialId);
+
+        // Assert
+        Assert.True(result.Succeeded);
+        store.VerifyAll();
+    }
+
+    [Fact]
     public async Task CheckPasswordWithNullUserReturnsFalse()
     {
         var manager = MockHelpers.TestUserManager(new EmptyStore());
@@ -1040,6 +1115,10 @@ public class UserManagerTest
         Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTokenProvider("whatever", null));
         await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.AddToRolesAsync(new PocoUser(), null));
         await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.RemoveFromRolesAsync(new PocoUser(), null));
+        await Assert.ThrowsAsync<ArgumentNullException>("passkey", async () => await manager.SetPasskeyAsync(new PocoUser(), null));
+        await Assert.ThrowsAsync<ArgumentNullException>("credentialId", async () => await manager.GetPasskeyAsync(new PocoUser(), null));
+        await Assert.ThrowsAsync<ArgumentNullException>("credentialId", async () => await manager.FindByPasskeyIdAsync(null));
+        await Assert.ThrowsAsync<ArgumentNullException>("credentialId", async () => await manager.RemovePasskeyAsync(new PocoUser(), null));
     }
 
     [Fact]
@@ -1141,6 +1220,14 @@ public class UserManagerTest
             async () => await manager.GetLockoutEndDateAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user",
             async () => await manager.IsLockedOutAsync(null));
+        await Assert.ThrowsAsync<ArgumentNullException>("user",
+            async () => await manager.SetPasskeyAsync(null, null));
+        await Assert.ThrowsAsync<ArgumentNullException>("user",
+            async () => await manager.GetPasskeysAsync(null));
+        await Assert.ThrowsAsync<ArgumentNullException>("user",
+            async () => await manager.GetPasskeyAsync(null, null));
+        await Assert.ThrowsAsync<ArgumentNullException>("user",
+            async () => await manager.RemovePasskeyAsync(null, null));
     }
 
     [Fact]
@@ -1180,6 +1267,11 @@ public class UserManagerTest
         await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GenerateEmailConfirmationTokenAsync(null));
         await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsEmailConfirmedAsync(null));
         await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmailAsync(null, null));
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.SetPasskeyAsync(null, null));
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetPasskeysAsync(null));
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetPasskeyAsync(null, null));
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByPasskeyIdAsync(null));
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.RemovePasskeyAsync(null, null));
     }
 
     private class BadPasswordValidator<TUser> : IPasswordValidator<TUser> where TUser : class
@@ -1213,7 +1305,8 @@ public class UserManagerTest
         IUserLockoutStore<PocoUser>,
         IUserTwoFactorStore<PocoUser>,
         IUserRoleStore<PocoUser>,
-        IUserSecurityStampStore<PocoUser>
+        IUserSecurityStampStore<PocoUser>,
+        IUserPasskeyStore<PocoUser>
     {
         public Task<IList<Claim>> GetClaimsAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -1463,6 +1556,31 @@ public class UserManagerTest
         {
             return Task.FromResult(0);
         }
+
+        public Task SetPasskeyAsync(PocoUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task<IList<UserPasskeyInfo>> GetPasskeysAsync(PocoUser user, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<IList<UserPasskeyInfo>>([]);
+        }
+
+        public Task<PocoUser> FindByPasskeyIdAsync(byte[] credentialId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<PocoUser>(null);
+        }
+
+        public Task<UserPasskeyInfo> FindPasskeyAsync(PocoUser user, byte[] credentialId, CancellationToken cancellationToken)
+        {
+            return Task.FromResult<UserPasskeyInfo>(null);
+        }
+
+        public Task RemovePasskeyAsync(PocoUser user, byte[] credentialId, CancellationToken cancellationToken)
+        {
+            return Task.CompletedTask;
+        }
     }
 
     private class NoOpTokenProvider : IUserTwoFactorTokenProvider<PocoUser>
@@ -1493,7 +1611,8 @@ public class UserManagerTest
         IUserEmailStore<PocoUser>,
         IUserPhoneNumberStore<PocoUser>,
         IUserLockoutStore<PocoUser>,
-        IUserTwoFactorStore<PocoUser>
+        IUserTwoFactorStore<PocoUser>,
+        IUserPasskeyStore<PocoUser>
     {
         public Task<IList<Claim>> GetClaimsAsync(PocoUser user, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -1731,6 +1850,31 @@ public class UserManagerTest
         }
 
         public Task SetNormalizedEmailAsync(PocoUser user, string normalizedEmail, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task SetPasskeyAsync(PocoUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<IList<UserPasskeyInfo>> GetPasskeysAsync(PocoUser user, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<PocoUser> FindByPasskeyIdAsync(byte[] credentialId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<UserPasskeyInfo> FindPasskeyAsync(PocoUser user, byte[] credentialId, CancellationToken cancellationToken)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task RemovePasskeyAsync(PocoUser user, byte[] credentialId, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

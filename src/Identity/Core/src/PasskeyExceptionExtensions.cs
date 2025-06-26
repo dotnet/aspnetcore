@@ -84,7 +84,7 @@ internal static class PasskeyExceptionExtensions
         public static PasskeyException InvalidAssertionSignature()
             => new("The assertion signature was invalid.");
 
-        public static PasskeyException SignCountLessThanStoredSignCount()
+        public static PasskeyException SignCountLessThanOrEqualToStoredSignCount()
             => new("The authenticator's signature counter is unexpectedly less than or equal to the stored signature counter.");
 
         public static PasskeyException InvalidAttestationObject(Exception ex)

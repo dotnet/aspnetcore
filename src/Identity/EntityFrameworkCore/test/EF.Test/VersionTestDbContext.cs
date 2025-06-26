@@ -24,6 +24,14 @@ public class VersionTwoDbContext : IdentityDbContext<IdentityUser, IdentityRole,
     }
 }
 
+public class VersionThreeDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
+{
+    public VersionThreeDbContext(DbContextOptions options)
+        : base(options)
+    {
+    }
+}
+
 public class EmptyDbContext : IdentityDbContext<IdentityUser, IdentityRole, string>
 {
     public EmptyDbContext(DbContextOptions options)
