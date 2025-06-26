@@ -1,0 +1,23 @@
+#nullable enable
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload
+static Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.ApplyHotReloadDelta(string! moduleIdString, byte[]! metadataDelta, byte[]! ilDelta, byte[]! pdbBytes, int[]? updatedTypes) -> void
+static Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.GetApplyUpdateCapabilities() -> string!
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.Delta() -> void
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.ILDelta.get -> byte[]!
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.ILDelta.init -> void
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.MetadataDelta.get -> byte[]!
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.MetadataDelta.init -> void
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.ModuleId.get -> string!
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.ModuleId.init -> void
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.PdbDelta.get -> byte[]!
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.PdbDelta.init -> void
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.UpdatedTypes.get -> int[]!
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta.UpdatedTypes.init -> void
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.LogEntry
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.LogEntry.LogEntry() -> void
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.LogEntry.Message.get -> string!
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.LogEntry.Message.init -> void
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.LogEntry.Severity.get -> int
+Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.LogEntry.Severity.init -> void
+static Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.ApplyHotReloadDeltas(Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.Delta[]! deltas, int loggingLevel) -> Microsoft.DotNet.HotReload.WebAssembly.WebAssemblyHotReload.LogEntry[]!

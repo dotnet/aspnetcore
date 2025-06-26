@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <Description>HotReload package for WebAssembly</Description>
+    <NoWarn>$(NoWarn);BL0006</NoWarn>
+    <!-- Workaround for https://github.com/dotnet/runtime/issues/52227 -->
+    <NoWarn>$(NoWarn);CS8603</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+    <IsTrimmable>true</IsTrimmable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- TODO: Address Native AOT analyzer warnings https://github.com/dotnet/aspnetcore/issues/45473 -->
+    <EnableAOTAnalyzer>false</EnableAOTAnalyzer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Components.Web" />
+    <Reference Include="Microsoft.Extensions.Configuration.Json" />
+    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
+    <Reference Include="Microsoft.Extensions.Logging" />
+    <Reference Include="Microsoft.JSInterop.WebAssembly" />
+    <Reference Include="Microsoft.DotNet.HotReload.Agent" PrivateAssets="all" />
+    <Reference Include="Microsoft.DotNet.HotReload.Agent.Data" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
+  </ItemGroup>
+</Project>
