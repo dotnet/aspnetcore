@@ -90,7 +90,7 @@ public class IPNetwork
 
     /// <summary>
     /// Convert <see cref="System.Net.IPNetwork" /> to <see cref="Microsoft.AspNetCore.HttpOverrides.IPNetwork" /> implicitly
-    /// </sumary>
+    /// </summary>
     public static implicit operator IPNetwork(System.Net.IPNetwork ipNetwork)
     {
         return new IPNetwork(ipNetwork);
