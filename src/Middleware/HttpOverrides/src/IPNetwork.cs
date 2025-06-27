@@ -25,6 +25,8 @@ public class IPNetwork
         _network = new(prefix, prefixLength);
     }
 
+    private IPNetwork(System.Net.IPNetwork network) => _network = network;
+
     /// <summary>
     /// Get the <see cref="IPAddress"/> that represents the prefix for the network.
     /// </summary>
@@ -90,6 +92,6 @@ public class IPNetwork
     /// </sumary>
     public static implicit operator IPNetwork(System.Net.IPNetwork ipNetwork)
     {
-        return new IPNetwork(ipNetwork.BaseAddress, ipNetwork.PrefixLength);
+        return new IPNetwork(ipNetwork);
     }
 }
