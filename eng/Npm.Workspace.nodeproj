@@ -167,7 +167,7 @@
     <Exec Command="npm run test" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory).." />
   </Target>
 
-  <Target Name="Pack">
+  <Target Name="Pack" DependsOnTargets="Build">
     <PropertyGroup>
       <PackageVersion>$(VersionPrefix)</PackageVersion>
       <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
@@ -175,6 +175,10 @@
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
     <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+
+    <Exec
+      Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
 
     <Exec
       Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
