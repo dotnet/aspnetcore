@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Sockets;
 
 namespace Microsoft.AspNetCore.HttpOverrides;
 
@@ -56,10 +55,7 @@ public class IPNetwork
     /// <exception cref="FormatException"><paramref name="networkSpan"/> is not in the correct format.</exception>
     /// <exception cref="ArgumentOutOfRangeException">The prefix length contained in <paramref name="networkSpan"/> is out of range.</exception>
     /// <inheritdoc cref="TryParseComponents(ReadOnlySpan{char}, out IPAddress?, out int)"/>
-    public static IPNetwork Parse(ReadOnlySpan<char> networkSpan)
-    {
-        return System.Net.IPNetwork.Parse(networkSpan);
-    }
+    public static IPNetwork Parse(ReadOnlySpan<char> networkSpan) => System.Net.IPNetwork.Parse(networkSpan);
 
     /// <summary>
     /// Converts the specified <see cref="ReadOnlySpan{T}"/> of <see langword="char"/> representation of
@@ -81,18 +77,16 @@ public class IPNetwork
     {
         if (System.Net.IPNetwork.TryParse(networkSpan, out var ipNetwork))
         {
-            network = ipNetwork;
+            network = new(ipNetwork);
             return true;
         }
 
+        network = null;
         return false;
     }
 
     /// <summary>
     /// Convert <see cref="System.Net.IPNetwork" /> to <see cref="Microsoft.AspNetCore.HttpOverrides.IPNetwork" /> implicitly
     /// </summary>
-    public static implicit operator IPNetwork(System.Net.IPNetwork ipNetwork)
-    {
-        return new IPNetwork(ipNetwork);
-    }
+    public static implicit operator IPNetwork(System.Net.IPNetwork ipNetwork) => new IPNetwork(ipNetwork);
 }
