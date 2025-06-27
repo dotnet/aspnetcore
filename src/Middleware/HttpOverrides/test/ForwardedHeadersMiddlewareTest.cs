@@ -1092,7 +1092,7 @@ public class ForwardedHeadersMiddlewareTests
             var knownNetworkParts = knownNetwork.Split('/');
             var networkIp = IPAddress.Parse(knownNetworkParts[0]);
             var prefixLength = int.Parse(knownNetworkParts[1], CultureInfo.InvariantCulture);
-            options.KnownNetworks.Add(new IPNetwork(networkIp, prefixLength));
+            options.KnownNetworks.Add(new System.Net.IPNetwork(networkIp, prefixLength));
         }
 
         using var host = new HostBuilder()
