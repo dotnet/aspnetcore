@@ -38,7 +38,7 @@ internal static class RenderTreeDiffBuilder
     }
 
     public static void DisposeFrames(RenderBatchBuilder batchBuilder, int componentId, ArrayRange<RenderTreeFrame> frames)
-        => DisposeFramesInRange(batchBuilder, componentId, frames.Array, 0, frames.Count, 0);
+        => DisposeFramesInRange(batchBuilder, componentId, frames.Array, 0, frames.Count);
 
     private static void AppendDiffEntriesForRange(
         ref DiffContext diffContext,
@@ -867,7 +867,7 @@ internal static class RenderTreeDiffBuilder
             case RenderTreeFrameType.Element:
                 {
                     var endIndexExcl = oldFrameIndex + oldFrame.ElementSubtreeLengthField;
-                    DisposeFramesInRange(diffContext.BatchBuilder, diffContext.ComponentId, oldTree, oldFrameIndex, endIndexExcl, diffContext.SiblingIndex);
+                    DisposeFramesInRange(diffContext.BatchBuilder, diffContext.ComponentId, oldTree, oldFrameIndex, endIndexExcl);
                     diffContext.Edits.Append(RenderTreeEdit.RemoveFrame(diffContext.SiblingIndex));
                     break;
                 }
@@ -1013,7 +1013,7 @@ internal static class RenderTreeDiffBuilder
         diffContext.BatchBuilder.AddNamedEvent(diffContext.ComponentId, newTreeFrameIndex, ref diffContext.NewTree[newTreeFrameIndex]);
     }
 
-    private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, int componentId, RenderTreeFrame[] frames, int startIndex, int endIndexExcl, int siblingIndex)
+    private static void DisposeFramesInRange(RenderBatchBuilder batchBuilder, int componentId, RenderTreeFrame[] frames, int startIndex, int endIndexExcl)
     {
         for (var i = startIndex; i < endIndexExcl; i++)
         {
@@ -1022,16 +1022,9 @@ internal static class RenderTreeDiffBuilder
             {
                 batchBuilder.ComponentDisposalQueue.Enqueue(frame.ComponentIdField);
             }
-            else if (frame.FrameTypeField == RenderTreeFrameType.Attribute)
+            else if (frame.FrameTypeField == RenderTreeFrameType.Attribute && frame.AttributeEventHandlerIdField > 0)
             {
-                if (frame.AttributeEventHandlerIdField > 0)
-                {
-                    batchBuilder.DisposedEventHandlerIds.Append(frame.AttributeEventHandlerIdField);
-                }
-                else if (frame.AttributeValueField is bool boolValue && boolValue && frame.AttributeNameField.StartsWith("__internal_", StringComparison.Ordinal))
-                {
-                    batchBuilder.EditsBuffer.Append(RenderTreeEdit.RemoveAttribute(siblingIndex, frame.AttributeNameField));
-                }
+                batchBuilder.DisposedEventHandlerIds.Append(frame.AttributeEventHandlerIdField);
             }
             else if (frame.FrameTypeField == RenderTreeFrameType.NamedEvent)
             {

@@ -122,10 +122,6 @@ export class EventDelegator {
         this.eventInfoStore.remove(handlerInfo.eventHandlerId);
       }
 
-      for (const eventName of infosForElement.enumeratedEventNamesForEnabledFlags()) {
-        this.eventInfoStore.decrementCountByEventName(eventName);
-      }
-
       delete element[this.eventsCollectionKey];
     }
   }
@@ -360,24 +356,10 @@ class EventHandlerInfosForElement {
 
   private stopPropagationFlags: { [eventName: string]: boolean } | null = null;
 
-  public *enumerateHandlers(): IterableIterator<EventHandlerInfo> {
+  public *enumerateHandlers() : IterableIterator<EventHandlerInfo> {
     for (const eventName in this.handlers) {
       if (Object.prototype.hasOwnProperty.call(this.handlers, eventName)) {
         yield this.handlers[eventName];
-      }
-    }
-  }
-
-  public *enumeratedEventNamesForEnabledFlags(): IterableIterator<string> {
-    for (const eventName in this.preventDefaultFlags) {
-      if (this.preventDefaultFlags[eventName] === true) {
-        yield eventName;
-      }
-    }
-
-    for (const eventName in this.stopPropagationFlags) {
-      if (this.stopPropagationFlags[eventName] === true) {
-        yield eventName;
       }
     }
   }
