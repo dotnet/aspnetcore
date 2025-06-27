@@ -39,7 +39,7 @@ Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedProtoHeaderName.ge
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardedProtoHeaderName.set -> void
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardLimit.get -> int?
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.ForwardLimit.set -> void
-Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.KnownNetworks.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.HttpOverrides.IPNetwork!>!
+Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.KnownNetworks.get -> System.Collections.Generic.IList<System.Net.IPNetwork!>!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.KnownProxies.get -> System.Collections.Generic.IList<System.Net.IPAddress!>!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalForHeaderName.get -> string!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.OriginalForHeaderName.set -> void
