@@ -186,17 +186,19 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 page.WaitForURLAsync("**/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Click here to confirm your account"));
 
+            // Now we attempt to navigate to the "Auth Required" page,
+            // which should redirect us to the login page since we are not logged in
+            await Task.WhenAll(
+                page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                page.ClickAsync("text=Auth Required"));
+
             // Now we can login
-            await page.ClickAsync("text=Login");
             await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
             await page.FillAsync("[name=\"Input.Email\"]", userName);
             await page.FillAsync("[name=\"Input.Password\"]", password);
             await page.ClickAsync("button[type=\"submit\"]");
 
-            // Verify that we can visit the "Auth Required" page
-            await Task.WhenAll(
-                page.WaitForURLAsync("**/auth", new() { WaitUntil = WaitUntilState.NetworkIdle }),
-                page.ClickAsync("text=Auth Required"));
+            // Verify that we return to the "Auth Required" page
             await page.WaitForSelectorAsync("text=You are authenticated");
 
             if (authenticationFeatures.HasFlag(AuthenticationFeatures.Passkeys))
@@ -236,11 +238,21 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 await page.WaitForSelectorAsync("text=Passkey updated successfully");
 
-                // Check that an error is displayed if passkey retrieval fails
+                // Logout so that we can test the passkey login flow
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("text=Logout"));
 
+                // Navigate home to reset the return URL
+                await page.ClickAsync("text=Home");
+                await page.WaitForSelectorAsync("text=Hello, world!");
+
+                // Now navigate to the login page
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Login"));
+
+                // Check that an error is displayed if passkey retrieval fails
                 await page.EvaluateAsync("""
                     () => {
                         navigator.credentials.get = () => {
@@ -258,13 +270,13 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 await page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
                 await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
                 await page.FillAsync("[name=\"Input.Email\"]", userName);
-
                 await page.ClickAsync("text=Log in with a passkey");
 
-                // Verify that we can visit the "Auth Required" page
-                await Task.WhenAll(
-                    page.WaitForURLAsync("**/auth", new() { WaitUntil = WaitUntilState.NetworkIdle }),
-                    page.ClickAsync("text=Auth Required"));
+                // Verify that we return to the home page
+                await page.WaitForSelectorAsync("text=Hello, world!");
+
+                // Verify that we can visit the "Auth Required" page again
+                await page.ClickAsync("text=Auth Required");
                 await page.WaitForSelectorAsync("text=You are authenticated");
             }
         }
