@@ -11,12 +11,16 @@
 
 @if (showElements)
 {
+    <div @onwheel:preventDefault="preventDefault" style="width: 400px; height: 200px; border: 1px solid black;">
+        Scroll here
+    </div>
+
     <button class="btn btn-primary" @onclick="IncrementCount" @onmousedown:preventDefault="preventDefault">
         Click me
     </button>
 }
 
-<p>
+<p style="padding-bottom: 2000px;">
     <button class="btn btn-secondary" @onclick="ToggleShow">
         Toggle show
     </button>

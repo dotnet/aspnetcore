@@ -152,7 +152,11 @@ export class EventDelegator {
     infoForElement.preventDefault(eventName, value);
 
     if (!currentValue && value) {
-      this.eventInfoStore.addGlobalListener(eventName);
+      // To ensure that preventDefault works for wheel and touch events,,
+      // we need to register a listener with the passive mode explicitly disabled.
+      // Note that this does not change behavior for other events as those
+      // use active mode by default.
+      this.eventInfoStore.addActiveGlobalListener(eventName);
     } else if (currentValue && !value) {
       this.eventInfoStore.decrementCountByEventName(eventName);
     }
@@ -291,6 +295,25 @@ class EventInfoStore {
       const useCapture = Object.prototype.hasOwnProperty.call(nonBubblingEvents, eventName);
       document.addEventListener(eventName, this.globalListener, useCapture);
     }
+  }
+
+  public addActiveGlobalListener(eventName: string) {
+    // If this event name is an alias, update the global listener for the corresponding browser event
+    eventName = getBrowserEventName(eventName);
+
+    // If the listener for this event is already registered, we recreate it to ensure
+    // that it is using the active mode.
+    if (Object.prototype.hasOwnProperty.call(this.countByEventName, eventName)) {
+      this.countByEventName[eventName]++;
+      document.removeEventListener(eventName, this.globalListener);
+    } else {
+      this.countByEventName[eventName] = 1;
+    }
+
+    // To make delegation work with non-bubbling events, register a 'capture' listener.
+    // We preserve the non-bubbling behavior by only dispatching such events to the targeted element.
+    const useCapture = Object.prototype.hasOwnProperty.call(nonBubblingEvents, eventName);
+    document.addEventListener(eventName, this.globalListener, { capture: useCapture, passive: false });
   }
 
   public update(oldEventHandlerId: number, newEventHandlerId: number) {
