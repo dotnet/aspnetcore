@@ -126,7 +126,7 @@ public static class WebHostBuilderExtensions
     public static IWebHostBuilder UseSolutionRelativeContentRoot(
         this IWebHostBuilder builder,
         string solutionRelativePath,
-        string solutionName = "*.sln")
+        string solutionName = "*.sln?")
     {
         return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, solutionName);
     }
@@ -144,7 +144,7 @@ public static class WebHostBuilderExtensions
         this IWebHostBuilder builder,
         string solutionRelativePath,
         string applicationBasePath,
-        string solutionName = "*.sln")
+        string solutionName = "*.sln?")
     {
         ArgumentNullException.ThrowIfNull(solutionRelativePath);
         ArgumentNullException.ThrowIfNull(applicationBasePath);
