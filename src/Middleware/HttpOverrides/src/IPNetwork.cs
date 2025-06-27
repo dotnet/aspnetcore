@@ -44,35 +44,10 @@ public class IPNetwork
     /// <returns><see langword="true"/> if the <see cref="IPAddress"/> is part of the IP network. Otherwise, <see langword="false"/>.</returns>
     public bool Contains(IPAddress address) => _network.Contains(address);
 
-    /// <summary>
-    /// Converts the specified <see cref="ReadOnlySpan{T}"/> of <see langword="char"/> representation of
-    /// an IP address and a prefix length to its <see cref="IPNetwork"/> equivalent.
-    /// </summary>
-    /// <param name="networkSpan">The <see cref="ReadOnlySpan{T}"/> of <see langword="char"/> to convert, in CIDR notation.</param>
-    /// <returns>
-    ///The <see cref="IPNetwork"/> equivalent to the IP address and prefix length contained in <paramref name="networkSpan"/>.
-    /// </returns>
-    /// <exception cref="FormatException"><paramref name="networkSpan"/> is not in the correct format.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">The prefix length contained in <paramref name="networkSpan"/> is out of range.</exception>
-    /// <inheritdoc cref="TryParseComponents(ReadOnlySpan{char}, out IPAddress?, out int)"/>
+    /// <inheritdoc cref="System.Net.IPNetwork.Parse(ReadOnlySpan{char})"/>
     public static IPNetwork Parse(ReadOnlySpan<char> networkSpan) => System.Net.IPNetwork.Parse(networkSpan);
 
-    /// <summary>
-    /// Converts the specified <see cref="ReadOnlySpan{T}"/> of <see langword="char"/> representation of
-    /// an IP address and a prefix length to its <see cref="IPNetwork"/> equivalent, and returns a value
-    /// that indicates whether the conversion succeeded.
-    /// </summary>
-    /// <param name="networkSpan">The <see cref="ReadOnlySpan{T}"/> of <see langword="char"/> to validate.</param>
-    /// <param name="network">
-    /// When this method returns, contains the <see cref="IPNetwork"/> equivalent to the IP Address
-    /// and prefix length contained in <paramref name="networkSpan"/>, if the conversion succeeded,
-    /// or <see langword="null"/> if the conversion failed. This parameter is passed uninitialized.
-    /// </param>
-    /// <returns>
-    /// <see langword="true"/> if the <paramref name="networkSpan"/> parameter was
-    /// converted successfully; otherwise <see langword="false"/>.
-    /// </returns>
-    /// <inheritdoc cref="TryParseComponents(ReadOnlySpan{char}, out IPAddress?, out int)"/>
+    /// <inheritdoc cref="System.Net.IPNetwork.TryParse(ReadOnlySpan{char}, out IPNetwork?)"/>
     public static bool TryParse(ReadOnlySpan<char> networkSpan, [NotNullWhen(true)] out IPNetwork? network)
     {
         if (System.Net.IPNetwork.TryParse(networkSpan, out var ipNetwork))
