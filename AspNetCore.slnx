@@ -409,6 +409,8 @@
   <Folder Name="/src/Identity/samples/">
     <Project Path="src/Identity/samples/IdentitySample.DefaultUI/IdentitySample.DefaultUI.csproj" />
     <Project Path="src/Identity/samples/IdentitySample.Mvc/IdentitySample.Mvc.csproj" />
+    <Project Path="src/Identity/samples/IdentitySample.PasskeyConformance/IdentitySample.PasskeyConformance.csproj" />
+    <Project Path="src/Identity/samples/IdentitySample.PasskeyUI/IdentitySample.PasskeyUI.csproj" />
   </Folder>
   <Folder Name="/src/Identity/Specification.Tests/">
     <Project Path="src/Identity/Specification.Tests/src/Microsoft.AspNetCore.Identity.Specification.Tests.csproj" />

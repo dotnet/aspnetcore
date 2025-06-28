@@ -374,6 +374,21 @@ public class UserManager<TUser> : IDisposable where TUser : class
     }
 
     /// <summary>
+    /// Gets a flag indicating whether the backing user store supports passkeys.
+    /// </summary>
+    /// <value>
+    /// true if the backing user store supports passkeys, otherwise false.
+    /// </value>
+    public virtual bool SupportsUserPasskey
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return Store is IUserPasskeyStore<TUser>;
+        }
+    }
+
+    /// <summary>
     ///     Returns an IQueryable of users if the store is an IQueryableUserStore
     /// </summary>
     public virtual IQueryable<TUser> Users
@@ -2129,6 +2144,93 @@ public class UserManager<TUser> : IDisposable where TUser : class
     }
 
     /// <summary>
+    /// Adds a new passkey for the given user or updates an existing one.
+    /// </summary>
+    /// <param name="user">The user for whom the passkey should be added or updated.</param>
+    /// <param name="passkey">The passkey to add or update.</param>
+    /// <returns>Whether the passkey was successfully set.</returns>
+    public virtual async Task<IdentityResult> SetPasskeyAsync(TUser user, UserPasskeyInfo passkey)
+    {
+        ThrowIfDisposed();
+        var passkeyStore = GetUserPasskeyStore();
+        ArgumentNullThrowHelper.ThrowIfNull(user);
+        ArgumentNullThrowHelper.ThrowIfNull(passkey);
+
+        await passkeyStore.SetPasskeyAsync(user, passkey, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets a user's passkeys.
+    /// </summary>
+    /// <param name="user">The user whose passkeys should be retrieved.</param>
+    /// <returns>
+    /// The <see cref="Task"/> that represents the asynchronous operation, containing a list of the user's passkeys.
+    /// </returns>
+    public virtual Task<IList<UserPasskeyInfo>> GetPasskeysAsync(TUser user)
+    {
+        ThrowIfDisposed();
+        var passkeyStore = GetUserPasskeyStore();
+        ArgumentNullThrowHelper.ThrowIfNull(user);
+
+        return passkeyStore.GetPasskeysAsync(user, CancellationToken);
+    }
+
+    /// <summary>
+    /// Finds a user's passkey by its credential id.
+    /// </summary>
+    /// <param name="user">The user whose passkey should be retrieved.</param>
+    /// <param name="credentialId">The credential ID to search for.</param>
+    /// <returns>
+    /// The <see cref="Task"/> that represents the asynchronous operation, containing the passkey if found; otherwise <see langword="null"/>.
+    /// </returns>
+    public virtual Task<UserPasskeyInfo?> GetPasskeyAsync(TUser user, byte[] credentialId)
+    {
+        ThrowIfDisposed();
+        var passkeyStore = GetUserPasskeyStore();
+        ArgumentNullThrowHelper.ThrowIfNull(user);
+        ArgumentNullThrowHelper.ThrowIfNull(credentialId);
+
+        return passkeyStore.FindPasskeyAsync(user, credentialId, CancellationToken);
+    }
+
+    /// <summary>
+    /// Finds the user associated with a passkey.
+    /// </summary>
+    /// <param name="credentialId">The credential ID to search for.</param>
+    /// <returns>
+    /// The <see cref="Task"/> that represents the asynchronous operation, containing the user if found, otherwise <see langword="null"/>.
+    /// </returns>
+    public virtual Task<TUser?> FindByPasskeyIdAsync(byte[] credentialId)
+    {
+        ThrowIfDisposed();
+        var passkeyStore = GetUserPasskeyStore();
+        ArgumentNullThrowHelper.ThrowIfNull(credentialId);
+
+        return passkeyStore.FindByPasskeyIdAsync(credentialId, CancellationToken);
+    }
+
+    /// <summary>
+    /// Removes a passkey credential from a user.
+    /// </summary>
+    /// <param name="user">The user whose passkey should be removed.</param>
+    /// <param name="credentialId">The credential id of the passkey to remove.</param>
+    /// <returns>
+    /// The <see cref="Task"/> that represents the asynchronous operation, containing the <see cref="IdentityResult"/>
+    /// of the operation.
+    /// </returns>
+    public virtual async Task<IdentityResult> RemovePasskeyAsync(TUser user, byte[] credentialId)
+    {
+        ThrowIfDisposed();
+        var passkeyStore = GetUserPasskeyStore();
+        ArgumentNullThrowHelper.ThrowIfNull(user);
+        ArgumentNullThrowHelper.ThrowIfNull(credentialId);
+
+        await passkeyStore.RemovePasskeyAsync(user, credentialId, CancellationToken).ConfigureAwait(false);
+        return await UpdateUserAsync(user).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Releases the unmanaged resources used by the role manager and optionally releases the managed resources.
     /// </summary>
     /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
@@ -2416,6 +2518,16 @@ public class UserManager<TUser> : IDisposable where TUser : class
         if (cast == null)
         {
             throw new NotSupportedException(Resources.StoreNotIUserPasswordStore);
+        }
+        return cast;
+    }
+
+    private IUserPasskeyStore<TUser> GetUserPasskeyStore()
+    {
+        var cast = Store as IUserPasskeyStore<TUser>;
+        if (cast == null)
+        {
+            throw new NotSupportedException(Resources.StoreNotIUserPasskeyStore);
         }
         return cast;
     }
