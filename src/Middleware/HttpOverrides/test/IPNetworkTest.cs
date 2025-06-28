@@ -4,6 +4,7 @@ using System.Net;
 
 namespace Microsoft.AspNetCore.HttpOverrides;
 
+[Obsolete("Keep it only for compatibility verify")]
 public class IPNetworkTest
 {
     [Theory]
