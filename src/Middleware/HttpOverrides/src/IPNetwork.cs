@@ -47,12 +47,12 @@ public class IPNetwork
     /// <inheritdoc cref="System.Net.IPNetwork.Parse(ReadOnlySpan{char})"/>
     public static IPNetwork Parse(ReadOnlySpan<char> networkSpan) => System.Net.IPNetwork.Parse(networkSpan);
 
-    /// <inheritdoc cref="System.Net.IPNetwork.TryParse(ReadOnlySpan{char}, out System.Net.IPNetwork?)"/>
+    /// <inheritdoc cref="System.Net.IPNetwork.TryParse(ReadOnlySpan{char}, out System.Net.IPNetwork)"/>
     public static bool TryParse(ReadOnlySpan<char> networkSpan, [NotNullWhen(true)] out IPNetwork? network)
     {
         if (System.Net.IPNetwork.TryParse(networkSpan, out var ipNetwork))
         {
-            network = new(ipNetwork);
+            network = ipNetwork;
             return true;
         }
 
