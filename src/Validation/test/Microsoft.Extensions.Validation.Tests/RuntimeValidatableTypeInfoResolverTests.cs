@@ -4,17 +4,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
 public class RuntimeValidatableTypeInfoResolverTests
 {
-    private readonly RuntimeValidatableTypeInfoResolver _resolver = new();
+    private readonly RuntimeValidatableInfoResolver _resolver = new();
 
     [Fact]
-    public void TryGetValidatableParameterInfo_AlwaysReturnsFalse()
+    public void TryGetValidatableParameterInfo_WithStringParameterNoAttributes_ReturnsFalse()
     {
         var methodInfo = typeof(RuntimeValidatableTypeInfoResolverTests).GetMethod(nameof(SampleMethod), BindingFlags.NonPublic | BindingFlags.Instance);
         var parameterInfo = methodInfo!.GetParameters()[0];
@@ -59,7 +58,7 @@ public class RuntimeValidatableTypeInfoResolverTests
 
         Assert.True(result);
         Assert.NotNull(validatableInfo);
-        Assert.IsType<RuntimeValidatableTypeInfoResolver.RuntimeValidatableTypeInfo>(validatableInfo);
+        Assert.IsType<RuntimeValidatableInfoResolver.RuntimeValidatableTypeInfo>(validatableInfo);
 
         // Test validation with invalid data
         var invalidPoco = new SimplePocoWithValidation
@@ -338,7 +337,7 @@ public class RuntimeValidatableTypeInfoResolverTests
     {
         // First call
         var result1 = _resolver.TryGetValidatableTypeInfo(typeof(SimplePocoWithValidation), out var validatableInfo1);
-        
+
         // Second call
         var result2 = _resolver.TryGetValidatableTypeInfo(typeof(SimplePocoWithValidation), out var validatableInfo2);
 
@@ -354,8 +353,8 @@ public class RuntimeValidatableTypeInfoResolverTests
 
         Assert.True(result);
         Assert.NotNull(validatableInfo);
-        
-        var typeInfo = Assert.IsType<RuntimeValidatableTypeInfoResolver.RuntimeValidatableTypeInfo>(validatableInfo);
+
+        var typeInfo = Assert.IsType<RuntimeValidatableInfoResolver.RuntimeValidatableTypeInfo>(validatableInfo);
 
         // Test validation with invalid writable property (read-only property should be ignored)
         var invalidPoco = new PocoWithReadOnlyProperty
@@ -395,6 +394,566 @@ public class RuntimeValidatableTypeInfoResolverTests
         await validatableInfo.ValidateAsync(validPoco, validContext, default);
 
         Assert.Null(validContext.ValidationErrors); // No validation errors for valid data
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithRecord_ReturnsTrue_AndValidatesCorrectly()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(SimpleRecordWithValidation), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        // Test validation with invalid record data
+        var invalidRecord = new SimpleRecordWithValidation("", 150); // Empty name, out of range age
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidRecord)
+        };
+
+        await validatableInfo.ValidateAsync(invalidRecord, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Age", kvp.Key);
+                Assert.Equal("The field Age must be between 0 and 100.", kvp.Value.First());
+            });
+
+        // Test validation with valid record data
+        var validRecord = new SimpleRecordWithValidation("John Doe", 25);
+
+        var validContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(validRecord)
+        };
+
+        await validatableInfo.ValidateAsync(validRecord, validContext, default);
+
+        Assert.Null(validContext.ValidationErrors);
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithRecordContainingComplexProperty_ReturnsTrue_AndValidatesCorrectly()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(RecordWithComplexProperty), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        // Test validation with invalid nested data in record
+        var invalidRecord = new RecordWithComplexProperty(
+            "",
+            new SimplePocoWithValidation { Name = "", Age = 150 });
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidRecord)
+        };
+
+        await validatableInfo.ValidateAsync(invalidRecord, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("ComplexProperty.Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("ComplexProperty.Age", kvp.Key);
+                Assert.Equal("The field Age must be between 0 and 100.", kvp.Value.First());
+            });
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithIValidatableObject_ReturnsTrue_AndValidatesCorrectly()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(ValidatableObject), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        // Test attribute validation fails first, then IValidatableObject.Validate is called
+        var invalidObject = new ValidatableObject
+        {
+            Name = "", // Required but empty - attribute validation
+            Value = 150 // Out of range - attribute validation
+        };
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(invalidObject, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Value", kvp.Key);
+                Assert.Equal("The field Value must be between 0 and 100.", kvp.Value.First());
+            });
+
+        // Test IValidatableObject.Validate custom logic
+        var customInvalidObject = new ValidatableObject
+        {
+            Name = "Invalid", // Triggers custom validation
+            Value = 25
+        };
+
+        var customContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(customInvalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(customInvalidObject, customContext, default);
+
+        Assert.NotNull(customContext.ValidationErrors);
+        var error = Assert.Single(customContext.ValidationErrors);
+        Assert.Equal("Name", error.Key);
+        Assert.Equal("Name cannot be 'Invalid'", error.Value.First());
+
+        // Test complex IValidatableObject logic with multiple properties
+        var multiPropertyInvalidObject = new ValidatableObject
+        {
+            Name = "Joe", // Valid but short (< 5 chars)
+            Value = 75    // Valid range but > 50, triggers multi-property validation
+        };
+
+        var multiContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(multiPropertyInvalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(multiPropertyInvalidObject, multiContext, default);
+
+        Assert.NotNull(multiContext.ValidationErrors);
+        Assert.Equal(2, multiContext.ValidationErrors.Count);
+        Assert.True(multiContext.ValidationErrors.ContainsKey("Name"));
+        Assert.True(multiContext.ValidationErrors.ContainsKey("Value"));
+        Assert.Equal("When Value > 50, Name must be at least 5 characters", multiContext.ValidationErrors["Name"].First());
+        Assert.Equal("When Value > 50, Name must be at least 5 characters", multiContext.ValidationErrors["Value"].First());
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithNestedIValidatableObject_ReturnsTrue_AndValidatesCorrectly()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(PocoWithValidatableObject), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        var invalidObject = new PocoWithValidatableObject
+        {
+            Title = "", // Required but empty
+            ValidatableProperty = new ValidatableObject
+            {
+                Name = "Invalid", // Triggers custom validation
+                Value = 25
+            }
+        };
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(invalidObject, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Title", kvp.Key);
+                Assert.Equal("The Title field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("ValidatableProperty.Name", kvp.Key);
+                Assert.Equal("Name cannot be 'Invalid'", kvp.Value.First());
+            });
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithCustomValidationAttribute_ReturnsTrue_AndValidatesCorrectly()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(PocoWithCustomValidation), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        var invalidObject = new PocoWithCustomValidation
+        {
+            Name = "", // Required but empty
+            EvenValue = 3, // Odd number - custom validation fails
+            MultipleAttributesValue = -1 // Odd number and out of range (-1 is not in range 1-100)
+        };
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(invalidObject, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("EvenValue", kvp.Key);
+                Assert.Equal("The field EvenValue must be an even number.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("MultipleAttributesValue", kvp.Key);
+                Assert.Equal(2, kvp.Value.Count());
+                Assert.Contains(kvp.Value, error => error == "The field MultipleAttributesValue must be between 1 and 100.");
+                Assert.Contains(kvp.Value, error => error == "The field MultipleAttributesValue must be an even number.");
+            });
+
+        // Test valid custom validation
+        var validObject = new PocoWithCustomValidation
+        {
+            Name = "Valid Name",
+            EvenValue = 4,
+            MultipleAttributesValue = 50
+        };
+
+        var validContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(validObject)
+        };
+
+        await validatableInfo.ValidateAsync(validObject, validContext, default);
+
+        Assert.Null(validContext.ValidationErrors);
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithStringValidationAttributes_ReturnsTrue_AndValidatesCorrectly()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(PocoWithStringValidation), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        var invalidObject = new PocoWithStringValidation
+        {
+            Name = "AB", // Too short (min 3, max 10)
+            Email = "invalid-email",
+            Website = "not-a-url",
+            Phone = "123-456" // Invalid format
+        };
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(invalidObject, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Contains("length", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Email", kvp.Key);
+                Assert.Contains("valid e-mail", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Website", kvp.Key);
+                Assert.Contains("valid", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Phone", kvp.Key);
+                Assert.Equal("Phone must be in format XXX-XXX-XXXX", kvp.Value.First());
+            });
+
+        // Test valid string validation
+        var validObject = new PocoWithStringValidation
+        {
+            Name = "Valid Name",
+            Email = "test@example.com",
+            Website = "https://example.com",
+            Phone = "123-456-7890"
+        };
+
+        var validContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(validObject)
+        };
+
+        await validatableInfo.ValidateAsync(validObject, validContext, default);
+
+        Assert.Null(validContext.ValidationErrors);
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithRangeValidationDifferentTypes_ReturnsTrue_AndValidatesCorrectly()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(PocoWithRangeValidation), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        var invalidObject = new PocoWithRangeValidation
+        {
+            DecimalValue = 150.75m, // Out of range (0.1 - 100.5)
+            DateValue = new DateTime(2024, 6, 1), // Out of range (2023 only)
+            DateOnlyValue = new DateOnly(2024, 6, 1) // Out of range (2023 only)
+        };
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(invalidObject, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Equal(3, context.ValidationErrors.Count);
+        Assert.All(context.ValidationErrors, kvp => Assert.Contains("must be between", kvp.Value.First()));
+
+        // Test valid range validation
+        var validObject = new PocoWithRangeValidation
+        {
+            DecimalValue = 50.25m,
+            DateValue = new DateTime(2023, 6, 1),
+            DateOnlyValue = new DateOnly(2023, 6, 1)
+        };
+
+        var validContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(validObject)
+        };
+
+        await validatableInfo.ValidateAsync(validObject, validContext, default);
+
+        Assert.Null(validContext.ValidationErrors);
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithDisplayAttributes_ReturnsTrue_AndUsesDisplayNamesInErrors()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(PocoWithDisplayAttributes), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        var invalidObject = new PocoWithDisplayAttributes
+        {
+            Name = "", // Required but empty
+            Age = 150 // Out of range
+        };
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(invalidObject, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Full Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Age", kvp.Key);
+                Assert.Equal("The field User Age must be between 0 and 100.", kvp.Value.First());
+            });
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithCustomValidationMethod_ReturnsTrue_AndValidatesCorrectly()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(PocoWithCustomValidationMethod), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        var invalidObject = new PocoWithCustomValidationMethod
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            FullName = "Jane Smith" // Doesn't match FirstName + LastName
+        };
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(invalidObject, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        var error = Assert.Single(context.ValidationErrors);
+        Assert.Equal("FullName", error.Key);
+        Assert.Equal("FullName must be 'John Doe'", error.Value.First());
+
+        // Test valid custom validation method
+        var validObject = new PocoWithCustomValidationMethod
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            FullName = "John Doe"
+        };
+
+        var validContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(validObject)
+        };
+
+        await validatableInfo.ValidateAsync(validObject, validContext, default);
+
+        Assert.Null(validContext.ValidationErrors);
+    }
+
+    [Fact]
+    public async Task TryGetValidatableTypeInfo_WithArrayValidation_ReturnsTrue_AndValidatesCorrectly()
+    {
+        var result = _resolver.TryGetValidatableTypeInfo(typeof(PocoWithArrayValidation), out var validatableInfo);
+
+        Assert.True(result);
+        Assert.NotNull(validatableInfo);
+
+        var invalidObject = new PocoWithArrayValidation
+        {
+            Name = "", // Required but empty
+            Items = new[]
+            {
+                new SimplePocoWithValidation { Name = "Valid", Age = 25 },
+                new SimplePocoWithValidation { Name = "", Age = 150 }, // Invalid item
+                new SimplePocoWithValidation { Name = "Another Valid", Age = 30 }
+            }
+        };
+
+        var validationOptions = new ValidationOptions();
+        validationOptions.Resolvers.Add(_resolver);
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(invalidObject)
+        };
+
+        await validatableInfo.ValidateAsync(invalidObject, context, default);
+
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Collection(context.ValidationErrors,
+            kvp =>
+            {
+                Assert.Equal("Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Items[1].Name", kvp.Key);
+                Assert.Equal("The Name field is required.", kvp.Value.First());
+            },
+            kvp =>
+            {
+                Assert.Equal("Items[1].Age", kvp.Key);
+                Assert.Equal("The field Age must be between 0 and 100.", kvp.Value.First());
+            });
+
+        // Test valid array validation
+        var validObject = new PocoWithArrayValidation
+        {
+            Name = "Valid Name",
+            Items = new[]
+            {
+                new SimplePocoWithValidation { Name = "Item 1", Age = 25 },
+                new SimplePocoWithValidation { Name = "Item 2", Age = 30 }
+            }
+        };
+
+        var validContext = new ValidateContext
+        {
+            ValidationOptions = validationOptions,
+            ValidationContext = new ValidationContext(validObject)
+        };
+
+        await validatableInfo.ValidateAsync(validObject, validContext, default);
+
+        Assert.Null(validContext.ValidationErrors);
     }
 
     // Helper method for parameter test
@@ -461,5 +1020,162 @@ public class RuntimeValidatableTypeInfoResolverTests
 
         [Required]
         public string ReadOnlyValue { get; } = "ReadOnly";
+    }
+
+    // Test record types
+    public record SimpleRecordWithValidation(
+        [Required] string Name,
+        [Range(0, 100)] int Age);
+
+    public record RecordWithComplexProperty(
+        [Required] string Name,
+        SimplePocoWithValidation ComplexProperty);
+
+    // Test IValidatableObject implementations
+    public class ValidatableObject : IValidatableObject
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [Range(0, 100)]
+        public int Value { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Name == "Invalid")
+            {
+                yield return new ValidationResult("Name cannot be 'Invalid'", new[] { nameof(Name) });
+            }
+
+            if (Value > 50 && Name?.Length < 5)
+            {
+                yield return new ValidationResult("When Value > 50, Name must be at least 5 characters", new[] { nameof(Name), nameof(Value) });
+            }
+        }
+    }
+
+    public class PocoWithValidatableObject
+    {
+        [Required]
+        public string Title { get; set; } = string.Empty;
+
+        public ValidatableObject ValidatableProperty { get; set; } = new();
+    }
+
+    // Test custom validation attributes
+    public class EvenNumberAttribute : ValidationAttribute
+    {
+        public override bool IsValid(object? value)
+        {
+            if (value is int number)
+            {
+                return number % 2 == 0;
+            }
+            return true;
+        }
+
+        public override string FormatErrorMessage(string name)
+        {
+            return $"The field {name} must be an even number.";
+        }
+    }
+
+    public class PocoWithCustomValidation
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        [EvenNumber]
+        public int EvenValue { get; set; }
+
+        [Range(1, 100), EvenNumber]
+        public int MultipleAttributesValue { get; set; }
+    }
+
+    // Test string-specific validation attributes
+    public class PocoWithStringValidation
+    {
+        [Required]
+        [StringLength(10, MinimumLength = 3)]
+        public string Name { get; set; } = string.Empty;
+
+        [EmailAddress]
+        public string? Email { get; set; }
+
+        [Url]
+        public string? Website { get; set; }
+
+        [RegularExpression(@"^\d{3}-\d{3}-\d{4}$", ErrorMessage = "Phone must be in format XXX-XXX-XXXX")]
+        public string? Phone { get; set; }
+    }
+
+    // Test range validation with different data types
+    public class PocoWithRangeValidation
+    {
+        [Range(0.1, 100.5)]
+        public decimal DecimalValue { get; set; }
+
+        [Range(typeof(DateTime), "2023-01-01", "2023-12-31")]
+        public DateTime DateValue { get; set; }
+
+        [Range(typeof(DateOnly), "2023-01-01", "2023-12-31")]
+        public DateOnly DateOnlyValue { get; set; }
+    }
+
+    // Test Display attribute handling
+    public class PocoWithDisplayAttributes
+    {
+        [Required]
+        [Display(Name = "Full Name")]
+        public string Name { get; set; } = string.Empty;
+
+        [Range(0, 100)]
+        [Display(Name = "User Age", Description = "Age in years")]
+        public int Age { get; set; }
+    }
+
+    // Test CustomValidation attribute
+    public class PocoWithCustomValidationMethod
+    {
+        [Required]
+        public string FirstName { get; set; } = string.Empty;
+
+        [Required]
+        public string LastName { get; set; } = string.Empty;
+
+        [CustomValidation(typeof(PocoWithCustomValidationMethod), nameof(ValidateFullName))]
+        public string FullName { get; set; } = string.Empty;
+
+        public static ValidationResult? ValidateFullName(string fullName, ValidationContext context)
+        {
+            if (context.ObjectInstance is PocoWithCustomValidationMethod instance)
+            {
+                var expectedFullName = $"{instance.FirstName} {instance.LastName}";
+                if (fullName != expectedFullName)
+                {
+                    return new ValidationResult($"FullName must be '{expectedFullName}'", new[] { context.MemberName! });
+                }
+            }
+            return ValidationResult.Success;
+        }
+    }
+
+    // Test array validation
+    public class PocoWithArrayValidation
+    {
+        [Required]
+        public string Name { get; set; } = string.Empty;
+
+        public SimplePocoWithValidation[]? Items { get; set; }
+    }
+
+    // Test service-like type that should be excluded from validation
+    public class TestService
+    {
+        [Range(10, 100)]
+        public int Value { get; set; } = 4;
+
+        [Required]
+        public string Name { get; set; } = string.Empty;
     }
 }
