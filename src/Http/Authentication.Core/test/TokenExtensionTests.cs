@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Claims;
+using static Microsoft.AspNetCore.Authentication.Core.Test.AuthenticationPropertiesTests;
 
 namespace Microsoft.AspNetCore.Authentication.Core.Test;
 
@@ -147,6 +148,22 @@ public class TokenExtensionTests
         Assert.Equal("1", await context.GetTokenAsync("simple", "One"));
         Assert.Equal("2", await context.GetTokenAsync("simple", "Two"));
         Assert.Equal("3", await context.GetTokenAsync("simple", "Three"));
+    }
+
+    [Fact]
+    public void UpdateTokenValueWorksWithNullGetTokenValueResult()
+    {
+        var sourceProperties = new AuthenticationProperties();
+        var targetProperties = new AuthenticationProperties();
+
+        var tokens = new List<AuthenticationToken>
+        {
+            new AuthenticationToken { Name = "refresh_token", Value = "refresh_value" }
+        };
+
+        targetProperties.StoreTokens(tokens);
+        targetProperties.UpdateTokenValue("refresh_token", sourceProperties.GetTokenValue("refresh_token"));
+        Assert.Null(targetProperties.GetTokenValue("refresh_token"));
     }
 
     private class SimpleAuth : IAuthenticationHandler
