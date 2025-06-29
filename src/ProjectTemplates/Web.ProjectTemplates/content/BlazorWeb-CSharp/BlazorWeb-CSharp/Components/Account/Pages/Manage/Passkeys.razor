@@ -90,7 +90,7 @@ else
 
         if (!string.IsNullOrEmpty(Input.Error))
         {
-            RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add a passkey: {Input.Error}", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus($"Error: {Input.Error}", HttpContext);
             return;
         }
 
@@ -110,7 +110,7 @@ else
         var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson, options);
         if (!attestationResult.Succeeded)
         {
-            RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add the passkey: {attestationResult.Failure.Message}.", HttpContext);
+            RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add the passkey: {attestationResult.Failure.Message}", HttpContext);
             return;
         }
 

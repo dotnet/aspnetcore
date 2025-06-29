@@ -150,7 +150,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                     protocol = "ctap2",
                     transport = "internal",
                     hasResidentKey = false,
-                    hasUserIdentification = true,
+                    hasUserVerification = true,
                     isUserVerified = true,
                     automaticPresenceSimulation = true,
                 }
@@ -186,17 +186,19 @@ public abstract class BlazorTemplateTest : BrowserTestBase
                 page.WaitForURLAsync("**/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Click here to confirm your account"));
 
+            // Now we attempt to navigate to the "Auth Required" page,
+            // which should redirect us to the login page since we are not logged in
+            await Task.WhenAll(
+                page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                page.ClickAsync("text=Auth Required"));
+
             // Now we can login
-            await page.ClickAsync("text=Login");
             await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
             await page.FillAsync("[name=\"Input.Email\"]", userName);
             await page.FillAsync("[name=\"Input.Password\"]", password);
             await page.ClickAsync("button[type=\"submit\"]");
 
-            // Verify that we can visit the "Auth Required" page
-            await Task.WhenAll(
-                page.WaitForURLAsync("**/auth", new() { WaitUntil = WaitUntilState.NetworkIdle }),
-                page.ClickAsync("text=Auth Required"));
+            // Verify that we return to the "Auth Required" page
             await page.WaitForSelectorAsync("text=You are authenticated");
 
             if (authenticationFeatures.HasFlag(AuthenticationFeatures.Passkeys))
@@ -208,11 +210,26 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 await page.WaitForSelectorAsync("text=Manage your account");
 
+                // Check that an error is displayed if passkey creation fails
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Manage/Passkeys**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("a[href=\"Account/Manage/Passkeys\"]"));
 
-                // Register a new passkey
+                await page.EvaluateAsync("""
+                    () => {
+                        navigator.credentials.create = () => {
+                            const error = new Error("Simulated passkey creation failure");
+                            error.name = "NotAllowedError";
+                            return Promise.reject(error);
+                        };
+                    }
+                    """);
+
+                await page.ClickAsync("text=Add a new passkey");
+                await page.WaitForSelectorAsync("text=Error: No passkey was provided by the authenticator.");
+
+                // Now check that we can successfully register a passkey
+                await page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
                 await page.ClickAsync("text=Add a new passkey");
 
                 await page.WaitForSelectorAsync("text=Enter a name for your passkey");
@@ -221,20 +238,45 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
                 await page.WaitForSelectorAsync("text=Passkey updated successfully");
 
-                // Login with the passkey
+                // Logout so that we can test the passkey login flow
                 await Task.WhenAll(
                     page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                     page.ClickAsync("text=Logout"));
 
-                await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
-                await page.FillAsync("[name=\"Input.Email\"]", userName);
+                // Navigate home to reset the return URL
+                await page.ClickAsync("text=Home");
+                await page.WaitForSelectorAsync("text=Hello, world!");
+
+                // Now navigate to the login page
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Login"));
+
+                // Check that an error is displayed if passkey retrieval fails
+                await page.EvaluateAsync("""
+                    () => {
+                        navigator.credentials.get = () => {
+                            const error = new Error("Simulated passkey retrieval failure");
+                            error.name = "NotAllowedError";
+                            return Promise.reject(error);
+                        };
+                    }
+                    """);
 
                 await page.ClickAsync("text=Log in with a passkey");
+                await page.WaitForSelectorAsync("text=Error: No passkey was provided by the authenticator.");
 
-                // Verify that we can visit the "Auth Required" page
-                await Task.WhenAll(
-                    page.WaitForURLAsync("**/auth", new() { WaitUntil = WaitUntilState.NetworkIdle }),
-                    page.ClickAsync("text=Auth Required"));
+                // Now check that we can successfully login with the passkey
+                await page.ReloadAsync(new() { WaitUntil = WaitUntilState.NetworkIdle });
+                await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
+                await page.FillAsync("[name=\"Input.Email\"]", userName);
+                await page.ClickAsync("text=Log in with a passkey");
+
+                // Verify that we return to the home page
+                await page.WaitForSelectorAsync("text=Hello, world!");
+
+                // Verify that we can visit the "Auth Required" page again
+                await page.ClickAsync("text=Auth Required");
                 await page.WaitForSelectorAsync("text=You are authenticated");
             }
         }
