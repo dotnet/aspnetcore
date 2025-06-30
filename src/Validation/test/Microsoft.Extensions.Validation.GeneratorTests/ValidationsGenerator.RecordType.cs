@@ -370,4 +370,31 @@ public record ValidatableRecord(
         });
 
     }
+
+    [Fact]
+    public async Task RecordTypes_DoNotIncludeEqualityContractProperty()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+builder.Services.AddValidation();
+var app = builder.Build();
+
+app.MapPost("/test-record", (TestRecord record) => Results.Ok("Passed"));
+
+app.Run();
+
+public record TestRecord([Required] string Name);
+""";
+
+        // Act & Assert - Verify the generated code doesn't include EqualityContract
+        await Verify(source, out var compilation);
+    }
 }
