@@ -890,7 +890,6 @@
   </Folder>
   <Folder Name="/src/Servers/HttpSys/samples/">
     <Project Path="src/Servers/HttpSys/samples/HotAddSample/HotAddSample.csproj" />
-    <Project Path="src/Servers/HttpSys/samples/MinimalSample/MinimalSample.csproj" />
     <Project Path="src/Servers/HttpSys/samples/QueueSharing/QueueSharing.csproj" />
     <Project Path="src/Servers/HttpSys/samples/SelfHostServer/SelfHostServer.csproj" />
     <Project Path="src/Servers/HttpSys/samples/TestClient/TestClient.csproj" />
