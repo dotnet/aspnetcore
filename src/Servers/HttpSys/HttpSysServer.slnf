@@ -35,6 +35,7 @@
       "src\\Servers\\Connections.Abstractions\\src\\Microsoft.AspNetCore.Connections.Abstractions.csproj",
       "src\\Servers\\HttpSys\\perf\\Microbenchmarks\\Microsoft.AspNetCore.Server.HttpSys.Microbenchmarks.csproj",
       "src\\Servers\\HttpSys\\samples\\HotAddSample\\HotAddSample.csproj",
+      "src\\Servers\\HttpSys\\samples\\MinimalSample\\MinimalSample.csproj",
       "src\\Servers\\HttpSys\\samples\\QueueSharing\\QueueSharing.csproj",
       "src\\Servers\\HttpSys\\samples\\SelfHostServer\\SelfHostServer.csproj",
       "src\\Servers\\HttpSys\\samples\\TestClient\\TestClient.csproj",
