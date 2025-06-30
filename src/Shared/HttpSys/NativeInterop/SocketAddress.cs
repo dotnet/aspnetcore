@@ -39,6 +39,7 @@ internal abstract class SocketAddress
         internal override int GetPort()
         {
             // _sockaddr.sin_port has network byte order.
+            // cast to ushort is important to avoid negative values for the TCP port
             return (ushort)IPAddress.NetworkToHostOrder((short)_sockaddr.sin_port);
         }
 
@@ -62,6 +63,7 @@ internal abstract class SocketAddress
         internal override int GetPort()
         {
             // _sockaddr.sin6_port has network byte order.
+            // cast to ushort is important to avoid negative values for the TCP port
             return (ushort)IPAddress.NetworkToHostOrder((short)_sockaddr.sin6_port);
         }
 
