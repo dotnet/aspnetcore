@@ -229,7 +229,6 @@
     <MicrosoftBuildTasksCoreVersion>17.8.29</MicrosoftBuildTasksCoreVersion>
     <MicrosoftBuildUtilitiesCoreVersion>17.8.29</MicrosoftBuildUtilitiesCoreVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
-    <MicrosoftBuildUtilitiesCoreVersion>17.8.29</MicrosoftBuildUtilitiesCoreVersion>
     <!--
       Temporarily override the Microsoft.NET.Test.Sdk version Arcade defaults to. That's incompatible w/ test
       framework in current .NET SDKs.
