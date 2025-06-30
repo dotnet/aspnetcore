@@ -39,15 +39,7 @@ internal abstract class SocketAddress
         internal override int GetPort()
         {
             // _sockaddr.sin_port has network byte order.
-            // ---
-            // We could use IPAddress.NetworkToHostOrder() here (see https://source.dot.net/#System.Net.Primitives/System/Net/IPAddress.cs,547),
-            // but it does not have a support for unsigned-short, resulting in incorrect representation of the result.
-            // ---
-            // However, BinaryPrimitives.ReverseEndianness() does support unsigned-short (see https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Buffers/Binary/BinaryPrimitives.ReverseEndianness.cs,100)
-            // which makes a correct conversion for a TCP port number range (0 - 65535).
-            return BitConverter.IsLittleEndian
-                ? BinaryPrimitives.ReverseEndianness(_sockaddr.sin_port)
-                : _sockaddr.sin_port;
+            return (ushort)IPAddress.NetworkToHostOrder((short)_sockaddr.sin_port);
         }
 
         internal override IPAddress? GetIPAddress()
@@ -70,15 +62,7 @@ internal abstract class SocketAddress
         internal override int GetPort()
         {
             // _sockaddr.sin6_port has network byte order.
-            // ---
-            // We could use IPAddress.NetworkToHostOrder() here (see https://source.dot.net/#System.Net.Primitives/System/Net/IPAddress.cs,547),
-            // but it does not have a support for unsigned-short, resulting in incorrect representation of the result.
-            // ---
-            // However, BinaryPrimitives.ReverseEndianness() does support unsigned-short (see https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Buffers/Binary/BinaryPrimitives.ReverseEndianness.cs,100)
-            // which makes a correct conversion for a TCP port number range (0 - 65535).
-            return BitConverter.IsLittleEndian
-                ? BinaryPrimitives.ReverseEndianness(_sockaddr.sin6_port)
-                : _sockaddr.sin6_port;
+            return (ushort)IPAddress.NetworkToHostOrder((short)_sockaddr.sin6_port);
         }
 
         internal override IPAddress? GetIPAddress()
