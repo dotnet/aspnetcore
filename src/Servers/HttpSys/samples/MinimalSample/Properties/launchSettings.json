@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "MinimalSample": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:42000",
+      "nativeDebugging": true
+    }
+  }
+}
