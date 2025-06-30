@@ -105,11 +105,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return true;
     }
 
-    private static bool IsEqualityContract(IPropertySymbol prop) =>
-        prop.Name == "EqualityContract"
-        && prop.Type.ToDisplayString() == "System.Type"
-        && prop.DeclaredAccessibility == Accessibility.Protected;
-
     internal ImmutableArray<ValidatableProperty> ExtractValidatableMembers(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes, ref HashSet<ValidatableType> validatableTypes, ref List<ITypeSymbol> visitedTypes)
     {
         var members = new List<ValidatableProperty>();
@@ -168,7 +163,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             // Skip compiler generated properties and properties already processed via
             // the record processing logic above.
             if (member.IsImplicitlyDeclared 
-                || IsEqualityContract(member) 
+                || member.IsEqualityContract(wellKnownTypes) 
                 || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {
                 continue;
