@@ -1,53 +1,18 @@
 ﻿@page "/counter"
 @rendermode InteractiveServer
-
 <PageTitle>Counter</PageTitle>
 
 <h1>Counter</h1>
 
 <p role="status">Current count: @currentCount</p>
-<p>showElements: @showElements</p>
-<p>preventDefault: @preventDefault</p>
 
-@if (showElements)
-{
-    <div @onwheel:preventDefault="preventDefault" style="width: 400px; height: 200px; border: 1px solid black;">
-        Scroll here
-    </div>
-
-    <button class="btn btn-primary" @onclick="IncrementCount" @onmousedown:preventDefault="preventDefault">
-        Click me
-    </button>
-}
-
-<p style="padding-bottom: 2000px;">
-    <button class="btn btn-secondary" @onclick="ToggleShow">
-        Toggle show
-    </button>
-    <button class="btn btn-secondary" @onclick="TogglePreventDefault">
-        Toggle preventDefault
-    </button>
-</p>
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
     private int currentCount = 0;
-    private bool showElements = true;
-    private bool preventDefault = true;
 
     private void IncrementCount()
     {
         currentCount++;
-    }
-
-    void ToggleShow()
-    {
-        showElements = !showElements;
-        StateHasChanged();
-    }
-
-    void TogglePreventDefault()
-    {
-        preventDefault = !preventDefault;
-        StateHasChanged();
     }
 }
