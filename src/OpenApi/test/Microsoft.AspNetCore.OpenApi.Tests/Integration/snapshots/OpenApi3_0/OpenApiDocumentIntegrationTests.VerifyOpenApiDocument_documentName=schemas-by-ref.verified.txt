@@ -507,6 +507,28 @@
           }
         }
       }
+    },
+    "/schemas-by-ref/json-patch": {
+      "patch": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonPatchDocumentOfParentObject"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -599,6 +621,7 @@
           }
         }
       },
+      "JsonPatchDocumentOfParentObject": { },
       "LocationContainer": {
         "required": [
           "location"
