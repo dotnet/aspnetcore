@@ -16,7 +16,7 @@ public class PersistentComponentState
     private readonly IDictionary<string, byte[]> _currentState;
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
-    private readonly List<(IPersistentComponentStateScenario Scenario, Action Callback, bool IsRecurring)> _restoringCallbacks = new();
+    private readonly List<RestoreComponentStateRegistration> _restoringCallbacks = new();
 
     internal PersistentComponentState(
         IDictionary<string , byte[]> currentState,
@@ -175,8 +175,8 @@ public class PersistentComponentState
         ArgumentNullException.ThrowIfNull(scenario);
         ArgumentNullException.ThrowIfNull(callback);
 
-        var isRecurring = scenario.IsRecurring;
-        _restoringCallbacks.Add((scenario, callback, isRecurring));
+        var registration = new RestoreComponentStateRegistration(scenario, callback);
+        _restoringCallbacks.Add(registration);
 
         // If we already have a current scenario and it matches, invoke immediately
         if (CurrentScenario != null && ShouldInvokeCallback(scenario, CurrentScenario))
@@ -184,7 +184,52 @@ public class PersistentComponentState
             callback();
         }
 
-        return new RestoringComponentStateSubscription(_restoringCallbacks, scenario, callback, isRecurring);
+        return new RestoringComponentStateSubscription(_restoringCallbacks, scenario, callback);
+    }
+
+    /// <summary>
+    /// Registers a callback to be invoked when state is restored and the filter allows the current scenario.
+    /// </summary>
+    /// <param name="filter">The filter to determine if the callback should be invoked for a scenario.</param>
+    /// <param name="callback">The callback to invoke during restoration.</param>
+    /// <returns>A subscription that can be disposed to unregister the callback.</returns>
+    public RestoringComponentStateSubscription RegisterOnRestoring(
+        IPersistentStateFilter filter,
+        Action callback)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(callback);
+
+        // Create a wrapper scenario that uses the filter
+        var filterScenario = new FilterWrapperScenario(filter);
+        return RegisterOnRestoring(filterScenario, callback);
+    }
+
+    /// <summary>
+    /// A scenario wrapper that uses a filter to determine if it should match the current scenario.
+    /// </summary>
+    private sealed class FilterWrapperScenario : IPersistentComponentStateScenario
+    {
+        private readonly IPersistentStateFilter _filter;
+
+        public FilterWrapperScenario(IPersistentStateFilter filter)
+        {
+            _filter = filter;
+        }
+
+        public bool IsRecurring => true; // Filter-based scenarios can be recurring
+
+        public bool ShouldMatchScenario(IPersistentComponentStateScenario currentScenario)
+        {
+            return _filter.ShouldRestore(currentScenario);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            return obj is FilterWrapperScenario other && ReferenceEquals(_filter, other._filter);
+        }
+
+        public override int GetHashCode() => _filter.GetHashCode();
     }
 
     /// <summary>
@@ -214,14 +259,14 @@ public class PersistentComponentState
     {
         for (int i = _restoringCallbacks.Count - 1; i >= 0; i--)
         {
-            var (callbackScenario, callback, isRecurring) = _restoringCallbacks[i];
+            var registration = _restoringCallbacks[i];
             
-            if (ShouldInvokeCallback(callbackScenario, scenario))
+            if (ShouldInvokeCallback(registration.Scenario, scenario))
             {
-                callback();
+                registration.Callback();
                 
                 // Remove non-recurring callbacks after invocation
-                if (!isRecurring)
+                if (!registration.Scenario.IsRecurring)
                 {
                     _restoringCallbacks.RemoveAt(i);
                 }
@@ -231,8 +276,13 @@ public class PersistentComponentState
 
     private static bool ShouldInvokeCallback(IPersistentComponentStateScenario callbackScenario, IPersistentComponentStateScenario currentScenario)
     {
-        // For now, match scenarios by type and properties
-        // This can be enhanced with more sophisticated matching logic
+        // Special handling for filter wrapper scenarios
+        if (callbackScenario is FilterWrapperScenario filterWrapper)
+        {
+            return filterWrapper.ShouldMatchScenario(currentScenario);
+        }
+
+        // For regular scenarios, match by type and properties
         return callbackScenario.GetType() == currentScenario.GetType() &&
                callbackScenario.Equals(currentScenario);
     }

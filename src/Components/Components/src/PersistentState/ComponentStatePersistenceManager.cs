@@ -17,6 +17,7 @@ public class ComponentStatePersistenceManager
     private bool _stateIsPersisted;
     private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
+    private int _restoreCallCount;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
@@ -71,15 +72,26 @@ public class ComponentStatePersistenceManager
     {
         var data = await store.GetPersistedStateAsync();
         
-        if (scenario == null)
+        _restoreCallCount++;
+        
+        if (_restoreCallCount == 1)
         {
             // First-time initialization
             State.InitializeExistingState(data);
         }
         else
         {
-            // Scenario-based update
-            State.UpdateExistingState(data, scenario);
+            // Scenario-based update - only if we have a scenario
+            if (scenario != null)
+            {
+                State.UpdateExistingState(data, scenario);
+            }
+            else
+            {
+                // This is a second call without a scenario, which should fail
+                // (maintaining the original behavior for backward compatibility)
+                throw new InvalidOperationException("PersistentComponentState already initialized.");
+            }
         }
         
         _servicesRegistry?.Restore(State);

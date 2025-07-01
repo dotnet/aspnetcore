@@ -8,21 +8,18 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 public readonly struct RestoringComponentStateSubscription : IDisposable
 {
-    private readonly List<(IPersistentComponentStateScenario Scenario, Action Callback, bool IsRecurring)>? _callbacks;
+    private readonly List<RestoreComponentStateRegistration>? _callbacks;
     private readonly IPersistentComponentStateScenario? _scenario;
     private readonly Action? _callback;
-    private readonly bool _isRecurring;
 
     internal RestoringComponentStateSubscription(
-        List<(IPersistentComponentStateScenario Scenario, Action Callback, bool IsRecurring)> callbacks,
+        List<RestoreComponentStateRegistration> callbacks,
         IPersistentComponentStateScenario scenario,
-        Action callback,
-        bool isRecurring)
+        Action callback)
     {
         _callbacks = callbacks;
         _scenario = scenario;
         _callback = callback;
-        _isRecurring = isRecurring;
     }
 
     /// <inheritdoc />
@@ -32,8 +29,8 @@ public readonly struct RestoringComponentStateSubscription : IDisposable
         {
             for (int i = _callbacks.Count - 1; i >= 0; i--)
             {
-                var (scenario, callback, isRecurring) = _callbacks[i];
-                if (ReferenceEquals(scenario, _scenario) && ReferenceEquals(callback, _callback) && isRecurring == _isRecurring)
+                var registration = _callbacks[i];
+                if (ReferenceEquals(registration.Scenario, _scenario) && ReferenceEquals(registration.Callback, _callback))
                 {
                     _callbacks.RemoveAt(i);
                     break;

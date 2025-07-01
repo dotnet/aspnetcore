@@ -42,12 +42,6 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         var componentState = (ComponentState)key!;
         var storageKey = ComputeKey(componentState, parameterInfo.PropertyName);
 
-        // Check if there are scenario filters on the property
-        if (ShouldFilterByScenario(componentState, parameterInfo))
-        {
-            return null; // Don't provide value if scenario filtering rejects it
-        }
-
         return state.TryTakeFromJson(storageKey, parameterInfo.PropertyType, out var value) ? value : null;
     }
 
@@ -58,10 +52,12 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     {
         var propertyName = parameterInfo.PropertyName;
         var propertyType = parameterInfo.PropertyType;
+        var propertyGetter = ResolvePropertyGetter(subscriber.Component.GetType(), propertyName);
+        
+        // Register persistence callback
         _subscriptions[subscriber] = state.RegisterOnPersisting(() =>
             {
                 var storageKey = ComputeKey(subscriber, propertyName);
-                var propertyGetter = ResolvePropertyGetter(subscriber.Component.GetType(), propertyName);
                 var property = propertyGetter.GetValue(subscriber.Component);
                 if (property == null)
                 {
@@ -70,6 +66,9 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
                 state.PersistAsJson(storageKey, property, propertyType);
                 return Task.CompletedTask;
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
+
+        // Register scenario-based restoration callback using PropertyGetter's PropertyInfo
+        RegisterScenarioRestorationCallback(subscriber, parameterInfo, propertyGetter.PropertyInfo);
     }
 
     private static PropertyGetter ResolvePropertyGetter(Type type, string propertyName)
@@ -288,43 +287,33 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         return result;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2072:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateValueProvider.GetPropertyForScenarioFiltering(Type, String)'. The return value of method 'System.Object.GetType()' does not have matching annotations.", Justification = "Properties of rendered components are preserved through other means and won't get trimmed.")]
-    private bool ShouldFilterByScenario(ComponentState componentState, in CascadingParameterInfo parameterInfo)
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Property types of rendered components are preserved through other means and won't get trimmed.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicConstructors', 'DynamicallyAccessedMemberTypes.PublicFields', 'DynamicallyAccessedMemberTypes.PublicProperties' in call to target method. The return value of the source method does not have matching annotations.", Justification = "Property types of rendered components are preserved through other means and won't get trimmed.")]
+    private void RegisterScenarioRestorationCallback(ComponentState subscriber, in CascadingParameterInfo parameterInfo, PropertyInfo propertyInfo)
     {
-        // If there's no current scenario, don't filter
-        if (state.CurrentScenario == null)
-        {
-            return false;
-        }
-
-        // Get the property info to check for filter attributes
-        var componentType = componentState.Component.GetType();
-        var propertyInfo = GetPropertyForScenarioFiltering(componentType, parameterInfo.PropertyName);
-        if (propertyInfo == null)
-        {
-            return false;
-        }
-
         // Check for IPersistentStateFilter attributes
         var filterAttributes = propertyInfo.GetCustomAttributes(typeof(IPersistentStateFilter), inherit: true);
         if (filterAttributes.Length == 0)
         {
-            return false; // No filters, allow state
+            return; // No filters, no scenario-based restoration needed
         }
 
-        // Check if any filter allows the current scenario
+        var storageKey = ComputeKey(subscriber, parameterInfo.PropertyName);
+        var propertyType = parameterInfo.PropertyType;
+        var component = subscriber.Component;
+
+        // Register restoration callbacks for each filter
         foreach (IPersistentStateFilter filter in filterAttributes)
         {
-            if (filter.ShouldRestore(state.CurrentScenario))
+            state.RegisterOnRestoring(filter, () =>
             {
-                return false; // At least one filter allows it
-            }
+                if (state.TryTakeFromJson(storageKey, propertyType, out var value))
+                {
+                    // Set the property value on the component
+                    propertyInfo.SetValue(component, value);
+                    // The component will re-render naturally when needed
+                }
+            });
         }
-
-        return true; // No filter allows it, so filter it out
     }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'System.Type.GetProperty(String)'. The return value of method 'System.Object.GetType()' does not have matching annotations.", Justification = "Properties of rendered components are preserved through other means and won't get trimmed.")]
-    private static PropertyInfo? GetPropertyForScenarioFiltering([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, string propertyName)
-        => type.GetProperty(propertyName);
 }
