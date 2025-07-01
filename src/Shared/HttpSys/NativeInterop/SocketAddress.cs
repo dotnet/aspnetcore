@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers.Binary;
 using System.Net;
 using Windows.Win32.Networking.WinSock;
 
@@ -25,7 +26,8 @@ internal abstract class SocketAddress
         };
     }
 
-    private sealed class SocketAddressIPv4 : SocketAddress
+    // internal for testing
+    internal sealed class SocketAddressIPv4 : SocketAddress
     {
         private readonly SOCKADDR_IN _sockaddr;
 
@@ -36,8 +38,9 @@ internal abstract class SocketAddress
 
         internal override int GetPort()
         {
-            // sin_port is network byte order
-            return IPAddress.NetworkToHostOrder((short)_sockaddr.sin_port);
+            // _sockaddr.sin_port has network byte order.
+            // cast to ushort is important to avoid negative values for the TCP port
+            return (ushort)IPAddress.NetworkToHostOrder((short)_sockaddr.sin_port);
         }
 
         internal override IPAddress? GetIPAddress()
@@ -47,7 +50,8 @@ internal abstract class SocketAddress
         }
     }
 
-    private sealed class SocketAddressIPv6 : SocketAddress
+    // internal for testing
+    internal sealed class SocketAddressIPv6 : SocketAddress
     {
         private readonly SOCKADDR_IN6 _sockaddr;
 
@@ -58,8 +62,9 @@ internal abstract class SocketAddress
 
         internal override int GetPort()
         {
-            // sin6_port is network byte order
-            return IPAddress.NetworkToHostOrder((short)_sockaddr.sin6_port);
+            // _sockaddr.sin6_port has network byte order.
+            // cast to ushort is important to avoid negative values for the TCP port
+            return (ushort)IPAddress.NetworkToHostOrder((short)_sockaddr.sin6_port);
         }
 
         internal override IPAddress? GetIPAddress()
