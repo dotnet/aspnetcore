@@ -426,6 +426,10 @@ public class SignInManagerTest
     public async Task CanPasskeySignIn()
     {
         // Setup
+        var testMeterFactory = new TestMeterFactory();
+        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+
         var user = new PocoUser { UserName = "Foo" };
         var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
         var assertionResult = PasskeyAssertionResult.Success(passkey, user);
@@ -433,7 +437,7 @@ public class SignInManagerTest
         passkeyHandler
             .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext<PocoUser>>()))
             .Returns(Task.FromResult(assertionResult));
-        var manager = SetupUserManager(user);
+        var manager = SetupUserManager(user, meterFactory: testMeterFactory);
         manager
             .Setup(m => m.SetPasskeyAsync(user, passkey))
             .Returns(Task.FromResult(IdentityResult.Success))
@@ -452,6 +456,22 @@ public class SignInManagerTest
         Assert.Same(SignInResult.Success, signInResult);
         manager.Verify();
         auth.Verify();
+
+        Assert.Collection(authenticate.GetMeasurementSnapshot(),
+            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            [
+                KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "passkey"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
+            ]));
+        Assert.Collection(signInUserPrincipal.GetMeasurementSnapshot(),
+            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            [
+                KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+            ]));
     }
 
     private class GoodTokenProvider : AuthenticatorTokenProvider<PocoUser>

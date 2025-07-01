@@ -2559,6 +2559,21 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <returns>Whether the passkey was successfully set.</returns>
     public virtual async Task<IdentityResult> SetPasskeyAsync(TUser user, UserPasskeyInfo passkey)
     {
+        try
+        {
+            var result = await SetPasskeyCoreAsync(user, passkey).ConfigureAwait(false);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.SetPasskey);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetPasskey, ex);
+            throw;
+        }
+    }
+
+    private async Task<IdentityResult> SetPasskeyCoreAsync(TUser user, UserPasskeyInfo passkey)
+    {
         ThrowIfDisposed();
         var passkeyStore = GetUserPasskeyStore();
         ArgumentNullThrowHelper.ThrowIfNull(user);
@@ -2628,6 +2643,21 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// of the operation.
     /// </returns>
     public virtual async Task<IdentityResult> RemovePasskeyAsync(TUser user, byte[] credentialId)
+    {
+        try
+        {
+            var result = await RemovePasskeyCoreAsync(user, credentialId).ConfigureAwait(false);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.RemovePasskey);
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.RemovePasskey, ex);
+            throw;
+        }
+    }
+
+    private async Task<IdentityResult> RemovePasskeyCoreAsync(TUser user, byte[] credentialId)
     {
         ThrowIfDisposed();
         var passkeyStore = GetUserPasskeyStore();

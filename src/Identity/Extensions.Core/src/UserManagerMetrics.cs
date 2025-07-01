@@ -239,6 +239,10 @@ internal sealed class UserManagerMetrics : IDisposable
             UserUpdateType.SetAuthenticationToken => "set_authentication_token",
             UserUpdateType.RemoveAuthenticationToken => "remove_authentication_token",
             UserUpdateType.ResetAuthenticatorKey => "reset_authenticator_key",
+            UserUpdateType.GenerateNewTwoFactorRecoveryCodes => "generate_new_two_factor_recovery_codes",
+            UserUpdateType.RedeemTwoFactorRecoveryCode => "redeem_two_factor_recovery_code",
+            UserUpdateType.SetPasskey => "set_passkey",
+            UserUpdateType.RemovePasskey => "remove_passkey",
             _ => "_UNKNOWN"
         };
     }
@@ -281,4 +285,6 @@ internal enum UserUpdateType
     ResetAuthenticatorKey,
     GenerateNewTwoFactorRecoveryCodes,
     RedeemTwoFactorRecoveryCode,
+    SetPasskey,
+    RemovePasskey
 }

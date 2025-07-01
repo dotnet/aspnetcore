@@ -613,6 +613,22 @@ public class SignInManager<TUser> where TUser : class
     /// </returns>
     public virtual async Task<SignInResult> PasskeySignInAsync(string credentialJson, PasskeyRequestOptions options)
     {
+        try
+        {
+            var result = await PasskeySignInCoreAsync(credentialJson, options);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Passkey, isPersistent: false);
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Passkey, isPersistent: false, ex);
+            throw;
+        }
+    }
+
+    private async Task<SignInResult> PasskeySignInCoreAsync(string credentialJson, PasskeyRequestOptions options)
+    {
         ArgumentException.ThrowIfNullOrEmpty(credentialJson);
 
         var assertionResult = await PerformPasskeyAssertionAsync(credentialJson, options);

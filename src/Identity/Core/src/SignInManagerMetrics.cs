@@ -165,6 +165,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             SignInType.TwoFactorAuthenticator => "two_factor_authenticator",
             SignInType.TwoFactor => "two_factor",
             SignInType.External => "external",
+            SignInType.Passkey => "passkey",
             _ => "_UNKNOWN"
         };
     }
@@ -188,5 +189,6 @@ internal enum SignInType
     TwoFactorRecoveryCode,
     TwoFactorAuthenticator,
     TwoFactor,
-    External
+    External,
+    Passkey
 }
