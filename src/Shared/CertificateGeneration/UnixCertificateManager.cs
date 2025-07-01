@@ -62,18 +62,31 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // Building the chain will check whether dotnet trusts the cert.  We could, instead,
         // enumerate the Root store and/or look for the file in the OpenSSL directory, but
         // this tests the real-world behavior.
-        using var chain = new X509Chain();
-        // This is just a heuristic for whether or not we should prompt the user to re-run with `--trust`
-        // so we don't need to check revocation (which doesn't really make sense for dev certs anyway)
-        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-        if (chain.Build(certificate))
+        var chain = new X509Chain();
+        try
         {
-            sawTrustSuccess = true;
-        }
-        else
+            // This is just a heuristic for whether or not we should prompt the user to re-run with `--trust`
+            // so we don't need to check revocation (which doesn't really make sense for dev certs anyway)
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+            if (chain.Build(certificate))
+            {
+                sawTrustSuccess = true;
+            }
+            else
+            {
+                sawTrustFailure = true;
+                Log.UnixNotTrustedByDotnet();
+            }
+        finally
         {
-            sawTrustFailure = true;
-            Log.UnixNotTrustedByDotnet();
+            // Disposing the chain does not dispose the elements we potentially built.
+            // Annoyingly do the full walk manually to dispose.
+            for (int chainElementIndex = 0; chainElementIndex < chain.ChainElements.Count; ++chainElementIndex)
+            {
+                chain.ChainElements[chainElementIndex].Certificate.Dispose();
+            }
+
+            chain.Dispose();
         }
 
         // Will become the name of the file on disk and the nickname in the NSS DBs
