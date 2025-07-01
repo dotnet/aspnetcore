@@ -56,8 +56,32 @@ public class ComponentStatePersistenceManager
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public async Task RestoreStateAsync(IPersistentComponentStateStore store)
     {
+        await RestoreStateAsync(store, scenario: null);
+    }
+
+    /// <summary>
+    /// Restores component state from the given store with scenario context.
+    /// </summary>
+    /// <param name="store">The store to restore state from.</param>
+    /// <param name="scenario">The restoration scenario context.</param>
+    /// <returns>A task that completes when state restoration is finished.</returns>
+    public async Task RestoreStateAsync(
+        IPersistentComponentStateStore store, 
+        IPersistentComponentStateScenario? scenario)
+    {
         var data = await store.GetPersistedStateAsync();
-        State.InitializeExistingState(data);
+        
+        if (scenario == null)
+        {
+            // First-time initialization
+            State.InitializeExistingState(data);
+        }
+        else
+        {
+            // Scenario-based update
+            State.UpdateExistingState(data, scenario);
+        }
+        
         _servicesRegistry?.Restore(State);
     }
 

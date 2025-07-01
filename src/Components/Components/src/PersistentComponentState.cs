@@ -16,6 +16,7 @@ public class PersistentComponentState
     private readonly IDictionary<string, byte[]> _currentState;
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
+    private readonly List<(IPersistentComponentStateScenario Scenario, Action Callback, bool IsRecurring)> _restoringCallbacks = new();
 
     internal PersistentComponentState(
         IDictionary<string , byte[]> currentState,
@@ -26,6 +27,11 @@ public class PersistentComponentState
     }
 
     internal bool PersistingState { get; set; }
+
+    /// <summary>
+    /// Gets the current restoration scenario, if any.
+    /// </summary>
+    public IPersistentComponentStateScenario? CurrentScenario { get; internal set; }
 
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
     {
@@ -153,6 +159,82 @@ public class PersistentComponentState
             instance = default;
             return false;
         }
+    }
+
+    /// <summary>
+    /// Registers a callback to be invoked when state is restored for a specific scenario.
+    /// If state for the scenario is already available, the callback is invoked immediately.
+    /// </summary>
+    /// <param name="scenario">The scenario for which to register the callback.</param>
+    /// <param name="callback">The callback to invoke during restoration.</param>
+    /// <returns>A subscription that can be disposed to unregister the callback.</returns>
+    public RestoringComponentStateSubscription RegisterOnRestoring(
+        IPersistentComponentStateScenario scenario, 
+        Action callback)
+    {
+        ArgumentNullException.ThrowIfNull(scenario);
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var isRecurring = scenario.IsRecurring;
+        _restoringCallbacks.Add((scenario, callback, isRecurring));
+
+        // If we already have a current scenario and it matches, invoke immediately
+        if (CurrentScenario != null && ShouldInvokeCallback(scenario, CurrentScenario))
+        {
+            callback();
+        }
+
+        return new RestoringComponentStateSubscription(_restoringCallbacks, scenario, callback, isRecurring);
+    }
+
+    /// <summary>
+    /// Updates the existing state with new state for subsequent restoration calls.
+    /// Only allowed when existing state is empty (fully consumed).
+    /// </summary>
+    /// <param name="newState">New state dictionary to replace existing state.</param>
+    /// <param name="scenario">The restoration scenario context.</param>
+    internal void UpdateExistingState(IDictionary<string, byte[]> newState, IPersistentComponentStateScenario scenario)
+    {
+        ArgumentNullException.ThrowIfNull(newState);
+        ArgumentNullException.ThrowIfNull(scenario);
+
+        if (_existingState != null && _existingState.Count > 0)
+        {
+            throw new InvalidOperationException("Cannot update existing state when state dictionary is not empty. State must be fully consumed before updating.");
+        }
+
+        _existingState = newState;
+        CurrentScenario = scenario;
+
+        // Invoke matching restoration callbacks
+        InvokeRestoringCallbacks(scenario);
+    }
+
+    private void InvokeRestoringCallbacks(IPersistentComponentStateScenario scenario)
+    {
+        for (int i = _restoringCallbacks.Count - 1; i >= 0; i--)
+        {
+            var (callbackScenario, callback, isRecurring) = _restoringCallbacks[i];
+            
+            if (ShouldInvokeCallback(callbackScenario, scenario))
+            {
+                callback();
+                
+                // Remove non-recurring callbacks after invocation
+                if (!isRecurring)
+                {
+                    _restoringCallbacks.RemoveAt(i);
+                }
+            }
+        }
+    }
+
+    private static bool ShouldInvokeCallback(IPersistentComponentStateScenario callbackScenario, IPersistentComponentStateScenario currentScenario)
+    {
+        // For now, match scenarios by type and properties
+        // This can be enhanced with more sophisticated matching logic
+        return callbackScenario.GetType() == currentScenario.GetType() &&
+               callbackScenario.Equals(currentScenario);
     }
 
     private bool TryTake(string key, out byte[]? value)

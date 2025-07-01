@@ -21,3 +21,13 @@ static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCo
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.SupplyParameterFromPersistentComponentStateProviderServiceCollectionExtensions.AddSupplyValueFromPersistentComponentStateProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.GetComponentKey() -> object?
+Microsoft.AspNetCore.Components.IPersistentComponentStateScenario
+Microsoft.AspNetCore.Components.IPersistentComponentStateScenario.IsRecurring.get -> bool
+Microsoft.AspNetCore.Components.IPersistentStateFilter
+Microsoft.AspNetCore.Components.IPersistentStateFilter.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
+Microsoft.AspNetCore.Components.PersistentComponentState.CurrentScenario.get -> Microsoft.AspNetCore.Components.IPersistentComponentStateScenario?
+Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario, System.Action! callback) -> Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
+Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
+Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.RestoringComponentStateSubscription() -> void
+Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.Dispose() -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.IPersistentComponentStateScenario? scenario) -> System.Threading.Tasks.Task!
