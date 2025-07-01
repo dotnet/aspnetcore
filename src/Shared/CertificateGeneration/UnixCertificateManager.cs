@@ -77,6 +77,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 sawTrustFailure = true;
                 Log.UnixNotTrustedByDotnet();
             }
+        }
         finally
         {
             // Disposing the chain does not dispose the elements we potentially built.
