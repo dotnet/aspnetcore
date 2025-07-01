@@ -46,4 +46,18 @@ public sealed class WebPersistenceContext : IPersistentComponentStateScenario
     /// Gets a context for reconnection restoration.
     /// </summary>
     public static WebPersistenceContext Reconnection => new(WebPersistenceReason.Reconnection);
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+    {
+        return obj is WebPersistenceContext other &&
+               Reason == other.Reason &&
+               RenderMode?.GetType() == other.RenderMode?.GetType();
+    }
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(Reason, RenderMode?.GetType());
+    }
 }

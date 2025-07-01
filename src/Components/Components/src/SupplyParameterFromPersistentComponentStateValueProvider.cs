@@ -42,6 +42,12 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         var componentState = (ComponentState)key!;
         var storageKey = ComputeKey(componentState, parameterInfo.PropertyName);
 
+        // Check if there are scenario filters on the property
+        if (ShouldFilterByScenario(componentState, parameterInfo))
+        {
+            return null; // Don't provide value if scenario filtering rejects it
+        }
+
         return state.TryTakeFromJson(storageKey, parameterInfo.PropertyType, out var value) ? value : null;
     }
 
@@ -281,4 +287,44 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
 
         return result;
     }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2072:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'Microsoft.AspNetCore.Components.SupplyParameterFromPersistentComponentStateValueProvider.GetPropertyForScenarioFiltering(Type, String)'. The return value of method 'System.Object.GetType()' does not have matching annotations.", Justification = "Properties of rendered components are preserved through other means and won't get trimmed.")]
+    private bool ShouldFilterByScenario(ComponentState componentState, in CascadingParameterInfo parameterInfo)
+    {
+        // If there's no current scenario, don't filter
+        if (state.CurrentScenario == null)
+        {
+            return false;
+        }
+
+        // Get the property info to check for filter attributes
+        var componentType = componentState.Component.GetType();
+        var propertyInfo = GetPropertyForScenarioFiltering(componentType, parameterInfo.PropertyName);
+        if (propertyInfo == null)
+        {
+            return false;
+        }
+
+        // Check for IPersistentStateFilter attributes
+        var filterAttributes = propertyInfo.GetCustomAttributes(typeof(IPersistentStateFilter), inherit: true);
+        if (filterAttributes.Length == 0)
+        {
+            return false; // No filters, allow state
+        }
+
+        // Check if any filter allows the current scenario
+        foreach (IPersistentStateFilter filter in filterAttributes)
+        {
+            if (filter.ShouldRestore(state.CurrentScenario))
+            {
+                return false; // At least one filter allows it
+            }
+        }
+
+        return true; // No filter allows it, so filter it out
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicProperties' in call to 'System.Type.GetProperty(String)'. The return value of method 'System.Object.GetType()' does not have matching annotations.", Justification = "Properties of rendered components are preserved through other means and won't get trimmed.")]
+    private static PropertyInfo? GetPropertyForScenarioFiltering([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type type, string propertyName)
+        => type.GetProperty(propertyName);
 }

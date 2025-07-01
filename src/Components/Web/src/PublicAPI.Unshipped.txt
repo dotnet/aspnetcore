@@ -15,6 +15,8 @@ Microsoft.AspNetCore.Components.Web.WebPersistenceContext.WebPersistenceContext(
 Microsoft.AspNetCore.Components.Web.WebPersistenceContext.IsRecurring.get -> bool
 Microsoft.AspNetCore.Components.Web.WebPersistenceContext.Reason.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceReason
 Microsoft.AspNetCore.Components.Web.WebPersistenceContext.RenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
+override Microsoft.AspNetCore.Components.Web.WebPersistenceContext.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Components.Web.WebPersistenceContext.GetHashCode() -> int
 static Microsoft.AspNetCore.Components.Web.WebPersistenceContext.EnhancedNavigation.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceContext!
 static Microsoft.AspNetCore.Components.Web.WebPersistenceContext.Prerendering.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceContext!
 static Microsoft.AspNetCore.Components.Web.WebPersistenceContext.Reconnection.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceContext!
