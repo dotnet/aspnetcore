@@ -44,6 +44,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private HttpContext _httpContext = default!; // Always set at the start of an inbound call
     private ResourceAssetCollection? _resourceCollection;
     private bool _rendererIsStopped;
+    private bool _rendererStopRequested;
     private readonly ILogger _logger;
 
     // The underlying Renderer always tracks the pending tasks representing *full* quiescence, i.e.,
@@ -185,11 +186,19 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         base.AddPendingTask(componentState, task);
     }
 
+    internal void RequestRendererToFinishRendering()
+    {
+        // requests a deferred stop of the renderer, which will have an effect after the current batch is completed
+        _rendererStopRequested = true;
+    }
+
     // For testing purposes only
     internal void SignalRendererToFinishRendering()
     {
-        // sets a deferred stop on the renderer, which will have an effect after the current batch is completed
-        _rendererIsStopped = true;
+        if (_rendererStopRequested)
+        {
+            _rendererIsStopped = true;
+        }
     }
 
     protected override void ProcessPendingRender()

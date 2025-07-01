@@ -104,7 +104,7 @@ internal partial class EndpointHtmlRenderer
         // When the application triggers a NotFound event, we continue rendering the current batch.
         // However, after completing this batch, we do not want to process any further UI updates,
         // as we are going to return a 404 status and discard the UI updates generated so far.
-        SignalRendererToFinishRendering();
+        RequestRendererToFinishRendering();
     }
 
     private string GetNotFoundUrl(string baseUri, NotFoundEventArgs args)
