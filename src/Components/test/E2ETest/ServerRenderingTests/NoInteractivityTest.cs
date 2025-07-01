@@ -157,6 +157,28 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(true, false)]
     [InlineData(false, true)]
     [InlineData(false, false)]
+    public void NotFoundSetOnInitialization_AfterAsyncOperation_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr?doAsync=true&useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        Navigate(testUrl);
+
+        if (hasCustomNotFoundPageSet)
+        {
+            AssertNotFoundPageRendered();
+        }
+        else
+        {
+            AssertNotFoundFragmentRendered();
+        }
+        AssertUrlNotChanged(testUrl);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
     public void NotFoundSetOnInitialization_ResponseStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
@@ -205,7 +227,23 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     public void NotFoundSetOnFormSubmit_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
-        string testUrl = $"{ServerPathBase}{reexecution}/post-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        string testUrl = $"{ServerPathBase}{reexecution}/post-not-found-ssr?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        Navigate(testUrl);
+        Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
+
+        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertUrlNotChanged(testUrl);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void NotFoundSetOnFormSubmit_AfterAsyncOperation_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/post-not-found-ssr?doAsync=true&useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
