@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Identity;
 [JsonSerializable(typeof(PublicKeyCredentialRequestOptions))]
 [JsonSerializable(typeof(PublicKeyCredential<AuthenticatorAssertionResponse>))]
 [JsonSerializable(typeof(PublicKeyCredential<AuthenticatorAttestationResponse>))]
+[JsonSerializable(typeof(PasskeyAttestationState))]
+[JsonSerializable(typeof(PasskeyAssertionState))]
 [JsonSourceGenerationOptions(
     JsonSerializerDefaults.Web,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

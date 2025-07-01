@@ -62,10 +62,13 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
 
             var userId = await userManager.GetUserIdAsync(user);
             var userName = await userManager.GetUserNameAsync(user) ?? "User";
-            var userEntity = new PasskeyUserEntity(userId, userName, displayName: userName);
-            var passkeyCreationArgs = new PasskeyCreationArgs(userEntity);
-            var options = await signInManager.ConfigurePasskeyCreationOptionsAsync(passkeyCreationArgs);
-            return TypedResults.Content(options.AsJson(), contentType: "application/json");
+            var optionsJson = await signInManager.MakePasskeyCreationOptionsAsync(new()
+            {
+                Id = userId,
+                Name = userName,
+                DisplayName = userName
+            });
+            return TypedResults.Content(optionsJson, contentType: "application/json");
         });
 
         accountGroup.MapPost("/PasskeyRequestOptions", async (
@@ -74,12 +77,8 @@ internal static class IdentityComponentsEndpointRouteBuilderExtensions
             [FromQuery] string? username) =>
         {
             var user = string.IsNullOrEmpty(username) ? null : await userManager.FindByNameAsync(username);
-            var passkeyRequestArgs = new PasskeyRequestArgs<ApplicationUser>
-            {
-                User = user,
-            };
-            var options = await signInManager.ConfigurePasskeyRequestOptionsAsync(passkeyRequestArgs);
-            return TypedResults.Content(options.AsJson(), contentType: "application/json");
+            var optionsJson = await signInManager.MakePasskeyRequestOptionsAsync(user);
+            return TypedResults.Content(optionsJson, contentType: "application/json");
         });
 
         var manageGroup = accountGroup.MapGroup("/Manage").RequireAuthorization();

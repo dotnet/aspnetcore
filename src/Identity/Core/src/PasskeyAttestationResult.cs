@@ -14,6 +14,7 @@ public sealed class PasskeyAttestationResult
     /// Gets whether the attestation was successful.
     /// </summary>
     [MemberNotNullWhen(true, nameof(Passkey))]
+    [MemberNotNullWhen(true, nameof(UserEntity))]
     [MemberNotNullWhen(false, nameof(Failure))]
     public bool Succeeded { get; }
 
@@ -23,14 +24,20 @@ public sealed class PasskeyAttestationResult
     public UserPasskeyInfo? Passkey { get; }
 
     /// <summary>
+    /// Gets the user entity associated with the passkey when successful.
+    /// </summary>
+    public PasskeyUserEntity? UserEntity { get; }
+
+    /// <summary>
     /// Gets the error that occurred during attestation.
     /// </summary>
     public PasskeyException? Failure { get; }
 
-    private PasskeyAttestationResult(UserPasskeyInfo passkey)
+    private PasskeyAttestationResult(UserPasskeyInfo passkey, PasskeyUserEntity userEntity)
     {
         Succeeded = true;
         Passkey = passkey;
+        UserEntity = userEntity;
     }
 
     private PasskeyAttestationResult(PasskeyException failure)
@@ -43,11 +50,12 @@ public sealed class PasskeyAttestationResult
     /// Creates a successful result for a passkey attestation operation.
     /// </summary>
     /// <param name="passkey">The passkey information associated with the attestation.</param>
+    /// <param name="userEntity">The user entity associated with the attestation.</param>
     /// <returns>A <see cref="PasskeyAttestationResult"/> instance representing a successful attestation.</returns>
-    public static PasskeyAttestationResult Success(UserPasskeyInfo passkey)
+    public static PasskeyAttestationResult Success(UserPasskeyInfo passkey, PasskeyUserEntity userEntity)
     {
         ArgumentNullException.ThrowIfNull(passkey);
-        return new PasskeyAttestationResult(passkey);
+        return new PasskeyAttestationResult(passkey, userEntity);
     }
 
     /// <summary>
