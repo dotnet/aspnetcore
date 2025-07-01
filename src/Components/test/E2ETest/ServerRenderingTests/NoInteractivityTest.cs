@@ -141,14 +141,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
 
-        if (hasCustomNotFoundPageSet)
-        {
-            AssertNotFoundPageRendered();
-        }
-        else
-        {
-            AssertNotFoundFragmentRendered();
-        }
+        AssertNotFoundRendered_ResponseNotStarted(hasCustomNotFoundPageSet);
         AssertUrlNotChanged(testUrl);
     }
 
@@ -163,14 +156,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr?doAsync=true&useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
 
-        if (hasCustomNotFoundPageSet)
-        {
-            AssertNotFoundPageRendered();
-        }
-        else
-        {
-            AssertNotFoundFragmentRendered();
-        }
+        AssertNotFoundRendered_ResponseNotStarted(hasCustomNotFoundPageSet);
         AssertUrlNotChanged(testUrl);
     }
 
@@ -184,7 +170,8 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+
+        AssertNotFoundRendered_ResponseStarted(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
         AssertUrlNotChanged(testUrl);
     }
 
@@ -198,11 +185,12 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+
+        AssertNotFoundRendered_ResponseStarted(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
         AssertUrlChanged(testUrl);
     }
 
-    private void AssertNotFoundRendered_ResponseStarted_Or_POST(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet, string testUrl)
+    private void AssertNotFoundRendered_ResponseStarted(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet, string testUrl)
     {
         if (hasCustomNotFoundPageSet)
         {
@@ -219,6 +207,18 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         }
     }
 
+    private void AssertNotFoundRendered_ResponseNotStarted(bool hasCustomNotFoundPageSet)
+    {
+        if (hasCustomNotFoundPageSet)
+        {
+            AssertNotFoundPageRendered();
+        }
+        else
+        {
+            AssertNotFoundFragmentRendered();
+        }
+    }
+
     [Theory]
     [InlineData(true, true)]
     [InlineData(true, false)]
@@ -231,7 +231,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Navigate(testUrl);
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertNotFoundRendered_ResponseNotStarted(hasCustomNotFoundPageSet);
         AssertUrlNotChanged(testUrl);
     }
 
@@ -247,7 +247,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Navigate(testUrl);
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertNotFoundRendered_ResponseNotStarted(hasCustomNotFoundPageSet);
         AssertUrlNotChanged(testUrl);
     }
 
@@ -263,7 +263,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Navigate(testUrl);
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertNotFoundRendered_ResponseStarted(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
         AssertUrlNotChanged(testUrl);
     }
 

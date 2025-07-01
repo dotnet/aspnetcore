@@ -81,10 +81,7 @@ internal partial class EndpointHtmlRenderer
 
     internal async Task SetNotFoundResponseAsync(string baseUri, NotFoundEventArgs args)
     {
-        if (_httpContext.Response.HasStarted ||
-            // POST waits for quiescence -> rendering the NotFoundPage would be queued for the next batch
-            // but we want to send the signal to the renderer to stop rendering future batches -> use client rendering
-            HttpMethods.IsPost(_httpContext.Request.Method))
+        if (_httpContext.Response.HasStarted)
         {
             if (string.IsNullOrEmpty(_notFoundUrl))
             {
