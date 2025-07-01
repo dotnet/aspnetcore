@@ -2,6 +2,8 @@
 
 Daily builds include the latest source code changes. They are not supported for production use and are subject to frequent changes, but we strive to make sure daily builds function correctly.
 
+test
+
 If you want to download the latest daily build and use it in a project, then you need to:
 
 * Obtain the latest [build of the .NET Core SDK](https://github.com/dotnet/dotnet/blob/main/docs/builds-table.md).
