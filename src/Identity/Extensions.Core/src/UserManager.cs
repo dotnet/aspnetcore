@@ -936,11 +936,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
         var hash = await store.GetPasswordHashAsync(user, CancellationToken).ConfigureAwait(false);
         if (hash == null)
         {
-            _metrics?.VerifyPassword(typeof(TUser).FullName!, passwordMissing: true, result: null);
             return PasswordVerificationResult.Failed;
         }
         var result = PasswordHasher.VerifyHashedPassword(user, hash, password);
-        _metrics?.VerifyPassword(typeof(TUser).FullName!, passwordMissing: false, result);
 
         return result;
     }

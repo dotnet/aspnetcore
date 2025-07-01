@@ -629,7 +629,6 @@ public class UserManagerTest
         var testMeterFactory = new TestMeterFactory();
         using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
         using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordCounterName);
-        using var verifyPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.VerifyPasswordCounterName);
 
         var store = new Mock<IUserPasswordStore<PocoUser>>();
         var hasher = new Mock<IPasswordHasher<PocoUser>>();
@@ -663,11 +662,6 @@ public class UserManagerTest
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
             ]));
         Assert.Collection(checkPassword.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
-            [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.user.password_result", "success_rehash_needed")
-            ]));
-        Assert.Collection(verifyPassword.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.password_result", "success_rehash_needed")

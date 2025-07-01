@@ -18,7 +18,6 @@ internal sealed class UserManagerMetrics : IDisposable
     public const string UpdateCounterName = "aspnetcore.identity.user.update";
     public const string DeleteCounterName = "aspnetcore.identity.user.delete";
     public const string CheckPasswordCounterName = "aspnetcore.identity.user.check_password";
-    public const string VerifyPasswordCounterName = "aspnetcore.identity.user.verify_password";
     public const string VerifyTokenCounterName = "aspnetcore.identity.user.verify_token";
     public const string GenerateTokenCounterName = "aspnetcore.identity.user.generate_token";
 
@@ -27,7 +26,6 @@ internal sealed class UserManagerMetrics : IDisposable
     private readonly Counter<long> _updateCounter;
     private readonly Counter<long> _deleteCounter;
     private readonly Counter<long> _checkPasswordCounter;
-    private readonly Counter<long> _verifyPasswordCounter;
     private readonly Counter<long> _verifyTokenCounter;
     private readonly Counter<long> _generateTokenCounter;
 
@@ -37,8 +35,7 @@ internal sealed class UserManagerMetrics : IDisposable
         _createCounter = _meter.CreateCounter<long>(CreateCounterName, "count", "The number of users created.");
         _updateCounter = _meter.CreateCounter<long>(UpdateCounterName, "count", "The number of user updates.");
         _deleteCounter = _meter.CreateCounter<long>(DeleteCounterName, "count", "The number of users deleted.");
-        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "count", "The number of check password attempts.");
-        _verifyPasswordCounter = _meter.CreateCounter<long>(VerifyPasswordCounterName, "count", "The number of password verification attempts.");
+        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "count", "The number of check password attempts. Only checks whether the password is valid and not whether the user account is in a state that can log in.");
         _verifyTokenCounter = _meter.CreateCounter<long>(VerifyTokenCounterName, "count", "The number of token verification attempts.");
         _generateTokenCounter = _meter.CreateCounter<long>(GenerateTokenCounterName, "count", "The number of token generation attempts.");
     }
@@ -112,20 +109,6 @@ internal sealed class UserManagerMetrics : IDisposable
             AddExceptionTags(ref tags, exception);
 
             _checkPasswordCounter.Add(1, tags);
-        }
-    }
-
-    internal void VerifyPassword(string userType, bool passwordMissing, PasswordVerificationResult? result)
-    {
-        if (_verifyPasswordCounter.Enabled)
-        {
-            var tags = new TagList
-            {
-                { "aspnetcore.identity.user_type", userType },
-                { "aspnetcore.identity.user.password_result", GetPasswordResult(result, passwordMissing, userMissing: null) },
-            };
-
-            _verifyPasswordCounter.Add(1, tags);
         }
     }
 
