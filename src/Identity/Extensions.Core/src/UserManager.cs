@@ -1411,7 +1411,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         try
         {
-            var result = await ResolveFromtRolesCoreAsync(user, roles).ConfigureAwait(false);
+            var result = await RemoveFromRolesCoreAsync(user, roles).ConfigureAwait(false);
             _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.RemoveFromRoles);
             return result;
         }
@@ -1422,7 +1422,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         }
     }
 
-    private async Task<IdentityResult> ResolveFromtRolesCoreAsync(TUser user, IEnumerable<string> roles)
+    private async Task<IdentityResult> RemoveFromRolesCoreAsync(TUser user, IEnumerable<string> roles)
     {
         ThrowIfDisposed();
         var userRoleStore = GetUserRoleStore();

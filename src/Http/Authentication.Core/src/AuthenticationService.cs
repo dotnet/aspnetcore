@@ -145,7 +145,7 @@ public class AuthenticationService : IAuthenticationService
     }
 
     /// <summary>
-    /// Sign in a principal in for the specified authentication scheme.
+    /// Sign a principal in for the specified authentication scheme.
     /// </summary>
     /// <param name="context">The <see cref="HttpContext"/>.</param>
     /// <param name="scheme">The name of the authentication scheme.</param>
