@@ -52,10 +52,18 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
     private async void OnUpdateRootComponents(RootComponentOperationBatch batch, IDictionary<string, byte[]>? persistentState)
     {
+        PrerenderComponentApplicationStore? store = null;
+        
         // Handle persistent state restoration if available
         if (_componentStatePersistenceManager != null && persistentState != null)
         {
-            var store = new DictionaryPersistentComponentStateStore(persistentState);
+            store = new PrerenderComponentApplicationStore();
+            store.ExistingState.Clear();
+            foreach (var kvp in persistentState)
+            {
+                store.ExistingState[kvp.Key] = kvp.Value;
+            }
+            
             var scenario = _isFirstUpdate 
                 ? WebPersistenceScenario.Prerendering() 
                 : WebPersistenceScenario.EnhancedNavigation(RenderMode.InteractiveWebAssembly);
@@ -95,6 +103,12 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
                     webRootComponentManager.RemoveRootComponent(operation.SsrComponentId);
                     break;
             }
+        }
+
+        // Clear state after processing operations when it's not the first update
+        if (!_isFirstUpdate && store != null)
+        {
+            store.ExistingState.Clear();
         }
 
         NotifyEndUpdateRootComponents(batch.BatchId);

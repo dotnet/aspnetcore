@@ -12,7 +12,7 @@ public sealed class UpdateStateOnEnhancedNavigationAttribute : Attribute, IPersi
     internal WebPersistenceFilter WebPersistenceFilter { get; } = WebPersistenceFilter.EnhancedNavigation;
 
     /// <inheritdoc />
-    public bool ShouldRestore(IPersistentComponentStateScenario scenario)
+    bool IPersistentStateFilter.ShouldRestore(IPersistentComponentStateScenario scenario)
     {
         return WebPersistenceFilter.ShouldRestore(scenario);
     }

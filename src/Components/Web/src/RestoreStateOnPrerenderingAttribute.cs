@@ -21,7 +21,7 @@ public sealed class RestoreStateOnPrerenderingAttribute : Attribute, IPersistent
     }
 
     /// <inheritdoc />
-    public bool ShouldRestore(IPersistentComponentStateScenario scenario)
+    bool IPersistentStateFilter.ShouldRestore(IPersistentComponentStateScenario scenario)
     {
         return WebPersistenceFilter?.ShouldRestore(scenario) ?? false;
     }

@@ -111,16 +111,16 @@ public class ScenarioBasedPersistentComponentStateTest
         var reconnectionFilter = new RestoreStateOnReconnectionAttribute();
 
         // Act & Assert
-        Assert.True(enhancedNavFilter.ShouldRestore(enhancedNavScenario));
-        Assert.False(enhancedNavFilter.ShouldRestore(prerenderingScenario));
-        Assert.False(enhancedNavFilter.ShouldRestore(reconnectionScenario));
+        Assert.True(((IPersistentStateFilter)enhancedNavFilter).ShouldRestore(enhancedNavScenario));
+        Assert.False(((IPersistentStateFilter)enhancedNavFilter).ShouldRestore(prerenderingScenario));
+        Assert.False(((IPersistentStateFilter)enhancedNavFilter).ShouldRestore(reconnectionScenario));
 
-        Assert.False(prerenderingFilter.ShouldRestore(enhancedNavScenario));
-        Assert.True(prerenderingFilter.ShouldRestore(prerenderingScenario));
-        Assert.False(prerenderingFilter.ShouldRestore(reconnectionScenario));
+        Assert.False(((IPersistentStateFilter)prerenderingFilter).ShouldRestore(enhancedNavScenario));
+        Assert.True(((IPersistentStateFilter)prerenderingFilter).ShouldRestore(prerenderingScenario));
+        Assert.False(((IPersistentStateFilter)prerenderingFilter).ShouldRestore(reconnectionScenario));
 
-        Assert.False(reconnectionFilter.ShouldRestore(enhancedNavScenario));
-        Assert.False(reconnectionFilter.ShouldRestore(prerenderingScenario));
-        Assert.True(reconnectionFilter.ShouldRestore(reconnectionScenario));
+        Assert.False(((IPersistentStateFilter)reconnectionFilter).ShouldRestore(enhancedNavScenario));
+        Assert.False(((IPersistentStateFilter)reconnectionFilter).ShouldRestore(prerenderingScenario));
+        Assert.True(((IPersistentStateFilter)reconnectionFilter).ShouldRestore(reconnectionScenario));
     }
 }
