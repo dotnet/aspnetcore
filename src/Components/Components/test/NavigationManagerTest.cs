@@ -888,7 +888,7 @@ public class NavigationManagerTest
     }
 
     [Fact]
-    public void OnNavigateToCallback_WhenThrows_ShouldBeHandledGracefully()
+    public async Task OnNavigateToCallback_WhenThrows_ShouldBeHandledGracefully()
     {
 #nullable enable
         // Arrange
@@ -896,6 +896,7 @@ public class NavigationManagerTest
         var uri = "scheme://host/test";
         var testNavManager = new TestNavigationManagerWithExceptionHandling(baseUri);
         var expectedException = new InvalidOperationException("Test exception from OnNavigateTo");
+        var tcs = new TaskCompletionSource();
 
         // First test: Initialize with a callback that throws exceptions
         testNavManager.Initialize(baseUri, uri, uri => testNavManager.GetErrorHandledTask(ThrowingMethod(uri)));
@@ -907,14 +908,23 @@ public class NavigationManagerTest
          // Should be null because the exception was handled gracefully
         Assert.Null(wrappedException);
 
+        await tcs.Task.WaitAsync(Timeout);
+
         // Verify that the exception was logged
         Assert.Single(testNavManager.HandledExceptions);
         Assert.Same(expectedException, testNavManager.HandledExceptions[0]);
 
         async Task ThrowingMethod(string param)
         {
-            await Task.Yield();
-            throw expectedException;
+            try
+            {
+                await Task.Yield();
+                throw expectedException;
+            }
+            finally
+            {
+                tcs.SetResult();
+            }
         }
 #nullable restore
     }
