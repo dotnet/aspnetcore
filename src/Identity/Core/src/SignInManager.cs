@@ -7,6 +7,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -60,32 +61,7 @@ public class SignInManager<TUser> where TUser : class
         Logger = logger;
         _schemes = schemes;
         _confirmation = confirmation;
-    }
-
-    /// <summary>
-    /// Creates a new instance of <see cref="SignInManager{TUser}"/>.
-    /// </summary>
-    /// <param name="userManager">An instance of <see cref="UserManager"/> used to retrieve users from and persist users.</param>
-    /// <param name="contextAccessor">The accessor used to access the <see cref="HttpContext"/>.</param>
-    /// <param name="claimsFactory">The factory to use to create claims principals for a user.</param>
-    /// <param name="optionsAccessor">The accessor used to access the <see cref="IdentityOptions"/>.</param>
-    /// <param name="logger">The logger used to log messages, warnings and errors.</param>
-    /// <param name="schemes">The scheme provider that is used enumerate the authentication schemes.</param>
-    /// <param name="confirmation">The <see cref="IUserConfirmation{TUser}"/> used check whether a user account is confirmed.</param>
-    /// <param name="passkeyHandler">The <see cref="IPasskeyHandler{TUser}"/> used when performing passkey attestation and assertion.</param>
-    public SignInManager(UserManager<TUser> userManager,
-        IHttpContextAccessor contextAccessor,
-        IUserClaimsPrincipalFactory<TUser> claimsFactory,
-        IOptions<IdentityOptions> optionsAccessor,
-        ILogger<SignInManager<TUser>> logger,
-        IAuthenticationSchemeProvider schemes,
-        IUserConfirmation<TUser> confirmation,
-        IPasskeyHandler<TUser> passkeyHandler)
-        : this(userManager, contextAccessor, claimsFactory, optionsAccessor, logger, schemes, confirmation)
-    {
-        ArgumentNullException.ThrowIfNull(passkeyHandler);
-
-        _passkeyHandler = passkeyHandler;
+        _passkeyHandler = userManager.ServiceProvider?.GetService<IPasskeyHandler<TUser>>();
     }
 
     /// <summary>

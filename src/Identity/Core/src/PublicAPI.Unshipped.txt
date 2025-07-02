@@ -100,7 +100,6 @@ Microsoft.AspNetCore.Identity.PasskeyUserEntity.Id.init -> void
 Microsoft.AspNetCore.Identity.PasskeyUserEntity.Name.get -> string!
 Microsoft.AspNetCore.Identity.PasskeyUserEntity.Name.init -> void
 Microsoft.AspNetCore.Identity.PasskeyUserEntity.PasskeyUserEntity() -> void
-Microsoft.AspNetCore.Identity.SignInManager<TUser>.SignInManager(Microsoft.AspNetCore.Identity.UserManager<TUser!>! userManager, Microsoft.AspNetCore.Http.IHttpContextAccessor! contextAccessor, Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser!>! claimsFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Identity.IdentityOptions!>! optionsAccessor, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Identity.SignInManager<TUser!>!>! logger, Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider! schemes, Microsoft.AspNetCore.Identity.IUserConfirmation<TUser!>! confirmation, Microsoft.AspNetCore.Identity.IPasskeyHandler<TUser!>! passkeyHandler) -> void
 static Microsoft.AspNetCore.Identity.PasskeyAssertionResult.Fail<TUser>(Microsoft.AspNetCore.Identity.PasskeyException! failure) -> Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser!>!
 static Microsoft.AspNetCore.Identity.PasskeyAssertionResult.Success<TUser>(Microsoft.AspNetCore.Identity.UserPasskeyInfo! passkey, TUser! user) -> Microsoft.AspNetCore.Identity.PasskeyAssertionResult<TUser!>!
 static Microsoft.AspNetCore.Identity.PasskeyAttestationResult.Fail(Microsoft.AspNetCore.Identity.PasskeyException! failure) -> Microsoft.AspNetCore.Identity.PasskeyAttestationResult!

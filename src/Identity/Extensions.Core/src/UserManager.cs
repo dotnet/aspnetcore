@@ -47,7 +47,6 @@ public class UserManager<TUser> : IDisposable where TUser : class
 #if NETSTANDARD2_0 || NETFRAMEWORK
     private static readonly RandomNumberGenerator _rng = RandomNumberGenerator.Create();
 #endif
-    private readonly IServiceProvider _services;
 
     /// <summary>
     /// The cancellation token used to cancel operations.
@@ -83,6 +82,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         KeyNormalizer = keyNormalizer;
         ErrorDescriber = errors;
         Logger = logger;
+        ServiceProvider = services;
 
         if (userValidators != null)
         {
@@ -99,7 +99,6 @@ public class UserManager<TUser> : IDisposable where TUser : class
             }
         }
 
-        _services = services;
         if (services != null)
         {
             foreach (var providerName in Options.Tokens.ProviderMap.Keys)
@@ -175,6 +174,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// The <see cref="IdentityOptions"/> used to configure Identity.
     /// </summary>
     public IdentityOptions Options { get; set; }
+
+    /// <summary>
+    /// The <see cref="IServiceProvider"/> used to resolve Identity services.
+    /// </summary>
+    public IServiceProvider ServiceProvider { get; }
 
     /// <summary>
     /// Gets a flag indicating whether the backing user store supports authentication tokens.
@@ -555,8 +559,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
         // Need to potentially check all keys
         if (user == null && Options.Stores.ProtectPersonalData)
         {
-            var keyRing = _services.GetService<ILookupProtectorKeyRing>();
-            var protector = _services.GetService<ILookupProtector>();
+            var keyRing = ServiceProvider.GetService<ILookupProtectorKeyRing>();
+            var protector = ServiceProvider.GetService<ILookupProtector>();
             if (keyRing != null && protector != null)
             {
                 foreach (var key in keyRing.GetAllKeyIds())
@@ -620,8 +624,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
     {
         if (Options.Stores.ProtectPersonalData)
         {
-            var keyRing = _services.GetRequiredService<ILookupProtectorKeyRing>();
-            var protector = _services.GetRequiredService<ILookupProtector>();
+            var keyRing = ServiceProvider.GetRequiredService<ILookupProtectorKeyRing>();
+            var protector = ServiceProvider.GetRequiredService<ILookupProtector>();
             return protector.Protect(keyRing.CurrentKeyId, data);
         }
         return data;
@@ -1310,8 +1314,8 @@ public class UserManager<TUser> : IDisposable where TUser : class
         // Need to potentially check all keys
         if (user == null && Options.Stores.ProtectPersonalData)
         {
-            var keyRing = _services.GetService<ILookupProtectorKeyRing>();
-            var protector = _services.GetService<ILookupProtector>();
+            var keyRing = ServiceProvider.GetService<ILookupProtectorKeyRing>();
+            var protector = ServiceProvider.GetService<ILookupProtector>();
             if (keyRing != null && protector != null)
             {
                 foreach (var key in keyRing.GetAllKeyIds())

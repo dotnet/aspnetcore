@@ -90,9 +90,9 @@ public class SignInManagerTest
         manager.Verify();
     }
 
-    private static Mock<UserManager<PocoUser>> SetupUserManager(PocoUser user)
+    private static Mock<UserManager<PocoUser>> SetupUserManager(PocoUser user, IServiceProvider services = null)
     {
-        var manager = MockHelpers.MockUserManager<PocoUser>();
+        var manager = MockHelpers.MockUserManager<PocoUser>(services);
         manager.Setup(m => m.FindByNameAsync(user.UserName)).ReturnsAsync(user);
         manager.Setup(m => m.FindByIdAsync(user.Id)).ReturnsAsync(user);
         manager.Setup(m => m.GetUserIdAsync(user)).ReturnsAsync(user.Id.ToString());
@@ -105,8 +105,7 @@ public class SignInManagerTest
         HttpContext context,
         ILogger logger = null,
         IdentityOptions identityOptions = null,
-        IAuthenticationSchemeProvider schemeProvider = null,
-        IPasskeyHandler<PocoUser> passkeyHandler = null)
+        IAuthenticationSchemeProvider schemeProvider = null)
     {
         var contextAccessor = new Mock<IHttpContextAccessor>();
         contextAccessor.Setup(a => a.HttpContext).Returns(context);
@@ -116,7 +115,6 @@ public class SignInManagerTest
         options.Setup(a => a.Value).Returns(identityOptions);
         var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager, roleManager.Object, options.Object);
         schemeProvider = schemeProvider ?? new MockSchemeProvider();
-        passkeyHandler = passkeyHandler ?? Mock.Of<IPasskeyHandler<PocoUser>>();
         var sm = new SignInManager<PocoUser>(
             manager,
             contextAccessor.Object,
@@ -124,8 +122,7 @@ public class SignInManagerTest
             options.Object,
             null,
             schemeProvider,
-            new DefaultUserConfirmation<PocoUser>(),
-            passkeyHandler);
+            new DefaultUserConfirmation<PocoUser>());
         sm.Logger = logger ?? NullLogger<SignInManager<PocoUser>>.Instance;
         return sm;
     }
@@ -376,7 +373,10 @@ public class SignInManagerTest
         passkeyHandler
             .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()))
             .Returns(Task.FromResult(assertionResult));
-        var manager = SetupUserManager(user);
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton(passkeyHandler.Object)
+            .BuildServiceProvider();
+        var manager = SetupUserManager(user, serviceProvider);
         manager
             .Setup(m => m.SetPasskeyAsync(user, passkey))
             .Returns(Task.FromResult(IdentityResult.Success))
@@ -385,7 +385,7 @@ public class SignInManagerTest
         var auth = MockAuth(context);
         SetupSignIn(context, auth, user.Id, isPersistent: false, loginProvider: null);
         SetupPasskeyAuth(context, auth);
-        var helper = SetupSignInManager(manager.Object, context, passkeyHandler: passkeyHandler.Object);
+        var helper = SetupSignInManager(manager.Object, context);
 
         // Act
         var optionsJson = await helper.MakePasskeyRequestOptionsAsync(user);
