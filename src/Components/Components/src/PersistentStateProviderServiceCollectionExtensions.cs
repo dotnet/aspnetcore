@@ -12,7 +12,7 @@ namespace Microsoft.Extensions.DependencyInjection;
 public static class PersistentStateProviderServiceCollectionExtensions
 {
     /// <summary>
-    /// Enables component parameters to be supplied from <see cref="PersistentComponentState"/> with <see cref="PersistentStateAttribute"/>..
+    /// Enables component parameters to be supplied from <see cref="PersistentComponentState"/> with <see cref="PersistentStateAttribute"/>.
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
