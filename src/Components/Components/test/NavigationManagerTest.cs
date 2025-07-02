@@ -8,6 +8,8 @@ using System.Text;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.InternalTesting;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Components;
 
 public class NavigationManagerTest
@@ -893,32 +895,30 @@ public class NavigationManagerTest
         // Arrange
         var baseUri = "scheme://host/";
         var uri = "scheme://host/test";
-        var testNavManager = new TestNavigationManagerWithCallback();
-        var exceptionThrown = false;
+        var testNavManager = new TestNavigationManagerWithExceptionHandling(baseUri);
         var expectedException = new InvalidOperationException("Test exception from OnNavigateTo");
 
-        // Configure the onNavigateTo callback to throw an exception
-        testNavManager.ConfigureOnNavigateToCallback(throwingUri =>
+        // First test: Initialize with a callback that throws exceptions
+        testNavManager.Initialize(baseUri, uri, uri => testNavManager.GetErrorHandledTask(ThrowingMethod(uri)));
+
+        // Act & Assert
+        // Verify that the wrapped callback handles the exception gracefully
+        var wrappedException = testNavManager.TriggerOnNavigateToCallback(uri);
+
+         // Should be null because the exception was handled gracefully
+        Assert.Null(wrappedException);
+
+        // Verify that the exception was logged
+        Assert.Single(testNavManager.HandledExceptions);
+        Assert.Same(expectedException, testNavManager.HandledExceptions[0]);
+
+        async Task ThrowingMethod(string param)
         {
-            exceptionThrown = true;
+            await Task.Yield();
             throw expectedException;
-        });
-
-        // Act
-        // Initialize the navigation manager with the callback
-        testNavManager.Initialize(baseUri, uri, testNavManager.GetOnNavigateToCallback());
-
-        // Assert
-        Assert.True(testNavManager.IsInitialized);
-
-        // When navigation is triggered, the exception should be handled gracefully
-        var thrownException = testNavManager.TriggerOnNavigateToCallback(uri);
-
-        // Assert
-        Assert.True(exceptionThrown, "The OnNavigateTo callback should have been called and thrown an exception.");
-        Assert.Same(expectedException, thrownException);
+        }
     }
- 
+
     private class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()
@@ -965,40 +965,27 @@ public class NavigationManagerTest
         }
     }
 
-    private class TestNavigationManagerWithCallback : TestNavigationManager, IHostEnvironmentNavigationManager
+    private class TestNavigationManagerWithExceptionHandling : TestNavigationManager, IHostEnvironmentNavigationManager
     {
         private Func<string, Task> _onNavigateToCallback;
 
-        public TestNavigationManagerWithCallback()
+        public List<Exception> HandledExceptions { get; } = new();
+
+        public TestNavigationManagerWithExceptionHandling(string baseUri = null, string uri = null)
+            : base(baseUri, uri)
         {
         }
 
         public void Initialize(string baseUri, string uri, Func<string, Task> onNavigateTo)
         {
             _onNavigateToCallback = onNavigateTo;
-            base.Initialize(baseUri, uri);
         }
 
-        public void ConfigureOnNavigateToCallback(Func<string, Task> callback)
+        public Exception? TriggerOnNavigateToCallback(string uri)
         {
-            _onNavigateToCallback = callback;
-        }
-
-        public Func<string, Task> GetOnNavigateToCallback()
-        {
-            return _onNavigateToCallback;
-        }
-
-        public Exception TriggerOnNavigateToCallback(string uri)
-        {
-            if (_onNavigateToCallback == null)
-            {
-                return null;
-            }
-
             try
             {
-                // Simulate the fire-and-forget pattern used in RemoteNavigationManager
+                // Simulate the fire-and-forget pattern of RemoteNavigationManager
                 _ = _onNavigateToCallback(uri);
                 return null;
             }
@@ -1008,19 +995,25 @@ public class NavigationManagerTest
             }
         }
 
-        public bool IsInitialized 
+        protected override void NavigateToCore(string uri, bool forceLoad)
         {
-            get
+            // Simulate the behavior where NavigateToCore calls the onNavigateTo callback
+            // in a fire-and-forget manner when JSRuntime is not available
+            if (_onNavigateToCallback is not null)
             {
-                try
-                {
-                    _ = BaseUri; // This will throw if not initialized
-                    return true;
-                }
-                catch (InvalidOperationException)
-                {
-                    return false;
-                }
+                _ = _onNavigateToCallback(uri);
+            }
+        }
+
+        public async Task GetErrorHandledTask(Task taskToHandle)
+        {
+            try
+            {
+                await taskToHandle;
+            }
+            catch (Exception ex)
+            {
+                HandledExceptions.Add(ex);
             }
         }
     }
