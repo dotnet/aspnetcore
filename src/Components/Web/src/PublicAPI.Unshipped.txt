@@ -2,10 +2,10 @@
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
 virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool
 Microsoft.AspNetCore.Components.Web.RestoreStateOnPrerenderingAttribute
-Microsoft.AspNetCore.Components.Web.RestoreStateOnPrerenderingAttribute.RestoreStateOnPrerenderingAttribute() -> void
+Microsoft.AspNetCore.Components.Web.RestoreStateOnPrerenderingAttribute.RestoreStateOnPrerenderingAttribute(bool restore = true) -> void
 Microsoft.AspNetCore.Components.Web.RestoreStateOnPrerenderingAttribute.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
 Microsoft.AspNetCore.Components.Web.RestoreStateOnReconnectionAttribute
-Microsoft.AspNetCore.Components.Web.RestoreStateOnReconnectionAttribute.RestoreStateOnReconnectionAttribute() -> void
+Microsoft.AspNetCore.Components.Web.RestoreStateOnReconnectionAttribute.RestoreStateOnReconnectionAttribute(bool restore = true) -> void
 Microsoft.AspNetCore.Components.Web.RestoreStateOnReconnectionAttribute.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
 Microsoft.AspNetCore.Components.Web.UpdateStateOnEnhancedNavigationAttribute
 Microsoft.AspNetCore.Components.Web.UpdateStateOnEnhancedNavigationAttribute.UpdateStateOnEnhancedNavigationAttribute() -> void

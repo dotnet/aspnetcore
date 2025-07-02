@@ -9,11 +9,20 @@ namespace Microsoft.AspNetCore.Components.Web;
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class RestoreStateOnPrerenderingAttribute : Attribute, IPersistentStateFilter
 {
-    internal WebPersistenceFilter WebPersistenceFilter { get; } = WebPersistenceFilter.Prerendering;
+    internal WebPersistenceFilter? WebPersistenceFilter { get; }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="RestoreStateOnPrerenderingAttribute"/>.
+    /// </summary>
+    /// <param name="restore">Whether to restore state during prerendering. Default is true.</param>
+    public RestoreStateOnPrerenderingAttribute(bool restore = true)
+    {
+        WebPersistenceFilter = restore ? Components.Web.WebPersistenceFilter.Prerendering : null;
+    }
 
     /// <inheritdoc />
     public bool ShouldRestore(IPersistentComponentStateScenario scenario)
     {
-        return WebPersistenceFilter.ShouldRestore(scenario);
+        return WebPersistenceFilter?.ShouldRestore(scenario) ?? false;
     }
 }

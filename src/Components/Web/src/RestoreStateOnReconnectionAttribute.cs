@@ -9,11 +9,20 @@ namespace Microsoft.AspNetCore.Components.Web;
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class RestoreStateOnReconnectionAttribute : Attribute, IPersistentStateFilter
 {
-    internal WebPersistenceFilter WebPersistenceFilter { get; } = WebPersistenceFilter.Reconnection;
+    internal WebPersistenceFilter? WebPersistenceFilter { get; }
+
+    /// <summary>
+    /// Initializes a new instance of <see cref="RestoreStateOnReconnectionAttribute"/>.
+    /// </summary>
+    /// <param name="restore">Whether to restore state after reconnection. Default is true.</param>
+    public RestoreStateOnReconnectionAttribute(bool restore = true)
+    {
+        WebPersistenceFilter = restore ? Components.Web.WebPersistenceFilter.Reconnection : null;
+    }
 
     /// <inheritdoc />
     public bool ShouldRestore(IPersistentComponentStateScenario scenario)
     {
-        return WebPersistenceFilter.ShouldRestore(scenario);
+        return WebPersistenceFilter?.ShouldRestore(scenario) ?? false;
     }
 }

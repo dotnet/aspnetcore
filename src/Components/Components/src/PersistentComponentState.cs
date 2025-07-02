@@ -218,6 +218,12 @@ public class PersistentComponentState
             if (registration.Filter.ShouldRestore(scenario))
             {
                 registration.Callback();
+
+                // Remove callback if scenario is not recurring (one-time scenarios)
+                if (!scenario.IsRecurring)
+                {
+                    _restoringCallbacks.RemoveAt(i);
+                }
             }
         }
     }
