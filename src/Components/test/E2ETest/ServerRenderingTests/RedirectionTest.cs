@@ -262,7 +262,6 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     // response to something like a 200 that the 'fetch' is allowed to read (embedding the
     // destination URL).
 
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
