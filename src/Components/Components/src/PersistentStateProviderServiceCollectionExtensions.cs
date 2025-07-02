@@ -7,18 +7,18 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
-/// Enables component parameters to be supplied from <see cref="PersistentComponentState"/> with <see cref="SupplyParameterFromPersistentComponentStateAttribute"/>.
+/// Enables component parameters to be supplied from <see cref="PersistentComponentState"/> with <see cref="PersistentStateAttribute"/>.
 /// </summary>
-public static class SupplyParameterFromPersistentComponentStateProviderServiceCollectionExtensions
+public static class PersistentStateProviderServiceCollectionExtensions
 {
     /// <summary>
-    /// Enables component parameters to be supplied from <see cref="PersistentComponentState"/> with <see cref="SupplyParameterFromPersistentComponentStateAttribute"/>..
+    /// Enables component parameters to be supplied from <see cref="PersistentComponentState"/> with <see cref="PersistentStateAttribute"/>..
     /// </summary>
     /// <param name="services">The <see cref="IServiceCollection"/>.</param>
     /// <returns>The <see cref="IServiceCollection"/>.</returns>
     public static IServiceCollection AddSupplyValueFromPersistentComponentStateProvider(this IServiceCollection services)
     {
-        services.TryAddEnumerable(ServiceDescriptor.Scoped<ICascadingValueSupplier, SupplyParameterFromPersistentComponentStateValueProvider>());
+        services.TryAddEnumerable(ServiceDescriptor.Scoped<ICascadingValueSupplier, PersistentStateValueProvider>());
         return services;
     }
 }
