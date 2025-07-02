@@ -571,7 +571,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
             TryClose();
         }
+
         RequestBodyPipe.Reader.Complete();
+
         _http3Output.Complete();
 
         // Stream will be pooled after app completed.
