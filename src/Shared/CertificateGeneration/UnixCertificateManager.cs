@@ -81,7 +81,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         finally
         {
             // Disposing the chain does not dispose the elements we potentially built.
-            // Annoyingly do the full walk manually to dispose.
+            // Do the full walk manually to dispose.
             for (int chainElementIndex = 0; chainElementIndex < chain.ChainElements.Count; ++chainElementIndex)
             {
                 chain.ChainElements[chainElementIndex].Certificate.Dispose();
