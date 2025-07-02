@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 internal sealed class PersistentStateValueProvider(PersistentComponentState state) : ICascadingValueSupplier
 {
