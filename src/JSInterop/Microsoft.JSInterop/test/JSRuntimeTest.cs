@@ -83,6 +83,24 @@ public class JSRuntimeTest
     }
 
     [Fact]
+    public async Task InvokeAsync_CancelsWithTaskCanceledException_WhenCancellationTokenFiresBeforeTimeout()
+    {
+        // Arrange
+        using var cts = new CancellationTokenSource();
+        var runtime = new TestJSRuntime();
+        // Set a long timeout, but cancel before it fires
+        runtime.DefaultTimeout = TimeSpan.FromSeconds(10);
+
+        // Act
+        var task = runtime.InvokeAsync<object>("test identifier 1", cts.Token, new object[] { "arg1", 123, true });
+
+        cts.Cancel();
+
+        // Assert - Should throw TaskCanceledException, not TimeoutException
+        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+    }
+
+    [Fact]
     public async Task InvokeAsync_DoesNotStartWorkWhenCancellationHasBeenRequested()
     {
         // Arrange
