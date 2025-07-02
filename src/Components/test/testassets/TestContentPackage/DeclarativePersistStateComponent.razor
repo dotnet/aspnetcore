@@ -8,7 +8,7 @@
     [Parameter, EditorRequired]
     public string KeyName { get; set; } = "";
 
-    [SupplyParameterFromPersistentComponentState]
+    [PersistentState]
     public string Value { get; set; }
 
     private string _renderMode = "SSR";
