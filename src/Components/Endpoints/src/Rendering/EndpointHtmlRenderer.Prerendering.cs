@@ -169,12 +169,9 @@ internal partial class EndpointHtmlRenderer
             return;
         }
 
-        // Set up a background task to wait for quiescence and signal when reached
-        _ = Task.Run(async () =>
-        {
-            await htmlContent.QuiescenceTask.ConfigureAwait(false);
-            SignalRendererToFinishRendering();
-        });
+        htmlContent.QuiescenceTask.ContinueWith(
+            _ => SignalRendererToFinishRendering(),
+            TaskScheduler.Default);
     }
 
     private async Task WaitForResultReady(bool waitForQuiescence, PrerenderedComponentHtmlContent result)
