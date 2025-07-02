@@ -122,7 +122,7 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
             catch (OperationCanceledException) when (cts.Token.IsCancellationRequested)
             {
                 // This was cancelled due to our timeout, throw a more meaningful exception
-                throw new JSTimeoutException("A JavaScript interop call timed out. Consider increasing the timeout duration if the operation is expected to take longer.");
+                throw new TimeoutException("A JavaScript interop call timed out. Consider increasing the timeout duration if the operation is expected to take longer.");
             }
         }
 
