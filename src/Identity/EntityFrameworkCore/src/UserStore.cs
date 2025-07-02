@@ -138,6 +138,8 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
     where TRoleClaim : IdentityRoleClaim<TKey>, new()
     where TUserPasskey : IdentityUserPasskey<TKey>, new()
 {
+    private bool? _dbContextSupportsPasskeys;
+
     /// <summary>
     /// Creates a new instance of the store.
     /// </summary>
@@ -160,7 +162,14 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
     private DbSet<TUserRole> UserRoles { get { return Context.Set<TUserRole>(); } }
     private DbSet<TUserLogin> UserLogins { get { return Context.Set<TUserLogin>(); } }
     private DbSet<TUserToken> UserTokens { get { return Context.Set<TUserToken>(); } }
-    private DbSet<TUserPasskey> UserPasskeys { get { return Context.Set<TUserPasskey>(); } }
+    private DbSet<TUserPasskey> UserPasskeys
+    {
+        get
+        {
+            ThrowIfPasskeysNotSupported();
+            return Context.Set<TUserPasskey>();
+        }
+    }
 
     /// <summary>
     /// Gets or sets a flag indicating if changes should be persisted after CreateAsync, UpdateAsync and DeleteAsync are called.
@@ -877,6 +886,24 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         {
             UserPasskeys.Remove(passkey);
             await SaveChanges(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private void ThrowIfPasskeysNotSupported()
+    {
+        if (_dbContextSupportsPasskeys == true)
+        {
+            return;
+        }
+
+        _dbContextSupportsPasskeys ??= Context.Model.FindEntityType(typeof(TUserPasskey)) is not null;
+        if (_dbContextSupportsPasskeys == false)
+        {
+            throw new InvalidOperationException(
+                $"This operation is not permitted because the underlying '{nameof(DbContext)}' does not include '{typeof(TUserPasskey).Name}' in its model. " +
+                $"When using '{nameof(IdentityDbContext)}', make sure that '{nameof(IdentityOptions)}.{nameof(IdentityOptions.Stores)}.{nameof(StoreOptions.SchemaVersion)}' " +
+                $"is set to '{nameof(IdentitySchemaVersions)}.{nameof(IdentitySchemaVersions.Version3)}' or higher. " +
+                $"See https://aka.ms/aspnet/passkeys for more information.");
         }
     }
 }
