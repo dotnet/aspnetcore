@@ -940,7 +940,9 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             {
                 return Task.CompletedTask;
             }
+
             _requestBodyStarted = true;
+
             foreach (var segment in payload)
             {
                 RequestBodyPipe.Writer.Write(segment.Span);
