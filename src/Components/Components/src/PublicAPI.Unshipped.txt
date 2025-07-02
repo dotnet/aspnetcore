@@ -26,7 +26,7 @@ Microsoft.AspNetCore.Components.IPersistentComponentStateScenario.IsRecurring.ge
 Microsoft.AspNetCore.Components.IPersistentStateFilter
 Microsoft.AspNetCore.Components.IPersistentStateFilter.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
 Microsoft.AspNetCore.Components.PersistentComponentState.CurrentScenario.get -> Microsoft.AspNetCore.Components.IPersistentComponentStateScenario?
-Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario, System.Action! callback) -> Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
+*REMOVED*Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario, System.Action! callback) -> Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(Microsoft.AspNetCore.Components.IPersistentStateFilter! filter, System.Action! callback) -> Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
 Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
 Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.RestoringComponentStateSubscription() -> void

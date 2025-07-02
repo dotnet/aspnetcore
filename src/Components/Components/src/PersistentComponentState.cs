@@ -162,32 +162,6 @@ public class PersistentComponentState
     }
 
     /// <summary>
-    /// Registers a callback to be invoked when state is restored for a specific scenario.
-    /// If state for the scenario is already available, the callback is invoked immediately.
-    /// </summary>
-    /// <param name="scenario">The scenario for which to register the callback.</param>
-    /// <param name="callback">The callback to invoke during restoration.</param>
-    /// <returns>A subscription that can be disposed to unregister the callback.</returns>
-    public RestoringComponentStateSubscription RegisterOnRestoring(
-        IPersistentComponentStateScenario scenario, 
-        Action callback)
-    {
-        ArgumentNullException.ThrowIfNull(scenario);
-        ArgumentNullException.ThrowIfNull(callback);
-
-        var registration = new RestoreComponentStateRegistration(scenario, callback);
-        _restoringCallbacks.Add(registration);
-
-        // If we already have a current scenario and it matches, invoke immediately
-        if (CurrentScenario != null && ShouldInvokeCallback(scenario, CurrentScenario))
-        {
-            callback();
-        }
-
-        return new RestoringComponentStateSubscription(_restoringCallbacks, scenario, callback);
-    }
-
-    /// <summary>
     /// Registers a callback to be invoked when state is restored and the filter allows the current scenario.
     /// </summary>
     /// <param name="filter">The filter to determine if the callback should be invoked for a scenario.</param>
@@ -202,7 +176,16 @@ public class PersistentComponentState
 
         // Create a wrapper scenario that uses the filter
         var filterScenario = new FilterWrapperScenario(filter);
-        return RegisterOnRestoring(filterScenario, callback);
+        var registration = new RestoreComponentStateRegistration(filterScenario, callback);
+        _restoringCallbacks.Add(registration);
+
+        // If we already have a current scenario and it matches, invoke immediately
+        if (CurrentScenario != null && ShouldInvokeCallback(filterScenario, CurrentScenario))
+        {
+            callback();
+        }
+
+        return new RestoringComponentStateSubscription(_restoringCallbacks, filterScenario, callback);
     }
 
     /// <summary>
