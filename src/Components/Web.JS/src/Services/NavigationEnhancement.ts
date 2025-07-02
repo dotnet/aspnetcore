@@ -35,14 +35,8 @@ different bundles that only contain minimal content.
 const acceptHeader = 'text/html; blazor-enhanced-nav=on';
 
 let currentEnhancedNavigationAbortController: AbortController | null;
-let navigationEnhancementCallbacks: Promise<NavigationEnhancementCallbacks>;
-let navigationEnhancementCallbacksResolver: (callbacks: NavigationEnhancementCallbacks) => void;
+let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
-
-// Initialize the promise that will be resolved when callbacks are set
-navigationEnhancementCallbacks = new Promise<NavigationEnhancementCallbacks>((resolve) => {
-  navigationEnhancementCallbacksResolver = resolve;
-});
 
 // This gets initialized to the current URL when we load.
 // After that, it gets updated every time we successfully complete a navigation.
@@ -63,7 +57,7 @@ export function hasNeverStartedAnyEnhancedPageLoad() {
 }
 
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
-  navigationEnhancementCallbacksResolver(callbacks);
+  navigationEnhancementCallbacks = callbacks;
   document.addEventListener('click', onDocumentClick);
   document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
@@ -207,11 +201,8 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
   // Notify any interactive runtimes that an enhanced navigation is starting
   notifyEnhancedNavigationListeners(internalDestinationHref, interceptedLink);
 
-  // Wait for navigation enhancement callbacks to be initialized before proceeding
-  const callbacks = await navigationEnhancementCallbacks;
-  
   // Notify handlers that enhanced navigation is starting
-  callbacks.enhancedNavigationStarted();
+  navigationEnhancementCallbacks.enhancedNavigationStarted();
 
   // Now request the new page via fetch, and a special header that tells the server we want it to inject
   // framing boundaries to distinguish the initial document and each subsequent streaming SSR update.
@@ -314,7 +305,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         // For HTML responses, regardless of the status code, display it
         const parsedHtml = new DOMParser().parseFromString(initialContent, 'text/html');
         synchronizeDomContent(document, parsedHtml);
-        callbacks.documentUpdated();
+        navigationEnhancementCallbacks.documentUpdated();
       } else if (responseContentType?.startsWith('text/') && initialContent) {
         // For any other text-based content, we'll just display it, because that's what
         // would happen if this was a non-enhanced request.
@@ -353,7 +344,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
     }
 
     performingEnhancedPageLoad = false;
-    callbacks.enhancedNavigationCompleted();
+    navigationEnhancementCallbacks.enhancedNavigationCompleted();
 
     // For non-GET requests, the destination has to be the same URL you're already on, or result in a redirection
     // (post/redirect/get). You're not allowed to POST to a different URL without redirecting, because then back/forwards

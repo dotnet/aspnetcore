@@ -209,7 +209,14 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Navigate(testUrl);
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        if (hasCustomNotFoundPageSet)
+        {
+            AssertNotFoundPageRendered();
+        }
+        else
+        {
+            AssertNotFoundFragmentRendered();
+        }
         AssertUrlNotChanged(testUrl);
     }
 
