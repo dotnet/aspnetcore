@@ -1060,6 +1060,8 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
+        Browser.Equal("restored-prerendering-enabled", () => Browser.FindElement(By.Id("prerendering-enabled-server")).Text);
+        Browser.Equal("restored-prerendering-disabled", () => Browser.FindElement(By.Id("prerendering-disabled-server")).Text);
     }
 
     [Fact]

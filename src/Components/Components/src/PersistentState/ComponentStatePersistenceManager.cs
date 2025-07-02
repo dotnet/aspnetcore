@@ -17,6 +17,7 @@ public class ComponentStatePersistenceManager
     private bool _stateIsPersisted;
     private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
+    private bool _isFirstRestore = true;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
@@ -56,8 +57,42 @@ public class ComponentStatePersistenceManager
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public async Task RestoreStateAsync(IPersistentComponentStateStore store)
     {
+        await RestoreStateAsync(store, scenario: null);
+    }
+
+    /// <summary>
+    /// Restores component state from the given store with scenario context.
+    /// </summary>
+    /// <param name="store">The store to restore state from.</param>
+    /// <param name="scenario">The restoration scenario context.</param>
+    /// <returns>A task that completes when state restoration is finished.</returns>
+    public async Task RestoreStateAsync(
+        IPersistentComponentStateStore store, 
+        IPersistentComponentStateScenario? scenario)
+    {
         var data = await store.GetPersistedStateAsync();
-        State.InitializeExistingState(data);
+        
+        if (_isFirstRestore)
+        {
+            // First-time initialization
+            State.InitializeExistingState(data);
+            _isFirstRestore = false;
+        }
+        else
+        {
+            // Scenario-based update - only if we have a scenario
+            if (scenario != null)
+            {
+                State.UpdateExistingState(data, scenario);
+            }
+            else
+            {
+                // This is a second call without a scenario, which should fail
+                // (maintaining the original behavior for backward compatibility)
+                throw new InvalidOperationException("PersistentComponentState already initialized.");
+            }
+        }
+        
         _servicesRegistry?.Restore(State);
     }
 

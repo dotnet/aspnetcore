@@ -24,7 +24,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     public ElementReferenceContext ElementReferenceContext { get; }
 
-    public event Action<RootComponentOperationBatch>? OnUpdateRootComponents;
+    public event Action<RootComponentOperationBatch, IDictionary<string, byte[]>?>? OnUpdateRootComponents;
 
     [DynamicDependency(nameof(InvokeDotNet))]
     [DynamicDependency(nameof(EndInvokeJS))]
@@ -94,12 +94,20 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
 
     [SupportedOSPlatform("browser")]
     [JSExport]
-    public static void UpdateRootComponentsCore(string operationsJson)
+    [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "Persistent state dictionary is preserved by design.")]
+    public static void UpdateRootComponentsCore(string operationsJson, string? persistentStateJson = null)
     {
         try
         {
             var operations = DeserializeOperations(operationsJson);
-            Instance.OnUpdateRootComponents?.Invoke(operations);
+            IDictionary<string, byte[]>? persistentState = null;
+            
+            if (!string.IsNullOrEmpty(persistentStateJson))
+            {
+                persistentState = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(persistentStateJson);
+            }
+            
+            Instance.OnUpdateRootComponents?.Invoke(operations, persistentState);
         }
         catch (Exception ex)
         {

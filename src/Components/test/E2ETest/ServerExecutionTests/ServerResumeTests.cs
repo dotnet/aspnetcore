@@ -188,6 +188,53 @@ public class ServerResumeTests : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
         Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
     }
+
+    [Fact]
+    public void NonPersistedStateIsNotRestoredAfterDisconnection()
+    {
+        // Verify initial state during/after SSR - NonPersistedCounter should be 5
+        Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
+        // Wait for interactivity - the value should still be 5
+        Browser.Exists(By.Id("render-mode-interactive"));
+        Browser.Equal("5", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
+        // Increment the non-persisted counter to 6 to show it works during interactive session
+        Browser.Exists(By.Id("increment-non-persisted-counter")).Click();
+        Browser.Equal("6", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
+        // Also increment the persistent counter to show the contrast
+        Browser.Exists(By.Id("increment-persistent-counter-count")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        // Force disconnection and reconnection
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript("window.replaceReconnectCallback()");
+        TriggerReconnectAndInteract(javascript);
+
+        // After reconnection:
+        // - Persistent counter should be 2 (was 1, incremented by TriggerReconnectAndInteract)
+        Browser.Equal("2", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        // - Non-persisted counter should be 0 (default value) because RestoreStateOnPrerendering
+        //   prevented it from being restored after disconnection
+        Browser.Equal("0", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
+        // Verify the non-persisted counter can still be incremented in the new session
+        Browser.Exists(By.Id("increment-non-persisted-counter")).Click();
+        Browser.Equal("1", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+
+        // Test repeatability - trigger another disconnection cycle
+        javascript.ExecuteScript("resetReconnect()");
+        TriggerReconnectAndInteract(javascript);
+
+        // After second reconnection:
+        // - Persistent counter should be 3
+        Browser.Equal("3", () => Browser.Exists(By.Id("persistent-counter-count")).Text);
+
+        // - Non-persisted counter should be 0 again (reset to default)
+        Browser.Equal("0", () => Browser.Exists(By.Id("non-persisted-counter")).Text);
+    }
 }
 
 public class CustomUIServerResumeTests : ServerResumeTests

@@ -16,6 +16,7 @@ public class PersistentComponentState
     private readonly IDictionary<string, byte[]> _currentState;
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
+    private readonly List<RestoreComponentStateRegistration> _restoringCallbacks = new();
 
     internal PersistentComponentState(
         IDictionary<string , byte[]> currentState,
@@ -26,6 +27,11 @@ public class PersistentComponentState
     }
 
     internal bool PersistingState { get; set; }
+
+    /// <summary>
+    /// Gets the current restoration scenario, if any.
+    /// </summary>
+    public IPersistentComponentStateScenario? CurrentScenario { get; internal set; }
 
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
     {
@@ -152,6 +158,73 @@ public class PersistentComponentState
         {
             instance = default;
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Registers a callback to be invoked when state is restored and the filter allows the current scenario.
+    /// </summary>
+    /// <param name="filter">The filter to determine if the callback should be invoked for a scenario.</param>
+    /// <param name="callback">The callback to invoke during restoration.</param>
+    /// <returns>A subscription that can be disposed to unregister the callback.</returns>
+    public RestoringComponentStateSubscription RegisterOnRestoring(
+        IPersistentStateFilter filter,
+        Action callback)
+    {
+        ArgumentNullException.ThrowIfNull(filter);
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var registration = new RestoreComponentStateRegistration(filter, callback);
+        _restoringCallbacks.Add(registration);
+
+        // If we already have a current scenario and the filter matches, invoke immediately
+        if (CurrentScenario != null && filter.ShouldRestore(CurrentScenario))
+        {
+            callback();
+        }
+
+        return new RestoringComponentStateSubscription(_restoringCallbacks, filter, callback);
+    }
+
+    /// <summary>
+    /// Updates the existing state with new state for subsequent restoration calls.
+    /// Only allowed when existing state is empty (fully consumed).
+    /// </summary>
+    /// <param name="newState">New state dictionary to replace existing state.</param>
+    /// <param name="scenario">The restoration scenario context.</param>
+    internal void UpdateExistingState(IDictionary<string, byte[]> newState, IPersistentComponentStateScenario scenario)
+    {
+        ArgumentNullException.ThrowIfNull(newState);
+        ArgumentNullException.ThrowIfNull(scenario);
+
+        if (_existingState != null && _existingState.Count > 0)
+        {
+            throw new InvalidOperationException("Cannot update existing state when state dictionary is not empty. State must be fully consumed before updating.");
+        }
+
+        _existingState = newState;
+        CurrentScenario = scenario;
+
+        // Invoke matching restoration callbacks
+        InvokeRestoringCallbacks(scenario);
+    }
+
+    private void InvokeRestoringCallbacks(IPersistentComponentStateScenario scenario)
+    {
+        for (int i = _restoringCallbacks.Count - 1; i >= 0; i--)
+        {
+            var registration = _restoringCallbacks[i];
+            
+            if (registration.Filter.ShouldRestore(scenario))
+            {
+                registration.Callback();
+
+                // Remove callback if scenario is not recurring (one-time scenarios)
+                if (!scenario.IsRecurring)
+                {
+                    _restoringCallbacks.RemoveAt(i);
+                }
+            }
         }
     }
 

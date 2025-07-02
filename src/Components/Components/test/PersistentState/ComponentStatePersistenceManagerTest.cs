@@ -78,6 +78,132 @@ public class ComponentStatePersistenceManagerTest
         await Assert.ThrowsAsync<InvalidOperationException>(() => persistenceManager.RestoreStateAsync(store));
     }
 
+    [Fact]
+    public async Task RestoreStateAsync_WithScenario_FirstCallInitializesState()
+    {
+        // Arrange
+        var data = new byte[] { 0, 1, 2, 3, 4 };
+        var state = new Dictionary<string, byte[]>
+        {
+            ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(data)
+        };
+        var store = new TestStore(state);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            CreateServiceProvider());
+        var scenario = new TestScenario(true);
+
+        // Act
+        await persistenceManager.RestoreStateAsync(store, scenario);
+
+        // Assert
+        Assert.True(persistenceManager.State.TryTakeFromJson<byte[]>("MyState", out var retrieved));
+        Assert.Equal(data, retrieved);
+    }
+
+    [Fact]
+    public async Task RestoreStateAsync_WithoutScenario_FirstCallInitializesState()
+    {
+        // Arrange
+        var data = new byte[] { 0, 1, 2, 3, 4 };
+        var state = new Dictionary<string, byte[]>
+        {
+            ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(data)
+        };
+        var store = new TestStore(state);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            CreateServiceProvider());
+
+        // Act
+        await persistenceManager.RestoreStateAsync(store, scenario: null);
+
+        // Assert
+        Assert.True(persistenceManager.State.TryTakeFromJson<byte[]>("MyState", out var retrieved));
+        Assert.Equal(data, retrieved);
+    }
+
+    [Fact]
+    public async Task RestoreStateAsync_WithScenario_SecondCallUpdatesExistingState()
+    {
+        // Arrange
+        var initialData = new byte[] { 0, 1, 2, 3, 4 };
+        var updatedData = new byte[] { 5, 6, 7, 8, 9 };
+        var initialState = new Dictionary<string, byte[]>
+        {
+            ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(initialData)
+        };
+        var updatedState = new Dictionary<string, byte[]>
+        {
+            ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(updatedData)
+        };
+        var initialStore = new TestStore(initialState);
+        var updatedStore = new TestStore(updatedState);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            CreateServiceProvider());
+        var scenario = new TestScenario(true);
+
+        // Act - First call initializes state
+        await persistenceManager.RestoreStateAsync(initialStore, scenario);
+        
+        // Consume the initial state to verify it was loaded
+        Assert.True(persistenceManager.State.TryTakeFromJson<byte[]>("MyState", out var initialRetrieved));
+        Assert.Equal(initialData, initialRetrieved);
+
+        // Act - Second call with scenario should update existing state
+        await persistenceManager.RestoreStateAsync(updatedStore, scenario);
+
+        // Assert - Should be able to retrieve updated data
+        Assert.True(persistenceManager.State.TryTakeFromJson<byte[]>("MyState", out var updatedRetrieved));
+        Assert.Equal(updatedData, updatedRetrieved);
+    }
+
+    [Fact]
+    public async Task RestoreStateAsync_WithoutScenario_SecondCallThrowsInvalidOperationException()
+    {
+        // Arrange
+        var initialData = new byte[] { 0, 1, 2, 3, 4 };
+        var initialState = new Dictionary<string, byte[]>
+        {
+            ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(initialData)
+        };
+        var store = new TestStore(initialState);
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            CreateServiceProvider());
+
+        // Act - First call initializes state
+        await persistenceManager.RestoreStateAsync(store, scenario: null);
+
+        // Assert - Second call without scenario should throw
+        await Assert.ThrowsAsync<InvalidOperationException>(() => 
+            persistenceManager.RestoreStateAsync(store, scenario: null));
+    }
+
+    [Fact]
+    public async Task RestoreStateAsync_WithScenario_RestoresServicesRegistry()
+    {
+        // Arrange
+        var serviceProvider = new ServiceCollection()
+            .AddScoped(sp => new TestStore([]))
+            .AddPersistentService<TestStore>(new TestRenderMode())
+            .BuildServiceProvider();
+
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            serviceProvider);
+        
+        var testStore = new TestStore([]);
+        var scenario = new TestScenario(true);
+
+        // Act
+        await persistenceManager.RestoreStateAsync(testStore, scenario);
+
+        // Assert
+        Assert.NotNull(persistenceManager.ServicesRegistry);
+    }
+
     private IServiceProvider CreateServiceProvider() =>
         new ServiceCollection().BuildServiceProvider();
 
@@ -420,6 +546,16 @@ public class ComponentStatePersistenceManagerTest
 
     private class TestRenderMode : IComponentRenderMode
     {
+    }
+
+    private class TestScenario : IPersistentComponentStateScenario
+    {
+        public bool IsRecurring { get; }
+
+        public TestScenario(bool isRecurring)
+        {
+            IsRecurring = isRecurring;
+        }
     }
 
     private class PersistentService : IPersistentServiceRegistration

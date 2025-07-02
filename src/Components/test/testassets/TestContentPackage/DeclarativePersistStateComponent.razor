@@ -1,5 +1,8 @@
-﻿<p>Application state is <span id="@KeyName">@Value</span></p>
+﻿@using Microsoft.AspNetCore.Components.Web
+<p>Application state is <span id="@KeyName">@Value</span></p>
 <p>Render mode: <span id="render-mode-@KeyName">@_renderMode</span></p>
+<p>Prerendering enabled state: <span id="prerendering-enabled-@KeyName">@PrerenderingEnabledValue</span></p>
+<p>Prerendering disabled state: <span id="prerendering-disabled-@KeyName">@PrerenderingDisabledValue</span></p>
 
 @code {
     [Parameter, EditorRequired]
@@ -11,11 +14,21 @@
     [SupplyParameterFromPersistentComponentState]
     public string Value { get; set; }
 
+    [SupplyParameterFromPersistentComponentState]
+    [RestoreStateOnPrerendering]
+    public string PrerenderingEnabledValue { get; set; }
+
+    [SupplyParameterFromPersistentComponentState]
+    [UpdateStateOnEnhancedNavigation]
+    public string PrerenderingDisabledValue { get; set; }
+
     private string _renderMode = "SSR";
 
     protected override void OnInitialized()
     {
         Value ??= !RendererInfo.IsInteractive ? InitialValue : "not restored";
+        PrerenderingEnabledValue ??= !RendererInfo.IsInteractive ? $"{InitialValue}-prerendering-enabled" : "not restored";
+        PrerenderingDisabledValue ??= !RendererInfo.IsInteractive ? $"{InitialValue}-prerendering-disabled" : "not restored";
         _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
     }
 }

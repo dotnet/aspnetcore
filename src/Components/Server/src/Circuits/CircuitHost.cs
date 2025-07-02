@@ -783,7 +783,14 @@ internal partial class CircuitHost : IAsyncDisposable
                         // provided during the start up process
                         var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
                         appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
-                        await appLifetime.RestoreStateAsync(store);
+                        
+                        // For the first update, this could be either prerendering or reconnection
+                        // If we have persisted circuit state, it means this is a reconnection scenario
+                        var scenario = HasPendingPersistedCircuitState 
+                            ? WebPersistenceScenario.Reconnection() 
+                            : WebPersistenceScenario.Prerendering();
+                            
+                        await appLifetime.RestoreStateAsync(store, scenario);
                     }
 
                     // Retrieve the circuit handlers at this point.
@@ -799,6 +806,16 @@ internal partial class CircuitHost : IAsyncDisposable
                         {
                             throw new InvalidOperationException($"The first set of update operations must always be of type {nameof(RootComponentOperationType.Add)}");
                         }
+                    }
+                }
+                else
+                {
+                    // This is a subsequent update (enhanced navigation)
+                    if (store != null)
+                    {
+                        var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                        var scenario = WebPersistenceScenario.EnhancedNavigation(RenderMode.InteractiveServer);
+                        await appLifetime.RestoreStateAsync(store, scenario);
                     }
                 }
 
