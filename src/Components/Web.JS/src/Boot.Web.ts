@@ -65,12 +65,13 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     },
   };
 
-  attachComponentDescriptorHandler(rootComponentManager);
-  attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
-
+  // Initialize enhanced navigation as early as possible to prevent timing issues
   if (!options?.ssr?.disableDomPreservation) {
     attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
   }
+
+  attachComponentDescriptorHandler(rootComponentManager);
+  attachStreamingRenderingListener(options?.ssr, navigationEnhancementCallbacks);
 
   enableFocusOnNavigate(jsEventRegistry);
 
