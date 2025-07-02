@@ -113,8 +113,17 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         if (DefaultAsyncTimeout.HasValue)
         {
             using var cts = new CancellationTokenSource(DefaultAsyncTimeout.Value);
-            // We need to await here due to the using
-            return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, cts.Token, args);
+            
+            try
+            {
+                // We need to await here due to the using
+                return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, cts.Token, args);
+            }
+            catch (OperationCanceledException) when (cts.Token.IsCancellationRequested)
+            {
+                // This was cancelled due to our timeout, throw a more meaningful exception
+                throw new JSTimeoutException("A JavaScript interop call timed out. Consider increasing the timeout duration if the operation is expected to take longer.");
+            }
         }
 
         return await InvokeAsync<TValue>(targetInstanceId, identifier, callType, CancellationToken.None, args);

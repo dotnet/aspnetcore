@@ -37,7 +37,7 @@ public class JSRuntimeTest
     }
 
     [Fact]
-    public async Task InvokeAsync_CancelsAsyncTask_AfterDefaultTimeout()
+    public async Task InvokeAsync_ThrowsJSTimeoutException_AfterDefaultTimeout()
     {
         // Arrange
         var runtime = new TestJSRuntime();
@@ -47,7 +47,7 @@ public class JSRuntimeTest
         var task = runtime.InvokeAsync<object>("test identifier 1", "arg1", 123, true);
 
         // Assert
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await task);
+        await Assert.ThrowsAsync<JSTimeoutException>(async () => await task);
     }
 
     [Fact]

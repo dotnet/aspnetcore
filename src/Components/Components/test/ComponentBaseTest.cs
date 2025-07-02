@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Test;
 
@@ -461,6 +462,24 @@ public class ComponentBaseTest
 
         // Assert
         Assert.Same(expected, actual);
+    }
+
+    [Fact]
+    public async Task ComponentBase_AllowsJSTimeoutExceptionToBubbleUp()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent();
+        
+        var timeoutException = new JSTimeoutException("Test timeout");
+        component.OnParametersSetAsyncLogic = _ => Task.FromException(timeoutException);
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        var actual = await Assert.ThrowsAsync<JSTimeoutException>(() => renderer.RenderRootComponentAsync(componentId));
+        
+        // Assert
+        Assert.Same(timeoutException, actual);
     }
 
     private class TestComponent : ComponentBase

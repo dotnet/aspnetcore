@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -289,6 +290,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
             {
                 await task;
             }
+            catch (JSTimeoutException)
+            {
+                // Let JSTimeoutException bubble up to provide meaningful error information
+                throw;
+            }
             catch // avoiding exception filters for AOT runtime support
             {
                 // Ignore exceptions from task cancellations.
@@ -331,6 +337,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
         try
         {
             await task;
+        }
+        catch (JSTimeoutException)
+        {
+            // Let JSTimeoutException bubble up to provide meaningful error information
+            throw;
         }
         catch // avoiding exception filters for AOT runtime support
         {
