@@ -3306,7 +3306,7 @@ public class Http3StreamTests : Http3TestBase
 
         var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(context =>
         {
-            Assert.Equal(!endstream, context.Features.Get<IHttpRequestBodyDetectionFeature>().CanHaveBody);
+            Assert.NotEqual(endstream, context.Features.Get<IHttpRequestBodyDetectionFeature>().CanHaveBody);
             context.Response.StatusCode = 200;
             return Task.CompletedTask;
         }, headers, endStream: endstream);
