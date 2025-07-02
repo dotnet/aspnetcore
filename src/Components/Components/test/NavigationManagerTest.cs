@@ -8,8 +8,6 @@ using System.Text;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.InternalTesting;
 
-#nullable enable
-
 namespace Microsoft.AspNetCore.Components;
 
 public class NavigationManagerTest
@@ -892,6 +890,7 @@ public class NavigationManagerTest
     [Fact]
     public void OnNavigateToCallback_WhenThrows_ShouldBeHandledGracefully()
     {
+#nullable enable
         // Arrange
         var baseUri = "scheme://host/";
         var uri = "scheme://host/test";
@@ -917,6 +916,7 @@ public class NavigationManagerTest
             await Task.Yield();
             throw expectedException;
         }
+#nullable restore
     }
 
     private class TestNavigationManager : NavigationManager
@@ -981,7 +981,9 @@ public class NavigationManagerTest
             _onNavigateToCallback = onNavigateTo;
         }
 
+#nullable enable
         public Exception? TriggerOnNavigateToCallback(string uri)
+#nullable restore
         {
             try
             {
