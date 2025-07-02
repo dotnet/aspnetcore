@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace Microsoft.Extensions.DependencyInjection;
+namespace Microsoft.AspNetCore.Components.Infrastructure;
 
 /// <summary>
 /// Enables component parameters to be supplied from <see cref="PersistentComponentState"/> with <see cref="PersistentStateAttribute"/>.
