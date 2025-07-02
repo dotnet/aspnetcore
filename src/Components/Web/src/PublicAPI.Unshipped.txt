@@ -10,17 +10,15 @@ Microsoft.AspNetCore.Components.Web.RestoreStateOnReconnectionAttribute.ShouldRe
 Microsoft.AspNetCore.Components.Web.UpdateStateOnEnhancedNavigationAttribute
 Microsoft.AspNetCore.Components.Web.UpdateStateOnEnhancedNavigationAttribute.UpdateStateOnEnhancedNavigationAttribute() -> void
 Microsoft.AspNetCore.Components.Web.UpdateStateOnEnhancedNavigationAttribute.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
-Microsoft.AspNetCore.Components.Web.WebPersistenceContext
-Microsoft.AspNetCore.Components.Web.WebPersistenceContext.WebPersistenceContext(Microsoft.AspNetCore.Components.Web.WebPersistenceReason reason, Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode = null) -> void
-Microsoft.AspNetCore.Components.Web.WebPersistenceContext.IsRecurring.get -> bool
-Microsoft.AspNetCore.Components.Web.WebPersistenceContext.Reason.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceReason
-Microsoft.AspNetCore.Components.Web.WebPersistenceContext.RenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
-override Microsoft.AspNetCore.Components.Web.WebPersistenceContext.Equals(object? obj) -> bool
-override Microsoft.AspNetCore.Components.Web.WebPersistenceContext.GetHashCode() -> int
-static Microsoft.AspNetCore.Components.Web.WebPersistenceContext.EnhancedNavigation.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceContext!
-static Microsoft.AspNetCore.Components.Web.WebPersistenceContext.Prerendering.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceContext!
-static Microsoft.AspNetCore.Components.Web.WebPersistenceContext.Reconnection.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceContext!
-Microsoft.AspNetCore.Components.Web.WebPersistenceReason
-Microsoft.AspNetCore.Components.Web.WebPersistenceReason.EnhancedNavigation = 2 -> Microsoft.AspNetCore.Components.Web.WebPersistenceReason
-Microsoft.AspNetCore.Components.Web.WebPersistenceReason.Prerendering = 1 -> Microsoft.AspNetCore.Components.Web.WebPersistenceReason
-Microsoft.AspNetCore.Components.Web.WebPersistenceReason.Reconnection = 4 -> Microsoft.AspNetCore.Components.Web.WebPersistenceReason
+Microsoft.AspNetCore.Components.Web.WebPersistenceScenario
+Microsoft.AspNetCore.Components.Web.WebPersistenceScenario.RenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
+override Microsoft.AspNetCore.Components.Web.WebPersistenceScenario.Equals(object? obj) -> bool
+override Microsoft.AspNetCore.Components.Web.WebPersistenceScenario.GetHashCode() -> int
+static Microsoft.AspNetCore.Components.Web.WebPersistenceScenario.EnhancedNavigation(Microsoft.AspNetCore.Components.IComponentRenderMode? renderMode = null) -> Microsoft.AspNetCore.Components.Web.WebPersistenceScenario!
+static Microsoft.AspNetCore.Components.Web.WebPersistenceScenario.Prerendering() -> Microsoft.AspNetCore.Components.Web.WebPersistenceScenario!
+static Microsoft.AspNetCore.Components.Web.WebPersistenceScenario.Reconnection() -> Microsoft.AspNetCore.Components.Web.WebPersistenceScenario!
+Microsoft.AspNetCore.Components.Web.WebPersistenceFilter
+Microsoft.AspNetCore.Components.Web.WebPersistenceFilter.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
+static Microsoft.AspNetCore.Components.Web.WebPersistenceFilter.EnhancedNavigation.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceFilter!
+static Microsoft.AspNetCore.Components.Web.WebPersistenceFilter.Prerendering.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceFilter!
+static Microsoft.AspNetCore.Components.Web.WebPersistenceFilter.Reconnection.get -> Microsoft.AspNetCore.Components.Web.WebPersistenceFilter!

@@ -9,15 +9,11 @@ namespace Microsoft.AspNetCore.Components.Web;
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class RestoreStateOnReconnectionAttribute : Attribute, IPersistentStateFilter
 {
+    internal WebPersistenceFilter WebPersistenceFilter { get; } = WebPersistenceFilter.Reconnection;
+
     /// <inheritdoc />
     public bool ShouldRestore(IPersistentComponentStateScenario scenario)
     {
-        if (scenario is not WebPersistenceContext { Reason: WebPersistenceReason.Reconnection } context)
-        {
-            return false;
-        }
-
-        // Reconnection only applies to server-side interactive mode
-        return context.RenderMode is InteractiveServerRenderMode;
+        return WebPersistenceFilter.ShouldRestore(scenario);
     }
 }

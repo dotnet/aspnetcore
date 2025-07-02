@@ -9,15 +9,11 @@ namespace Microsoft.AspNetCore.Components.Web;
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class UpdateStateOnEnhancedNavigationAttribute : Attribute, IPersistentStateFilter
 {
+    internal WebPersistenceFilter WebPersistenceFilter { get; } = WebPersistenceFilter.EnhancedNavigation;
+
     /// <inheritdoc />
     public bool ShouldRestore(IPersistentComponentStateScenario scenario)
     {
-        if (scenario is not WebPersistenceContext { Reason: WebPersistenceReason.EnhancedNavigation } context)
-        {
-            return false;
-        }
-
-        // Enhanced navigation only applies to interactive modes (Server or WebAssembly)
-        return context.RenderMode is InteractiveServerRenderMode or InteractiveWebAssemblyRenderMode;
+        return WebPersistenceFilter.ShouldRestore(scenario);
     }
 }

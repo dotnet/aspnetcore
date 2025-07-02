@@ -9,15 +9,11 @@ namespace Microsoft.AspNetCore.Components.Web;
 [AttributeUsage(AttributeTargets.Property)]
 public sealed class RestoreStateOnPrerenderingAttribute : Attribute, IPersistentStateFilter
 {
+    internal WebPersistenceFilter WebPersistenceFilter { get; } = WebPersistenceFilter.Prerendering;
+
     /// <inheritdoc />
     public bool ShouldRestore(IPersistentComponentStateScenario scenario)
     {
-        if (scenario is not WebPersistenceContext { Reason: WebPersistenceReason.Prerendering } context)
-        {
-            return false;
-        }
-
-        // Prerendering state restoration only applies to interactive modes
-        return context.RenderMode is InteractiveServerRenderMode or InteractiveWebAssemblyRenderMode;
+        return WebPersistenceFilter.ShouldRestore(scenario);
     }
 }

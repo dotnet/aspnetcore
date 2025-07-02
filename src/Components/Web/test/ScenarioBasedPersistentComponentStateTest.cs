@@ -9,88 +9,118 @@ namespace Microsoft.AspNetCore.Components;
 public class ScenarioBasedPersistentComponentStateTest
 {
     [Fact]
-    public void WebPersistenceContext_Properties_SetCorrectly()
+    public void WebPersistenceScenario_Properties_SetCorrectly()
     {
         // Arrange & Act
-        var enhancedNavContext = new WebPersistenceContext(WebPersistenceReason.EnhancedNavigation);
-        var prerenderingContext = new WebPersistenceContext(WebPersistenceReason.Prerendering);
-        var reconnectionContext = new WebPersistenceContext(WebPersistenceReason.Reconnection);
+        var enhancedNavScenario = WebPersistenceScenario.EnhancedNavigation();
+        var prerenderingScenario = WebPersistenceScenario.Prerendering();
+        var reconnectionScenario = WebPersistenceScenario.Reconnection();
 
         // Assert
-        Assert.Equal(WebPersistenceReason.EnhancedNavigation, enhancedNavContext.Reason);
-        Assert.True(enhancedNavContext.IsRecurring);
+        Assert.Equal(WebPersistenceScenario.ScenarioType.EnhancedNavigation, enhancedNavScenario.Type);
+        Assert.True(((IPersistentComponentStateScenario)enhancedNavScenario).IsRecurring);
         
-        Assert.Equal(WebPersistenceReason.Prerendering, prerenderingContext.Reason);
-        Assert.False(prerenderingContext.IsRecurring);
+        Assert.Equal(WebPersistenceScenario.ScenarioType.Prerendering, prerenderingScenario.Type);
+        Assert.False(((IPersistentComponentStateScenario)prerenderingScenario).IsRecurring);
         
-        Assert.Equal(WebPersistenceReason.Reconnection, reconnectionContext.Reason);
-        Assert.False(reconnectionContext.IsRecurring);
+        Assert.Equal(WebPersistenceScenario.ScenarioType.Reconnection, reconnectionScenario.Type);
+        Assert.False(((IPersistentComponentStateScenario)reconnectionScenario).IsRecurring);
     }
 
     [Fact]
-    public void WebPersistenceContext_StaticProperties_ReturnCorrectInstances()
+    public void WebPersistenceScenario_EnhancedNavigation_WithRenderMode()
     {
+        // Arrange
+        var serverRenderMode = new InteractiveServerRenderMode();
+        var wasmRenderMode = new InteractiveWebAssemblyRenderMode();
+
         // Act
-        var enhancedNav = WebPersistenceContext.EnhancedNavigation;
-        var prerendering = WebPersistenceContext.Prerendering;
-        var reconnection = WebPersistenceContext.Reconnection;
+        var serverScenario = WebPersistenceScenario.EnhancedNavigation(serverRenderMode);
+        var wasmScenario = WebPersistenceScenario.EnhancedNavigation(wasmRenderMode);
+        var defaultScenario = WebPersistenceScenario.EnhancedNavigation();
 
         // Assert
-        Assert.Equal(WebPersistenceReason.EnhancedNavigation, enhancedNav.Reason);
-        Assert.Equal(WebPersistenceReason.Prerendering, prerendering.Reason);
-        Assert.Equal(WebPersistenceReason.Reconnection, reconnection.Reason);
+        Assert.Equal(serverRenderMode, serverScenario.RenderMode);
+        Assert.Equal(wasmRenderMode, wasmScenario.RenderMode);
+        Assert.Null(defaultScenario.RenderMode);
     }
 
     [Fact]
-    public void WebPersistenceContext_Equals_WorksCorrectly()
+    public void WebPersistenceScenario_Equals_WorksCorrectly()
     {
         // Arrange
-        var context1 = new WebPersistenceContext(WebPersistenceReason.EnhancedNavigation);
-        var context2 = new WebPersistenceContext(WebPersistenceReason.EnhancedNavigation);
-        var context3 = new WebPersistenceContext(WebPersistenceReason.Prerendering);
+        var scenario1 = WebPersistenceScenario.EnhancedNavigation();
+        var scenario2 = WebPersistenceScenario.EnhancedNavigation();
+        var scenario3 = WebPersistenceScenario.Prerendering();
 
         // Act & Assert
-        Assert.True(context1.Equals(context2));
-        Assert.False(context1.Equals(context3));
-        Assert.False(context1.Equals(null));
+        Assert.True(scenario1.Equals(scenario2));
+        Assert.False(scenario1.Equals(scenario3));
+        Assert.False(scenario1.Equals(null));
     }
 
     [Fact]
-    public void WebPersistenceContext_GetHashCode_WorksCorrectly()
+    public void WebPersistenceScenario_GetHashCode_WorksCorrectly()
     {
         // Arrange
-        var context1 = new WebPersistenceContext(WebPersistenceReason.EnhancedNavigation);
-        var context2 = new WebPersistenceContext(WebPersistenceReason.EnhancedNavigation);
-        var context3 = new WebPersistenceContext(WebPersistenceReason.Prerendering);
+        var scenario1 = WebPersistenceScenario.EnhancedNavigation();
+        var scenario2 = WebPersistenceScenario.EnhancedNavigation();
+        var scenario3 = WebPersistenceScenario.Prerendering();
 
         // Act & Assert
-        Assert.Equal(context1.GetHashCode(), context2.GetHashCode());
-        Assert.NotEqual(context1.GetHashCode(), context3.GetHashCode());
+        Assert.Equal(scenario1.GetHashCode(), scenario2.GetHashCode());
+        Assert.NotEqual(scenario1.GetHashCode(), scenario3.GetHashCode());
+    }
+
+    [Fact]
+    public void WebPersistenceFilter_ShouldRestore_WorksCorrectly()
+    {
+        // Arrange
+        var enhancedNavScenario = WebPersistenceScenario.EnhancedNavigation();
+        var prerenderingScenario = WebPersistenceScenario.Prerendering();
+        var reconnectionScenario = WebPersistenceScenario.Reconnection();
+
+        var enhancedNavFilter = WebPersistenceFilter.EnhancedNavigation;
+        var prerenderingFilter = WebPersistenceFilter.Prerendering;
+        var reconnectionFilter = WebPersistenceFilter.Reconnection;
+
+        // Act & Assert
+        Assert.True(enhancedNavFilter.ShouldRestore(enhancedNavScenario));
+        Assert.False(enhancedNavFilter.ShouldRestore(prerenderingScenario));
+        Assert.False(enhancedNavFilter.ShouldRestore(reconnectionScenario));
+
+        Assert.False(prerenderingFilter.ShouldRestore(enhancedNavScenario));
+        Assert.True(prerenderingFilter.ShouldRestore(prerenderingScenario));
+        Assert.False(prerenderingFilter.ShouldRestore(reconnectionScenario));
+
+        Assert.False(reconnectionFilter.ShouldRestore(enhancedNavScenario));
+        Assert.False(reconnectionFilter.ShouldRestore(prerenderingScenario));
+        Assert.True(reconnectionFilter.ShouldRestore(reconnectionScenario));
     }
 
     [Fact]
     public void FilterAttributes_ShouldRestore_WorksCorrectly()
     {
         // Arrange
-        var enhancedNavContext = new WebPersistenceContext(WebPersistenceReason.EnhancedNavigation, new InteractiveServerRenderMode());
-        var prerenderingContext = new WebPersistenceContext(WebPersistenceReason.Prerendering, new InteractiveServerRenderMode());
-        var reconnectionContext = new WebPersistenceContext(WebPersistenceReason.Reconnection, new InteractiveServerRenderMode());
+        var enhancedNavScenario = WebPersistenceScenario.EnhancedNavigation();
+        var prerenderingScenario = WebPersistenceScenario.Prerendering();
+        var reconnectionScenario = WebPersistenceScenario.Reconnection();
 
         var enhancedNavFilter = new UpdateStateOnEnhancedNavigationAttribute();
         var prerenderingFilter = new RestoreStateOnPrerenderingAttribute();
         var reconnectionFilter = new RestoreStateOnReconnectionAttribute();
 
         // Act & Assert
-        Assert.True(enhancedNavFilter.ShouldRestore(enhancedNavContext));
-        Assert.False(enhancedNavFilter.ShouldRestore(prerenderingContext));
-        Assert.False(enhancedNavFilter.ShouldRestore(reconnectionContext));
+        Assert.True(enhancedNavFilter.ShouldRestore(enhancedNavScenario));
+        Assert.False(enhancedNavFilter.ShouldRestore(prerenderingScenario));
+        Assert.False(enhancedNavFilter.ShouldRestore(reconnectionScenario));
 
-        Assert.False(prerenderingFilter.ShouldRestore(enhancedNavContext));
-        Assert.True(prerenderingFilter.ShouldRestore(prerenderingContext));
-        Assert.False(prerenderingFilter.ShouldRestore(reconnectionContext));
+        Assert.False(prerenderingFilter.ShouldRestore(enhancedNavScenario));
+        Assert.True(prerenderingFilter.ShouldRestore(prerenderingScenario));
+        Assert.False(prerenderingFilter.ShouldRestore(reconnectionScenario));
 
-        Assert.False(reconnectionFilter.ShouldRestore(enhancedNavContext));
-        Assert.False(reconnectionFilter.ShouldRestore(prerenderingContext));
-        Assert.True(reconnectionFilter.ShouldRestore(reconnectionContext));
+        Assert.False(reconnectionFilter.ShouldRestore(enhancedNavScenario));
+        Assert.False(reconnectionFilter.ShouldRestore(prerenderingScenario));
+        Assert.True(reconnectionFilter.ShouldRestore(reconnectionScenario));
     }
 }
