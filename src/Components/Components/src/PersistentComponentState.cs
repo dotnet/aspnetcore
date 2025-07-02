@@ -174,45 +174,16 @@ public class PersistentComponentState
         ArgumentNullException.ThrowIfNull(filter);
         ArgumentNullException.ThrowIfNull(callback);
 
-        // Create a wrapper scenario that uses the filter
-        var filterScenario = new FilterWrapperScenario(filter);
-        var registration = new RestoreComponentStateRegistration(filterScenario, callback);
+        var registration = new RestoreComponentStateRegistration(filter, callback);
         _restoringCallbacks.Add(registration);
 
-        // If we already have a current scenario and it matches, invoke immediately
-        if (CurrentScenario != null && ShouldInvokeCallback(filterScenario, CurrentScenario))
+        // If we already have a current scenario and the filter matches, invoke immediately
+        if (CurrentScenario != null && filter.ShouldRestore(CurrentScenario))
         {
             callback();
         }
 
-        return new RestoringComponentStateSubscription(_restoringCallbacks, filterScenario, callback);
-    }
-
-    /// <summary>
-    /// A scenario wrapper that uses a filter to determine if it should match the current scenario.
-    /// </summary>
-    private sealed class FilterWrapperScenario : IPersistentComponentStateScenario
-    {
-        private readonly IPersistentStateFilter _filter;
-
-        public FilterWrapperScenario(IPersistentStateFilter filter)
-        {
-            _filter = filter;
-        }
-
-        public bool IsRecurring => true; // Filter-based scenarios can be recurring
-
-        public bool ShouldMatchScenario(IPersistentComponentStateScenario currentScenario)
-        {
-            return _filter.ShouldRestore(currentScenario);
-        }
-
-        public override bool Equals(object? obj)
-        {
-            return obj is FilterWrapperScenario other && ReferenceEquals(_filter, other._filter);
-        }
-
-        public override int GetHashCode() => _filter.GetHashCode();
+        return new RestoringComponentStateSubscription(_restoringCallbacks, filter, callback);
     }
 
     /// <summary>
@@ -244,30 +215,11 @@ public class PersistentComponentState
         {
             var registration = _restoringCallbacks[i];
             
-            if (ShouldInvokeCallback(registration.Scenario, scenario))
+            if (registration.Filter.ShouldRestore(scenario))
             {
                 registration.Callback();
-                
-                // Remove non-recurring callbacks after invocation
-                if (!registration.Scenario.IsRecurring)
-                {
-                    _restoringCallbacks.RemoveAt(i);
-                }
             }
         }
-    }
-
-    private static bool ShouldInvokeCallback(IPersistentComponentStateScenario callbackScenario, IPersistentComponentStateScenario currentScenario)
-    {
-        // Special handling for filter wrapper scenarios
-        if (callbackScenario is FilterWrapperScenario filterWrapper)
-        {
-            return filterWrapper.ShouldMatchScenario(currentScenario);
-        }
-
-        // For regular scenarios, match by type and properties
-        return callbackScenario.GetType() == currentScenario.GetType() &&
-               callbackScenario.Equals(currentScenario);
     }
 
     private bool TryTake(string key, out byte[]? value)

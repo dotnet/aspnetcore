@@ -21,6 +21,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
 
     private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
+    private readonly Dictionary<(ComponentState, string), object?> _scenarioRestoredValues = [];
 
     public bool IsFixed => false;
     // For testing purposes only
@@ -40,8 +41,15 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     public object? GetCurrentValue(object? key, in CascadingParameterInfo parameterInfo)
     {
         var componentState = (ComponentState)key!;
+        
+        // Check if we have a scenario-restored value first
+        var valueKey = (componentState, parameterInfo.PropertyName);
+        if (_scenarioRestoredValues.TryGetValue(valueKey, out var scenarioValue))
+        {
+            return scenarioValue;
+        }
+        
         var storageKey = ComputeKey(componentState, parameterInfo.PropertyName);
-
         return state.TryTakeFromJson(storageKey, parameterInfo.PropertyType, out var value) ? value : null;
     }
 
@@ -293,27 +301,28 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     {
         // Check for IPersistentStateFilter attributes
         var filterAttributes = propertyInfo.GetCustomAttributes(typeof(IPersistentStateFilter), inherit: true);
-        if (filterAttributes.Length == 0)
-        {
-            return; // No filters, no scenario-based restoration needed
-        }
-
-        var storageKey = ComputeKey(subscriber, parameterInfo.PropertyName);
-        var propertyType = parameterInfo.PropertyType;
-        var component = subscriber.Component;
-
+        
         // Register restoration callbacks for each filter
         foreach (IPersistentStateFilter filter in filterAttributes)
         {
-            state.RegisterOnRestoring(filter, () =>
-            {
-                if (state.TryTakeFromJson(storageKey, propertyType, out var value))
-                {
-                    // Set the property value on the component
-                    propertyInfo.SetValue(component, value);
-                    // The component will re-render naturally when needed
-                }
-            });
+            RegisterRestorationCallback(subscriber, parameterInfo, filter);
         }
+    }
+
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Property types of rendered components are preserved through other means and won't get trimmed.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes.PublicConstructors', 'DynamicallyAccessedMemberTypes.PublicFields', 'DynamicallyAccessedMemberTypes.PublicProperties' in call to target method. The return value of the source method does not have matching annotations.", Justification = "Property types of rendered components are preserved through other means and won't get trimmed.")]
+    private void RegisterRestorationCallback(ComponentState subscriber, in CascadingParameterInfo parameterInfo, IPersistentStateFilter filter)
+    {
+        var storageKey = ComputeKey(subscriber, parameterInfo.PropertyName);
+        var propertyType = parameterInfo.PropertyType;
+        var valueKey = (subscriber, parameterInfo.PropertyName);
+
+        state.RegisterOnRestoring(filter, () =>
+        {
+            if (state.TryTakeFromJson(storageKey, propertyType, out var value))
+            {
+                _scenarioRestoredValues[valueKey] = value;
+            }
+        });
     }
 }

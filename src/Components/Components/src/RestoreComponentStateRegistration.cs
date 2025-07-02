@@ -8,12 +8,12 @@ namespace Microsoft.AspNetCore.Components;
 /// </summary>
 internal readonly struct RestoreComponentStateRegistration
 {
-    public RestoreComponentStateRegistration(IPersistentComponentStateScenario scenario, Action callback)
+    public RestoreComponentStateRegistration(IPersistentStateFilter filter, Action callback)
     {
-        Scenario = scenario;
+        Filter = filter;
         Callback = callback;
     }
 
-    public IPersistentComponentStateScenario Scenario { get; }
+    public IPersistentStateFilter Filter { get; }
     public Action Callback { get; }
 }

@@ -17,7 +17,7 @@ public class ComponentStatePersistenceManager
     private bool _stateIsPersisted;
     private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
-    private int _restoreCallCount;
+    private bool _isFirstRestore = true;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ComponentStatePersistenceManager"/>.
@@ -72,12 +72,11 @@ public class ComponentStatePersistenceManager
     {
         var data = await store.GetPersistedStateAsync();
         
-        _restoreCallCount++;
-        
-        if (_restoreCallCount == 1)
+        if (_isFirstRestore)
         {
             // First-time initialization
             State.InitializeExistingState(data);
+            _isFirstRestore = false;
         }
         else
         {

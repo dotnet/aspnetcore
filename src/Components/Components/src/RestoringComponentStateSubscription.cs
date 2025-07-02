@@ -9,28 +9,28 @@ namespace Microsoft.AspNetCore.Components;
 public readonly struct RestoringComponentStateSubscription : IDisposable
 {
     private readonly List<RestoreComponentStateRegistration>? _callbacks;
-    private readonly IPersistentComponentStateScenario? _scenario;
+    private readonly IPersistentStateFilter? _filter;
     private readonly Action? _callback;
 
     internal RestoringComponentStateSubscription(
         List<RestoreComponentStateRegistration> callbacks,
-        IPersistentComponentStateScenario scenario,
+        IPersistentStateFilter filter,
         Action callback)
     {
         _callbacks = callbacks;
-        _scenario = scenario;
+        _filter = filter;
         _callback = callback;
     }
 
     /// <inheritdoc />
     public void Dispose()
     {
-        if (_callbacks != null && _scenario != null && _callback != null)
+        if (_callbacks != null && _filter != null && _callback != null)
         {
             for (int i = _callbacks.Count - 1; i >= 0; i--)
             {
                 var registration = _callbacks[i];
-                if (ReferenceEquals(registration.Scenario, _scenario) && ReferenceEquals(registration.Callback, _callback))
+                if (ReferenceEquals(registration.Filter, _filter) && ReferenceEquals(registration.Callback, _callback))
                 {
                     _callbacks.RemoveAt(i);
                     break;
