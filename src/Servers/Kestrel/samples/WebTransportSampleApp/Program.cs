@@ -78,7 +78,7 @@ static X509Certificate2 GenerateManualCertificate()
         req.CertificateExtensions.Add(sanBuilder.Build());
         // Sign
         using var crt = req.CreateSelfSigned(now, now.AddDays(14)); // 14 days is the max duration of a certificate for this
-        cert = X509CertificateLoader.LoadPkcs12(crt.Export(X509ContentType.Pfx));
+        cert = X509CertificateLoader.LoadPkcs12(crt.Export(X509ContentType.Pfx), password: null);
 
         // Save
         store.Add(cert);
