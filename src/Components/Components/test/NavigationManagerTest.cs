@@ -896,10 +896,10 @@ public class NavigationManagerTest
         var uri = "scheme://host/test";
         var testNavManager = new TestNavigationManagerWithExceptionHandling(baseUri);
         var expectedException = new InvalidOperationException("Test exception from OnNavigateTo");
-        var tcs = new TaskCompletionSource();
+        var exceptionHandledTcs = new TaskCompletionSource();
 
         // First test: Initialize with a callback that throws exceptions
-        testNavManager.Initialize(baseUri, uri, uri => testNavManager.GetErrorHandledTask(ThrowingMethod(uri)));
+        testNavManager.Initialize(baseUri, uri, uri => testNavManager.GetErrorHandledTask(ThrowingMethod(uri), exceptionHandledTcs));
 
         // Act & Assert
         // Verify that the wrapped callback handles the exception gracefully
@@ -908,7 +908,7 @@ public class NavigationManagerTest
          // Should be null because the exception was handled gracefully
         Assert.Null(wrappedException);
 
-        await tcs.Task.WaitAsync(Timeout);
+        await exceptionHandledTcs.Task;
 
         // Verify that the exception was logged
         Assert.Single(testNavManager.HandledExceptions);
@@ -916,15 +916,8 @@ public class NavigationManagerTest
 
         async Task ThrowingMethod(string param)
         {
-            try
-            {
-                await Task.Yield();
-                throw expectedException;
-            }
-            finally
-            {
-                tcs.SetResult();
-            }
+            await Task.Yield();
+            throw expectedException;
         }
 #nullable restore
     }
@@ -1017,7 +1010,7 @@ public class NavigationManagerTest
             }
         }
 
-        public async Task GetErrorHandledTask(Task taskToHandle)
+        public async Task GetErrorHandledTask(Task taskToHandle, TaskCompletionSource completionSource = null)
         {
             try
             {
@@ -1026,6 +1019,10 @@ public class NavigationManagerTest
             catch (Exception ex)
             {
                 HandledExceptions.Add(ex);
+            }
+            finally
+            {
+                completionSource?.SetResult();
             }
         }
     }
