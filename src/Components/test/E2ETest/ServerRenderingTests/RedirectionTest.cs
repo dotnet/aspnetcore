@@ -221,6 +221,16 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Assert.EndsWith("/subdir/redirect", Browser.Url);
     }
 
+    [Fact]
+    public void NavigationException_InAsyncContext_DoesNotBecomeUnobservedTaskException()
+    {
+        // Navigate to the page that triggers the circular redirect.
+        Navigate($"{ServerPathBase}/redirect/circular");
+
+        // The component will stop redirecting after 3 attempts and render the exception count.
+        Browser.Equal("0", () => Browser.FindElement(By.Id("unobserved-exceptions-count")).Text);
+    }
+
     private void AssertElementRemoved(IWebElement element)
     {
         Browser.True(() =>
