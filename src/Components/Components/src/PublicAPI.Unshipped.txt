@@ -24,5 +24,3 @@ virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.GetComponentKey
 Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<T>
 Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<T>.PersistAsync(T value, System.Buffers.IBufferWriter<byte>! writer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<T>.Restore(System.Buffers.ReadOnlySequence<byte> data) -> T
-Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsync<TValue>(string! key, TValue instance, Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<TValue>! serializer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.PersistentComponentState.TryTake<TValue>(string! key, Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<TValue>! serializer, out TValue instance) -> bool

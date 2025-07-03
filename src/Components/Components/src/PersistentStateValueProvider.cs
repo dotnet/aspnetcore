@@ -49,7 +49,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         if (customSerializer != null)
         {
             // Use reflection to call the generic TryTake method with the custom serializer
-            var tryTakeMethod = typeof(PersistentComponentState).GetMethod(nameof(PersistentComponentState.TryTake), BindingFlags.Instance | BindingFlags.Public, [typeof(string), serializerType, parameterInfo.PropertyType.MakeByRefType()]);
+            var tryTakeMethod = typeof(PersistentComponentState).GetMethod(nameof(PersistentComponentState.TryTake), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(string), serializerType, parameterInfo.PropertyType.MakeByRefType()]);
             if (tryTakeMethod != null)
             {
                 var parameters = new object?[] { storageKey, customSerializer, null };
@@ -86,7 +86,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
                 if (customSerializer != null)
                 {
                     // Use reflection to call the generic PersistAsync method with the custom serializer
-                    var persistMethod = typeof(PersistentComponentState).GetMethod(nameof(PersistentComponentState.PersistAsync), BindingFlags.Instance | BindingFlags.Public, [typeof(string), propertyType, serializerType, typeof(CancellationToken)]);
+                    var persistMethod = typeof(PersistentComponentState).GetMethod(nameof(PersistentComponentState.PersistAsync), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(string), propertyType, serializerType, typeof(CancellationToken)]);
                     if (persistMethod != null)
                     {
                         var task = (Task)persistMethod.Invoke(state, [storageKey, property, customSerializer, CancellationToken.None])!;

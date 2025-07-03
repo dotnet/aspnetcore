@@ -119,7 +119,7 @@ public class PersistentComponentState
     /// <param name="instance">The instance to persist.</param>
     /// <param name="serializer">The custom serializer to use for serialization.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the serialization operation.</param>
-    public async Task PersistAsync<TValue>(string key, TValue instance, IPersistentComponentStateSerializer<TValue> serializer, CancellationToken cancellationToken = default)
+    internal async Task PersistAsync<TValue>(string key, TValue instance, IPersistentComponentStateSerializer<TValue> serializer, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(serializer);
@@ -194,7 +194,7 @@ public class PersistentComponentState
     /// <param name="serializer">The custom serializer to use for deserialization.</param>
     /// <param name="instance">The persisted instance.</param>
     /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-    public bool TryTake<TValue>(string key, IPersistentComponentStateSerializer<TValue> serializer, [MaybeNullWhen(false)] out TValue instance)
+    internal bool TryTake<TValue>(string key, IPersistentComponentStateSerializer<TValue> serializer, [MaybeNullWhen(false)] out TValue instance)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(serializer);
