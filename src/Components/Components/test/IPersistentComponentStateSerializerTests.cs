@@ -3,6 +3,8 @@
 
 using System.Buffers;
 using System.Text;
+using System.Text.Json;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Components;
