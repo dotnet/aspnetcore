@@ -235,22 +235,9 @@ internal partial class EndpointHtmlRenderer
                     // the child components to finish executing SetParametersAsync
                     await pendingWork;
                 }
-                catch (Exception ex)
+                catch (NavigationException navigationException)
                 {
-                    // We need to handle NavigationException specially to ensure it gets properly
-                    // processed through HandleNavigationException rather than being rethrown
-                    if (ex is NavigationException navigationEx)
-                    {
-                        if (_httpContext is not null)
-                        {
-                            await HandleNavigationException(_httpContext, navigationEx);
-                        }
-                        return;
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    await HandleNavigationException(_httpContext, navigationException);
                 }
             }
         }
