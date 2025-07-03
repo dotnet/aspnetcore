@@ -21,3 +21,8 @@ static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCo
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.PersistentStateProviderServiceCollectionExtensions.AddSupplyValueFromPersistentComponentStateProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.GetComponentKey() -> object?
+Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<T>
+Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<T>.PersistAsync(T value, System.Buffers.IBufferWriter<byte>! writer, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<T>.Restore(System.Buffers.ReadOnlySequence<byte> data) -> T
+Microsoft.AspNetCore.Components.PersistentComponentState.PersistAsync<TValue>(string! key, TValue instance, Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<TValue>! serializer, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.PersistentComponentState.TryTake<TValue>(string! key, Microsoft.AspNetCore.Components.IPersistentComponentStateSerializer<TValue>! serializer, out TValue instance) -> bool

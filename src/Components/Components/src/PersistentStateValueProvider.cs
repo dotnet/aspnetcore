@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Internal;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
-internal sealed class PersistentStateValueProvider(PersistentComponentState state) : ICascadingValueSupplier
+internal sealed class PersistentStateValueProvider(PersistentComponentState state, IServiceProvider serviceProvider) : ICascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
@@ -42,6 +42,23 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         var componentState = (ComponentState)key!;
         var storageKey = ComputeKey(componentState, parameterInfo.PropertyName);
 
+        // Try to get a custom serializer for this type first
+        var serializerType = typeof(IPersistentComponentStateSerializer<>).MakeGenericType(parameterInfo.PropertyType);
+        var customSerializer = serviceProvider.GetService(serializerType);
+        
+        if (customSerializer != null)
+        {
+            // Use reflection to call the generic TryTake method with the custom serializer
+            var tryTakeMethod = typeof(PersistentComponentState).GetMethod(nameof(PersistentComponentState.TryTake), BindingFlags.Instance | BindingFlags.Public, [typeof(string), serializerType, parameterInfo.PropertyType.MakeByRefType()]);
+            if (tryTakeMethod != null)
+            {
+                var parameters = new object?[] { storageKey, customSerializer, null };
+                var success = (bool)tryTakeMethod.Invoke(state, parameters)!;
+                return success ? parameters[2] : null;
+            }
+        }
+
+        // Fallback to JSON serialization
         return state.TryTakeFromJson(storageKey, parameterInfo.PropertyType, out var value) ? value : null;
     }
 
@@ -52,17 +69,34 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     {
         var propertyName = parameterInfo.PropertyName;
         var propertyType = parameterInfo.PropertyType;
-        _subscriptions[subscriber] = state.RegisterOnPersisting(() =>
+        _subscriptions[subscriber] = state.RegisterOnPersisting(async () =>
             {
                 var storageKey = ComputeKey(subscriber, propertyName);
                 var propertyGetter = ResolvePropertyGetter(subscriber.Component.GetType(), propertyName);
                 var property = propertyGetter.GetValue(subscriber.Component);
                 if (property == null)
                 {
-                    return Task.CompletedTask;
+                    return;
                 }
+
+                // Try to get a custom serializer for this type first
+                var serializerType = typeof(IPersistentComponentStateSerializer<>).MakeGenericType(propertyType);
+                var customSerializer = serviceProvider.GetService(serializerType);
+                
+                if (customSerializer != null)
+                {
+                    // Use reflection to call the generic PersistAsync method with the custom serializer
+                    var persistMethod = typeof(PersistentComponentState).GetMethod(nameof(PersistentComponentState.PersistAsync), BindingFlags.Instance | BindingFlags.Public, [typeof(string), propertyType, serializerType, typeof(CancellationToken)]);
+                    if (persistMethod != null)
+                    {
+                        var task = (Task)persistMethod.Invoke(state, [storageKey, property, customSerializer, CancellationToken.None])!;
+                        await task;
+                        return;
+                    }
+                }
+
+                // Fallback to JSON serialization
                 state.PersistAsJson(storageKey, property, propertyType);
-                return Task.CompletedTask;
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
     }
 
