@@ -20,7 +20,7 @@
     [SupplyParameterFromPersistentComponentState] public CounterState State { get; set; }
 
     [SupplyParameterFromPersistentComponentState]
-    [RestoreStateOnPrerendering]
+    [RestoreStateOnReconnection(false)]
     public int NonPersistedCounter { get; set; }
 
     public class CounterState

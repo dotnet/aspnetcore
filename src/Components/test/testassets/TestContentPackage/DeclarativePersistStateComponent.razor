@@ -19,7 +19,7 @@
     public string PrerenderingEnabledValue { get; set; }
 
     [SupplyParameterFromPersistentComponentState]
-    [UpdateStateOnEnhancedNavigation]
+    [RestoreStateOnPrerendering(false)]
     public string PrerenderingDisabledValue { get; set; }
 
     private string _renderMode = "SSR";
