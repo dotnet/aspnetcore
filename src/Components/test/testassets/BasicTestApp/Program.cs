@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Logging.Configuration;
 using Microsoft.JSInterop;
+using TestContentPackage;
 
 namespace BasicTestApp;
 
@@ -44,6 +45,9 @@ public class Program
 
         builder.Services.AddScoped<PreserveStateService>();
         builder.Services.AddTransient<FormsTest.ValidationComponentDI.SaladChef>();
+
+        // Register custom serializer for E2E testing of persistent component state serialization extensibility
+        builder.Services.AddSingleton<IPersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
         builder.Services.AddKeyedSingleton("keyed-service-1", TestKeyedService.Create("value-1"));
         builder.Services.AddKeyedSingleton(TestServiceKey.ServiceB, TestKeyedService.Create("value-2"));

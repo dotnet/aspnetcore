@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
+using TestContentPackage;
 using TestContentPackage.Services;
 
 namespace TestServer;

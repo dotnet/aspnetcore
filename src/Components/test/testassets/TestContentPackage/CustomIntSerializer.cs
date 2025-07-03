@@ -5,7 +5,7 @@ using System.Buffers;
 using System.Text;
 using Microsoft.AspNetCore.Components;
 
-namespace TestServer;
+namespace TestContentPackage;
 
 /// <summary>
 /// A custom serializer for int values that uses a custom format to test serialization extensibility.
