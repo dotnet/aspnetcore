@@ -13,9 +13,9 @@ using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Infrastructure;
 
-internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(PersistentComponentState state) : ICascadingValueSupplier
+internal sealed class PersistentStateValueProvider(PersistentComponentState state) : ICascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
@@ -27,7 +27,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     internal Dictionary<ComponentState, PersistingComponentStateSubscription> Subscriptions => _subscriptions;
 
     public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
-        => parameterInfo.Attribute is SupplyParameterFromPersistentComponentStateAttribute;
+        => parameterInfo.Attribute is PersistentStateAttribute;
 
     [UnconditionalSuppressMessage(
         "ReflectionAnalysis",
