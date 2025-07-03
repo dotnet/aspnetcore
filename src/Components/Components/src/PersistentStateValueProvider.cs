@@ -19,7 +19,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
+    private readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
 
     private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
 
@@ -101,17 +101,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
 
     private IPersistentComponentStateSerializer? ResolveSerializer(Type type)
     {
-        if (_serializerCache.TryGetValue(type, out var cached))
-        {
-            return cached;
-        }
-
-        var serializer = SerializerFactory(type);
-        if (serializer != null)
-        {
-            _serializerCache.TryAdd(type, serializer);
-        }
-        return serializer;
+        return _serializerCache.GetOrAdd(type, SerializerFactory);
     }
 
     private IPersistentComponentStateSerializer? SerializerFactory(Type type)
