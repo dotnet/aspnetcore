@@ -224,6 +224,8 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
     [Fact]
     public void NavigationException_InAsyncContext_DoesNotBecomeUnobservedTaskException()
     {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", false);
+
         // Navigate to the page that triggers the circular redirect.
         Navigate($"{ServerPathBase}/redirect/circular");
 
