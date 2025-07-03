@@ -405,7 +405,7 @@ public class KestrelConfigurationLoaderTests
         var testCertificate = TestResources.GetTestCertificate();
 
         var otherCertificatePath = TestResources.GetCertPath("aspnetdevcert.pfx");
-        var otherCertificate = new X509Certificate2(otherCertificatePath, "testPassword");
+        var otherCertificate = X509CertificateLoader.LoadPkcs12FromFile(otherCertificatePath, "testPassword");
 
         serverOptions.Configure(configRoot).Load();
         CheckListenOptions(testCertificate);
@@ -699,7 +699,7 @@ public class KestrelConfigurationLoaderTests
     public void ConfigureEndpoint_CanLoadPemCertificates(string certificateFile, string certificateKey, string password)
     {
         var serverOptions = CreateServerOptions();
-        var certificate = new X509Certificate2(TestResources.GetCertPath(Path.ChangeExtension(certificateFile, "crt")));
+        var certificate = X509CertificateLoader.LoadCertificateFromFile(TestResources.GetCertPath(Path.ChangeExtension(certificateFile, "crt")));
 
         var ran1 = false;
         var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
@@ -886,7 +886,7 @@ public class KestrelConfigurationLoaderTests
             var oldCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var oldCertificateBytes = oldCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
 
-            var newCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
+            var newCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
             var newCertificateBytes = newCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
 
             Directory.CreateDirectory(Path.GetDirectoryName(certificatePath));
@@ -986,7 +986,7 @@ public class KestrelConfigurationLoaderTests
 
             File.WriteAllBytes(oldCertPath, oldCertificateBytes);
 
-            var newCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
+            var newCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.TestCertificatePath, "testPassword", X509KeyStorageFlags.Exportable);
             var newCertificateBytes = newCertificate.Export(X509ContentType.Pkcs12, certificatePassword);
 
             File.WriteAllBytes(newCertPath, newCertificateBytes);
