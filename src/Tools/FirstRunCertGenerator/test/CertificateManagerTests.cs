@@ -215,7 +215,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
         Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
         Assert.True(File.Exists(CertificateName));
 
-        var exportedCertificate = X509CertificateLoader.LoadCertificate(CertificateName);
+        var exportedCertificate = X509CertificateLoader.LoadCertificateFromFile(CertificateName);
         Assert.NotNull(exportedCertificate);
         Assert.False(exportedCertificate.HasPrivateKey);
     }
