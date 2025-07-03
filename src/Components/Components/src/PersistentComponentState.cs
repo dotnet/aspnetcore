@@ -112,14 +112,35 @@ public class PersistentComponentState
     }
 
     /// <summary>
+    /// Persists the provided byte array under the given key.
+    /// </summary>
+    /// <param name="key">The key to use to persist the state.</param>
+    /// <param name="data">The byte array to persist.</param>
+    internal void PersistAsBytes(string key, byte[] data)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+
+        if (!PersistingState)
+        {
+            throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
+        }
+
+        if (_currentState.ContainsKey(key))
+        {
+            throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
+        }
+
+        _currentState.Add(key, data);
+    }
+
+    /// <summary>
     /// Serializes <paramref name="instance"/> using the provided <paramref name="serializer"/> and persists it under the given <paramref name="key"/>.
     /// </summary>
     /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
     /// <param name="key">The key to use to persist the state.</param>
     /// <param name="instance">The instance to persist.</param>
     /// <param name="serializer">The custom serializer to use for serialization.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the serialization operation.</param>
-    internal async Task PersistAsync<TValue>(string key, TValue instance, IPersistentComponentStateSerializer<TValue> serializer, CancellationToken cancellationToken = default)
+    internal async Task PersistAsync<TValue>(string key, TValue instance, IPersistentComponentStateSerializer<TValue> serializer)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(serializer);
@@ -135,7 +156,7 @@ public class PersistentComponentState
         }
 
         using var writer = new PooledArrayBufferWriter<byte>();
-        await serializer.PersistAsync(instance, writer, cancellationToken);
+        await serializer.PersistAsync(instance, writer);
         _currentState.Add(key, writer.WrittenMemory.ToArray());
     }
 
@@ -210,6 +231,19 @@ public class PersistentComponentState
             instance = default;
             return false;
         }
+    }
+
+    /// <summary>
+    /// Tries to retrieve the persisted state as raw bytes with the given <paramref name="key"/>.
+    /// When the key is present, the raw bytes are successfully returned via <paramref name="data"/>
+    /// and removed from the <see cref="PersistentComponentState"/>.
+    /// </summary>
+    /// <param name="key">The key used to persist the data.</param>
+    /// <param name="data">The persisted raw bytes.</param>
+    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+    internal bool TryTakeBytes(string key, [MaybeNullWhen(false)] out byte[]? data)
+    {
+        return TryTake(key, out data);
     }
 
     private bool TryTake(string key, out byte[]? value)

@@ -59,7 +59,7 @@ public class IPersistentComponentStateSerializerTests
 
     private class TestStringSerializer : IPersistentComponentStateSerializer<string>
     {
-        public Task PersistAsync(string value, IBufferWriter<byte> writer, CancellationToken cancellationToken)
+        public Task PersistAsync(string value, IBufferWriter<byte> writer)
         {
             var bytes = Encoding.UTF8.GetBytes(value);
             writer.Write(bytes);

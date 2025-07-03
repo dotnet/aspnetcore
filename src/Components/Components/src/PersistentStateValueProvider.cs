@@ -19,6 +19,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
+    private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
 
     private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
 
@@ -43,19 +44,16 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         var storageKey = ComputeKey(componentState, parameterInfo.PropertyName);
 
         // Try to get a custom serializer for this type first
-        var serializerType = typeof(IPersistentComponentStateSerializer<>).MakeGenericType(parameterInfo.PropertyType);
-        var customSerializer = serviceProvider.GetService(serializerType);
+        var customSerializer = ResolveSerializer(parameterInfo.PropertyType);
         
         if (customSerializer != null)
         {
-            // Use reflection to call the generic TryTake method with the custom serializer
-            var tryTakeMethod = typeof(PersistentComponentState).GetMethod(nameof(PersistentComponentState.TryTake), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(string), serializerType, parameterInfo.PropertyType.MakeByRefType()]);
-            if (tryTakeMethod != null)
+            if (state.TryTakeBytes(storageKey, out var data))
             {
-                var parameters = new object?[] { storageKey, customSerializer, null };
-                var success = (bool)tryTakeMethod.Invoke(state, parameters)!;
-                return success ? parameters[2] : null;
+                var sequence = new ReadOnlySequence<byte>(data!);
+                return customSerializer.Restore(parameterInfo.PropertyType, sequence);
             }
+            return null;
         }
 
         // Fallback to JSON serialization
@@ -69,6 +67,10 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     {
         var propertyName = parameterInfo.PropertyName;
         var propertyType = parameterInfo.PropertyType;
+        
+        // Resolve serializer outside the lambda
+        var customSerializer = ResolveSerializer(propertyType);
+        
         _subscriptions[subscriber] = state.RegisterOnPersisting(async () =>
             {
                 var storageKey = ComputeKey(subscriber, propertyName);
@@ -79,20 +81,12 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
                     return;
                 }
 
-                // Try to get a custom serializer for this type first
-                var serializerType = typeof(IPersistentComponentStateSerializer<>).MakeGenericType(propertyType);
-                var customSerializer = serviceProvider.GetService(serializerType);
-                
                 if (customSerializer != null)
                 {
-                    // Use reflection to call the generic PersistAsync method with the custom serializer
-                    var persistMethod = typeof(PersistentComponentState).GetMethod(nameof(PersistentComponentState.PersistAsync), BindingFlags.Instance | BindingFlags.NonPublic, [typeof(string), propertyType, serializerType, typeof(CancellationToken)]);
-                    if (persistMethod != null)
-                    {
-                        var task = (Task)persistMethod.Invoke(state, [storageKey, property, customSerializer, CancellationToken.None])!;
-                        await task;
-                        return;
-                    }
+                    using var writer = new PooledArrayBufferWriter<byte>();
+                    await customSerializer.PersistAsync(propertyType, property, writer);
+                    state.PersistAsBytes(storageKey, writer.WrittenMemory.ToArray());
+                    return;
                 }
 
                 // Fallback to JSON serialization
@@ -103,6 +97,28 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     private static PropertyGetter ResolvePropertyGetter(Type type, string propertyName)
     {
         return _propertyGetterCache.GetOrAdd((type, propertyName), PropertyGetterFactory);
+    }
+
+    private IPersistentComponentStateSerializer? ResolveSerializer(Type type)
+    {
+        if (_serializerCache.TryGetValue(type, out var cached))
+        {
+            return cached;
+        }
+
+        var serializer = SerializerFactory(type);
+        if (serializer != null)
+        {
+            _serializerCache.TryAdd(type, serializer);
+        }
+        return serializer;
+    }
+
+    private IPersistentComponentStateSerializer? SerializerFactory(Type type)
+    {
+        var serializerType = typeof(IPersistentComponentStateSerializer<>).MakeGenericType(type);
+        var serializer = serviceProvider.GetService(serializerType);
+        return serializer as IPersistentComponentStateSerializer;
     }
 
     [UnconditionalSuppressMessage(
