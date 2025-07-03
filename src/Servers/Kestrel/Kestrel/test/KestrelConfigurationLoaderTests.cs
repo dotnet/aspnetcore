@@ -273,7 +273,7 @@ public class KestrelConfigurationLoaderTests
         try
         {
             var serverOptions = CreateServerOptions();
-            var certificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var certificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var bytes = certificate.Export(X509ContentType.Pkcs12, "1234");
             var path = GetCertificatePath();
             Directory.CreateDirectory(Path.GetDirectoryName(path));
@@ -314,7 +314,7 @@ public class KestrelConfigurationLoaderTests
         {
             var serverOptions = CreateServerOptions();
 
-            var devCert = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+            var devCert = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
             var devCertBytes = devCert.Export(X509ContentType.Pkcs12, "1234");
             var devCertPath = GetCertificatePath();
             Directory.CreateDirectory(Path.GetDirectoryName(devCertPath));
