@@ -393,7 +393,7 @@ internal partial class IISHttpContext : IFeatureCollection,
                 // Based off of from https://referencesource.microsoft.com/#system/net/System/Net/HttpListenerRequest.cs,1037c8ec82879ba0,references
                 var rawCertificateCopy = new byte[NativeRequest->pSslInfo->pClientCertInfo->CertEncodedSize];
                 Marshal.Copy((IntPtr)NativeRequest->pSslInfo->pClientCertInfo->pCertEncoded, rawCertificateCopy, 0, rawCertificateCopy.Length);
-                _certificate = new X509Certificate2(rawCertificateCopy);
+                _certificate = X509CertificateLoader.LoadCertificate(rawCertificateCopy);
             }
 
             return _certificate;

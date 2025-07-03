@@ -531,7 +531,7 @@ public class SniOptionsSelectorTests
             };
         var fallbackOptions = new HttpsConnectionAdapterOptions
         {
-            ServerCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword")
+            ServerCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword")
         };
 
         var sniOptionsSelector = new SniOptionsSelector(
