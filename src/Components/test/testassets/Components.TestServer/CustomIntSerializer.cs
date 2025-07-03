@@ -26,7 +26,7 @@ public class CustomIntSerializer : IPersistentComponentStateSerializer<int>
         var bytes = data.ToArray();
         var text = Encoding.UTF8.GetString(bytes);
         
-        if (text.StartsWith("CUSTOM:") && int.TryParse(text.Substring(7), out var value))
+        if (text.StartsWith("CUSTOM:", StringComparison.Ordinal) && int.TryParse(text.Substring(7), out var value))
         {
             return value;
         }
