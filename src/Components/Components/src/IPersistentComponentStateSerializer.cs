@@ -33,7 +33,7 @@ internal interface IPersistentComponentStateSerializer
 /// Provides custom serialization logic for persistent component state values of type <typeparamref name="T"/>.
 /// </summary>
 /// <typeparam name="T">The type of the value to serialize.</typeparam>
-internal interface IPersistentComponentStateSerializer<T> : IPersistentComponentStateSerializer
+public interface IPersistentComponentStateSerializer<T> : IPersistentComponentStateSerializer
 {
     /// <summary>
     /// Serializes the provided <paramref name="value"/> and writes it to the <paramref name="writer"/>.
