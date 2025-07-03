@@ -1,9 +1,14 @@
 ﻿{
   "openapi": "3.0.4",
   "info": {
-    "title": "Sample | xml",
+    "title": "Sample | xml-openapi3_0",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost/"
+    }
+  ],
   "paths": {
     "/xml/type-with-examples": {
       "get": {
