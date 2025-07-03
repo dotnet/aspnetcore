@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Provides custom serialization logic for persistent component state values.
 /// </summary>
-internal interface IPersistentComponentStateSerializer
+public interface IPersistentComponentStateSerializer
 {
     /// <summary>
     /// Serializes the provided <paramref name="value"/> and writes it to the <paramref name="writer"/>.

@@ -17,13 +17,15 @@ public class IPersistentComponentStateSerializerTests
         // Arrange
         var currentState = new Dictionary<string, byte[]>();
         var state = new PersistentComponentState(currentState, []);
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var stateValueProvider = new PersistentStateValueProvider(state, serviceProvider);
         var customSerializer = new TestStringSerializer();
         var testValue = "Hello, World!";
 
         state.PersistingState = true;
 
         // Act
-        await state.PersistAsync("test-key", testValue, customSerializer);
+        await stateValueProvider.PersistAsync("test-key", testValue, customSerializer);
 
         // Assert
         state.PersistingState = false;
@@ -31,8 +33,9 @@ public class IPersistentComponentStateSerializerTests
         // Simulate the state transfer that happens between persist and restore phases
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(currentState);
+        var newStateValueProvider = new PersistentStateValueProvider(newState, serviceProvider);
         
-        Assert.True(newState.TryTake("test-key", customSerializer, out var retrievedValue));
+        Assert.True(newStateValueProvider.TryTake("test-key", customSerializer, out var retrievedValue));
         Assert.Equal(testValue, retrievedValue);
     }
 
@@ -47,10 +50,12 @@ public class IPersistentComponentStateSerializerTests
         var state = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         state.InitializeExistingState(existingState);
         
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var stateValueProvider = new PersistentStateValueProvider(state, serviceProvider);
         var customSerializer = new TestStringSerializer();
 
         // Act
-        var success = state.TryTake("test-key", customSerializer, out var retrievedValue);
+        var success = stateValueProvider.TryTake("test-key", customSerializer, out var retrievedValue);
 
         // Assert
         Assert.True(success);

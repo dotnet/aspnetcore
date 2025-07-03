@@ -321,4 +321,49 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
 
         return result;
     }
+
+    /// <summary>
+    /// Serializes <paramref name="instance"/> using the provided <paramref name="serializer"/> and persists it under the given <paramref name="key"/>.
+    /// </summary>
+    /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
+    /// <param name="key">The key to use to persist the state.</param>
+    /// <param name="instance">The instance to persist.</param>
+    /// <param name="serializer">The custom serializer to use for serialization.</param>
+    internal async Task PersistAsync<TValue>(string key, TValue instance, IPersistentComponentStateSerializer<TValue> serializer)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(serializer);
+
+        using var writer = new PooledArrayBufferWriter<byte>();
+        await serializer.PersistAsync(instance, writer);
+        state.PersistAsBytes(key, writer.WrittenMemory.ToArray());
+    }
+
+    /// <summary>
+    /// Tries to retrieve the persisted state with the given <paramref name="key"/> and deserializes it using the provided <paramref name="serializer"/> into an
+    /// instance of type <typeparamref name="TValue"/>.
+    /// When the key is present, the state is successfully returned via <paramref name="instance"/>
+    /// and removed from the <see cref="PersistentComponentState"/>.
+    /// </summary>
+    /// <param name="key">The key used to persist the instance.</param>
+    /// <param name="serializer">The custom serializer to use for deserialization.</param>
+    /// <param name="instance">The persisted instance.</param>
+    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+    internal bool TryTake<TValue>(string key, IPersistentComponentStateSerializer<TValue> serializer, [MaybeNullWhen(false)] out TValue instance)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(serializer);
+
+        if (state.TryTakeBytes(key, out var data))
+        {
+            var sequence = new ReadOnlySequence<byte>(data!);
+            instance = serializer.Restore(sequence);
+            return true;
+        }
+        else
+        {
+            instance = default;
+            return false;
+        }
+    }
 }

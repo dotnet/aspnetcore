@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -134,33 +133,6 @@ public class PersistentComponentState
     }
 
     /// <summary>
-    /// Serializes <paramref name="instance"/> using the provided <paramref name="serializer"/> and persists it under the given <paramref name="key"/>.
-    /// </summary>
-    /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
-    /// <param name="key">The key to use to persist the state.</param>
-    /// <param name="instance">The instance to persist.</param>
-    /// <param name="serializer">The custom serializer to use for serialization.</param>
-    internal async Task PersistAsync<TValue>(string key, TValue instance, IPersistentComponentStateSerializer<TValue> serializer)
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(serializer);
-
-        if (!PersistingState)
-        {
-            throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
-        }
-
-        if (_currentState.ContainsKey(key))
-        {
-            throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
-        }
-
-        using var writer = new PooledArrayBufferWriter<byte>();
-        await serializer.PersistAsync(instance, writer);
-        _currentState.Add(key, writer.WrittenMemory.ToArray());
-    }
-
-    /// <summary>
     /// Tries to retrieve the persisted state as JSON with the given <paramref name="key"/> and deserializes it into an
     /// instance of type <typeparamref name="TValue"/>.
     /// When the key is present, the state is successfully returned via <paramref name="instance"/>
@@ -196,34 +168,6 @@ public class PersistentComponentState
         {
             var reader = new Utf8JsonReader(data);
             instance = JsonSerializer.Deserialize(ref reader, type, JsonSerializerOptionsProvider.Options);
-            return true;
-        }
-        else
-        {
-            instance = default;
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Tries to retrieve the persisted state with the given <paramref name="key"/> and deserializes it using the provided <paramref name="serializer"/> into an
-    /// instance of type <typeparamref name="TValue"/>.
-    /// When the key is present, the state is successfully returned via <paramref name="instance"/>
-    /// and removed from the <see cref="PersistentComponentState"/>.
-    /// </summary>
-    /// <param name="key">The key used to persist the instance.</param>
-    /// <param name="serializer">The custom serializer to use for deserialization.</param>
-    /// <param name="instance">The persisted instance.</param>
-    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-    internal bool TryTake<TValue>(string key, IPersistentComponentStateSerializer<TValue> serializer, [MaybeNullWhen(false)] out TValue instance)
-    {
-        ArgumentNullException.ThrowIfNull(key);
-        ArgumentNullException.ThrowIfNull(serializer);
-
-        if (TryTake(key, out var data))
-        {
-            var sequence = new ReadOnlySequence<byte>(data!);
-            instance = serializer.Restore(sequence);
             return true;
         }
         else
