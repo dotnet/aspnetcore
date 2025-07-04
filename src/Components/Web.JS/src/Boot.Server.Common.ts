@@ -186,16 +186,16 @@ export function isCircuitAvailable(): boolean {
   return circuit && !circuit.isDisposedOrDisposing();
 }
 
-export function updateServerRootComponents(operations: string): Promise<void> | undefined {
+export function updateServerRootComponents(operations: string, serverState: string): Promise<void> | undefined {
   if (circuit && !circuit.isDisposedOrDisposing()) {
-    return circuit.updateRootComponents(operations);
+    return circuit.updateRootComponents(operations, serverState);
   } else {
-    scheduleWhenReady(operations);
+    scheduleWhenReady(operations, serverState);
   }
 }
-async function scheduleWhenReady(operations: string) {
+async function scheduleWhenReady(operations: string, serverState: string) {
   await serverStartPromise;
   if (await startCircuit()) {
-    return circuit.updateRootComponents(operations);
+    return circuit.updateRootComponents(operations, serverState);
   }
 }
