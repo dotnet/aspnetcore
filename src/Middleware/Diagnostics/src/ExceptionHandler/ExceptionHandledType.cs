@@ -4,18 +4,18 @@
 namespace Microsoft.AspNetCore.Diagnostics;
 
 /// <summary>
-/// The result of executing <see cref="ExceptionHandlerMiddleware"/>.
+/// The result of handling an exception with the <see cref="ExceptionHandlerMiddleware"/>.
 /// </summary>
-public enum ExceptionHandlerResult
+public enum ExceptionHandledType
 {
     /// <summary>
     /// Exception was unhandled.
     /// </summary>
     Unhandled,
     /// <summary>
-    /// Exception was handled by an <see cref="Diagnostics.IExceptionHandler"/> instance registered in the DI container.
+    /// Exception was handled by an <see cref="Diagnostics.IExceptionHandler"/> service instance registered in the DI container.
     /// </summary>
-    IExceptionHandler,
+    ExceptionHandlerService,
     /// <summary>
     /// Exception was handled by an <see cref="Http.IProblemDetailsService"/> instance registered in the DI container.
     /// </summary>
@@ -23,7 +23,7 @@ public enum ExceptionHandlerResult
     /// <summary>
     /// Exception was handled by by <see cref="Builder.ExceptionHandlerOptions.ExceptionHandler"/>.
     /// </summary>
-    ExceptionHandler,
+    ExceptionHandlerCallback,
     /// <summary>
     /// Exception was handled by by <see cref="Builder.ExceptionHandlerOptions.ExceptionHandlingPath"/>.
     /// </summary>
