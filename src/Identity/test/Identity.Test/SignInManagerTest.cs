@@ -763,7 +763,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var refreshSignIn = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.RefreshCounterName);
+        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var context = new DefaultHttpContext();
@@ -803,7 +803,7 @@ public class SignInManagerTest
         auth.Verify();
         signInManager.Verify();
 
-        Assert.Collection(refreshSignIn.GetMeasurementSnapshot(),
+        Assert.Collection(authenticate.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
@@ -817,7 +817,7 @@ public class SignInManagerTest
     public async Task ResignInNoOpsAndLogsErrorIfNotAuthenticated()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var refresh = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.RefreshCounterName);
+        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
         using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
@@ -840,7 +840,7 @@ public class SignInManagerTest
         signInManager.Verify(s => s.SignInWithClaimsAsync(It.IsAny<PocoUser>(), It.IsAny<AuthenticationProperties>(), It.IsAny<IEnumerable<Claim>>()),
             Times.Never());
 
-        Assert.Collection(refresh.GetMeasurementSnapshot(),
+        Assert.Collection(authenticate.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),

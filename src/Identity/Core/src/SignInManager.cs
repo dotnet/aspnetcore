@@ -200,11 +200,12 @@ public class SignInManager<TUser> where TUser : class
         try
         {
             var (success, isPersistent) = await RefreshSignInCoreAsync(user);
-            _metrics?.RefreshSignIn(typeof(TUser).FullName!, AuthenticationScheme, success, isPersistent);
+            var signInResult = success ? SignInResult.Success : SignInResult.Failed;
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, signInResult, SignInType.Refresh, isPersistent);
         }
         catch (Exception ex)
         {
-            _metrics?.RefreshSignIn(typeof(TUser).FullName!, AuthenticationScheme, success: null, isPersistent: null, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Refresh, isPersistent: null, ex);
             throw;
         }
     }

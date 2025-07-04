@@ -13,7 +13,6 @@ internal sealed class SignInManagerMetrics : IDisposable
     public const string AuthenticateCounterName = "aspnetcore.identity.sign_in.authenticate";
     public const string RememberTwoFactorCounterName = "aspnetcore.identity.sign_in.remember_two_factor";
     public const string ForgetTwoFactorCounterName = "aspnetcore.identity.sign_in.forget_two_factor";
-    public const string RefreshCounterName = "aspnetcore.identity.sign_in.refresh";
     public const string CheckPasswordCounterName = "aspnetcore.identity.sign_in.check_password";
     public const string SignInUserPrincipalCounterName = "aspnetcore.identity.sign_in.sign_in_principal";
     public const string SignOutUserPrincipalCounterName = "aspnetcore.identity.sign_in.sign_out_principal";
@@ -22,7 +21,6 @@ internal sealed class SignInManagerMetrics : IDisposable
     private readonly Counter<long> _authenticateCounter;
     private readonly Counter<long> _rememberTwoFactorClientCounter;
     private readonly Counter<long> _forgetTwoFactorCounter;
-    private readonly Counter<long> _refreshCounter;
     private readonly Counter<long> _checkPasswordCounter;
     private readonly Counter<long> _signInUserPrincipalCounter;
     private readonly Counter<long> _signOutUserPrincipalCounter;
@@ -34,7 +32,6 @@ internal sealed class SignInManagerMetrics : IDisposable
         _authenticateCounter = _meter.CreateCounter<long>(AuthenticateCounterName, "count", "The number of authenticate attempts. The authenticate counter is incremented by sign in methods such as PasswordSignInAsync and TwoFactorSignInAsync.");
         _rememberTwoFactorClientCounter = _meter.CreateCounter<long>(RememberTwoFactorCounterName, "count", "The number of two factor clients remembered.");
         _forgetTwoFactorCounter = _meter.CreateCounter<long>(ForgetTwoFactorCounterName, "count", "The number of two factor clients forgotten.");
-        _refreshCounter = _meter.CreateCounter<long>(RefreshCounterName, "count", "The number of refresh sign-in attempts.");
         _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "count", "The number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.");
         _signInUserPrincipalCounter = _meter.CreateCounter<long>(SignInUserPrincipalCounterName, "count", "The number of user principals signed in.");
         _signOutUserPrincipalCounter = _meter.CreateCounter<long>(SignOutUserPrincipalCounterName, "count", "The number of user principals signed out.");
@@ -57,7 +54,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         _checkPasswordCounter.Add(1, tags);
     }
 
-    internal void AuthenticateSignIn(string userType, string authenticationScheme, SignInResult? result, SignInType signInType, bool isPersistent, Exception? exception = null)
+    internal void AuthenticateSignIn(string userType, string authenticationScheme, SignInResult? result, SignInType signInType, bool? isPersistent, Exception? exception = null)
     {
         if (!_authenticateCounter.Enabled)
         {
@@ -69,8 +66,11 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.authentication_scheme", authenticationScheme },
             { "aspnetcore.identity.sign_in.type", GetSignInType(signInType) },
-            { "aspnetcore.identity.sign_in.is_persistent", isPersistent },
         };
+        if (isPersistent != null)
+        {
+            tags.Add("aspnetcore.identity.sign_in.is_persistent", isPersistent.Value);
+        }
         AddSignInResult(ref tags, result);
         AddExceptionTags(ref tags, exception);
 
@@ -145,28 +145,6 @@ internal sealed class SignInManagerMetrics : IDisposable
         _forgetTwoFactorCounter.Add(1, tags);
     }
 
-    internal void RefreshSignIn(string userType, string authenticationScheme, bool? success, bool? isPersistent, Exception? exception = null)
-    {
-        if (!_refreshCounter.Enabled)
-        {
-            return;
-        }
-
-        var tags = new TagList
-        {
-            { "aspnetcore.identity.user_type", userType },
-            { "aspnetcore.identity.authentication_scheme", authenticationScheme },
-            { "aspnetcore.identity.sign_in.result", success.GetValueOrDefault() ? "success" : "failure" }
-        };
-        if (isPersistent != null)
-        {
-            tags.Add("aspnetcore.identity.sign_in.is_persistent", isPersistent.Value);
-        }
-        AddExceptionTags(ref tags, exception);
-
-        _refreshCounter.Add(1, tags);
-    }
-
     public void Dispose()
     {
         _meter.Dispose();
@@ -217,6 +195,7 @@ internal sealed class SignInManagerMetrics : IDisposable
 
 internal enum SignInType
 {
+    Refresh,
     Password,
     TwoFactorRecoveryCode,
     TwoFactorAuthenticator,
