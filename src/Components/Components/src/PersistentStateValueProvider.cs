@@ -109,14 +109,8 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         var serializerType = typeof(IPersistentComponentStateSerializer<>).MakeGenericType(type);
         var serializer = serviceProvider.GetService(serializerType);
         
-        if (serializer != null)
-        {
-            // Create an adapter that implements the internal interface
-            var adapterType = typeof(SerializerAdapter<>).MakeGenericType(type);
-            return (IPersistentComponentStateSerializer?)Activator.CreateInstance(adapterType, serializer);
-        }
-        
-        return null;
+        // The generic interface now inherits from the internal interface, so we can cast directly
+        return serializer as IPersistentComponentStateSerializer;
     }
 
     [UnconditionalSuppressMessage(
@@ -373,14 +367,5 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
             instance = default;
             return false;
         }
-    }
-
-    private sealed class SerializerAdapter<T>(IPersistentComponentStateSerializer<T> serializer) : IPersistentComponentStateSerializer
-    {
-        Task IPersistentComponentStateSerializer.PersistAsync(Type type, object value, IBufferWriter<byte> writer)
-            => serializer.PersistAsync((T)value, writer);
-
-        object IPersistentComponentStateSerializer.Restore(Type type, ReadOnlySequence<byte> data)
-            => serializer.Restore(data)!;
     }
 }

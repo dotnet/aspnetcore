@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components;
 /// Provides custom serialization logic for persistent component state values of type <typeparamref name="T"/>.
 /// </summary>
 /// <typeparam name="T">The type of the value to serialize.</typeparam>
-public interface IPersistentComponentStateSerializer<T>
+public interface IPersistentComponentStateSerializer<T> : IPersistentComponentStateSerializer
 {
     /// <summary>
     /// Serializes the provided <paramref name="value"/> and writes it to the <paramref name="writer"/>.
@@ -26,4 +26,16 @@ public interface IPersistentComponentStateSerializer<T>
     /// <param name="data">The serialized data to deserialize.</param>
     /// <returns>The deserialized value.</returns>
     T Restore(ReadOnlySequence<byte> data);
+
+    /// <summary>
+    /// Explicit interface implementation for non-generic serialization.
+    /// </summary>
+    Task IPersistentComponentStateSerializer.PersistAsync(Type type, object value, IBufferWriter<byte> writer)
+        => PersistAsync((T)value, writer);
+
+    /// <summary>
+    /// Explicit interface implementation for non-generic deserialization.
+    /// </summary>
+    object IPersistentComponentStateSerializer.Restore(Type type, ReadOnlySequence<byte> data)
+        => Restore(data)!;
 }
