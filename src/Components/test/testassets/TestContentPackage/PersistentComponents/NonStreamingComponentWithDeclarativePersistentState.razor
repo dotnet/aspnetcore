@@ -1,0 +1,40 @@
+﻿<p>Non streaming component with persistent state</p>
+
+<p>This component demonstrates state persistence in the absence of streaming rendering.
+When the component renders it will try to restore the state and if present display that
+it succeeded in doing so and the restored value.
+If the state is not present, it will indicate it didn't find it and display a "fresh"
+value.</p>
+
+<p id="interactive">Interactive: @(RendererInfo.IsInteractive)</p>
+<p id="interactive-runtime">Interactive runtime: @_interactiveRuntime</p>
+<p id="state-value">State value:@EnhancedNavState</p>
+
+<a id="enhanced-nav-update" href="@Navigation.GetUriWithQueryParameter("server-state", "updated")">With updated server state</a>
+<br />
+
+@code {
+    private string _interactiveRuntime;
+
+    [Inject] public PersistentComponentState PersistentComponentState { get; set; }
+    [Inject] public NavigationManager Navigation { get; set; }
+
+    [Parameter] public string ServerState { get; set; }
+
+    [PersistentState(AllowUpdates = true)]
+    public string EnhancedNavState { get; set; }
+
+    protected override void OnInitialized()
+    {
+        if (!RendererInfo.IsInteractive)
+        {
+            _interactiveRuntime = "none";
+            EnhancedNavState = ServerState;
+        }
+        else
+        {
+            EnhancedNavState ??= "not found";
+            _interactiveRuntime = OperatingSystem.IsBrowser() ? "wasm" : "server";
+        }
+    }
+}

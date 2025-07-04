@@ -76,7 +76,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             // when the first set of components is provided via an UpdateRootComponents call.
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
             appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
-            await appLifetime.RestoreStateAsync(store);
+            await appLifetime.RestoreStateAsync(store, RestoreContext.InitialValue);
         }
 
         var serverComponentDeserializer = scope.ServiceProvider.GetRequiredService<IServerComponentDeserializer>();
