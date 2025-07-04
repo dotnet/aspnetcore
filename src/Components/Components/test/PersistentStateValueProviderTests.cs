@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
+using Microsoft.AspNetCore.Components.PersistentState;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,7 @@ public class PersistentStateValueProviderTests
         // Arrange
         var state = new PersistentComponentState(
             new Dictionary<string, byte[]>(),
+            [],
             []);
 
         var provider = new PersistentStateValueProvider(state, new ServiceCollection().BuildServiceProvider());
@@ -52,6 +54,7 @@ public class PersistentStateValueProviderTests
         // Arrange
         var state = new PersistentComponentState(
             new Dictionary<string, byte[]>(),
+            [],
             []);
         var provider = new PersistentStateValueProvider(state, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
@@ -74,6 +77,7 @@ public class PersistentStateValueProviderTests
         // Arrange
         var state = new PersistentComponentState(
             new Dictionary<string, byte[]>(),
+            [],
             []);
         var provider = new PersistentStateValueProvider(state, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
@@ -121,7 +125,7 @@ public class PersistentStateValueProviderTests
         Assert.NotEmpty(store.State);
 
         // To verify the actual content, we need to create a new state and restore it
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State);
 
         // The key used for storing the property value is computed by the PersistentStateValueProvider
@@ -159,7 +163,7 @@ public class PersistentStateValueProviderTests
         Assert.NotEmpty(store.State);
 
         // To verify the actual content, we need to create a new state and restore it
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State);
 
         // The key used for storing the property value is computed by the PersistentStateValueProvider
@@ -200,7 +204,7 @@ public class PersistentStateValueProviderTests
         Assert.NotEmpty(store.State);
 
         // To verify the actual content, we need to create a new state and restore it
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State);
 
         // The key used for storing the property value is computed by the PersistentStateValueProvider
@@ -273,7 +277,7 @@ public class PersistentStateValueProviderTests
         Assert.NotEmpty(store.State);
 
         // To verify the actual content, we need to create a new state and restore it
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State);
 
         // The key used for storing the property value is computed by the PersistentStateValueProvider
@@ -459,7 +463,7 @@ public class PersistentStateValueProviderTests
         Assert.NotEmpty(store.State);
 
         // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State);
 
         var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
@@ -494,7 +498,7 @@ public class PersistentStateValueProviderTests
         Assert.NotEmpty(store.State);
 
         // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State);
 
         var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
@@ -529,7 +533,7 @@ public class PersistentStateValueProviderTests
         Assert.NotEmpty(store.State);
 
         // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State);
 
         var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
@@ -564,7 +568,7 @@ public class PersistentStateValueProviderTests
         Assert.NotEmpty(store.State);
 
         // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State);
 
         var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
@@ -618,7 +622,7 @@ public class PersistentStateValueProviderTests
                 {
                     currentRenderTree.OpenComponent<IComponent>(0);
                 }
-                
+
                 var frames = currentRenderTree.GetFrames();
                 frames.Array[frames.Count - 1].ComponentStateField = componentState;
                 if (key != null)
@@ -690,5 +694,102 @@ public class PersistentStateValueProviderTests
     {
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
         public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    private class TestComponentWithFilteredState : IComponent
+    {
+        [PersistentState]
+        [RestoreStateOnPrerendering]
+        public string PrerenderState { get; set; }
+
+        [PersistentState]
+        public string NormalState { get; set; }
+
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    [Fact]
+    public void Subscribe_WithRestoreOnPrerenderingAttribute_CreatesCorrectSubscriptions()
+    {
+        // Arrange
+        var state = new PersistentComponentState(
+            new Dictionary<string, byte[]>(),
+            [],
+            []);
+
+        var provider = new PersistentStateValueProvider(state);
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithFilteredState();
+        var componentStates = CreateComponentState(renderer, [(component, null)], null);
+        var componentState = componentStates.First();
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponentWithFilteredState.PrerenderState), typeof(string));
+
+        // Act
+        provider.Subscribe(componentState, cascadingParameterInfo);
+
+        // Assert
+        Assert.True(provider.Subscriptions.ContainsKey(componentState));
+        var subscription = provider.Subscriptions[componentState];
+        Assert.NotNull(subscription.FirstRestoringSubscription);
+        Assert.Null(subscription.AdditionalRestoringSubscriptions);
+    }
+
+    [Fact]
+    public void Subscribe_WithFilteredProperty_CreatesValidSubscription()
+    {
+        // Arrange
+        var state = new PersistentComponentState(
+            new Dictionary<string, byte[]>(),
+            [],
+            []);
+
+        var provider = new PersistentStateValueProvider(state);
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithFilteredState();
+        var componentStates = CreateComponentState(renderer, [(component, null)], null);
+        var componentState = componentStates.First();
+
+        var prerenderInfo = CreateCascadingParameterInfo(nameof(TestComponentWithFilteredState.PrerenderState), typeof(string));
+        var normalInfo = CreateCascadingParameterInfo(nameof(TestComponentWithFilteredState.NormalState), typeof(string));
+
+        // Act & Assert - Subscribe to prerender state
+        provider.Subscribe(componentState, prerenderInfo);
+        Assert.True(provider.Subscriptions.ContainsKey(componentState));
+
+        // Act & Assert - Subscribe to normal state should work too
+        provider.Subscribe(componentState, normalInfo);
+        Assert.True(provider.Subscriptions.ContainsKey(componentState));
+
+        // Verify subscription structure is valid and was created
+        var subscription = provider.Subscriptions[componentState];
+        // PersistingComponentStateSubscription is a value type, so just verify the subscription exists
+        Assert.True(provider.Subscriptions.ContainsKey(componentState));
+    }
+
+    [Fact]
+    public void Unsubscribe_RemovesSubscriptionCorrectly()
+    {
+        // Arrange
+        var state = new PersistentComponentState(
+            new Dictionary<string, byte[]>(),
+            [],
+            []);
+
+        var provider = new PersistentStateValueProvider(state);
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithFilteredState();
+        var componentStates = CreateComponentState(renderer, [(component, null)], null);
+        var componentState = componentStates.First();
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponentWithFilteredState.PrerenderState), typeof(string));
+
+        // Act - Subscribe then unsubscribe
+        provider.Subscribe(componentState, cascadingParameterInfo);
+        Assert.True(provider.Subscriptions.ContainsKey(componentState));
+
+        provider.Unsubscribe(componentState, cascadingParameterInfo);
+
+        // Assert - Subscription should be removed
+        Assert.False(provider.Subscriptions.ContainsKey(componentState));
     }
 }

@@ -16,13 +16,17 @@ public class PersistentComponentState
     private readonly IDictionary<string, byte[]> _currentState;
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
+    private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks;
+    private IPersistentComponentStateScenario? _currentScenario;
 
     internal PersistentComponentState(
         IDictionary<string , byte[]> currentState,
-        List<PersistComponentStateRegistration> pauseCallbacks)
+        List<PersistComponentStateRegistration> pauseCallbacks,
+        List<RestoreComponentStateRegistration> restoringCallbacks)
     {
         _currentState = currentState;
         _registeredCallbacks = pauseCallbacks;
+        _registeredRestoringCallbacks = restoringCallbacks;
     }
 
     internal bool PersistingState { get; set; }
@@ -66,6 +70,23 @@ public class PersistentComponentState
         _registeredCallbacks.Add(persistenceCallback);
 
         return new PersistingComponentStateSubscription(_registeredCallbacks, persistenceCallback);
+    }
+
+    /// <summary>
+    /// Register a callback to restore the component state during specific scenarios.
+    /// The callback will only be invoked if the filter supports the current restoration scenario.
+    /// </summary>
+    /// <param name="filter">The filter that determines when this callback should be invoked.</param>
+    /// <param name="callback">The callback to invoke during state restoration.</param>
+    /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
+    public RestoringComponentStateSubscription RegisterOnRestoring(IPersistentStateFilter? filter, Action callback)
+    {
+        ArgumentNullException.ThrowIfNull(callback);
+
+        var registration = new RestoreComponentStateRegistration(filter, callback);
+        _registeredRestoringCallbacks.Add(registration);
+
+        return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);
     }
 
     /// <summary>
@@ -213,5 +234,23 @@ public class PersistentComponentState
         {
             return false;
         }
+    }
+
+    /// <summary>
+    /// Updates the existing state with the given <paramref name="state"/> dictionary.
+    /// </summary>
+    /// <param name="state">The new state to apply.</param>
+    /// <param name="scenario">The scenario for which the state is being updated.</param>
+    internal void UpdateExistingState(IDictionary<string, byte[]> state, IPersistentComponentStateScenario? scenario)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        if (_existingState == null || _existingState.Count > 0)
+        {
+            throw new InvalidOperationException("Cannot update existing state: previous state has not been cleared or state is not initialized.");
+        }
+
+        _existingState = state;
+        _currentScenario = scenario;
     }
 }

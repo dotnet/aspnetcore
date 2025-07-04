@@ -1061,6 +1061,10 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
         Browser.Equal("42", () => Browser.FindElement(By.Id("custom-server")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
+
+        // Verify prerendering filtering attributes work correctly
+        Browser.Equal("prerender-enabled-restored", () => Browser.FindElement(By.Id("prerendering-enabled-server")).Text);
+        Browser.Equal("prerender-disabled-not-restored", () => Browser.FindElement(By.Id("prerendering-disabled-server")).Text);
     }
 
     [Fact]
@@ -1080,6 +1084,10 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("restored", () => Browser.FindElement(By.Id("wasm")).Text);
         Browser.Equal("42", () => Browser.FindElement(By.Id("custom-wasm")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
+
+        // Verify prerendering filtering attributes work correctly
+        Browser.Equal("prerender-enabled-restored", () => Browser.FindElement(By.Id("prerendering-enabled-wasm")).Text);
+        Browser.Equal("prerender-disabled-not-restored", () => Browser.FindElement(By.Id("prerendering-disabled-wasm")).Text);
     }
 
     [Fact]
@@ -1099,6 +1107,10 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
         Browser.Equal("42", () => Browser.FindElement(By.Id("custom-auto")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
+
+        // Verify prerendering filtering attributes work correctly
+        Browser.Equal("prerender-enabled-restored", () => Browser.FindElement(By.Id("prerendering-enabled-auto")).Text);
+        Browser.Equal("prerender-disabled-not-restored", () => Browser.FindElement(By.Id("prerendering-disabled-auto")).Text);
     }
 
     [Fact]
@@ -1161,6 +1173,10 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
         Browser.Equal("42", () => Browser.FindElement(By.Id("custom-auto")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
+
+        // Verify prerendering filtering attributes work correctly
+        Browser.Equal("prerender-enabled-restored", () => Browser.FindElement(By.Id("prerendering-enabled-auto")).Text);
+        Browser.Equal("prerender-disabled-not-restored", () => Browser.FindElement(By.Id("prerendering-disabled-auto")).Text);
     }
 
     [Fact]

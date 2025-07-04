@@ -1,6 +1,8 @@
 ﻿<p>Application state is <span id="@KeyName">@Value</span></p>
 <p>Custom value is <span id="custom-@KeyName">@CustomValue</span></p>
 <p>Render mode: <span id="render-mode-@KeyName">@_renderMode</span></p>
+<p>Prerendering enabled: <span id="prerendering-enabled-@KeyName">@PrerenderingEnabledValue</span></p>
+<p>Prerendering disabled: <span id="prerendering-disabled-@KeyName">@PrerenderingDisabledValue</span></p>
 
 @code {
     [Parameter, EditorRequired]
@@ -14,6 +16,12 @@
 
     [PersistentState]
     public int CustomValue { get; set; }
+    [RestoreStateOnPrerendering]
+    public string PrerenderingEnabledValue { get; set; }
+
+    [PersistentState]
+    [RestoreStateOnPrerendering(false)]
+    public string PrerenderingDisabledValue { get; set; }
 
     private string _renderMode = "SSR";
 
@@ -25,5 +33,9 @@
             CustomValue = !RendererInfo.IsInteractive ? 42 : 0;
         }
         _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+
+        // Set initial values for prerendering test properties
+        PrerenderingEnabledValue ??= !RendererInfo.IsInteractive ? "prerender-enabled-initial" : "prerender-enabled-restored";
+        PrerenderingDisabledValue ??= !RendererInfo.IsInteractive ? "prerender-disabled-initial" : "prerender-disabled-not-restored";
     }
 }

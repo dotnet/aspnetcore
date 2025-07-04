@@ -28,7 +28,18 @@
 * Do not emit "Act", "Arrange" or "Assert" comments.
 * Use Moq for mocking in tests.
 * Copy existing style in nearby files for test method names and capitalization.
+* For specific tests, use `--filter DisplayName~TestName` syntax rather than other filter formats.
+* For running multiple specific tests, use pipe syntax: `--filter DisplayName~FirstTest|DisplayName~SecondTest`.
+* Run expensive E2E tests selectively using specific test filters rather than running all tests in a suite.
+* For UI/interaction tests, run only one test at a time to avoid browser conflicts.
 
 ## Running tests
 
 * To build and run tests in the repo, use the `build.sh` script that is located in each subdirectory within the `src` folder. For example, to run the build with tests in the `src/Http` directory, run `./src/Http/build.sh -test`.
+* When debugging specific test failures, you can run individual tests with filtering:
+  ```
+  dotnet test <project-path> --filter DisplayName~TestMethodName --logger "console;verbosity=normal"
+  ```
+* When making changes that affect certain scenarios (like prerendering), test those specific scenarios first before running full test suites.
+* Build projects locally with `dotnet build <project-path> --no-restore` for faster validation before running tests.
+* When working with interactive features, check both server and WebAssembly render modes by running representative tests for each.

@@ -123,7 +123,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         componentApplicationLifetime.SetPlatformRenderMode(RenderMode.InteractiveAuto);
-        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
+        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore(), WebPersistenceScenario.Prerendering);
 
         if (componentType != null)
         {

@@ -791,7 +791,7 @@ internal partial class CircuitHost : IAsyncDisposable
                         // provided during the start up process
                         var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
                         appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
-                        await appLifetime.RestoreStateAsync(store);
+                        await appLifetime.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
                     }
 
                     // Retrieve the circuit handlers at this point.
