@@ -86,7 +86,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         Assert.Equal("Test exception", originalExceptionMessage);
 
         Assert.IsType<Exception>(loggingContext.Exception);
-        Assert.Equal(ExceptionHandlerResult.ProblemDetailsService, loggingContext.HandlerResult);
+        Assert.Equal(ExceptionHandledType.ProblemDetailsService, loggingContext.ExceptionHandledBy);
     }
 
     [Fact]
@@ -114,9 +114,9 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     }
 
     [Theory]
-    [InlineData(ExceptionHandlerResult.ExceptionHandler, false)]
-    [InlineData(ExceptionHandlerResult.ProblemDetailsService, true)]
-    public async Task Invoke_HasExceptionHandler_SuppressLogging_CallbackRun(ExceptionHandlerResult suppressResult, bool logged)
+    [InlineData(ExceptionHandledType.ExceptionHandlerCallback, false)]
+    [InlineData(ExceptionHandledType.ProblemDetailsService, true)]
+    public async Task Invoke_HasExceptionHandler_SuppressLogging_CallbackRun(ExceptionHandledType suppressResult, bool logged)
     {
         // Arrange
         var sink = new TestSink();
@@ -128,7 +128,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
                 context.Features.Set<IHttpResponseFeature>(new TestHttpResponseFeature());
                 return Task.CompletedTask;
             },
-            suppressLoggingCallback: c => c.HandlerResult == suppressResult);
+            suppressLoggingCallback: c => c.ExceptionHandledBy == suppressResult);
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, loggerFactory: new TestLoggerFactory(sink, true));
 
         // Act & Assert

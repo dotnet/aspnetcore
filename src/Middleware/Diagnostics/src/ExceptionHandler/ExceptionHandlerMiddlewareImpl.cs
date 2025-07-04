@@ -171,18 +171,18 @@ internal sealed class ExceptionHandlerMiddlewareImpl
             context.Response.OnStarting(_clearCacheHeadersDelegate, context.Response);
 
             string? handlerTag = null;
-            var result = ExceptionHandlerResult.Unhandled;
+            var result = ExceptionHandledType.Unhandled;
             foreach (var exceptionHandler in _exceptionHandlers)
             {
                 if (await exceptionHandler.TryHandleAsync(context, edi.SourceException, context.RequestAborted))
                 {
-                    result = ExceptionHandlerResult.IExceptionHandler;
+                    result = ExceptionHandledType.ExceptionHandlerService;
                     handlerTag = exceptionHandler.GetType().FullName;
                     break;
                 }
             }
 
-            if (result == ExceptionHandlerResult.Unhandled)
+            if (result == ExceptionHandledType.Unhandled)
             {
                 if (_options.ExceptionHandler is not null)
                 {
@@ -193,12 +193,12 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                     {
                         if (_options.ExceptionHandlingPath.HasValue)
                         {
-                            result = ExceptionHandlerResult.ExceptionHandlingPath;
+                            result = ExceptionHandledType.ExceptionHandlingPath;
                             handlerTag = _options.ExceptionHandlingPath.Value;
                         }
                         else
                         {
-                            result = ExceptionHandlerResult.ExceptionHandler;
+                            result = ExceptionHandledType.ExceptionHandlerCallback;
                         }
                     }
                 }
@@ -212,13 +212,13 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                         Exception = edi.SourceException,
                     }))
                     {
-                        result = ExceptionHandlerResult.ProblemDetailsService;
+                        result = ExceptionHandledType.ProblemDetailsService;
                         handlerTag = _problemDetailsService.GetType().FullName;
                     }
                 }
             }
 
-            if (result != ExceptionHandlerResult.Unhandled || _options.StatusCodeSelector != null || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
+            if (result != ExceptionHandledType.Unhandled || _options.StatusCodeSelector != null || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
                 var suppressLogging = false;
 
@@ -227,7 +227,12 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                 // Run the configured callback to determine if the exception logging in middleware should be suppressed.
                 if (_options.SuppressLoggingCallback is { } suppressLoggingCallback)
                 {
-                    var logContext = new ExceptionHandlerSuppressLoggingContext { Exception = edi.SourceException, HandlerResult = result };
+                    var logContext = new ExceptionHandlerSuppressLoggingContext
+                    {
+                        HttpContext = context,
+                        Exception = edi.SourceException,
+                        ExceptionHandledBy = result
+                    };
                     suppressLogging = suppressLoggingCallback(logContext);
                 }
 
