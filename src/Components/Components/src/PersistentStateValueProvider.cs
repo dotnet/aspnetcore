@@ -71,26 +71,27 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         // Resolve serializer outside the lambda
         var customSerializer = ResolveSerializer(propertyType);
         
-        _subscriptions[subscriber] = state.RegisterOnPersisting(async () =>
+        _subscriptions[subscriber] = state.RegisterOnPersisting(() =>
             {
                 var storageKey = ComputeKey(subscriber, propertyName);
                 var propertyGetter = ResolvePropertyGetter(subscriber.Component.GetType(), propertyName);
                 var property = propertyGetter.GetValue(subscriber.Component);
                 if (property == null)
                 {
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 if (customSerializer != null)
                 {
                     using var writer = new PooledArrayBufferWriter<byte>();
-                    await customSerializer.PersistAsync(propertyType, property, writer);
+                    customSerializer.PersistAsync(propertyType, property, writer);
                     state.PersistAsBytes(storageKey, writer.WrittenMemory.ToArray());
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 // Fallback to JSON serialization
                 state.PersistAsJson(storageKey, property, propertyType);
+                return Task.CompletedTask;
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
     }
 
@@ -331,13 +332,13 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     /// <param name="key">The key to use to persist the state.</param>
     /// <param name="instance">The instance to persist.</param>
     /// <param name="serializer">The custom serializer to use for serialization.</param>
-    internal async Task PersistAsync<TValue>(string key, TValue instance, PersistentComponentStateSerializer<TValue> serializer)
+    internal void PersistAsync<TValue>(string key, TValue instance, PersistentComponentStateSerializer<TValue> serializer)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(serializer);
 
         using var writer = new PooledArrayBufferWriter<byte>();
-        await serializer.PersistAsync(instance, writer);
+        serializer.PersistAsync(instance, writer);
         state.PersistAsBytes(key, writer.WrittenMemory.ToArray());
     }
 

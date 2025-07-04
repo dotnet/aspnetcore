@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Components;
 
 internal interface IPersistentComponentStateSerializer
 {
-    Task PersistAsync(Type type, object value, IBufferWriter<byte> writer);
+    void PersistAsync(Type type, object value, IBufferWriter<byte> writer);
     object Restore(Type type, ReadOnlySequence<byte> data);
 }

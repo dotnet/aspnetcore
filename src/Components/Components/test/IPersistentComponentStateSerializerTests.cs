@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components;
 public class IPersistentComponentStateSerializerTests
 {
     [Fact]
-    public async Task PersistAsync_CanUseCustomSerializer()
+    public void PersistAsync_CanUseCustomSerializer()
     {
         // Arrange
         var currentState = new Dictionary<string, byte[]>();
@@ -25,7 +25,7 @@ public class IPersistentComponentStateSerializerTests
         state.PersistingState = true;
 
         // Act
-        await stateValueProvider.PersistAsync("test-key", testValue, customSerializer);
+        stateValueProvider.PersistAsync("test-key", testValue, customSerializer);
 
         // Assert
         state.PersistingState = false;
@@ -64,11 +64,10 @@ public class IPersistentComponentStateSerializerTests
 
     private class TestStringSerializer : PersistentComponentStateSerializer<string>
     {
-        public override Task PersistAsync(string value, IBufferWriter<byte> writer)
+        public override void PersistAsync(string value, IBufferWriter<byte> writer)
         {
             var bytes = Encoding.UTF8.GetBytes(value);
             writer.Write(bytes);
-            return Task.CompletedTask;
         }
 
         public override string Restore(ReadOnlySequence<byte> data)

@@ -13,12 +13,11 @@ namespace TestContentPackage;
 /// </summary>
 public class CustomIntSerializer : PersistentComponentStateSerializer<int>
 {
-    public override Task PersistAsync(int value, IBufferWriter<byte> writer)
+    public override void PersistAsync(int value, IBufferWriter<byte> writer)
     {
         var customFormat = $"CUSTOM:{value}";
         var bytes = Encoding.UTF8.GetBytes(customFormat);
         writer.Write(bytes);
-        return Task.CompletedTask;
     }
 
     public override int Restore(ReadOnlySequence<byte> data)
