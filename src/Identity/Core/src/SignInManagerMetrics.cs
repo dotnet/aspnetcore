@@ -42,6 +42,11 @@ internal sealed class SignInManagerMetrics : IDisposable
 
     internal void CheckPasswordSignIn(string userType, SignInResult? result, Exception? exception = null)
     {
+        if (!_checkPasswordCounter.Enabled)
+        {
+            return;
+        }
+
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
@@ -54,6 +59,11 @@ internal sealed class SignInManagerMetrics : IDisposable
 
     internal void AuthenticateSignIn(string userType, string authenticationScheme, SignInResult? result, SignInType signInType, bool isPersistent, Exception? exception = null)
     {
+        if (!_authenticateCounter.Enabled)
+        {
+            return;
+        }
+
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
@@ -69,6 +79,11 @@ internal sealed class SignInManagerMetrics : IDisposable
 
     internal void SignInUserPrincipal(string userType, string authenticationScheme, Exception? exception = null)
     {
+        if (!_signInUserPrincipalCounter.Enabled)
+        {
+            return;
+        }
+
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
@@ -81,6 +96,11 @@ internal sealed class SignInManagerMetrics : IDisposable
 
     internal void SignOutUserPrincipal(string userType, string authenticationScheme, Exception? exception = null)
     {
+        if (!_signOutUserPrincipalCounter.Enabled)
+        {
+            return;
+        }
+
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
@@ -93,6 +113,11 @@ internal sealed class SignInManagerMetrics : IDisposable
 
     internal void RememberTwoFactorClient(string userType, string authenticationScheme, Exception? exception = null)
     {
+        if (!_rememberTwoFactorClientCounter.Enabled)
+        {
+            return;
+        }
+
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
@@ -105,6 +130,11 @@ internal sealed class SignInManagerMetrics : IDisposable
 
     internal void ForgetTwoFactorClient(string userType, string authenticationScheme, Exception? exception = null)
     {
+        if (!_forgetTwoFactorCounter.Enabled)
+        {
+            return;
+        }
+
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
@@ -117,6 +147,11 @@ internal sealed class SignInManagerMetrics : IDisposable
 
     internal void RefreshSignIn(string userType, string authenticationScheme, bool? success, bool? isPersistent, Exception? exception = null)
     {
+        if (!_refreshCounter.Enabled)
+        {
+            return;
+        }
+
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },

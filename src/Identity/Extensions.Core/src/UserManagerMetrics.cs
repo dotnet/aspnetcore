@@ -42,78 +42,83 @@ internal sealed class UserManagerMetrics : IDisposable
 
     internal void CreateUser(string userType, IdentityResult? result, Exception? exception = null)
     {
-        if (_createCounter.Enabled)
+        if (!_createCounter.Enabled)
         {
-            var tags = new TagList
-            {
-                { "aspnetcore.identity.user_type", userType }
-            };
-            AddIdentityResultTags(ref tags, result);
-            AddExceptionTags(ref tags, exception);
-
-            _createCounter.Add(1, tags);
+            return;
         }
-    }
 
-    private static void AddExceptionTags(ref TagList tags, Exception? exception)
-    {
-        if (exception != null)
+        var tags = new TagList
         {
-            tags.Add("error.type", exception.GetType().FullName!);
-        }
+            { "aspnetcore.identity.user_type", userType }
+        };
+        AddIdentityResultTags(ref tags, result);
+        AddExceptionTags(ref tags, exception);
+
+        _createCounter.Add(1, tags);
     }
 
     internal void UpdateUser(string userType, IdentityResult? result, UserUpdateType updateType, Exception? exception = null)
     {
-        if (_updateCounter.Enabled)
+        if (!_updateCounter.Enabled)
         {
-            var tags = new TagList
-            {
-                { "aspnetcore.identity.user_type", userType },
-                { "aspnetcore.identity.user.update_type", GetUpdateType(updateType) },
-            };
-            AddIdentityResultTags(ref tags, result);
-            AddExceptionTags(ref tags, exception);
-
-            _updateCounter.Add(1, tags);
+            return;
         }
+
+        var tags = new TagList
+        {
+            { "aspnetcore.identity.user_type", userType },
+            { "aspnetcore.identity.user.update_type", GetUpdateType(updateType) },
+        };
+        AddIdentityResultTags(ref tags, result);
+        AddExceptionTags(ref tags, exception);
+
+        _updateCounter.Add(1, tags);
     }
 
     internal void DeleteUser(string userType, IdentityResult? result, Exception? exception = null)
     {
-        if (_deleteCounter.Enabled)
+        if (!_deleteCounter.Enabled)
         {
-            var tags = new TagList
-            {
-                { "aspnetcore.identity.user_type", userType }
-            };
-            AddIdentityResultTags(ref tags, result);
-            AddExceptionTags(ref tags, exception);
-
-            _deleteCounter.Add(1, tags);
+            return;
         }
+
+        var tags = new TagList
+        {
+            { "aspnetcore.identity.user_type", userType }
+        };
+        AddIdentityResultTags(ref tags, result);
+        AddExceptionTags(ref tags, exception);
+
+        _deleteCounter.Add(1, tags);
     }
 
     internal void CheckPassword(string userType, bool? userMissing, PasswordVerificationResult? result, Exception? exception = null)
     {
-        if (_checkPasswordCounter.Enabled)
+        if (!_checkPasswordCounter.Enabled)
         {
-            var tags = new TagList
-            {
-                { "aspnetcore.identity.user_type", userType },
-            };
-            if (userMissing != null || result != null)
-            {
-                tags.Add("aspnetcore.identity.user.password_result", GetPasswordResult(result, passwordMissing: null, userMissing));
-            }
-            AddExceptionTags(ref tags, exception);
-
-            _checkPasswordCounter.Add(1, tags);
+            return;
         }
+
+        var tags = new TagList
+        {
+            { "aspnetcore.identity.user_type", userType },
+        };
+        if (userMissing != null || result != null)
+        {
+            tags.Add("aspnetcore.identity.user.password_result", GetPasswordResult(result, passwordMissing: null, userMissing));
+        }
+        AddExceptionTags(ref tags, exception);
+
+        _checkPasswordCounter.Add(1, tags);
     }
 
     internal void VerifyToken(string userType, bool? result, string purpose, Exception? exception = null)
     {
+        if (!_verifyTokenCounter.Enabled)
+        {
+            return;
+        }
+
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
@@ -130,6 +135,11 @@ internal sealed class UserManagerMetrics : IDisposable
 
     internal void GenerateToken(string userType, string purpose, Exception? exception = null)
     {
+        if (!_generateTokenCounter.Enabled)
+        {
+            return;
+        }
+
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
@@ -174,6 +184,14 @@ internal sealed class UserManagerMetrics : IDisposable
         if (!result.Succeeded && result.Errors.FirstOrDefault()?.Code is { Length: > 0 } code)
         {
             tags.Add("aspnetcore.identity.result_error_code", code);
+        }
+    }
+
+    private static void AddExceptionTags(ref TagList tags, Exception? exception)
+    {
+        if (exception != null)
+        {
+            tags.Add("error.type", exception.GetType().FullName!);
         }
     }
 
