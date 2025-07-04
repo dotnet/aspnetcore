@@ -375,16 +375,12 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         }
     }
 
-    /// <summary>
-    /// Adapter class to bridge between the public generic interface and the internal interface.
-    /// </summary>
-    /// <typeparam name="T">The type of the value to serialize.</typeparam>
     private sealed class SerializerAdapter<T>(IPersistentComponentStateSerializer<T> serializer) : IPersistentComponentStateSerializer
     {
-        public Task PersistAsync(Type type, object value, IBufferWriter<byte> writer)
+        Task IPersistentComponentStateSerializer.PersistAsync(Type type, object value, IBufferWriter<byte> writer)
             => serializer.PersistAsync((T)value, writer);
 
-        public object Restore(Type type, ReadOnlySequence<byte> data)
+        object IPersistentComponentStateSerializer.Restore(Type type, ReadOnlySequence<byte> data)
             => serializer.Restore(data)!;
     }
 }

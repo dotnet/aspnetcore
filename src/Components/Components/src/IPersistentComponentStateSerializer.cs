@@ -5,26 +5,8 @@ using System.Buffers;
 
 namespace Microsoft.AspNetCore.Components;
 
-/// <summary>
-/// Provides custom serialization logic for persistent component state values.
-/// </summary>
 internal interface IPersistentComponentStateSerializer
 {
-    /// <summary>
-    /// Serializes the provided <paramref name="value"/> and writes it to the <paramref name="writer"/>.
-    /// </summary>
-    /// <param name="type">The type of the value to serialize.</param>
-    /// <param name="value">The value to serialize.</param>
-    /// <param name="writer">The buffer writer to write the serialized data to.</param>
-    /// <returns>A task that represents the asynchronous serialization operation.</returns>
     Task PersistAsync(Type type, object value, IBufferWriter<byte> writer);
-
-    /// <summary>
-    /// Deserializes a value from the provided <paramref name="data"/>.
-    /// This method must be synchronous to avoid UI tearing during component state restoration.
-    /// </summary>
-    /// <param name="type">The type of the value to deserialize.</param>
-    /// <param name="data">The serialized data to deserialize.</param>
-    /// <returns>The deserialized value.</returns>
     object Restore(Type type, ReadOnlySequence<byte> data);
 }
