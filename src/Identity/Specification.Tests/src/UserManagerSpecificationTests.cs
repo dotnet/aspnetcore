@@ -248,7 +248,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
 
         var newUser = CreateTestUser(username, useNamePrefixAsUserName: true);
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(newUser));
-        var error = _errorDescriber.InvalidUserName("");
+        var error = _errorDescriber.InvalidUserName("", manager.Options.User.AllowedUserNameCharacters);
         IdentityResultAssert.IsFailure(await manager.SetUserNameAsync(newUser, ""), error);
         IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User validation failed: {error.Code}.");
 
