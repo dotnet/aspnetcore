@@ -3,7 +3,7 @@
 
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
-import { ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
+import { ServerComponentDescriptor, descriptorToMarker, discoverServerPersistedState } from '../../Services/ComponentDescriptorDiscovery';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
 import { RootComponentManager } from '../../Services/RootComponentManager';
@@ -40,8 +40,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private _circuitId?: string;
 
   private _startPromise?: Promise<boolean>;
-
-  private _firstUpdate = true;
 
   private _renderingFailed = false;
 
@@ -85,13 +83,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   }
 
   public updateRootComponents(operations: string): Promise<void> | undefined {
-    if (this._firstUpdate) {
-      // Only send the application state on the first update.
-      this._firstUpdate = false;
-      return this._connection?.send('UpdateRootComponents', operations, this._applicationState);
-    } else {
-      return this._connection?.send('UpdateRootComponents', operations, '');
+    if (this._applicationState === '') {
+      this._applicationState = discoverServerPersistedState(document) || '';
     }
+    const appState = this._applicationState;
+    this._applicationState = '';
+    return this._connection?.send('UpdateRootComponents', operations, appState);
   }
 
   private async startCore(): Promise<boolean> {

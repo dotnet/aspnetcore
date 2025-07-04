@@ -156,8 +156,10 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
 
   Blazor._internal.getInitialComponentsUpdate = () => initialUpdatePromise;
 
-  Blazor._internal.updateRootComponents = (operations: string) =>
-    Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations);
+  Blazor._internal.updateRootComponents = (operations: string) => {
+    const appState = discoverWebAssemblyPersistedState(document) || '';
+    Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations, appState);
+  };
 
   Blazor._internal.endUpdateRootComponents = (batchId: number) =>
     components.onAfterUpdateRootComponents?.(batchId);
