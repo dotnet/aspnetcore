@@ -454,7 +454,7 @@ internal abstract class CertificateManager
         try
         {
             Log.LoadCertificateStart(certificatePath);
-            certificate = new X509Certificate2(certificatePath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
+            certificate = X509CertificateLoader.LoadPkcs12FromFile(certificatePath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
             if (Log.IsEnabled())
             {
                 Log.LoadCertificateEnd(GetDescription(certificate));

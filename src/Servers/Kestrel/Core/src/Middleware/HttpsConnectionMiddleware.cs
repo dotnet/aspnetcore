@@ -502,7 +502,7 @@ internal sealed class HttpsConnectionMiddleware
             return cert2;
         }
 
-        return new X509Certificate2(certificate);
+        return X509CertificateLoader.LoadCertificate(certificate.GetRawCertData());
     }
 
     internal static HttpProtocols ValidateAndNormalizeHttpProtocols(HttpProtocols httpProtocols, ILogger<HttpsConnectionMiddleware> logger)
