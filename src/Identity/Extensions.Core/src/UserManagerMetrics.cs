@@ -155,11 +155,11 @@ internal sealed class UserManagerMetrics : IDisposable
         // Purpose could be any value and can't be used as a tag value. However, there are known purposes
         // on UserManager that we can detect and use as a tag value. Some could have a ':' in them followed by user data.
         // We need to trim them to content before ':' and then match to known values.
-        var trimmedPurpose = purpose;
+        ReadOnlySpan<char> trimmedPurpose = purpose;
         var colonIndex = purpose.IndexOf(':');
         if (colonIndex >= 0)
         {
-            trimmedPurpose = purpose.Substring(0, colonIndex);
+            trimmedPurpose = purpose.AsSpan(0, colonIndex);
         }
         
         return trimmedPurpose switch
