@@ -44,7 +44,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         var storageKey = ComputeKey(componentState, parameterInfo.PropertyName);
 
         // Try to get a custom serializer for this type first
-        var customSerializer = ResolveSerializer(parameterInfo.PropertyType);
+        var customSerializer = _serializerCache.GetOrAdd(parameterInfo.PropertyType, SerializerFactory);
         
         if (customSerializer != null)
         {
@@ -69,7 +69,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         var propertyType = parameterInfo.PropertyType;
         
         // Resolve serializer outside the lambda
-        var customSerializer = ResolveSerializer(propertyType);
+        var customSerializer = _serializerCache.GetOrAdd(propertyType, SerializerFactory);
         
         _subscriptions[subscriber] = state.RegisterOnPersisting(() =>
             {
@@ -98,11 +98,6 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     private static PropertyGetter ResolvePropertyGetter(Type type, string propertyName)
     {
         return _propertyGetterCache.GetOrAdd((type, propertyName), PropertyGetterFactory);
-    }
-
-    private IPersistentComponentStateSerializer? ResolveSerializer(Type type)
-    {
-        return _serializerCache.GetOrAdd(type, SerializerFactory);
     }
 
     private IPersistentComponentStateSerializer? SerializerFactory(Type type)
