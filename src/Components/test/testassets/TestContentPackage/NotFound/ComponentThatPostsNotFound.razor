@@ -1,4 +1,4 @@
-@using Microsoft.AspNetCore.Components.Forms
+﻿@using Microsoft.AspNetCore.Components.Forms
 
 @inject NavigationManager NavigationManager
 
@@ -16,14 +16,14 @@
 
 @code{
     [Parameter]
-    public bool StartStreaming { get; set; } = false;
+    public bool DoAsyncOperationBeforeSettingNotFound { get; set; } = false;
 
     [Parameter]
     public bool WaitForInteractivity { get; set; } = false;
 
     private async Task HandleSubmit()
     {
-        if (StartStreaming)
+        if (DoAsyncOperationBeforeSettingNotFound)
         {
             await Task.Yield();
         }

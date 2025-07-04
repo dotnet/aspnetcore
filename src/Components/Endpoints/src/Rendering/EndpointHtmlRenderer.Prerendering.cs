@@ -149,6 +149,8 @@ internal partial class EndpointHtmlRenderer
             var component = BeginRenderingComponent(rootComponentType, parameters);
             var result = new PrerenderedComponentHtmlContent(Dispatcher, component);
 
+            FinishRendereingOnQuiescenceIfRequested(result);
+
             await WaitForResultReady(waitForQuiescence, result);
 
             return result;
@@ -157,6 +159,19 @@ internal partial class EndpointHtmlRenderer
         {
             return await HandleNavigationException(_httpContext, navigationException);
         }
+    }
+
+    private void FinishRendereingOnQuiescenceIfRequested(PrerenderedComponentHtmlContent htmlContent)
+    {
+        if (htmlContent.QuiescenceTask.IsCompleted)
+        {
+            SignalRendererToFinishRendering();
+            return;
+        }
+
+        htmlContent.QuiescenceTask.ContinueWith(
+            _ => SignalRendererToFinishRendering(),
+            TaskScheduler.Default);
     }
 
     private async Task WaitForResultReady(bool waitForQuiescence, PrerenderedComponentHtmlContent result)
