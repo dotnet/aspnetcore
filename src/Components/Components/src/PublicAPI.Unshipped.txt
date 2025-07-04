@@ -18,7 +18,7 @@ Microsoft.AspNetCore.Components.PersistentStateAttribute.PersistentStateAttribut
 Microsoft.AspNetCore.Components.Infrastructure.PersistentStateProviderServiceCollectionExtensions
 Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>
 Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.PersistentComponentStateSerializer() -> void
-abstract Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.PersistAsync(T value, System.Buffers.IBufferWriter<byte>! writer) -> void
+abstract Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.Persist(T value, System.Buffers.IBufferWriter<byte>! writer) -> void
 abstract Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.Restore(System.Buffers.ReadOnlySequence<byte> data) -> T
 static Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.IComponentRenderMode! componentRenderMode) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

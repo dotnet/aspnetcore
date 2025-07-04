@@ -64,7 +64,7 @@ public class IPersistentComponentStateSerializerTests
 
     private class TestStringSerializer : PersistentComponentStateSerializer<string>
     {
-        public override void PersistAsync(string value, IBufferWriter<byte> writer)
+        public override void Persist(string value, IBufferWriter<byte> writer)
         {
             var bytes = Encoding.UTF8.GetBytes(value);
             writer.Write(bytes);

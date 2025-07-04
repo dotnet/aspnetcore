@@ -84,7 +84,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
                 if (customSerializer != null)
                 {
                     using var writer = new PooledArrayBufferWriter<byte>();
-                    customSerializer.PersistAsync(propertyType, property, writer);
+                    customSerializer.Persist(propertyType, property, writer);
                     state.PersistAsBytes(storageKey, writer.WrittenMemory.ToArray());
                     return Task.CompletedTask;
                 }
@@ -333,7 +333,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         ArgumentNullException.ThrowIfNull(serializer);
 
         using var writer = new PooledArrayBufferWriter<byte>();
-        serializer.PersistAsync(instance, writer);
+        serializer.Persist(instance, writer);
         state.PersistAsBytes(key, writer.WrittenMemory.ToArray());
     }
 

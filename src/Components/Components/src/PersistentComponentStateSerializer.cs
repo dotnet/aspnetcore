@@ -16,7 +16,7 @@ public abstract class PersistentComponentStateSerializer<T> : IPersistentCompone
     /// </summary>
     /// <param name="value">The value to serialize.</param>
     /// <param name="writer">The buffer writer to write the serialized data to.</param>
-    public abstract void PersistAsync(T value, IBufferWriter<byte> writer);
+    public abstract void Persist(T value, IBufferWriter<byte> writer);
 
     /// <summary>
     /// Deserializes a value of type <typeparamref name="T"/> from the provided <paramref name="data"/>.
@@ -29,8 +29,8 @@ public abstract class PersistentComponentStateSerializer<T> : IPersistentCompone
     /// <summary>
     /// Explicit interface implementation for non-generic serialization.
     /// </summary>
-    void IPersistentComponentStateSerializer.PersistAsync(Type type, object value, IBufferWriter<byte> writer)
-        => PersistAsync((T)value, writer);
+    void IPersistentComponentStateSerializer.Persist(Type type, object value, IBufferWriter<byte> writer)
+        => Persist((T)value, writer);
 
     /// <summary>
     /// Explicit interface implementation for non-generic deserialization.

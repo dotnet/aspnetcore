@@ -13,7 +13,7 @@ namespace TestContentPackage;
 /// </summary>
 public class CustomIntSerializer : PersistentComponentStateSerializer<int>
 {
-    public override void PersistAsync(int value, IBufferWriter<byte> writer)
+    public override void Persist(int value, IBufferWriter<byte> writer)
     {
         var customFormat = $"CUSTOM:{value}";
         var bytes = Encoding.UTF8.GetBytes(customFormat);
