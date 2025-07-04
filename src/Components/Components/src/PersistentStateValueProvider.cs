@@ -106,10 +106,10 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
 
     private IPersistentComponentStateSerializer? SerializerFactory(Type type)
     {
-        var serializerType = typeof(IPersistentComponentStateSerializer<>).MakeGenericType(type);
+        var serializerType = typeof(PersistentComponentStateSerializer<>).MakeGenericType(type);
         var serializer = serviceProvider.GetService(serializerType);
         
-        // The generic interface now inherits from the internal interface, so we can cast directly
+        // The generic class now inherits from the internal interface, so we can cast directly
         return serializer as IPersistentComponentStateSerializer;
     }
 
@@ -331,7 +331,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     /// <param name="key">The key to use to persist the state.</param>
     /// <param name="instance">The instance to persist.</param>
     /// <param name="serializer">The custom serializer to use for serialization.</param>
-    internal async Task PersistAsync<TValue>(string key, TValue instance, IPersistentComponentStateSerializer<TValue> serializer)
+    internal async Task PersistAsync<TValue>(string key, TValue instance, PersistentComponentStateSerializer<TValue> serializer)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(serializer);
@@ -351,7 +351,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     /// <param name="serializer">The custom serializer to use for deserialization.</param>
     /// <param name="instance">The persisted instance.</param>
     /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
-    internal bool TryTake<TValue>(string key, IPersistentComponentStateSerializer<TValue> serializer, [MaybeNullWhen(false)] out TValue instance)
+    internal bool TryTake<TValue>(string key, PersistentComponentStateSerializer<TValue> serializer, [MaybeNullWhen(false)] out TValue instance)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(serializer);

@@ -67,7 +67,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddScoped<InteractiveAutoService>();
 
         // Register custom serializer for E2E testing of persistent component state serialization extensibility
-        services.AddSingleton<IPersistentComponentStateSerializer<int>, CustomIntSerializer>();
+        services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();

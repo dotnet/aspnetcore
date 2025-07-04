@@ -62,16 +62,16 @@ public class IPersistentComponentStateSerializerTests
         Assert.Equal(customData, retrievedValue);
     }
 
-    private class TestStringSerializer : IPersistentComponentStateSerializer<string>
+    private class TestStringSerializer : PersistentComponentStateSerializer<string>
     {
-        public Task PersistAsync(string value, IBufferWriter<byte> writer)
+        public override Task PersistAsync(string value, IBufferWriter<byte> writer)
         {
             var bytes = Encoding.UTF8.GetBytes(value);
             writer.Write(bytes);
             return Task.CompletedTask;
         }
 
-        public string Restore(ReadOnlySequence<byte> data)
+        public override string Restore(ReadOnlySequence<byte> data)
         {
             var bytes = data.ToArray();
             return Encoding.UTF8.GetString(bytes);

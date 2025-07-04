@@ -5,7 +5,7 @@ using System.Buffers;
 
 namespace Microsoft.AspNetCore.Components;
 
-public interface IPersistentComponentStateSerializer
+internal interface IPersistentComponentStateSerializer
 {
     Task PersistAsync(Type type, object value, IBufferWriter<byte> writer);
     object Restore(Type type, ReadOnlySequence<byte> data);

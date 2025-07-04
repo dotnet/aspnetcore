@@ -17,7 +17,7 @@ builder.Services.AddSingleton<InteractiveAutoService>();
 builder.Services.AddSingleton<InteractiveServerService>();
 
 // Register custom serializer for persistent component state
-builder.Services.AddSingleton<IPersistentComponentStateSerializer<int>, CustomIntSerializer>();
+builder.Services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
 builder.Services.AddCascadingAuthenticationState();
 

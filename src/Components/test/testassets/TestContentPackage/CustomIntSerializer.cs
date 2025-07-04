@@ -11,9 +11,9 @@ namespace TestContentPackage;
 /// A custom serializer for int values that uses a custom format to test serialization extensibility.
 /// This serializer prefixes integer values with "CUSTOM:" to clearly distinguish them from JSON serialization.
 /// </summary>
-public class CustomIntSerializer : IPersistentComponentStateSerializer<int>
+public class CustomIntSerializer : PersistentComponentStateSerializer<int>
 {
-    public Task PersistAsync(int value, IBufferWriter<byte> writer)
+    public override Task PersistAsync(int value, IBufferWriter<byte> writer)
     {
         var customFormat = $"CUSTOM:{value}";
         var bytes = Encoding.UTF8.GetBytes(customFormat);
@@ -21,7 +21,7 @@ public class CustomIntSerializer : IPersistentComponentStateSerializer<int>
         return Task.CompletedTask;
     }
 
-    public int Restore(ReadOnlySequence<byte> data)
+    public override int Restore(ReadOnlySequence<byte> data)
     {
         var bytes = data.ToArray();
         var text = Encoding.UTF8.GetString(bytes);
