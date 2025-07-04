@@ -405,6 +405,7 @@ public class SignInManagerTest
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                    KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
                 ]));
         }
         else
@@ -471,6 +472,7 @@ public class SignInManagerTest
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
             ]));
     }
 

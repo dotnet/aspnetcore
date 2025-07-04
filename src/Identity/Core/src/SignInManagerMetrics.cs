@@ -33,8 +33,8 @@ internal sealed class SignInManagerMetrics : IDisposable
         _rememberTwoFactorClientCounter = _meter.CreateCounter<long>(RememberTwoFactorCounterName, "count", "The number of two factor clients remembered.");
         _forgetTwoFactorCounter = _meter.CreateCounter<long>(ForgetTwoFactorCounterName, "count", "The number of two factor clients forgotten.");
         _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "count", "The number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.");
-        _signInUserPrincipalCounter = _meter.CreateCounter<long>(SignInUserPrincipalCounterName, "count", "The number of user principals signed in.");
-        _signOutUserPrincipalCounter = _meter.CreateCounter<long>(SignOutUserPrincipalCounterName, "count", "The number of user principals signed out.");
+        _signInUserPrincipalCounter = _meter.CreateCounter<long>(SignInUserPrincipalCounterName, "count", "The number of calls to sign in user principals.");
+        _signOutUserPrincipalCounter = _meter.CreateCounter<long>(SignOutUserPrincipalCounterName, "count", "The number of calls to sign out user principals.");
     }
 
     internal void CheckPasswordSignIn(string userType, SignInResult? result, Exception? exception = null)
@@ -67,17 +67,14 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.authentication_scheme", authenticationScheme },
             { "aspnetcore.identity.sign_in.type", GetSignInType(signInType) },
         };
-        if (isPersistent != null)
-        {
-            tags.Add("aspnetcore.identity.sign_in.is_persistent", isPersistent.Value);
-        }
+        AddIsPersistent(ref tags, isPersistent);
         AddSignInResult(ref tags, result);
         AddExceptionTags(ref tags, exception);
 
         _authenticateCounter.Add(1, tags);
     }
 
-    internal void SignInUserPrincipal(string userType, string authenticationScheme, Exception? exception = null)
+    internal void SignInUserPrincipal(string userType, string authenticationScheme, bool? isPersistent, Exception? exception = null)
     {
         if (!_signInUserPrincipalCounter.Enabled)
         {
@@ -89,6 +86,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.authentication_scheme", authenticationScheme },
         };
+        AddIsPersistent(ref tags, isPersistent);
         AddExceptionTags(ref tags, exception);
 
         _signInUserPrincipalCounter.Add(1, tags);
@@ -148,6 +146,14 @@ internal sealed class SignInManagerMetrics : IDisposable
     public void Dispose()
     {
         _meter.Dispose();
+    }
+
+    private static void AddIsPersistent(ref TagList tags, bool? isPersistent)
+    {
+        if (isPersistent != null)
+        {
+            tags.Add("aspnetcore.identity.sign_in.is_persistent", isPersistent.Value);
+        }
     }
 
     private static void AddSignInResult(ref TagList tags, SignInResult? result)

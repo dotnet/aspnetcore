@@ -304,18 +304,20 @@ public class SignInManager<TUser> where TUser : class
             {
                 userPrincipal.Identities.First().AddClaim(claim);
             }
+
+            authenticationProperties ??= new AuthenticationProperties();
             await Context.SignInAsync(AuthenticationScheme,
                 userPrincipal,
-                authenticationProperties ?? new AuthenticationProperties());
+                authenticationProperties);
 
             // This is useful for updating claims immediately when hitting MapIdentityApi's /account/info endpoint with cookies.
             Context.User = userPrincipal;
 
-            _metrics?.SignInUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme);
+            _metrics?.SignInUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme, authenticationProperties.IsPersistent);
         }
         catch (Exception ex)
         {
-            _metrics?.SignInUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme, ex);
+            _metrics?.SignInUserPrincipal(typeof(TUser).FullName!, AuthenticationScheme, isPersistent: null, ex);
             throw;
         }
     }
