@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -16,24 +17,30 @@ public class PersistentComponentState
     private readonly IDictionary<string, byte[]> _currentState;
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
+    private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks;
 
     internal PersistentComponentState(
-        IDictionary<string , byte[]> currentState,
-        List<PersistComponentStateRegistration> pauseCallbacks)
+        IDictionary<string, byte[]> currentState,
+        List<PersistComponentStateRegistration> pauseCallbacks,
+        List<RestoreComponentStateRegistration> restoringCallbacks)
     {
         _currentState = currentState;
         _registeredCallbacks = pauseCallbacks;
+        _registeredRestoringCallbacks = restoringCallbacks;
     }
 
     internal bool PersistingState { get; set; }
 
-    internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
+    internal RestoreContext CurrentContext { get; private set; } = RestoreContext.InitialValue;
+
+    internal void InitializeExistingState(IDictionary<string, byte[]> existingState, RestoreContext context)
     {
         if (_existingState != null)
         {
             throw new InvalidOperationException("PersistentComponentState already initialized.");
         }
         _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
+        CurrentContext = context;
     }
 
     /// <summary>
@@ -66,6 +73,30 @@ public class PersistentComponentState
         _registeredCallbacks.Add(persistenceCallback);
 
         return new PersistingComponentStateSubscription(_registeredCallbacks, persistenceCallback);
+    }
+
+    /// <summary>
+    /// Register a callback to restore the state when the application state is being restored.
+    /// </summary>
+    /// <param name="callback"> The callback to invoke when the application state is being restored.</param>
+    /// <param name="options">Options that control the restoration behavior.</param>
+    /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
+    public RestoringComponentStateSubscription RegisterOnRestoring(Action callback, RestoreOptions options)
+    {
+        Debug.Assert(CurrentContext != null);
+        if (CurrentContext.ShouldRestore(options))
+        {
+            callback();
+        }
+
+        if (options.AllowUpdates)
+        {
+            var registration = new RestoreComponentStateRegistration(callback);
+            _registeredRestoringCallbacks.Add(registration);
+            return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);
+        }
+
+        return default;
     }
 
     /// <summary>
@@ -213,5 +244,18 @@ public class PersistentComponentState
         {
             return false;
         }
+    }
+
+    internal void UpdateExistingState(IDictionary<string, byte[]> state, RestoreContext context)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+
+        if (_existingState == null || _existingState.Count > 0)
+        {
+            throw new InvalidOperationException("Cannot update existing state: previous state has not been cleared or state is not initialized.");
+        }
+
+        _existingState = state;
+        CurrentContext = context;
     }
 }
