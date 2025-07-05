@@ -707,7 +707,7 @@ public class CircuitHostTest
         };
 
         // Add component
-        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, null, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, null, false, CancellationToken.None);
     }
 
     private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
@@ -723,7 +723,7 @@ public class CircuitHostTest
         };
 
         // Update component
-        await circuitHost.UpdateRootComponents(new() { Operations = [updateOperation] }, null, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [updateOperation] }, null, false, CancellationToken.None);
     }
 
     private async Task RemoveComponentAsync(CircuitHost circuitHost, int ssrComponentId)
@@ -735,7 +735,7 @@ public class CircuitHostTest
         };
 
         // Remove component
-        await circuitHost.UpdateRootComponents(new() { Operations = [removeOperation] }, null, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [removeOperation] }, null, false, CancellationToken.None);
     }
 
     private ProtectedPrerenderComponentApplicationStore CreateStore()

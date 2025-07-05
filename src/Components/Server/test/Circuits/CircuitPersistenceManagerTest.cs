@@ -464,6 +464,7 @@ public class CircuitPersistenceManagerTest
         await circuitHost.UpdateRootComponents(
             CreateBatch(components, deserializer, dataProtectionProvider),
             store,
+            false,
             default);
 
         return circuitHost;

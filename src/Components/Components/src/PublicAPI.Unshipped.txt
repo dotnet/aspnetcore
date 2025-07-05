@@ -1,5 +1,6 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+Microsoft.AspNetCore.Components.Rendering.ComponentState.Renderer.get -> Microsoft.AspNetCore.Components.RenderTree.Renderer!
 Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties = null) -> void
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type?
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
@@ -38,13 +39,19 @@ Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute
 Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute.RestoreStateOnPrerenderingAttribute(bool enable = true) -> void
 Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
 Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute.SupportsScenario(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
+Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute
+Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute.RestoreStateOnReconnectionAttribute(bool enabled = true) -> void
+Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
+Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute.SupportsScenario(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
 Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
 Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.Dispose() -> void
 Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.RestoringComponentStateSubscription() -> void
 Microsoft.AspNetCore.Components.WebPersistenceFilter
 static Microsoft.AspNetCore.Components.WebPersistenceFilter.Prerendering.get -> Microsoft.AspNetCore.Components.WebPersistenceFilter!
+static Microsoft.AspNetCore.Components.WebPersistenceFilter.Reconnection.get -> Microsoft.AspNetCore.Components.WebPersistenceFilter!
 Microsoft.AspNetCore.Components.WebPersistenceFilter.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
 Microsoft.AspNetCore.Components.WebPersistenceFilter.SupportsScenario(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
 Microsoft.AspNetCore.Components.WebPersistenceScenario
 Microsoft.AspNetCore.Components.WebPersistenceScenario.IsRecurring.get -> bool
 static Microsoft.AspNetCore.Components.WebPersistenceScenario.Prerendering.get -> Microsoft.AspNetCore.Components.WebPersistenceScenario!
+static Microsoft.AspNetCore.Components.WebPersistenceScenario.Reconnection.get -> Microsoft.AspNetCore.Components.WebPersistenceScenario!

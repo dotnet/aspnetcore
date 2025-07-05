@@ -23,4 +23,18 @@ public sealed class WebPersistenceScenario : IPersistentComponentStateScenario
     /// This scenario occurs once when components are initially rendered on the server before interactivity.
     /// </summary>
     public static WebPersistenceScenario Prerendering { get; } = new(isRecurring: false);
+
+    /// <summary>
+    /// Gets a scenario representing reconnection state restoration.
+    /// This scenario occurs once when a server circuit is evicted and later restored after a client reconnection.
+    /// </summary>
+    /// <example>
+    /// <code>
+    /// if (scenario == WebPersistenceScenario.Reconnection)
+    /// {
+    ///     // Handle reconnection-specific state restoration
+    /// }
+    /// </code>
+    /// </example>
+    public static WebPersistenceScenario Reconnection { get; } = new(isRecurring: false);
 }

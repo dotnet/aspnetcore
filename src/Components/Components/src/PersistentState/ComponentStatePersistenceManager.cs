@@ -77,7 +77,7 @@ public class ComponentStatePersistenceManager
         }
         else
         {
-            State.InitializeExistingState(data);
+            State.InitializeExistingState(data, scenario);
             _stateIsInitialized = true;
         }
 

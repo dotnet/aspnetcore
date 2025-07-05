@@ -10,15 +10,20 @@ public sealed class WebPersistenceFilter : IPersistentStateFilter
 {
     private readonly bool _enableForPrerendering;
 
-    private WebPersistenceFilter(bool enableForPrerendering)
+    private WebPersistenceFilter(bool enabled)
     {
-        _enableForPrerendering = enableForPrerendering;
+        _enableForPrerendering = enabled;
     }
 
     /// <summary>
     /// Gets a filter that enables state restoration during prerendering scenarios.
     /// </summary>
-    public static WebPersistenceFilter Prerendering { get; } = new(enableForPrerendering: true);
+    public static WebPersistenceFilter Prerendering { get; } = new(enabled: true);
+
+    /// <summary>
+    /// Gets a filter that enables state restoration during prerendering scenarios.
+    /// </summary>
+    public static WebPersistenceFilter Reconnection { get; } = new(enabled: true);
 
     /// <summary>
     /// Determines whether this filter supports the specified scenario.
@@ -36,11 +41,6 @@ public sealed class WebPersistenceFilter : IPersistentStateFilter
     /// <returns><see langword="true"/> if state should be restored; otherwise, <see langword="false"/>.</returns>
     public bool ShouldRestore(IPersistentComponentStateScenario scenario)
     {
-        if (scenario == WebPersistenceScenario.Prerendering)
-        {
-            return _enableForPrerendering;
-        }
-
-        return false;
+        return _enableForPrerendering;
     }
 }

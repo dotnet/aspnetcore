@@ -363,10 +363,10 @@ public class ComponentStatePersistenceManagerTest
             CreateServiceProvider());
 
         var callbacksInvoked = new List<string>();
-        
+
         // Register callbacks with different filters
         persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("no-filter"));
-        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(), 
+        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(),
             () => callbacksInvoked.Add("prerender-filter"));
 
         // Act
@@ -390,12 +390,12 @@ public class ComponentStatePersistenceManagerTest
 
         var callbacksInvoked = new List<string>();
         var prerenderingScenario = WebPersistenceScenario.Prerendering;
-        
+
         // Register callbacks with different filters
         persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("no-filter"));
-        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(enable: true), 
+        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(enable: true),
             () => callbacksInvoked.Add("prerender-enabled"));
-        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(enable: false), 
+        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(enable: false),
             () => callbacksInvoked.Add("prerender-disabled"));
 
         // Act
@@ -420,10 +420,10 @@ public class ComponentStatePersistenceManagerTest
 
         var callbacksInvoked = new List<string>();
         var nonPrerenderingScenario = new TestScenario(isRecurring: false);
-        
+
         // Register callbacks with different filters
         persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("no-filter"));
-        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(), 
+        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(),
             () => callbacksInvoked.Add("prerender-filter"));
 
         // Act
@@ -448,10 +448,10 @@ public class ComponentStatePersistenceManagerTest
 
         var callbacksInvoked = new List<string>();
         var recurringScenario = new TestScenario(isRecurring: true);
-        
+
         // Register callbacks with different filters
         persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("no-filter"));
-        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(), 
+        persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(),
             () => callbacksInvoked.Add("prerender-filter"));
 
         // Act
@@ -473,7 +473,7 @@ public class ComponentStatePersistenceManagerTest
             CreateServiceProvider());
 
         var callbacksInvoked = new List<string>();
-        
+
         // Register callbacks and keep subscription to dispose
         var subscription1 = persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("callback1"));
         var subscription2 = persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("callback2"));

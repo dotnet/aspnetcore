@@ -761,6 +761,7 @@ internal partial class CircuitHost : IAsyncDisposable
     internal Task UpdateRootComponents(
         RootComponentOperationBatch operationBatch,
         ProtectedPrerenderComponentApplicationStore store,
+        bool isRestore,
         CancellationToken cancellation)
     {
         Log.UpdateRootComponentsStarted(_logger);
@@ -791,7 +792,12 @@ internal partial class CircuitHost : IAsyncDisposable
                         // provided during the start up process
                         var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
                         appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
-                        await appLifetime.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
+
+                        // Use the appropriate scenario based on whether this is a restore operation
+                        var scenario = isRestore 
+                            ? WebPersistenceScenario.Reconnection 
+                            : WebPersistenceScenario.Prerendering;
+                        await appLifetime.RestoreStateAsync(store, scenario);
                     }
 
                     // Retrieve the circuit handlers at this point.

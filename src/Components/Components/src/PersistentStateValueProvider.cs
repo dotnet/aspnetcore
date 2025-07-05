@@ -58,12 +58,16 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     {
         var propertyName = parameterInfo.PropertyName;
         var propertyType = parameterInfo.PropertyType;
+        var storageKey = ComputeKey(subscriber, propertyName);
 
 
         // Resolve serializer outside the lambda
         var customSerializer = _serializerCache.GetOrAdd(propertyType, SerializerFactory);
 
         var propertyGetter = ResolvePropertyGetter(subscriber.Component.GetType(), propertyName);
+
+        var componentSubscription = new ComponentSubscription();
+        _subscriptions[subscriber] = componentSubscription;
 
         var persistingSubscription = state.RegisterOnPersisting(() =>
             {
@@ -88,56 +92,40 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
                 return Task.CompletedTask;
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
 
+        componentSubscription.SetPersistingSubscription(persistingSubscription);
+
         var filterAttributes = propertyGetter.PropertyInfo.GetCustomAttributes(inherit: true)
             .OfType<IPersistentStateFilter>();
 
-        RestoringComponentStateSubscription? firstRestoringSubscription = null;
-        List<RestoringComponentStateSubscription>? additionalRestoringSubscriptions = null;
+        Action? restorationAction = null;
 
-        var filterIndex = 0;
         foreach (var filter in filterAttributes)
         {
-            var restoringSubscription = state.RegisterOnRestoring(filter, () =>
-            {
-                var storageKey = ComputeKey(subscriber, propertyName);
-                if (state.TryTakeFromJson(storageKey, propertyType, out var value))
-                {
-                    if (_subscriptions.TryGetValue(subscriber, out var existingSubscription))
-                    {
-                        existingSubscription.SetLastValue(value);
-                    }
-                }
-            });
-
-            if (filterIndex == 0)
-            {
-                firstRestoringSubscription = restoringSubscription;
-            }
-            else
-            {
-                additionalRestoringSubscriptions ??= new List<RestoringComponentStateSubscription>();
-                additionalRestoringSubscriptions.Add(restoringSubscription);
-            }
-            filterIndex++;
+            restorationAction ??= CreateRestorationAction(storageKey, propertyType, componentSubscription);
+            var restoringSubscription = state.RegisterOnRestoring(filter, restorationAction);
+            componentSubscription.AddRestoringSubscription(restoringSubscription);
         }
 
-        // If no filters are present, register a default restoration callback without a filter
-        if (filterIndex == 0)
+        if (!componentSubscription.HasRestoringSubscriptions)
         {
-            firstRestoringSubscription = state.RegisterOnRestoring(null, () =>
-            {
-                var storageKey = ComputeKey(subscriber, propertyName);
-                if (state.TryTakeFromJson(storageKey, propertyType, out var value))
-                {
-                    if (_subscriptions.TryGetValue(subscriber, out var existingSubscription))
-                    {
-                        existingSubscription.SetLastValue(value);
-                    }
-                }
-            });
+            restorationAction ??= CreateRestorationAction(storageKey, propertyType, componentSubscription);
+            var defaultRestoringSubscription = state.RegisterOnRestoring(null, restorationAction);
+            componentSubscription.AddRestoringSubscription(defaultRestoringSubscription);
         }
+    }
 
-        _subscriptions[subscriber] = new ComponentSubscription(persistingSubscription, firstRestoringSubscription, additionalRestoringSubscriptions, null);
+    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
+    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+    private Action CreateRestorationAction(string storageKey, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type propertyType, ComponentSubscription componentSubscription)
+    {
+        return () =>
+        {
+            if (state.TryTakeFromJson(storageKey, propertyType, out var value))
+            {
+                componentSubscription.SetLastValue(value);
+            }
+        };
     }
 
     private static PropertyGetter ResolvePropertyGetter(Type type, string propertyName)
@@ -177,8 +165,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     {
         if (_subscriptions.TryGetValue(subscriber, out var subscription))
         {
-            subscription.PersistingSubscription.Dispose();
-            subscription.DisposeAllRestoringSubscriptions();
+            subscription.Dispose();
             _subscriptions.Remove(subscriber);
         }
     }
@@ -366,6 +353,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         return result;
     }
 
+<<<<<<< HEAD
     /// <summary>
     /// Serializes <paramref name="instance"/> using the provided <paramref name="serializer"/> and persists it under the given <paramref name="key"/>.
     /// </summary>
@@ -412,39 +400,52 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
     }
 
     internal struct ComponentSubscription
+=======
+    internal class ComponentSubscription
+>>>>>>> 35244a5176 (Reconnection)
     {
-        public readonly PersistingComponentStateSubscription PersistingSubscription { get; }
-        public readonly RestoringComponentStateSubscription? FirstRestoringSubscription { get; }
-        public readonly List<RestoringComponentStateSubscription>? AdditionalRestoringSubscriptions { get; }
+        private PersistingComponentStateSubscription? _persistingSubscription;
+        private RestoringComponentStateSubscription? _firstRestoringSubscription;
+        private List<RestoringComponentStateSubscription>? _additionalRestoringSubscriptions;
 
-        public object? LastValue { readonly get; private set; }
+        public object? LastValue { get; private set; }
 
-        public ComponentSubscription(
-            PersistingComponentStateSubscription persistingSubscription,
-            RestoringComponentStateSubscription? firstRestoringSubscription,
-            List<RestoringComponentStateSubscription>? additionalRestoringSubscriptions,
-            object? lastValue)
+        public void SetPersistingSubscription(PersistingComponentStateSubscription subscription)
         {
-            PersistingSubscription = persistingSubscription;
-            FirstRestoringSubscription = firstRestoringSubscription;
-            AdditionalRestoringSubscriptions = additionalRestoringSubscriptions;
-            LastValue = lastValue;
+            _persistingSubscription = subscription;
         }
+
+        public void AddRestoringSubscription(RestoringComponentStateSubscription subscription)
+        {
+            if (_firstRestoringSubscription == null)
+            {
+                _firstRestoringSubscription = subscription;
+            }
+            else
+            {
+                _additionalRestoringSubscriptions ??= new List<RestoringComponentStateSubscription>();
+                _additionalRestoringSubscriptions.Add(subscription);
+            }
+        }
+
+        public bool HasRestoringSubscriptions => _firstRestoringSubscription != null;
 
         public void SetLastValue(object? value)
         {
             LastValue = value;
         }
 
-        public void DisposeAllRestoringSubscriptions()
+        public void Dispose()
         {
-            FirstRestoringSubscription?.Dispose();
-            if (AdditionalRestoringSubscriptions != null)
+            _persistingSubscription?.Dispose();
+            _firstRestoringSubscription?.Dispose();
+            if (_additionalRestoringSubscriptions != null)
             {
-                foreach (var subscription in AdditionalRestoringSubscriptions)
+                foreach (var subscription in _additionalRestoringSubscriptions)
                 {
                     subscription.Dispose();
                 }
+                _additionalRestoringSubscriptions.Clear();
             }
         }
     }

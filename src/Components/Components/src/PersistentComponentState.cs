@@ -20,7 +20,7 @@ public class PersistentComponentState
     private IPersistentComponentStateScenario? _currentScenario;
 
     internal PersistentComponentState(
-        IDictionary<string , byte[]> currentState,
+        IDictionary<string, byte[]> currentState,
         List<PersistComponentStateRegistration> pauseCallbacks,
         List<RestoreComponentStateRegistration> restoringCallbacks)
     {
@@ -31,13 +31,14 @@ public class PersistentComponentState
 
     internal bool PersistingState { get; set; }
 
-    internal void InitializeExistingState(IDictionary<string, byte[]> existingState)
+    internal void InitializeExistingState(IDictionary<string, byte[]> existingState, IPersistentComponentStateScenario? scenario)
     {
         if (_existingState != null)
         {
             throw new InvalidOperationException("PersistentComponentState already initialized.");
         }
         _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
+        _currentScenario = scenario;
     }
 
     /// <summary>
@@ -83,10 +84,26 @@ public class PersistentComponentState
     {
         ArgumentNullException.ThrowIfNull(callback);
 
-        var registration = new RestoreComponentStateRegistration(filter, callback);
-        _registeredRestoringCallbacks.Add(registration);
+        if (_currentScenario == null || filter == null ||
+            (filter != null && filter.SupportsScenario(_currentScenario) &&
+            filter.ShouldRestore(_currentScenario)))
+        {
+            callback();
+            return default;
+        }
 
-        return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);
+        if (!_currentScenario.IsRecurring)
+        {
+            // If the scenario is recurring, we don't register the callback.
+            // The host will handle restoring the state for recurring scenarios.
+            return default;
+        }
+        else
+        {
+            var registration = new RestoreComponentStateRegistration(filter, callback);
+            _registeredRestoringCallbacks.Add(registration);
+            return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);
+        }
     }
 
     /// <summary>
