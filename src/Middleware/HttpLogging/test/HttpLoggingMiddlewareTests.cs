@@ -1673,10 +1673,10 @@ public class HttpLoggingMiddlewareTests : LoggedTest
     }
 
     [Theory]
-    [InlineData(HttpLoggingFields.RequestBody | HttpLoggingFields.ResponseBody, true, true)]
-    [InlineData(HttpLoggingFields.RequestBody, true, false)]
-    [InlineData(HttpLoggingFields.ResponseBody, false, true)]
-    public async Task CombineLogsWithStreamCloseWorks(HttpLoggingFields fields, bool hasRequestBody, bool hasResponseBody)
+    [InlineData(HttpLoggingFields.RequestBody | HttpLoggingFields.ResponseBody)]
+    [InlineData(HttpLoggingFields.RequestBody)]
+    [InlineData(HttpLoggingFields.ResponseBody)]
+    public async Task CombineLogsWithStreamCloseWorks(HttpLoggingFields fields)
     {
         var options = CreateOptionsAccessor();
         options.CurrentValue.LoggingFields = fields;
@@ -1701,7 +1701,6 @@ public class HttpLoggingMiddlewareTests : LoggedTest
 
                 // (2) The subsequent middleware closes the request stream after its consumption
                 c.Request.Body.Close();
-
 
                 c.Response.ContentType = "text/plain";
 
