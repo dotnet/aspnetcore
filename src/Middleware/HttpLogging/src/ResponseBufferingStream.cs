@@ -19,6 +19,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
     private readonly HttpLoggingOptions _options;
     private readonly IHttpLoggingInterceptor[] _interceptors;
     private bool _logBody;
+    private bool _hasLogged;
     private Encoding? _encoding;
     private string? _bodyBeforeClose;
 
@@ -182,6 +183,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         {
             var responseBody = GetStringInternal();
             _logger.ResponseBody(responseBody);
+            _hasLogged = true;
         }
     }
 
@@ -190,6 +192,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
         if (_logBody)
         {
             logContext.AddParameter("ResponseBody", GetStringInternal());
+            _hasLogged = true;
         }
     }
 
@@ -203,7 +206,7 @@ internal sealed class ResponseBufferingStream : BufferingStream, IHttpResponseBo
 
     public override void Close()
     {
-        if (_logBody)
+        if (_logBody && !_hasLogged)
         {
             // Subsequent middleware can close the response stream after writing its body
             // Preserving the body for the final GetStringInternal() call.
