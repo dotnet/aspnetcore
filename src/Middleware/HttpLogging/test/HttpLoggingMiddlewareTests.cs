@@ -390,6 +390,46 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
     }
 
+    [Theory]
+    [MemberData(nameof(BodyData))]
+    public async Task RequestBodyWithStreamCloseWorks(string expected)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.RequestBody;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                var arr = new byte[4096];
+                var contentLengthBytesLeft = c.Request.Body.Length;
+
+                // (1) The subsequent middleware reads right up to the buffer size (guided by the ContentLength header)
+                while (contentLengthBytesLeft > 0)
+                {
+                    var res = await c.Request.Body.ReadAsync(arr, 0, arr.Length);
+                    contentLengthBytesLeft -= res;
+                    if (res == 0)
+                    {
+                        break;
+                    }
+                }
+
+                // (2) The subsequent middleware closes the request stream after its consumption
+                c.Request.Body.Close();
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.ContentType = "text/plain";
+        var buffer = Encoding.UTF8.GetBytes(expected);
+        httpContext.Request.Body = new MemoryStream(buffer);
+        httpContext.Request.ContentLength = buffer.Length;
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
+    }
+
     [Fact]
     public async Task RequestBodyReadingLimitLongCharactersWorks()
     {
@@ -1155,6 +1195,32 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         await middlewareTask;
     }
 
+    [Theory]
+    [MemberData(nameof(BodyData))]
+    public async Task ResponseBodyWithStreamCloseWorks(string expected)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = HttpLoggingFields.ResponseBody;
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                c.Response.ContentType = "text/plain";
+
+                // (1) The subsequent middleware writes its response
+                await c.Response.WriteAsync(expected);
+
+                // (2) The subsequent middleware closes the response stream after it has completed writing to it
+                c.Response.Body.Close();
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+
+        await middleware.Invoke(httpContext);
+
+        Assert.Contains(TestSink.Writes, w => w.Message.Contains(expected));
+    }
+
     [Fact]
     public async Task UnrecognizedMediaType()
     {
@@ -1603,6 +1669,72 @@ public class HttpLoggingMiddlewareTests : LoggedTest
         Assert.Equal("RequestBody: test", lines[i++]);
         Assert.Equal("RequestBodyStatus: [Completed]", lines[i++]);
         Assert.StartsWith("Duration: ", lines[i++]);
+        Assert.Equal(lines.Length, i);
+    }
+
+    [Theory]
+    [InlineData(HttpLoggingFields.RequestBody | HttpLoggingFields.ResponseBody)]
+    [InlineData(HttpLoggingFields.RequestBody)]
+    [InlineData(HttpLoggingFields.ResponseBody)]
+    public async Task CombineLogsWithStreamCloseWorks(HttpLoggingFields fields)
+    {
+        var options = CreateOptionsAccessor();
+        options.CurrentValue.LoggingFields = fields;
+        options.CurrentValue.CombineLogs = true;
+
+        var middleware = CreateMiddleware(
+            async c =>
+            {
+                var arr = new byte[4096];
+                var contentLengthBytesLeft = c.Request.Body.Length;
+
+                // (1) The subsequent middleware reads right up to the buffer size (guided by the ContentLength header)
+                while (contentLengthBytesLeft > 0)
+                {
+                    var res = await c.Request.Body.ReadAsync(arr, 0, arr.Length);
+                    contentLengthBytesLeft -= res;
+                    if (res == 0)
+                    {
+                        break;
+                    }
+                }
+
+                // (2) The subsequent middleware closes the request stream after its consumption
+                c.Request.Body.Close();
+
+                c.Response.ContentType = "text/plain";
+
+                // (3) The subsequent middleware writes its response
+                await c.Response.WriteAsync("test response");
+
+                // (4) The subsequent middleware closes the response stream after it has completed writing to it
+                c.Response.Body.Close();
+            },
+            options);
+
+        var httpContext = new DefaultHttpContext();
+        httpContext.Request.ContentType = "text/plain";
+        var requestBodyBuffer = Encoding.UTF8.GetBytes("test request");
+        httpContext.Request.Body = new MemoryStream(requestBodyBuffer);
+        httpContext.Request.ContentLength = requestBodyBuffer.Length;
+
+        await middleware.Invoke(httpContext);
+
+        var lines = Assert.Single(TestSink.Writes.Where(w => w.LogLevel >= LogLevel.Information)).Message.Split(Environment.NewLine);
+        var i = 0;
+        Assert.Equal("Request and Response:", lines[i++]);
+        if (fields.HasFlag(HttpLoggingFields.RequestBody))
+        {
+            Assert.Equal("RequestBody: test request", lines[i++]);
+            // Here we expect "Only partially consumed by app" status as the middleware reads request body right to its end,
+            // but never further as it follows the ContentLength header. From logging middleware perspective it looks like
+            // a partial consumption as it can't know for sure if it has been drained to the end or not.
+            Assert.Equal("RequestBodyStatus: [Only partially consumed by app]", lines[i++]);
+        }
+        if (fields.HasFlag(HttpLoggingFields.ResponseBody))
+        {
+            Assert.Equal("ResponseBody: test response", lines[i++]);
+        }
         Assert.Equal(lines.Length, i);
     }
 
