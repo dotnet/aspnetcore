@@ -758,7 +758,8 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
             throw new InvalidOperationException(
                 $"This operation is not permitted because the underlying '{nameof(DbContext)}' does not include '{typeof(TUserPasskey).Name}' in its model. " +
                 $"When using '{nameof(IdentityDbContext)}', make sure that '{nameof(IdentityOptions)}.{nameof(IdentityOptions.Stores)}.{nameof(StoreOptions.SchemaVersion)}' " +
-                $"is set to '{nameof(IdentitySchemaVersions)}.{nameof(IdentitySchemaVersions.Version3)}' or higher.");
+                $"is set to '{nameof(IdentitySchemaVersions)}.{nameof(IdentitySchemaVersions.Version3)}' or higher. " +
+                $"See https://aka.ms/aspnet/passkeys for more information.");
         }
     }
 }

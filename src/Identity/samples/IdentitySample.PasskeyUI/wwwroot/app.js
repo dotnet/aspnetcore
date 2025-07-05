@@ -36,10 +36,6 @@
                 method: 'POST',
                 body: JSON.stringify({
                     username,
-                    authenticatorSelection: {
-                        residentKey: 'preferred',
-                    }
-                    // TODO: Allow configuration of other options.
                 }),
                 headers: {
                     'Content-Type': 'application/json',
@@ -62,7 +58,6 @@
                 method: 'POST',
                 body: JSON.stringify({
                     username,
-                    // TODO: Allow configuration of other options.
                 }),
                 headers: {
                     'Content-Type': 'application/json',
