@@ -125,11 +125,11 @@ public static class JSObjectReferenceExtensions
     /// <param name="identifier">An identifier for the constructor function to invoke. For example, the value <c>"someScope.SomeClass"</c> will invoke the constructor <c>someScope.SomeClass</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
-    public static ValueTask<IJSObjectReference> InvokeNewAsync(this IJSObjectReference jsObjectReference, string identifier, params object?[]? args)
+    public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSObjectReference jsObjectReference, string identifier, params object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
-        return jsObjectReference.InvokeNewAsync(identifier, args);
+        return jsObjectReference.InvokeConstructorAsync(identifier, args);
     }
 
     /// <summary>
@@ -143,11 +143,11 @@ public static class JSObjectReferenceExtensions
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
-    public static ValueTask<IJSObjectReference> InvokeNewAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, object?[]? args)
+    public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSObjectReference jsObjectReference, string identifier, CancellationToken cancellationToken, object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
-        return jsObjectReference.InvokeNewAsync(identifier, cancellationToken, args);
+        return jsObjectReference.InvokeConstructorAsync(identifier, cancellationToken, args);
     }
 
     /// <summary>
@@ -158,13 +158,13 @@ public static class JSObjectReferenceExtensions
     /// <param name="timeout">The duration after which to cancel the async operation. Overrides default timeouts (<see cref="JSRuntime.DefaultAsyncTimeout"/>).</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
-    public static ValueTask<IJSObjectReference> InvokeNewAsync(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, object?[]? args)
+    public static ValueTask<IJSObjectReference> InvokeConstructorAsync(this IJSObjectReference jsObjectReference, string identifier, TimeSpan timeout, object?[]? args)
     {
         ArgumentNullException.ThrowIfNull(jsObjectReference);
 
         using var cancellationTokenSource = timeout == Timeout.InfiniteTimeSpan ? null : new CancellationTokenSource(timeout);
         var cancellationToken = cancellationTokenSource?.Token ?? CancellationToken.None;
 
-        return jsObjectReference.InvokeNewAsync(identifier, cancellationToken, args);
+        return jsObjectReference.InvokeConstructorAsync(identifier, cancellationToken, args);
     }
 }

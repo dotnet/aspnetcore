@@ -50,19 +50,19 @@ public class JSObjectReference : IJSObjectReference
     }
 
     /// <inheritdoc />
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.NewCall, args);
+        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.ConstructorCall, args);
     }
 
     /// <inheritdoc />
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.NewCall, cancellationToken, args);
+        return _jsRuntime.InvokeAsync<IJSObjectReference>(Id, identifier, JSCallType.ConstructorCall, cancellationToken, args);
     }
 
     /// <inheritdoc />
