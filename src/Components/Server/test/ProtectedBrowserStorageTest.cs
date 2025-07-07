@@ -373,7 +373,7 @@ public class ProtectedBrowserStorageTest
 
         public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object[] args)
         {
-            Invocations.Add((identifier, args, JSCallType.NewCall));
+            Invocations.Add((identifier, args, JSCallType.ConstructorCall));
             return (ValueTask<IJSObjectReference>)NextInvocationResult;
         }
 
