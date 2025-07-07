@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Components;
 /// requires disposal such as a repository or database abstraction. Using <see cref="OwningComponentBase"/>
 /// as a base class ensures that the service provider scope is disposed with the component.
 /// </remarks>
-public abstract class OwningComponentBase : ComponentBase, IDisposable
+public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDisposable
 {
     private AsyncServiceScope? _scope;
 
@@ -44,20 +44,63 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable
         }
     }
 
+    /// <summary>
+    /// Releases the service scope used by the component.
+    /// </summary>
     void IDisposable.Dispose()
+    {
+        Dispose(disposing: true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Asynchronously releases the service scope used by the component.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous dispose operation.</returns>
+    public async ValueTask DisposeAsync()
+    {
+        await DisposeAsyncCore().ConfigureAwait(false);
+
+        Dispose(disposing: false);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Releases the service scope used by the component.
+    /// </summary>
+    /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
+    protected virtual void Dispose(bool disposing)
     {
         if (!IsDisposed)
         {
-            _scope?.Dispose();
-            _scope = null;
-            Dispose(disposing: true);
+            if (disposing)
+            {
+                if (_scope.HasValue)
+                {
+                    if (_scope.Value is IDisposable disposable)
+                    {
+                        disposable.Dispose();
+                    }
+                    _scope = null;
+                }
+            }
             IsDisposed = true;
         }
     }
 
-    /// <inheritdoc />
-    protected virtual void Dispose(bool disposing)
+    /// <summary>
+    /// Asynchronously releases the service scope used by the component.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous dispose operation.</returns>
+    protected virtual async ValueTask DisposeAsyncCore()
     {
+        if (!IsDisposed && _scope.HasValue)
+        {
+            await _scope.Value.DisposeAsync().ConfigureAwait(false);
+            _scope = null;
+        }
+
+        IsDisposed = true;
     }
 }
 
