@@ -107,8 +107,8 @@ else
             return;
         }
 
-        var setPasskeyResult = await UserManager.SetPasskeyAsync(user, attestationResult.Passkey);
-        if (!setPasskeyResult.Succeeded)
+        var addPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
+        if (!addPasskeyResult.Succeeded)
         {
             RedirectManager.RedirectToCurrentPageWithStatus("Error: The passkey could not be added to your account.", HttpContext);
             return;

@@ -378,7 +378,7 @@ public class SignInManagerTest
             .BuildServiceProvider();
         var manager = SetupUserManager(user, serviceProvider);
         manager
-            .Setup(m => m.SetPasskeyAsync(user, passkey))
+            .Setup(m => m.AddOrUpdatePasskeyAsync(user, passkey))
             .Returns(Task.FromResult(IdentityResult.Success))
             .Verifiable();
         var context = new DefaultHttpContext();

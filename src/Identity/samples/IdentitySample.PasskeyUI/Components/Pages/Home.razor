@@ -101,7 +101,7 @@
             }
         }
 
-        var setPasskeyResult = await UserManager.SetPasskeyAsync(user, attestationResult.Passkey);
+        var setPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
         if (!setPasskeyResult.Succeeded)
         {
             statusMessage = "Error: Could not update the user with the new passkey.";

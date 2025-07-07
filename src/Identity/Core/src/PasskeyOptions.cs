@@ -43,16 +43,17 @@ public class PasskeyOptions
     /// <remarks>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#enumdef-userverificationrequirement"/>.
     /// Possible values are "required", "preferred", and "discouraged".
-    /// The default value is "preferred".
+    /// If left <see langword="null"/>, the browser defaults to "preferred".
     /// </remarks>
     public string? UserVerificationRequirement { get; set; }
 
     /// <summary>
     /// Gets or sets the extent to which the server desires to create a client-side discoverable credential.
-    /// Supported values are "discouraged", "preferred", or "required".
     /// </summary>
     /// <remarks>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#enumdef-residentkeyrequirement"/>.
+    /// Possible values are "discouraged", "preferred", or "required".
+    /// If left <see langword="null"/>, the browser defaults to "preferred".
     /// </remarks>
     public string? ResidentKeyRequirement { get; set; }
 
@@ -61,7 +62,7 @@ public class PasskeyOptions
     /// </summary>
     /// <remarks>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#enumdef-attestationconveyancepreference"/>.
-    /// The default value is "none".
+    /// If left <see langword="null"/>, the browser defaults to "none".
     /// </remarks>
     public string? AttestationConveyancePreference { get; set; }
 
@@ -70,6 +71,7 @@ public class PasskeyOptions
     /// </summary>
     /// <remarks>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#enumdef-authenticatorattachment"/>.
+    /// If left <see langword="null"/>, any authenticator attachment modality is allowed.
     /// </remarks>
     public string? AuthenticatorAttachment { get; set; }
 

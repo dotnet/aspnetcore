@@ -124,7 +124,7 @@ attestationGroup.MapPost("/result", async (
         }
     }
 
-    await passkeyStore.SetPasskeyAsync(user, attestationResult.Passkey, cancellationToken).ConfigureAwait(false);
+    await passkeyStore.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey, cancellationToken).ConfigureAwait(false);
     var updateResult = await userManager.UpdateAsync(user).ConfigureAwait(false);
     if (!updateResult.Succeeded)
     {
@@ -194,7 +194,7 @@ assertionGroup.MapPost("/result", async (
         return Results.BadRequest(new FailedResponse($"Assertion failed: {assertionResult.Failure.Message}"));
     }
 
-    await userManager.SetPasskeyAsync(assertionResult.User, assertionResult.Passkey);
+    await userManager.AddOrUpdatePasskeyAsync(assertionResult.User, assertionResult.Passkey);
 
     return Results.Ok(new OkResponse());
 });

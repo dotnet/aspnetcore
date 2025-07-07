@@ -516,7 +516,7 @@ public class SignInManager<TUser> where TUser : class
     /// <c>navigator.credentials.get()</c> JavaScript API. The argument to <c>navigator.credentials.get()</c>
     /// should be obtained by calling <see cref="MakePasskeyRequestOptionsAsync(TUser)"/>.
     /// Upon success, the <see cref="PasskeyAssertionResult{TUser}.Passkey"/> should be stored on the
-    /// <see cref="PasskeyAssertionResult{TUser}.User"/> using <see cref="UserManager{TUser}.SetPasskeyAsync(TUser, UserPasskeyInfo)"/>.
+    /// <see cref="PasskeyAssertionResult{TUser}.User"/> using <see cref="UserManager{TUser}.AddOrUpdatePasskeyAsync(TUser, UserPasskeyInfo)"/>.
     /// </remarks>
     /// <param name="credentialJson">The credentials obtained by JSON-serializing the result of the <c>navigator.credentials.get()</c> JavaScript function.</param>
     /// <returns>
@@ -577,7 +577,7 @@ public class SignInManager<TUser> where TUser : class
 
         // After a successful assertion, we need to update the passkey so that it has the latest
         // sign count and authenticator data.
-        var setPasskeyResult = await UserManager.SetPasskeyAsync(assertionResult.User, assertionResult.Passkey);
+        var setPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(assertionResult.User, assertionResult.Passkey);
         if (!setPasskeyResult.Succeeded)
         {
             return SignInResult.Failed;

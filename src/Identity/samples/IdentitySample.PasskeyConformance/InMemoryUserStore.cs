@@ -70,7 +70,7 @@ public sealed class InMemoryUserStore<TUser> :
         return Task.FromResult(IdentityResult.Success);
     }
 
-    public Task SetPasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+    public Task AddOrUpdatePasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
     {
         var passkeyEntity = user.Passkeys.FirstOrDefault(p => p.CredentialId.SequenceEqual(passkey.CredentialId));
         if (passkeyEntity is null)
