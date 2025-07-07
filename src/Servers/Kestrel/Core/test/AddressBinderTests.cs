@@ -72,6 +72,26 @@ public class AddressBinderTests
         Assert.False(https);
     }
 
+    [Theory]
+    [InlineData("http://sample.localhost:5000", 5000, false)]
+    [InlineData("https://sample.localhost:5001", 5001, true)]
+    [InlineData("http://multilevel.sample.localhost:5000", 5000, false)]
+    [InlineData("https://multilevel.sample.localhost:5001", 5001, true)]
+    public void ParseAddressWithLocalhostTld(string address, int expectedPort, bool expectedHttps)
+    {
+        var listenOptions = AddressBinder.ParseAddress(address, out var https);
+        Assert.IsType<LocalhostListenOptions>(listenOptions);
+        Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
+        Assert.Equal(IPAddress.Loopback, listenOptions.IPEndPoint.Address);
+        Assert.Equal(expectedPort, listenOptions.IPEndPoint.Port);
+        Assert.Equal(expectedHttps, https);
+        if (https)
+        {
+            listenOptions.IsTls = true;
+        }
+        Assert.Equal(address, listenOptions.GetDisplayName());
+    }
+
     [Fact]
     public void ParseAddress_HasPipeNoSlash()
     {

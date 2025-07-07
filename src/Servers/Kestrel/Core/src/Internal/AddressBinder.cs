@@ -125,10 +125,10 @@ internal sealed class AddressBinder
         {
             options = new ListenOptions(new NamedPipeEndPoint(parsedAddress.NamedPipeName));
         }
-        else if (string.Equals(parsedAddress.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+        else if (IsLocalhost(parsedAddress.Host, out var prefix))
         {
             // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
-            options = new LocalhostListenOptions(parsedAddress.Port);
+            options = prefix is null ? new LocalhostListenOptions(parsedAddress.Port) : new LocalhostListenOptions(parsedAddress.Port, prefix);
         }
         else if (TryCreateIPEndPoint(parsedAddress, out var endpoint))
         {
@@ -141,6 +141,31 @@ internal sealed class AddressBinder
         }
 
         return options;
+
+        bool IsLocalhost(string host, out string? prefix)
+        {
+            // Check for "localhost"
+            if (string.Equals(parsedAddress.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                prefix = null;
+                return true;
+            }
+
+            // Check for use of .localhost TLD (Top Level Domain)
+            if (host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase))
+            {
+                var parts = parsedAddress.Host.Split('.', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length > 1)
+                {
+                    // Take all but the last part as the prefix
+                    prefix = string.Join('.', parts, 0, parts.Length - 1);
+                    return true;
+                }
+            }
+
+            prefix = null;
+            return false;
+        }
     }
 
     private interface IStrategy
