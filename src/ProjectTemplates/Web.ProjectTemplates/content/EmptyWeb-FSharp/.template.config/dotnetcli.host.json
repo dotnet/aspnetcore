@@ -27,6 +27,10 @@
     "NoHttps": {
       "longName": "no-https",
       "shortName": ""
+    },
+    "LocalhostTld": {
+      "longName": "localhost-tld",
+      "shortName": ""
     }
   },
   "usageExamples": [

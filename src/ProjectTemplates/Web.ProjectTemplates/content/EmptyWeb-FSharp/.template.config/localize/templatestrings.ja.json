@@ -11,6 +11,8 @@
   "symbols/Framework/choices/net10.0/description": "ターゲット net10.0",
   "symbols/skipRestore/description": "指定した場合、作成時にプロジェクトの自動復元がスキップされます。",
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。このオプションは、Individual、IndividualB2C、SingleOrg、または MultiOrg が --auth に使用されていない場合にのみ適用されます。",
+  "symbols/LocalhostTld/displayName": "Use the .localhost TLD in the aplication URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .localhost TLD in the application URL for local development, e.g. https://myapp.localhost:12345.",
   "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する"
 }

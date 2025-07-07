@@ -11,6 +11,8 @@
   "symbols/Framework/choices/net10.0/description": "目标 net10.0",
   "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
   "symbols/NoHttps/description": "是否禁用 HTTPS。仅当 Individual、IndividualB2C、SingleOrg 或 MultiOrg 不用于 --auth 时，此选项才适用。",
+  "symbols/LocalhostTld/displayName": "Use the .localhost TLD in the aplication URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .localhost TLD in the application URL for local development, e.g. https://myapp.localhost:12345.",
   "postActions/restore/description": "还原此项目所需的 NuGet 包。",
   "postActions/restore/manualInstructions/default/text": "运行 \"dotnet restore\""
 }
