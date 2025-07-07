@@ -78,7 +78,7 @@ public class JSObjectReference : IJSObjectReference
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.GetValue, null);
+        return _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.GetValue, cancellationToken, null);
     }
 
     /// <inheritdoc />
@@ -94,7 +94,7 @@ public class JSObjectReference : IJSObjectReference
     {
         ThrowIfDisposed();
 
-        await _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.SetValue, [value]);
+        await _jsRuntime.InvokeAsync<TValue>(Id, identifier, JSCallType.SetValue, cancellationToken, [value]);
     }
 
     /// <inheritdoc />
