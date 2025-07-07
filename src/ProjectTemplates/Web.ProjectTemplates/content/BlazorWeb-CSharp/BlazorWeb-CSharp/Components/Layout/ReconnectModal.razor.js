@@ -32,7 +32,7 @@ async function retry() {
         if (!successful) {
             // We have been able to reach the server, but the circuit is no longer available.
             // We'll reload the page so the user can continue using the app as quickly as possible.
-            const resumeSuccessful = await Blazor.resume();
+            const resumeSuccessful = await Blazor.resumeCircuit();
             if (!resumeSuccessful) {
                 location.reload();
             } else {
@@ -47,7 +47,7 @@ async function retry() {
 
 async function resume() {
     try {
-        const successful = await Blazor.resume();
+        const successful = await Blazor.resumeCircuit();
         if (!successful) {
             location.reload();
         }

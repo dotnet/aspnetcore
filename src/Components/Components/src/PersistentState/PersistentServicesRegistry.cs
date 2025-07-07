@@ -166,10 +166,10 @@ internal sealed class PersistentServicesRegistry
             var keys = new List<(string, Type)>();
             foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
             {
-                SupplyParameterFromPersistentComponentStateAttribute? parameterAttribute = null;
+                PersistentStateAttribute? parameterAttribute = null;
                 foreach (var attribute in propertyInfo.GetCustomAttributes())
                 {
-                    if (attribute is SupplyParameterFromPersistentComponentStateAttribute persistentStateAttribute)
+                    if (attribute is PersistentStateAttribute persistentStateAttribute)
                     {
                         parameterAttribute = persistentStateAttribute;
                         break;

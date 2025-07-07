@@ -123,6 +123,7 @@ internal static class WellKnownTypeData
         System_ComponentModel_DataAnnotations_ValidationAttribute,
         System_ComponentModel_DataAnnotations_RequiredAttribute,
         System_ComponentModel_DataAnnotations_CustomValidationAttribute,
+        System_Type,
     }
 
     public static string[] WellKnownTypeNames =
@@ -243,5 +244,6 @@ internal static class WellKnownTypeData
         "System.ComponentModel.DataAnnotations.ValidationAttribute",
         "System.ComponentModel.DataAnnotations.RequiredAttribute",
         "System.ComponentModel.DataAnnotations.CustomValidationAttribute",
+        "System.Type",
     ];
 }

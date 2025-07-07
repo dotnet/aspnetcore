@@ -229,9 +229,16 @@ internal partial class EndpointHtmlRenderer
                 // Clear all pending work.
                 _nonStreamingPendingTasks.Clear();
 
-                // new work might be added before we check again as a result of waiting for all
-                // the child components to finish executing SetParametersAsync
-                await pendingWork;
+                try
+                {
+                    // new work might be added before we check again as a result of waiting for all
+                    // the child components to finish executing SetParametersAsync
+                    await pendingWork;
+                }
+                catch (NavigationException navigationException)
+                {
+                    await HandleNavigationException(_httpContext, navigationException);
+                }
             }
         }
     }
