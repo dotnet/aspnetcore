@@ -54,18 +54,6 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDi
     }
 
     /// <summary>
-    /// Asynchronously releases the service scope used by the component.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous dispose operation.</returns>
-    public async ValueTask DisposeAsync()
-    {
-        await DisposeAsyncCore().ConfigureAwait(false);
-
-        Dispose(disposing: false);
-        GC.SuppressFinalize(this);
-    }
-
-    /// <summary>
     /// Releases the service scope used by the component.
     /// </summary>
     /// <param name="disposing">true to release both managed and unmanaged resources; false to release only unmanaged resources.</param>
@@ -86,6 +74,18 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDi
             }
             IsDisposed = true;
         }
+    }
+
+    /// <summary>
+    /// Asynchronously releases the service scope used by the component.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous dispose operation.</returns>
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await DisposeAsyncCore().ConfigureAwait(false);
+
+        Dispose(disposing: false);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
