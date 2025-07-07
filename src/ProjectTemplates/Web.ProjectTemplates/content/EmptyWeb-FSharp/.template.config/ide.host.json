@@ -3,13 +3,5 @@
   "order": 101,
   "icon": "ide/icon.ico",
   "supportsDocker": true,
-  "symbolInfo": [
-    {
-      "id": "LocalhostTld",
-      "isVisible": true,
-      "persistenceScope": "shared",
-      "persistenceScopeName": "Microsoft"
-    }
-  ],
   "disableHttpsSymbol": "NoHttps"
 }
