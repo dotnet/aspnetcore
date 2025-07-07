@@ -39,6 +39,8 @@
   "symbols/NoHttps/description": "HTTPS를 끌지 여부입니다. 이 옵션은 개별 항목이 --auth에 사용되지 않는 경우에만 적용됩니다.",
   "symbols/UseProgramMain/displayName": "최상위 문 사용 안 함(_T)",
   "symbols/UseProgramMain/description": "최상위 문 대신 명시적 Program 클래스 및 Main 메서드를 생성할지 여부입니다.",
+  "symbols/LocalhostTld/displayName": "Use the .localhost TLD in the aplication URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .localhost TLD in the application URL for local development, e.g. https://myapp.localhost:12345.",
   "postActions/restore/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' 실행"
 }

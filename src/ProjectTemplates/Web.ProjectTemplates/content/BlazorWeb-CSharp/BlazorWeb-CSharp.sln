@@ -2,9 +2,9 @@
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.0.0
 MinimumVisualStudioVersion = 16.0.0.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb-CSharp", "BlazorWeb-CSharp\BlazorWeb-CSharp.csproj", "{650B3CE7-2E93-4CC4-9F46-466686815EAA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebCSharp.1", "BlazorWebCSharp.1\BlazorWebCSharp.1.csproj", "{650B3CE7-2E93-4CC4-9F46-466686815EAA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWeb-CSharp.Client", "BlazorWeb-CSharp.Client\BlazorWeb-CSharp.Client.csproj", "{5990939C-7E7B-4CFA-86FF-44CA5756498A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorWebCSharp.1.Client", "BlazorWebCSharp.1.Client\BlazorWebCSharp.1.Client.csproj", "{5990939C-7E7B-4CFA-86FF-44CA5756498A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
