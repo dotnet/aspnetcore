@@ -13,12 +13,13 @@ using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Infrastructure;
 
-internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(PersistentComponentState state) : ICascadingValueSupplier
+internal sealed class PersistentStateValueProvider(PersistentComponentState state, IServiceProvider serviceProvider) : ICascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
+    private readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
 
     private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
 
@@ -27,7 +28,7 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     internal Dictionary<ComponentState, PersistingComponentStateSubscription> Subscriptions => _subscriptions;
 
     public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
-        => parameterInfo.Attribute is SupplyParameterFromPersistentComponentStateAttribute;
+        => parameterInfo.Attribute is PersistentStateAttribute;
 
     [UnconditionalSuppressMessage(
         "ReflectionAnalysis",
@@ -42,6 +43,20 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
         var componentState = (ComponentState)key!;
         var storageKey = ComputeKey(componentState, parameterInfo.PropertyName);
 
+        // Try to get a custom serializer for this type first
+        var customSerializer = _serializerCache.GetOrAdd(parameterInfo.PropertyType, SerializerFactory);
+        
+        if (customSerializer != null)
+        {
+            if (state.TryTakeBytes(storageKey, out var data))
+            {
+                var sequence = new ReadOnlySequence<byte>(data!);
+                return customSerializer.Restore(parameterInfo.PropertyType, sequence);
+            }
+            return null;
+        }
+
+        // Fallback to JSON serialization
         return state.TryTakeFromJson(storageKey, parameterInfo.PropertyType, out var value) ? value : null;
     }
 
@@ -52,6 +67,10 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     {
         var propertyName = parameterInfo.PropertyName;
         var propertyType = parameterInfo.PropertyType;
+        
+        // Resolve serializer outside the lambda
+        var customSerializer = _serializerCache.GetOrAdd(propertyType, SerializerFactory);
+        
         _subscriptions[subscriber] = state.RegisterOnPersisting(() =>
             {
                 var storageKey = ComputeKey(subscriber, propertyName);
@@ -61,6 +80,16 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
                 {
                     return Task.CompletedTask;
                 }
+
+                if (customSerializer != null)
+                {
+                    using var writer = new PooledArrayBufferWriter<byte>();
+                    customSerializer.Persist(propertyType, property, writer);
+                    state.PersistAsBytes(storageKey, writer.WrittenMemory.ToArray());
+                    return Task.CompletedTask;
+                }
+
+                // Fallback to JSON serialization
                 state.PersistAsJson(storageKey, property, propertyType);
                 return Task.CompletedTask;
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
@@ -69,6 +98,15 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
     private static PropertyGetter ResolvePropertyGetter(Type type, string propertyName)
     {
         return _propertyGetterCache.GetOrAdd((type, propertyName), PropertyGetterFactory);
+    }
+
+    private IPersistentComponentStateSerializer? SerializerFactory(Type type)
+    {
+        var serializerType = typeof(PersistentComponentStateSerializer<>).MakeGenericType(type);
+        var serializer = serviceProvider.GetService(serializerType);
+        
+        // The generic class now inherits from the internal interface, so we can cast directly
+        return serializer as IPersistentComponentStateSerializer;
     }
 
     [UnconditionalSuppressMessage(
@@ -280,5 +318,50 @@ internal sealed class SupplyParameterFromPersistentComponentStateValueProvider(P
             || keyType == typeof(TimeOnly);
 
         return result;
+    }
+
+    /// <summary>
+    /// Serializes <paramref name="instance"/> using the provided <paramref name="serializer"/> and persists it under the given <paramref name="key"/>.
+    /// </summary>
+    /// <typeparam name="TValue">The <paramref name="instance"/> type.</typeparam>
+    /// <param name="key">The key to use to persist the state.</param>
+    /// <param name="instance">The instance to persist.</param>
+    /// <param name="serializer">The custom serializer to use for serialization.</param>
+    internal void PersistAsync<TValue>(string key, TValue instance, PersistentComponentStateSerializer<TValue> serializer)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(serializer);
+
+        using var writer = new PooledArrayBufferWriter<byte>();
+        serializer.Persist(instance, writer);
+        state.PersistAsBytes(key, writer.WrittenMemory.ToArray());
+    }
+
+    /// <summary>
+    /// Tries to retrieve the persisted state with the given <paramref name="key"/> and deserializes it using the provided <paramref name="serializer"/> into an
+    /// instance of type <typeparamref name="TValue"/>.
+    /// When the key is present, the state is successfully returned via <paramref name="instance"/>
+    /// and removed from the <see cref="PersistentComponentState"/>.
+    /// </summary>
+    /// <param name="key">The key used to persist the instance.</param>
+    /// <param name="serializer">The custom serializer to use for deserialization.</param>
+    /// <param name="instance">The persisted instance.</param>
+    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+    internal bool TryTake<TValue>(string key, PersistentComponentStateSerializer<TValue> serializer, [MaybeNullWhen(false)] out TValue instance)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+        ArgumentNullException.ThrowIfNull(serializer);
+
+        if (state.TryTakeBytes(key, out var data))
+        {
+            var sequence = new ReadOnlySequence<byte>(data!);
+            instance = serializer.Restore(sequence);
+            return true;
+        }
+        else
+        {
+            instance = default;
+            return false;
+        }
     }
 }

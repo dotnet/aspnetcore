@@ -1,1 +1,3 @@
 #nullable enable
+*REMOVED*static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.UpdateTokenValue(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! tokenName, string! tokenValue) -> bool
+static Microsoft.AspNetCore.Authentication.AuthenticationTokenExtensions.UpdateTokenValue(this Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties, string! tokenName, string? tokenValue) -> bool

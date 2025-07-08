@@ -8,6 +8,6 @@ namespace Microsoft.AspNetCore.Components;
 /// previous render.
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
-public sealed class SupplyParameterFromPersistentComponentStateAttribute : CascadingParameterAttributeBase
+public sealed class PersistentStateAttribute : CascadingParameterAttributeBase
 {
 }
