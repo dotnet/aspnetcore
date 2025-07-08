@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Diagnostics;
 
 /// <summary>
-/// The context used to determine whether <see cref="ExceptionHandlerMiddleware"/> should log an exception.
+/// The context used to determine whether <see cref="ExceptionHandlerMiddleware"/> should record diagnostics for an exception.
 /// </summary>
-public sealed class ExceptionHandlerSuppressLoggingContext
+public sealed class ExceptionHandlerSuppressDiagnosticsContext
 {
     /// <summary>
     /// Gets the <see cref="Http.HttpContext"/> of the current request.

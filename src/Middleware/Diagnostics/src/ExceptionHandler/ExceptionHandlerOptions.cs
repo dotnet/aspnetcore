@@ -48,9 +48,9 @@ public class ExceptionHandlerOptions
     public Func<Exception, int>? StatusCodeSelector { get; set; }
 
     /// <summary>
-    /// Gets or sets a callback that can be used to suppress logging by <see cref="ExceptionHandlerMiddleware" />.
+    /// Gets or sets a callback that can return <see langword="true" /> be used to suppress some diagnostics by <see cref="ExceptionHandlerMiddleware" />.
     /// This callback is only run if the exception was handled by the middleware.
     /// Unhandled exceptions and exceptions thrown after the response has started are always logged.
     /// </summary>
-    public Func<ExceptionHandlerSuppressLoggingContext, bool>? SuppressLoggingCallback { get; set; }
+    public Func<ExceptionHandlerSuppressDiagnosticsContext, bool>? SuppressDiagnosticsCallback { get; set; }
 }

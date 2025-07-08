@@ -112,8 +112,6 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
     private async Task HandleException(HttpContext context, ExceptionDispatchInfo edi)
     {
-        DiagnosticsTelemetry.AddMetricsTags(context, edi.SourceException);
-
         var exceptionName = edi.SourceException.GetType().FullName!;
 
         if ((edi.SourceException is OperationCanceledException || edi.SourceException is IOException) && context.RequestAborted.IsCancellationRequested)
@@ -133,7 +131,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         // We can't do anything if the response has already started, just abort.
         if (context.Response.HasStarted)
         {
-            _logger.UnhandledException(edi.SourceException);
+            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
             _logger.ResponseStartedErrorHandler();
 
             _metrics.RequestException(exceptionName, ExceptionResult.Skipped, handler: null);
@@ -220,23 +218,23 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
             if (result != ExceptionHandledType.Unhandled || _options.StatusCodeSelector != null || context.Response.StatusCode != StatusCodes.Status404NotFound || _options.AllowStatusCode404Response)
             {
-                var suppressLogging = false;
+                var suppressDiagnostics = false;
 
-                // Customers may prefer to handle the exception and perfer to do their own logging.
+                // Customers may prefer to handle the exception and to do their own diagnostics.
                 // In that case, it can be undesirable for the middleware to log the exception at an error level.
-                // Run the configured callback to determine if the exception logging in middleware should be suppressed.
-                if (_options.SuppressLoggingCallback is { } suppressLoggingCallback)
+                // Run the configured callback to determine if exception diagnostics in the middleware should be suppressed.
+                if (_options.SuppressDiagnosticsCallback is { } suppressCallback)
                 {
-                    var logContext = new ExceptionHandlerSuppressLoggingContext
+                    var suppressDiagnosticsContext = new ExceptionHandlerSuppressDiagnosticsContext
                     {
                         HttpContext = context,
                         Exception = edi.SourceException,
                         ExceptionHandledBy = result
                     };
-                    suppressLogging = suppressLoggingCallback(logContext);
+                    suppressDiagnostics = suppressCallback(suppressDiagnosticsContext);
                 }
 
-                if (!suppressLogging)
+                if (!suppressDiagnostics)
                 {
                     // Note: Microsoft.AspNetCore.Diagnostics.HandledException is used by AppInsights to log errors.
                     // The diagnostics event is run together with standard exception logging.
@@ -246,7 +244,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                         WriteDiagnosticEvent(_diagnosticListener, eventName, new { httpContext = context, exception = edi.SourceException });
                     }
 
-                    _logger.UnhandledException(edi.SourceException);
+                    DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
                 }
 
                 _metrics.RequestException(exceptionName, ExceptionResult.Handled, handlerTag);
@@ -254,7 +252,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
             }
 
             // Log original unhandled exception before it is wrapped.
-            _logger.UnhandledException(edi.SourceException);
+            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
 
             edi = ExceptionDispatchInfo.Capture(new InvalidOperationException($"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +
                 $"This {nameof(InvalidOperationException)} containing the original exception was thrown since this is often due to a misconfigured {nameof(ExceptionHandlerOptions.ExceptionHandlingPath)}. " +
@@ -266,7 +264,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
             _logger.ErrorHandlerException(ex2);
 
             // There was an error handling the exception. Log original unhandled exception.
-            _logger.UnhandledException(edi.SourceException);
+            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
         }
         finally
         {

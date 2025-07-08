@@ -1,6 +1,6 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressLoggingCallback.get -> System.Func<Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext!, bool>?
-Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressLoggingCallback.set -> void
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressDiagnosticsCallback.get -> System.Func<Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext!, bool>?
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressDiagnosticsCallback.set -> void
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.get -> bool
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.set -> void
 Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
@@ -9,12 +9,12 @@ Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.ExceptionHandlerService = 
 Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.ExceptionHandlingPath = 4 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
 Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.ProblemDetailsService = 2 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
 Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.Unhandled = 0 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.Exception.get -> System.Exception!
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.Exception.init -> void
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.ExceptionHandlerSuppressLoggingContext() -> void
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.ExceptionHandledBy.get -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.ExceptionHandledBy.init -> void
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
-Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressLoggingContext.HttpContext.init -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.Exception.get -> System.Exception!
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.Exception.init -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.ExceptionHandledBy.get -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.ExceptionHandledBy.init -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.ExceptionHandlerSuppressDiagnosticsContext() -> void
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
+Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.HttpContext.init -> void
 static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, bool createScopeForErrors, string? queryFormat = null) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
