@@ -98,11 +98,11 @@
             @foreach (var col in _columns)
             {
                 <td class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
-        }
-    </tr>
-        }
+            }
+        </tr>
+    }
 
-        private void RenderColumnHeaders(RenderTreeBuilder __builder)
+    private void RenderColumnHeaders(RenderTreeBuilder __builder)
     {
         foreach (var col in _columns)
         {
