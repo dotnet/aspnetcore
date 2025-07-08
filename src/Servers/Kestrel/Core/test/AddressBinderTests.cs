@@ -51,6 +51,7 @@ public class AddressBinderTests
     [InlineData("randomhost")]
     [InlineData("+")]
     [InlineData("contoso.com")]
+    [InlineData(".localhost")]
     public void ParseAddressDefaultsToAnyIPOnInvalidIPAddress(string host)
     {
         var listenOptions = AddressBinder.ParseAddress($"http://{host}", out var https);
@@ -74,10 +75,13 @@ public class AddressBinderTests
 
     [Theory]
     [InlineData("http://sample.localhost:5000", 5000, false)]
+    [InlineData("http://SAMPLE.localhost:5000", 5000, false)]
+    [InlineData("http://SAMPLE.Localhost:5000", 5000, false, "http://SAMPLE.localhost:5000")]
+    [InlineData("HTTP://sample.localhost:5000", 5000, false, "http://sample.localhost:5000")]
     [InlineData("https://sample.localhost:5001", 5001, true)]
     [InlineData("http://multilevel.sample.localhost:5000", 5000, false)]
     [InlineData("https://multilevel.sample.localhost:5001", 5001, true)]
-    public void ParseAddressWithLocalhostTld(string address, int expectedPort, bool expectedHttps)
+    public void ParseAddressWithLocalhostTld(string address, int expectedPort, bool expectedHttps, string expectedAddress = null)
     {
         var listenOptions = AddressBinder.ParseAddress(address, out var https);
         Assert.IsType<LocalhostListenOptions>(listenOptions);
@@ -89,7 +93,7 @@ public class AddressBinderTests
         {
             listenOptions.IsTls = true;
         }
-        Assert.Equal(address, listenOptions.GetDisplayName());
+        Assert.Equal(expectedAddress ?? address, listenOptions.GetDisplayName());
     }
 
     [Fact]

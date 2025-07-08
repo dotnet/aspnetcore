@@ -154,11 +154,11 @@ internal sealed class AddressBinder
             // Check for use of .localhost TLD (Top Level Domain)
             if (host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase))
             {
-                var parts = parsedAddress.Host.Split('.', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-                if (parts.Length > 1)
+                var localhostTldIndex = host.LastIndexOf('.');
+                if (localhostTldIndex > 0)
                 {
-                    // Take all but the last part as the prefix
-                    prefix = string.Join('.', parts, 0, parts.Length - 1);
+                    // Take all but the .localhost TLD as the prefix
+                    prefix = host[..localhostTldIndex];
                     return true;
                 }
             }
