@@ -11,6 +11,11 @@ namespace Microsoft.AspNetCore.Components.QuickGrid;
 public class PaginationState
 {
     /// <summary>
+    /// Whether or not to render empty rows to fill the view.  
+    /// </summary>
+    public bool RenderFillerRows = true;
+
+    /// <summary>
     /// Gets or sets the number of items on each page.
     /// </summary>
     public int ItemsPerPage { get; set; } = 10;
