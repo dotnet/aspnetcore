@@ -95,6 +95,7 @@ Microsoft.AspNetCore.Components.QuickGrid.PropertyColumn<TGridItem, TProp>.Prope
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AddUpdateSortByColumnAsync(Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>! column, Microsoft.AspNetCore.Components.QuickGrid.SortDirection direction = Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ChildContent.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Class.get -> string?
