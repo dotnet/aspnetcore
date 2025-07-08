@@ -440,5 +440,22 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
       <Sha>bff9b4a349cfa7e3d83264d8953613d98a7b04eb</Sha>
     </Dependency>
+    <!-- Dependencies required for source build to lift to the previously-source-built version. -->
+    <Dependency Name="Microsoft.Build" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Build.Framework" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
+    </Dependency>
   </ToolsetDependencies>
 </Dependencies>
