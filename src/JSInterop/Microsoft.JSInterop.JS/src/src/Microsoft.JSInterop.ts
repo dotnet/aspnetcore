@@ -562,7 +562,17 @@ export module DotNet {
       const targetInstance = cachedJSObjectsById[targetInstanceId];
 
       if (targetInstance) {
-          return targetInstance.resolveInvocationHandler(identifier, callType ?? JSCallType.FunctionCall);
+          if (identifier) {
+              return targetInstance.resolveInvocationHandler(identifier, callType ?? JSCallType.FunctionCall);
+          } else {
+              const wrappedObject = targetInstance.getWrappedObject();
+              
+              if (wrappedObject instanceof Function) {
+                  return wrappedObject;
+              } else {
+                  throw new Error(`JS object instance with ID ${targetInstanceId} is not a function.`);
+              }
+          }
       }
 
       throw new Error(`JS object instance with ID ${targetInstanceId} does not exist (has it been disposed?).`);
@@ -626,7 +636,10 @@ export module DotNet {
               if (!isReadableProperty(parent, memberName)) {
                   throw new Error(`The property '${identifier}' is not defined or is not readable.`);
               }
-              return () => parent[memberName];
+
+              return parent[memberName] instanceof Function
+                  ? () => parent[memberName].bind(parent)
+                  : () => parent[memberName];
           case JSCallType.SetValue:
               if (!isWritableProperty(parent, memberName)) {
                   throw new Error(`The property '${identifier}' is not writable.`);
