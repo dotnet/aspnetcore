@@ -14,6 +14,14 @@ namespace Microsoft.AspNetCore.Builder;
 public class ExceptionHandlerOptions
 {
     /// <summary>
+    /// Initializes a new instance of the <see cref="ExceptionHandlerOptions"/> class.
+    /// </summary>
+    public ExceptionHandlerOptions()
+    {
+        SuppressDiagnosticsCallback = static c => c.ExceptionHandledBy == ExceptionHandledType.ExceptionHandlerService;
+    }
+
+    /// <summary>
     /// The path to the exception handling endpoint. This path will be used when executing
     /// the <see cref="ExceptionHandler"/>.
     /// </summary>
@@ -51,6 +59,7 @@ public class ExceptionHandlerOptions
 
     /// <summary>
     /// Gets or sets a callback that can return <see langword="true" /> be used to suppress diagnostics by <see cref="ExceptionHandlerMiddleware" />.
+    /// The default value is to suppress diagnostics if the exception was handled by an <see cref="IExceptionHandler"/> service instance registered in the DI container.
     /// <para>
     /// This callback is only run if the exception was handled by the middleware.
     /// Unhandled exceptions and exceptions thrown after the response has started are always logged.

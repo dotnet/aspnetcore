@@ -128,7 +128,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
                 context.Features.Set<IHttpResponseFeature>(new TestHttpResponseFeature());
                 return Task.CompletedTask;
             },
-            suppressLoggingCallback: c => c.ExceptionHandledBy == suppressResult);
+            suppressDiagnosticsCallback: c => c.ExceptionHandledBy == suppressResult);
         var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, loggerFactory: new TestLoggerFactory(sink, true));
 
         // Act & Assert
@@ -198,13 +198,15 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         Assert.True(httpContext.Items.ContainsKey("2"));
         Assert.True(httpContext.Items.ContainsKey("3"));
 
-        Assert.Collection(sink.Writes, w => Assert.Equal("UnhandledException", w.EventId.Name));
+        // IExceptionHandlers handling an exception suppress diagnostics by default.
+        Assert.Empty(sink.Writes);
     }
 
     [Theory]
+    [InlineData(null)]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task IExceptionHandlers_SuppressLogging_TestLogs(bool suppressedLogs)
+    public async Task IExceptionHandlers_SuppressLogging_TestLogs(bool? suppressDiagnostics)
     {
         // Arrange
         var sink = new TestSink();
@@ -213,7 +215,13 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         var metricsTagsFeature = new TestHttpMetricsTagsFeature();
         httpContext.Features.Set<IHttpMetricsTagsFeature>(metricsTagsFeature);
 
-        var optionsAccessor = CreateOptionsAccessor(suppressLoggingCallback: c => suppressedLogs);
+        Func<ExceptionHandlerSuppressDiagnosticsContext, bool>? suppressDiagnosticsCallback = null;
+        if (suppressDiagnostics != null)
+        {
+            suppressDiagnosticsCallback = c => suppressDiagnostics.Value;
+        }
+
+        var optionsAccessor = CreateOptionsAccessor(suppressDiagnosticsCallback: suppressDiagnosticsCallback);
 
         var exceptionHandlers = new List<IExceptionHandler>
         {
@@ -227,7 +235,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
 
         Assert.True(httpContext.Items.ContainsKey("1"));
 
-        if (suppressedLogs)
+        if (suppressDiagnostics == null || suppressDiagnostics == true)
         {
             Assert.Empty(sink.Writes);
             Assert.Empty(metricsTagsFeature.Tags);
@@ -611,7 +619,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     private IOptions<ExceptionHandlerOptions> CreateOptionsAccessor(
         RequestDelegate exceptionHandler = null,
         string exceptionHandlingPath = null,
-        Func<ExceptionHandlerSuppressDiagnosticsContext, bool> suppressLoggingCallback = null)
+        Func<ExceptionHandlerSuppressDiagnosticsContext, bool> suppressDiagnosticsCallback = null)
     {
         exceptionHandler ??= c => Task.CompletedTask;
         var options = new ExceptionHandlerOptions()
@@ -619,9 +627,9 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
             ExceptionHandler = exceptionHandler,
             ExceptionHandlingPath = exceptionHandlingPath,
         };
-        if (suppressLoggingCallback != null)
+        if (suppressDiagnosticsCallback != null)
         {
-            options.SuppressDiagnosticsCallback = suppressLoggingCallback;
+            options.SuppressDiagnosticsCallback = suppressDiagnosticsCallback;
         }
         var optionsAccessor = Mock.Of<IOptions<ExceptionHandlerOptions>>(o => o.Value == options);
         return optionsAccessor;
