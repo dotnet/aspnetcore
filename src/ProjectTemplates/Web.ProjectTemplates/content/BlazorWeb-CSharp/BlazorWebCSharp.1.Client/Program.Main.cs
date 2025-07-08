@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-namespace BlazorWebCSharp_1.Client;
+namespace BlazorWebCSharp._1.Client;
 
 class Program
 {

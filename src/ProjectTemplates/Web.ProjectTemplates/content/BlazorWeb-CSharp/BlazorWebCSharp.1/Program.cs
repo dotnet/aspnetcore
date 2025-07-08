@@ -123,7 +123,7 @@ app.MapRazorComponents<App>()
 app.MapRazorComponents<App>();
 #endif
 #if (UseWebAssembly)
-    .AddAdditionalAssemblies(typeof(BlazorWebCSharp_1.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(BlazorWebCSharp._1.Client._Imports).Assembly);
 #endif
 
 #if (IndividualLocalAuth)

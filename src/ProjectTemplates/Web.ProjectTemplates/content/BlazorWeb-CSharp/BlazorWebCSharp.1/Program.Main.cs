@@ -6,15 +6,15 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 #endif
 #if (UseWebAssembly && SampleContent)
-using BlazorWebCSharp_1.Client.Pages;
+using BlazorWebCSharp._1.Client.Pages;
 #endif
-using BlazorWebCSharp_1.Components;
+using BlazorWebCSharp._1.Components;
 #if (IndividualLocalAuth)
-using BlazorWebCSharp_1.Components.Account;
-using BlazorWebCSharp_1.Data;
+using BlazorWebCSharp._1.Components.Account;
+using BlazorWebCSharp._1.Data;
 #endif
 
-namespace BlazorWebCSharp_1;
+namespace BlazorWebCSharp._1;
 
 public class Program
 {

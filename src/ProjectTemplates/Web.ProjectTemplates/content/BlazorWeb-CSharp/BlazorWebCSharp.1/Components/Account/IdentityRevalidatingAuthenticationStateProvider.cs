@@ -3,9 +3,9 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
-using BlazorWebCSharp_1.Data;
+using BlazorWebCSharp._1.Data;
 
-namespace BlazorWebCSharp_1.Components.Account;
+namespace BlazorWebCSharp._1.Components.Account;
 
 // This is a server-side AuthenticationStateProvider that revalidates the security stamp for the connected user
 // every 30 minutes an interactive circuit is connected.
