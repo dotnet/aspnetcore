@@ -44,9 +44,7 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDi
         }
     }
 
-    /// <summary>
-    /// Releases the service scope used by the component.
-    /// </summary>
+    /// <inhertidoc />
     void IDisposable.Dispose()
     {
         Dispose(disposing: true);
@@ -61,25 +59,17 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDi
     {
         if (!IsDisposed)
         {
-            if (disposing)
+            if (disposing && _scope.HasValue && _scope.Value is IDisposable disposable)
             {
-                if (_scope.HasValue)
-                {
-                    if (_scope.Value is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                    }
-                    _scope = null;
-                }
+                disposable.Dispose();
+                _scope = null;
             }
+
             IsDisposed = true;
         }
     }
 
-    /// <summary>
-    /// Asynchronously releases the service scope used by the component.
-    /// </summary>
-    /// <returns>A task that represents the asynchronous dispose operation.</returns>
+    /// <inhertidoc />
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
         await DisposeAsyncCore().ConfigureAwait(false);
