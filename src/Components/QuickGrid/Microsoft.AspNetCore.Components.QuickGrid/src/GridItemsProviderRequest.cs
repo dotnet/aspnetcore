@@ -54,7 +54,11 @@ public readonly struct GridItemsProviderRequest<TGridItem>
         for (var i = 0; i < SortColumns.Count; i++)
         {
             var sortColumn = SortColumns[i];
-            source = sortColumn.Column.SortBy.Apply(source, sortColumn.Ascending, i == 0);
+
+            if (sortColumn.Column?.SortBy != null)
+            {
+                source = sortColumn.Column.SortBy.Apply(source, sortColumn.Ascending, i == 0);
+            }
         }
 
         return source;
@@ -68,7 +72,7 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     {
         foreach (var sortColumn in SortColumns)
         {
-            yield return sortColumn.Column.SortBy?.ToPropertyList(sortColumn.Ascending) ?? [];
+            yield return sortColumn.Column?.SortBy?.ToPropertyList(sortColumn.Ascending) ?? [];
         }
     }
 }
