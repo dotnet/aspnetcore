@@ -41,12 +41,7 @@ Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.Ca
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.CancellationToken.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.Count.get -> int?
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.Count.init -> void
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.GetSortByProperties() -> System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.Components.QuickGrid.SortedProperty>!
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.GridItemsProviderRequest() -> void
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortByAscending.get -> bool
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortByAscending.init -> void
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortByColumn.get -> Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>?
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortByColumn.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.StartIndex.get -> int
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.StartIndex.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderResult
