@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
-using BlazorWebCSharp_1.Data;
+using BlazorWebCSharp._1.Data;
 
-namespace BlazorWebCSharp_1.Components.Account;
+namespace BlazorWebCSharp._1.Components.Account;
 
 internal sealed class IdentityRedirectManager(NavigationManager navigationManager)
 {

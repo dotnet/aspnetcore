@@ -1,4 +1,4 @@
-namespace BlazorWebCSharp_1.Components.Account;
+namespace BlazorWebCSharp._1.Components.Account;
 
 public class PasskeyInputModel
 {
