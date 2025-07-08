@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq.Expressions;
 
 namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
@@ -147,10 +148,11 @@ public class GridSortTest
     public void ToPropertyName_InvalidExpression_ThrowsArgumentException()
     {
         // Arrange
-        Expression<Func<TestEntity, string>> invalidExpression = x => x.Name.ToUpper();
+        Expression<Func<TestEntity, string>> invalidExpression = x => x.Name.ToUpper(CultureInfo.InvariantCulture);
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => GridSort<TestEntity>.ByAscending(invalidExpression));
+        var gridSort = GridSort<TestEntity>.ByAscending(invalidExpression);
+        var exception = Assert.Throws<ArgumentException>(() => gridSort.ToPropertyList(ascending: true));
         Assert.Contains("The supplied expression can't be represented as a property name for sorting", exception.Message);
     }
 
@@ -158,10 +160,11 @@ public class GridSortTest
     public void ToPropertyName_MethodCallExpression_ThrowsArgumentException()
     {
         // Arrange
-        Expression<Func<TestEntity, int>> invalidExpression = x => x.Name.Length;
+        Expression<Func<TestEntity, string>> invalidExpression = x => x.Name.Substring(0, 1);
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => GridSort<TestEntity>.ByAscending(invalidExpression));
+        var gridSort = GridSort<TestEntity>.ByAscending(invalidExpression);
+        var exception = Assert.Throws<ArgumentException>(() => gridSort.ToPropertyList(ascending: true));
         Assert.Contains("The supplied expression can't be represented as a property name for sorting", exception.Message);
     }
 
@@ -172,7 +175,8 @@ public class GridSortTest
         Expression<Func<TestEntity, string>> invalidExpression = x => "constant";
 
         // Act & Assert
-        var exception = Assert.Throws<ArgumentException>(() => GridSort<TestEntity>.ByAscending(invalidExpression));
+        var gridSort = GridSort<TestEntity>.ByAscending(invalidExpression);
+        var exception = Assert.Throws<ArgumentException>(() => gridSort.ToPropertyList(ascending: true));
         Assert.Contains("The supplied expression can't be represented as a property name for sorting", exception.Message);
     }
 }

@@ -9,8 +9,10 @@
     <Reference Include="Microsoft.AspNetCore.Components.QuickGrid" />
   </ItemGroup>
 
+
+
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
+    <GlobalUsings Include="Xunit" />
   </ItemGroup>
 
 </Project>
