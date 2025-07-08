@@ -253,39 +253,3 @@ internal sealed class UserManagerMetrics : IDisposable
         _meter.Dispose();
     }
 }
-
-internal enum UserUpdateType
-{
-    Update,
-    UserName,
-    AddPassword,
-    ChangePassword,
-    SecurityStamp,
-    ResetPassword,
-    RemoveLogin,
-    AddLogin,
-    AddClaims,
-    ReplaceClaim,
-    RemoveClaims,
-    AddToRoles,
-    RemoveFromRoles,
-    SetEmail,
-    ConfirmEmail,
-    PasswordRehash,
-    RemovePassword,
-    ChangeEmail,
-    SetPhoneNumber,
-    ChangePhoneNumber,
-    SetTwoFactorEnabled,
-    SetLockoutEnabled,
-    SetLockoutEndDate,
-    AccessFailed,
-    ResetAccessFailedCount,
-    SetAuthenticationToken,
-    RemoveAuthenticationToken,
-    ResetAuthenticatorKey,
-    GenerateNewTwoFactorRecoveryCodes,
-    RedeemTwoFactorRecoveryCode,
-    SetPasskey,
-    RemovePasskey
-}

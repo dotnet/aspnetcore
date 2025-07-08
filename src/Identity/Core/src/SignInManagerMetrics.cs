@@ -198,14 +198,3 @@ internal sealed class SignInManagerMetrics : IDisposable
         };
     }
 }
-
-internal enum SignInType
-{
-    Refresh,
-    Password,
-    TwoFactorRecoveryCode,
-    TwoFactorAuthenticator,
-    TwoFactor,
-    External,
-    Passkey
-}
