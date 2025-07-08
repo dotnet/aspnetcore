@@ -31,6 +31,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
     {
         // Additional arguments are needed. See: https://github.com/dotnet/aspnetcore/issues/24278
         Environment.SetEnvironmentVariable("EnableDefaultScopedCssItems", "true");
+        Environment.SetEnvironmentVariable("AllowMissingPrunePackageData", "true");
 
         var project = await ProjectFactory.CreateProject(Output);
         if (targetFramework != null)
@@ -86,7 +87,7 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         string listeningUri,
         string appName,
         BlazorTemplatePages pagesToExclude = BlazorTemplatePages.None,
-        bool usesAuth = false)
+        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None)
     {
         if (!BrowserManager.IsAvailable(browserKind))
         {
@@ -100,16 +101,17 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         Output.WriteLine($"Opening browser at {listeningUri}...");
         await page.GotoAsync(listeningUri, new() { WaitUntil = WaitUntilState.NetworkIdle });
 
-        await TestBasicInteractionAsync(page, appName, pagesToExclude, usesAuth);
+        await TestBasicInteractionAsync(browser, page, appName, pagesToExclude, authenticationFeatures);
 
         await page.CloseAsync();
     }
 
     protected async Task TestBasicInteractionAsync(
+        IBrowserContext browser,
         IPage page,
         string appName,
         BlazorTemplatePages pagesToExclude = BlazorTemplatePages.None,
-        bool usesAuth = false)
+        AuthenticationFeatures authenticationFeatures = AuthenticationFeatures.None)
     {
         await page.WaitForSelectorAsync("nav");
 
@@ -134,16 +136,38 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             await IncrementCounterAsync(page);
         }
 
-        if (usesAuth)
+        if (authenticationFeatures.HasFlag(AuthenticationFeatures.RegisterAndLogIn))
         {
-            await Task.WhenAll(
-                page.WaitForURLAsync("**/Identity/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
-                page.ClickAsync("text=Log in"));
+            // Start a new CDP session with WebAuthn enabled and add a virtual authenticator.
+            // We do this regardless of whether we're testing passkeys, because passkey
+            // gets attempted unconditionally on the login page, and this utilizes the WebAuthn API.
+            await using var cdpSession = await browser.NewCDPSessionAsync(page);
+            await cdpSession.SendAsync("WebAuthn.enable");
+            var result = await cdpSession.SendAsync("WebAuthn.addVirtualAuthenticator", new Dictionary<string, object>
+            {
+                ["options"] = new
+                {
+                    protocol = "ctap2",
+                    transport = "internal",
+                    hasResidentKey = false,
+                    hasUserIdentification = true,
+                    isUserVerified = true,
+                    automaticPresenceSimulation = true,
+                }
+            });
+
+            Assert.True(result.HasValue);
+            var authenticatorId = result.Value.GetProperty("authenticatorId").GetString();
 
             await Task.WhenAll(
-                page.WaitForSelectorAsync("[name=\"Input.Email\"]"),
-                page.WaitForURLAsync("**/Identity/Account/Register**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                page.ClickAsync("text=Login"));
+
+            await Task.WhenAll(
+                page.WaitForURLAsync("**/Account/Register**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Register as a new user"));
+
+            await page.WaitForSelectorAsync("text=Create a new account.");
 
             var userName = $"{Guid.NewGuid()}@example.com";
             var password = "[PLACEHOLDER]-1a";
@@ -154,12 +178,12 @@ public abstract class BlazorTemplateTest : BrowserTestBase
 
             // We will be redirected to the RegisterConfirmation
             await Task.WhenAll(
-                page.WaitForURLAsync("**/Identity/Account/RegisterConfirmation**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
-                page.ClickAsync("#registerSubmit"));
+                page.WaitForURLAsync("**/Account/RegisterConfirmation**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                page.ClickAsync("button[type=\"submit\"]"));
 
             // We will be redirected to the ConfirmEmail
             await Task.WhenAll(
-                page.WaitForURLAsync("**/Identity/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                page.WaitForURLAsync("**/Account/ConfirmEmail**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
                 page.ClickAsync("text=Click here to confirm your account"));
 
             // Now we can login
@@ -167,11 +191,52 @@ public abstract class BlazorTemplateTest : BrowserTestBase
             await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
             await page.FillAsync("[name=\"Input.Email\"]", userName);
             await page.FillAsync("[name=\"Input.Password\"]", password);
-            await page.ClickAsync("#login-submit");
+            await page.ClickAsync("button[type=\"submit\"]");
 
-            // Need to navigate to fetch page
-            await page.GotoAsync(new Uri(page.Url).GetLeftPart(UriPartial.Authority));
-            Assert.Equal(appName.Trim(), (await page.TitleAsync()).Trim());
+            // Verify that we can visit the "Auth Required" page
+            await Task.WhenAll(
+                page.WaitForURLAsync("**/auth", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                page.ClickAsync("text=Auth Required"));
+            await page.WaitForSelectorAsync("text=You are authenticated");
+
+            if (authenticationFeatures.HasFlag(AuthenticationFeatures.Passkeys))
+            {
+                // Navigate to the passkey management page
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage\"]"));
+
+                await page.WaitForSelectorAsync("text=Manage your account");
+
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Manage/Passkeys**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("a[href=\"Account/Manage/Passkeys\"]"));
+
+                // Register a new passkey
+                await page.ClickAsync("text=Add a new passkey");
+
+                await page.WaitForSelectorAsync("text=Enter a name for your passkey");
+                await page.FillAsync("[name=\"Input.Name\"]", "My passkey");
+                await page.ClickAsync("text=Continue");
+
+                await page.WaitForSelectorAsync("text=Passkey updated successfully");
+
+                // Login with the passkey
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/Account/Login**", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Logout"));
+
+                await page.WaitForSelectorAsync("[name=\"Input.Email\"]");
+                await page.FillAsync("[name=\"Input.Email\"]", userName);
+
+                await page.ClickAsync("text=Log in with a passkey");
+
+                // Verify that we can visit the "Auth Required" page
+                await Task.WhenAll(
+                    page.WaitForURLAsync("**/auth", new() { WaitUntil = WaitUntilState.NetworkIdle }),
+                    page.ClickAsync("text=Auth Required"));
+                await page.WaitForSelectorAsync("text=You are authenticated");
+            }
         }
 
         if (!pagesToExclude.HasFlag(BlazorTemplatePages.Weather))
@@ -231,5 +296,13 @@ public abstract class BlazorTemplateTest : BrowserTestBase
         Counter = 2,
         Weather = 4,
         All = ~0,
+    }
+
+    [Flags]
+    protected enum AuthenticationFeatures
+    {
+        None = 0,
+        RegisterAndLogIn = 1,
+        Passkeys = 2,
     }
 }

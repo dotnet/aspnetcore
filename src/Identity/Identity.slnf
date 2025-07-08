@@ -41,6 +41,8 @@
       "src\\Identity\\samples\\IdentitySample.ApiEndpoints\\IdentitySample.ApiEndpoints.csproj",
       "src\\Identity\\samples\\IdentitySample.DefaultUI\\IdentitySample.DefaultUI.csproj",
       "src\\Identity\\samples\\IdentitySample.Mvc\\IdentitySample.Mvc.csproj",
+      "src\\Identity\\samples\\IdentitySample.PasskeyConformance\\IdentitySample.PasskeyConformance.csproj",
+      "src\\Identity\\samples\\IdentitySample.PasskeyUI\\IdentitySample.PasskeyUI.csproj",
       "src\\Identity\\test\\Identity.FunctionalTests\\Microsoft.AspNetCore.Identity.FunctionalTests.csproj",
       "src\\Identity\\test\\Identity.Test\\Microsoft.AspNetCore.Identity.Test.csproj",
       "src\\Identity\\test\\InMemory.Test\\Microsoft.AspNetCore.Identity.InMemory.Test.csproj",

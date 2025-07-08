@@ -49,6 +49,7 @@ public class EmptyDbContext : IdentityDbContext<IdentityUser, IdentityRole, stri
 
             builder.Ignore<IdentityUserRole<string>>();
 
+            builder.Ignore<IdentityUserPasskey<string>>();
         }
         else
         {
