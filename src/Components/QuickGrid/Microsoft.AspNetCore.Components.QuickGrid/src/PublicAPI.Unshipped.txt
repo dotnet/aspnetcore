@@ -1,4 +1,5 @@
 #nullable enable
+~override Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder __builder) -> void
 Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>.ChildContent.set -> void
