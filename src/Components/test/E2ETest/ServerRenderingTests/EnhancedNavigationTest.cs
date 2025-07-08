@@ -324,6 +324,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.Id("refresh-with-refresh")).Click();
         Browser.True(() => IsElementStale(initialRenderIdElement));
 
+        //Check if the warning about the fail were logged.
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.Contains(logs, log => log.Message.Contains("Enhanced navigation failed for destination") && !log.Message.Contains("Error"));
+
         var finalRenderIdElement = Browser.Exists(By.Id("render-id"));
         var finalRenderId = -1;
         Browser.True(() => int.TryParse(finalRenderIdElement.Text, out finalRenderId));
