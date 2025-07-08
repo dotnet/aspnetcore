@@ -88,32 +88,32 @@
             @foreach (var col in _columns)
             {
                 <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
+            }
+        </tr>
+    }
+
+    private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
+    {
+        <tr aria-rowindex="@(placeholderContext.Index + 1)">
+            @foreach (var col in _columns)
+            {
+                <td class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
         }
     </tr>
-}
+        }
 
-private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
-{
-    <tr aria-rowindex="@(placeholderContext.Index + 1)">
-        @foreach (var col in _columns)
-        {
-            <td class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
-    }
-</tr>
-    }
-
-    private void RenderColumnHeaders(RenderTreeBuilder __builder)
-{
-    foreach (var col in _columns)
+        private void RenderColumnHeaders(RenderTreeBuilder __builder)
     {
-        <th class="@ColumnHeaderClass(col)" aria-sort="@AriaSortValue(col)" @key="@col" scope="col">
-            <div class="col-header-content">@col.HeaderContent</div>
+        foreach (var col in _columns)
+        {
+            <th class="@ColumnHeaderClass(col)" aria-sort="@AriaSortValue(col)" @key="@col" scope="col">
+                <div class="col-header-content">@col.HeaderContent</div>
 
-            @if (col == _displayOptionsForColumn)
-            {
-                <div class="col-options">@col.ColumnOptions</div>
-            }
-        </th>
+                @if (col == _displayOptionsForColumn)
+                {
+                    <div class="col-options">@col.ColumnOptions</div>
+                }
+            </th>
+        }
     }
-}
 }
