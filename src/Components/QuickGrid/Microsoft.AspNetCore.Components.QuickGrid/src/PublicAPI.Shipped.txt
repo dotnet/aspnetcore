@@ -34,6 +34,10 @@ Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Sortable.get -> 
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Sortable.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Title.get -> string?
 Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>.Title.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>.ChildContent.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>.EmptyContentTemplate() -> void
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProvider<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.ApplySorting(System.Linq.IQueryable<TGridItem>! source) -> System.Linq.IQueryable<TGridItem>!
