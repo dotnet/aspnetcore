@@ -120,6 +120,11 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.get -> stri
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Theme.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Virtualize.get -> bool
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Virtualize.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>.Ascending.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>.Column.get -> Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>?
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>.Column.init -> void
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>.SortColumn() -> void
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Ascending = 1 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
 Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto = 0 -> Microsoft.AspNetCore.Components.QuickGrid.SortDirection
