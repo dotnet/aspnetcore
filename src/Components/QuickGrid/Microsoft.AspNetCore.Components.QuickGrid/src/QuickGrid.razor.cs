@@ -242,7 +242,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         _collectingColumns = false;
     }
 
-    private List<SortColumn<TGridItem>> _sortByColumns = [];
+    private readonly List<SortColumn<TGridItem>> _sortByColumns = [];
 
     /// <summary>
     /// The list of columns that have sorting applied.
