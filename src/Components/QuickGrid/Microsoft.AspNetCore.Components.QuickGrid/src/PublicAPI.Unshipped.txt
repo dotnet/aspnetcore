@@ -1,4 +1,10 @@
 #nullable enable
+Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>.ChildContent.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.EmptyContentTemplate<TGridItem>.EmptyContentTemplate() -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.EmptyContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.EmptyContent.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.HideColumnOptionsAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RowClass.get -> System.Func<TGridItem, string?>?
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RowClass.set -> void
