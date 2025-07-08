@@ -39,6 +39,8 @@
   "symbols/NoHttps/description": "Следует ли отключить HTTPS. Этот параметр применяется только в том случае, если для аргумента --auth не используется значение Individual.",
   "symbols/UseProgramMain/displayName": "Не использовать _операторы верхнего уровня",
   "symbols/UseProgramMain/description": "Следует ли создавать явный класс Program и метод Main вместо операторов верхнего уровня.",
+  "symbols/LocalhostTld/displayName": "Use the .localhost TLD in the aplication URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .localhost TLD in the application URL for local development, e.g. https://myapp.localhost:12345.",
   "postActions/restore/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
   "postActions/restore/manualInstructions/default/text": "Выполнить команду \"dotnet restore\""
 }
