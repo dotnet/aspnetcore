@@ -116,7 +116,6 @@ internal sealed class ExceptionHandlerMiddlewareImpl
 
         if ((edi.SourceException is OperationCanceledException || edi.SourceException is IOException) && context.RequestAborted.IsCancellationRequested)
         {
-            // Don't log unhandled exception for aborted request.
             _logger.RequestAbortedException();
 
             if (!context.Response.HasStarted)
@@ -131,9 +130,9 @@ internal sealed class ExceptionHandlerMiddlewareImpl
         // We can't do anything if the response has already started, just abort.
         if (context.Response.HasStarted)
         {
-            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
             _logger.ResponseStartedErrorHandler();
 
+            DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
             _metrics.RequestException(exceptionName, ExceptionResult.Skipped, handler: null);
             edi.Throw();
         }
@@ -251,7 +250,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                 return;
             }
 
-            // Log original unhandled exception before it is wrapped.
+            // Exception is unhandled. Record diagnostics for the unhandled exception before it is wrapped.
             DiagnosticsTelemetry.ReportUnhandledException(_logger, context, edi.SourceException);
 
             edi = ExceptionDispatchInfo.Capture(new InvalidOperationException($"The exception handler configured on {nameof(ExceptionHandlerOptions)} produced a 404 status response. " +

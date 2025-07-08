@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Tracing;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -48,9 +50,25 @@ public class ExceptionHandlerOptions
     public Func<Exception, int>? StatusCodeSelector { get; set; }
 
     /// <summary>
-    /// Gets or sets a callback that can return <see langword="true" /> be used to suppress some diagnostics by <see cref="ExceptionHandlerMiddleware" />.
+    /// Gets or sets a callback that can return <see langword="true" /> be used to suppress diagnostics by <see cref="ExceptionHandlerMiddleware" />.
+    /// <para>
     /// This callback is only run if the exception was handled by the middleware.
     /// Unhandled exceptions and exceptions thrown after the response has started are always logged.
+    /// </para>
+    /// <para>
+    /// Suppress diagnostics include:
+    /// </para>
+    /// <list type="bullet">
+    ///   <item>
+    ///     <description>Logging <c>UnhandledException</c> to <see cref="ILogger"/>.</description>
+    ///   </item>
+    ///   <item>
+    ///     <description>Writing <c>Microsoft.AspNetCore.Diagnostics.HandledException</c> event to <see cref="EventSource" />.</description>
+    ///   </item>
+    ///   <item>
+    ///     <description>Adding <c>error.type</c> tag to the <c>http.server.request.duration</c> metric.</description>
+    ///   </item>
+    /// </list>
     /// </summary>
     public Func<ExceptionHandlerSuppressDiagnosticsContext, bool>? SuppressDiagnosticsCallback { get; set; }
 }
