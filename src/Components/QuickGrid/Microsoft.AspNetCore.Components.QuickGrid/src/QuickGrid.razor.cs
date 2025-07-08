@@ -261,6 +261,14 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         return AddUpdateSortByColumnAsync(column, direction);
     }
 
+    /// <summary>
+    /// Adds or updates sorting of the specified <paramref name="column"/>.
+    /// If the column is not already being tracked it will be appended, otherwise it's direction is updated with it's position unchanged.
+    /// </summary>
+    /// <param name="column">The column that defines the new sort order.</param>
+    /// <param name="direction">The direction of sorting.  If the value is <see cref="SortDirection.Auto"/>, then it will toggle the direction on each call.</param>
+    /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
+    /// <exception cref="NotSupportedException"></exception>
     public Task AddUpdateSortByColumnAsync(ColumnBase<TGridItem> column, SortDirection direction = SortDirection.Auto)
     {
         var sortBy = _sortByColumns.FirstOrDefault(sbc => sbc.Column == column);
