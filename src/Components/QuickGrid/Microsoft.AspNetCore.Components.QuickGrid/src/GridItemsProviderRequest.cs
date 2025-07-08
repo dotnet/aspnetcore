@@ -22,20 +22,13 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     public int? Count { get; init; }
 
     /// <summary>
-    /// Specifies which column represents the sort order.
-    ///
+    /// Specifies which columns are currently being sorted.
+    /// 
     /// Rather than inferring the sort rules manually, you should normally call either <see cref="ApplySorting(IQueryable{TGridItem})"/>
-    /// or <see cref="GetSortByProperties"/>, since they also account for <see cref="SortByColumn" /> and <see cref="SortByAscending" /> automatically.
+    /// or <see cref="GetSortByProperties"/>, since they also account for <see cref="SortColumn{TGridItem}.Column"/> 
+    /// and <see cref="SortColumn{TGridItem}.Ascending"/> automatically.
     /// </summary>
-    public ColumnBase<TGridItem>? SortByColumn { get; init; }
-
-    /// <summary>
-    /// Specifies the current sort direction.
-    ///
-    /// Rather than inferring the sort rules manually, you should normally call either <see cref="ApplySorting(IQueryable{TGridItem})"/>
-    /// or <see cref="GetSortByProperties"/>, since they also account for <see cref="SortByColumn" /> and <see cref="SortByAscending" /> automatically.
-    /// </summary>
-    public bool SortByAscending { get; init; }
+    public IReadOnlyList<SortColumn<TGridItem>> SortColumns { get; init; }
 
     /// <summary>
     /// A token that indicates if the request should be cancelled.
@@ -43,13 +36,11 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     public CancellationToken CancellationToken { get; init; }
 
     internal GridItemsProviderRequest(
-        int startIndex, int? count, ColumnBase<TGridItem>? sortByColumn, bool sortByAscending,
-        CancellationToken cancellationToken)
+        int startIndex, int? count, IReadOnlyList<SortColumn<TGridItem>> sortColumns, CancellationToken cancellationToken)
     {
         StartIndex = startIndex;
         Count = count;
-        SortByColumn = sortByColumn;
-        SortByAscending = sortByAscending;
+        SortColumns = sortColumns;
         CancellationToken = cancellationToken;
     }
 
@@ -58,13 +49,26 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     /// </summary>
     /// <param name="source">An <see cref="IQueryable{TGridItem}"/>.</param>
     /// <returns>A new <see cref="IQueryable{TGridItem}"/> representing the <paramref name="source"/> with sorting rules applied.</returns>
-    public IQueryable<TGridItem> ApplySorting(IQueryable<TGridItem> source) =>
-        SortByColumn?.SortBy?.Apply(source, SortByAscending) ?? source;
+    public IQueryable<TGridItem> ApplySorting(IQueryable<TGridItem> source)
+    {
+        for (var i = 0; i < SortColumns.Count; i++)
+        {
+            var sortColumn = SortColumns[i];
+            source = sortColumn.Column.SortBy.Apply(source, sortColumn.Ascending, i == 0);
+        }
+
+        return source;
+    }
 
     /// <summary>
     /// Produces a collection of (property name, direction) pairs representing the sorting rules.
     /// </summary>
     /// <returns>A collection of (property name, direction) pairs representing the sorting rules</returns>
-    public IReadOnlyCollection<SortedProperty> GetSortByProperties() =>
-        SortByColumn?.SortBy?.ToPropertyList(SortByAscending) ?? Array.Empty<SortedProperty>();
+    public IEnumerable<IReadOnlyCollection<SortedProperty>> GetSortByProperties()
+    {
+        foreach (var sortColumn in SortColumns)
+        {
+            yield return sortColumn.Column.SortBy?.ToPropertyList(sortColumn.Ascending) ?? [];
+        }
+    }
 }

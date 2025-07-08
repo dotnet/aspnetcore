@@ -242,6 +242,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         _collectingColumns = false;
     }
 
+    private List<SortColumn<TGridItem>> _sortByColumns = [];
+
+    /// <summary>
+    /// The list of columns that have sorting applied.
+    /// </summary>
+    public IReadOnlyList<SortColumn<TGridItem>> SortColumns => _sortByColumns;
+
     /// <summary>
     /// Sets the grid's current sort column to the specified <paramref name="column"/>.
     /// </summary>
@@ -250,15 +257,27 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <returns>A <see cref="Task"/> representing the completion of the operation.</returns>
     public Task SortByColumnAsync(ColumnBase<TGridItem> column, SortDirection direction = SortDirection.Auto)
     {
-        _sortByAscending = direction switch
+        _sortByColumns.RemoveAll(sbc => sbc.Column != column);
+        return AddUpdateSortByColumnAsync(column, direction);
+    }
+
+    public Task AddUpdateSortByColumnAsync(ColumnBase<TGridItem> column, SortDirection direction = SortDirection.Auto)
+    {
+        var sortBy = _sortByColumns.FirstOrDefault(sbc => sbc.Column == column);
+
+        if (sortBy == null)
+        {
+            sortBy = new() { Column = column };
+            _sortByColumns.Add(sortBy);
+        }
+
+        sortBy.Ascending = direction switch
         {
             SortDirection.Ascending => true,
             SortDirection.Descending => false,
-            SortDirection.Auto => _sortByColumn != column || !_sortByAscending,
-            _ => throw new NotSupportedException($"Unknown sort direction {direction}"),
+            SortDirection.Auto => !sortBy.Ascending,
+            _ => throw new NotSupportedException($"Unknown sort direction {direction}")
         };
-
-        _sortByColumn = column;
 
         StateHasChanged(); // We want to see the updated sort order in the header, even before the data query is completed
         return RefreshDataAsync();
@@ -320,7 +339,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
             var startIndex = Pagination is null ? 0 : (Pagination.CurrentPageIndex * Pagination.ItemsPerPage);
             var request = new GridItemsProviderRequest<TGridItem>(
-                startIndex, Pagination?.ItemsPerPage, _sortByColumn, _sortByAscending, thisLoadCts.Token);
+                startIndex, Pagination?.ItemsPerPage, SortColumns, thisLoadCts.Token);
             var result = await ResolveItemsRequestAsync(request);
             if (!thisLoadCts.IsCancellationRequested)
             {
@@ -356,7 +375,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         }
 
         var providerRequest = new GridItemsProviderRequest<TGridItem>(
-            startIndex, count, _sortByColumn, _sortByAscending, request.CancellationToken);
+            startIndex, count, SortColumns, request.CancellationToken);
         var providerResult = await ResolveItemsRequestAsync(providerRequest);
 
         if (!request.CancellationToken.IsCancellationRequested)
