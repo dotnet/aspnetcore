@@ -78,6 +78,8 @@ Microsoft.AspNetCore.Components.QuickGrid.PaginationState.ItemsPerPage.get -> in
 Microsoft.AspNetCore.Components.QuickGrid.PaginationState.ItemsPerPage.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.PaginationState.LastPageIndex.get -> int?
 Microsoft.AspNetCore.Components.QuickGrid.PaginationState.PaginationState() -> void
+Microsoft.AspNetCore.Components.QuickGrid.PaginationState.RenderFillerRows.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.PaginationState.RenderFillerRows.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.PaginationState.SetCurrentPageIndexAsync(int pageIndex) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.QuickGrid.PaginationState.TotalItemCount.get -> int?
 Microsoft.AspNetCore.Components.QuickGrid.PaginationState.TotalItemCountChanged -> System.EventHandler<int?>?

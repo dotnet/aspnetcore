@@ -13,7 +13,7 @@ public class PaginationState
     /// <summary>
     /// Whether or not to render empty rows to fill the view.  
     /// </summary>
-    public bool RenderFillerRows = true;
+    public bool RenderFillerRows { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the number of items on each page.
