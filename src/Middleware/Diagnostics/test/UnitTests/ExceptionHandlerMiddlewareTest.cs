@@ -34,7 +34,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     public async Task ExceptionIsSetOnProblemDetailsContext()
     {
         // Arrange
-        ExceptionHandlerSuppressDiagnosticsContext loggingContext = null;
+        ExceptionHandlerSuppressDiagnosticsContext suppressContext = null;
         using var host = new HostBuilder()
             .ConfigureServices(services =>
             {
@@ -59,7 +59,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
                     {
                         SuppressDiagnosticsCallback = context =>
                         {
-                            loggingContext = context;
+                            suppressContext = context;
                             return true;
                         }
                     });
@@ -85,8 +85,8 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         var originalExceptionMessage = ((JsonElement)body.Extensions["OriginalExceptionMessage"]).GetString();
         Assert.Equal("Test exception", originalExceptionMessage);
 
-        Assert.IsType<Exception>(loggingContext.Exception);
-        Assert.Equal(ExceptionHandledType.ProblemDetailsService, loggingContext.ExceptionHandledBy);
+        Assert.IsType<Exception>(suppressContext.Exception);
+        Assert.Equal(ExceptionHandledType.ProblemDetailsService, suppressContext.ExceptionHandledBy);
     }
 
     [Fact]
@@ -116,7 +116,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     [Theory]
     [InlineData(ExceptionHandledType.ExceptionHandlerCallback, false)]
     [InlineData(ExceptionHandledType.ProblemDetailsService, true)]
-    public async Task Invoke_HasExceptionHandler_SuppressLogging_CallbackRun(ExceptionHandledType suppressResult, bool logged)
+    public async Task Invoke_HasExceptionHandler_SuppressDiagnostics_CallbackRun(ExceptionHandledType suppressResult, bool logged)
     {
         // Arrange
         var sink = new TestSink();
@@ -206,7 +206,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     [InlineData(null)]
     [InlineData(true)]
     [InlineData(false)]
-    public async Task IExceptionHandlers_SuppressLogging_TestLogs(bool? suppressDiagnostics)
+    public async Task IExceptionHandlers_SuppressDiagnostics_TestLogs(bool? suppressDiagnostics)
     {
         // Arrange
         var sink = new TestSink();
