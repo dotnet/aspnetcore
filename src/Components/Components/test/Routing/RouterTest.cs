@@ -267,6 +267,43 @@ public class RouterTest
         Assert.Equal("Not found", renderedFrame.TextContent);
     }
 
+    [Fact]
+    public async Task LogsWarningWhenBothNotFoundAndNotFoundPageAreSet()
+    {
+        // Arrange
+        var logger = new TestLogger<Router>();
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(new TestLoggerFactory(logger));
+        services.AddSingleton<NavigationManager>(_navigationManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        renderer.ShouldHandleExceptions = true;
+        var router = (Router)renderer.InstantiateComponent<Router>();
+        router.AppAssembly = Assembly.GetExecutingAssembly();
+        router.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+        renderer.AssignRootComponentId(router);
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.NotFound), (RenderFragment)(builder => builder.AddContent(0, "Custom not found")) },
+            { nameof(Router.NotFoundPage), typeof(NotFoundTestComponent) }
+        };
+
+        // Act
+        await renderer.Dispatcher.InvokeAsync(() =>
+            router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Assert
+        var warningLogs = logger.LogEntries.Where(entry => entry.LogLevel == LogLevel.Warning).ToList();
+        Assert.Single(warningLogs);
+        Assert.Contains("Both NotFound and NotFoundPage parameters are set on Router component", warningLogs[0].Message);
+        Assert.Contains("NotFoundPage is preferred and NotFound will be deprecated", warningLogs[0].Message);
+    }
+
     internal class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager() =>
@@ -308,4 +345,51 @@ public class RouterTest
 
     [Route("a/b/c")]
     public class MultiSegmentRouteComponent : ComponentBase { }
+
+    [Route("not-found")]
+    public class NotFoundTestComponent : ComponentBase { }
+
+    public class TestLogger<T> : ILogger<T>
+    {
+        public List<LogEntry> LogEntries { get; } = new List<LogEntry>();
+
+        public IDisposable BeginScope<TState>(TState state) => null;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+            LogEntries.Add(new LogEntry
+            {
+                LogLevel = logLevel,
+                EventId = eventId,
+                Message = formatter(state, exception),
+                Exception = exception
+            });
+        }
+    }
+
+    public class LogEntry
+    {
+        public LogLevel LogLevel { get; set; }
+        public EventId EventId { get; set; }
+        public string Message { get; set; }
+        public Exception Exception { get; set; }
+    }
+
+    public class TestLoggerFactory : ILoggerFactory
+    {
+        private readonly ILogger _logger;
+
+        public TestLoggerFactory(ILogger logger)
+        {
+            _logger = logger;
+        }
+
+        public void AddProvider(ILoggerProvider provider) { }
+
+        public ILogger CreateLogger(string categoryName) => _logger;
+
+        public void Dispose() { }
+    }
 }
