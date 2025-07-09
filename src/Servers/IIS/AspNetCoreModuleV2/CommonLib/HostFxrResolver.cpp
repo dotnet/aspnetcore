@@ -543,7 +543,7 @@ BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
     }
 
     // Read the DOS header
-    IMAGE_DOS_HEADER dosHeader{};
+    IMAGE_DOS_HEADER dosHeader;
     file.read(reinterpret_cast<char*>(&dosHeader), sizeof(dosHeader));
     if (dosHeader.e_magic != IMAGE_DOS_SIGNATURE) // 'MZ'
     {
@@ -555,7 +555,7 @@ BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
     file.seekg(dosHeader.e_lfanew, std::ios::beg);
 
     // Read the PE header
-    DWORD peSignature{};
+    DWORD peSignature;
     file.read(reinterpret_cast<char*>(&peSignature), sizeof(peSignature));
     if (peSignature != IMAGE_NT_SIGNATURE) // 'PE\0\0'
     {
@@ -564,11 +564,11 @@ BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
     }
 
     // Read the file header
-    IMAGE_FILE_HEADER fileHeader{};
+    IMAGE_FILE_HEADER fileHeader;
     file.read(reinterpret_cast<char*>(&fileHeader), sizeof(fileHeader));
 
     // Read the optional header magic field
-    WORD magic{};
+    WORD magic;
     file.read(reinterpret_cast<char*>(&magic), sizeof(magic));
 
     // Determine the architecture based on the magic value
