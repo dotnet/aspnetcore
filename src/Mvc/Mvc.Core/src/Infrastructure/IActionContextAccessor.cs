@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// Defines an interface for exposing an <see cref="ActionContext"/>.
 /// </summary>
+[Obsolete("IActionContextAccessor is obsolete. Use IHttpContextAccessor instead and access the endpoint information from HttpContext.GetEndpoint(). This type will be removed in a future version.")]
 public interface IActionContextAccessor
 {
     /// <summary>

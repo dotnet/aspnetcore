@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure;
 /// <summary>
 /// Type that provides access to an <see cref="ActionContext"/>.
 /// </summary>
+[Obsolete("ActionContextAccessor is obsolete. Use IHttpContextAccessor instead and access the endpoint information from HttpContext.GetEndpoint(). This type will be removed in a future version.")]
 public class ActionContextAccessor : IActionContextAccessor
 {
     internal static readonly IActionContextAccessor Null = new NullActionContextAccessor();
