@@ -389,6 +389,26 @@ internal sealed class HostingApplicationDiagnostics
     {
         hasDiagnosticListener = false;
 
+        var tagsForCreation = new TagList();
+        if (_activitySource.HasListeners() && httpContext.Request.Host.HasValue)
+        {
+            var host = httpContext.Request.Host.Host;
+            var port = httpContext.Request.Host.Port;
+            tagsForCreation.Add("server.address", host);
+            if (port is not null)
+            {
+                tagsForCreation.Add("server.port", port);
+            }
+            else if (string.Equals("https", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
+            {
+                tagsForCreation.Add("server.port", 443);
+            }
+            else if (string.Equals("http", httpContext.Request.Scheme, StringComparison.OrdinalIgnoreCase))
+            {
+                tagsForCreation.Add("server.port", 80);
+            }
+        }
+
         var headers = httpContext.Request.Headers;
         var activity = ActivityCreator.CreateFromRemote(
             _activitySource,
@@ -402,7 +422,7 @@ internal sealed class HostingApplicationDiagnostics
             },
             ActivityName,
             ActivityKind.Server,
-            tags: null,
+            tags: tagsForCreation,
             links: null,
             loggingEnabled || diagnosticListenerActivityCreationEnabled);
         if (activity is null)
