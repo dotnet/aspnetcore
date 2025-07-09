@@ -3,6 +3,11 @@
   <PropertyGroup>
     <_ApiDescriptionClientAssemblyPath>$(MSBuildThisFileDirectory)../tasks/netstandard2.0/Microsoft.Extensions.ApiDescription.Client.dll</_ApiDescriptionClientAssemblyPath>
   </PropertyGroup>
+  
+  <!-- Emit deprecation warning for this package -->
+  <Target Name="_WarnMicrosoftExtensionsApiDescriptionClientDeprecated" BeforeTargets="BeforeCompile;Build;Restore">
+    <Warning Text="The 'Microsoft.Extensions.ApiDescription.Client' package is deprecated and will be removed in a future release. Please consider migrating to alternative solutions for OpenAPI client code generation." />
+  </Target>
   <UsingTask TaskName="GetCurrentOpenApiReference" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
   <UsingTask TaskName="GetOpenApiReferenceMetadata" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
 
