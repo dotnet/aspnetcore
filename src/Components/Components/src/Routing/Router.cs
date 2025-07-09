@@ -77,7 +77,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// </summary>
     [Parameter]
     [DynamicallyAccessedMembers(LinkerFlags.Component)]
-    public Type NotFoundPage { get; set; } = default!;
+    public Type? NotFoundPage { get; set; }
 
     /// <summary>
     /// Gets or sets the content to display when a match is found for the requested route.
@@ -139,6 +139,11 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         if (Found == null)
         {
             throw new InvalidOperationException($"The {nameof(Router)} component requires a value for the parameter {nameof(Found)}.");
+        }
+
+        if (NotFound != null && NotFoundPage != null)
+        {
+            throw new InvalidOperationException($"The {nameof(Router)} component cannot have both {nameof(NotFound)} and {nameof(NotFoundPage)} parameters set. Use either {nameof(NotFound)} render fragment or {nameof(NotFoundPage)} component type, but not both.");
         }
 
         if (NotFoundPage != null)

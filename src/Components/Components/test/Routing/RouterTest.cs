@@ -265,6 +265,73 @@ public class RouterTest
         Assert.Equal("Not found", renderedFrame.TextContent);
     }
 
+    [Fact]
+    public async Task ThrowsIfBothNotFoundAndNotFoundPageAreSet()
+    {
+        // Arrange
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.NotFound), (RenderFragment)(builder => builder.AddContent(0, "Custom content")) },
+            { nameof(Router.NotFoundPage), typeof(TestNotFoundPageComponent) },
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await _renderer.Dispatcher.InvokeAsync(() =>
+                _router.SetParametersAsync(ParameterView.FromDictionary(parameters))));
+
+        Assert.Contains("cannot have both NotFound and NotFoundPage parameters set", exception.Message);
+    }
+
+    [Fact]
+    public async Task UsesNotFoundPageIfSpecified()
+    {
+        // Arrange
+        _navigationManager.NotifyLocationChanged("https://www.example.com/subdir/nonexistent", false);
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.NotFoundPage), typeof(TestNotFoundPageComponent) },
+        };
+
+        // Act
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Assert
+        var batch = _renderer.Batches.First();
+        var renderedFrame = batch.ReferenceFrames.Skip(1).First(); // Skip the RouteView frame
+        Assert.Equal(RenderTreeFrameType.Attribute, renderedFrame.FrameType);
+        Assert.Equal(nameof(RouteView.RouteData), renderedFrame.AttributeName);
+        var routeData = (RouteData)renderedFrame.AttributeValue;
+        Assert.Equal(typeof(TestNotFoundPageComponent), routeData.PageType);
+    }
+
+    [Fact]
+    public async Task UsesNotFoundPageOverNotFound()
+    {
+        // Arrange - This test verifies that if only NotFoundPage is set (not both), it takes precedence over default
+        _navigationManager.NotifyLocationChanged("https://www.example.com/subdir/nonexistent", false);
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.NotFoundPage), typeof(TestNotFoundPageComponent) },
+        };
+
+        // Act
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Assert
+        var batch = _renderer.Batches.First();
+        var renderedFrame = batch.ReferenceFrames.Skip(1).First(); // Skip the RouteView frame
+        Assert.Equal(RenderTreeFrameType.Attribute, renderedFrame.FrameType);
+        Assert.Equal(nameof(RouteView.RouteData), renderedFrame.AttributeName);
+        var routeData = (RouteData)renderedFrame.AttributeValue;
+        Assert.Equal(typeof(TestNotFoundPageComponent), routeData.PageType);
+    }
+
     internal class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager() =>
@@ -306,4 +373,7 @@ public class RouterTest
 
     [Route("a/b/c")]
     public class MultiSegmentRouteComponent : ComponentBase { }
+
+    [Route("/not-found")]
+    public class TestNotFoundPageComponent : ComponentBase { }
 }
