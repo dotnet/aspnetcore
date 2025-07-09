@@ -107,6 +107,24 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
+    public void InputHiddenCanStoreData(bool suppressEnhancedNavigation)
+    {
+        var dispatchToForm = new DispatchToForm(this)
+        {
+            Url = "forms/default-form-input-hidden",
+            FormCssSelector = "form",
+            SuppressEnhancedNavigation = suppressEnhancedNavigation,
+        };
+        DispatchToFormCore(dispatchToForm);
+        var textHidden = Browser.Exists(By.Id("hidden")).GetDomProperty("value");
+        Assert.Equal("stranger", textHidden);
+        var textPass = Browser.Exists(By.Id("pass")).Text;
+        Assert.Equal("Hello stranger!", textPass);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
     public void DataAnnotationsWorkForForms(bool suppressEnhancedNavigation)
     {
         var dispatchToForm = new DispatchToForm(this)
