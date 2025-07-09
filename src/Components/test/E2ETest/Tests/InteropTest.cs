@@ -102,11 +102,11 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["setValueToSetterAsync"] = "40",
             ["setValueToUndefinedPropertyAsync"] = "50",
             ["setValueToGetterAsync"] = "Success",
-            // InvokeNew tests
-            ["invokeNewWithClassConstructorAsync"] = "Success",
-            ["invokeNewWithClassConstructorAsync.dataProperty"] = "abraka",
-            ["invokeNewWithClassConstructorAsync.function"] = "6",
-            ["invokeNewWithNonConstructorAsync"] = "Success",
+            // InvokeConstructor tests
+            ["invokeConstructorWithClassConstructorAsync"] = "Success",
+            ["invokeConstructorWithClassConstructorAsync.dataProperty"] = "abraka",
+            ["invokeConstructorWithClassConstructorAsync.function"] = "6",
+            ["invokeConstructorWithNonConstructorAsync"] = "Success",
             // Function reference tests
             ["changeFunctionViaObjectReferenceAsync"] = "42"
         };
@@ -168,11 +168,11 @@ public class InteropTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
             ["setValueToSetter"] = "40",
             ["setValueToUndefinedProperty"] = "50",
             ["setValueToGetter"] = "Success",
-            // InvokeNew tests
-            ["invokeNewWithClassConstructor"] = "Success",
-            ["invokeNewWithClassConstructor.dataProperty"] = "abraka",
-            ["invokeNewWithClassConstructor.function"] = "6",
-            ["invokeNewWithNonConstructor"] = "Success",
+            // InvokeConstructor tests
+            ["invokeConstructorWithClassConstructor"] = "Success",
+            ["invokeConstructorWithClassConstructor.dataProperty"] = "abraka",
+            ["invokeConstructorWithClassConstructor.function"] = "6",
+            ["invokeConstructorWithNonConstructor"] = "Success",
             // Function reference tests
             ["changeFunctionViaObjectReference"] = "42"
         };

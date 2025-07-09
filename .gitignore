@@ -3,6 +3,7 @@ artifacts/
 bin/
 obj/
 .dotnet/
+.gradle/
 .nuget/
 .packages/
 .tools/

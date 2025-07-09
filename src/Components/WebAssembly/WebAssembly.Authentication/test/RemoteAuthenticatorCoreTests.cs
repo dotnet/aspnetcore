@@ -790,10 +790,10 @@ public class RemoteAuthenticatorCoreTests
             return default;
         }
 
-        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object[] args)
             => throw new NotImplementedException();
 
-        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object[] args)
             => throw new NotImplementedException();
 
         public ValueTask<TValue> GetValueAsync<TValue>(string identifier)
