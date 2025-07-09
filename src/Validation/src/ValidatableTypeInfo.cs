@@ -64,10 +64,23 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
         {
             var actualType = value.GetType();
 
-            // First validate members
+            // Track if there are any property-level validation errors from this type
+            var hasPropertyValidationErrors = false;
+
+            // First validate only property attributes for each member
             for (var i = 0; i < _membersCount; i++)
             {
-                await Members[i].ValidateAsync(value, context, cancellationToken);
+                if (await Members[i].ValidatePropertyAttributesAsync(value, context, cancellationToken))
+                {
+                    hasPropertyValidationErrors = true;
+                }
+                context.CurrentValidationPath = originalPrefix;
+            }
+
+            // Then validate complex objects for each member
+            for (var i = 0; i < _membersCount; i++)
+            {
+                await Members[i].ValidateComplexObjectsAsync(value, context, cancellationToken);
                 context.CurrentValidationPath = originalPrefix;
             }
 
@@ -86,8 +99,8 @@ public abstract class ValidatableTypeInfo : IValidatableInfo
                 }
             }
 
-            // Finally validate IValidatableObject if implemented
-            if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable)
+            // Finally validate IValidatableObject if implemented, but only if there are no property validation errors
+            if (Type.ImplementsInterface(typeof(IValidatableObject)) && value is IValidatableObject validatable && !hasPropertyValidationErrors)
             {
                 // Important: Set the DisplayName to the type name for top-level validations
                 // and restore the original validation context properties

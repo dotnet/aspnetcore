@@ -60,6 +60,16 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
+        await ValidatePropertyAttributesAsync(value, context, cancellationToken);
+        await ValidateComplexObjectsAsync(value, context, cancellationToken);
+    }
+
+    /// <summary>
+    /// Validates only the property attributes (Required, Range, etc.) without validating complex objects.
+    /// Returns true if there were validation errors.
+    /// </summary>
+    public virtual Task<bool> ValidatePropertyAttributesAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    {
         var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
         var propertyValue = property.GetValue(value);
         var validationAttributes = GetValidationAttributes();
@@ -78,6 +88,8 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
         context.ValidationContext.DisplayName = DisplayName;
         context.ValidationContext.MemberName = Name;
 
+        var hadValidationErrors = false;
+
         // Check required attribute first
         if (_requiredAttribute is not null || validationAttributes.TryGetRequiredAttribute(out _requiredAttribute))
         {
@@ -87,12 +99,49 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             {
                 context.AddValidationError(Name, context.CurrentValidationPath, [result.ErrorMessage], value);
                 context.CurrentValidationPath = originalPrefix; // Restore prefix
-                return;
+                return Task.FromResult(true);
             }
         }
 
+        // Track errors before validating other attributes  
+        var errorCountBeforeOtherValidation = context.ValidationErrors?.Count ?? 0;
+
         // Validate any other attributes
-        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value);
+        ValidateValue(propertyValue, Name, context.CurrentValidationPath, validationAttributes, value, context);
+
+        // Check if other validation introduced errors
+        if ((context.ValidationErrors?.Count ?? 0) > errorCountBeforeOtherValidation)
+        {
+            hadValidationErrors = true;
+        }
+
+        // Restore prefix
+        context.CurrentValidationPath = originalPrefix;
+        
+        return Task.FromResult(hadValidationErrors);
+    }
+
+    /// <summary>
+    /// Validates complex objects (sub-types) for this property.
+    /// </summary>
+    public virtual async Task ValidateComplexObjectsAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    {
+        var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
+        var propertyValue = property.GetValue(value);
+
+        // Calculate and save the current path
+        var originalPrefix = context.CurrentValidationPath;
+        if (string.IsNullOrEmpty(originalPrefix))
+        {
+            context.CurrentValidationPath = Name;
+        }
+        else
+        {
+            context.CurrentValidationPath = $"{originalPrefix}.{Name}";
+        }
+
+        context.ValidationContext.DisplayName = DisplayName;
+        context.ValidationContext.MemberName = Name;
 
         // Check if we've reached the maximum depth before validating complex properties
         if (context.CurrentDepth >= context.ValidationOptions.MaxDepth)
@@ -149,26 +198,26 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
             context.CurrentDepth--;
             context.CurrentValidationPath = originalPrefix;
         }
+    }
 
-        void ValidateValue(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container)
+    private static void ValidateValue(object? val, string name, string errorPrefix, ValidationAttribute[] validationAttributes, object? container, ValidateContext context)
+    {
+        for (var i = 0; i < validationAttributes.Length; i++)
         {
-            for (var i = 0; i < validationAttributes.Length; i++)
+            var attribute = validationAttributes[i];
+            try
             {
-                var attribute = validationAttributes[i];
-                try
-                {
-                    var result = attribute.GetValidationResult(val, context.ValidationContext);
-                    if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
-                    {
-                        var key = errorPrefix.TrimStart('.');
-                        context.AddOrExtendValidationErrors(name, key, [result.ErrorMessage], container);
-                    }
-                }
-                catch (Exception ex)
+                var result = attribute.GetValidationResult(val, context.ValidationContext);
+                if (result is not null && result != ValidationResult.Success && result.ErrorMessage is not null)
                 {
                     var key = errorPrefix.TrimStart('.');
-                    context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
+                    context.AddOrExtendValidationErrors(name, key, [result.ErrorMessage], container);
                 }
+            }
+            catch (Exception ex)
+            {
+                var key = errorPrefix.TrimStart('.');
+                context.AddOrExtendValidationErrors(name, key, [ex.Message], container);
             }
         }
     }
