@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#verification-procedure"/>.
 /// </remarks>
-public readonly struct PasskeyAttestationStatementVerificationContext
+public sealed class PasskeyAttestationStatementVerificationContext
 {
     /// <summary>
     /// Gets or sets the <see cref="HttpContext"/> for the current request.

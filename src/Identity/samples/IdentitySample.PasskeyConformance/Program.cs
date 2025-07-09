@@ -236,14 +236,14 @@ static string ServerPublicKeyCredentialToJson(JsonElement serverPublicKeyCredent
     return resultJson;
 }
 
-static Task<bool> ValidateOriginAsync(PasskeyOriginValidationContext context)
+static ValueTask<bool> ValidateOriginAsync(PasskeyOriginValidationContext context)
 {
     if (!Uri.TryCreate(context.Origin, UriKind.Absolute, out var uri))
     {
-        return Task.FromResult(false);
+        return ValueTask.FromResult(false);
     }
 
-    return Task.FromResult(uri.Host == "localhost" && uri.Port == 7020);
+    return ValueTask.FromResult(uri.Host == "localhost" && uri.Port == 7020);
 }
 
 static IOptions<PasskeyOptions> GetPasskeyOptionsFromCreationRequest(ServerPublicKeyCredentialCreationOptionsRequest request)

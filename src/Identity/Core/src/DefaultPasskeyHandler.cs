@@ -60,7 +60,7 @@ public sealed class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
                 DisplayName = userEntity.DisplayName,
             },
             Challenge = BufferSource.FromBytes(challenge),
-            Timeout = (uint)_options.Timeout.TotalMilliseconds,
+            Timeout = (uint)_options.AuthenticatorTimeout.TotalMilliseconds,
             ExcludeCredentials = excludeCredentials,
             PubKeyCredParams = pubKeyCredParams,
             AuthenticatorSelection = new()
@@ -112,13 +112,13 @@ public sealed class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         ArgumentNullException.ThrowIfNull(httpContext);
 
         var allowCredentials = await GetAllowCredentialsAsync().ConfigureAwait(false);
-        var serverDomain = _options.ServerDomain ?? httpContext.Request.Host.Host;
+        var serverDomain = GetServerDomain(httpContext);
         var challenge = RandomNumberGenerator.GetBytes(_options.ChallengeSize);
         var options = new PublicKeyCredentialRequestOptions
         {
             Challenge = BufferSource.FromBytes(challenge),
             RpId = serverDomain,
-            Timeout = (uint)_options.Timeout.TotalMilliseconds,
+            Timeout = (uint)_options.AuthenticatorTimeout.TotalMilliseconds,
             AllowCredentials = allowCredentials,
             UserVerification = _options.UserVerificationRequirement,
         };
@@ -307,15 +307,19 @@ public sealed class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         // 21-24. Determine the attestation statement format by performing a USASCII case-sensitive match on fmt against the set of supported WebAuthn
         //        Attestation Statement Format Identifier values...
         //        Handles all validation related to the attestation statement (21-24).
-        var isAttestationStatementValid = await _options.VerifyAttestationStatement(new()
+        if (_options.VerifyAttestationStatement is { } verifyAttestationStatement)
         {
-            HttpContext = context.HttpContext,
-            AttestationObject = attestationObjectMemory,
-            ClientDataHash = clientDataHash,
-        }).ConfigureAwait(false);
-        if (!isAttestationStatementValid)
-        {
-            throw PasskeyException.InvalidAttestationStatement();
+            var isAttestationStatementValid = await verifyAttestationStatement(new()
+            {
+                HttpContext = context.HttpContext,
+                AttestationObject = attestationObjectMemory,
+                ClientDataHash = clientDataHash,
+            }).ConfigureAwait(false);
+
+            if (!isAttestationStatementValid)
+            {
+                throw PasskeyException.InvalidAttestationStatement();
+            }
         }
 
         // 25. Verify that the credentialId is <= 1023 bytes.
@@ -338,7 +342,6 @@ public sealed class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         var credentialRecord = new UserPasskeyInfo(
             credentialId,
             publicKey: attestedCredentialData.CredentialPublicKey.ToArray(),
-            name: null,
             createdAt: DateTime.UtcNow,
             signCount: authenticatorData.SignCount,
             transports: response.Transports,
@@ -591,14 +594,7 @@ public sealed class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         }
 
         // Verify that the value of C.origin is an origin expected by the Relying Party.
-        var originInfo = new PasskeyOriginValidationContext
-        {
-            HttpContext = httpContext,
-            Origin = clientData.Origin,
-            CrossOrigin = clientData.CrossOrigin == true,
-            TopOrigin = clientData.TopOrigin,
-        };
-        var isOriginValid = await _options.ValidateOrigin(originInfo).ConfigureAwait(false);
+        var isOriginValid = await ValidateOriginAsync(clientData, httpContext).ConfigureAwait(false);
         if (!isOriginValid)
         {
             throw PasskeyException.InvalidOrigin(clientData.Origin);
@@ -650,6 +646,32 @@ public sealed class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
         {
             throw PasskeyException.NotBackupEligibleYetBackedUp();
         }
+    }
+
+    private ValueTask<bool> ValidateOriginAsync(CollectedClientData clientData, HttpContext httpContext)
+    {
+        if (_options.ValidateOrigin is { } validateOrigin)
+        {
+            // The user has overridden the default origin validation,
+            // so we'll use that instead of the default behavior.
+            return validateOrigin(new PasskeyOriginValidationContext
+            {
+                HttpContext = httpContext,
+                Origin = clientData.Origin,
+                CrossOrigin = clientData.CrossOrigin == true,
+                TopOrigin = clientData.TopOrigin,
+            });
+        }
+
+        if (string.IsNullOrEmpty(clientData.Origin) ||
+            clientData.CrossOrigin == true ||
+            !Uri.TryCreate(clientData.Origin, UriKind.Absolute, out var originUri))
+        {
+            return ValueTask.FromResult(false);
+        }
+
+        // Uri.Equals correctly handles string comparands.
+        return ValueTask.FromResult(httpContext.Request.Headers.Origin is [var origin] && originUri.Equals(origin));
     }
 
     private string GetServerDomain(HttpContext httpContext)

@@ -106,7 +106,6 @@ public sealed class InMemoryUserStore<TUser> :
         => p is null ? null : new(
             p.CredentialId,
             p.PublicKey,
-            p.Name,
             p.CreatedAt,
             p.SignCount,
             p.Transports,

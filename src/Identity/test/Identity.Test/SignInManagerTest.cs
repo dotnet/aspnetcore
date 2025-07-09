@@ -359,7 +359,7 @@ public class SignInManagerTest
     {
         // Setup
         var user = new PocoUser { UserName = "Foo" };
-        var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
         var assertionResult = PasskeyAssertionResult.Success(passkey, user);
         var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
         var expectedOptionsJson = "<some-options-json>";

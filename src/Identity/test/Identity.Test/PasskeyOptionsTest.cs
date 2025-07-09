@@ -10,14 +10,15 @@ public class PasskeyOptionsTest
     {
         var options = new PasskeyOptions();
 
-        Assert.Equal(TimeSpan.FromMinutes(5), options.Timeout);
+        Assert.Equal(TimeSpan.FromMinutes(5), options.AuthenticatorTimeout);
         Assert.Equal(32, options.ChallengeSize);
         Assert.Null(options.ServerDomain);
         Assert.Null(options.UserVerificationRequirement);
         Assert.Null(options.ResidentKeyRequirement);
         Assert.Null(options.AttestationConveyancePreference);
         Assert.Null(options.AuthenticatorAttachment);
-        Assert.NotNull(options.ValidateOrigin);
-        Assert.NotNull(options.VerifyAttestationStatement);
+        Assert.Null(options.IsAllowedAlgorithm);
+        Assert.Null(options.ValidateOrigin);
+        Assert.Null(options.VerifyAttestationStatement);
     }
 }

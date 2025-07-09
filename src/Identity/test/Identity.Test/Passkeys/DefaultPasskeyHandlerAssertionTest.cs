@@ -1009,7 +1009,6 @@ public class DefaultPasskeyHandlerAssertionTest
             var storedPasskey = StoredPasskey.Compute(new(
                 CredentialId.ToArray(),
                 credentialPublicKey.ToArray(),
-                name: null,
                 createdAt: default,
                 signCount: 0,
                 transports: null,

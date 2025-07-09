@@ -909,7 +909,7 @@ public class DefaultPasskeyHandlerAttestationTest
     public async Task Fails_WhenVerifyAttestationStatementAsyncReturnsFalse()
     {
         var test = new AttestationTest();
-        test.PasskeyOptions.VerifyAttestationStatement = context => Task.FromResult(false);
+        test.PasskeyOptions.VerifyAttestationStatement = context => ValueTask.FromResult(false);
 
         var result = await test.RunAsync();
 

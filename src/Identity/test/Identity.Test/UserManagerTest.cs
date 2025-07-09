@@ -674,7 +674,7 @@ public class UserManagerTest
         // Setup
         var store = new Mock<IUserPasskeyStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
-        var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
         store.Setup(s => s.AddOrUpdatePasskeyAsync(user, passkey, CancellationToken.None)).Returns(Task.CompletedTask).Verifiable();
         store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
         var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
@@ -693,7 +693,7 @@ public class UserManagerTest
         // Setup
         var store = new Mock<IUserPasskeyStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
-        var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
         var passkeys = (IList<UserPasskeyInfo>)[passkey];
         store.Setup(s => s.GetPasskeysAsync(user, CancellationToken.None)).Returns(Task.FromResult(passkeys)).Verifiable();
         var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);

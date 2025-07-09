@@ -59,6 +59,8 @@ Microsoft.AspNetCore.Identity.PasskeyOptions.AttestationConveyancePreference.get
 Microsoft.AspNetCore.Identity.PasskeyOptions.AttestationConveyancePreference.set -> void
 Microsoft.AspNetCore.Identity.PasskeyOptions.AuthenticatorAttachment.get -> string?
 Microsoft.AspNetCore.Identity.PasskeyOptions.AuthenticatorAttachment.set -> void
+Microsoft.AspNetCore.Identity.PasskeyOptions.AuthenticatorTimeout.get -> System.TimeSpan
+Microsoft.AspNetCore.Identity.PasskeyOptions.AuthenticatorTimeout.set -> void
 Microsoft.AspNetCore.Identity.PasskeyOptions.ChallengeSize.get -> int
 Microsoft.AspNetCore.Identity.PasskeyOptions.ChallengeSize.set -> void
 Microsoft.AspNetCore.Identity.PasskeyOptions.IsAllowedAlgorithm.get -> System.Func<int, bool>?
@@ -68,13 +70,11 @@ Microsoft.AspNetCore.Identity.PasskeyOptions.ResidentKeyRequirement.get -> strin
 Microsoft.AspNetCore.Identity.PasskeyOptions.ResidentKeyRequirement.set -> void
 Microsoft.AspNetCore.Identity.PasskeyOptions.ServerDomain.get -> string?
 Microsoft.AspNetCore.Identity.PasskeyOptions.ServerDomain.set -> void
-Microsoft.AspNetCore.Identity.PasskeyOptions.Timeout.get -> System.TimeSpan
-Microsoft.AspNetCore.Identity.PasskeyOptions.Timeout.set -> void
 Microsoft.AspNetCore.Identity.PasskeyOptions.UserVerificationRequirement.get -> string?
 Microsoft.AspNetCore.Identity.PasskeyOptions.UserVerificationRequirement.set -> void
-Microsoft.AspNetCore.Identity.PasskeyOptions.ValidateOrigin.get -> System.Func<Microsoft.AspNetCore.Identity.PasskeyOriginValidationContext, System.Threading.Tasks.Task<bool>!>!
+Microsoft.AspNetCore.Identity.PasskeyOptions.ValidateOrigin.get -> System.Func<Microsoft.AspNetCore.Identity.PasskeyOriginValidationContext!, System.Threading.Tasks.ValueTask<bool>>?
 Microsoft.AspNetCore.Identity.PasskeyOptions.ValidateOrigin.set -> void
-Microsoft.AspNetCore.Identity.PasskeyOptions.VerifyAttestationStatement.get -> System.Func<Microsoft.AspNetCore.Identity.PasskeyAttestationStatementVerificationContext, System.Threading.Tasks.Task<bool>!>!
+Microsoft.AspNetCore.Identity.PasskeyOptions.VerifyAttestationStatement.get -> System.Func<Microsoft.AspNetCore.Identity.PasskeyAttestationStatementVerificationContext!, System.Threading.Tasks.ValueTask<bool>>?
 Microsoft.AspNetCore.Identity.PasskeyOptions.VerifyAttestationStatement.set -> void
 Microsoft.AspNetCore.Identity.PasskeyOriginValidationContext
 Microsoft.AspNetCore.Identity.PasskeyOriginValidationContext.CrossOrigin.get -> bool

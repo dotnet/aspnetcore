@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <summary>
 /// Contains information used for determining whether a passkey's origin is valid.
 /// </summary>
-public readonly struct PasskeyOriginValidationContext
+public sealed class PasskeyOriginValidationContext
 {
     /// <summary>
     /// Gets or sets the HTTP context associated with the request.

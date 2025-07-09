@@ -106,7 +106,6 @@ public sealed class InMemoryUserStore<TUser> :
         => p is null ? null : new(
             p.CredentialId,
             p.PublicKey,
-            p.Name,
             p.CreatedAt,
             p.SignCount,
             p.Transports,
@@ -114,7 +113,10 @@ public sealed class InMemoryUserStore<TUser> :
             p.IsBackupEligible,
             p.IsBackedUp,
             p.AttestationObject,
-            p.ClientDataJson);
+            p.ClientDataJson)
+        {
+            Name = p.Name,
+        };
 
     [return: NotNullIfNotNull(nameof(p))]
     private static PocoUserPasskey<string>? ToPocoUserPasskey(TUser user, UserPasskeyInfo? p)
