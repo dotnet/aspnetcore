@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Globalization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
@@ -35,6 +36,32 @@ builder.Services.AddOpenApi("forms");
 builder.Services.AddOpenApi("schemas-by-ref");
 
 var app = builder.Build();
+
+// Run requests with a culture that uses commas to format decimals to
+// verify the invariant culture is used to generate the OpenAPI document.
+app.Use((next) =>
+{
+    return async context =>
+    {
+        var originalCulture = CultureInfo.CurrentCulture;
+        var originalUICulture = CultureInfo.CurrentUICulture;
+
+        var newCulture = new CultureInfo("fr-FR");
+
+        try
+        {
+            CultureInfo.CurrentCulture = newCulture;
+            CultureInfo.CurrentUICulture = newCulture;
+
+            await next(context);
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUICulture;
+        }
+    };
+});
 
 app.MapOpenApi();
 if (app.Environment.IsDevelopment())

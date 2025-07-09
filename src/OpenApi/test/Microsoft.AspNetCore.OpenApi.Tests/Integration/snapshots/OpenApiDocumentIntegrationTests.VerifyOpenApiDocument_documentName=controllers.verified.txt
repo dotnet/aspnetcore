@@ -4,6 +4,11 @@
     "title": "Sample | controllers",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "http://localhost/"
+    }
+  ],
   "paths": {
     "/getbyidandname/{id}/{name}": {
       "get": {
@@ -88,9 +93,41 @@
           }
         }
       }
+    },
+    "/getcultureinvariant": {
+      "get": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
-  "components": { },
+  "components": {
+    "schemas": {
+      "CurrentWeather": {
+        "type": "object",
+        "properties": {
+          "temperature": {
+            "type": "number",
+            "format": "float",
+            "default": 0.1
+          }
+        }
+      }
+    }
+  },
   "tags": [
     {
       "name": "Test"
