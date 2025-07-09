@@ -280,8 +280,8 @@
                           $(RepoRoot)**\obj\**\*;"
                         Condition=" '$(BuildMainlyReferenceProviders)' != 'true' " />
 
-        <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '1'"Include="@(ProjectsWithTestsSubset1)" />
-        <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '2'"Include="@(ProjectsWithTestsSubset2)" />
+        <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '1'" Include="@(ProjectsWithTestsSubset1)" />
+        <DotNetProjects Condition=" '$(HelixSubset)' == '' OR '$(HelixSubset)' == '2'" Include="@(ProjectsWithTestsSubset2)" />
 
         <ProjectToBuild Condition=" '$(BuildManaged)' == 'true'" Include="@(DotNetProjects)" Exclude="@(ProjectToExclude)" BuildStep="managed" />
         <ProjectToExclude Condition=" '$(BuildManaged)' != 'true'" Include="@(DotNetProjects)" />
