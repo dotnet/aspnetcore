@@ -1,5 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.GetSortByProperties() -> System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.Components.QuickGrid.SortedProperty>!>!
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.GetSortColumnProperties() -> System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.Components.QuickGrid.SortedProperty>!>!
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortColumns.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>!>!
 Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortColumns.init -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AddUpdateSortByColumnAsync(Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>! column, Microsoft.AspNetCore.Components.QuickGrid.SortDirection direction = Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto) -> System.Threading.Tasks.Task!

@@ -31,6 +31,24 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     public IReadOnlyList<SortColumn<TGridItem>> SortColumns { get; init; }
 
     /// <summary>
+    /// Specifies which column represents the sort order.
+    ///
+    /// Rather than inferring the sort rules manually, you should normally call either <see cref="ApplySorting(IQueryable{TGridItem})"/>
+    /// or <see cref="GetSortByProperties"/>, since they also account for <see cref="SortByColumn" /> and <see cref="SortByAscending" /> automatically.
+    /// </summary>
+    [Obsolete("Use " + nameof(SortColumns) + " instead.")]
+    public ColumnBase<TGridItem>? SortByColumn { get; init; }
+
+    /// <summary>
+    /// Specifies the current sort direction.
+    ///
+    /// Rather than inferring the sort rules manually, you should normally call either <see cref="ApplySorting(IQueryable{TGridItem})"/>
+    /// or <see cref="GetSortByProperties"/>, since they also account for <see cref="SortByColumn" /> and <see cref="SortByAscending" /> automatically.
+    /// </summary>
+    [Obsolete("Use " + nameof(SortColumns) + " instead.")]
+    public bool SortByAscending { get; init; }
+
+    /// <summary>
     /// A token that indicates if the request should be cancelled.
     /// </summary>
     public CancellationToken CancellationToken { get; init; }
@@ -41,6 +59,15 @@ public readonly struct GridItemsProviderRequest<TGridItem>
         StartIndex = startIndex;
         Count = count;
         SortColumns = sortColumns;
+
+        var sortColumn = sortColumns.FirstOrDefault();
+
+        if (sortColumn != null)
+        {
+            SortByColumn = sortColumn.Column;
+            SortByAscending = sortColumn.Ascending;
+        }
+
         CancellationToken = cancellationToken;
     }
 
@@ -68,7 +95,21 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     /// Produces a collection of (property name, direction) pairs representing the sorting rules.
     /// </summary>
     /// <returns>A collection of (property name, direction) pairs representing the sorting rules</returns>
-    public IEnumerable<IReadOnlyCollection<SortedProperty>> GetSortByProperties()
+    [Obsolete("Use " + nameof(GetSortColumnProperties) + " instead.")]
+    public IReadOnlyCollection<SortedProperty> GetSortByProperties() =>
+            SortByColumn?.SortBy?.ToPropertyList(SortByAscending) ?? Array.Empty<SortedProperty>();
+
+    /// <summary>
+    /// Produces a collection of collections representing the applied sort rules for the grid.
+    /// </summary>
+    /// <remarks>
+    /// Each item in the returned sequence is a collection of property name and sort direction pairs that define one sorting expression.
+    /// The sequence reflects the sort precedence (first, second, etc.).
+    /// </remarks>
+    /// <returns>
+    /// An <see cref="IEnumerable{T}"/> of <see cref="IReadOnlyCollection{T}"/> of <see cref="SortedProperty"/> representing the full sorting expression.
+    /// </returns>
+    public IEnumerable<IReadOnlyCollection<SortedProperty>> GetSortColumnProperties()
     {
         foreach (var sortColumn in SortColumns)
         {
