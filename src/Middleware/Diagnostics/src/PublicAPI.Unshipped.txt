@@ -1,4 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.get -> bool
-Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.set -> void
-static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, bool createScopeForErrors, string? queryFormat = null) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForStatusCodePages.get -> bool
+Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForStatusCodePages.set -> void
+static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, string? queryFormat = null, bool createScopeForStatusCodePages = false) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
