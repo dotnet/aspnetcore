@@ -134,6 +134,10 @@ jobs:
           signType: $(_SignType)
           zipSources: false
           feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
+          ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+            ConnectedPMEServiceName: 6cc74545-d7b9-4050-9dfa-ebefcc8961ea
+          ${{ else }}:
+            ConnectedPMEServiceName: 248d384a-b39b-46e3-8ad5-c2c210d5e7ca
         env:
           TeamName: $(_TeamName)
           MicroBuildOutputFolderOverride: '$(Agent.TempDirectory)'
