@@ -10,9 +10,6 @@ using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -711,4 +708,51 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         public IDictionary<string, Parent> SelfReferenceDictionary { get; set; } = new Dictionary<string, Parent>();
     }
 
+    /// <remarks>
+    /// Regression test for https://github.com/dotnet/aspnetcore/issues/61327
+    /// </remarks>
+    [Fact]
+    public async Task RespectsEnumDefaultValueInControllerFormParameters()
+    {
+        // Arrange
+        var actionDescriptor = CreateActionDescriptor(nameof(TestBodyController.FormPostWithOptionalEnumParam), typeof(TestBodyController));
+
+        // Assert
+        await VerifyOpenApiDocument(actionDescriptor, VerifyOptionalEnum);
+    }
+
+    [Fact]
+    public async Task RespectsEnumDefaultValueInMinimalApiFormParameters()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/optionalEnum", ([FromForm(Name = "status")] Status status = Status.Approved) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, VerifyOptionalEnum);
+    }
+
+    private void VerifyOptionalEnum(OpenApiDocument document)
+    {
+        var operation = document.Paths["/optionalEnum"].Operations[HttpMethod.Post];
+        var properties = operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.Properties;
+        var property = properties["status"];
+
+        Assert.NotNull(property);
+        Assert.Equal(3, property.Enum.Count);
+        Assert.Equal("Approved", property.Default.GetValue<string>());
+    }
+
+    [ApiController]
+    [Produces("application/json")]
+    public class TestBodyController
+    {
+        [Route("/optionalEnum")]
+        [HttpPost]
+        internal Status FormPostWithOptionalEnumParam(
+            [FromForm(Name = "status")] Status status = Status.Approved
+        ) => status;
+    }
 }

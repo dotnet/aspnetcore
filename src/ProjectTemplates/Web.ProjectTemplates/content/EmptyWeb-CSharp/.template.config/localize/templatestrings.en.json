@@ -14,6 +14,8 @@
   "symbols/UseProgramMain/displayName": "Do not use _top-level statements",
   "_symbols/UseProgramMain/displayName.comment": "Use '_' as accelerator key when translating.",
   "symbols/UseProgramMain/description": "Whether to generate an explicit Program class and Main method instead of top-level statements.",
+  "symbols/LocalhostTld/displayName": "Use the .localhost TLD in the aplication URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .localhost TLD in the application URL for local development, e.g. https://myapp.localhost:12345.",
   "postActions/restore/description": "Restore NuGet packages required by this project.",
   "postActions/restore/manualInstructions/default/text": "Run 'dotnet restore'"
 }

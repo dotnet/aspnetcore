@@ -15,13 +15,13 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
-using Microsoft.OpenApi.Models;
 using Moq;
 using static Microsoft.AspNetCore.OpenApi.Tests.OpenApiOperationGeneratorTests;
 
@@ -235,8 +235,13 @@ public abstract class OpenApiDocumentServiceTestBase
         };
         action.RouteValues.Add("controller", "Test");
         action.RouteValues.Add("action", action.MethodInfo.Name);
-        action.ActionConstraints = [new HttpMethodActionConstraint(["GET"])];
         action.EndpointMetadata = [..action.MethodInfo.GetCustomAttributes()];
+        action.ActionConstraints = [new HttpMethodActionConstraint(action
+            .EndpointMetadata
+            .OfType<IActionHttpMethodProvider>()
+            .SelectMany(a => a.HttpMethods)
+            .DefaultIfEmpty("GET")
+        )];
         if (controllerType is not null)
         {
             foreach (var attribute in controllerType.GetCustomAttributes())

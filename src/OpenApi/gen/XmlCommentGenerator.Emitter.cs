@@ -58,9 +58,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using Microsoft.AspNetCore.OpenApi;
     using Microsoft.AspNetCore.Mvc.Controllers;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.OpenApi.Models;
-    using Microsoft.OpenApi.Models.Interfaces;
-    using Microsoft.OpenApi.Models.References;
+    using Microsoft.OpenApi;
 
     {{GeneratedCodeAttribute}}
     file record XmlComment(

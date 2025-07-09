@@ -168,6 +168,45 @@ configuration:
             To make sure no conflicting changes have occurred, please rerun validation before merging. You can do this by leaving an `/azp run` comment here (requires commit rights), or by simply closing and reopening.
       - addLabel:
           label: pending-ci-rerun
+    - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (non-weekend)'
+      frequencies:
+      - weekday:
+          day: Tuesday
+          time: 0:0
+      - weekday:
+          day: Wednesday
+          time: 0:0
+      - weekday:
+          day: Thursday
+          time: 0:0
+      - weekday:
+          day: Friday
+          time: 0:0
+      filters:
+      - isPullRequest
+      - isOpen
+      - hasLabel:
+          label: 'build-ops'
+      - noActivitySince:
+          days: 1
+      actions:
+      - addReply:
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
+    - description: '[Idle Issue Management] Tag aspnet-build on dependency PRs (weekend)'
+      frequencies:
+      - weekday:
+          day: Monday
+          time: 0:0
+      filters:
+      - isPullRequest
+      - isOpen
+      - hasLabel:
+          label: 'build-ops'
+      - noActivitySince:
+          days: 3
+      actions:
+      - addReply:
+          reply: This dependency PR has had no activity for a full business day - @dotnet/aspnet-build please take a look if you are on build-ops.
     eventResponderTasks:
     - if:
       - payloadType: Issue_Comment
@@ -252,6 +291,26 @@ configuration:
       - isAction:
           action: Opened
       - isActivitySender:
+          user: dotnet-maestro[bot]
+          issueAuthor: False
+      - targetsBranch:
+          branch: main
+      - or:
+        - titleContains:
+            pattern: Update dependencies
+            isRegex: False
+        - titleContains:
+            pattern: Source code updates
+            isRegex: False
+      then:
+      - addLabel:
+          label: 'build-ops'
+      description: '[Infrastructure PRs] Add build-ops label to dependency update Pull Requests against main'
+    - if:
+      - payloadType: Pull_Request
+      - isAction:
+          action: Opened
+      - isActivitySender:
           user: dotnet-maestro-bot
           issueAuthor: False
       - titleContains:
@@ -264,6 +323,8 @@ configuration:
           label: area-infrastructure
       - addLabel:
           label: 'Type: Merge Forward :fast_forward:'
+      - addLabel:
+          label: 'build-ops'
       - approvePullRequest:
           comment: Auto-approving branch merge.
       description: '[Infrastructure PRs] Add area-infrastructure label to auto-merge Pull Requests'
@@ -380,18 +441,18 @@ configuration:
           branch: main
       then:
       - addMilestone:
-          milestone: 10.0-preview6
+          milestone: 10.0-preview7
       description: '[Milestone Assignments] Assign Milestone to PRs merged to the `main` branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
           action: Closed
       - targetsBranch:
-          branch: release/10.0-preview5
+          branch: release/10.0-preview6
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0-preview5
+          milestone: 10.0-preview6
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0-preview1 branch'
     - if:
       - payloadType: Issues
@@ -495,16 +556,16 @@ configuration:
       - isAction:
           action: Opened
       - targetsBranch:
-          branch: release/2.1
+          branch: release/2.3
       then:
       - addMilestone:
-          milestone: 2.1.x
+          milestone: 2.3.x
       - addReply:
           reply: >-
             Hi @${issueAuthor}. If this is not a tell-mode PR, please make sure to follow the instructions laid out in the [servicing process](https://aka.ms/aspnet/servicing) document.
 
             Otherwise, please add `tell-mode` label.
-      description: Add release/2.1 targeting PRs to the servicing project
+      description: Add release/2.3 targeting PRs to the servicing project
     - if:
       - payloadType: Pull_Request
       - labelAdded:
@@ -553,7 +614,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 9.0.6
+          milestone: 9.0.7
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/9.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -564,7 +625,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 8.0.17
+          milestone: 8.0.18
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/8.0 branch'
     - if:
       - payloadType: Issues
@@ -651,6 +712,8 @@ configuration:
           label: area-infrastructure
       - addLabel:
           label: 'Type: Dependency Update :arrow_up_small:'
+      - addLabel:
+          label: 'build-ops'
       - approvePullRequest:
           comment: Auto-approving SDK update.
       - enableAutoMerge:
@@ -670,6 +733,8 @@ configuration:
           label: area-infrastructure
       - addLabel:
           label: 'Type: Dependency Update :arrow_up_small:'
+      - addLabel:
+          label: 'build-ops'
       - approvePullRequest:
           comment: Auto-approving dependabot update.
       - enableAutoMerge:

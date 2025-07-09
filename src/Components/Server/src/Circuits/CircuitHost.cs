@@ -24,14 +24,15 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
-    private readonly CircuitMetrics? _circuitMetrics;
-    private readonly ComponentsActivitySource? _componentsActivitySource;
+    private readonly CircuitMetrics _circuitMetrics;
+    private readonly CircuitActivitySource _circuitActivitySource;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
     private bool _disposed;
     private long _startTime;
+    private PersistedCircuitState _persistedCircuitState;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
     // it need so be torn down. The registry listens to this even so that the circuit can
@@ -51,8 +52,8 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
-        CircuitMetrics? circuitMetrics,
-        ComponentsActivitySource? componentsActivitySource,
+        CircuitMetrics circuitMetrics,
+        CircuitActivitySource circuitActivitySource,
         ILogger logger)
     {
         CircuitId = circuitId;
@@ -71,7 +72,7 @@ internal partial class CircuitHost : IAsyncDisposable
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _circuitMetrics = circuitMetrics;
-        _componentsActivitySource = componentsActivitySource;
+        _circuitActivitySource = circuitActivitySource;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         Services = scope.ServiceProvider;
@@ -106,9 +107,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public IServiceProvider Services { get; }
 
+    internal bool HasPendingPersistedCircuitState => _persistedCircuitState != null;
+
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpContext, CancellationToken cancellationToken)
+    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpActivityContext, CancellationToken cancellationToken)
     {
         Log.InitializationStarted(_logger);
 
@@ -118,13 +121,14 @@ internal partial class CircuitHost : IAsyncDisposable
             {
                 throw new InvalidOperationException("The circuit host is already initialized.");
             }
-            Activity? activity = null;
+
+            CircuitActivityHandle activityHandle = default;
 
             try
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
-                activity = _componentsActivitySource?.StartCircuitActivity(CircuitId.Id, httpContext);
+                activityHandle = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext);
                 _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
 
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
@@ -170,11 +174,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
                 Log.InitializationSucceeded(_logger);
 
-                activity?.Stop();
+                _circuitActivitySource.StopCircuitActivity(activityHandle, null);
             }
             catch (Exception ex)
             {
-                _componentsActivitySource?.FailCircuitActivity(activity, ex);
+                _circuitActivitySource.StopCircuitActivity(activityHandle, ex);
 
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);
@@ -873,6 +877,42 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
+    internal void AttachPersistedState(PersistedCircuitState persistedCircuitState)
+    {
+        if (_persistedCircuitState != null)
+        {
+            throw new InvalidOperationException("Persisted state has already been attached to this circuit.");
+        }
+
+        _persistedCircuitState = persistedCircuitState;
+    }
+
+    internal PersistedCircuitState TakePersistedCircuitState()
+    {
+        var result = _persistedCircuitState;
+        _persistedCircuitState = null;
+        return result;
+    }
+
+    internal async Task<bool> SendPersistedStateToClient(string rootComponents, string applicationState, CancellationToken cancellation)
+    {
+        try
+        {
+            var succeded = await Client.InvokeAsync<bool>(
+                "JS.SavePersistedState",
+                CircuitId.Secret,
+                rootComponents,
+                applicationState,
+                cancellationToken: cancellation);
+            return succeded;
+        }
+        catch (Exception ex)
+        {
+            Log.FailedToSaveStateToClient(_logger, CircuitId, ex);
+            return false;
+        }
+    }
+
     private static partial class Log
     {
         // 100s used for lifecycle stuff
@@ -1028,5 +1068,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailedInCircuit")]
         public static partial void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception);
+
+        [LoggerMessage(220, LogLevel.Debug, "Failed to save state to client in circuit '{CircuitId}'.", EventName = "FailedToSaveStateToClient")]
+        public static partial void FailedToSaveStateToClient(ILogger logger, CircuitId circuitId, Exception exception);
     }
 }

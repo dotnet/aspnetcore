@@ -1,17 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections;
+using System.Diagnostics;
 using System.IO.Pipelines;
+using System.Reflection;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests;
 
@@ -115,5 +120,112 @@ public class WebHostBuilderKestrelExtensionsTests
         Assert.IsType<KestrelMetrics>(server.ServiceContext.Metrics);
         Assert.Equal(PipeScheduler.ThreadPool, server.ServiceContext.Scheduler);
         Assert.Equal(TimeProvider.System, server.ServiceContext.TimeProvider);
+
+        var handlers = (IHeartbeatHandler[])typeof(Heartbeat).GetField("_callbacks", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(server.ServiceContext.Heartbeat);
+        Assert.Collection(handlers,
+            handler =>
+            {
+                Assert.Equal(typeof(DateHeaderValueManager), handler.GetType());
+            },
+            handler =>
+            {
+                Assert.Equal(typeof(ConnectionManager), handler.GetType());
+            },
+            handler =>
+            {
+                Assert.Equal(typeof(PinnedBlockMemoryPoolFactory), handler.GetType());
+            });
+    }
+
+    [Fact]
+    public void MemoryPoolFactorySetCorrectlyWithSockets()
+    {
+        var hostBuilder = new WebHostBuilder()
+            .UseSockets()
+            .UseKestrel()
+            .Configure(app => { });
+
+        var host = hostBuilder.Build();
+
+        var memoryPoolFactory = Assert.IsType<PinnedBlockMemoryPoolFactory>(host.Services.GetRequiredService<IMemoryPoolFactory<byte>>());
+        Assert.Null(host.Services.GetService<IMemoryPoolFactory<int>>());
+
+        Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<SocketTransportOptions>>().Value.MemoryPoolFactory);
+
+        // Swap order of UseKestrel and UseSockets
+        hostBuilder = new WebHostBuilder()
+            .UseKestrel()
+            .UseSockets()
+            .Configure(app => { });
+
+        host = hostBuilder.Build();
+
+        memoryPoolFactory = Assert.IsType<PinnedBlockMemoryPoolFactory>(host.Services.GetRequiredService<IMemoryPoolFactory<byte>>());
+        Assert.Null(host.Services.GetService<IMemoryPoolFactory<int>>());
+
+        Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<SocketTransportOptions>>().Value.MemoryPoolFactory);
+    }
+
+    [Fact]
+    public void SocketsHasDefaultMemoryPool()
+    {
+        var hostBuilder = new WebHostBuilder()
+            .UseSockets()
+            .Configure(app => { });
+
+        var host = hostBuilder.Build();
+
+        var memoryPoolFactory = host.Services.GetRequiredService<IMemoryPoolFactory<byte>>();
+        Assert.IsNotType<PinnedBlockMemoryPoolFactory>(memoryPoolFactory);
+        Assert.Null(host.Services.GetService<IMemoryPoolFactory<int>>());
+
+        Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<SocketTransportOptions>>().Value.MemoryPoolFactory);
+    }
+
+    [ConditionalFact]
+    [NamedPipesSupported]
+    public void MemoryPoolFactorySetCorrectlyWithNamedPipes()
+    {
+        var hostBuilder = new WebHostBuilder()
+            .UseNamedPipes()
+            .UseKestrel()
+            .Configure(app => { });
+
+        var host = hostBuilder.Build();
+
+        var memoryPoolFactory = Assert.IsType<PinnedBlockMemoryPoolFactory>(host.Services.GetRequiredService<IMemoryPoolFactory<byte>>());
+        Assert.Null(host.Services.GetService<IMemoryPoolFactory<int>>());
+
+        Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<NamedPipeTransportOptions>>().Value.MemoryPoolFactory);
+
+        // Swap order of UseKestrel and UseNamedPipes
+        hostBuilder = new WebHostBuilder()
+            .UseKestrel()
+            .UseNamedPipes()
+            .Configure(app => { });
+
+        host = hostBuilder.Build();
+
+        memoryPoolFactory = Assert.IsType<PinnedBlockMemoryPoolFactory>(host.Services.GetRequiredService<IMemoryPoolFactory<byte>>());
+        Assert.Null(host.Services.GetService<IMemoryPoolFactory<int>>());
+
+        Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<NamedPipeTransportOptions>>().Value.MemoryPoolFactory);
+    }
+
+    [ConditionalFact]
+    [NamedPipesSupported]
+    public void NamedPipesHasDefaultMemoryPool()
+    {
+        var hostBuilder = new WebHostBuilder()
+            .UseNamedPipes()
+            .Configure(app => { });
+
+        var host = hostBuilder.Build();
+
+        var memoryPoolFactory = host.Services.GetRequiredService<IMemoryPoolFactory<byte>>();
+        Assert.IsNotType<PinnedBlockMemoryPoolFactory>(memoryPoolFactory);
+        Assert.Null(host.Services.GetService<IMemoryPoolFactory<int>>());
+
+        Assert.Same(memoryPoolFactory, host.Services.GetRequiredService<IOptions<NamedPipeTransportOptions>>().Value.MemoryPoolFactory);
     }
 }

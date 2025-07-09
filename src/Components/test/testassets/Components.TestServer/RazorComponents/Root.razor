@@ -6,6 +6,7 @@
 <head>
     <meta charset="utf-8" />
     <base href="/subdir/" />
+    <link rel="stylesheet" href="@Assets["Components.TestServer.styles.css"]" />
     <HeadOutlet />
 </head>
 <body>
@@ -14,8 +15,32 @@
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
     <script>
         const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
-        sessionStorage.removeItem('suppress-enhanced-navigation');
 
+        let pwr = Promise.withResolvers();
+        let reconnectPromise = pwr.promise;
+        let reconnectResolver = pwr.resolve;
+
+        function triggerReconnect() {
+            if(reconnectResolver) {
+                reconnectResolver();
+            }
+        }
+
+        function resetReconnect() {
+            pwr = Promise.withResolvers();
+            reconnectPromise = pwr.promise;
+            reconnectResolver = pwr.resolve;
+        }
+
+        function replaceReconnectCallback() {
+            const originalCallback = Blazor.defaultReconnectionHandler._reconnectCallback;
+            Blazor.defaultReconnectionHandler._reconnectCallback = async () => {
+                await reconnectPromise;
+                await originalCallback();
+            };
+        }
+
+        sessionStorage.removeItem('suppress-enhanced-navigation');
         function callBlazorStart() {
             Blazor.start({
                 ssr: {
@@ -25,6 +50,9 @@
                     loadBootResource: function (type, name, defaultUri, integrity) {
                         return `WasmMinimal/_framework/${name}`;
                     },
+                },
+                circuit: {
+                    logLevel: 0
                 },
             });
         }
@@ -39,5 +67,13 @@
             document.body.appendChild(startButton);
         }
     </script>
+
+    @if(CustomReconnectUI) {
+        <ReconnectModal></ReconnectModal>
+    }
 </body>
 </html>
+
+@code {
+    [SupplyParameterFromQuery(Name = "custom-reconnect-ui")] public bool CustomReconnectUI { get; set; }
+}

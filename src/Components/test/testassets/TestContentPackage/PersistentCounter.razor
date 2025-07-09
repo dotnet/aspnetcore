@@ -1,0 +1,34 @@
+﻿@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+
+<!-- The render changes when the component is resumed because it runs in a separate circuit -->
+@if (RendererInfo.IsInteractive)
+{
+    <p>Interactive <span id="render-mode-interactive">@RendererInfo.IsInteractive</span></p>    
+}
+<p>Current render GUID: <span id="persistent-counter-render">@Guid.NewGuid().ToString()</span></p>
+
+<p>Current count: <span id="persistent-counter-count">@State.Count</span></p>
+
+<button id="increment-persistent-counter-count" @onclick="IncrementCount">Click me</button>
+
+@code {
+
+    [PersistentState] public CounterState State { get; set; }
+
+    public class CounterState
+    {
+        public int Count { get; set; } = 0;
+    }
+
+    protected override void OnInitialized()
+    {
+        // State is preserved across disconnections
+        State ??= new CounterState();
+    }
+
+    private void IncrementCount()
+    {
+        State.Count = State.Count + 1;
+    }
+}

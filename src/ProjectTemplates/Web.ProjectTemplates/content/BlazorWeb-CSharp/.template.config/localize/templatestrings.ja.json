@@ -39,6 +39,8 @@
   "symbols/NoHttps/description": "HTTPS をオフにするかどうか。このオプションは、Individual が --auth に使用されていない場合にのみ適用されます。",
   "symbols/UseProgramMain/displayName": "最上位レベルのステートメントを使用しない(_T)",
   "symbols/UseProgramMain/description": "最上位レベルのステートメントではなく、明示的な Program クラスと Main メソッドを生成するかどうか。",
+  "symbols/LocalhostTld/displayName": "Use the .localhost TLD in the aplication URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .localhost TLD in the application URL for local development, e.g. https://myapp.localhost:12345.",
   "postActions/restore/description": "このプロジェクトに必要な NuGet パッケージを復元します。",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' を実行する"
 }

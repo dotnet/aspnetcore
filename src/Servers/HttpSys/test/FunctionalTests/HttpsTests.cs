@@ -241,6 +241,28 @@ public class HttpsTests : LoggedTest
 
     [ConditionalFact]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
+    public async Task Https_SetsIHttpSysRequestPropertyFeature()
+    {
+        using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
+        {
+            try
+            {
+                var requestPropertyFeature = httpContext.Features.Get<IHttpSysRequestPropertyFeature>();
+                Assert.NotNull(requestPropertyFeature);
+            }
+            catch (Exception ex)
+            {
+                await httpContext.Response.WriteAsync(ex.ToString());
+            }
+        }, LoggerFactory))
+        {
+            string response = await SendRequestAsync(address);
+            Assert.Equal(string.Empty, response);
+        }
+    }
+
+    [ConditionalFact]
+    [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10_20H2)]
     public async Task Https_SetsIHttpSysRequestTimingFeature()
     {
         using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>

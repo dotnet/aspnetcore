@@ -8,10 +8,12 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
+using TestContentPackage;
 using TestContentPackage.Services;
 
 namespace TestServer;
@@ -28,6 +30,8 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddValidation();
+
         services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
@@ -38,16 +42,32 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
             .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
             .AddInteractiveWebAssemblyComponents()
-            .AddInteractiveServerComponents()
+            .AddInteractiveServerComponents(options =>
+            {
+                if (Configuration.GetValue<bool>("DisableReconnectionCache"))
+                {
+                    // This disables the reconnection cache, which forces the server to persist the circuit state.
+                    options.DisconnectedCircuitMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+            })
             .AddAuthenticationStateSerialization(options =>
             {
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
 
+        if (Configuration.GetValue<bool>("UseHybridCache"))
+        {
+            services.AddHybridCache();
+        }
+
         services.AddScoped<InteractiveWebAssemblyService>();
         services.AddScoped<InteractiveServerService>();
         services.AddScoped<InteractiveAutoService>();
+
+        // Register custom serializer for E2E testing of persistent component state serialization extensibility
+        services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
@@ -75,6 +95,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         {
             app.Map("/reexecution", reexecutionApp =>
             {
+                app.Map("/trigger-404", app =>
+                {
+                    app.Run(async context =>
+                    {
+                        context.Response.StatusCode = 404;
+                        await context.Response.WriteAsync("Triggered a 404 status code.");
+                    });
+                });
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
                 reexecutionApp.UseRouting();
 
@@ -125,6 +153,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             }
 
             _ = endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"))
                 .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
                 .AddInteractiveServerRenderMode(options =>
                 {
