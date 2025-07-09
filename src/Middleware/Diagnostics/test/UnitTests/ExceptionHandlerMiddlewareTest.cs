@@ -215,7 +215,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         var metricsTagsFeature = new TestHttpMetricsTagsFeature();
         httpContext.Features.Set<IHttpMetricsTagsFeature>(metricsTagsFeature);
 
-        Func<ExceptionHandlerSuppressDiagnosticsContext, bool>? suppressDiagnosticsCallback = null;
+        Func<ExceptionHandlerSuppressDiagnosticsContext, bool> suppressDiagnosticsCallback = null;
         if (suppressDiagnostics != null)
         {
             suppressDiagnosticsCallback = c => suppressDiagnostics.Value;
