@@ -68,7 +68,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// Validates only the property attributes (Required, Range, etc.) without validating complex objects.
     /// Returns true if there were validation errors.
     /// </summary>
-    public virtual Task<bool> ValidatePropertyAttributesAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    internal virtual Task<bool> ValidatePropertyAttributesAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
         var propertyValue = property.GetValue(value);
@@ -124,7 +124,7 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <summary>
     /// Validates complex objects (sub-types) for this property.
     /// </summary>
-    public virtual async Task ValidateComplexObjectsAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
+    internal virtual async Task ValidateComplexObjectsAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
         var property = DeclaringType.GetProperty(Name) ?? throw new InvalidOperationException($"Property '{Name}' not found on type '{DeclaringType.Name}'.");
         var propertyValue = property.GetValue(value);
