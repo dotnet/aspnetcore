@@ -391,68 +391,6 @@ public class StatusCodeMiddlewareTest
     }
 
     [Fact]
-    public async Task CreateScopeForStatusCodePages_ConfiguresOptionCorrectly()
-    {
-        var expectedStatusCode = 432;
-        var destination = "/location";
-        StatusCodePagesOptions capturedOptions = null;
-        
-        using var host = new HostBuilder()
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                .UseTestServer()
-                .Configure(app =>
-                {
-                    // Use the new overload
-                    app.UseStatusCodePagesWithReExecute(pathFormat: "/errorPage", queryFormat: null, createScopeForStatusCodePages: true);
-
-                    app.Map(destination, (innerAppBuilder) =>
-                    {
-                        innerAppBuilder.Run((httpContext) =>
-                        {
-                            httpContext.Response.StatusCode = expectedStatusCode;
-                            return Task.FromResult(1);
-                        });
-                    });
-
-                    app.Map("/errorPage", (innerAppBuilder) =>
-                    {
-                        innerAppBuilder.Run((httpContext) =>
-                        {
-                            // Capture the options to verify they were set correctly
-                            var statusCodePagesFeature = httpContext.Features.Get<IStatusCodePagesFeature>();
-                            if (statusCodePagesFeature != null)
-                            {
-                                // Access the middleware context to get options if possible
-                                var statusCodeContext = new StatusCodeContext(httpContext, new StatusCodePagesOptions(), _ => Task.CompletedTask);
-                                var field = typeof(StatusCodeContext).GetProperty("Options");
-                                capturedOptions = field?.GetValue(statusCodeContext) as StatusCodePagesOptions;
-                            }
-                            return httpContext.Response.WriteAsync("Error page");
-                        });
-                    });
-
-                    app.Run((context) =>
-                    {
-                        throw new InvalidOperationException("Invalid input provided.");
-                    });
-                });
-            }).Build();
-
-        await host.StartAsync();
-
-        using var server = host.GetTestServer();
-        var client = server.CreateClient();
-        var response = await client.GetAsync(destination);
-        var content = await response.Content.ReadAsStringAsync();
-        
-        Assert.Equal("Error page", content);
-        // Just verify that the API accepts the parameter, since it's hard to test the internal behavior
-        Assert.True(true); // Test passes if we get here without exceptions
-    }
-
-    [Fact]
     public async Task CreateScopeForStatusCodePages_DefaultParameterWorks()
     {
         var expectedStatusCode = 432;
