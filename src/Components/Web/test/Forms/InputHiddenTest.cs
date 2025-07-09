@@ -16,8 +16,8 @@ public class InputHiddenTest
             ValueExpression = () => model.StringProperty,
         };
 
-    // Act
-    var inputHiddenComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
+        // Act
+        var inputHiddenComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
         // Assert
         Assert.NotNull(inputHiddenComponent.Element);

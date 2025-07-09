@@ -116,10 +116,9 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
             SuppressEnhancedNavigation = suppressEnhancedNavigation,
         };
         DispatchToFormCore(dispatchToForm);
-        var textHidden = Browser.Exists(By.Id("hidden")).GetDomProperty("value");
-        Assert.Equal("stranger", textHidden);
-        var textPass = Browser.Exists(By.Id("pass")).Text;
-        Assert.Equal("Hello stranger!", textPass);
+
+        Browser.Equal("stranger", () => Browser.Exists(By.Id("hidden")).GetDomProperty("value"));
+        Browser.Equal("Hello stranger!", () => Browser.Exists(By.Id("pass")).Text);
     }
 
     [Theory]
