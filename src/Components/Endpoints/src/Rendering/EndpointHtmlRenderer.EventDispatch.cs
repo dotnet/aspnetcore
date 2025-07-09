@@ -109,7 +109,7 @@ internal partial class EndpointHtmlRenderer
 
     private string GetNotFoundUrl(string baseUri, NotFoundEventArgs args)
     {
-        string path = args.Path;
+        string? path = args.Path;
         if (string.IsNullOrEmpty(path))
         {
             var pathFormat = _httpContext.Items[nameof(StatusCodePagesOptions)] as string;

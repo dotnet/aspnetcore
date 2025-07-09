@@ -63,6 +63,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     internal HttpContext? HttpContext => _httpContext;
+    internal NotFoundEventArgs? NotFoundEventArgs { get; set; }
 
     internal void SetHttpContext(HttpContext httpContext)
     {
@@ -87,6 +88,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         navigationManager?.OnNotFound += (sender, args) =>
         {
+            NotFoundEventArgs = args;
             _ = GetErrorHandledTask(SetNotFoundResponseAsync(navigationManager.BaseUri, args));
         };
 

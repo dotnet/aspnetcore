@@ -168,6 +168,17 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
         }
 
+        if (context.Response.StatusCode == StatusCodes.Status404NotFound &&
+            !isReExecuted &&
+            string.IsNullOrEmpty(_renderer.NotFoundEventArgs?.Path))
+        {
+            // Router did not handle the NotFound event, otherwise this would not be empty.
+            // Don't flush the response if we have an unhandled 404 rendering
+            // This will allow the StatusCodePages middleware to re-execute the request
+            context.Response.ContentType = null;
+            return;
+        }
+
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying
         // response asynchronously. In the absence of this line, the buffer gets synchronously written to the
         // response as part of the Dispose which has a perf impact.
