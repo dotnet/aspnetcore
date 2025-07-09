@@ -37,7 +37,13 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     /// or <see cref="GetSortByProperties"/>, since they also account for <see cref="SortByColumn" /> and <see cref="SortByAscending" /> automatically.
     /// </summary>
     [Obsolete("Use " + nameof(SortColumns) + " instead.")]
-    public ColumnBase<TGridItem>? SortByColumn { get; init; }
+    public ColumnBase<TGridItem>? SortByColumn
+    {
+        get => _sortByColumn;
+        init => _sortByColumn = value;
+    }
+
+    private readonly ColumnBase<TGridItem>? _sortByColumn;
 
     /// <summary>
     /// Specifies the current sort direction.
@@ -46,7 +52,13 @@ public readonly struct GridItemsProviderRequest<TGridItem>
     /// or <see cref="GetSortByProperties"/>, since they also account for <see cref="SortByColumn" /> and <see cref="SortByAscending" /> automatically.
     /// </summary>
     [Obsolete("Use " + nameof(SortColumns) + " instead.")]
-    public bool SortByAscending { get; init; }
+    public bool SortByAscending
+    {
+        get => _sortByAscending;
+        init => _sortByAscending = value;
+    }
+
+    private readonly bool _sortByAscending;
 
     /// <summary>
     /// A token that indicates if the request should be cancelled.
@@ -60,12 +72,11 @@ public readonly struct GridItemsProviderRequest<TGridItem>
         Count = count;
         SortColumns = sortColumns;
 
-        var sortColumn = sortColumns.FirstOrDefault();
-
-        if (sortColumn != null)
+        if (sortColumns.Any())
         {
-            SortByColumn = sortColumn.Column;
-            SortByAscending = sortColumn.Ascending;
+            var sortColumn = sortColumns[0];
+            _sortByColumn = sortColumn.Column;
+            _sortByAscending = sortColumn.Ascending;
         }
 
         CancellationToken = cancellationToken;
