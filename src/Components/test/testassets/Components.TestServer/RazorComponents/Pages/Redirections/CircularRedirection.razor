@@ -1,0 +1,53 @@
+﻿@page "/redirect/circular"
+@using System.Collections.Concurrent
+@inject NavigationManager Nav
+@inject UnobservedTaskExceptionObserver Observer
+
+<h1>Hello, world!</h1>
+
+@if (_shouldStopRedirecting)
+{
+    <p id="unobserved-exceptions-count">@_unobservedExceptions.Count</p>
+
+    @if (_unobservedExceptions.Any())
+    {
+        <h2>Unobserved Exceptions (for debugging):</h2>
+        <ul>
+            @foreach (var ex in _unobservedExceptions)
+            {
+                <li>@ex.ToString()</li>
+            }
+        </ul>
+    }
+}
+
+@code {
+    private bool _shouldStopRedirecting;
+    private IReadOnlyCollection<Exception> _unobservedExceptions = Array.Empty<Exception>();
+
+    protected override async Task OnInitializedAsync()
+    {
+		int visits = Observer.GetCircularRedirectCount();
+		if (visits == 0)
+		{
+			// make sure we start with clean logs
+			Observer.Clear();
+		}
+
+        // Force GC collection to trigger finalizers - this is what causes the issue
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+        GC.Collect();
+        await Task.Yield();
+
+        if (Observer.GetAndIncrementCircularRedirectCount() < 3)
+        {
+            Nav.NavigateTo("redirect/circular");
+        }
+        else
+        {
+            _shouldStopRedirecting = true;
+            _unobservedExceptions = Observer.GetExceptions();
+        }
+    }
+}

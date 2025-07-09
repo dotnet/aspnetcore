@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 
 namespace Microsoft.AspNetCore.Components;
-public class SupplyParameterFromPersistentComponentStateValueProviderTests
+public class PersistentStateValueProviderTests
 {
     [Fact]
     public void CanRestoreState_ForComponentWithProperties()
@@ -25,7 +25,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
             new Dictionary<string, byte[]>(),
             []);
 
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(state);
+        var provider = new PersistentStateValueProvider(state, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
         var component = new TestComponent();
         // Update the method call to match the correct signature
@@ -53,7 +53,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var state = new PersistentComponentState(
             new Dictionary<string, byte[]>(),
             []);
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(state);
+        var provider = new PersistentStateValueProvider(state, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
         var component = new TestComponent();
         var componentStates = CreateComponentState(renderer, [(component, null)], null);
@@ -75,7 +75,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var state = new PersistentComponentState(
             new Dictionary<string, byte[]>(),
             []);
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(state);
+        var provider = new PersistentStateValueProvider(state, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
         var component = new TestComponent();
         var componentStates = CreateComponentState(renderer, [(component, null)], null);
@@ -108,7 +108,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState = componentStates.First();
 
         // Create the provider and subscribe the component
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState, cascadingParameterInfo);
 
@@ -124,8 +124,8 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        // The key used for storing the property value is computed by the SupplyParameterFromPersistentComponentStateValueProvider
-        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        // The key used for storing the property value is computed by the PersistentStateValueProvider
+        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key, out var retrievedValue));
         Assert.Equal("testValue", retrievedValue);
     }
@@ -147,7 +147,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState = componentStates.First();
 
         // Create the provider and subscribe the component
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState, cascadingParameterInfo);
 
@@ -162,8 +162,8 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        // The key used for storing the property value is computed by the SupplyParameterFromPersistentComponentStateValueProvider
-        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        // The key used for storing the property value is computed by the PersistentStateValueProvider
+        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key, out var retrievedValue));
         Assert.Equal("testValue", retrievedValue);
     }
@@ -187,7 +187,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState2 = componentStates.Last();
 
         // Create the provider and subscribe the component
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
         provider.Subscribe(componentState2, cascadingParameterInfo);
@@ -203,12 +203,12 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        // The key used for storing the property value is computed by the SupplyParameterFromPersistentComponentStateValueProvider
-        var key1 = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
+        // The key used for storing the property value is computed by the PersistentStateValueProvider
+        var key1 = PersistentStateValueProvider.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key1, out var retrievedValue));
         Assert.Equal("testValue1", retrievedValue);
 
-        var key2 = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
+        var key2 = PersistentStateValueProvider.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key2, out retrievedValue));
         Assert.Equal("testValue2", retrievedValue);
     }
@@ -260,7 +260,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState2 = componentStates.Last();
 
         // Create the provider and subscribe the component
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
         provider.Subscribe(componentState2, cascadingParameterInfo);
@@ -276,12 +276,12 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        // The key used for storing the property value is computed by the SupplyParameterFromPersistentComponentStateValueProvider
-        var key1 = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
+        // The key used for storing the property value is computed by the PersistentStateValueProvider
+        var key1 = PersistentStateValueProvider.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key1, out var retrievedValue));
         Assert.Equal("testValue1", retrievedValue);
 
-        var key2 = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
+        var key2 = PersistentStateValueProvider.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key2, out retrievedValue));
         Assert.Equal("testValue2", retrievedValue);
     }
@@ -305,7 +305,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState2 = componentStates.Last();
 
         // Create the provider and subscribe the components
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
         provider.Subscribe(componentState2, cascadingParameterInfo);
@@ -346,7 +346,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState2 = componentStates.Last();
 
         // Create the provider and subscribe the components
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
         provider.Subscribe(componentState2, cascadingParameterInfo);
@@ -379,7 +379,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState2 = componentStates.Last();
 
         // Create the provider and subscribe the components
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
         provider.Subscribe(componentState2, cascadingParameterInfo);
@@ -419,7 +419,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState2 = componentStates.Last();
 
         // Create the provider and subscribe the components
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
         provider.Subscribe(componentState2, cascadingParameterInfo);
@@ -448,7 +448,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState = componentStates.First();
 
         // Create the provider and subscribe the component
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.IntValue), typeof(int));
         provider.Subscribe(componentState, cascadingParameterInfo);
 
@@ -462,7 +462,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<int>(key, out var retrievedValue));
         Assert.Equal(42, retrievedValue);
     }
@@ -483,7 +483,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState = componentStates.First();
 
         // Create the provider and subscribe the component
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.NullableIntValue), typeof(int?));
         provider.Subscribe(componentState, cascadingParameterInfo);
 
@@ -497,7 +497,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<int?>(key, out var retrievedValue));
         Assert.Equal(123, retrievedValue);
     }
@@ -518,7 +518,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState = componentStates.First();
 
         // Create the provider and subscribe the component
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.TupleValue), typeof((string, int)));
         provider.Subscribe(componentState, cascadingParameterInfo);
 
@@ -532,7 +532,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<(string, int)>(key, out var retrievedValue));
         Assert.Equal(("test", 456), retrievedValue);
     }
@@ -553,7 +553,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var componentState = componentStates.First();
 
         // Create the provider and subscribe the component
-        var provider = new SupplyParameterFromPersistentComponentStateValueProvider(persistenceManager.State);
+        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.NullableTupleValue), typeof((string, int)?));
         provider.Subscribe(componentState, cascadingParameterInfo);
 
@@ -567,7 +567,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
         newState.InitializeExistingState(store.State);
 
-        var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<(string, int)?>(key, out var retrievedValue));
         Assert.Equal(("test2", 789), retrievedValue);
     }
@@ -577,7 +577,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
         var dictionary = new Dictionary<string, byte[]>();
         foreach (var item in items)
         {
-            var key = SupplyParameterFromPersistentComponentStateValueProvider.ComputeKey(item.componentState, item.propertyName);
+            var key = PersistentStateValueProvider.ComputeKey(item.componentState, item.propertyName);
             dictionary[key] = JsonSerializer.SerializeToUtf8Bytes(item.value, JsonSerializerOptions.Web);
         }
         state.InitializeExistingState(dictionary);
@@ -586,7 +586,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
     private static CascadingParameterInfo CreateCascadingParameterInfo(string propertyName, Type propertyType)
     {
         return new CascadingParameterInfo(
-            new SupplyParameterFromPersistentComponentStateAttribute(),
+            new PersistentStateAttribute(),
             propertyName,
             propertyType);
     }
@@ -644,7 +644,7 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
 
     private class TestComponent : IComponent
     {
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public string State { get; set; }
 
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
@@ -653,16 +653,16 @@ public class SupplyParameterFromPersistentComponentStateValueProviderTests
 
     private class ValueTypeTestComponent : IComponent
     {
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public int IntValue { get; set; }
 
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public int? NullableIntValue { get; set; }
 
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public (string, int) TupleValue { get; set; }
 
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public (string, int)? NullableTupleValue { get; set; }
 
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
