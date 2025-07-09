@@ -54,6 +54,7 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     private bool _isMethodConnect;
     private bool _isWebTransportSessionAccepted;
     private Http3MessageBody? _messageBody;
+    private bool _requestBodyStarted;
 
     private readonly ManualResetValueTaskSource<object?> _appCompletedTaskSource = new();
     private readonly Lock _completionLock = new();
@@ -64,6 +65,17 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
     public bool IsAborted => (_completionState & StreamCompletionFlags.Aborted) == StreamCompletionFlags.Aborted;
     private bool IsAbortedRead => (_completionState & StreamCompletionFlags.AbortedRead) == StreamCompletionFlags.AbortedRead;
     public bool IsCompleted => (_completionState & StreamCompletionFlags.Completed) == StreamCompletionFlags.Completed;
+
+    public bool ReceivedEmptyRequestBody
+    {
+        get
+        {
+            lock (_completionLock)
+            {
+                return EndStreamReceived && !_requestBodyStarted;
+            }
+        }
+    }
 
     public Pipe RequestBodyPipe { get; private set; } = default!;
     public long? InputRemaining { get; internal set; }
@@ -560,6 +572,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
             TryClose();
         }
 
+        RequestBodyPipe.Reader.Complete();
+
         _http3Output.Complete();
 
         // Stream will be pooled after app completed.
@@ -929,6 +943,8 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
                 return Task.CompletedTask;
             }
 
+            _requestBodyStarted = true;
+
             foreach (var segment in payload)
             {
                 RequestBodyPipe.Writer.Write(segment.Span);
@@ -966,6 +982,11 @@ internal abstract partial class Http3Stream : HttpProtocol, IHttp3Stream, IHttpS
 
     protected override MessageBody CreateMessageBody()
     {
+        if (ReceivedEmptyRequestBody)
+        {
+            return MessageBody.ZeroContentLengthClose;
+        }
+
         if (_messageBody != null)
         {
             _messageBody.Reset();

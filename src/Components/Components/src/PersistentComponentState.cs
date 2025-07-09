@@ -111,6 +111,28 @@ public class PersistentComponentState
     }
 
     /// <summary>
+    /// Persists the provided byte array under the given key.
+    /// </summary>
+    /// <param name="key">The key to use to persist the state.</param>
+    /// <param name="data">The byte array to persist.</param>
+    internal void PersistAsBytes(string key, byte[] data)
+    {
+        ArgumentNullException.ThrowIfNull(key);
+
+        if (!PersistingState)
+        {
+            throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
+        }
+
+        if (_currentState.ContainsKey(key))
+        {
+            throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
+        }
+
+        _currentState.Add(key, data);
+    }
+
+    /// <summary>
     /// Tries to retrieve the persisted state as JSON with the given <paramref name="key"/> and deserializes it into an
     /// instance of type <typeparamref name="TValue"/>.
     /// When the key is present, the state is successfully returned via <paramref name="instance"/>
@@ -153,6 +175,19 @@ public class PersistentComponentState
             instance = default;
             return false;
         }
+    }
+
+    /// <summary>
+    /// Tries to retrieve the persisted state as raw bytes with the given <paramref name="key"/>.
+    /// When the key is present, the raw bytes are successfully returned via <paramref name="data"/>
+    /// and removed from the <see cref="PersistentComponentState"/>.
+    /// </summary>
+    /// <param name="key">The key used to persist the data.</param>
+    /// <param name="data">The persisted raw bytes.</param>
+    /// <returns><c>true</c> if the state was found; <c>false</c> otherwise.</returns>
+    internal bool TryTakeBytes(string key, [MaybeNullWhen(false)] out byte[]? data)
+    {
+        return TryTake(key, out data);
     }
 
     private bool TryTake(string key, out byte[]? value)

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+    "profiles": {
+      //#if (HasHttpProfile)
+      "http": {
+        "commandName": "Project",
+        "dotnetRunMessages": true,
+        "launchBrowser": true,
+        //#if (UseWebAssembly)
+        "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+        //#endif
+        //#if (LocalhostTld)
+        "applicationUrl": "http://blazorwebcsharp__1.localhost:5500",
+        //#else
+        "applicationUrl": "http://localhost:5500",
+        //#endif
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development"
+        }
+        //#if (HasHttpsProfile)
+      },
+      //#else
+      }
+      //#endif
+      //#endif
+      //#if (HasHttpsProfile)
+      "https": {
+        "commandName": "Project",
+        "dotnetRunMessages": true,
+        "launchBrowser": true,
+        //#if (UseWebAssembly)
+        "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+        //#endif
+        //#if (LocalhostTld)
+        "applicationUrl": "https://blazorwebcsharp__1.localhost:5501;http://blazorwebcsharp__1.localhost:5500",
+        //#else
+        "applicationUrl": "https://localhost:5501",
+        //#endif
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development"
+        }
+      }
+      //#endif
+    }
+  }

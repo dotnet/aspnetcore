@@ -8,10 +8,12 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
+using TestContentPackage;
 using TestContentPackage.Services;
 
 namespace TestServer;
@@ -63,6 +65,9 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         services.AddScoped<InteractiveWebAssemblyService>();
         services.AddScoped<InteractiveServerService>();
         services.AddScoped<InteractiveAutoService>();
+
+        // Register custom serializer for E2E testing of persistent component state serialization extensibility
+        services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
