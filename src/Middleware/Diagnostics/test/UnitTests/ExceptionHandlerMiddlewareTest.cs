@@ -114,7 +114,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     }
 
     [Theory]
-    [InlineData(ExceptionHandledType.ExceptionHandlerCallback, false)]
+    [InlineData(ExceptionHandledType.ExceptionHandlerDelegate, false)]
     [InlineData(ExceptionHandledType.ProblemDetailsService, true)]
     public async Task Invoke_HasExceptionHandler_SuppressDiagnostics_CallbackRun(ExceptionHandledType suppressResult, bool logged)
     {

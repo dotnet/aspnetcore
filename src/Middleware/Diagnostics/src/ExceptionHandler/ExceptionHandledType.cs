@@ -23,7 +23,7 @@ public enum ExceptionHandledType
     /// <summary>
     /// Exception was handled by by <see cref="Builder.ExceptionHandlerOptions.ExceptionHandler"/>.
     /// </summary>
-    ExceptionHandlerCallback,
+    ExceptionHandlerDelegate,
     /// <summary>
     /// Exception was handled by by <see cref="Builder.ExceptionHandlerOptions.ExceptionHandlingPath"/>.
     /// </summary>

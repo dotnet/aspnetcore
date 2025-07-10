@@ -195,7 +195,7 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                         }
                         else
                         {
-                            result = ExceptionHandledType.ExceptionHandlerCallback;
+                            result = ExceptionHandledType.ExceptionHandlerDelegate;
                         }
                     }
                 }
@@ -231,6 +231,11 @@ internal sealed class ExceptionHandlerMiddlewareImpl
                         ExceptionHandledBy = result
                     };
                     suppressDiagnostics = suppressCallback(suppressDiagnosticsContext);
+                }
+                else
+                {
+                    // Default behavior is to suppress diagnostics if the exception was handled by an IExceptionHandler service instance.
+                    suppressDiagnostics = result == ExceptionHandledType.ExceptionHandlerService;
                 }
 
                 if (!suppressDiagnostics)
