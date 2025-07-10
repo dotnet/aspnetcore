@@ -65,7 +65,7 @@ public class ExceptionHandlerOptions
     /// Unhandled exceptions and exceptions thrown after the response has started are always logged.
     /// </para>
     /// <para>
-    /// Suppress diagnostics include:
+    /// Suppressed diagnostics include:
     /// </para>
     /// <list type="bullet">
     ///   <item>
