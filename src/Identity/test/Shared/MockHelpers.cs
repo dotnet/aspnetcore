@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.Metrics;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -12,10 +14,17 @@ public static class MockHelpers
 {
     public static StringBuilder LogMessage = new StringBuilder();
 
-    public static Mock<UserManager<TUser>> MockUserManager<TUser>() where TUser : class
+    public static Mock<UserManager<TUser>> MockUserManager<TUser>(IMeterFactory meterFactory = null) where TUser : class
     {
+        var services = new ServiceCollection();
+        if (meterFactory != null)
+        {
+            services.AddSingleton<SignInManagerMetrics>();
+            services.AddSingleton(meterFactory);
+        }
+
         var store = new Mock<IUserStore<TUser>>();
-        var mgr = new Mock<UserManager<TUser>>(store.Object, null, null, null, null, null, null, null, null);
+        var mgr = new Mock<UserManager<TUser>>(store.Object, null, null, null, null, null, null, services.BuildServiceProvider(), null);
         mgr.Object.UserValidators.Add(new UserValidator<TUser>());
         mgr.Object.PasswordValidators.Add(new PasswordValidator<TUser>());
         return mgr;
@@ -30,7 +39,7 @@ public static class MockHelpers
             new IdentityErrorDescriber(), null);
     }
 
-    public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store = null) where TUser : class
+    public static UserManager<TUser> TestUserManager<TUser>(IUserStore<TUser> store = null, IMeterFactory meterFactory = null) where TUser : class
     {
         store = store ?? new Mock<IUserStore<TUser>>().Object;
         var options = new Mock<IOptions<IdentityOptions>>();
@@ -42,9 +51,16 @@ public static class MockHelpers
         userValidators.Add(validator.Object);
         var pwdValidators = new List<PasswordValidator<TUser>>();
         pwdValidators.Add(new PasswordValidator<TUser>());
+        var services = new ServiceCollection();
+        if (meterFactory != null)
+        {
+            services.AddSingleton<UserManagerMetrics>();
+            services.AddSingleton<SignInManagerMetrics>();
+            services.AddSingleton(meterFactory);
+        }
         var userManager = new UserManager<TUser>(store, options.Object, new PasswordHasher<TUser>(),
             userValidators, pwdValidators, MockLookupNormalizer(),
-            new IdentityErrorDescriber(), null,
+            new IdentityErrorDescriber(), services.BuildServiceProvider(),
             new Mock<ILogger<UserManager<TUser>>>().Object);
         validator.Setup(v => v.ValidateAsync(userManager, It.IsAny<TUser>()))
             .Returns(Task.FromResult(IdentityResult.Success)).Verifiable();

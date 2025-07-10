@@ -13,6 +13,8 @@
   "symbols/NoHttps/description": "是否要關閉 HTTPS。只有當 Individual、IndividualB2C、SingleOrg 或 MultiOrg 未用於 --auth 時，才適用此選項。",
   "symbols/UseProgramMain/displayName": "不要使用最上層陳述式(_T)",
   "symbols/UseProgramMain/description": "是否要產生明確的 Program 類別和 Main 方法，而非最上層語句。",
+  "symbols/LocalhostTld/displayName": "Use the .localhost TLD in the aplication URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .localhost TLD in the application URL for local development, e.g. https://myapp.localhost:12345.",
   "postActions/restore/description": "還原此專案所需的 NuGet 套件。",
   "postActions/restore/manualInstructions/default/text": "執行 'dotnet restore'"
 }

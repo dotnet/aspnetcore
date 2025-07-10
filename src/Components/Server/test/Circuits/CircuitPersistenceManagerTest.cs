@@ -586,7 +586,7 @@ public class CircuitPersistenceManagerTest
             _renderHandle = renderHandle;
         }
 
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public string Persisted { get; set; }
 
         [Parameter]
@@ -617,7 +617,7 @@ public class CircuitPersistenceManagerTest
             _renderHandle = renderHandle;
         }
 
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public string Persisted { get; set; }
 
         [Parameter]

@@ -66,7 +66,7 @@ export module DotNet {
    */
   export enum JSCallType {
       FunctionCall = 1,
-      NewCall = 2,
+      ConstructorCall = 2,
       GetValue = 3,
       SetValue = 4
   }
@@ -620,7 +620,7 @@ export module DotNet {
               } else {
                   throw new Error(`The value '${identifier}' is not a function.`);
               }
-          case JSCallType.NewCall:
+          case JSCallType.ConstructorCall:
               const ctor = parent[memberName];
               if (ctor instanceof Function) {
                   const bound = ctor.bind(parent);

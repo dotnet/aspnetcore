@@ -162,7 +162,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         {
             // Skip compiler generated properties and properties already processed via
             // the record processing logic above.
-            if (member.IsImplicitlyDeclared || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            if (member.IsImplicitlyDeclared 
+                || member.IsEqualityContract(wellKnownTypes) 
+                || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {
                 continue;
             }

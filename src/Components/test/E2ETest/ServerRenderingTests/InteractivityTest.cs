@@ -1059,6 +1059,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/persist-state?server=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
+        Browser.Equal("42", () => Browser.FindElement(By.Id("custom-server")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
     }
 
@@ -1077,6 +1078,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/persist-state?wasm=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("wasm")).Text);
+        Browser.Equal("42", () => Browser.FindElement(By.Id("custom-wasm")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
     }
 
@@ -1095,6 +1097,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/persist-state?auto=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
+        Browser.Equal("42", () => Browser.FindElement(By.Id("custom-auto")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
     }
 
@@ -1156,6 +1159,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/persist-state?auto=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
+        Browser.Equal("42", () => Browser.FindElement(By.Id("custom-auto")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
     }
 

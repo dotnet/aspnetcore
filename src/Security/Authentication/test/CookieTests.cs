@@ -33,6 +33,13 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new CookieAuthenticationOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task NormalRequestPassesThrough()
     {
         using var host = await CreateHost(s => { });
