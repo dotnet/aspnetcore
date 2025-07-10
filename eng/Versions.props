@@ -155,6 +155,11 @@
     <MicrosoftEntityFrameworkCoreToolsVersion>10.0.0-preview.7.25358.102</MicrosoftEntityFrameworkCoreToolsVersion>
     <MicrosoftEntityFrameworkCoreVersion>10.0.0-preview.7.25358.102</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreDesignVersion>10.0.0-preview.7.25358.102</MicrosoftEntityFrameworkCoreDesignVersion>
+    <!-- Packages from dotnet/msbuild -->
+    <MicrosoftBuildVersion>17.12.36</MicrosoftBuildVersion>
+    <MicrosoftBuildFrameworkVersion>17.12.36</MicrosoftBuildFrameworkVersion>
+    <MicrosoftBuildTasksCoreVersion>17.12.36</MicrosoftBuildTasksCoreVersion>
+    <MicrosoftBuildUtilitiesCoreVersion>17.12.36</MicrosoftBuildUtilitiesCoreVersion>
     <!-- Packages from dotnet/sdk -->
     <MicrosoftDotNetHotReloadAgentVersion>10.0.100-preview.7.25358.102</MicrosoftDotNetHotReloadAgentVersion>
     <MicrosoftDotNetHotReloadAgentDataVersion>10.0.100-preview.7.25358.102</MicrosoftDotNetHotReloadAgentDataVersion>
@@ -224,10 +229,6 @@
     <!-- Partner teams -->
     <MicrosoftAzureSignalRVersion>1.2.0</MicrosoftAzureSignalRVersion>
     <MicrosoftBuildLocatorVersion>1.2.6</MicrosoftBuildLocatorVersion>
-    <MicrosoftBuildVersion>17.8.29</MicrosoftBuildVersion>
-    <MicrosoftBuildFrameworkVersion>17.8.29</MicrosoftBuildFrameworkVersion>
-    <MicrosoftBuildTasksCoreVersion>17.8.29</MicrosoftBuildTasksCoreVersion>
-    <MicrosoftBuildUtilitiesCoreVersion>17.8.29</MicrosoftBuildUtilitiesCoreVersion>
     <!--
       Temporarily override the Microsoft.NET.Test.Sdk version Arcade defaults to. That's incompatible w/ test
       framework in current .NET SDKs.

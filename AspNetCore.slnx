@@ -1227,6 +1227,7 @@
   <Project Path="src/Caching/perf/MicroBenchmarks/Microsoft.Extensions.Caching.MicroBenchmarks/Microsoft.Extensions.Caching.MicroBenchmarks.csproj" />
   <Project Path="src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter/src/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
   <Project Path="src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/src/Microsoft.AspNetCore.Components.QuickGrid.csproj" />
+  <Project Path="src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/test/Microsoft.AspNetCore.Components.QuickGrid.Tests.csproj" />
   <Project Path="src/Components/WebView/test/E2ETest/Microsoft.AspNetCore.Components.WebViewE2E.Test.csproj" />
   <Project Path="src/DataProtection/samples/KeyManagementSimulator/KeyManagementSimulator.csproj" />
   <Project Path="src/Framework/AspNetCoreAnalyzers/samples/WebAppSample/WebAppSample.csproj" />

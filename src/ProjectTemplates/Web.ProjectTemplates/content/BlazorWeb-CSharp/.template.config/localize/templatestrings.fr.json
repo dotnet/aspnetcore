@@ -39,6 +39,8 @@
   "symbols/NoHttps/description": "Indique s’il faut désactiver HTTPS. Cette option s’applique uniquement si Individual n’est pas utilisé pour --auth.",
   "symbols/UseProgramMain/displayName": "N’utilisez pas _d’instructions de niveau supérieur.",
   "symbols/UseProgramMain/description": "Indique s’il faut générer une classe Programme explicite et une méthode Main au lieu d’instructions de niveau supérieur.",
+  "symbols/LocalhostTld/displayName": "Use the .localhost TLD in the aplication URL",
+  "symbols/LocalhostTld/description": "Whether to combine the project name with the .localhost TLD in the application URL for local development, e.g. https://myapp.localhost:12345.",
   "postActions/restore/description": "Restaurez les packages NuGet requis par ce projet.",
   "postActions/restore/manualInstructions/default/text": "Exécuter « dotnet restore »"
 }

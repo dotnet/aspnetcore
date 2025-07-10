@@ -43,7 +43,7 @@ public interface IJSRuntime
     /// <param name="identifier">An identifier for the constructor function to invoke. For example, the value <c>"someScope.SomeClass"</c> will invoke the constructor <c>window.someScope.SomeClass</c>.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
-    ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
+    ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
         => throw new NotImplementedException();
 
     /// <summary>
@@ -56,7 +56,7 @@ public interface IJSRuntime
     /// </param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSObjectReference"/> instance that represents the created JS object.</returns>
-    ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+    ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
         => throw new NotImplementedException();
 
     /// <summary>
