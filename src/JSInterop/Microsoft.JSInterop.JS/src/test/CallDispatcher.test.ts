@@ -395,4 +395,25 @@ describe("CallDispatcher", () => {
 
         expect(result2).toBe("30");
     });
+
+    test("createJSObjectReference: Handles null values without throwing", () => {
+        const nullRef = DotNet.createJSObjectReference(null);
+        expect(nullRef).toEqual({ [jsObjectId]: -1 });
+    });
+
+    test("createJSObjectReference: Handles undefined values without throwing", () => {
+        const undefinedRef = DotNet.createJSObjectReference(undefined);
+        expect(undefinedRef).toEqual({ [jsObjectId]: -1 });
+    });
+
+    test("disposeJSObjectReference: Safely handles null reference disposal", () => {
+        const nullRef = DotNet.createJSObjectReference(null);
+        expect(() => DotNet.disposeJSObjectReference(nullRef)).not.toThrow();
+    });
+
+    test("createJSObjectReference: Still throws for invalid types", () => {
+        expect(() => DotNet.createJSObjectReference("string")).toThrow();
+        expect(() => DotNet.createJSObjectReference(123)).toThrow();
+        expect(() => DotNet.createJSObjectReference(true)).toThrow();
+    });
 });
