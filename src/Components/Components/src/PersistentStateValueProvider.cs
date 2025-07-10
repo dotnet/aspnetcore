@@ -19,7 +19,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
+    private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
 
     private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
 
