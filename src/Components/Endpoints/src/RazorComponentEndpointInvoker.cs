@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using System.Net.Http;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
@@ -142,7 +143,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
             context.Response.Headers.ContentEncoding = "identity";
         }
-        else
+        else if (endpoint.Metadata.GetMetadata<ConfiguredRenderModesMetadata>()?.ConfiguredRenderModes.Length == 0)
         {
             // Disable token generation on EndpointAntiforgeryStateProvider if we are not streaming.
             var provider = (EndpointAntiforgeryStateProvider)context.RequestServices.GetRequiredService<AntiforgeryStateProvider>();
