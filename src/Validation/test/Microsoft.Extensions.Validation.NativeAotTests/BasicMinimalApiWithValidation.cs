@@ -4,14 +4,22 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Validation;
 
 var builder = WebApplication.CreateSlimBuilder();
 
 builder.Services.AddValidation();
+builder.WebHost.UseUrls("http://localhost:5000");
+builder.Services.ConfigureHttpJsonOptions(options =>
+{
+    options.SerializerOptions.TypeInfoResolverChain.Insert(0, AppJsonSerializerContext.Default);
+});
 
 var app = builder.Build();
 
@@ -42,7 +50,67 @@ app.MapPost("/products/bulk", (Product[] products) =>
     TypedResults.Ok(new BulkProductResponse("Bulk products created", products.Length)))
     .DisableValidation();
 
-app.Run();
+await app.StartAsync().ConfigureAwait(false);
+
+try
+{
+    // Create an HTTP client to test the endpoints
+    using var httpClient = new HttpClient();
+    httpClient.BaseAddress = new Uri("http://localhost:5000");
+
+    // Test 1: Valid ID - should succeed
+    var response = await httpClient.GetAsync("/customers/123").ConfigureAwait(false);
+
+    if (response.IsSuccessStatusCode)
+    {
+        var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+        Console.WriteLine($"Test 1 Success: {content}");
+    }
+    else
+    {
+        Console.WriteLine($"Test 1 Failed: {response.StatusCode}");
+        return 1;
+    }
+
+    // Test 2: Invalid ID (0) - should fail validation
+    try
+    {
+        await httpClient.GetAsync("/customers/0").ConfigureAwait(false);
+    }
+    catch (HttpRequestException httpEx)
+    {
+        // Handle HttpRequestException and assert on the response
+        if (httpEx.Data.Contains("HttpResponse"))
+        {
+            var invalidResponse = (HttpResponseMessage)httpEx.Data["HttpResponse"];
+            if (invalidResponse.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                var errorContent = await invalidResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
+                Console.WriteLine($"Test 2 Success (Caught HttpRequestException with validation error): {invalidResponse.StatusCode}");
+                Console.WriteLine($"Error content: {errorContent}");
+            }
+            else
+            {
+                Console.WriteLine($"Test 2 Failed: Expected BadRequest in exception but got {invalidResponse.StatusCode}");
+                return 1;
+            }
+        }
+        else
+        {
+            Console.WriteLine($"Test 2 Failed: HttpRequestException without HttpResponse data: {httpEx.Message}");
+            return 1;
+        }
+    }
+}
+catch (Exception ex)
+{
+    Console.WriteLine($"Error: {ex.Message}");
+    return 1;
+}
+finally
+{
+    await app.StopAsync().ConfigureAwait(false);
+}
 
 return 100;
 
@@ -164,3 +232,22 @@ public record AddressResponse(string Message, Address Address);
 public record InventoryResponse(int ProductId, string Name);
 
 public record BulkProductResponse(string Message, int Count);
+
+[JsonSerializable(typeof(Customer))]
+[JsonSerializable(typeof(Product))]
+[JsonSerializable(typeof(Address))]
+[JsonSerializable(typeof(Order))]
+[JsonSerializable(typeof(User))]
+[JsonSerializable(typeof(ProductResponse))]
+[JsonSerializable(typeof(AddressResponse))]
+[JsonSerializable(typeof(InventoryResponse))]
+[JsonSerializable(typeof(BulkProductResponse))]
+[JsonSerializable(typeof(Product[]))]
+[JsonSerializable(typeof(string))]
+[JsonSerializable(typeof(int))]
+[JsonSerializable(typeof(decimal))]
+[JsonSerializable(typeof(DateTime))]
+[JsonSerializable(typeof(Microsoft.AspNetCore.Http.HttpValidationProblemDetails))]
+internal sealed partial class AppJsonSerializerContext : JsonSerializerContext
+{
+}
