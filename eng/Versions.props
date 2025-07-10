@@ -182,11 +182,11 @@
     <!-- Packages from dotnet/xdt -->
     <MicrosoftWebXdtVersion>10.0.0-preview.25351.105</MicrosoftWebXdtVersion>
     <!-- dotnet-optimization dependencies -->
-    <optimizationwindows_ntx64MIBCRuntimeVersion>1.0.0-prerelease.25217.3</optimizationwindows_ntx64MIBCRuntimeVersion>
-    <optimizationwindows_ntx86MIBCRuntimeVersion>1.0.0-prerelease.25217.3</optimizationwindows_ntx86MIBCRuntimeVersion>
-    <optimizationwindows_ntarm64MIBCRuntimeVersion>1.0.0-prerelease.25217.3</optimizationwindows_ntarm64MIBCRuntimeVersion>
-    <optimizationlinuxx64MIBCRuntimeVersion>1.0.0-prerelease.25217.3</optimizationlinuxx64MIBCRuntimeVersion>
-    <optimizationlinuxarm64MIBCRuntimeVersion>1.0.0-prerelease.25217.3</optimizationlinuxarm64MIBCRuntimeVersion>
+    <optimizationwindows_ntx64MIBCRuntimeVersion>1.0.0-prerelease.25324.1</optimizationwindows_ntx64MIBCRuntimeVersion>
+    <optimizationwindows_ntx86MIBCRuntimeVersion>1.0.0-prerelease.25324.1</optimizationwindows_ntx86MIBCRuntimeVersion>
+    <optimizationwindows_ntarm64MIBCRuntimeVersion>1.0.0-prerelease.25324.1</optimizationwindows_ntarm64MIBCRuntimeVersion>
+    <optimizationlinuxx64MIBCRuntimeVersion>1.0.0-prerelease.25324.1</optimizationlinuxx64MIBCRuntimeVersion>
+    <optimizationlinuxarm64MIBCRuntimeVersion>1.0.0-prerelease.25324.1</optimizationlinuxarm64MIBCRuntimeVersion>
   </PropertyGroup>
   <!--
 
