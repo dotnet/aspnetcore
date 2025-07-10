@@ -1143,15 +1143,9 @@
     <Project Path="src/SignalR/server/StackExchangeRedis/src/Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
     <Project Path="src/SignalR/server/StackExchangeRedis/test/Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj" />
   </Folder>
-  <Folder Name="/src/SiteExtensions/">
-    <Project Path="src/SiteExtensions/LoggingBranch/LB.csproj" />
-  </Folder>
   <Folder Name="/src/SiteExtensions/Microsoft.Web.Xdt.Extensions/">
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/src/Microsoft.Web.Xdt.Extensions.csproj" />
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/tests/Microsoft.Web.Xdt.Extensions.Tests.csproj" />
-  </Folder>
-  <Folder Name="/src/SiteExtensions/Sdk/">
-    <Project Path="src/SiteExtensions/Sdk/HostingStartup/HostingStartup.csproj" />
   </Folder>
   <Folder Name="/src/Testing/">
     <Project Path="src/Analyzers/Microsoft.AspNetCore.Analyzer.Testing/src/Microsoft.AspNetCore.Analyzer.Testing.csproj" />
