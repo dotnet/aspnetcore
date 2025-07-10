@@ -760,6 +760,25 @@ export module DotNet {
       async arrayBuffer(): Promise<ArrayBuffer> {
           return new Response(await this.stream()).arrayBuffer();
       }
+
+      /**
+       * Returns a Blob from the stream. This uses the browser's stream reader.
+       * The returned value is a string.
+       */
+      async readableStreamToBlob(mimeType: string = "application/octet-stream"): Promise<string> {
+          const reader = (await this.stream()).getReader();
+          const chunks: BlobPart[] = [];
+
+          while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              chunks.push(value);
+          }
+
+          const blob = new Blob(chunks, {type: mimeType});
+          const url = URL.createObjectURL(blob);
+          return url;
+      }
   }
 
   class PendingStream {
