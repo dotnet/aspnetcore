@@ -138,4 +138,18 @@ internal static class ITypeSymbolExtensions
             (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
              SymbolEqualityComparer.Default.Equals(attr.AttributeClass, fromKeyedServiceAttributeSymbol)));
     }
+
+    /// <summary>
+    /// Checks if the property is marked with [FromService] or [FromKeyedService] attributes.
+    /// </summary>
+    /// <param name="property">The property to check.</param>
+    /// <param name="fromServiceMetadataSymbol">The symbol representing the [FromService] attribute.</param>
+    /// <param name="fromKeyedServiceAttributeSymbol">The symbol representing the [FromKeyedService] attribute.</param>
+    internal static bool IsServiceProperty(this IPropertySymbol property, INamedTypeSymbol fromServiceMetadataSymbol, INamedTypeSymbol fromKeyedServiceAttributeSymbol)
+    {
+        return property.GetAttributes().Any(attr =>
+            attr.AttributeClass is not null &&
+            (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
+             SymbolEqualityComparer.Default.Equals(attr.AttributeClass, fromKeyedServiceAttributeSymbol)));
+    }
 }

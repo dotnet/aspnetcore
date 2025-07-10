@@ -110,6 +110,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
 
+        var fromServiceMetadataSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
+        var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
+
         // Special handling for record types to extract properties from
         // the primary constructor.
         if (typeSymbol is INamedTypeSymbol { IsRecord: true } namedType)
@@ -126,6 +131,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 // Process all parameters in constructor order to maintain parameter ordering
                 foreach (var parameter in primaryConstructor.Parameters)
                 {
+                    // Skip parameters that are injected as services
+                    if (parameter.IsServiceParameter(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+                    {
+                        continue;
+                    }
+
                     // Find the corresponding property in this type, we ignore
                     // base types here since that will be handled by the inheritance
                     // checks in the default ValidatableTypeInfo implementation.
@@ -136,6 +147,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                     if (correspondingProperty != null)
                     {
                         resolvedRecordProperty.Add(correspondingProperty);
+
+                        // Skip properties that are injected as services
+                        if (correspondingProperty.IsServiceProperty(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+                        {
+                            continue;
+                        }
 
                         // Check if the property's type is validatable, this resolves
                         // validatable types in the inheritance hierarchy
@@ -165,6 +182,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             if (member.IsImplicitlyDeclared 
                 || member.IsEqualityContract(wellKnownTypes) 
                 || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            {
+                continue;
+            }
+
+            // Skip properties that are injected as services
+            if (member.IsServiceProperty(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
             {
                 continue;
             }
