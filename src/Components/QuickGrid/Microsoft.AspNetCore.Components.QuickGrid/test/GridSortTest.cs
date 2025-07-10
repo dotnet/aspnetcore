@@ -18,7 +18,7 @@ public class GridSortTest
         public TestChild Child { get; set; } = new();
     }
 
-    public class TestChild
+    private class TestChild
     {
         public string ChildName { get; set; } = string.Empty;
         public DateTime? ChildNullableDate { get; set; }
