@@ -1146,10 +1146,6 @@
   <Folder Name="/src/SiteExtensions/">
     <Project Path="src/SiteExtensions/LoggingBranch/LB.csproj" />
   </Folder>
-  <Folder Name="/src/SiteExtensions/LoggingAggregate/">
-    <Project Path="src/SiteExtensions/LoggingAggregate/src/Microsoft.AspNetCore.AzureAppServices.SiteExtension/Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" />
-    <Project Path="src/SiteExtensions/LoggingAggregate/test/Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests/Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests.csproj" />
-  </Folder>
   <Folder Name="/src/SiteExtensions/Microsoft.Web.Xdt.Extensions/">
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/src/Microsoft.Web.Xdt.Extensions.csproj" />
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/tests/Microsoft.Web.Xdt.Extensions.Tests.csproj" />
