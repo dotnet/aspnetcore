@@ -14,18 +14,18 @@ namespace Microsoft.AspNetCore.Identity;
 /// <summary>
 /// The default passkey handler.
 /// </summary>
-public sealed class DefaultPasskeyHandler<TUser> : IPasskeyHandler<TUser>
+public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
     private readonly PasskeyOptions _options;
 
     /// <summary>
-    /// Constructs a new <see cref="DefaultPasskeyHandler{TUser}"/> instance.
+    /// Constructs a new <see cref="PasskeyHandler{TUser}"/> instance.
     /// </summary>
     /// <param name="userManager">The <see cref="UserManager{TUser}"/>.</param>
     /// <param name="options">The <see cref="IdentityOptions"/>.</param>
-    public DefaultPasskeyHandler(UserManager<TUser> userManager, IOptions<PasskeyOptions> options)
+    public PasskeyHandler(UserManager<TUser> userManager, IOptions<PasskeyOptions> options)
     {
         ArgumentNullException.ThrowIfNull(userManager);
         ArgumentNullException.ThrowIfNull(options);

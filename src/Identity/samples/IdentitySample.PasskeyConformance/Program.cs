@@ -60,7 +60,7 @@ attestationGroup.MapPost("/options", async (
         Name = request.Username,
         DisplayName = request.DisplayName
     };
-    var passkeyHandler = new DefaultPasskeyHandler<PocoUser>(userManager, passkeyOptions);
+    var passkeyHandler = new PasskeyHandler<PocoUser>(userManager, passkeyOptions);
     var result = await passkeyHandler.MakeCreationOptionsAsync(userEntity, context);
     var response = new ServerPublicKeyCredentialOptionsResponse(result.CreationOptionsJson);
     var state = new PasskeyAttestationState
@@ -94,7 +94,7 @@ attestationGroup.MapPost("/result", async (
     }
 
     var passkeyOptions = GetPasskeyOptionsFromCreationRequest(state.Request);
-    var passkeyHandler = new DefaultPasskeyHandler<PocoUser>(userManager, passkeyOptions);
+    var passkeyHandler = new PasskeyHandler<PocoUser>(userManager, passkeyOptions);
 
     var attestationResult = await passkeyHandler.PerformAttestationAsync(new()
     {
@@ -148,7 +148,7 @@ assertionGroup.MapPost("/options", async (
     }
 
     var passkeyOptions = GetPasskeyOptionsFromGetRequest(request);
-    var passkeyHandler = new DefaultPasskeyHandler<PocoUser>(userManager, passkeyOptions);
+    var passkeyHandler = new PasskeyHandler<PocoUser>(userManager, passkeyOptions);
 
     var result = await passkeyHandler.MakeRequestOptionsAsync(user, context);
     var response = new ServerPublicKeyCredentialOptionsResponse(result.RequestOptionsJson);
@@ -181,7 +181,7 @@ assertionGroup.MapPost("/result", async (
     }
 
     var passkeyOptions = GetPasskeyOptionsFromGetRequest(state.Request);
-    var passkeyHandler = new DefaultPasskeyHandler<PocoUser>(userManager, passkeyOptions);
+    var passkeyHandler = new PasskeyHandler<PocoUser>(userManager, passkeyOptions);
 
     var assertionResult = await passkeyHandler.PerformAssertionAsync(new()
     {
