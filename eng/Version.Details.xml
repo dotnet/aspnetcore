@@ -51,10 +51,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>23101ed07a38169d3e59d63b9d4d33e6d1d609bb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="10.0.0-alpha.2.24462.2">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f485d74550db5bd91617accc1bb548ae6013756b</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0-preview.7.25358.102">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>23101ed07a38169d3e59d63b9d4d33e6d1d609bb</Sha>
@@ -400,13 +396,17 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>23101ed07a38169d3e59d63b9d4d33e6d1d609bb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.6.0-preview.1.25271.2">
+    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="9.8.0-preview.1.25358.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6f29ab505709370fc9b72bf4bb7e004a7662f69f</Sha>
+      <Sha>23c62b80989f7baf55dc394829895b636f960fdc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.6.0-preview.1.25271.2">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.8.0-preview.1.25358.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>6f29ab505709370fc9b72bf4bb7e004a7662f69f</Sha>
+      <Sha>23c62b80989f7baf55dc394829895b636f960fdc</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.8.0-preview.1.25358.1">
+      <Uri>https://github.com/dotnet/extensions</Uri>
+      <Sha>23c62b80989f7baf55dc394829895b636f960fdc</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
@@ -420,25 +420,25 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
-    <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.25217.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.25324.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>bff9b4a349cfa7e3d83264d8953613d98a7b04eb</Sha>
+      <Sha>86968b14b5c2ba5104d205665c76c22544c067f6</Sha>
     </Dependency>
-    <Dependency Name="optimization.windows_nt-x86.MIBC.Runtime" Version="1.0.0-prerelease.25217.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="optimization.windows_nt-x86.MIBC.Runtime" Version="1.0.0-prerelease.25324.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>bff9b4a349cfa7e3d83264d8953613d98a7b04eb</Sha>
+      <Sha>86968b14b5c2ba5104d205665c76c22544c067f6</Sha>
     </Dependency>
-    <Dependency Name="optimization.linux-x64.MIBC.Runtime" Version="1.0.0-prerelease.25217.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="optimization.linux-x64.MIBC.Runtime" Version="1.0.0-prerelease.25324.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>bff9b4a349cfa7e3d83264d8953613d98a7b04eb</Sha>
+      <Sha>86968b14b5c2ba5104d205665c76c22544c067f6</Sha>
     </Dependency>
-    <Dependency Name="optimization.windows_nt-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25217.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="optimization.windows_nt-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25324.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>bff9b4a349cfa7e3d83264d8953613d98a7b04eb</Sha>
+      <Sha>86968b14b5c2ba5104d205665c76c22544c067f6</Sha>
     </Dependency>
-    <Dependency Name="optimization.linux-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25217.3" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="optimization.linux-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25324.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>bff9b4a349cfa7e3d83264d8953613d98a7b04eb</Sha>
+      <Sha>86968b14b5c2ba5104d205665c76c22544c067f6</Sha>
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
     <Dependency Name="Microsoft.Build" Version="17.12.36">
