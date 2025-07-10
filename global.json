@@ -1,6 +1,11 @@
 {
   "sdk": {
-    "version": "10.0.100-preview.6.25315.102"
+    "version": "10.0.100-preview.6.25315.102",
+    "paths": [
+      ".dotnet",
+      "$host$"
+    ],
+    "errorMessage": "The .NET SDK is not installed or is not configured correctly. Please run ./build to install the correct SDK version locally."
   },
   "tools": {
     "dotnet": "10.0.100-preview.6.25315.102",
