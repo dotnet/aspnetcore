@@ -151,11 +151,12 @@
           the entire pattern will silently fail to evaluate correctly.
         -->
 
-        <!-- Strictly non-test projects - test projects are added in subsets below -->
         <!-- 
-            When adding new projects to this file, add them to either ProjectsWithTestsSubset1 or 
-            ProjectsWithTestsSubset2 - whichever has fewer entries
+          When adding new projects to this file, add them to either ProjectsWithTestsSubset1 or 
+          ProjectsWithTestsSubset2 - whichever has fewer entries.
         -->
+
+        <!-- Strictly projects with no associated tests - projects with tests are added in subsets below. -->
         <DotNetProjects Include="
                           $(RepoRoot)src\Assets\**\*.*proj;
                           $(RepoRoot)src\Framework\App.Ref\src\Microsoft.AspNetCore.App.Ref.sfxproj;
