@@ -625,6 +625,38 @@ public class ValidatableTypeInfoTests
         Assert.False(testObject.IValidatableObjectWasCalled, "IValidatableObject.Validate should not be called when property validation fails");
     }
 
+    [Fact]
+    public void DoesNotCallObjectValidation_WhenPropertyAttributeValidationFails()
+    {
+        // Arrange
+        var address = new AddressWithValidation { Street = "123" }; // Too short for MinLength(5)
+        var context = new ValidationContext(address);
+        var results = new List<ValidationResult>();
+
+        // Act
+        var isValid = Validator.TryValidateObject(address, context, results, validateAllProperties: true);
+
+        // Assert
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.ErrorMessage!.Contains("minimum length of '5'"));
+        Assert.DoesNotContain(results, r => r.ErrorMessage == "Address-level validation ran.");
+        Assert.False(address.WasValidateCalled);
+    }
+
+    private class AddressWithValidation : IValidatableObject
+    {
+        [MinLength(5)]
+        public string Street { get; set; } = string.Empty;
+
+        public bool WasValidateCalled { get; private set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            WasValidateCalled = true;
+            yield return new ValidationResult("Address-level validation ran.");
+        }
+    }
+
     // Test class to demonstrate the expected behavior
     private class TestObjectWithValidation : IValidatableObject
     {
