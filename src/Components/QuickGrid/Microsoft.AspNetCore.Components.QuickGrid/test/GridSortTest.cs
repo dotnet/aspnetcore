@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
 public class GridSortTest
 {
     // Test model classes
-    public class TestEntity
+    private class TestEntity
     {
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }
