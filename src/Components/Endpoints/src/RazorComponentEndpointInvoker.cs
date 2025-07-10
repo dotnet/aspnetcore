@@ -76,14 +76,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             return;
         }
 
-        context.Response.OnStarting(() =>
-        {
-            // Generate the antiforgery tokens before we start streaming the response, as it needs
-            // to set the cookie header.
-            antiforgery!.GetAndStoreTokens(context);
-            return Task.CompletedTask;
-        });
-
         if (httpActivityContext != default)
         {
             _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivityContext, null);
@@ -154,6 +146,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
 
         if (!quiesceTask.IsCompletedSuccessfully)
         {
+            // We need to ensure that the antiforgery tokens are generated and stored in the response
+            antiforgery!.GetAndStoreTokens(context);
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
         }
         else
