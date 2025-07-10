@@ -333,5 +333,203 @@ internal sealed class OpenApiSchemaService(
     }
 
     private JsonNode CreateSchema(OpenApiSchemaKey key)
-        => JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+    {
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+        return InlineAllRelativeReferences(schema);
+    }
+
+    private static JsonNode InlineAllRelativeReferences(JsonNode schema)
+    {
+        if (schema is not JsonObject rootSchema)
+        {
+            return schema;
+        }
+
+        var maxIterations = 100;
+        var iteration = 0;
+        var processedSchema = schema;
+
+        while (ContainsRelativeReferences(processedSchema) && iteration < maxIterations)
+        {
+            processedSchema = ProcessReferencesRecursive(processedSchema, rootSchema, new Stack<string>());
+            iteration++;
+        }
+
+        if (iteration >= maxIterations)
+        {
+            throw new InvalidOperationException("Maximum iterations reached while inlining relative references. This may indicate a complex circular reference structure.");
+        }
+
+        return processedSchema;
+    }
+
+    private static bool ContainsRelativeReferences(JsonNode? node)
+    {
+        if (node is JsonObject obj)
+        {
+            if (obj.TryGetPropertyValue("$ref", out var refNode) &&
+                refNode is JsonValue refValue &&
+                refValue.ToString().StartsWith("#/", StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            foreach (var kvp in obj)
+            {
+                if (ContainsRelativeReferences(kvp.Value))
+                {
+                    return true;
+                }
+            }
+        }
+        else if (node is JsonArray array)
+        {
+            foreach (var item in array)
+            {
+                if (ContainsRelativeReferences(item))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static JsonNode ProcessReferencesRecursive(JsonNode? currentNode, JsonObject rootSchema, Stack<string> currentPath)
+    {
+        if (currentNode is JsonObject obj)
+        {
+            if (obj.TryGetPropertyValue("$ref", out var refNode) &&
+                refNode is JsonValue refValue &&
+                refValue.ToString().StartsWith("#/", StringComparison.Ordinal))
+            {
+                var refPath = refValue.ToString();
+
+                // Check for circular reference
+                if (currentPath.Contains(refPath))
+                {
+                    return new JsonObject();
+                }
+
+                var resolvedSchema = ResolveJsonPointer(rootSchema, refPath);
+                if (resolvedSchema != null)
+                {
+                    // Deep clone the resolved schema to avoid modifying the original
+                    var clonedSchema = JsonNode.Parse(resolvedSchema.ToJsonString());
+
+                    // If the reference object has additional properties, merge them
+                    if (obj.Count > 1)
+                    {
+                        var mergedSchema = new JsonObject();
+
+                        // First add all properties from the resolved schema
+                        if (clonedSchema is JsonObject clonedObj)
+                        {
+                            foreach (var kvp in clonedObj)
+                            {
+                                mergedSchema[kvp.Key] = kvp.Value?.DeepClone();
+                            }
+                        }
+
+                        // Then add additional properties from the reference object (except $ref)
+                        foreach (var kvp in obj)
+                        {
+                            if (kvp.Key != "$ref")
+                            {
+                                mergedSchema[kvp.Key] = kvp.Value?.DeepClone();
+                            }
+                        }
+
+                        if (obj.TryGetPropertyValue("x-schema-id", out var schemaId))
+                        {
+                            mergedSchema["x-schema-id"] = schemaId?.DeepClone();
+                        }
+
+                        clonedSchema = mergedSchema;
+                    }
+
+                    // Continue processing the resolved schema
+                    currentPath.Push(refPath);
+                    var result = ProcessReferencesRecursive(clonedSchema, rootSchema, currentPath);
+                    currentPath.Pop();
+                    return result;
+                }
+                else
+                {
+                    // If reference cannot be resolved, return the original reference
+                    return obj.DeepClone();
+                }
+            }
+            else
+            {
+                // Process all properties in the object
+                var newObj = new JsonObject();
+                foreach (var kvp in obj)
+                {
+                    var processedValue = ProcessReferencesRecursive(kvp.Value, rootSchema, currentPath);
+                    newObj[kvp.Key] = processedValue;
+                }
+                return newObj;
+            }
+        }
+        else if (currentNode is JsonArray array)
+        {
+            var newArray = new JsonArray();
+            foreach (var item in array)
+            {
+                var processedItem = ProcessReferencesRecursive(item, rootSchema, currentPath);
+                newArray.Add(processedItem);
+            }
+            return newArray;
+        }
+
+        return currentNode?.DeepClone() ?? new JsonObject();
+    }
+
+    private static JsonNode? ResolveJsonPointer(JsonObject rootSchema, string pointer)
+    {
+        if (!pointer.StartsWith("#/", StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        var path = pointer.Substring(2); // Remove "#/"
+        if (string.IsNullOrEmpty(path))
+        {
+            return rootSchema;
+        }
+
+        var segments = path.Split('/');
+        JsonNode? current = rootSchema;
+
+        foreach (var segment in segments)
+        {
+            // Unescape JSON Pointer special characters
+            var unescapedSegment = segment.Replace("~1", "/").Replace("~0", "~");
+
+            if (current is JsonObject obj)
+            {
+                if (!obj.TryGetPropertyValue(unescapedSegment, out var next))
+                {
+                    return null;
+                }
+                current = next;
+            }
+            else if (current is JsonArray arr)
+            {
+                if (!int.TryParse(unescapedSegment, out var index) || index < 0 || index >= arr.Count)
+                {
+                    return null;
+                }
+                current = arr[index];
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        return current;
+    }
 }

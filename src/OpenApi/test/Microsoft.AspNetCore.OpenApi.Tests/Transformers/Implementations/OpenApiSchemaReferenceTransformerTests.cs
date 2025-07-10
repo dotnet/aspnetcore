@@ -712,18 +712,15 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
             // Assert items are arrays of strings
             Assert.Equal(JsonSchemaType.Array, seq1Schema.Items.Type);
-            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
-            // Assert.Equal(JsonSchemaType.Array, seq2Schema.Items.Type);
+            Assert.Equal(JsonSchemaType.Array, seq2Schema.Items.Type);
 
             // Since both Seq1 and Seq2 are the same type (List<List<string>>),
             // they should reference the same schema structure
-            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
-            // Assert.Equal(seq1Schema.Items.Type, seq2Schema.Items.Type);
+            Assert.Equal(seq1Schema.Items.Type, seq2Schema.Items.Type);
 
             // Verify the inner arrays contain strings
             Assert.Equal(JsonSchemaType.String, seq1Schema.Items.Items.Type);
-            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
-            // Assert.Equal(JsonSchemaType.String, seq2Schema.Items.Items.Type);
+            Assert.Equal(JsonSchemaType.String, seq2Schema.Items.Items.Type);
 
             Assert.Equal(["ContainerType"], document.Components.Schemas.Keys);
         });
