@@ -6,7 +6,7 @@
   
   <!-- Emit deprecation warning for this package -->
   <Target Name="_WarnMicrosoftExtensionsApiDescriptionClientDeprecated" BeforeTargets="BeforeCompile;Build;Restore">
-    <Warning Text="The 'Microsoft.Extensions.ApiDescription.Client' package is deprecated and will be removed in a future release. Please consider migrating to alternative solutions for OpenAPI client code generation." />
+    <Warning Text="The 'Microsoft.Extensions.ApiDescription.Client' package is deprecated and will be removed in a future release. For more information, see aka.ms/aspnet/deprecate/001." />
   </Target>
   <UsingTask TaskName="GetCurrentOpenApiReference" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
   <UsingTask TaskName="GetOpenApiReferenceMetadata" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
