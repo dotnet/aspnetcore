@@ -29,7 +29,9 @@ public class Startup
         ConfigureRoutingServices(services);
 
         services.AddScoped<TestResponseGenerator>();
+        #pragma warning disable CS0618 // Type or member is obsolete
         services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     public virtual void Configure(IApplicationBuilder app)

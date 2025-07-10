@@ -12,7 +12,9 @@ public class TestResponseGenerator
 {
     private readonly ActionContext _actionContext;
 
+#pragma warning disable CS0618 // Type or member is obsolete
     public TestResponseGenerator(IActionContextAccessor contextAccessor)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         _actionContext = contextAccessor.ActionContext;
         if (_actionContext == null)
