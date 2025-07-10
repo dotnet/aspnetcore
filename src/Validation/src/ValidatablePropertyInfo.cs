@@ -60,7 +60,13 @@ public abstract class ValidatablePropertyInfo : IValidatableInfo
     /// <inheritdoc />
     public virtual async Task ValidateAsync(object? value, ValidateContext context, CancellationToken cancellationToken)
     {
-        await ValidatePropertyAttributesAsync(value, context, cancellationToken);
+        // Validate property attributes first (e.g., [Required], [Range], etc.)
+        // Note: We capture the result for clarity, but complex object validation
+        // always runs regardless of property validation results, as it handles
+        // null values automatically and non-null objects should be validated
+        // even if they fail property-level validation.
+        _ = await ValidatePropertyAttributesAsync(value, context, cancellationToken);
+        
         await ValidateComplexObjectsAsync(value, context, cancellationToken);
     }
 
