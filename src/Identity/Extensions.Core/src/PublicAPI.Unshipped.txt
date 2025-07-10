@@ -7,7 +7,6 @@ Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>.FindPasskeyAsync(TUser! u
 Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>.GetPasskeysAsync(TUser! user, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserPasskeyInfo!>!>!
 Microsoft.AspNetCore.Identity.IUserPasskeyStore<TUser>.RemovePasskeyAsync(TUser! user, byte[]! credentialId, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Identity.UserLoginInfo.UserLoginInfo(string! loginProvider, string! providerKey, string? providerDisplayName) -> void
-Microsoft.AspNetCore.Identity.UserManager<TUser>.ServiceProvider.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Identity.UserPasskeyInfo
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.AttestationObject.get -> byte[]!
 Microsoft.AspNetCore.Identity.UserPasskeyInfo.ClientDataJson.get -> byte[]!
@@ -32,3 +31,4 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetPasskeyAsync(TUser! 
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetPasskeysAsync(TUser! user) -> System.Threading.Tasks.Task<System.Collections.Generic.IList<Microsoft.AspNetCore.Identity.UserPasskeyInfo!>!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.RemovePasskeyAsync(TUser! user, byte[]! credentialId) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPasskey.get -> bool
+Microsoft.AspNetCore.Identity.UserManager<TUser>.ServiceProvider.get -> System.IServiceProvider!

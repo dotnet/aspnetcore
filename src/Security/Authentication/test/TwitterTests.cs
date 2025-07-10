@@ -42,6 +42,13 @@ public class TwitterTests : RemoteAuthenticationTests<TwitterOptions>
     }
 
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new TwitterOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task ChallengeWillTriggerApplyRedirectEvent()
     {
         using var host = await CreateHost(o =>
