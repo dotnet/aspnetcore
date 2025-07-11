@@ -468,7 +468,6 @@
     },
     "copyrightYear": {
       "type": "generated",
-
       "generator": "now",
       "replaces": "copyrightYear",
       "parameters": {
