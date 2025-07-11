@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <summary>
 /// Represents link elements for preloading assets.
 /// </summary>
-public sealed class LinkPreload : IComponent
+public sealed class ResourcePreloader : IComponent
 {
     private RenderHandle renderHandle;
     private List<PreloadAsset>? assets;
