@@ -169,7 +169,7 @@ internal sealed class UserManagerMetrics : IDisposable
             "EmailConfirmation" => "email_confirmation",
             "ChangeEmail" => "change_email",
             "TwoFactor" => "two_factor",
-            _ => "_UNKNOWN"
+            _ => "_OTHER"
         };
     }
 
@@ -204,7 +204,7 @@ internal sealed class UserManagerMetrics : IDisposable
             (PasswordVerificationResult.Failed, false, false) => "failure",
             (null, true, false) => "password_missing",
             (null, false, true) => "user_missing",
-            _ => "_UNKNOWN"
+            _ => "_OTHER"
         };
     }
 
@@ -244,7 +244,7 @@ internal sealed class UserManagerMetrics : IDisposable
             UserUpdateType.RedeemTwoFactorRecoveryCode => "redeem_two_factor_recovery_code",
             UserUpdateType.SetPasskey => "set_passkey",
             UserUpdateType.RemovePasskey => "remove_passkey",
-            _ => "_UNKNOWN"
+            _ => "_OTHER"
         };
     }
 
