@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
-/// Represents link elements for preloading assets.
+/// Represents a component that renders preload link elements for resources.
 /// </summary>
 public sealed class ResourcePreloader : IComponent
 {
