@@ -182,7 +182,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             SignInType.TwoFactor => "two_factor",
             SignInType.External => "external",
             SignInType.Passkey => "passkey",
-            _ => "_UNKNOWN"
+            _ => "_OTHER"
         };
     }
 

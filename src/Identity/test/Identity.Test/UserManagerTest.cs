@@ -952,13 +952,13 @@ public class UserManagerTest
         Assert.Collection(generateToken.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_UNKNOWN"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_OTHER"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
         Assert.Collection(verifyToken.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_UNKNOWN"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_OTHER"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
     }
