@@ -23,7 +23,9 @@ public class Startup
         services.AddLogging();
         services.AddHttpContextAccessor();
         services.AddScoped<TestResponseGenerator>();
+        #pragma warning disable CS0618 // Type or member is obsolete
         services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     public void Configure(IApplicationBuilder app)
