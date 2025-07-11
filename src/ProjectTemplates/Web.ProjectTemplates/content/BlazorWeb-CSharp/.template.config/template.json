@@ -323,6 +323,19 @@
       },
       "replaces": "44300"
     },
+    "StyleBundleName":{
+      "type": "generated",
+      "generator": "regex",
+      "replaces": "StyleBundleName",
+      "parameters": {
+      "source": "name",
+      "steps": [
+        {
+          "regex": " ",
+          "replacement": "_"
+        }]
+      }
+    },
     "InteractivityPlatform": {
       "type": "parameter",
       "datatype": "choice",
