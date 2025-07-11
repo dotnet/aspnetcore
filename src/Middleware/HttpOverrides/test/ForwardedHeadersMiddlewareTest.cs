@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.DotNet.RemoteExecutor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -1033,6 +1034,128 @@ public class ForwardedHeadersMiddlewareTests
                 Assert.Equal("/pathbase", context.Request.PathBase);
             }
         }
+    }
+
+    [Theory]
+    [InlineData(ForwardedHeaders.XForwardedFor)]
+    [InlineData(ForwardedHeaders.XForwardedHost)]
+    [InlineData(ForwardedHeaders.XForwardedProto)]
+    [InlineData(ForwardedHeaders.XForwardedPrefix)]
+    public void AppContextDoesNotValidateUnknownProxyWithoutForwardedFor(ForwardedHeaders forwardedHeaders)
+    {
+        RemoteExecutor.Invoke(static async (forwardedHeadersName) =>
+        {
+            Assert.True(Enum.TryParse<ForwardedHeaders>(forwardedHeadersName, out var forwardedHeaders));
+            AppContext.SetSwitch("Microsoft.AspNetCore.HttpOverrides.IgnoreUnknownProxiesWithoutFor", true);
+            using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    var options = new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = forwardedHeaders
+                    };
+                    app.UseForwardedHeaders(options);
+                });
+            }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+                c.Request.Headers["X-Forwarded-Host"] = "testhost";
+                c.Request.Headers["X-Forwarded-Proto"] = "Protocol";
+                c.Request.Headers["X-Forwarded-Prefix"] = "/pathbase";
+                c.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
+                c.Connection.RemotePort = 99;
+            });
+
+            if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedFor))
+            {
+                // X-Forwarded-For ignored since 10.0.0.1 isn't in KnownProxies
+                Assert.Equal("10.0.0.1", context.Connection.RemoteIpAddress.ToString());
+            }
+            if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedHost))
+            {
+                Assert.Equal("testhost", context.Request.Host.ToString());
+            }
+            if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedProto))
+            {
+                Assert.Equal("Protocol", context.Request.Scheme);
+            }
+            if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedPrefix))
+            {
+                Assert.Equal("/pathbase", context.Request.PathBase);
+            }
+            return RemoteExecutor.SuccessExitCode;
+        }, forwardedHeaders.ToString()).Dispose();
+    }
+
+    [Theory]
+    [InlineData(ForwardedHeaders.XForwardedFor)]
+    [InlineData(ForwardedHeaders.XForwardedHost)]
+    [InlineData(ForwardedHeaders.XForwardedProto)]
+    [InlineData(ForwardedHeaders.XForwardedPrefix)]
+    public void EnvVariableDoesNotValidateUnknownProxyWithoutForwardedFor(ForwardedHeaders forwardedHeaders)
+    {
+        RemoteExecutor.Invoke(static async (forwardedHeadersName) =>
+        {
+            Assert.True(Enum.TryParse<ForwardedHeaders>(forwardedHeadersName, out var forwardedHeaders));
+            Environment.SetEnvironmentVariable("MICROSOFT_ASPNETCORE_HTTPOVERRIDES_IGNORE_UNKNOWN_PROXIES_WITHOUT_FOR", "true");
+            using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                .UseTestServer()
+                .Configure(app =>
+                {
+                    var options = new ForwardedHeadersOptions
+                    {
+                        ForwardedHeaders = forwardedHeaders
+                    };
+                    app.UseForwardedHeaders(options);
+                });
+            }).Build();
+
+            await host.StartAsync();
+
+            var server = host.GetTestServer();
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+                c.Request.Headers["X-Forwarded-Host"] = "testhost";
+                c.Request.Headers["X-Forwarded-Proto"] = "Protocol";
+                c.Request.Headers["X-Forwarded-Prefix"] = "/pathbase";
+                c.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
+                c.Connection.RemotePort = 99;
+            });
+
+            if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedFor))
+            {
+                // X-Forwarded-For ignored since 10.0.0.1 isn't in KnownProxies
+                Assert.Equal("10.0.0.1", context.Connection.RemoteIpAddress.ToString());
+            }
+            if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedHost))
+            {
+                Assert.Equal("testhost", context.Request.Host.ToString());
+            }
+            if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedProto))
+            {
+                Assert.Equal("Protocol", context.Request.Scheme);
+            }
+            if (forwardedHeaders.HasFlag(ForwardedHeaders.XForwardedPrefix))
+            {
+                Assert.Equal("/pathbase", context.Request.PathBase);
+            }
+            return RemoteExecutor.SuccessExitCode;
+        }, forwardedHeaders.ToString()).Dispose();
     }
 
     [Fact]
