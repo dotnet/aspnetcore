@@ -140,11 +140,11 @@ internal static class ITypeSymbolExtensions
     }
 
     /// <summary>
-    /// Checks if the property is marked with [FromService] or [FromKeyedService] attributes.
+    /// Checks if the property is marked with [FromServices] or [FromKeyedServices] attributes.
     /// </summary>
     /// <param name="property">The property to check.</param>
-    /// <param name="fromServiceMetadataSymbol">The symbol representing the [FromService] attribute.</param>
-    /// <param name="fromKeyedServiceAttributeSymbol">The symbol representing the [FromKeyedService] attribute.</param>
+    /// <param name="fromServiceMetadataSymbol">The symbol representing the [FromServices] attribute.</param>
+    /// <param name="fromKeyedServiceAttributeSymbol">The symbol representing the [FromKeyedServices] attribute.</param>
     internal static bool IsServiceProperty(this IPropertySymbol property, INamedTypeSymbol fromServiceMetadataSymbol, INamedTypeSymbol fromKeyedServiceAttributeSymbol)
     {
         return property.GetAttributes().Any(attr =>
