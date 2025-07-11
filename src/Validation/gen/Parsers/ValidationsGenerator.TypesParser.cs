@@ -131,12 +131,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 // Process all parameters in constructor order to maintain parameter ordering
                 foreach (var parameter in primaryConstructor.Parameters)
                 {
-                    // Skip parameters that are injected as services
-                    if (parameter.IsServiceParameter(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
-                    {
-                        continue;
-                    }
-
                     // Find the corresponding property in this type, we ignore
                     // base types here since that will be handled by the inheritance
                     // checks in the default ValidatableTypeInfo implementation.
@@ -147,6 +141,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                     if (correspondingProperty != null)
                     {
                         resolvedRecordProperty.Add(correspondingProperty);
+
+                        // Skip parameters that are injected as services
+                        if (parameter.IsServiceParameter(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+                        {
+                            continue;
+                        }
 
                         // Check if the property's type is validatable, this resolves
                         // validatable types in the inheritance hierarchy
@@ -173,8 +173,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         {
             // Skip compiler generated properties and properties already processed via
             // the record processing logic above.
-            if (member.IsImplicitlyDeclared 
-                || member.IsEqualityContract(wellKnownTypes) 
+            if (member.IsImplicitlyDeclared
+                || member.IsEqualityContract(wellKnownTypes)
                 || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
             {
                 continue;

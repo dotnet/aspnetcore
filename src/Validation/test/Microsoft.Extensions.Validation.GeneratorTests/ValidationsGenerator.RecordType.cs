@@ -50,6 +50,10 @@ public record SubTypeWithoutConstructor
 
     [StringLength(10)]
     public string? StringWithLength { get; set; }
+
+    [FromServices]
+    [Required]
+    public TestService ServiceProperty { get; set; } = null!;
 }
 
 public static class CustomValidators
