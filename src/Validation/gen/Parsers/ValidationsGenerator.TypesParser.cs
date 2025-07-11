@@ -148,12 +148,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                     {
                         resolvedRecordProperty.Add(correspondingProperty);
 
-                        // Skip properties that are injected as services
-                        if (correspondingProperty.IsServiceProperty(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
-                        {
-                            continue;
-                        }
-
                         // Check if the property's type is validatable, this resolves
                         // validatable types in the inheritance hierarchy
                         var hasValidatableType = TryExtractValidatableType(

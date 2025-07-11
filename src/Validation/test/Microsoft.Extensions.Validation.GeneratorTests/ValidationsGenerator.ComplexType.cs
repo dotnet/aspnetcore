@@ -373,4 +373,94 @@ public static class CustomValidators
             }
         });
     }
+
+    [Fact]
+    public async Task DoesNotValidatePropertiesWithFromServicesAttribute()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+builder.Services.AddSingleton<TestService>();
+
+var app = builder.Build();
+
+app.MapPost("/with-from-services", ([AsParameters] ComplexTypeWithFromServices complexType) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class ComplexTypeWithFromServices
+{
+    [Range(10, 100)]
+    public int ValidatableProperty { get; set; } = 10;
+
+    [FromServices]
+    [Required] // This should be ignored because of [FromServices]
+    public TestService ServiceProperty { get; set; } = null!;
+
+    [FromKeyedServices("serviceKey")]
+    [Range(10, 100)] // This should be ignored because of [FromKeyedServices]
+    public int KeyedServiceProperty { get; set; } = 5;
+}
+
+public class TestService
+{
+    [Range(10, 100)]
+    public int Value { get; set; } = 4;
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/with-from-services", async (endpoint, serviceProvider) =>
+        {
+            await ValidInputWithFromServicesProducesNoWarnings(endpoint);
+            await InvalidValidatablePropertyProducesError(endpoint);
+
+            async Task ValidInputWithFromServicesProducesNoWarnings(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "ValidatableProperty": 50,
+                    "ServiceProperty": null,
+                    "KeyedServiceProperty": 5
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+                await endpoint.RequestDelegate(context);
+
+                Assert.Equal(200, context.Response.StatusCode);
+            }
+
+            async Task InvalidValidatablePropertyProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "ValidatableProperty": 5,
+                    "ServiceProperty": null,
+                    "KeyedServiceProperty": 5
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("ValidatableProperty", kvp.Key);
+                    Assert.Equal("The field ValidatableProperty must be between 10 and 100.", kvp.Value.Single());
+                });
+            }
+        });
+    }
 }
