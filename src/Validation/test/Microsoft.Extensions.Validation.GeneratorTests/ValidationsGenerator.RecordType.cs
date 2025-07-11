@@ -21,10 +21,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddValidation();
+builder.Services.AddSingleton<TestService>();
 
 var app = builder.Build();
 
@@ -66,6 +68,12 @@ public static class CustomValidators
     }
 }
 
+public class TestService
+{
+    [Range(10, 100)]
+    public int Value { get; set; } = 4;
+}
+
 public record ValidatableRecord(
     [Range(10, 100)]
     int IntegerWithRange = 10,
@@ -81,7 +89,9 @@ public record ValidatableRecord(
     [CustomValidation(typeof(CustomValidators), nameof(CustomValidators.Validate))]
     int IntegerWithCustomValidation = 0,
     [DerivedValidation, Range(10, 100)]
-    int PropertyWithMultipleAttributes = 10
+    int PropertyWithMultipleAttributes = 10,
+    [FromServices] [Required] TestService ServiceProperty = null!, // This should be ignored because of [FromServices]
+    [FromKeyedServices("serviceKey")] [Range(10, 100)] int KeyedServiceProperty = 5 // This should be ignored because of [FromKeyedServices]
 );
 """;
         await Verify(source, out var compilation);
@@ -369,87 +379,5 @@ public record ValidatableRecord(
             }
         });
 
-    }
-
-    [Fact]
-    public async Task DoesNotValidateRecordPropertiesWithFromServicesAttribute()
-    {
-        // Arrange
-        var source = """
-using System;
-using System.ComponentModel.DataAnnotations;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Validation;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Mvc;
-
-var builder = WebApplication.CreateBuilder();
-
-builder.Services.AddValidation();
-builder.Services.AddSingleton<TestService>();
-
-var app = builder.Build();
-
-app.MapPost("/with-from-services-record", ([AsParameters] ComplexRecordWithFromServices complexType) => Results.Ok("Passed"!));
-
-app.Run();
-
-public record ComplexRecordWithFromServices(
-    [Range(10, 100)] int ValidatableProperty,
-    [FromServices] [Required] TestService ServiceProperty, // This should be ignored because of [FromServices]
-    [FromKeyedServices("serviceKey")] [Range(10, 100)] int KeyedServiceProperty // This should be ignored because of [FromKeyedServices]
-);
-
-public class TestService
-{
-    [Range(10, 100)]
-    public int Value { get; set; } = 4;
-}
-""";
-        await Verify(source, out var compilation);
-        await VerifyEndpoint(compilation, "/with-from-services-record", async (endpoint, serviceProvider) =>
-        {
-            await ValidInputWithFromServicesProducesNoWarnings(endpoint);
-            await InvalidValidatablePropertyProducesError(endpoint);
-
-            async Task ValidInputWithFromServicesProducesNoWarnings(Endpoint endpoint)
-            {
-                var payload = """
-                {
-                    "ValidatableProperty": 50,
-                    "ServiceProperty": null,
-                    "KeyedServiceProperty": 5
-                }
-                """;
-                var context = CreateHttpContextWithPayload(payload, serviceProvider);
-                await endpoint.RequestDelegate(context);
-
-                Assert.Equal(200, context.Response.StatusCode);
-            }
-
-            async Task InvalidValidatablePropertyProducesError(Endpoint endpoint)
-            {
-                var payload = """
-                {
-                    "ValidatableProperty": 5,
-                    "ServiceProperty": null,
-                    "KeyedServiceProperty": 5
-                }
-                """;
-                var context = CreateHttpContextWithPayload(payload, serviceProvider);
-                await endpoint.RequestDelegate(context);
-
-                var problemDetails = await AssertBadRequest(context);
-                Assert.Collection(problemDetails.Errors, kvp =>
-                {
-                    Assert.Equal("ValidatableProperty", kvp.Key);
-                    Assert.Equal("The field ValidatableProperty must be between 10 and 100.", kvp.Value.Single());
-                });
-            }
-        });
     }
 }
