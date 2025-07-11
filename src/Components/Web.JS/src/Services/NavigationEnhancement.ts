@@ -37,10 +37,17 @@ const acceptHeader = 'text/html; blazor-enhanced-nav=on';
 let currentEnhancedNavigationAbortController: AbortController | null;
 let navigationEnhancementCallbacks: NavigationEnhancementCallbacks;
 let performingEnhancedPageLoad: boolean;
+let navigationEnhancementCallbacksPromise: Promise<NavigationEnhancementCallbacks> | null = null;
+let navigationEnhancementCallbacksResolver: ((callbacks: NavigationEnhancementCallbacks) => void) | null = null;
 
 // This gets initialized to the current URL when we load.
 // After that, it gets updated every time we successfully complete a navigation.
 let currentContentUrl = location.href;
+
+// Initialize the promise for waiting for navigation enhancement callbacks
+navigationEnhancementCallbacksPromise = new Promise<NavigationEnhancementCallbacks>((resolve) => {
+  navigationEnhancementCallbacksResolver = resolve;
+});
 
 export interface NavigationEnhancementCallbacks {
   enhancedNavigationStarted: () => void;
@@ -58,6 +65,14 @@ export function hasNeverStartedAnyEnhancedPageLoad() {
 
 export function attachProgressivelyEnhancedNavigationListener(callbacks: NavigationEnhancementCallbacks) {
   navigationEnhancementCallbacks = callbacks;
+
+  // Resolve the promise so any waiting performEnhancedPageLoad calls can proceed
+  if (navigationEnhancementCallbacksResolver) {
+    navigationEnhancementCallbacksResolver(callbacks);
+    navigationEnhancementCallbacksResolver = null;
+    navigationEnhancementCallbacksPromise = null;
+  }
+
   document.addEventListener('click', onDocumentClick);
   document.addEventListener('submit', onDocumentSubmit);
   window.addEventListener('popstate', onPopState);
@@ -194,6 +209,10 @@ function onDocumentSubmit(event: SubmitEvent) {
 
 export async function performEnhancedPageLoad(internalDestinationHref: string, interceptedLink: boolean, fetchOptions?: RequestInit, treatAsRedirectionFromMethod?: 'get' | 'post', changeUrl: boolean = true) {
   performingEnhancedPageLoad = true;
+
+  if (!navigationEnhancementCallbacks && navigationEnhancementCallbacksPromise) {
+    navigationEnhancementCallbacks = await navigationEnhancementCallbacksPromise;
+  }
 
   // First, stop any preceding enhanced page load
   currentEnhancedNavigationAbortController?.abort();
