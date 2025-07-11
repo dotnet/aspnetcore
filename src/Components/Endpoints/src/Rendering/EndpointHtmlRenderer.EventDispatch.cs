@@ -109,6 +109,11 @@ internal partial class EndpointHtmlRenderer
 
     private string GetNotFoundUrl(string baseUri, NotFoundEventArgs args)
     {
+        if (args.Path == null)
+        {
+            return null!;
+        }
+
         string path = args.Path;
         if (string.IsNullOrEmpty(path))
         {

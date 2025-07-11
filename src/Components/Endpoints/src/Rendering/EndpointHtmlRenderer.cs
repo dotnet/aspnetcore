@@ -87,7 +87,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
         navigationManager?.OnNotFound += (sender, args) =>
         {
-            _ = GetErrorHandledTask(SetNotFoundResponseAsync(navigationManager.BaseUri, args));
+            Args = args;
         };
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
@@ -162,6 +162,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     /// <inheritdoc/>
     protected override ResourceAssetCollection Assets =>
         _resourceCollection ??= GetResourceCollection(_httpContext) ?? base.Assets;
+
+    public NotFoundEventArgs? Args { get; private set; }
 
     private static ResourceAssetCollection? GetResourceCollection(HttpContext httpContext) => httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
 

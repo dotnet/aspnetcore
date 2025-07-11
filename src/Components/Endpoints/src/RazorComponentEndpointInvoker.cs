@@ -130,6 +130,14 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             }
         }
 
+        if (_renderer.Args != null)
+        {
+            context.Response.StatusCode = StatusCodes.Status404NotFound;
+            //_ = GetErrorHandledTask(SetNotFoundResponseAsync(navigationManager.BaseUri, args));
+
+            //await EndpointHtmlRenderer.HandleNotFoundAsync(context, _renderer.Args);
+        }
+
         if (!quiesceTask.IsCompleted)
         {
             // An incomplete QuiescenceTask indicates there may be streaming rendering updates.
@@ -158,6 +166,12 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         if (!quiesceTask.IsCompletedSuccessfully)
         {
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
+            if (_renderer.Args != null)
+            {
+                // Not found was triggered, nothing set the path.
+                // Was a path set in the args?
+                await _renderer.SetNotFoundResponseAsync(context.Request.PathBase, _renderer.Args);
+            }
         }
         else
         {

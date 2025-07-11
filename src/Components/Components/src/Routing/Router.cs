@@ -148,19 +148,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
                     $"does not implement {typeof(IComponent).FullName}.");
             }
-
-            var routeAttributes = NotFoundPage.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
-            if (routeAttributes.Length == 0)
-            {
-                throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
-                    $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
-            }
-
-            var routeAttribute = (RouteAttribute)routeAttributes[0];
-            if (routeAttribute.Template != null)
-            {
-                NavigationManager.NotFoundPageRoute = routeAttribute.Template;
-            }
         }
 
         if (!_onNavigateCalled)
@@ -381,10 +368,22 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    private void OnNotFound(object sender, EventArgs args)
+    private void OnNotFound(object sender, NotFoundEventArgs args)
     {
-        if (_renderHandle.IsInitialized)
+        if (_renderHandle.IsInitialized && NotFoundPage != null)
         {
+            var routeAttributes = NotFoundPage.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
+            if (routeAttributes.Length == 0)
+            {
+                throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
+                    $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
+            }
+
+            var routeAttribute = (RouteAttribute)routeAttributes[0];
+            if (routeAttribute.Template != null)
+            {
+                args.Path = routeAttribute.Template;
+            }
             Log.DisplayingNotFound(_logger);
             RenderNotFound();
         }

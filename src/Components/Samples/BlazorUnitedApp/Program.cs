@@ -25,6 +25,8 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForErrors: true);
+
 app.UseStaticFiles();
 app.UseAntiforgery();
 
