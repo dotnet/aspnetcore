@@ -416,4 +416,34 @@ describe("CallDispatcher", () => {
         expect(() => DotNet.createJSObjectReference(123)).toThrow();
         expect(() => DotNet.createJSObjectReference(true)).toThrow();
     });
+
+    test("GetValue: Returns JSObjectReference with sentinel value for null property", () => {
+        const testObject = { nullProp: null };
+        const objectId = getObjectReferenceId(testObject);
+
+        const result = dispatcher.invokeJSFromDotNet(
+            "nullProp",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
+
+        expect(result).toBe('{"__jsObjectId":-1}');
+    });
+
+    test("GetValue: Returns JSObjectReference with sentinel value for undefined property", () => {
+        const testObject = { undefinedProp: undefined };
+        const objectId = getObjectReferenceId(testObject);
+
+        const result = dispatcher.invokeJSFromDotNet(
+            "undefinedProp",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
+
+        expect(result).toBe('{"__jsObjectId":-1}');
+    });
 });

@@ -170,29 +170,43 @@
         try
         {
             var undefinedJsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnUndefined");
-            ReturnValues["invokeAsyncThrowsUndefinedJSObjectReference"] = undefinedJsObjectReference is null ? "Failure: null" : "Failure: not null";
+            ReturnValues["invokeAsyncUndefinedJSObjectReference"] = undefinedJsObjectReference is null ? "Success" : "Failure: not null";
         }
-        catch (JSException)
+        catch (JSException ex)
         {
-            ReturnValues["invokeAsyncThrowsUndefinedJSObjectReference"] = "Success";
+            ReturnValues["invokeAsyncUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
         }
         catch (Exception ex)
         {
-            ReturnValues["invokeAsyncThrowsUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
+            ReturnValues["invokeAsyncUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
         }
 
         try
         {
             var nullJsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnNull");
-            ReturnValues["invokeAsyncThrowsNullJSObjectReference"] = nullJsObjectReference is null ? "Failure: null" : "Failure: not null";
+            ReturnValues["invokeAsyncNullJSObjectReference"] = nullJsObjectReference is null ? "Success" : "Failure: not null";
         }
-        catch (JSException)
+        catch (JSException ex)
         {
-            ReturnValues["invokeAsyncThrowsNullJSObjectReference"] = "Success";
+            ReturnValues["invokeAsyncNullJSObjectReference"] = $"Failure: {ex.Message}";
         }
         catch (Exception ex)
         {
-            ReturnValues["invokeAsyncThrowsNullJSObjectReference"] = $"Failure: {ex.Message}";
+            ReturnValues["invokeAsyncNullJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var nullVariableJsObjectReference = await JSRuntime.GetValueAsync<IJSObjectReference>("jsInteropTests.testObject.nullProperty");
+            ReturnValues["invokeAsyncNullFromVariableJSObjectReference"] = nullVariableJsObjectReference is null ? "Success" : "Failure: not null";
+        }
+        catch (JSException)
+        {
+            ReturnValues["invokeAsyncNullFromVariableJSObjectReference"] = "Failure";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeAsyncNullFromVariableJSObjectReference"] = $"Failure: {ex.Message}";
         }
 
         var jsObjectReference = await JSRuntime.InvokeAsync<IJSObjectReference>("returnJSObjectReference");
@@ -397,29 +411,46 @@
         try
         {
             var undefinedJsObjectReference = inProcRuntime.Invoke<IJSObjectReference>("returnUndefined");
-            ReturnValues["invokeThrowsUndefinedJSObjectReference"] = undefinedJsObjectReference is null ? "Failure: null" : "Failure: not null";
+            ReturnValues["invokeUndefinedJSObjectReference"] = undefinedJsObjectReference is null ? "Success" : "Failure: not null";
+            Console.WriteLine($"Received undefined JSObjectReference: {undefinedJsObjectReference}");
         }
-        catch (JSException)
+        catch (JSException ex)
         {
-            ReturnValues["invokeThrowsUndefinedJSObjectReference"] = "Success";
+            ReturnValues["invokeUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
         }
         catch (Exception ex)
         {
-            ReturnValues["invokeThrowsUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
+            ReturnValues["invokeUndefinedJSObjectReference"] = $"Failure: {ex.Message}";
         }
 
         try
         {
             var nullJsObjectReference = inProcRuntime.Invoke<IJSObjectReference>("returnNull");
-            ReturnValues["invokeThrowsNullJSObjectReference"] = nullJsObjectReference is null ? "Failure: null" : "Failure: not null";
+            ReturnValues["invokeNullJSObjectReference"] = nullJsObjectReference is null ? "Success" : "Failure: not null";
+            Console.WriteLine($"Received undefined JSObjectReference: {nullJsObjectReference}");
         }
-        catch (JSException)
+        catch (JSException ex)
         {
-            ReturnValues["invokeThrowsNullJSObjectReference"] = "Success";
+            ReturnValues["invokeNullJSObjectReference"] = $"Failure: {ex.Message}";
         }
         catch (Exception ex)
         {
-            ReturnValues["invokeThrowsNullJSObjectReference"] = $"Failure: {ex.Message}";
+            ReturnValues["invokeNullJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+
+        try
+        {
+            var nullVariableJsObjectReference = inProcRuntime.GetValue<IJSObjectReference>("jsInteropTests.testObject.nullProperty");
+            ReturnValues["invokeNullFromVariableJSObjectReference"] = nullVariableJsObjectReference is null ? "Success" : "Failure: not null";
+            Console.WriteLine($"Received undefined JSObjectReference: {nullVariableJsObjectReference}");
+        }
+        catch (JSException ex)
+        {
+            ReturnValues["invokeNullFromVariableJSObjectReference"] = $"Failure: {ex.Message}";
+        }
+        catch (Exception ex)
+        {
+            ReturnValues["invokeNullFromVariableJSObjectReference"] = $"Failure: {ex.Message}";
         }
 
         var jsInProcObjectReference = inProcRuntime.Invoke<IJSInProcessObjectReference>("returnJSObjectReference");
