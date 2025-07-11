@@ -494,7 +494,7 @@ app.MapPost("/", (IFormFile? file, TraceIdentifier traceId, HttpContext httpCont
         httpContext.TraceIdentifier = "my-trace-id";
 
 #pragma warning disable SYSLIB0026 // Type or member is obsolete
-        var clientCertificate = new X509Certificate2();
+        var clientCertificate = X509CertificateLoader.LoadCertificate(Array.Empty<byte>());
 #pragma warning restore SYSLIB0026 // Type or member is obsolete
 
         httpContext.Features.Set<ITlsConnectionFeature>(new TlsConnectionFeature(clientCertificate));
