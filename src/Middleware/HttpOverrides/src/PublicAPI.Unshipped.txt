@@ -1,4 +1,3 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.KnownNetworks.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.HttpOverrides.IPNetwork!>!
 Microsoft.AspNetCore.Builder.ForwardedHeadersOptions.KnownNetworks.get -> System.Collections.Generic.IList<System.Net.IPNetwork>!
-static Microsoft.AspNetCore.HttpOverrides.IPNetwork.implicit operator Microsoft.AspNetCore.HttpOverrides.IPNetwork!(System.Net.IPNetwork ipNetwork) -> Microsoft.AspNetCore.HttpOverrides.IPNetwork!

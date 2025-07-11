@@ -52,16 +52,11 @@ public class IPNetwork
     {
         if (System.Net.IPNetwork.TryParse(networkSpan, out var ipNetwork))
         {
-            network = ipNetwork;
+            network = new(ipNetwork);
             return true;
         }
 
         network = null;
         return false;
     }
-
-    /// <summary>
-    /// Convert <see cref="System.Net.IPNetwork" /> to <see cref="Microsoft.AspNetCore.HttpOverrides.IPNetwork" /> implicitly
-    /// </summary>
-    public static implicit operator IPNetwork(System.Net.IPNetwork ipNetwork) => new IPNetwork(ipNetwork);
 }
