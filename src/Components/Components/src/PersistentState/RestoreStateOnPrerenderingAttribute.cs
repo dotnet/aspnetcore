@@ -32,28 +32,14 @@ public sealed class RestoreStateOnPrerenderingAttribute : Attribute, IPersistent
     /// </param>
     public RestoreStateOnPrerenderingAttribute(bool enable = true)
     {
-        Enable = enable;
+        Filter = enable ? WebPersistenceFilter.Prerendering : new WebPersistenceFilter(WebPersistenceScenarioType.Prerendering, enabled: false);
     }
 
-    /// <summary>
-    /// Gets a value indicating whether state restoration is enabled during prerendering.
-    /// </summary>
-    internal bool Enable { get; }
+    internal WebPersistenceFilter Filter { get; }
 
-    /// <summary>
-    /// Determines whether this filter supports the specified scenario.
-    /// </summary>
-    /// <param name="scenario">The scenario to check.</param>
-    /// <returns><see langword="true"/> if the filter supports the scenario; otherwise, <see langword="false"/>.</returns>
-    public bool SupportsScenario(IPersistentComponentStateScenario scenario)
-        => scenario == WebPersistenceScenario.Prerendering;
+    bool IPersistentStateFilter.SupportsScenario(IPersistentComponentStateScenario scenario)
+        => Filter.SupportsScenario(scenario);
 
-    /// <summary>
-    /// Determines whether state should be restored for the specified scenario.
-    /// This method is only called if <see cref="SupportsScenario"/> returns <see langword="true"/>.
-    /// </summary>
-    /// <param name="scenario">The scenario for which state restoration is being considered.</param>
-    /// <returns><see langword="true"/> if state should be restored; otherwise, <see langword="false"/>.</returns>
-    public bool ShouldRestore(IPersistentComponentStateScenario scenario)
-        => scenario == WebPersistenceScenario.Prerendering && Enable;
+    bool IPersistentStateFilter.ShouldRestore(IPersistentComponentStateScenario scenario)
+        => Filter.ShouldRestore(scenario);
 }

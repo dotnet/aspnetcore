@@ -37,12 +37,8 @@ Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(Mic
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.IPersistentComponentStateScenario? scenario) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute
 Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute.RestoreStateOnPrerenderingAttribute(bool enable = true) -> void
-Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
-Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute.SupportsScenario(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
 Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute
 Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute.RestoreStateOnReconnectionAttribute(bool enabled = true) -> void
-Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
-Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute.SupportsScenario(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
 Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
 Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.Dispose() -> void
 Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.RestoringComponentStateSubscription() -> void

@@ -1,17 +1,29 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Components;
+
+internal enum WebPersistenceScenarioType
+{
+    Prerendering,
+    Reconnection
+}
 
 /// <summary>
 /// Provides predefined scenarios for web-based persistent component state restoration.
 /// </summary>
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed class WebPersistenceScenario : IPersistentComponentStateScenario
 {
-    private WebPersistenceScenario(bool isRecurring)
+    private WebPersistenceScenario(WebPersistenceScenarioType scenarioType, bool isRecurring)
     {
         IsRecurring = isRecurring;
+        ScenarioType = scenarioType;
     }
+
+    internal WebPersistenceScenarioType ScenarioType { get; }
 
     /// <summary>
     /// Gets a value indicating whether this scenario can occur multiple times during the component's lifetime.
@@ -22,7 +34,7 @@ public sealed class WebPersistenceScenario : IPersistentComponentStateScenario
     /// Gets a scenario representing prerendering state restoration.
     /// This scenario occurs once when components are initially rendered on the server before interactivity.
     /// </summary>
-    public static WebPersistenceScenario Prerendering { get; } = new(isRecurring: false);
+    public static WebPersistenceScenario Prerendering { get; } = new(WebPersistenceScenarioType.Prerendering, isRecurring: false);
 
     /// <summary>
     /// Gets a scenario representing reconnection state restoration.
@@ -36,5 +48,7 @@ public sealed class WebPersistenceScenario : IPersistentComponentStateScenario
     /// }
     /// </code>
     /// </example>
-    public static WebPersistenceScenario Reconnection { get; } = new(isRecurring: false);
+    public static WebPersistenceScenario Reconnection { get; } = new(WebPersistenceScenarioType.Reconnection, isRecurring: false);
+
+    private string GetDebuggerDisplay() => $"{ScenarioType} (IsRecurring: {IsRecurring})";
 }

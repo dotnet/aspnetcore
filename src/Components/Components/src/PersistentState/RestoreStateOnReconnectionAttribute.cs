@@ -32,35 +32,14 @@ public sealed class RestoreStateOnReconnectionAttribute : Attribute, IPersistent
     /// </param>
     public RestoreStateOnReconnectionAttribute(bool enabled = true)
     {
-        Enabled = enabled;
+        Filter = enabled ? WebPersistenceFilter.Reconnection : new WebPersistenceFilter(WebPersistenceScenarioType.Reconnection, enabled: false);
     }
 
-    /// <summary>
-    /// Gets a value indicating whether state restoration is enabled during reconnection.
-    /// </summary>
-    internal bool Enabled { get; }
+    internal WebPersistenceFilter Filter { get; }
 
-    /// <summary>
-    /// Determines whether this filter supports the specified scenario.
-    /// </summary>
-    /// <param name="scenario">The scenario to check.</param>
-    /// <returns><see langword="true"/> if the filter supports the scenario; otherwise, <see langword="false"/>.</returns>
-    public bool SupportsScenario(IPersistentComponentStateScenario scenario)
-        => scenario == WebPersistenceScenario.Reconnection;
+    bool IPersistentStateFilter.SupportsScenario(IPersistentComponentStateScenario scenario)
+        => Filter.SupportsScenario(scenario);
 
-    /// <summary>
-    /// Determines whether state should be restored for the specified scenario.
-    /// This method is only called if <see cref="SupportsScenario"/> returns <see langword="true"/>.
-    /// </summary>
-    /// <param name="scenario">The scenario for which state restoration is being considered.</param>
-    /// <returns><see langword="true"/> if state should be restored; otherwise, <see langword="false"/>.</returns>
-    public bool ShouldRestore(IPersistentComponentStateScenario scenario)
-    {
-        if (scenario == WebPersistenceScenario.Reconnection)
-        {
-            return Enabled;
-        }
-        // For other scenarios, use default behavior (restore)
-        return true;
-    }
+    bool IPersistentStateFilter.ShouldRestore(IPersistentComponentStateScenario scenario)
+        => Filter.ShouldRestore(scenario);
 }

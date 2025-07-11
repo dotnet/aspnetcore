@@ -13,10 +13,15 @@ using System.Text;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
+<<<<<<< HEAD
 internal sealed class PersistentStateValueProvider(PersistentComponentState state, IServiceProvider serviceProvider) : ICascadingValueSupplier
+=======
+internal sealed partial class PersistentStateValueProvider(PersistentComponentState state, ILogger<PersistentStateValueProvider> logger) : ICascadingValueSupplier
+>>>>>>> eaa091941d (tmp)
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
@@ -74,6 +79,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
                 var property = propertyGetter.GetValue(subscriber.Component);
                 if (property == null)
                 {
+                    Log.SkippedPersistingNullValue(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name);
                     return Task.CompletedTask;
                 }
 
@@ -81,6 +87,8 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
 
                 if (customSerializer != null)
                 {
+                    Log.PersistingValueToState(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name);
+
                     using var writer = new PooledArrayBufferWriter<byte>();
                     customSerializer.Persist(propertyType, property, writer);
                     state.PersistAsBytes(storageKey, writer.WrittenMemory.ToArray());
@@ -88,6 +96,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
                 }
 
                 // Fallback to JSON serialization
+                Log.PersistingValueToState(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name);
                 state.PersistAsJson(storageKey, property, propertyType);
                 return Task.CompletedTask;
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
@@ -123,7 +132,12 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         {
             if (state.TryTakeFromJson(storageKey, propertyType, out var value))
             {
+                Log.RestoringValueFromState(logger, storageKey, propertyType.Name);
                 componentSubscription.SetLastValue(value);
+            }
+            else
+            {
+                Log.NoValueToRestoreFromState(logger, storageKey, propertyType.Name);
             }
         };
     }
@@ -353,7 +367,6 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         return result;
     }
 
-<<<<<<< HEAD
     /// <summary>
     /// Serializes <paramref name="instance"/> using the provided <paramref name="serializer"/> and persists it under the given <paramref name="key"/>.
     /// </summary>
@@ -399,10 +412,7 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
         }
     }
 
-    internal struct ComponentSubscription
-=======
     internal class ComponentSubscription
->>>>>>> 35244a5176 (Reconnection)
     {
         private PersistingComponentStateSubscription? _persistingSubscription;
         private RestoringComponentStateSubscription? _firstRestoringSubscription;
@@ -448,5 +458,26 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
                 _additionalRestoringSubscriptions.Clear();
             }
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Persisting value for storage key '{StorageKey}' of type '{PropertyType}' from component '{ComponentType}'", EventName = "PersistingValueToState")]
+        public static partial void PersistingValueToState(ILogger logger, string storageKey, string propertyType, string componentType);
+
+        [LoggerMessage(2, LogLevel.Debug, "Skipped persisting null value for storage key '{StorageKey}' of type '{PropertyType}' from component '{ComponentType}'", EventName = "SkippedPersistingNullValue")]
+        public static partial void SkippedPersistingNullValue(ILogger logger, string storageKey, string propertyType, string componentType);
+
+        [LoggerMessage(3, LogLevel.Debug, "Restoring value for storage key '{StorageKey}' of type '{PropertyType}'", EventName = "RestoringValueFromState")]
+        public static partial void RestoringValueFromState(ILogger logger, string storageKey, string propertyType);
+
+        [LoggerMessage(4, LogLevel.Debug, "No value to restore for storage key '{StorageKey}' of type '{PropertyType}'", EventName = "NoValueToRestoreFromState")]
+        public static partial void NoValueToRestoreFromState(ILogger logger, string storageKey, string propertyType);
+
+        [LoggerMessage(5, LogLevel.Debug, "Restored value from persistent state for storage key '{StorageKey}' of type '{PropertyType}' for component '{ComponentType}'", EventName = "RestoredValueFromPersistentState")]
+        public static partial void RestoredValueFromPersistentState(ILogger logger, string storageKey, string propertyType, string componentType);
+
+        [LoggerMessage(6, LogLevel.Debug, "Value not found in persistent state for storage key '{StorageKey}' of type '{PropertyType}' for component '{ComponentType}'", EventName = "ValueNotFoundInPersistentState")]
+        public static partial void ValueNotFoundInPersistentState(ILogger logger, string storageKey, string propertyType, string componentType);
     }
 }

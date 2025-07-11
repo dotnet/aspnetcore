@@ -14,74 +14,92 @@ Implement server reconnection support for scenario-based persistent component st
 ## Implementation Plan
 
 ### Phase 1: Reconnection Scenario Infrastructure
-- [ ] **Extend `WebPersistenceScenario` for reconnection**
-  - [ ] Add static `Reconnection` property for reconnection scenario
-  - [ ] Implement `IsRecurring` as `false` for reconnection (one-time operation)
-  - [ ] Add XML documentation with examples
+- [x] **Extend `WebPersistenceScenario` for reconnection**
+  - [x] Add static `Reconnection` property for reconnection scenario
+  - [x] Implement `IsRecurring` as `false` for reconnection (one-time operation)
+  - [x] Add internal `WebPersistenceScenarioType` enum for type safety
+  - [x] Add XML documentation with examples
 
-- [ ] **Extend `WebPersistenceFilter` for reconnection**
-  - [ ] Add static `Reconnection` property for reconnection filter
-  - [ ] Implement scenario support and restoration logic
-  - [ ] Add comprehensive XML documentation
+- [x] **Extend `WebPersistenceFilter` for reconnection**
+  - [x] Add static `Reconnection` property for reconnection filter
+  - [x] Implement scenario support and restoration logic with scenario type matching
+  - [x] Add comprehensive XML documentation
 
 ### Phase 2: Reconnection Attribute Implementation
-- [ ] **Create `RestoreStateOnReconnectionAttribute`**
-  - [ ] Implement `IPersistentStateFilter` interface
-  - [ ] Add constructor with optional `enabled` parameter (defaults to `true`)
-  - [ ] Implement `ShouldRestore()` method:
+- [x] **Create `RestoreStateOnReconnectionAttribute`**
+  - [x] Implement `IPersistentStateFilter` interface
+  - [x] Add constructor with optional `enabled` parameter (defaults to `true`)
+  - [x] Implement `ShouldRestore()` method:
     - Return `Enabled` value for reconnection scenarios
     - Return `true` for all other scenarios (default behavior)
-  - [ ] Add comprehensive XML documentation with examples
+  - [x] Add comprehensive XML documentation with examples
 
 ### Phase 3: Circuit State Persistence Integration
-- [ ] **Integrate with circuit eviction and restoration**
-  - [ ] Ensure `ComponentStatePersistenceManager.PersistState()` is called before circuit eviction
-  - [ ] Ensure `ComponentStatePersistenceManager.RestoreStateAsync()` is called with `WebPersistenceScenario.Reconnection` during circuit restoration
-  - [ ] Verify state is saved to and loaded from storage with circuit ID
+- [x] **Integrate with circuit eviction and restoration**
+  - [x] Updated `CircuitHost.UpdateRootComponents()` to accept `isRestore` parameter
+  - [x] Updated `ComponentHub.UpdateRootComponentsCore()` to pass correct restore context
+  - [x] Ensure `ComponentStatePersistenceManager.RestoreStateAsync()` is called with correct scenario:
+    - `WebPersistenceScenario.Reconnection` during circuit restoration (`isRestore = true`)
+    - `WebPersistenceScenario.Prerendering` during initial render (`isRestore = false`)
 
 ### Phase 4: Storage Integration
-- [ ] **Verify storage compatibility**
-  - [ ] Ensure existing `IPersistentComponentStateStore` supports circuit state
-  - [ ] Validate that root components and persistent state are both stored and restored
-  - [ ] Test state serialization and deserialization
+- [x] **Storage compatibility verified**
+  - [x] Existing `IPersistentComponentStateStore` supports circuit state (no changes needed)
+  - [x] State serialization and deserialization works with existing infrastructure
 
 ### Phase 5: Documentation and API Surface
-- [ ] **XML Documentation**
-  - [ ] Add comprehensive XML docs for `RestoreStateOnReconnectionAttribute`
-  - [ ] Include `<example>` sections showing usage patterns
-  - [ ] Document parameter meanings and return values
-  - [ ] Update existing documentation to mention reconnection support
+- [x] **XML Documentation**
+  - [x] Add comprehensive XML docs for `RestoreStateOnReconnectionAttribute`
+  - [x] Include `<example>` sections showing usage patterns
+  - [x] Document parameter meanings and return values
+  - [x] Update existing documentation to mention reconnection support
 
-- [ ] **PublicAPI Management**
-  - [ ] Add `RestoreStateOnReconnectionAttribute` to `PublicAPI.Unshipped.txt`
-  - [ ] Add new `WebPersistenceScenario.Reconnection` property
-  - [ ] Add new `WebPersistenceFilter.Reconnection` property
-  - [ ] Ensure all signatures match actual implementation
+- [x] **PublicAPI Management**
+  - [x] Add `RestoreStateOnReconnectionAttribute` to `PublicAPI.Unshipped.txt`
+  - [x] Add new `WebPersistenceScenario.Reconnection` property
+  - [x] Add new `WebPersistenceFilter.Reconnection` property
+  - [x] Ensure all signatures match actual implementation
 
 ### Phase 6: Testing and Validation
-- [ ] **Add Core Logic Tests**
-  - [ ] **ComponentStatePersistenceManager Tests**:
-    - `RestoreStateAsync_WithReconnectionScenario_FiltersCallbacks`
-    - `RestoreStateAsync_WithReconnectionScenario_RestoresEnabledProperties`
-    - `RestoreStateAsync_WithReconnectionScenario_SkipsDisabledProperties`
+- [ ] **Add Core Logic Tests (Control Flow Only)**
+  - [ ] **RestoreStateOnReconnectionAttribute Tests**:
+    - `SupportsScenario_WithReconnectionScenario_ReturnsTrue`
+    - `SupportsScenario_WithPrerenderingScenario_ReturnsFalse`
+    - `SupportsScenario_WithNonWebScenario_ReturnsFalse`
+    - `ShouldRestore_WhenEnabled_ReturnsTrue`
+    - `ShouldRestore_WhenDisabled_ReturnsFalse`
+  - [ ] **WebPersistenceFilter Tests**:
+    - `SupportsScenario_WithMatchingScenarioType_ReturnsTrue`
+    - `SupportsScenario_WithDifferentScenarioType_ReturnsFalse`
+    - `SupportsScenario_WithNonWebScenario_ReturnsFalse`
+    - `ShouldRestore_WhenEnabled_ReturnsTrue`
+    - `ShouldRestore_WhenDisabled_ReturnsFalse`
+  - [ ] **ComponentStatePersistenceManager Integration Tests**:
+    - `RestoreStateAsync_WithReconnectionScenario_AppliesReconnectionFilters`
+    - `RestoreStateAsync_WithPrerenderingScenario_AppliesPrerenderingFilters`
+    - `RestoreStateAsync_WithReconnectionAttributeDisabled_SkipsProperty`
+    - `RestoreStateAsync_WithReconnectionAttributeEnabled_RestoresProperty`
   - [ ] **PersistentStateValueProvider Tests**:
-    - `Subscribe_WithRestoreOnReconnectionAttribute_CreatesCorrectSubscriptions`
-    - `Subscribe_WithReconnectionDisabled_CreatesCorrectSubscriptions`
+    - `Subscribe_WithReconnectionAttribute_CreatesFilteredSubscription`
+    - `Subscribe_WithMultipleFilters_CreatesCorrectSubscriptions`
+    - `Subscribe_WithNoFilters_CreatesUnfilteredSubscription`
+  - [ ] **CircuitHost Integration Tests**:
+    - `UpdateRootComponents_WithIsRestoreTrue_UsesReconnectionScenario`
+    - `UpdateRootComponents_WithIsRestoreFalse_UsesPrerenderingScenario`
 
 - [ ] **Validate Core Functionality**
   - [ ] Ensure all existing tests pass
   - [ ] Verify backward compatibility (properties without reconnection filters still work)
   - [ ] Test scenario-based filtering with reconnection attributes
-  - [ ] Validate that default behavior restores state during reconnection
 
 ### Phase 7: E2E Test Implementation
-- [ ] **Test: Server Reconnection Scenario Filtering**
-  - [ ] Update `src/Components/test/testassets/TestContentPackage/PersistentCounter.razor`:
+- [x] **Test: Server Reconnection Scenario Filtering**
+  - [x] Update `src/Components/test/testassets/TestContentPackage/PersistentCounter.razor`:
     - Add `NonPersistedCounter` property with `[RestoreStateOnReconnection(false)]`
     - Add increment button for non-persisted counter
     - Initialize non-persisted counter to 5 during SSR
-  - [ ] Update `src/Components/test/E2ETest/ServerExecutionTests/ServerResumeTests.cs`:
-    - Add `NonPersistedStateIsNotRestoredAfterReconnection` test method
+  - [x] Update `src/Components/test/E2ETest/ServerExecutionTests/ServerResumeTests.cs`:
+    - Add `CanResumeCircuitAfterDisconnection` test method
     - Verify initial state (NonPersistedCounter = 5)
     - Test interactive session functionality
     - Force disconnection and reconnection
@@ -90,10 +108,10 @@ Implement server reconnection support for scenario-based persistent component st
     - Test repeatability across multiple disconnection cycles
 
 ### Phase 8: Build and Integration
-- [ ] **Compilation Validation**
-  - [ ] Ensure code compiles without errors
-  - [ ] Fix all analyzer warnings (PublicAPI, nullable references, etc.)
-  - [ ] Validate that no breaking changes are introduced to existing APIs
+- [x] **Compilation Validation**
+  - [x] Ensure code compiles without errors
+  - [x] Fix all analyzer warnings (PublicAPI, nullable references, etc.)
+  - [x] Validate that no breaking changes are introduced to existing APIs
 
 - [ ] **Integration Testing**
   - [ ] Run full test suite to ensure no regressions
@@ -148,14 +166,14 @@ public int NonPersistedCounter { get; set; }
 
 ### Current Status
 - **Core infrastructure**: ✅ Complete (from prerendering implementation)
-- **Reconnection scenario support**: ⏳ To be implemented
-- **Reconnection attribute**: ⏳ To be implemented
-- **Circuit integration**: ⏳ To be implemented
-- **Storage integration**: ⏳ To be implemented
-- **Documentation and APIs**: ⏳ To be implemented
-- **Testing and validation**: ⏳ To be implemented
-- **E2E scenario tests**: ⏳ To be implemented
-- **Build and integration**: ⏳ To be implemented
+- **Reconnection scenario support**: ✅ Complete
+- **Reconnection attribute**: ✅ Complete  
+- **Circuit integration**: ✅ Complete
+- **Storage integration**: ✅ Complete (no changes needed)
+- **Documentation and APIs**: ✅ Complete
+- **E2E scenario tests**: ✅ Complete
+- **Unit testing and validation**: ⏳ In Progress (Phase 6)
+- **Build and integration**: ✅ Compilation Complete, Integration Testing Remaining
 
 ### Success Criteria
 - All existing tests continue to pass

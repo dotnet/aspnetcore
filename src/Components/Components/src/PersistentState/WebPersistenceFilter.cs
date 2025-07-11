@@ -1,29 +1,42 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
 /// Provides predefined filters for web-based persistent component state restoration scenarios.
 /// </summary>
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 public sealed class WebPersistenceFilter : IPersistentStateFilter
 {
-    private readonly bool _enableForPrerendering;
+    private readonly WebPersistenceScenarioType _scenarioType;
+    private readonly bool _enabled;
 
-    private WebPersistenceFilter(bool enabled)
+    internal WebPersistenceFilter(WebPersistenceScenarioType scenarioType, bool enabled)
     {
-        _enableForPrerendering = enabled;
+        _scenarioType = scenarioType;
+        _enabled = enabled;
     }
 
     /// <summary>
     /// Gets a filter that enables state restoration during prerendering scenarios.
     /// </summary>
-    public static WebPersistenceFilter Prerendering { get; } = new(enabled: true);
+    public static WebPersistenceFilter Prerendering { get; } = new(WebPersistenceScenarioType.Prerendering, enabled: true);
 
     /// <summary>
-    /// Gets a filter that enables state restoration during prerendering scenarios.
+    /// Gets a filter that enables state restoration during reconnection scenarios.
     /// </summary>
-    public static WebPersistenceFilter Reconnection { get; } = new(enabled: true);
+    /// <example>
+    /// <code>
+    /// if (filter.ShouldRestore(WebPersistenceScenario.Reconnection))
+    /// {
+    ///     // Restore state for reconnection
+    /// }
+    /// </code>
+    /// </example>
+    public static WebPersistenceFilter Reconnection { get; } = new(WebPersistenceScenarioType.Reconnection, enabled: true);
 
     /// <summary>
     /// Determines whether this filter supports the specified scenario.
@@ -31,7 +44,7 @@ public sealed class WebPersistenceFilter : IPersistentStateFilter
     /// <param name="scenario">The scenario to check.</param>
     /// <returns><see langword="true"/> if the filter supports the scenario; otherwise, <see langword="false"/>.</returns>
     public bool SupportsScenario(IPersistentComponentStateScenario scenario)
-        => scenario is WebPersistenceScenario;
+        => scenario is WebPersistenceScenario webScenario && webScenario.ScenarioType == _scenarioType;
 
     /// <summary>
     /// Determines whether state should be restored for the specified scenario.
@@ -41,6 +54,8 @@ public sealed class WebPersistenceFilter : IPersistentStateFilter
     /// <returns><see langword="true"/> if state should be restored; otherwise, <see langword="false"/>.</returns>
     public bool ShouldRestore(IPersistentComponentStateScenario scenario)
     {
-        return _enableForPrerendering;
+        return _enabled;
     }
+
+    private string GetDebuggerDisplay() => $"{_scenarioType} (Enabled: {_enabled})";
 }
