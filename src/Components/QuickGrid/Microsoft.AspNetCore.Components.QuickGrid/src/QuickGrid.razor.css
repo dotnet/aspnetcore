@@ -51,11 +51,6 @@ th ::deep .col-options-button {
     z-index: 1;
 }
 
-.col-justify-end .col-options {
-    left: unset;
-    right: 0;
-}
-
 .col-width-draghandle {
     position: absolute;
     top: 0;
@@ -76,8 +71,30 @@ td.col-justify-center {
     text-align: center;
 }
 
+.col-justify-end .col-options {
+    left: unset;
+    right: 0;
+}
+
 td.col-justify-end {
     text-align: right;
+}
+
+.col-justify-start .col-options {
+    left: 0;
+    right: unset;
+}
+
+td.col-justify-start {
+    text-align: left;
+}
+
+td.col-justify-right {
+    text-align: right;
+}
+
+td.col-justify-left {
+    text-align: left;
 }
 
 /* Unfortunately we can't use the :dir pseudoselector due to lack of browser support. Instead we have to rely on
@@ -89,6 +106,10 @@ html[dir=rtl] td.col-justify-end {
 html[dir=rtl] .col-options {
     left: unset;
     right: 0;
+}
+
+html[dir=rtl] td.col-justify-start {
+    text-align: right;
 }
 
 html[dir=rtl] .col-justify-end .col-options {
