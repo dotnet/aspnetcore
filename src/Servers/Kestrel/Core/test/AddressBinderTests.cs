@@ -79,8 +79,8 @@ public class AddressBinderTests
     [InlineData("http://SAMPLE.Localhost:5000", 5000, false, "http://SAMPLE.localhost:5000")]
     [InlineData("HTTP://sample.localhost:5000", 5000, false, "http://sample.localhost:5000")]
     [InlineData("https://sample.localhost:5001", 5001, true)]
-    [InlineData("http://multilevel.sample.localhost:5000", 5000, false)]
-    [InlineData("https://multilevel.sample.localhost:5001", 5001, true)]
+    [InlineData("http://multilevel.dev.localhost:5000", 5000, false)]
+    [InlineData("https://multilevel.dev.localhost:5001", 5001, true)]
     public void ParseAddressWithLocalhostTld(string address, int expectedPort, bool expectedHttps, string expectedAddress = null)
     {
         var listenOptions = AddressBinder.ParseAddress(address, out var https);

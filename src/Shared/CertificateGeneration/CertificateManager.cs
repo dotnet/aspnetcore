@@ -34,8 +34,8 @@ internal abstract class CertificateManager
     private const string ContainersDockerHttpsDnsName = "host.containers.internal";
 
     // wildcard DNS names
-    private const string LocalhostWildcardHttpsDnsName = "*.localhost";
-    private const string InternalWildcardHttpsDnsName = "*.internal";
+    private const string LocalhostWildcardHttpsDnsName = "*.dev.localhost";
+    private const string InternalWildcardHttpsDnsName = "*.dev.internal";
 
     // main cert subject
     private const string LocalhostHttpsDnsName = "localhost";

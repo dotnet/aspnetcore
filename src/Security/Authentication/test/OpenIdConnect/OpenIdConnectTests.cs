@@ -25,6 +25,13 @@ public class OpenIdConnectTests
     static readonly string nonceDelimiter = ".";
     const string DefaultHost = @"https://example.com";
 
+    [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new OpenIdConnectOptions();
+        Assert.NotNull(options.Events);
+    }
+
     /// <summary>
     /// Tests RedirectForSignOutContext replaces the OpenIdConnectMesssage correctly.
     /// </summary>
