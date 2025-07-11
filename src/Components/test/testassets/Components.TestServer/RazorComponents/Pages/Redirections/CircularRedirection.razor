@@ -13,9 +13,22 @@
     {
         <h2>Unobserved Exceptions (for debugging):</h2>
         <ul>
-            @foreach (var ex in _unobservedExceptions)
+            @foreach (var exceptionDetail in _unobservedExceptions)
             {
-                <li>@ex.ToString()</li>
+                <li>
+                    <strong>Observed at:</strong> @exceptionDetail.ObservedAt.ToString("yyyy-MM-dd HH:mm:ss.fff") UTC<br/>
+                    <strong>Thread ID:</strong> @exceptionDetail.ObservedThreadId<br/>
+                    <strong>From Finalizer Thread:</strong> @exceptionDetail.IsFromFinalizerThread<br/>
+                    <strong>Exception:</strong> @exceptionDetail.Exception.ToString()<br/>
+                    <details>
+                        <summary>Detailed Exception Information</summary>
+                        <pre>@exceptionDetail.DetailedExceptionInfo</pre>
+                    </details>
+                    <details>
+                        <summary>Call Stack When Observed</summary>
+                        <pre>@exceptionDetail.ObservedCallStack</pre>
+                    </details>
+                </li>
             }
         </ul>
     }
@@ -23,16 +36,16 @@
 
 @code {
     private bool _shouldStopRedirecting;
-    private IReadOnlyCollection<Exception> _unobservedExceptions = Array.Empty<Exception>();
+    private IReadOnlyCollection<UnobservedExceptionDetails> _unobservedExceptions = Array.Empty<UnobservedExceptionDetails>();
 
     protected override async Task OnInitializedAsync()
     {
-		int visits = Observer.GetCircularRedirectCount();
-		if (visits == 0)
-		{
-			// make sure we start with clean logs
-			Observer.Clear();
-		}
+        int visits = Observer.GetCircularRedirectCount();
+        if (visits == 0)
+        {
+            // make sure we start with clean logs
+            Observer.Clear();
+        }
 
         // Force GC collection to trigger finalizers - this is what causes the issue
         GC.Collect();
@@ -47,7 +60,7 @@
         else
         {
             _shouldStopRedirecting = true;
-            _unobservedExceptions = Observer.GetExceptions();
+            _unobservedExceptions = Observer.GetExceptionDetails();
         }
     }
 }
