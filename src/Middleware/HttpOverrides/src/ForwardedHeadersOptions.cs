@@ -84,10 +84,7 @@ public class ForwardedHeadersOptions
     /// <summary>
     /// Address ranges of known proxies to accept forwarded headers from.
     /// </summary>
-    public IList<IPNetwork> KnownNetworks { get; } = new List<IPNetwork>()
-    {
-        IPNetwork.Parse("127.0.0.0/8")
-    };
+    public IList<IPNetwork> KnownNetworks { get; } = new List<IPNetwork>() { new IPNetwork(IPAddress.Loopback, 8) };
 
     /// <summary>
     /// The allowed values from x-forwarded-host. If the list is empty then all hosts are allowed.
