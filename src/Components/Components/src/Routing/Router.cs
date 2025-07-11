@@ -384,12 +384,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private void OnNotFound(object sender, NotFoundEventArgs args)
     {
-        if (_renderHandle.IsInitialized)
+        if (_renderHandle.IsInitialized && NotFoundPage != null)
         {
+            // setting the path signals to the endpoint renderer that router handled rendering
+            args.Path = _notFoundPageRoute;
             Log.DisplayingNotFound(_logger);
             RenderNotFound();
-            // setting the path signals to the endpoint renderer that router handled rendering
-            args.Path = _notFoundPageRoute ?? "not-found-handled-by-router";
         }
     }
 

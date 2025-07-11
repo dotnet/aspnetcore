@@ -79,27 +79,9 @@ internal partial class EndpointHtmlRenderer
             : Task.CompletedTask;
     }
 
-    internal async Task SetNotFoundResponseAsync(string baseUri, NotFoundEventArgs args)
+    internal void SetNotFoundWhenResponseNotStarted()
     {
-        if (_httpContext.Response.HasStarted ||
-            // POST waits for quiescence -> rendering the NotFoundPage would be queued for the next batch
-            // but we want to send the signal to the renderer to stop rendering future batches -> use client rendering
-            HttpMethods.IsPost(_httpContext.Request.Method))
-        {
-            if (string.IsNullOrEmpty(_notFoundUrl))
-            {
-                _notFoundUrl = GetNotFoundUrl(baseUri, args);
-            }
-            var defaultBufferSize = 16 * 1024;
-            await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
-            using var bufferWriter = new BufferedTextWriter(writer);
-            HandleNotFoundAfterResponseStarted(bufferWriter, _httpContext, _notFoundUrl);
-            await bufferWriter.FlushAsync();
-        }
-        else
-        {
-            _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
-        }
+        _httpContext.Response.StatusCode = StatusCodes.Status404NotFound;
 
         // When the application triggers a NotFound event, we continue rendering the current batch.
         // However, after completing this batch, we do not want to process any further UI updates,
@@ -107,9 +89,28 @@ internal partial class EndpointHtmlRenderer
         SignalRendererToFinishRendering();
     }
 
-    private string GetNotFoundUrl(string baseUri, NotFoundEventArgs args)
+    internal async Task SetNotFoundWhenResponseHasStarted()
     {
-        string? path = args.Path;
+        if (string.IsNullOrEmpty(_notFoundUrl))
+        {
+            var baseUri = $"{_httpContext.Request.Scheme}://{_httpContext.Request.Host}{_httpContext.Request.PathBase}/";
+            _notFoundUrl = GetNotFoundUrl(baseUri, NotFoundEventArgs);
+        }
+        var defaultBufferSize = 16 * 1024;
+        await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+        using var bufferWriter = new BufferedTextWriter(writer);
+        HandleNotFoundAfterResponseStarted(bufferWriter, _httpContext, _notFoundUrl);
+        await bufferWriter.FlushAsync();
+
+        // When the application triggers a NotFound event, we continue rendering the current batch.
+        // However, after completing this batch, we do not want to process any further UI updates,
+        // as we are going to return a 404 status and discard the UI updates generated so far.
+        SignalRendererToFinishRendering();
+    }
+
+    private string GetNotFoundUrl(string baseUri, NotFoundEventArgs? args)
+    {
+        string? path = args?.Path;
         if (string.IsNullOrEmpty(path))
         {
             var pathFormat = _httpContext.Items[nameof(StatusCodePagesOptions)] as string;

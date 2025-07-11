@@ -136,6 +136,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             }
         }
 
+        if (_renderer.NotFoundEventArgs != null)
+        {
+            _renderer.SetNotFoundWhenResponseNotStarted();
+        }
+
         if (!quiesceTask.IsCompleted)
         {
             // An incomplete QuiescenceTask indicates there may be streaming rendering updates.
@@ -155,6 +160,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         if (!quiesceTask.IsCompletedSuccessfully)
         {
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
+            if (_renderer.NotFoundEventArgs != null)
+            {
+                await _renderer.SetNotFoundWhenResponseHasStarted();
+            }
         }
         else
         {

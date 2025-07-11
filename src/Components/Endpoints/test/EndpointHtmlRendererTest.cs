@@ -1823,7 +1823,7 @@ public class EndpointHtmlRendererTest
         public async Task SetNotFoundResponseAsync(HttpContext httpContext, NotFoundEventArgs args)
         {
             SetHttpContext(httpContext);
-            await SetNotFoundResponseAsync(httpContext.Request.PathBase, args);
+            await SetNotFoundWhenResponseHasStarted();
         }
     }
 
