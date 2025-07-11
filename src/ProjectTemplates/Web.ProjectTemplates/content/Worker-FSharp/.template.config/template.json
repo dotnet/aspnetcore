@@ -8,7 +8,7 @@
   ],
   "name": "Worker Service",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "An empty project template for creating a worker service.",
+  "description": "An app that runs background jobs without showing a window.",
   "groupIdentity": "Microsoft.Worker.Empty",
   "precedence": "10000",
   "identity": "Microsoft.Worker.Empty.FSharp.10.0",
