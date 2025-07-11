@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.HttpOverrides;
 using IPAddress = System.Net.IPAddress;
+using IPNetwork = System.Net.IPNetwork;
 
 namespace Microsoft.AspNetCore.Builder;
 
