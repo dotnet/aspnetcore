@@ -45,7 +45,7 @@ public class IPNetwork
     public bool Contains(IPAddress address) => _network.Contains(address);
 
     /// <inheritdoc cref="System.Net.IPNetwork.Parse(ReadOnlySpan{char})"/>
-    public static IPNetwork Parse(ReadOnlySpan<char> networkSpan) => System.Net.IPNetwork.Parse(networkSpan);
+    public static IPNetwork Parse(ReadOnlySpan<char> networkSpan) => new(System.Net.IPNetwork.Parse(networkSpan));
 
     /// <inheritdoc cref="System.Net.IPNetwork.TryParse(ReadOnlySpan{char}, out System.Net.IPNetwork)"/>
     public static bool TryParse(ReadOnlySpan<char> networkSpan, [NotNullWhen(true)] out IPNetwork? network)
