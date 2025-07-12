@@ -336,7 +336,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         const string expectedOkDescription = "The weather forecast for the next 5 days.";
 
-        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = "The weather forecast for the next 5 days.")]
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
         () => new GenericClass<TimeSpan> { Value = new TimeSpan() });
 
         var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
@@ -355,7 +355,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         const string expectedOkDescription = "The weather forecast for the next 5 days.";
 
-        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = "The weather forecast for the next 5 days.")]
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
         () => TypedResults.Ok(new GenericClass<TimeSpan> { Value = new TimeSpan() }));
 
         var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
@@ -374,7 +374,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         const string expectedOkDescription = "The weather forecast for the next 5 days.";
 
-        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = "The weather forecast for the next 5 days.")]
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
         () => new List<TimeSpan> { new() });
 
         var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
@@ -393,7 +393,7 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         const string expectedOkDescription = "The weather forecast for the next 5 days.";
 
-        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = "The weather forecast for the next 5 days.")]
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
         () => TypedResults.Ok(new List<TimeSpan> { new() }));
 
         var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
@@ -401,6 +401,44 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal(200, okResponseType.StatusCode);
         Assert.Equal(typeof(List<TimeSpan>), okResponseType.Type); // We use List as the inferred type has higher priority than those set by metadata (attributes)
         Assert.Equal(typeof(List<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollectionsWhereInnerTypeIsInEndpoint()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<List<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => new List<TimeSpan> { new() }.AsEnumerable());
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(IEnumerable<TimeSpan>), okResponseType.Type); // We use IEnumerable<TimeSpan> as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(IEnumerable<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollectionsAndTypedResultsWhereInnerTypeIsInEndpoint()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<List<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => TypedResults.Ok(new List<TimeSpan> { new() }.AsEnumerable()));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(IEnumerable<TimeSpan>), okResponseType.Type); // We use IEnumerable<TimeSpan> as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(IEnumerable<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
         Assert.Equal(expectedOkDescription, okResponseType.Description);
 
         var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
