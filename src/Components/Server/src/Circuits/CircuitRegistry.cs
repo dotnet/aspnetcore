@@ -309,9 +309,20 @@ internal partial class CircuitRegistry
 
     private async Task PauseAndDisposeCircuitHost(CircuitHost circuitHost, bool saveStateToClient)
     {
-        await _circuitPersistenceManager.PauseCircuitAsync(circuitHost, saveStateToClient);
-        circuitHost.UnhandledException -= CircuitHost_UnhandledException;
-        await circuitHost.DisposeAsync();
+        try
+        {
+            await _circuitPersistenceManager.PauseCircuitAsync(circuitHost, saveStateToClient);
+        }
+        catch (ObjectDisposedException ex)
+        {
+            // Expected when service provider is disposed during circuit cleanup e.g. by forced GC
+            CircuitHost_UnhandledException(circuitHost, new UnhandledExceptionEventArgs(ex, isTerminating: true));
+        }
+        finally
+        {
+            circuitHost.UnhandledException -= CircuitHost_UnhandledException;
+            await circuitHost.DisposeAsync();
+        }
     }
 
     internal async Task PauseCircuitAsync(
