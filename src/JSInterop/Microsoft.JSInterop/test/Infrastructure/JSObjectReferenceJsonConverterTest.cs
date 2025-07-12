@@ -87,4 +87,17 @@ public class JSObjectReferenceJsonConverterTest
         // Assert
         Assert.Equal($"{{\"__jsObjectId\":{jsObjectRef.Id}}}", json);
     }
+
+    [Fact]
+    public void Read_ReturnsNull_WhenJSObjectIdIsMinusOne()
+    {
+        // Arrange
+        var json = "{\"__jsObjectId\":-1}";
+
+        // Act
+        var deserialized = JsonSerializer.Deserialize<IJSObjectReference>(json, JsonSerializerOptions);
+
+        // Assert
+        Assert.Null(deserialized);
+    }
 }
