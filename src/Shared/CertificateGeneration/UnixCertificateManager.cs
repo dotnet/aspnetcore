@@ -108,7 +108,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 var certPath = Path.Combine(sslCertDir, certificateNickname + ".pem");
                 if (File.Exists(certPath))
                 {
-                    var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
+                    using var candidate = X509CertificateLoader.LoadCertificateFromFile(certPath);
                     if (AreCertificatesEqual(certificate, candidate))
                     {
                         foundCert = true;
