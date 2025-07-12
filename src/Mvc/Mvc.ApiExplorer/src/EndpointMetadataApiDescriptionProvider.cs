@@ -414,7 +414,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             return matchingDescription;
         }
 
-        static bool TypesAreCompatible(Type? apiResponseType, Type? metadaType)
+        static bool TypesAreCompatible(Type? apiResponseType, Type? metadataType)
         {
             // We need to a special check for cases where the inferred type is different than the one specified in attributes.
             // For example, an endpoint that defines [ProducesResponseType<IEnumerable<WeatherForecast>>],
@@ -422,9 +422,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             // Currently, we do a "simple" bidirectional check to see if the types are assignable to each other.
             // This isn't very thorough, but it works for most cases.
             // For more information, check the related bug: https://github.com/dotnet/aspnetcore/issues/60518
-            return apiResponseType == metadaType ||
-                metadaType?.IsAssignableFrom(apiResponseType) == true ||
-                apiResponseType?.IsAssignableFrom(metadaType) == true;
+            return apiResponseType == metadataType ||
+                metadataType?.IsAssignableFrom(apiResponseType) == true ||
+                apiResponseType?.IsAssignableFrom(metadataType) == true;
         }
     }
 
