@@ -322,7 +322,6 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         Type returnType,
         EndpointMetadataCollection endpointMetadata)
     {
-        System.Diagnostics.Debugger.Break();
         var responseType = returnType;
 
         // We support attributes (which implement the IApiResponseMetadataProvider) interface
