@@ -209,7 +209,10 @@ internal partial class CircuitHost : IAsyncDisposable
 
             try
             {
-                await OnConnectionDownAsync(CancellationToken.None);
+                if (this.Client.Connected)
+                {
+                    await OnConnectionDownAsync(CancellationToken.None);
+                }
             }
             catch
             {

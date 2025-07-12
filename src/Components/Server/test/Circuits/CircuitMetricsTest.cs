@@ -108,14 +108,10 @@ public class CircuitMetricsTest
 
         // Assert
         var activeMeasurements = activeCircuitCounter.GetMeasurementSnapshot();
-        var connectedMeasurements = connectedCircuitCounter.GetMeasurementSnapshot();
         var durationMeasurements = circuitDurationCollector.GetMeasurementSnapshot();
 
         Assert.Single(activeMeasurements);
         Assert.Equal(-1, activeMeasurements[0].Value);
-
-        Assert.Single(connectedMeasurements);
-        Assert.Equal(-1, connectedMeasurements[0].Value);
 
         Assert.Single(durationMeasurements);
         Assert.True(durationMeasurements[0].Value > 0);
@@ -162,7 +158,10 @@ public class CircuitMetricsTest
         // 4. Connection re-established
         circuitMetrics.OnConnectionUp();
 
-        // 5. Circuit closes
+        // 5. Connection drops
+        circuitMetrics.OnConnectionDown();
+
+        // 6. Circuit closes
         Thread.Sleep(10); // Add a small delay to ensure a measurable duration
         var endTime = Stopwatch.GetTimestamp();
         circuitMetrics.OnCircuitDown(startTime, endTime);
