@@ -6,3 +6,4 @@ Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.get ->
 Microsoft.AspNetCore.Mvc.ProducesDefaultResponseTypeAttribute.Description.set -> void
 Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.get -> string?
 Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute.Description.set -> void
+static Microsoft.AspNetCore.Mvc.ModelBinding.ModelNames.CreatePropertyModelNameOptimized(string? prefix, string? propertyName) -> string!

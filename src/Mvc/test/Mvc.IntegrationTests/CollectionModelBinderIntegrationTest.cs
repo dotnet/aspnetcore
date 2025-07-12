@@ -338,6 +338,74 @@ public class CollectionModelBinderIntegrationTest
         Assert.Equal("A value for the 'Name' parameter or property was not provided.", error.ErrorMessage);
     }
 
+    class TestClass
+    {
+        public TestClass2 Parameter { get; set; }
+    }
+
+    class TestClass2
+    {
+        public string Parameter { get; set; } = "";
+    }
+
+    [Fact(Skip = "Nested properties are more complex to deal with it. See https://github.com/dotnet/aspnetcore/pull/62459 for more info.")]
+    public async Task CollectionModelBinder_CanBind_NestedProperties_WithSameNameOfParameter()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(TestClass)
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(request =>
+        {
+            request.QueryString = new QueryString("?parameter.parameter=testing");
+        });
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.True(modelBindingResult.IsModelSet);
+
+        var model = Assert.IsType<TestClass>(modelBindingResult.Model);
+        Assert.Equal("testing", model.Parameter.Parameter);
+        Assert.True(modelState.IsValid);
+    }
+
+    [Fact]
+    public async Task CollectionModelBinder_CanBind_SimpleProperties_WithSameNameOfParameter()
+    {
+        // Arrange
+        var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+        var parameter = new ParameterDescriptor()
+        {
+            Name = "parameter",
+            ParameterType = typeof(TestClass2)
+        };
+
+        var testContext = ModelBindingTestHelper.GetTestContext(request =>
+        {
+            request.QueryString = new QueryString("?parameter=testing");
+        });
+
+        var modelState = testContext.ModelState;
+
+        // Act
+        var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+        // Assert
+        Assert.True(modelBindingResult.IsModelSet);
+
+        var model = Assert.IsType<TestClass2>(modelBindingResult.Model);
+        Assert.Equal("testing", model.Parameter);
+        Assert.True(modelState.IsValid);
+    }
+
     [Fact]
     public async Task CollectionModelBinder_BindsListOfComplexType_WithRequiredProperty_WithExplicitPrefix_PartialData()
     {
