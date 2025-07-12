@@ -58,9 +58,7 @@ public class VersionThreeSchemaTest : IClassFixture<ScratchDatabaseFixture>
         Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserClaims", "Id", "UserId", "ClaimType", "ClaimValue"));
         Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
         Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
-        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserPasskeys", "UserId", "CredentialId", "PublicKey", "Name", "CreatedAt",
-            "SignCount", "Transports", "IsUserVerified", "IsBackupEligible", "IsBackedUp", "AttestationObject",
-            "ClientDataJson"));
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserPasskeys", "UserId", "CredentialId", "Data"));
 
         Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetUsers", 256, "UserName", "Email", "NormalizedUserName", "NormalizedEmail", "PhoneNumber"));
         Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetRoles", 256, "Name", "NormalizedName"));

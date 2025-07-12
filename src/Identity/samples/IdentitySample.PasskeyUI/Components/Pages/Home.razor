@@ -77,14 +77,7 @@
             return;
         }
 
-        var options = await SignInManager.RetrievePasskeyCreationOptionsAsync();
-        if (options is null)
-        {
-            statusMessage = "Error: There are no original passkey options present.";
-            return;
-        }
-
-        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(CredentialJson, options);
+        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(CredentialJson);
         if (!attestationResult.Succeeded)
         {
             statusMessage = $"Error: Could not validate credential: {attestationResult.Failure.Message}";
@@ -92,7 +85,7 @@
         }
 
         // Create the user if they don't exist yet.
-        var userEntity = options.UserEntity;
+        var userEntity = attestationResult.UserEntity;
         var user = await UserManager.FindByIdAsync(userEntity.Id);
         if (user is null)
         {
@@ -108,7 +101,7 @@
             }
         }
 
-        var setPasskeyResult = await UserManager.SetPasskeyAsync(user, attestationResult.Passkey);
+        var setPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
         if (!setPasskeyResult.Succeeded)
         {
             statusMessage = "Error: Could not update the user with the new passkey.";
@@ -126,14 +119,7 @@
             return;
         }
 
-        var options = await SignInManager.RetrievePasskeyRequestOptionsAsync();
-        if (options is null)
-        {
-            statusMessage = "Error: There are no original passkey options present.";
-            return;
-        }
-
-        var signInResult = await SignInManager.PasskeySignInAsync(CredentialJson, options);
+        var signInResult = await SignInManager.PasskeySignInAsync(CredentialJson);
         if (!signInResult.Succeeded)
         {
             statusMessage = "Error: Could not sign in with the provided credential.";
