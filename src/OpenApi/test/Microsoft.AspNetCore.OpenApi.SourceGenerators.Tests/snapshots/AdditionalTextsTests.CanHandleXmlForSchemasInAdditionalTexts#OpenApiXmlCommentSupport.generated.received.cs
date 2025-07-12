@@ -69,128 +69,36 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
             var cache = new Dictionary<string, XmlComment>();
+            cache.Add(@"T:ClassLibrary.Todo", new XmlComment(@"This is a todo item.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:ClassLibrary.Project", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:ClassLibrary.Project.#ctor(System.String,System.String)", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:ClassLibrary.ProjectBoard.BoardItem", new XmlComment(@"An item on the board.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ClassLibrary.ProjectBoard.BoardItem.Name", new XmlComment(@"The identifier of the board item. Defaults to ""name"".", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:ClassLibrary.ProjectRecord", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
+            cache.Add(@"M:ClassLibrary.ProjectRecord.#ctor(System.String,System.String)", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
+            cache.Add(@"P:ClassLibrary.ProjectRecord.Name", new XmlComment(@"The name of the project.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ClassLibrary.ProjectRecord.Description", new XmlComment(@"The description of the project.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ClassLibrary.TodoWithDescription.Id", new XmlComment(@"The identifier of the todo.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:ClassLibrary.TodoWithDescription.Name", new XmlComment(null, null, null, null, @"The name of the todo.", false, null, null, null));
+            cache.Add(@"P:ClassLibrary.TodoWithDescription.Description", new XmlComment(@"A description of the todo.", null, null, null, @"Another description of the todo.", false, null, null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.BooleanType", new XmlComment(null, null, null, null, null, false, [@"true"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.IntegerType", new XmlComment(null, null, null, null, null, false, [@"42"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.LongType", new XmlComment(null, null, null, null, null, false, [@"1234567890123456789"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.DoubleType", new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.FloatType", new XmlComment(null, null, null, null, null, false, [@"3.14"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.DateTimeType", new XmlComment(null, null, null, null, null, false, [@"2022-01-01T00:00:00Z"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.DateOnlyType", new XmlComment(null, null, null, null, null, false, [@"2022-01-01"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.StringType", new XmlComment(null, null, null, null, null, false, [@"Hello, World!"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.GuidType", new XmlComment(null, null, null, null, null, false, [@"2d8f1eac-b5c6-4e29-8c62-4d9d75ef3d3d"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.TimeOnlyType", new XmlComment(null, null, null, null, null, false, [@"12:30:45"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.TimeSpanType", new XmlComment(null, null, null, null, null, false, [@"P3DT4H5M"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.ByteType", new XmlComment(null, null, null, null, null, false, [@"255"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.DecimalType", new XmlComment(null, null, null, null, null, false, [@"3.14159265359"], null, null));
+            cache.Add(@"P:ClassLibrary.TypeWithExamples.UriType", new XmlComment(null, null, null, null, null, false, [@"https://example.com"], null, null));
+            cache.Add(@"P:ClassLibrary.Holder`1.Value", new XmlComment(@"The value to hold.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:ClassLibrary.Endpoints.ExternalMethod(System.String)", new XmlComment(@"An external method.", null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the tester. Defaults to ""Tester"".", null, false)], null));
+            cache.Add(@"M:ClassLibrary.Endpoints.CreateHolder``1(``0)", new XmlComment(@"Creates a holder for the specified value.", null, null, @"A holder for the specified value.", null, false, [@"{ value: 42 }"], [new XmlParameterComment(@"value", @"The value to hold.", null, false)], null));
 
-            cache.Add(@"T:ExampleClass", new XmlComment(@"Every class and member should have a one sentence
-summary describing its purpose.", null, @"     You can expand on that one sentence summary to
-     provide more information for readers. In this case,
-     the `ExampleClass` provides different C#
-     elements to show how you would add documentation
-    comments for most elements in a typical class.
-     The remarks can add multiple paragraphs, so you can
-write detailed information for developers that use
-your work. You should add everything needed for
-readers to be successful. This class contains
-examples for the following:
-     * Summary
-
-This should provide a one sentence summary of the class or member.
-* Remarks
-
-This is typically a more detailed description of the class or member
-* para
-
-The para tag separates a section into multiple paragraphs
-* list
-
-Provides a list of terms or elements
-* returns, param
-
-Used to describe parameters and return values
-* value
-Used to describe properties
-* exception
-
-Used to describe exceptions that may be thrown
-* c, cref, see, seealso
-
-These provide code style and links to other
-documentation elements
-* example, code
-
-These are used for code examples
-     The list above uses the ""table"" style. You could
-also use the ""bullet"" or ""number"" style. Neither
-would typically use the ""term"" element.
-
-Note: paragraphs are double spaced. Use the *br*
-tag for single spaced lines.", null, null, false, null, null, null));
-            cache.Add(@"T:Person", new XmlComment(@"This is an example of a positional record.", null, @"There isn't a way to add XML comments for properties
-created for positional records, yet. The language
-design team is still considering what tags should
-be supported, and where. Currently, you can use
-the ""param"" tag to describe the parameters to the
-primary constructor.", null, null, false, null, [new XmlParameterComment(@"FirstName", @"This tag will apply to the primary constructor parameter.", null, false), new XmlParameterComment(@"LastName", @"This tag will apply to the primary constructor parameter.", null, false)], null));
-            cache.Add(@"T:MainClass", new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
-In this example, these comments also explain the
-general information about the derived class.", null, null, false, null, null, null));
-            cache.Add(@"T:DerivedClass", new XmlComment(@"A summary about this class.", null, @"These remarks would explain more about this class.
-In this example, these comments also explain the
-general information about the derived class.", null, null, false, null, null, null));
-            cache.Add(@"T:ITestInterface", new XmlComment(@"This interface would describe all the methods in
-its contract.", null, @"While elided for brevity, each method or property
-in this interface would contain docs that you want
-to duplicate in each implementing class.", null, null, false, null, null, null));
-            cache.Add(@"T:ImplementingClass", new XmlComment(@"This interface would describe all the methods in
-its contract.", null, @"While elided for brevity, each method or property
-in this interface would contain docs that you want
-to duplicate in each implementing class.", null, null, false, null, null, null));
-            cache.Add(@"T:InheritOnlyReturns", new XmlComment(@"This class shows hows you can ""inherit"" the doc
-comments from one method in another method.", null, @"You can inherit all comments, or only a specific tag,
-represented by an xpath expression.", null, null, false, null, null, null));
-            cache.Add(@"T:InheritAllButRemarks", new XmlComment(@"This class shows an example of sharing comments across methods.", null, null, null, null, false, null, null, null));
-            cache.Add(@"T:GenericClass`1", new XmlComment(@"This is a generic class.", null, @"This example shows how to specify the GenericClass&lt;T&gt;
-type as a cref attribute.
-In generic classes and methods, you'll often want to reference the
-generic type, or the type parameter.", null, null, false, null, null, null));
-            cache.Add(@"T:GenericParent", new XmlComment(@"This class validates the behavior for mapping
-generic types to open generics for use in
-typeof expressions.", null, null, null, null, false, null, null, null));
-            cache.Add(@"T:ParamsAndParamRefs", new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
-            cache.Add(@"T:DisposableType", new XmlComment(@"A class that implements the IDisposable interface.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:ExampleClass.Label", new XmlComment(null, null, @"    The string? ExampleClass.Label is a `string`
-    that you use for a label.
-    Note that there isn't a way to provide a ""cref"" to
-each accessor, only to the property itself.", null, @"The `Label` property represents a label
-for this instance.", false, null, null, null));
-            cache.Add(@"P:Person.FirstName", new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:Person.LastName", new XmlComment(@"This tag will apply to the primary constructor parameter.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:GenericParent.Id", new XmlComment(@"This property is a nullable value type.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:GenericParent.Name", new XmlComment(@"This property is a nullable reference type.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:GenericParent.TaskOfTupleProp", new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:GenericParent.TupleWithGenericProp", new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:GenericParent.TupleWithNestedGenericProp", new XmlComment(@"This property is a tuple with a nested generic type inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)~System.Int32", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
-if (c &gt; 10)
-{
-    Console.WriteLine(c);
-}```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
-            cache.Add(@"M:ExampleClass.AddAsync(System.Int32,System.Int32)~System.Threading.Tasks.Task{System.Int32}", new XmlComment(@"This method is an example of a method that
-returns an awaitable item.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ExampleClass.DoNothingAsync~System.Threading.Tasks.Task", new XmlComment(@"This method is an example of a method that
-returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ExampleClass.AddNumbers(System.Int32[])~System.Int32", new XmlComment(@"This method is an example of a method that consumes
-an params array.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ITestInterface.Method(System.Int32)~System.Int32", new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
-that implement this interface when the
-implementing class uses ""inheritdoc""", @"The value of arg", null, false, null, [new XmlParameterComment(@"arg", @"The argument to the method", null, false)], null));
-            cache.Add(@"M:InheritOnlyReturns.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:InheritOnlyReturns.MyChildMethod~System.Boolean", new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:InheritAllButRemarks.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
-using the xpath expression.", @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:InheritAllButRemarks.MyChildMethod~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTaskOfTuple~System.Threading.Tasks.Task{System.ValueTuple{System.Int32,System.String}}", new XmlComment(@"This method returns a generic type containing a tuple.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTupleOfTask~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTupleOfTask1``1~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method return a tuple with a generic type containing a
-type parameter inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTupleOfTask2``1~System.ValueTuple{``0,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method return a tuple with a generic type containing a
-type parameter inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetNestedGeneric~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a nested generic with all types resolved.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetNestedGeneric1``1~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method returns a nested generic with a type parameter.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ParamsAndParamRefs.GetGenericValue``1(``0)~``0", new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
-method as a cref attribute.
-The parameter and return value are both of an arbitrary type,
-T", null, null, false, null, null, null));
-            cache.Add(@"M:DisposableType.Dispose", new XmlComment(null, null, null, null, null, false, null, null, null));
 
             return cache;
         }
@@ -405,6 +313,33 @@ T", null, null, false, null, null, null));
             // For non-generic types, use FullName (if available) and replace nested type separators.
             return (type.FullName ?? type.Name).Replace('+', '.');
         }
+
+        /// <summary>
+        /// Normalizes a documentation comment ID to match the compiler-style format.
+        /// Strips the return type suffix for ordinary methods but retains it for conversion operators.
+        /// </summary>
+        /// <param name="docId">The documentation comment ID to normalize.</param>
+        /// <returns>The normalized documentation comment ID.</returns>
+        public static string NormalizeDocId(string docId)
+        {
+            // Find the tilde character that indicates the return type suffix
+            var tildeIndex = docId.IndexOf('~');
+            if (tildeIndex == -1)
+            {
+                // No return type suffix, return as-is
+                return docId;
+            }
+
+            // Check if this is a conversion operator (op_Implicit or op_Explicit)
+            // For these operators, we need to keep the return type suffix
+            if (docId.Contains("op_Implicit") || docId.Contains("op_Explicit"))
+            {
+                return docId;
+            }
+
+            // For ordinary methods, strip the return type suffix
+            return docId.Substring(0, tildeIndex);
+        }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -420,7 +355,7 @@ T", null, null, false, null, null, null));
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue(methodInfo.CreateDocumentationId(), out var methodComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(methodInfo.CreateDocumentationId()), out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -526,7 +461,7 @@ T", null, null, false, null, null, null));
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.Cache.TryGetValue(propertyInfo.CreateDocumentationId(), out var propertyComment))
+                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -535,7 +470,7 @@ T", null, null, false, null, null, null));
                     }
                 }
             }
-            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
