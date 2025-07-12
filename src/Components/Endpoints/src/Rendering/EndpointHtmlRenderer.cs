@@ -63,6 +63,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     }
 
     internal HttpContext? HttpContext => _httpContext;
+    internal NotFoundEventArgs? NotFoundEventArgs { get; private set; }
 
     internal void SetHttpContext(HttpContext httpContext)
     {
@@ -85,10 +86,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request), OnNavigateTo);
 
-        navigationManager?.OnNotFound += (sender, args) =>
-        {
-            _ = GetErrorHandledTask(SetNotFoundResponseAsync(navigationManager.BaseUri, args));
-        };
+        navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
         if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)

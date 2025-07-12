@@ -117,6 +117,16 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     private void AssertReExecutionPageRendered() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 
+    private void AssertBrowserDefaultNotFoundViewRendered()
+    {
+        var mainMessage = Browser.FindElement(By.Id("main-message"));
+
+        Browser.True(
+            () => mainMessage.FindElement(By.CssSelector("p")).Text
+            .Contains("No webpage was found for the web address:", StringComparison.OrdinalIgnoreCase)
+        );
+    }
+
     private void AssertNotFoundPageRendered()
     {
         Browser.Equal("Welcome On Custom Not Found Page", () => Browser.FindElement(By.Id("test-info")).Text);
@@ -141,13 +151,45 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
 
-        if (hasCustomNotFoundPageSet)
+        AssertNotFoundRendered_ResponseNotStarted(hasCustomNotFoundPageSet);
+        AssertUrlNotChanged(testUrl);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void NotFoundSetOnInitialization_AfterAsyncOperation_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr?doAsync=true&useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        Navigate(testUrl);
+
+        AssertNotFoundRendered_ResponseNotStarted(hasCustomNotFoundPageSet);
+        AssertUrlNotChanged(testUrl);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    // our custom router does not support NotFoundPage to simulate the most probable custom router behavior
+    public void NotFoundSetOnInitialization_ResponseNotStarted_CustomRouter_SSR(bool hasReExecutionMiddleware)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr?useCustomRouter=true";
+        Navigate(testUrl);
+
+        if (hasReExecutionMiddleware)
         {
-            AssertNotFoundPageRendered();
+            AssertReExecutionPageRendered();
         }
         else
         {
-            AssertNotFoundFragmentRendered();
+            // Apps that don't support re-execution and don't have blazor's router,
+            // cannot render custom NotFound contents.
+            // The browser will display default 404 page.
+            AssertBrowserDefaultNotFoundViewRendered();
         }
         AssertUrlNotChanged(testUrl);
     }
@@ -162,7 +204,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertNotFoundRendered_ResponseStarted(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
         AssertUrlNotChanged(testUrl);
     }
 
@@ -176,11 +218,47 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertNotFoundRendered_ResponseStarted(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
         AssertUrlChanged(testUrl);
     }
 
-    private void AssertNotFoundRendered_ResponseStarted_Or_POST(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet, string testUrl)
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    // our custom router does not support NotFoundPage to simulate the most probable custom router behavior
+    public void NotFoundSetOnInitialization_ResponseStarted_CustomRouter_SSR(bool hasReExecutionMiddleware)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomRouter=true";
+        Navigate(testUrl);
+
+        if (hasReExecutionMiddleware)
+        {
+            AssertReExecutionPageRendered();
+        }
+        else
+        {
+            // Apps that don't support re-execution and don't have blazor's router,
+            // cannot render custom NotFound contents.
+            // The browser will display default 404 page.
+            AssertBrowserDefaultNotFoundViewRendered();
+        }
+        AssertUrlNotChanged(testUrl);
+    }
+
+    private void AssertNotFoundRendered_ResponseNotStarted(bool hasCustomNotFoundPageSet)
+    {
+        if (hasCustomNotFoundPageSet)
+        {
+            AssertNotFoundPageRendered();
+        }
+        else
+        {
+            AssertNotFoundContentNotRendered();
+        }
+    }
+
+    private void AssertNotFoundRendered_ResponseStarted(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet, string testUrl)
     {
         if (hasCustomNotFoundPageSet)
         {
@@ -205,11 +283,37 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     public void NotFoundSetOnFormSubmit_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
-        string testUrl = $"{ServerPathBase}{reexecution}/post-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        string testUrl = $"{ServerPathBase}{reexecution}/post-not-found-ssr?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertNotFoundRendered_ResponseNotStarted(hasCustomNotFoundPageSet);
+        AssertUrlNotChanged(testUrl);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void NotFoundSetOnFormSubmit_AfterAsyncOperation_ResponseNotStarted_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
+    {
+        string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
+        string testUrl = $"{ServerPathBase}{reexecution}/post-not-found-ssr?doAsync=true&useCustomNotFoundPage={hasCustomNotFoundPageSet}";
+        Navigate(testUrl);
+        Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
+
+        AssertNotFoundRendered_ResponseNotStarted(hasCustomNotFoundPageSet);
+        AssertUrlNotChanged(testUrl);
+    }
+
+    [Fact]
+    public void NotFoundSetOnFormSubmit_ResponseNotStarted_CustomRouter_SSR()
+    {
+        string testUrl = $"{ServerPathBase}/reexecution/post-not-found-ssr?useCustomRouter=true";
+        Navigate(testUrl);
+
+        AssertReExecutionPageRendered();
         AssertUrlNotChanged(testUrl);
     }
 
@@ -225,12 +329,19 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Navigate(testUrl);
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
-        AssertNotFoundRendered_ResponseStarted_Or_POST(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
+        AssertNotFoundRendered_ResponseStarted(hasReExecutionMiddleware, hasCustomNotFoundPageSet, testUrl);
         AssertUrlNotChanged(testUrl);
     }
 
-    private void AssertNotFoundFragmentRendered() =>
-        Browser.Equal("There's nothing here", () => Browser.FindElement(By.Id("not-found-fragment")).Text);
+    [Fact]
+    public void NotFoundSetOnFormSubmit_ResponseStarted_CustomRouter_SSR()
+    {
+        string testUrl = $"{ServerPathBase}/reexecution/post-not-found-ssr-streaming?useCustomRouter=true";
+        Navigate(testUrl);
+
+        AssertReExecutionPageRendered();
+        AssertUrlNotChanged(testUrl);
+    }
 
     private void AssertNotFoundContentNotRendered() =>
         Browser.Equal("Any content", () => Browser.FindElement(By.Id("test-info")).Text);
