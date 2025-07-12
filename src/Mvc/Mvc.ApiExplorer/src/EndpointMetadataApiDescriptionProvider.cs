@@ -419,7 +419,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             // We need to a special check for cases where the inferred type is different than the one specified in attributes.
             // For example, an endpoint that defines [ProducesResponseType<IEnumerable<WeatherForecast>>],
             // but the endpoint returns weatherForecasts.ToList(). Because List<> is a different type than IEnumerable<>, it would incorrectly return false.
-            // Currently, we do a "simple" biderectional check to see if the types are assignable to each other.
+            // Currently, we do a "simple" bidirectional check to see if the types are assignable to each other.
             // This isn't very thorough, but it works for most cases.
             // For more information, check the related bug: https://github.com/dotnet/aspnetcore/issues/60518
             return apiResponseType == metadaType ||
