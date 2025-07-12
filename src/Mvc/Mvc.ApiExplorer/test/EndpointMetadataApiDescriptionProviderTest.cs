@@ -1965,7 +1965,6 @@ public class EndpointMetadataApiDescriptionProviderTest
 
             return null;
         }
-
     }
 
     private class GenericClass<TType> : BaseClass { public required TType Value { get; set; } }
