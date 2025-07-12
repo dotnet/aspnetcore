@@ -14,6 +14,32 @@ namespace Microsoft.AspNetCore.OpenApi.SourceGenerators;
 
 public sealed partial class XmlCommentGenerator
 {
+    /// <summary>
+    /// Normalizes a documentation comment ID to match the compiler-style format.
+    /// Strips the return type suffix for ordinary methods but retains it for conversion operators.
+    /// </summary>
+    /// <param name="docId">The documentation comment ID to normalize.</param>
+    /// <returns>The normalized documentation comment ID.</returns>
+    internal static string NormalizeDocId(string docId)
+    {
+        // Find the tilde character that indicates the return type suffix
+        var tildeIndex = docId.IndexOf('~');
+        if (tildeIndex == -1)
+        {
+            // No return type suffix, return as-is
+            return docId;
+        }
+
+        // Check if this is a conversion operator (op_Implicit or op_Explicit)
+        // For these operators, we need to keep the return type suffix
+        if (docId.Contains("op_Implicit") || docId.Contains("op_Explicit"))
+        {
+            return docId;
+        }
+
+        // For ordinary methods, strip the return type suffix
+        return docId.Substring(0, tildeIndex);
+    }
     internal static List<(string, string)> ParseXmlFile(AdditionalText additionalText, CancellationToken cancellationToken)
     {
         var text = additionalText.GetText(cancellationToken);
@@ -37,7 +63,7 @@ public sealed partial class XmlCommentGenerator
             var name = member.Attribute(DocumentationCommentXmlNames.NameAttributeName)?.Value;
             if (name is not null)
             {
-                comments.Add((name, member.ToString()));
+                comments.Add((NormalizeDocId(name), member.ToString()));
             }
         }
         return comments;
@@ -54,7 +80,7 @@ public sealed partial class XmlCommentGenerator
             if (DocumentationCommentId.CreateDeclarationId(type) is string name &&
                 type.GetDocumentationCommentXml(CultureInfo.InvariantCulture, expandIncludes: true, cancellationToken: cancellationToken) is string xml)
             {
-                comments.Add((name, xml));
+                comments.Add((NormalizeDocId(name), xml));
             }
         }
         var properties = visitor.GetPublicProperties();
@@ -63,7 +89,7 @@ public sealed partial class XmlCommentGenerator
             if (DocumentationCommentId.CreateDeclarationId(property) is string name &&
                 property.GetDocumentationCommentXml(CultureInfo.InvariantCulture, expandIncludes: true, cancellationToken: cancellationToken) is string xml)
             {
-                comments.Add((name, xml));
+                comments.Add((NormalizeDocId(name), xml));
             }
         }
         var methods = visitor.GetPublicMethods();
@@ -77,7 +103,7 @@ public sealed partial class XmlCommentGenerator
             if (DocumentationCommentId.CreateDeclarationId(method) is string name &&
                 method.GetDocumentationCommentXml(CultureInfo.InvariantCulture, expandIncludes: true, cancellationToken: cancellationToken) is string xml)
             {
-                comments.Add((name, xml));
+                comments.Add((NormalizeDocId(name), xml));
             }
         }
         return comments;
