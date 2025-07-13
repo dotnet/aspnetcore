@@ -17,11 +17,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Infrastructure;
 
-<<<<<<< HEAD
-internal sealed class PersistentStateValueProvider(PersistentComponentState state, IServiceProvider serviceProvider) : ICascadingValueSupplier
-=======
-internal sealed partial class PersistentStateValueProvider(PersistentComponentState state, ILogger<PersistentStateValueProvider> logger) : ICascadingValueSupplier
->>>>>>> eaa091941d (tmp)
+internal sealed partial class PersistentStateValueProvider(PersistentComponentState state, ILogger<PersistentStateValueProvider> logger, IServiceProvider serviceProvider) : ICascadingValueSupplier
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
