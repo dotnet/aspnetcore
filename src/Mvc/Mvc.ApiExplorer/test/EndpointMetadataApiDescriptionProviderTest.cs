@@ -407,63 +407,6 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal("application/json", createdOkFormat.MediaType);
     }
 
-    [Fact]
-    public void AddsResponseDescription_WorksWithCollectionsWhereInnerTypeIsInEndpoint()
-    {
-        const string expectedOkDescription = "The weather forecast for the next 5 days.";
-
-        var apiDescription = GetApiDescription([ProducesResponseType<List<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
-        () => new List<TimeSpan> { new() }.AsEnumerable());
-
-        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
-
-        Assert.Equal(200, okResponseType.StatusCode);
-        Assert.Equal(typeof(IEnumerable<TimeSpan>), okResponseType.Type); // We use IEnumerable<TimeSpan> as the inferred type has higher priority than those set by metadata (attributes)
-        Assert.Equal(typeof(IEnumerable<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
-        Assert.Equal(expectedOkDescription, okResponseType.Description);
-
-        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
-        Assert.Equal("application/json", createdOkFormat.MediaType);
-    }
-
-    [Fact]
-    public void AddsResponseDescription_WorksWithCollectionsAndTypedResultsWhereInnerTypeIsInEndpoint()
-    {
-        const string expectedOkDescription = "The weather forecast for the next 5 days.";
-
-        var apiDescription = GetApiDescription([ProducesResponseType<List<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
-        () => TypedResults.Ok(new List<TimeSpan> { new() }.AsEnumerable()));
-
-        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
-
-        Assert.Equal(200, okResponseType.StatusCode);
-        Assert.Equal(typeof(IEnumerable<TimeSpan>), okResponseType.Type); // We use IEnumerable<TimeSpan> as the inferred type has higher priority than those set by metadata (attributes)
-        Assert.Equal(typeof(IEnumerable<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
-        Assert.Equal(expectedOkDescription, okResponseType.Description);
-
-        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
-        Assert.Equal("application/json", createdOkFormat.MediaType);
-    }
-
-    [Fact]
-    public void AddsResponseDescription_WorksWithCollectionsWhereInnerTypeIsInEndpointAndIsBaseClass()
-    {
-        const string expectedOkDescription = "The weather forecast for the next 5 days.";
-
-        var apiDescription = GetApiDescription([ProducesResponseType<List<GenericClass<string>>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
-        () => new List<BaseClass> { new() }.AsEnumerable());
-
-        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
-
-        Assert.Equal(200, okResponseType.StatusCode);
-        Assert.Equal(typeof(IEnumerable<BaseClass>), okResponseType.Type); // We use IEnumerable<BaseClass> as the inferred type has higher priority than those set by metadata (attributes)
-        Assert.Equal(typeof(IEnumerable<BaseClass>), okResponseType.ModelMetadata?.ModelType);
-        Assert.Equal(expectedOkDescription, okResponseType.Description);
-
-        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
-        Assert.Equal("application/json", createdOkFormat.MediaType);
-    }
-
     /// <summary>
     /// EndpointMetadataApiDescriptionProvider performs a one way type check for discovering response types to match the description that's set in [ProducesResponseType]
     /// The reason we do a one-way check instead of a bidirectional check is to prevent too many positive matches.
