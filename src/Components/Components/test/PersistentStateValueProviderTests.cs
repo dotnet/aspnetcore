@@ -757,11 +757,8 @@ public class PersistentStateValueProviderTests
         provider.Subscribe(componentState, cascadingParameterInfo);
 
         // Assert
-        Assert.True(provider.Subscriptions.ContainsKey(componentState));
-        var subscription = provider.Subscriptions[componentState];
-        // Note: The following assertions test private fields which should not be tested per coding guidelines
-        // Assert.NotNull(subscription.FirstRestoringSubscription);
-        // Assert.Null(subscription.AdditionalRestoringSubscriptions);
+        Assert.True(provider.Subscriptions.ContainsKey((componentState, nameof(TestComponentWithFilteredState.PrerenderState))));
+        var subscription = provider.Subscriptions[(componentState, nameof(TestComponentWithFilteredState.PrerenderState))];
     }
 
     [Fact]
@@ -784,16 +781,16 @@ public class PersistentStateValueProviderTests
 
         // Act & Assert - Subscribe to prerender state
         provider.Subscribe(componentState, prerenderInfo);
-        Assert.True(provider.Subscriptions.ContainsKey(componentState));
+        Assert.True(provider.Subscriptions.ContainsKey((componentState, nameof(TestComponentWithFilteredState.PrerenderState))));
 
         // Act & Assert - Subscribe to normal state should work too
         provider.Subscribe(componentState, normalInfo);
-        Assert.True(provider.Subscriptions.ContainsKey(componentState));
-
+        Assert.True(provider.Subscriptions.ContainsKey((componentState, nameof(TestComponentWithFilteredState.NormalState))));
+        
         // Verify subscription structure is valid and was created
-        var subscription = provider.Subscriptions[componentState];
+        var subscription = provider.Subscriptions[(componentState, nameof(TestComponentWithFilteredState.NormalState))];
         // PersistingComponentStateSubscription is a value type, so just verify the subscription exists
-        Assert.True(provider.Subscriptions.ContainsKey(componentState));
+        Assert.True(provider.Subscriptions.ContainsKey((componentState, nameof(TestComponentWithFilteredState.NormalState))));
     }
 
     [Fact]
@@ -814,11 +811,11 @@ public class PersistentStateValueProviderTests
 
         // Act - Subscribe then unsubscribe
         provider.Subscribe(componentState, cascadingParameterInfo);
-        Assert.True(provider.Subscriptions.ContainsKey(componentState));
+        Assert.True(provider.Subscriptions.ContainsKey((componentState, nameof(TestComponentWithFilteredState.PrerenderState))));
 
         provider.Unsubscribe(componentState, cascadingParameterInfo);
 
         // Assert - Subscription should be removed
-        Assert.False(provider.Subscriptions.ContainsKey(componentState));
+        Assert.False(provider.Subscriptions.ContainsKey((componentState, nameof(TestComponentWithFilteredState.PrerenderState))));
     }
 }
