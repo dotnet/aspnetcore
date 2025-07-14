@@ -391,15 +391,16 @@ public class ComponentStatePersistenceManagerTest
         var callbacksInvoked = new List<string>();
         var prerenderingScenario = WebPersistenceScenario.Prerendering;
 
-        // Register callbacks with different filters
+        // Restore happens before, the callbacks that get executed later execute right away and don't get
+        // added to the subscription list indefinitely unless recurring.
+        await persistenceManager.RestoreStateAsync(store, prerenderingScenario);
+
+        // Act
         persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("no-filter"));
         persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(enable: true),
             () => callbacksInvoked.Add("prerender-enabled"));
         persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(enable: false),
             () => callbacksInvoked.Add("prerender-disabled"));
-
-        // Act
-        await persistenceManager.RestoreStateAsync(store, prerenderingScenario);
 
         // Assert - no-filter and prerender-enabled should be invoked, prerender-disabled should not
         Assert.Equal(2, callbacksInvoked.Count);
@@ -449,13 +450,12 @@ public class ComponentStatePersistenceManagerTest
         var callbacksInvoked = new List<string>();
         var recurringScenario = new TestScenario(isRecurring: true);
 
-        // Register callbacks with different filters
+        await persistenceManager.RestoreStateAsync(store, recurringScenario);
+
+        // Act
         persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("no-filter"));
         persistenceManager.State.RegisterOnRestoring(new RestoreStateOnPrerenderingAttribute(),
             () => callbacksInvoked.Add("prerender-filter"));
-
-        // Act
-        await persistenceManager.RestoreStateAsync(store, recurringScenario);
 
         // Assert - only no-filter callback should be invoked (filtered callbacks skipped for recurring)
         Assert.Single(callbacksInvoked);
@@ -472,11 +472,15 @@ public class ComponentStatePersistenceManagerTest
             NullLogger<ComponentStatePersistenceManager>.Instance,
             CreateServiceProvider());
 
+        var filter = new TestScenarioFilter();
+
+        await persistenceManager.RestoreStateAsync(store, new TestScenario(isRecurring: true));
+
         var callbacksInvoked = new List<string>();
 
         // Register callbacks and keep subscription to dispose
-        var subscription1 = persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("callback1"));
-        var subscription2 = persistenceManager.State.RegisterOnRestoring(null, () => callbacksInvoked.Add("callback2"));
+        var subscription1 = persistenceManager.State.RegisterOnRestoring(filter, () => callbacksInvoked.Add("callback1"));
+        var subscription2 = persistenceManager.State.RegisterOnRestoring(filter, () => callbacksInvoked.Add("callback2"));
 
         // Act - dispose one subscription before restore
         subscription1.Dispose();
@@ -567,14 +571,21 @@ public class ComponentStatePersistenceManagerTest
         public IComponentRenderMode GetRenderModeOrDefault() => null;
     }
 
-    private class TestScenario : IPersistentComponentStateScenario
+    private class TestScenario(bool isRecurring) : IPersistentComponentStateScenario
     {
-        public TestScenario(bool isRecurring)
-        {
-            IsRecurring = isRecurring;
-        }
+        public bool IsRecurring { get; } = isRecurring;
+    }
 
-        public bool IsRecurring { get; }
+    private class TestScenarioFilter : IPersistentStateFilter
+    {
+        public bool SupportsScenario(IPersistentComponentStateScenario scenario)
+        {
+            return scenario is TestScenario;
+        }
+        public bool ShouldRestore(IPersistentComponentStateScenario scenario)
+        {
+            return scenario is TestScenario testScenario && !testScenario.IsRecurring;
+        }
     }
 }
 

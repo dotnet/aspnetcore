@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components;
 public readonly struct RestoringComponentStateSubscription : IDisposable
 {
     private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks;
-    private readonly RestoreComponentStateRegistration _registration;
+    private readonly RestoreComponentStateRegistration? _registration;
 
     internal RestoringComponentStateSubscription(
         List<RestoreComponentStateRegistration> registeredRestoringCallbacks,
@@ -24,6 +24,9 @@ public readonly struct RestoringComponentStateSubscription : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _registeredRestoringCallbacks.Remove(_registration);
+        if (_registration.HasValue)
+        {
+            _registeredRestoringCallbacks?.Remove(_registration.Value);
+        }
     }
 }

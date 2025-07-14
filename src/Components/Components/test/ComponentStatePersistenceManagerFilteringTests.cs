@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.Extensions.Logging.Abstractions;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -16,10 +15,10 @@ public class ComponentStatePersistenceManagerFilteringTests
         var manager = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
         var store = new TestPersistentComponentStateStore();
         store.SetState("test-key", "test-value");
-        
+
         var callbackExecuted = false;
         var restoredValue = string.Empty;
-        
+
         // Register a restoration callback with NO filter (registration.Filter == null)
         manager.State.RegisterOnRestoring(filter: null, () =>
         {
@@ -34,18 +33,18 @@ public class ComponentStatePersistenceManagerFilteringTests
         callbackExecuted = false;
         restoredValue = string.Empty;
         await manager.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
-        
+
         Assert.True(callbackExecuted, "Callback should execute for prerendering when no filter is applied");
         Assert.Equal("test-value", restoredValue);
 
         // Reset store for next test
         store.SetState("test-key", "test-value");
-        
+
         // Act & Assert for Reconnection scenario  
         callbackExecuted = false;
         restoredValue = string.Empty;
         await manager.RestoreStateAsync(store, WebPersistenceScenario.Reconnection);
-        
+
         Assert.True(callbackExecuted, "Callback should execute for reconnection when no filter is applied");
         Assert.Equal("test-value", restoredValue);
     }
@@ -57,10 +56,10 @@ public class ComponentStatePersistenceManagerFilteringTests
         var manager = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
         var store = new TestPersistentComponentStateStore();
         store.SetState("test-key", "test-value");
-        
+
         var callbackExecuted = false;
         var restoredValue = string.Empty;
-        
+
         // Register a restoration callback with Reconnection filter
         var reconnectionFilter = WebPersistenceFilter.Reconnection;
         manager.State.RegisterOnRestoring(reconnectionFilter, () =>
@@ -76,18 +75,18 @@ public class ComponentStatePersistenceManagerFilteringTests
         callbackExecuted = false;
         restoredValue = string.Empty;
         await manager.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
-        
+
         Assert.False(callbackExecuted, "Callback should NOT execute for prerendering when reconnection filter is applied");
         Assert.Equal(string.Empty, restoredValue);
 
         // Reset store for next test
         store.SetState("test-key", "test-value");
-        
+
         // Act & Assert for Reconnection scenario (should execute)
         callbackExecuted = false;
         restoredValue = string.Empty;
         await manager.RestoreStateAsync(store, WebPersistenceScenario.Reconnection);
-        
+
         Assert.True(callbackExecuted, "Callback should execute for reconnection when reconnection filter is applied");
         Assert.Equal("test-value", restoredValue);
     }
@@ -99,10 +98,10 @@ public class ComponentStatePersistenceManagerFilteringTests
         var manager = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
         var store = new TestPersistentComponentStateStore();
         store.SetState("test-key", "test-value");
-        
+
         var callbackExecuted = false;
         var restoredValue = string.Empty;
-        
+
         // Register a restoration callback with Prerendering filter
         var prerenderingFilter = WebPersistenceFilter.Prerendering;
         manager.State.RegisterOnRestoring(prerenderingFilter, () =>
@@ -118,18 +117,18 @@ public class ComponentStatePersistenceManagerFilteringTests
         callbackExecuted = false;
         restoredValue = string.Empty;
         await manager.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
-        
+
         Assert.True(callbackExecuted, "Callback should execute for prerendering when prerendering filter is applied");
         Assert.Equal("test-value", restoredValue);
 
         // Reset store for next test
         store.SetState("test-key", "test-value");
-        
+
         // Act & Assert for Reconnection scenario (should NOT execute)
         callbackExecuted = false;
         restoredValue = string.Empty;
         await manager.RestoreStateAsync(store, WebPersistenceScenario.Reconnection);
-        
+
         Assert.False(callbackExecuted, "Callback should NOT execute for reconnection when prerendering filter is applied");
         Assert.Equal(string.Empty, restoredValue);
     }
@@ -141,11 +140,16 @@ public class ComponentStatePersistenceManagerFilteringTests
         var manager = new ComponentStatePersistenceManager(NullLogger<ComponentStatePersistenceManager>.Instance);
         var store = new TestPersistentComponentStateStore();
         store.SetState("test-key", "test-value");
-        
+
         var callbackExecuted = false;
         var restoredValue = string.Empty;
-        
+
+        callbackExecuted = false;
+        restoredValue = string.Empty;
+        await manager.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
+
         // Register a restoration callback with DISABLED Reconnection filter ([RestoreStateOnReconnection(false)])
+        // Act & Assert for Prerendering scenario (filter doesn't support, so should execute)
         var disabledReconnectionFilter = new WebPersistenceFilter(WebPersistenceScenarioType.Reconnection, enabled: false);
         manager.State.RegisterOnRestoring(disabledReconnectionFilter, () =>
         {
@@ -156,22 +160,26 @@ public class ComponentStatePersistenceManagerFilteringTests
             }
         });
 
-        // Act & Assert for Prerendering scenario (filter doesn't support, so should execute)
-        callbackExecuted = false;
-        restoredValue = string.Empty;
-        await manager.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
-        
         Assert.True(callbackExecuted, "Callback should execute for prerendering when disabled reconnection filter is applied (filter doesn't support prerendering)");
         Assert.Equal("test-value", restoredValue);
 
         // Reset store for next test
         store.SetState("test-key", "test-value");
-        
+
         // Act & Assert for Reconnection scenario (should NOT execute because filter is disabled)
         callbackExecuted = false;
         restoredValue = string.Empty;
         await manager.RestoreStateAsync(store, WebPersistenceScenario.Reconnection);
-        
+
+        manager.State.RegisterOnRestoring(disabledReconnectionFilter, () =>
+        {
+            callbackExecuted = true;
+            if (manager.State.TryTakeFromJson<string>("test-key", out var value))
+            {
+                restoredValue = value;
+            }
+        });
+
         Assert.False(callbackExecuted, "Callback should NOT execute for reconnection when disabled reconnection filter is applied");
         Assert.Equal(string.Empty, restoredValue);
     }
@@ -184,12 +192,12 @@ public class ComponentStatePersistenceManagerFilteringTests
         var store = new TestPersistentComponentStateStore();
         store.SetState("test-key1", "value-no-filter");
         store.SetState("test-key2", "value-with-filter");
-        
+
         var noFilterCallbackExecuted = false;
         var withFilterCallbackExecuted = false;
         var noFilterRestoredValue = string.Empty;
         var withFilterRestoredValue = string.Empty;
-        
+
         // Register restoration callbacks - one with no filter, one with reconnection filter
         manager.State.RegisterOnRestoring(filter: null, () =>
         {
@@ -199,7 +207,7 @@ public class ComponentStatePersistenceManagerFilteringTests
                 noFilterRestoredValue = value;
             }
         });
-        
+
         manager.State.RegisterOnRestoring(WebPersistenceFilter.Reconnection, () =>
         {
             withFilterCallbackExecuted = true;
@@ -211,7 +219,7 @@ public class ComponentStatePersistenceManagerFilteringTests
 
         // Act - Restore with null scenario (should execute ALL callbacks regardless of filters)
         await manager.RestoreStateAsync(store, scenario: null);
-        
+
         // Assert
         Assert.True(noFilterCallbackExecuted, "Callback with no filter should execute when scenario is null");
         Assert.True(withFilterCallbackExecuted, "Callback with filter should execute when scenario is null");
@@ -228,10 +236,12 @@ public class ComponentStatePersistenceManagerFilteringTests
         store.SetState("no-filter-key", "always-restore");
         store.SetState("reconnection-key", "reconnection-only");
         store.SetState("prerendering-key", "prerendering-only");
-        store.SetState("disabled-reconnection-key", "disabled-for-reconnection");
-        
+        store.SetState("prerendering-disabled-key", "prerendering-disabled");
+
         var results = new Dictionary<string, string>();
-        
+
+        await manager.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
+
         // Property with no filter - should restore for any scenario
         manager.State.RegisterOnRestoring(filter: null, () =>
         {
@@ -240,8 +250,9 @@ public class ComponentStatePersistenceManagerFilteringTests
                 results["no-filter"] = value;
             }
         });
-        
-        // Property with reconnection filter - should only restore for reconnection
+
+        // Should restore for prerendering because it's not explicitly disabled
+        // and the reconnection filter doesn't apply to prerendering.
         manager.State.RegisterOnRestoring(WebPersistenceFilter.Reconnection, () =>
         {
             if (manager.State.TryTakeFromJson<string>("reconnection-key", out var value))
@@ -249,7 +260,7 @@ public class ComponentStatePersistenceManagerFilteringTests
                 results["reconnection"] = value;
             }
         });
-        
+
         // Property with prerendering filter - should only restore for prerendering
         manager.State.RegisterOnRestoring(WebPersistenceFilter.Prerendering, () =>
         {
@@ -258,46 +269,18 @@ public class ComponentStatePersistenceManagerFilteringTests
                 results["prerendering"] = value;
             }
         });
-        
-        // Property with disabled reconnection filter - should not restore for reconnection
-        var disabledReconnectionFilter = new WebPersistenceFilter(WebPersistenceScenarioType.Reconnection, enabled: false);
-        manager.State.RegisterOnRestoring(disabledReconnectionFilter, () =>
+
+        manager.State.RegisterOnRestoring(new WebPersistenceFilter(WebPersistenceScenarioType.Prerendering, false), () =>
         {
-            if (manager.State.TryTakeFromJson<string>("disabled-reconnection-key", out var value))
+            if (manager.State.TryTakeFromJson<string>("prerendering-disabled-key", out var value))
             {
-                results["disabled-reconnection"] = value;
+                results["prerendering-disabled"] = value;
             }
         });
 
-        // Act & Assert for Prerendering scenario
-        results.Clear();
-        store.ResetState();
-        store.SetState("no-filter-key", "always-restore");
-        store.SetState("reconnection-key", "reconnection-only");
-        store.SetState("prerendering-key", "prerendering-only");
-        store.SetState("disabled-reconnection-key", "disabled-for-reconnection");
-        
-        await manager.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
-        
-        Assert.Equal("always-restore", results.GetValueOrDefault("no-filter"));
-        Assert.False(results.ContainsKey("reconnection"));
-        Assert.Equal("prerendering-only", results.GetValueOrDefault("prerendering"));
-        Assert.Equal("disabled-for-reconnection", results.GetValueOrDefault("disabled-reconnection"));
-
-        // Act & Assert for Reconnection scenario
-        results.Clear();
-        store.ResetState();
-        store.SetState("no-filter-key", "always-restore");
-        store.SetState("reconnection-key", "reconnection-only");
-        store.SetState("prerendering-key", "prerendering-only");
-        store.SetState("disabled-reconnection-key", "disabled-for-reconnection");
-        
-        await manager.RestoreStateAsync(store, WebPersistenceScenario.Reconnection);
-        
         Assert.Equal("always-restore", results.GetValueOrDefault("no-filter"));
         Assert.Equal("reconnection-only", results.GetValueOrDefault("reconnection"));
-        Assert.False(results.ContainsKey("prerendering"));
-        Assert.False(results.ContainsKey("disabled-reconnection"));
+        Assert.Equal("prerendering-only", results.GetValueOrDefault("prerendering"));
     }
 
     private class TestPersistentComponentStateStore : IPersistentComponentStateStore

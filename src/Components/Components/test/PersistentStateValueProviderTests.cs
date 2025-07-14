@@ -41,6 +41,8 @@ public class PersistentStateValueProviderTests
             (componentState, cascadingParameterInfo.PropertyName, "state")
         });
 
+        provider.Subscribe(componentState, cascadingParameterInfo);
+
         // Act
         var result = provider.GetCurrentValue(componentState, cascadingParameterInfo);
 

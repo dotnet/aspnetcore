@@ -85,8 +85,8 @@ public class PersistentComponentState
         ArgumentNullException.ThrowIfNull(callback);
 
         if (_currentScenario == null || filter == null ||
-            (filter != null && filter.SupportsScenario(_currentScenario) &&
-            filter.ShouldRestore(_currentScenario)))
+            (filter != null && (!filter.SupportsScenario(_currentScenario) ||
+            filter.ShouldRestore(_currentScenario))))
         {
             callback();
             return default;

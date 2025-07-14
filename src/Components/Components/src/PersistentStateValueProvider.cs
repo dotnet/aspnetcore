@@ -23,11 +23,11 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
     private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
 
-    private readonly Dictionary<ComponentState, ComponentSubscription> _subscriptions = [];
+    private readonly Dictionary<(ComponentState, string), ComponentSubscription> _subscriptions = [];
 
     public bool IsFixed => false;
     // For testing purposes only
-    internal Dictionary<ComponentState, ComponentSubscription> Subscriptions => _subscriptions;
+    internal Dictionary<(ComponentState, string), ComponentSubscription> Subscriptions => _subscriptions;
 
     public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
         => parameterInfo.Attribute is PersistentStateAttribute;
@@ -44,7 +44,7 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
     {
         var componentState = (ComponentState)key!;
 
-        if (_subscriptions.TryGetValue(componentState, out var subscription))
+        if (_subscriptions.TryGetValue((componentState, parameterInfo.PropertyName), out var subscription))
         {
             return subscription.LastValue;
         }
@@ -67,20 +67,18 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         var propertyGetter = ResolvePropertyGetter(subscriber.Component.GetType(), propertyName);
 
         var componentSubscription = new ComponentSubscription();
-        _subscriptions[subscriber] = componentSubscription;
-
         var persistingSubscription = state.RegisterOnPersisting(() =>
             {
                 var property = propertyGetter.GetValue(subscriber.Component);
                 if (property == null)
                 {
-                    Log.SkippedPersistingNullValue(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name);
+                    Log.SkippedPersistingNullValue(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name, propertyName);
                     return Task.CompletedTask;
                 }
 
                 if (customSerializer != null)
                 {
-                    Log.PersistingValueToState(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name);
+                    Log.PersistingValueToState(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name, propertyName);
 
                     using var writer = new PooledArrayBufferWriter<byte>();
                     customSerializer.Persist(propertyType, property, writer);
@@ -89,7 +87,7 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
                 }
 
                 // Fallback to JSON serialization
-                Log.PersistingValueToState(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name);
+                Log.PersistingValueToState(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name, propertyName);
                 state.PersistAsJson(storageKey, property, propertyType);
                 return Task.CompletedTask;
             }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
@@ -97,40 +95,50 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         componentSubscription.SetPersistingSubscription(persistingSubscription);
 
         var filterAttributes = propertyGetter.PropertyInfo.GetCustomAttributes(inherit: true)
-            .OfType<IPersistentStateFilter>();
+            .OfType<IPersistentStateFilter>() ?? [];
 
-        Action? restorationAction = null;
+        var filter = CreateFilter(filterAttributes);
 
-        foreach (var filter in filterAttributes)
+        var defaultRestoringSubscription = state.RegisterOnRestoring(
+        filter,
+        CreateRestoreAction(storageKey, propertyType, componentSubscription, propertyName));
+        componentSubscription.SetRestoringSubscription(defaultRestoringSubscription);
+
+        _subscriptions.Add((subscriber, propertyName), componentSubscription);
+    }
+
+    private static IPersistentStateFilter? CreateFilter(IEnumerable<IPersistentStateFilter> filterAttributes)
+    {
+        // If no filter attributes return null.
+        // Otherwise, create a composite filter that supports the scenario if any of the filters supports it.
+        // and returns ShouldRestore if the supporting filter returns true.
+        if (!filterAttributes.Any())
         {
-            restorationAction ??= CreateRestorationAction(storageKey, propertyType, componentSubscription);
-            var restoringSubscription = state.RegisterOnRestoring(filter, restorationAction);
-            componentSubscription.AddRestoringSubscription(restoringSubscription);
+            return null;
         }
-
-        if (!componentSubscription.HasRestoringSubscriptions)
+        var filters = filterAttributes.ToList();
+        if (filters.Count == 1)
         {
-            restorationAction ??= CreateRestorationAction(storageKey, propertyType, componentSubscription);
-            var defaultRestoringSubscription = state.RegisterOnRestoring(null, restorationAction);
-            componentSubscription.AddRestoringSubscription(defaultRestoringSubscription);
+            return filters[0];
         }
+        return new CompositeScenarioFilter(filters);
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
     [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-    private Action CreateRestorationAction(string storageKey, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type propertyType, ComponentSubscription componentSubscription)
+    private Action CreateRestoreAction(string storageKey, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type propertyType, ComponentSubscription componentSubscription, string propertyName)
     {
         return () =>
         {
             if (state.TryTakeFromJson(storageKey, propertyType, out var value))
             {
-                Log.RestoringValueFromState(logger, storageKey, propertyType.Name);
+                Log.RestoringValueFromState(logger, storageKey, propertyType.Name, propertyName);
                 componentSubscription.SetLastValue(value);
             }
             else
             {
-                Log.NoValueToRestoreFromState(logger, storageKey, propertyType.Name);
+                Log.NoValueToRestoreFromState(logger, storageKey, propertyType.Name, propertyName);
             }
         };
     }
@@ -170,10 +178,10 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
 
     public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
-        if (_subscriptions.TryGetValue(subscriber, out var subscription))
+        if (_subscriptions.TryGetValue((subscriber, parameterInfo.PropertyName), out var subscription))
         {
             subscription.Dispose();
-            _subscriptions.Remove(subscriber);
+            _subscriptions.Remove((subscriber, parameterInfo.PropertyName));
         }
     }
 
@@ -405,11 +413,41 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         }
     }
 
+    private class CompositeScenarioFilter(List<IPersistentStateFilter> filters) : IPersistentStateFilter
+    {
+        public bool ShouldRestore(IPersistentComponentStateScenario scenario)
+        {
+            for (var i = 0; i < filters.Count; i++)
+            {
+                var filter = filters[i];
+                if (filter.SupportsScenario(scenario))
+                {
+                    return filter.ShouldRestore(scenario);
+                }
+            }
+
+            return true;
+        }
+
+        public bool SupportsScenario(IPersistentComponentStateScenario scenario)
+        {
+            for (var i = 0; i < filters.Count; i++)
+            {
+                var filter = filters[i];
+                if (filter.SupportsScenario(scenario))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+    }
+
     internal class ComponentSubscription
     {
         private PersistingComponentStateSubscription? _persistingSubscription;
-        private RestoringComponentStateSubscription? _firstRestoringSubscription;
-        private List<RestoringComponentStateSubscription>? _additionalRestoringSubscriptions;
+        private RestoringComponentStateSubscription? _restoringSubscription;
 
         public object? LastValue { get; private set; }
 
@@ -418,20 +456,10 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
             _persistingSubscription = subscription;
         }
 
-        public void AddRestoringSubscription(RestoringComponentStateSubscription subscription)
+        public void SetRestoringSubscription(RestoringComponentStateSubscription subscription)
         {
-            if (_firstRestoringSubscription == null)
-            {
-                _firstRestoringSubscription = subscription;
-            }
-            else
-            {
-                _additionalRestoringSubscriptions ??= new List<RestoringComponentStateSubscription>();
-                _additionalRestoringSubscriptions.Add(subscription);
-            }
+            _restoringSubscription = subscription;
         }
-
-        public bool HasRestoringSubscriptions => _firstRestoringSubscription != null;
 
         public void SetLastValue(object? value)
         {
@@ -441,36 +469,28 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         public void Dispose()
         {
             _persistingSubscription?.Dispose();
-            _firstRestoringSubscription?.Dispose();
-            if (_additionalRestoringSubscriptions != null)
-            {
-                foreach (var subscription in _additionalRestoringSubscriptions)
-                {
-                    subscription.Dispose();
-                }
-                _additionalRestoringSubscriptions.Clear();
-            }
+            _restoringSubscription?.Dispose();
         }
     }
 
     private static partial class Log
     {
-        [LoggerMessage(1, LogLevel.Debug, "Persisting value for storage key '{StorageKey}' of type '{PropertyType}' from component '{ComponentType}'", EventName = "PersistingValueToState")]
-        public static partial void PersistingValueToState(ILogger logger, string storageKey, string propertyType, string componentType);
+        [LoggerMessage(1, LogLevel.Debug, "Persisting value for storage key '{StorageKey}' of type '{PropertyType}' from component '{ComponentType}' for property '{PropertyName}'", EventName = "PersistingValueToState")]
+        public static partial void PersistingValueToState(ILogger logger, string storageKey, string propertyType, string componentType, string propertyName);
 
-        [LoggerMessage(2, LogLevel.Debug, "Skipped persisting null value for storage key '{StorageKey}' of type '{PropertyType}' from component '{ComponentType}'", EventName = "SkippedPersistingNullValue")]
-        public static partial void SkippedPersistingNullValue(ILogger logger, string storageKey, string propertyType, string componentType);
+        [LoggerMessage(2, LogLevel.Debug, "Skipped persisting null value for storage key '{StorageKey}' of type '{PropertyType}' from component '{ComponentType}' for property '{PropertyName}'", EventName = "SkippedPersistingNullValue")]
+        public static partial void SkippedPersistingNullValue(ILogger logger, string storageKey, string propertyType, string componentType, string propertyName);
 
-        [LoggerMessage(3, LogLevel.Debug, "Restoring value for storage key '{StorageKey}' of type '{PropertyType}'", EventName = "RestoringValueFromState")]
-        public static partial void RestoringValueFromState(ILogger logger, string storageKey, string propertyType);
+        [LoggerMessage(3, LogLevel.Debug, "Restoring value for storage key '{StorageKey}' of type '{PropertyType}' for property '{PropertyName}'", EventName = "RestoringValueFromState")]
+        public static partial void RestoringValueFromState(ILogger logger, string storageKey, string propertyType, string propertyName);
 
-        [LoggerMessage(4, LogLevel.Debug, "No value to restore for storage key '{StorageKey}' of type '{PropertyType}'", EventName = "NoValueToRestoreFromState")]
-        public static partial void NoValueToRestoreFromState(ILogger logger, string storageKey, string propertyType);
+        [LoggerMessage(4, LogLevel.Debug, "No value to restore for storage key '{StorageKey}' of type '{PropertyType}' for property '{PropertyName}'", EventName = "NoValueToRestoreFromState")]
+        public static partial void NoValueToRestoreFromState(ILogger logger, string storageKey, string propertyType, string propertyName);
 
-        [LoggerMessage(5, LogLevel.Debug, "Restored value from persistent state for storage key '{StorageKey}' of type '{PropertyType}' for component '{ComponentType}'", EventName = "RestoredValueFromPersistentState")]
-        public static partial void RestoredValueFromPersistentState(ILogger logger, string storageKey, string propertyType, string componentType);
+        [LoggerMessage(5, LogLevel.Debug, "Restored value from persistent state for storage key '{StorageKey}' of type '{PropertyType}' for component '{ComponentType}' for property '{PropertyName}'", EventName = "RestoredValueFromPersistentState")]
+        public static partial void RestoredValueFromPersistentState(ILogger logger, string storageKey, string propertyType, string componentType, string propertyName);
 
-        [LoggerMessage(6, LogLevel.Debug, "Value not found in persistent state for storage key '{StorageKey}' of type '{PropertyType}' for component '{ComponentType}'", EventName = "ValueNotFoundInPersistentState")]
-        public static partial void ValueNotFoundInPersistentState(ILogger logger, string storageKey, string propertyType, string componentType);
+        [LoggerMessage(6, LogLevel.Debug, "Value not found in persistent state for storage key '{StorageKey}' of type '{PropertyType}' for component '{ComponentType}' for property '{PropertyName}'", EventName = "ValueNotFoundInPersistentState")]
+        public static partial void ValueNotFoundInPersistentState(ILogger logger, string storageKey, string propertyType, string componentType, string propertyName);
     }
 }
