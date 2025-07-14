@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <AspNetCoreBaselineVersion>2.3.3</AspNetCoreBaselineVersion>
+    <AspNetCoreBaselineVersion>2.3.4</AspNetCoreBaselineVersion>
   </PropertyGroup>
   <!-- Package: dotnet-dev-certs-->
   <PropertyGroup Condition=" '$(PackageId)' == 'dotnet-dev-certs' ">
@@ -1164,7 +1164,7 @@
   </ItemGroup>
   <!-- Package: Microsoft.Net.Http.Headers-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' ">
-    <BaselinePackageVersion>2.3.0</BaselinePackageVersion>
+    <BaselinePackageVersion>2.3.4</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.Net.Http.Headers' AND '$(TargetFramework)' == 'netstandard2.0' ">
     <BaselinePackageReference Include="Microsoft.Extensions.Primitives" Version="[8.0.0, )" />
