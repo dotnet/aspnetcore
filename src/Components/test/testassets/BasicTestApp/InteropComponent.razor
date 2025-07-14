@@ -282,6 +282,7 @@
         }
 
         await JSObjectReferenceAsyncTests();
+
         if (shouldSupportSyncInterop)
         {
             JSObjectReferenceTests();
@@ -631,11 +632,11 @@
         }
         catch (Exception ex)
         {
-            ReturnValues["invokeAsyncNonExistentJSObjectReference"] = "Failure";
+            ReturnValues["invokeAsyncNonExistentJSObjectReference"] = $"Failure: {ex.Message}";
         }
     }
 
-    private async Task JSObjectReferenceTests()
+    private void JSObjectReferenceTests()
     {
         var inProcRuntime = ((IJSInProcessRuntime)JSRuntime);
         
@@ -691,7 +692,7 @@
         }
         catch (Exception ex)
         {
-            ReturnValues["invokeNonExistentJSObjectReference"] = "Failure";
+            ReturnValues["invokeNonExistentJSObjectReference"] = $"Failure: {ex.Message}";
         }
     }
 
