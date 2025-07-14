@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         private readonly ForwardedHeadersOptions _options;
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
+        private readonly bool _ignoreUnknownProxiesWithoutFor;
         private bool _allowAllHosts;
         private IList<StringSegment> _allowedHosts;
 
@@ -89,6 +90,18 @@ namespace Microsoft.AspNetCore.HttpOverrides
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<ForwardedHeadersMiddleware>();
             _next = next;
+
+            if (AppContext.TryGetSwitch("Microsoft.AspNetCore.HttpOverrides.IgnoreUnknownProxiesWithoutFor", out var enabled)
+            && enabled)
+        {
+            _ignoreUnknownProxiesWithoutFor = true;
+        }
+
+        if (Environment.GetEnvironmentVariable("MICROSOFT_ASPNETCORE_HTTPOVERRIDES_IGNORE_UNKNOWN_PROXIES_WITHOUT_FOR") is string env
+            && (env.Equals("true", StringComparison.OrdinalIgnoreCase) || env.Equals("1")))
+        {
+            _ignoreUnknownProxiesWithoutFor = true;
+        }
 
             PreProcessHosts();
         }
@@ -228,12 +241,17 @@ namespace Microsoft.AspNetCore.HttpOverrides
             {
                 var set = sets[entriesConsumed];
 
-                // For the first instance, allow remoteIp to be null for servers that don't support it natively.
-                if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+                // Opt-out of breaking change behavior where we now always check KnownProxies and KnownNetworks
+                // It used to be guarded by the ForwardedHeaders.XForwardedFor flag, but now we always check it.
+                if (!_ignoreUnknownProxiesWithoutFor || checkFor)
                 {
-                    // Stop at the first unknown remote IP, but still apply changes processed so far.
-                    _logger.LogDebug(1, $"Unknown proxy: {currentValues.RemoteIpAndPort}");
-                    break;
+                    // For the first instance, allow remoteIp to be null for servers that don't support it natively.
+                    if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+                    {
+                        // Stop at the first unknown remote IP, but still apply changes processed so far.
+                        _logger.LogWarning(1, $"Unknown proxy: {currentValues.RemoteIpAndPort}");
+                        break;
+                    }
                 }
 
                 if (checkFor)
