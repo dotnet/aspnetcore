@@ -794,8 +794,8 @@ internal partial class CircuitHost : IAsyncDisposable
                         appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
 
                         // Use the appropriate scenario based on whether this is a restore operation
-                        var scenario = isRestore 
-                            ? WebPersistenceScenario.Reconnection 
+                        var scenario = isRestore
+                            ? WebPersistenceScenario.Reconnection
                             : WebPersistenceScenario.Prerendering;
                         await appLifetime.RestoreStateAsync(store, scenario);
                     }
