@@ -37,4 +37,8 @@ Later on, this will be checked using this condition:
       Microsoft.Net.Http.Headers;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.5' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>
