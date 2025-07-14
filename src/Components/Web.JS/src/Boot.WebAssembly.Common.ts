@@ -100,14 +100,14 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
 
   // obsolete:
   Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined, updatedTypes?: number[]) => {
-    dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta, updatedTypes ?? null);
+    dispatcher.invokeDotNetStaticMethod('Microsoft.DotNet.HotReload.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta, updatedTypes ?? null);
   };
 
   Blazor._internal.applyHotReloadDeltas = (deltas: { moduleId: string, metadataDelta: string, ilDelta: string, pdbDelta: string, updatedTypes: number[] }[], loggingLevel: number) => {
-    return dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDeltas', deltas, loggingLevel) ?? [];
+    return dispatcher.invokeDotNetStaticMethod('Microsoft.DotNet.HotReload.WebAssembly', 'ApplyHotReloadDeltas', deltas, loggingLevel) ?? [];
   };
 
-  Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities') ?? '';
+  Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.DotNet.HotReload.WebAssembly', 'GetApplyUpdateCapabilities') ?? '';
 
   // Configure JS interop
   Blazor._internal.invokeJSJson = invokeJSJson;
@@ -134,7 +134,7 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
 
   Blazor._internal.navigationManager.listenForNavigationEvents(WebRendererId.WebAssembly, async (uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     await dispatcher.invokeDotNetStaticMethodAsync(
-      'Microsoft.AspNetCore.Components.WebAssembly',
+      'Microsoft.DotNet.HotReload.WebAssembly',
       'NotifyLocationChanged',
       uri,
       state,
@@ -142,7 +142,7 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     );
   }, async (callId: number, uri: string, state: string | undefined, intercepted: boolean): Promise<void> => {
     const shouldContinueNavigation = await dispatcher.invokeDotNetStaticMethodAsync<boolean>(
-      'Microsoft.AspNetCore.Components.WebAssembly',
+      'Microsoft.DotNet.HotReload.WebAssembly',
       'NotifyLocationChangingAsync',
       uri,
       state,
