@@ -10,9 +10,6 @@
     <Project Path="eng/tools/BaselineGenerator/BaselineGenerator.csproj" />
     <Project Path="eng/tools/RepoTasks/RepoTasks.csproj" />
   </Folder>
-  <Folder Name="/Solution Items/">
-    <File Path="src/JSInterop/Microsoft.JSInterop.JS/src/src/Microsoft.JSInterop.ts" />
-  </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/Analyzers/" />
   <Folder Name="/src/Analyzers/Analyzers/">
