@@ -27,7 +27,7 @@ public class Startup
         });
     }
 
-    public static IHostBuilder CreateHost(string[] args) =>
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
         new HostBuilder()
             .ConfigureWebHost(webHostBuilder =>
             {
