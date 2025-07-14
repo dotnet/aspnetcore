@@ -155,6 +155,12 @@ export module DotNet {
    * @throws Error if the given value is not an Object.
    */
   export function createJSObjectReference(jsObject: any): any {
+      if (jsObject === null || jsObject === undefined) {
+          return {
+              [jsObjectIdKey]: -1
+          };
+      }
+
       if (jsObject && (typeof jsObject === "object" || jsObject instanceof Function)) {
           cachedJSObjectsById[nextJsObjectId] = new JSObject(jsObject);
 
@@ -220,7 +226,7 @@ export module DotNet {
   export function disposeJSObjectReference(jsObjectReference: any): void {
       const id = jsObjectReference && jsObjectReference[jsObjectIdKey];
 
-      if (typeof id === "number") {
+      if (typeof id === "number" && id !== -1) {
           disposeJSObjectReferenceById(id);
       }
   }
