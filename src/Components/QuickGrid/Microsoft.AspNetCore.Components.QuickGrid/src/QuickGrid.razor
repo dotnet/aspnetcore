@@ -79,7 +79,14 @@
         <tr aria-rowindex="@(placeholderContext.Index + 1)">
             @foreach (var col in _columns)
             {
-                <td class="grid-cell-placeholder @ColumnClass(col)" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
+                var hasCustomPlaceholder = col.PlaceholderTemplate is not null;
+                var cssClass = hasCustomPlaceholder 
+                    ? "@ColumnClass(col)" 
+                    : "grid-cell-placeholder @ColumnClass(col)";
+            
+                <td class="@cssClass" @key="@col">
+                    @{ col.RenderPlaceholderContent(__builder, placeholderContext); }
+                </td>
             }
         </tr>
     }
