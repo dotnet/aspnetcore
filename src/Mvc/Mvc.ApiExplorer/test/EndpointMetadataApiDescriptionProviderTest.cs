@@ -464,23 +464,30 @@ public class EndpointMetadataApiDescriptionProviderTest
         Assert.Equal("application/json", createdOkFormat.MediaType);
     }
 
+    /// <summary>
+    /// EndpointMetadataApiDescriptionProvider performs a one way type check for discovering response types to match the description that's set in [ProducesResponseType]
+    /// The reason we do a one-way check instead of a bidirectional check is to prevent too many positive matches.
+    /// </summary>
+    /// <remarks>
+    /// Example: If we did a bidirectional check, we would match something scenarios like this, which can cause confusion:
+    /// [ProducesResponseType<string>(StatusCodes.Status200OK, Description = "Returned with a string")] -> TypedResults.Ok(new object())
+    /// This would match because object is assignable to string,
+    /// but it doesn't make sense to add the Description to the object type because the attribute says we should return a string.
+    ///
+    /// This test documents this desired behavior and will fail if the behavior changes, so the developer can double check if their change is intentional.
+    /// </summary>
     [Fact]
-    public void AddsResponseDescription_WorksWithCollectionsAndTypedResultsWhereInnerTypeIsInEndpointAndIsBaseClass()
+    public void AddsResponseDescription_ShouldFailWhenInferredTypeIsNotDirectlyAssignableToAttributeType()
     {
-        const string expectedOkDescription = "The weather forecast for the next 5 days.";
-
-        var apiDescription = GetApiDescription([ProducesResponseType<List<GenericClass<string>>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
-        () => TypedResults.Ok(new List<BaseClass> { new() }.AsEnumerable()));
+        var apiDescription = GetApiDescription([ProducesResponseType<string>(StatusCodes.Status200OK, Description = "Only returned with a string")]
+        () => TypedResults.Ok(new object()));
 
         var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
 
         Assert.Equal(200, okResponseType.StatusCode);
-        Assert.Equal(typeof(IEnumerable<BaseClass>), okResponseType.Type); // We use IEnumerable<BaseClass> as the inferred type has higher priority than those set by metadata (attributes)
-        Assert.Equal(typeof(IEnumerable<BaseClass>), okResponseType.ModelMetadata?.ModelType);
-        Assert.Equal(expectedOkDescription, okResponseType.Description);
-
-        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
-        Assert.Equal("application/json", createdOkFormat.MediaType);
+        Assert.Equal(typeof(object), okResponseType.Type);
+        Assert.Equal(typeof(object), okResponseType.ModelMetadata?.ModelType);
+        Assert.Null(okResponseType.Description);
     }
 
     [Fact]
