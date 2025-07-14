@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+namespace Microsoft.AspNetCore.Components.Server.Circuits;
+
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Infrastructure.Server;
 
@@ -11,7 +13,7 @@ internal class CircuitActivitySource
 
     private ComponentsActivityLinkStore? _activityLinkStore;
 
-    private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
+    private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
     public void Init(ComponentsActivityLinkStore store)
     {

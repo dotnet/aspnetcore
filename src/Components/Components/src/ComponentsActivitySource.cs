@@ -15,7 +15,7 @@ internal class ComponentsActivitySource
     internal const string OnRouteName = $"{Name}.RouteChange";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
-    private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
+    private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
     private ComponentsActivityLinkStore? _componentsActivityLinkStore;
 
     public void Init(ComponentsActivityLinkStore store)
@@ -59,7 +59,7 @@ internal class ComponentsActivitySource
         StopComponentActivity(ComponentsActivityLinkStore.Route, activityHandle, ex);
     }
 
-    public ComponentsActivityHandle StartEventActivity(string? componentType, string? methodName, string? attributeName)
+    public static ComponentsActivityHandle StartEventActivity(string? componentType, string? methodName, string? attributeName)
     {
         var activity = ActivitySource.CreateActivity(OnEventName, ActivityKind.Internal, parentId: null, null, null);
 
