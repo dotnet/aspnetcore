@@ -1917,6 +1917,5 @@ public class EndpointMetadataApiDescriptionProviderTest
         }
     }
 
-    private class GenericClass<TType> : BaseClass { public required TType Value { get; set; } }
-    private class BaseClass { }
+    private class GenericClass<TType> { public required TType Value { get; set; } }
 }
