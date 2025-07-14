@@ -61,7 +61,6 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         var propertyType = parameterInfo.PropertyType;
         var storageKey = ComputeKey(subscriber, propertyName);
 
-
         // Resolve serializer outside the lambda
         var customSerializer = _serializerCache.GetOrAdd(propertyType, SerializerFactory);
 
@@ -78,8 +77,6 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
                     Log.SkippedPersistingNullValue(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name);
                     return Task.CompletedTask;
                 }
-
-                var storageKey = ComputeKey(subscriber, propertyName);
 
                 if (customSerializer != null)
                 {

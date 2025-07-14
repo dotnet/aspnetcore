@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components;
 
@@ -16,9 +17,9 @@ public class IPersistentComponentStateSerializerTests
     {
         // Arrange
         var currentState = new Dictionary<string, byte[]>();
-        var state = new PersistentComponentState(currentState, []);
+        var state = new PersistentComponentState(currentState, [], []);
         var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var stateValueProvider = new PersistentStateValueProvider(state, serviceProvider);
+        var stateValueProvider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, serviceProvider);
         var customSerializer = new TestStringSerializer();
         var testValue = "Hello, World!";
 
@@ -31,9 +32,9 @@ public class IPersistentComponentStateSerializerTests
         state.PersistingState = false;
         
         // Simulate the state transfer that happens between persist and restore phases
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(currentState);
-        var newStateValueProvider = new PersistentStateValueProvider(newState, serviceProvider);
+        var newStateValueProvider = new PersistentStateValueProvider(newState, NullLogger<PersistentStateValueProvider>.Instance, serviceProvider);
         
         Assert.True(newStateValueProvider.TryTake("test-key", customSerializer, out var retrievedValue));
         Assert.Equal(testValue, retrievedValue);
@@ -47,11 +48,11 @@ public class IPersistentComponentStateSerializerTests
         var customBytes = Encoding.UTF8.GetBytes(customData);
         var existingState = new Dictionary<string, byte[]> { { "test-key", customBytes } };
         
-        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         state.InitializeExistingState(existingState);
         
         var serviceProvider = new ServiceCollection().BuildServiceProvider();
-        var stateValueProvider = new PersistentStateValueProvider(state, serviceProvider);
+        var stateValueProvider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, serviceProvider);
         var customSerializer = new TestStringSerializer();
 
         // Act

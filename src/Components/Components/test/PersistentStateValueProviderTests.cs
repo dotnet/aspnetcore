@@ -27,7 +27,7 @@ public class PersistentStateValueProviderTests
             [],
             []);
 
-        var provider = new PersistentStateValueProvider(state, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
         var component = new TestComponent();
         // Update the method call to match the correct signature
@@ -56,7 +56,7 @@ public class PersistentStateValueProviderTests
             new Dictionary<string, byte[]>(),
             [],
             []);
-        var provider = new PersistentStateValueProvider(state, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
         var component = new TestComponent();
         var componentStates = CreateComponentState(renderer, [(component, null)], null);
@@ -80,7 +80,7 @@ public class PersistentStateValueProviderTests
             [],
             []);
 
-        var provider = new PersistentStateValueProvider(state, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var renderer = new TestRenderer();
         var component = new TestComponent();
@@ -115,7 +115,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the component
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState, cascadingParameterInfo);
@@ -156,7 +156,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the component
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState, cascadingParameterInfo);
@@ -198,7 +198,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the component
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
@@ -273,7 +273,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the component
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
@@ -320,7 +320,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the components
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
@@ -363,7 +363,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the components
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
@@ -398,7 +398,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the components
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
@@ -440,7 +440,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the components
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
         provider.Subscribe(componentState1, cascadingParameterInfo);
@@ -471,7 +471,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the component
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.IntValue), typeof(int));
         provider.Subscribe(componentState, cascadingParameterInfo);
@@ -508,7 +508,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the component
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.NullableIntValue), typeof(int?));
         provider.Subscribe(componentState, cascadingParameterInfo);
@@ -545,7 +545,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the component
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.TupleValue), typeof((string, int)));
         provider.Subscribe(componentState, cascadingParameterInfo);
@@ -582,7 +582,7 @@ public class PersistentStateValueProviderTests
 
         // Create the provider and subscribe the component
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, new ServiceCollection().BuildServiceProvider());
+        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.NullableTupleValue), typeof((string, int)?));
         provider.Subscribe(componentState, cascadingParameterInfo);
@@ -744,7 +744,7 @@ public class PersistentStateValueProviderTests
             [],
             []);
 
-        var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance);
+        var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
         var component = new TestComponentWithFilteredState();
         var componentStates = CreateComponentState(renderer, [(component, null)], null);
@@ -771,7 +771,7 @@ public class PersistentStateValueProviderTests
             [],
             []);
 
-        var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance);
+        var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
         var component = new TestComponentWithFilteredState();
         var componentStates = CreateComponentState(renderer, [(component, null)], null);
@@ -803,7 +803,7 @@ public class PersistentStateValueProviderTests
             [],
             []);
 
-        var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance);
+        var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
         var component = new TestComponentWithFilteredState();
         var componentStates = CreateComponentState(renderer, [(component, null)], null);

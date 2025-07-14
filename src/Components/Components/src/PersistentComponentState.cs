@@ -31,7 +31,7 @@ public class PersistentComponentState
 
     internal bool PersistingState { get; set; }
 
-    internal void InitializeExistingState(IDictionary<string, byte[]> existingState, IPersistentComponentStateScenario? scenario)
+    internal void InitializeExistingState(IDictionary<string, byte[]> existingState, IPersistentComponentStateScenario? scenario = null)
     {
         if (_existingState != null)
         {
