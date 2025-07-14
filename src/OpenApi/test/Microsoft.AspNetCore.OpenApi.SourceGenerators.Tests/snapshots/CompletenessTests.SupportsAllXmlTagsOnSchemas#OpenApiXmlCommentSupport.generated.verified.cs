@@ -196,6 +196,7 @@ T", null, null, false, null, null, null));
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class DocumentationCommentIdHelper
     {
         /// <summary>
@@ -574,6 +575,7 @@ T", null, null, false, null, null, null));
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class JsonNodeExtensions
     {
         public static JsonNode? Parse(this string? json)

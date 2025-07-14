@@ -93,6 +93,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         }
     }
 
+    {{GeneratedCodeAttribute}}
     file static class DocumentationCommentIdHelper
     {
         /// <summary>
@@ -471,6 +472,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         }
     }
 
+    {{GeneratedCodeAttribute}}
     file static class JsonNodeExtensions
     {
         public static JsonNode? Parse(this string? json)
