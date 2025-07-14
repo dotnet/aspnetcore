@@ -404,9 +404,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             string? matchingDescription = null;
             foreach (var metadata in responseMetadataTypes)
             {
-                if (metadata?.StatusCode == apiResponseType?.StatusCode &&
-                    TypesAreCompatible(apiResponseType?.Type, metadata?.Type) &&
-                    metadata?.Description is not null)
+                if (metadata.StatusCode == apiResponseType.StatusCode &&
+                    TypesAreCompatible(apiResponseType.Type, metadata.Type) &&
+                    metadata.Description is not null)
                 {
                     matchingDescription = metadata.Description;
                 }
