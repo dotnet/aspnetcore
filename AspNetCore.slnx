@@ -10,9 +10,6 @@
     <Project Path="eng/tools/BaselineGenerator/BaselineGenerator.csproj" />
     <Project Path="eng/tools/RepoTasks/RepoTasks.csproj" />
   </Folder>
-  <Folder Name="/Solution Items/">
-    <File Path="src/JSInterop/Microsoft.JSInterop.JS/src/src/Microsoft.JSInterop.ts" />
-  </Folder>
   <Folder Name="/src/" />
   <Folder Name="/src/Analyzers/" />
   <Folder Name="/src/Analyzers/Analyzers/">
@@ -1203,8 +1200,8 @@
     <Project Path="src/Validation/src/Microsoft.Extensions.Validation.csproj" />
   </Folder>
   <Folder Name="/src/Validation/test/">
-    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
+    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
