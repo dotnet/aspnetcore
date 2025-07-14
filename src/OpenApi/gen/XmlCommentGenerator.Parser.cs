@@ -32,7 +32,7 @@ public sealed partial class XmlCommentGenerator
 
         // Check if this is a conversion operator (op_Implicit or op_Explicit)
         // For these operators, we need to keep the return type suffix
-        if (docId.Contains("op_Implicit") || docId.Contains("op_Explicit"))
+        if (docId.Contains("op_Implicit", StringComparison.Ordinal) || docId.Contains("op_Explicit", StringComparison.Ordinal))
         {
             return docId;
         }
