@@ -1,1 +1,27 @@
 #nullable enable
+Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>
+Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.IdentityUserPasskey() -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.AttestationObject.get -> byte[]!
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.AttestationObject.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.ClientDataJson.get -> byte[]!
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.ClientDataJson.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.CreatedAt.get -> System.DateTimeOffset
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.CreatedAt.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.CredentialId.get -> byte[]!
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.CredentialId.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.IsBackedUp.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.IsBackedUp.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.IsBackupEligible.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.IsBackupEligible.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.IsUserVerified.get -> bool
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.IsUserVerified.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.Name.get -> string?
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.Name.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.PublicKey.get -> byte[]!
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.PublicKey.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.SignCount.get -> uint
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.SignCount.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.Transports.get -> string![]?
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.Transports.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.UserId.get -> TKey
+virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.UserId.set -> void

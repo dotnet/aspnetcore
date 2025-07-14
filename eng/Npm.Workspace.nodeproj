@@ -19,15 +19,131 @@
     <_NpmAdditionalEnvironmentVariables>PUPPETEER_SKIP_DOWNLOAD=1</_NpmAdditionalEnvironmentVariables>
   </PropertyGroup>
 
-  <Target Name="Restore">
+  <PropertyGroup>
+    <NpmWorkspaceRoot>$(MSBuildThisFileDirectory)..</NpmWorkspaceRoot>
+    <NodeModulesMarkerFile>$(NpmWorkspaceRoot)\node_modules\.package-lock.json</NodeModulesMarkerFile>
+    <!-- Common exclude patterns for NPM build input/output files -->
+    <NpmCommonExcludePatterns>
+      **\pkg-version.ts;
+      $(NpmWorkspaceRoot)\src\**\node_modules\**\*;
+      $(NpmWorkspaceRoot)\src\**\bin\**\*;
+      $(NpmWorkspaceRoot)\src\**\obj\**\*
+    </NpmCommonExcludePatterns>
+  </PropertyGroup>
+
+  <!-- Input files for incremental restore check -->
+  <ItemGroup>
+    <NpmInputFiles Include="$(NpmWorkspaceRoot)\package.json" />
+    <NpmInputFiles Include="$(NpmWorkspaceRoot)\package-lock.json" Condition="Exists('$(NpmWorkspaceRoot)\package-lock.json')" />
+    <NpmInputFiles Include="$(NpmWorkspaceRoot)\src\**\package.json" Exclude="$(NpmWorkspaceRoot)\src\**\node_modules\**\package.json" />
+    <NpmInputFiles Include="$(NpmWorkspaceRoot)\.npmrc" Condition="Exists('$(NpmWorkspaceRoot)\.npmrc')" />
+  </ItemGroup>
+
+  <!-- Output files for incremental restore check -->
+  <ItemGroup>
+    <NpmOutputFiles Include="$(NodeModulesMarkerFile)" />
+  </ItemGroup>
+
+  <!-- Output files for incremental build check -->
+  <ItemGroup>
+    <!-- SignalR client outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\browser\signalr.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\browser\signalr.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\browser\signalr.min.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\browser\signalr.min.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\cjs\**\*.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\cjs\**\*.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\esm\**\*.d.ts" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\esm\**\*.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\esm\**\*.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\webworker\signalr.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\webworker\signalr.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\webworker\signalr.min.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr\dist\webworker\signalr.min.js.map" />
+
+    <!-- SignalR MessagePack protocol outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\browser\signalr-protocol-msgpack.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\browser\signalr-protocol-msgpack.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\browser\signalr-protocol-msgpack.min.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\browser\signalr-protocol-msgpack.min.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\cjs\**\*.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\cjs\**\*.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\esm\**\*.d.ts" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\esm\**\*.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\signalr-protocol-msgpack\dist\esm\**\*.js.map" />
+
+    <!-- JSInterop outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\src\Microsoft.JSInterop.d.ts" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\src\Microsoft.JSInterop.d.ts.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\src\Microsoft.JSInterop.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\src\Microsoft.JSInterop.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\JSInterop\Microsoft.JSInterop.JS\src\dist\tsconfig.tsbuildinfo" />
+
+    <!-- Components Web.JS outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.server.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.server.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.web.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.web.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.webassembly.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.webassembly.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Debug\blazor.webview.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.server.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.server.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.web.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.web.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webassembly.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webassembly.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\Web.JS\dist\Release\blazor.webview.js" />
+
+    <!-- WebAssembly Authentication outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\WebAssembly.Authentication\src\Interop\dist\Debug\AuthenticationService.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\WebAssembly.Authentication\src\Interop\dist\Debug\AuthenticationService.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\WebAssembly.Authentication\src\Interop\dist\Release\AuthenticationService.js" />
+
+    <!-- WebAssembly Authentication MSAL outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\Authentication.Msal\src\Interop\dist\Debug\AuthenticationService.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\Authentication.Msal\src\Interop\dist\Debug\AuthenticationService.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\WebAssembly\Authentication.Msal\src\Interop\dist\Release\AuthenticationService.js" />
+
+    <!-- Custom Elements outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\CustomElements\src\js\dist\Debug\Microsoft.AspNetCore.Components.CustomElements.lib.module.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\CustomElements\src\js\dist\Debug\Microsoft.AspNetCore.Components.CustomElements.lib.module.js.map" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\Components\CustomElements\src\js\dist\Release\Microsoft.AspNetCore.Components.CustomElements.lib.module.js" />
+
+    <!-- FunctionalTests outputs -->
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\FunctionalTests\wwwroot\dist\signalr-functional-tests.js" />
+    <NpmBuildOutputFiles Include="$(NpmWorkspaceRoot)\src\SignalR\clients\ts\FunctionalTests\wwwroot\dist\signalr-functional-tests.js.map" />
+  </ItemGroup>
+
+  <!-- Input files for incremental build check -->
+  <ItemGroup>
+    <!-- Source files -->
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.ts" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.js" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns);**\samples\**\wwwroot\lib\**\*;**\FunctionalTests\wwwroot\lib\**\*;$(NpmWorkspaceRoot)\src\**\dist\**\*" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\*.mjs" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns);$(NpmWorkspaceRoot)\src\**\dist\**\*" />
+
+    <!-- Configuration files -->
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\package.json" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns);$(NpmWorkspaceRoot)\src\**\node_modules\**\package.json" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\tsconfig*.json" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\rollup.config.*" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\webpack.config.*" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\src\**\jest.config.*" Exclude="@(NpmBuildOutputFiles);$(NpmCommonExcludePatterns)" />
+
+    <!-- Root workspace configuration files that affect build -->
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\package.json" />
+    <NpmBuildInputFiles Include="$(NpmWorkspaceRoot)\tsconfig*.json" />
+  </ItemGroup>
+
+
+  <Target Name="Restore" Inputs="@(NpmInputFiles)" Outputs="@(NpmOutputFiles)">
     <Message Text="Restoring NPM packages..." Importance="high" />
     <Exec
       Command="npm ci"
-      WorkingDirectory="$(MSBuildThisFileDirectory).."
+      WorkingDirectory="$(NpmWorkspaceRoot)"
       EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
   </Target>
 
-  <Target Name="Build">
+  <Target Name="Build" DependsOnTargets="Restore" Inputs="@(NpmBuildInputFiles)" Outputs="@(NpmBuildOutputFiles)">
     <PropertyGroup>
       <PackageVersion>$(VersionPrefix)</PackageVersion>
       <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
@@ -51,7 +167,7 @@
     <Exec Command="npm run test" ContinueOnError="true" WorkingDirectory="$(MSBuildThisFileDirectory).." />
   </Target>
 
-  <Target Name="Pack">
+  <Target Name="Pack" DependsOnTargets="Build">
     <PropertyGroup>
       <PackageVersion>$(VersionPrefix)</PackageVersion>
       <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
@@ -59,6 +175,10 @@
     <Message Text="Packing NPM packages..." Importance="high" />
     <MakeDir Directories="$(PackageOutputPath)" Condition="!Exists('$(PackageOutputPath)')" />
     <MakeDir Directories="$(IntermediateOutputPath)" Condition="!Exists('$(IntermediateOutputPath)')" />
+
+    <Exec
+      Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --update-versions $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
+      EnvironmentVariables="$(_NpmAdditionalEnvironmentVariables)" />
 
     <Exec
       Command="node $(MSBuildThisFileDirectory)scripts/npm/pack-workspace.mjs --create-packages $(RepoRoot)package.json $(PackageVersion) $(PackageOutputPath) $(IntermediateOutputPath)"
