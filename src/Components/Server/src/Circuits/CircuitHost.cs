@@ -188,6 +188,16 @@ internal partial class CircuitHost : IAsyncDisposable
         }));
     }
 
+    public bool SetDisconnected()
+    {
+        if (Client.Connected)
+        {
+            Client.SetDisconnected();
+            return true;
+        }
+        return false;
+    }
+
     // We handle errors in DisposeAsync because there's no real value in letting it propagate.
     // We run user code here (CircuitHandlers) and it's reasonable to expect some might throw, however,
     // there isn't anything better to do than log when one of these exceptions happens - because the
