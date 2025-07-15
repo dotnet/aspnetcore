@@ -119,9 +119,14 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     circuit.sendDisconnectBeacon();
   };
 
+  const onVisibilityChange = () => {
+    circuit.sendVisibilityChangeBeacon(document.visibilityState === 'visible');
+  };
+
   Blazor.disconnect = cleanup;
 
-  window.addEventListener('unload', cleanup, { capture: false, once: true });
+  window.addEventListener('pagehide', cleanup, { capture: false, once: true });
+  document.addEventListener('visibilitychange', onVisibilityChange, { capture: false, once: false });
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 

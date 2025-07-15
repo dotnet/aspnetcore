@@ -107,6 +107,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public IServiceProvider Services { get; }
 
+    public DateTime? PageHiddenAt { get; set; }
+
     internal bool HasPendingPersistedCircuitState => _persistedCircuitState != null;
 
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
