@@ -22,6 +22,8 @@
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.JSInterop.WebAssembly" />
     <Reference Include="Microsoft.DotNet.HotReload.WebAssembly" />
+    <Reference Include="Microsoft.DotNet.HotReload.Agent" PrivateAssets="all" />
+    <Reference Include="Microsoft.DotNet.HotReload.Agent.Data" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -65,9 +67,5 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="HotReload\" />
   </ItemGroup>
 </Project>

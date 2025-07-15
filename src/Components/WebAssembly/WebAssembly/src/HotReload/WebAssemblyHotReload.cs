@@ -6,15 +6,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection.Metadata;
-using System.Runtime.InteropServices.JavaScript;
-using System.Runtime.Versioning;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.WebAssembly.Services;
+using Microsoft.DotNet.HotReload;
 using Microsoft.JSInterop;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
-namespace Microsoft.DotNet.HotReload.WebAssembly;
+namespace Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 
 /// <summary>
 /// Contains methods called by interop. Intended for framework use only, not supported for use in application
@@ -63,7 +62,7 @@ public static partial class WebAssemblyHotReload
     private static bool s_initialized;
     private static HotReloadAgent? s_hotReloadAgent;
 
-    internal static async Task InitializeAsync(string baseUri)
+    internal static async Task InitializeAsync()
     {
         if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
             OperatingSystem.IsBrowser())
@@ -78,17 +77,17 @@ public static partial class WebAssemblyHotReload
                 throw new InvalidOperationException("Hot Reload agent already initialized");
             }
 
-            await ApplyPreviousDeltasAsync(agent, baseUri);
+            await ApplyPreviousDeltasAsync(agent);
         }
     }
 
-    private static async ValueTask ApplyPreviousDeltasAsync(HotReloadAgent agent, string baseUri)
+    private static async ValueTask ApplyPreviousDeltasAsync(HotReloadAgent agent)
     {
         string errorMessage;
 
         using var client = new HttpClient()
         {
-            BaseAddress = new Uri(baseUri, UriKind.Absolute)
+            BaseAddress = new Uri(WebAssemblyNavigationManager.Instance.BaseUri, UriKind.Absolute)
         };
 
         try
@@ -135,6 +134,7 @@ public static partial class WebAssemblyHotReload
     /// For framework use only.
     /// </summary>
     [Obsolete("Use ApplyHotReloadDeltas instead")]
+    [JSInvokable(nameof(ApplyHotReloadDelta))]
     public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes, int[]? updatedTypes)
     {
         GetAgent()?.ApplyDeltas(
@@ -159,28 +159,7 @@ public static partial class WebAssemblyHotReload
     /// <summary>
     /// For framework use only.
     /// </summary>
+    [JSInvokable(nameof(GetApplyUpdateCapabilities))]
     public static string GetApplyUpdateCapabilities()
         => GetAgent()?.Capabilities ?? "";
-}
-
-internal static partial class Interop
-{
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    public static Task InitializeAsync(string baseUri)
-    {
-        if (MetadataUpdater.IsSupported)
-        {
-            return WebAssemblyHotReload.InitializeAsync(baseUri);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    [JSExport]
-    [SupportedOSPlatform("browser")]
-    public static string GetApplyUpdateCapabilities()
-    {
-        return WebAssemblyHotReload.GetApplyUpdateCapabilities();
-    }
 }

@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
+using Microsoft.AspNetCore.Components.WebAssembly.HotReload;
 using Microsoft.AspNetCore.Components.WebAssembly.Infrastructure;
 using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
@@ -137,11 +139,10 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
         await manager.RestoreStateAsync(store);
 
-        // TODO MF: Clean up
-        //if (MetadataUpdater.IsSupported)
-        //{
-        //    await WebAssemblyHotReload.InitializeAsync();
-        //}
+        if (MetadataUpdater.IsSupported && Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_LEGACY_HOTRELOAD") != "false")
+        {
+            await WebAssemblyHotReload.InitializeAsync();
+        }
 
         var tcs = new TaskCompletionSource();
         using (cancellationToken.Register(() => tcs.TrySetResult()))
