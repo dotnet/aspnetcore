@@ -534,7 +534,7 @@
     <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
   </PropertyGroup>
   <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.OpenApi' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
-    <BaselinePackageReference Include="Microsoft.OpenApi" Version="[1.6.17, )" />
+    <BaselinePackageReference Include="Microsoft.OpenApi" Version="[2.0.0, )" />
   </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.OutputCaching.StackExchangeRedis-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.OutputCaching.StackExchangeRedis' ">
