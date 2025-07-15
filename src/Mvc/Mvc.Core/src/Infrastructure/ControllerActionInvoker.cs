@@ -30,14 +30,11 @@ internal partial class ControllerActionInvoker : ResourceInvoker, IActionInvoker
     internal ControllerActionInvoker(
         ILogger logger,
         DiagnosticListener diagnosticListener,
-#pragma warning disable CS0618 // Type or member is obsolete
-        IActionContextAccessor actionContextAccessor,
-#pragma warning restore CS0618 // Type or member is obsolete
         IActionResultTypeMapper mapper,
         ControllerContext controllerContext,
         ControllerActionInvokerCacheEntry cacheEntry,
         IFilterMetadata[] filters)
-        : base(diagnosticListener, logger, actionContextAccessor, mapper, controllerContext, filters, controllerContext.ValueProviderFactories)
+        : base(diagnosticListener, logger, mapper, controllerContext, filters, controllerContext.ValueProviderFactories)
     {
         ArgumentNullException.ThrowIfNull(cacheEntry);
 

@@ -49,9 +49,6 @@ public class StartupWithoutEndpointRouting
         services.AddScoped<RequestIdService>();
         services.AddTransient<ServiceActionFilter>();
         services.AddScoped<TestResponseGenerator>();
-        #pragma warning disable CS0618 // Type or member is obsolete
-        services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-#pragma warning restore CS0618 // Type or member is obsolete
         services.TryAddSingleton(CreateWeatherForecastService);
     }
 

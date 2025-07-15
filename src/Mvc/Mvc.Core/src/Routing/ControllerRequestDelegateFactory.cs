@@ -24,9 +24,6 @@ internal sealed class ControllerRequestDelegateFactory : IRequestDelegateFactory
     private readonly ILogger _logger;
     private readonly DiagnosticListener _diagnosticListener;
     private readonly IActionResultTypeMapper _mapper;
-#pragma warning disable CS0618 // Type or member is obsolete
-    private readonly IActionContextAccessor _actionContextAccessor;
-#pragma warning restore CS0618 // Type or member is obsolete
     private readonly bool _enableActionInvokers;
 
     public ControllerRequestDelegateFactory(
@@ -35,19 +32,6 @@ internal sealed class ControllerRequestDelegateFactory : IRequestDelegateFactory
         ILoggerFactory loggerFactory,
         DiagnosticListener diagnosticListener,
         IActionResultTypeMapper mapper)
-        : this(controllerActionInvokerCache, optionsAccessor, loggerFactory, diagnosticListener, mapper, null)
-    {
-    }
-
-    public ControllerRequestDelegateFactory(
-        ControllerActionInvokerCache controllerActionInvokerCache,
-        IOptions<MvcOptions> optionsAccessor,
-        ILoggerFactory loggerFactory,
-        DiagnosticListener diagnosticListener,
-        IActionResultTypeMapper mapper,
-#pragma warning disable CS0618 // Type or member is obsolete
-        IActionContextAccessor? actionContextAccessor)
-#pragma warning restore CS0618 // Type or member is obsolete
     {
         _controllerActionInvokerCache = controllerActionInvokerCache;
         _valueProviderFactories = optionsAccessor.Value.ValueProviderFactories.ToArray();
@@ -58,9 +42,6 @@ internal sealed class ControllerRequestDelegateFactory : IRequestDelegateFactory
         _logger = loggerFactory.CreateLogger<ControllerActionInvoker>();
         _diagnosticListener = diagnosticListener;
         _mapper = mapper;
-#pragma warning disable CS0618 // Type or member is obsolete
-        _actionContextAccessor = actionContextAccessor ?? ActionContextAccessor.Null;
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     public RequestDelegate? CreateRequestDelegate(ActionDescriptor actionDescriptor, RouteValueDictionary? dataTokens)
@@ -100,7 +81,6 @@ internal sealed class ControllerRequestDelegateFactory : IRequestDelegateFactory
             var invoker = new ControllerActionInvoker(
                 _logger,
                 _diagnosticListener,
-                _actionContextAccessor,
                 _mapper,
                 controllerContext,
                 cacheEntry,

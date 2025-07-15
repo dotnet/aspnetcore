@@ -1432,9 +1432,6 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         var invoker = new ControllerActionInvoker(
             new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
             new DiagnosticListener("Microsoft.AspNetCore"),
-#pragma warning disable CS0618 // Type or member is obsolete
-            ActionContextAccessor.Null,
-#pragma warning restore CS0618 // Type or member is obsolete
             new ActionResultTypeMapper(),
             controllerContext,
             cacheEntry,
@@ -1771,9 +1768,6 @@ public class ControllerActionInvokerTest : CommonResourceInvokerTest
         var invoker = new ControllerActionInvoker(
             logger,
             diagnosticSource,
-#pragma warning disable CS0618 // Type or member is obsolete
-            ActionContextAccessor.Null,
-#pragma warning restore CS0618 // Type or member is obsolete
             new ActionResultTypeMapper(),
             controllerContext,
             cacheEntry,

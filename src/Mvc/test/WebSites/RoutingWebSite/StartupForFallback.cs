@@ -15,10 +15,8 @@ public class StartupForFallback
             .AddMvc()
             .AddNewtonsoftJson();
 
+        services.AddHttpContextAccessor();
         services.AddScoped<TestResponseGenerator>();
-        #pragma warning disable CS0618 // Type or member is obsolete
-        services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-#pragma warning restore CS0618 // Type or member is obsolete
 
         // Used by some controllers defined in this project.
         services.Configure<RouteOptions>(options => options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer));

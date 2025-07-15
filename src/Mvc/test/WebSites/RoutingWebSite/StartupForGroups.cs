@@ -15,11 +15,9 @@ public class StartupForGroups
 
         // Used by some controllers defined in this project.
         services.Configure<RouteOptions>(options => options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer));
+        services.AddHttpContextAccessor();
         services.AddScoped<TestResponseGenerator>();
         // This is used by test response generator
-        #pragma warning disable CS0618 // Type or member is obsolete
-        services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     public virtual void Configure(IApplicationBuilder app)
