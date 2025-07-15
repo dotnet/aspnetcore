@@ -32,12 +32,12 @@ internal sealed class UserManagerMetrics : IDisposable
     public UserManagerMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
-        _createCounter = _meter.CreateCounter<long>(CreateCounterName, "count", "The number of users created.");
-        _updateCounter = _meter.CreateCounter<long>(UpdateCounterName, "count", "The number of user updates.");
-        _deleteCounter = _meter.CreateCounter<long>(DeleteCounterName, "count", "The number of users deleted.");
-        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "count", "The number of check password attempts. Only checks whether the password is valid and not whether the user account is in a state that can log in.");
-        _verifyTokenCounter = _meter.CreateCounter<long>(VerifyTokenCounterName, "count", "The number of token verification attempts.");
-        _generateTokenCounter = _meter.CreateCounter<long>(GenerateTokenCounterName, "count", "The number of token generation attempts.");
+        _createCounter = _meter.CreateCounter<long>(CreateCounterName, "{create}", "The number of users created.");
+        _updateCounter = _meter.CreateCounter<long>(UpdateCounterName, "{update}", "The number of user updates.");
+        _deleteCounter = _meter.CreateCounter<long>(DeleteCounterName, "{delete}", "The number of users deleted.");
+        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "{check}", "The number of check password attempts. Only checks whether the password is valid and not whether the user account is in a state that can log in.");
+        _verifyTokenCounter = _meter.CreateCounter<long>(VerifyTokenCounterName, "{count}", "The number of token verification attempts.");
+        _generateTokenCounter = _meter.CreateCounter<long>(GenerateTokenCounterName, "{count}", "The number of token generation attempts.");
     }
 
     internal void CreateUser(string userType, IdentityResult? result, Exception? exception = null)
@@ -52,7 +52,7 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType }
         };
         AddIdentityResultTags(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddExceptionTags(ref tags, exception, result: result);
 
         _createCounter.Add(1, tags);
     }
@@ -70,7 +70,7 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user.update_type", GetUpdateType(updateType) },
         };
         AddIdentityResultTags(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddExceptionTags(ref tags, exception, result: result);
 
         _updateCounter.Add(1, tags);
     }
@@ -87,7 +87,7 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType }
         };
         AddIdentityResultTags(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddExceptionTags(ref tags, exception, result: result);
 
         _deleteCounter.Add(1, tags);
     }
@@ -105,7 +105,7 @@ internal sealed class UserManagerMetrics : IDisposable
         };
         if (userMissing != null || result != null)
         {
-            tags.Add("aspnetcore.identity.user.password_result", GetPasswordResult(result, passwordMissing: null, userMissing));
+            tags.Add("aspnetcore.identity.password_check_result", GetPasswordResult(result, passwordMissing: null, userMissing));
         }
         AddExceptionTags(ref tags, exception);
 
@@ -183,15 +183,16 @@ internal sealed class UserManagerMetrics : IDisposable
         tags.Add("aspnetcore.identity.result", result.Succeeded ? "success" : "failure");
         if (!result.Succeeded && result.Errors.FirstOrDefault()?.Code is { Length: > 0 } code)
         {
-            tags.Add("aspnetcore.identity.result_error_code", code);
+            tags.Add("aspnetcore.identity.error_code", code);
         }
     }
 
-    private static void AddExceptionTags(ref TagList tags, Exception? exception)
+    private static void AddExceptionTags(ref TagList tags, Exception? exception, IdentityResult? result = null)
     {
-        if (exception != null)
+        var value = exception?.GetType().FullName ?? result?.Errors.FirstOrDefault()?.Code;
+        if (value != null)
         {
-            tags.Add("error.type", exception.GetType().FullName!);
+            tags.Add("error.type", value);
         }
     }
 
