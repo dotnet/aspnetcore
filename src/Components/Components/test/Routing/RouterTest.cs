@@ -268,12 +268,11 @@ public class RouterTest
     }
 
     [Fact]
-    public async Task LogsWarningWhenBothNotFoundAndNotFoundPageAreSet()
+    public async Task ThrowsExceptionWhenBothNotFoundAndNotFoundPageAreSet()
     {
         // Arrange
-        var logger = new TestLogger<Router>();
         var services = new ServiceCollection();
-        services.AddSingleton<ILoggerFactory>(new TestLoggerFactory(logger));
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
         services.AddSingleton<NavigationManager>(_navigationManager);
         services.AddSingleton<INavigationInterception, TestNavigationInterception>();
         services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
@@ -293,15 +292,13 @@ public class RouterTest
             { nameof(Router.NotFoundPage), typeof(NotFoundTestComponent) }
         };
 
-        // Act
-        await renderer.Dispatcher.InvokeAsync(() =>
-            router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await renderer.Dispatcher.InvokeAsync(() =>
+                router.SetParametersAsync(ParameterView.FromDictionary(parameters))));
 
-        // Assert
-        var warningLogs = logger.LogEntries.Where(entry => entry.LogLevel == LogLevel.Warning).ToList();
-        Assert.Single(warningLogs);
-        Assert.Contains("Both NotFound and NotFoundPage parameters are set on Router component", warningLogs[0].Message);
-        Assert.Contains("NotFoundPage is preferred and NotFound will be deprecated", warningLogs[0].Message);
+        Assert.Contains("Both NotFound and NotFoundPage parameters are set on Router component", exception.Message);
+        Assert.Contains("NotFoundPage is preferred and NotFound will be deprecated", exception.Message);
     }
 
     internal class TestNavigationManager : NavigationManager

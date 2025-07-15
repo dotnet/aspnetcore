@@ -147,7 +147,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 #pragma warning disable CS0618 // Type or member is obsolete
             if (NotFound != null)
             {
-                Log.BothNotFoundParametersSet(_logger);
+                throw new InvalidOperationException("Both NotFound and NotFoundPage parameters are set on Router component. NotFoundPage is preferred and NotFound will be deprecated. Consider using only NotFoundPage.");
             }
 #pragma warning restore CS0618 // Type or member is obsolete
             if (!typeof(IComponent).IsAssignableFrom(NotFoundPage))
@@ -451,8 +451,5 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         [LoggerMessage(4, LogLevel.Debug, $"Displaying {nameof(NotFound)} on request", EventName = "DisplayingNotFoundOnRequest")]
         internal static partial void DisplayingNotFound(ILogger logger);
 #pragma warning restore CS0618 // Type or member is obsolete
-
-        [LoggerMessage(5, LogLevel.Warning, "Both NotFound and NotFoundPage parameters are set on Router component. NotFoundPage is preferred and NotFound will be deprecated. Consider using only NotFoundPage.", EventName = "BothNotFoundParametersSet")]
-        internal static partial void BothNotFoundParametersSet(ILogger logger);
     }
 }
