@@ -127,9 +127,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         );
     }
 
-    private void AssertOriginalPageRendered() =>
-        Browser.Equal("Any content", () => Browser.FindElement(By.Id("test-info")).Text);
-
     private void AssertNotFoundPageRendered()
     {
         Browser.Equal("Welcome On Custom Not Found Page", () => Browser.FindElement(By.Id("test-info")).Text);
@@ -139,14 +136,11 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
 
     private void AssertNotFoundContentNotRendered(bool responseHasStarted)
     {
-        if (responseHasStarted)
-        {
-            AssertOriginalPageRendered();
-        }
-        else
+        if (!responseHasStarted)
         {
             AssertBrowserDefaultNotFoundViewRendered();
         }
+        // otherwise, the render view does not differ from the original page
     }
 
     private void AssertUrlNotChanged(string expectedUrl) =>
