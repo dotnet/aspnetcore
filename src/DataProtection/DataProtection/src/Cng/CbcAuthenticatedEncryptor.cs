@@ -299,6 +299,18 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
         CryptoUtil.Assert(dwEncryptedBytes == cbOutput, "dwEncryptedBytes == cbOutput");
     }
 
+#if NET10_0_OR_GREATER
+    public override int GetEncryptedSize(int plainTextLength, uint preBufferSize, uint postBufferSize)
+    {
+        return checked((int)(preBufferSize + KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + plainTextLength + _hmacAlgorithmDigestLengthInBytes + postBufferSize));
+    }
+
+    public override bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        throw new NotImplementedException();
+    }
+#endif
+
     protected override byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer)
     {
         // This buffer will be used to hold the symmetric encryption and HMAC subkeys

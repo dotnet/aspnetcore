@@ -281,6 +281,17 @@ sealed class MockAuthenticatedEncryptor : IAuthenticatedEncryptor
 {
     byte[] IAuthenticatedEncryptor.Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> _additionalAuthenticatedData) => ciphertext.ToArray();
     byte[] IAuthenticatedEncryptor.Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> _additionalAuthenticatedData) => plaintext.ToArray();
+
+#if NET10_0_OR_GREATER
+    public int GetEncryptedSize(int plainTextLength) => plainTextLength;
+
+    public bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        var result = plainText.TryCopyTo(destination);
+        bytesWritten = destination.Length;
+        return result;
+    }
+#endif
 }
 
 /// <summary>

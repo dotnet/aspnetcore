@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.DataProtection;
@@ -26,4 +27,9 @@ public interface IDataProtector : IDataProtectionProvider
     /// Thrown if the protected data is invalid or malformed.
     /// </exception>
     byte[] Unprotect(byte[] protectedData);
+
+#if NET10_0_OR_GREATER
+    int GetProtectedSize(ReadOnlySpan<byte> plainText);
+    bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten);
+#endif
 }

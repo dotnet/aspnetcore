@@ -125,4 +125,14 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
         return Unprotect(protectedData, out _);
     }
+
+    public int GetProtectedSize(ReadOnlySpan<byte> plainText)
+    {
+        throw new NotImplementedException();
+    }
+
+    public bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten)
+    {
+        throw new NotImplementedException();
+    }
 }

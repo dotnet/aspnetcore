@@ -32,4 +32,9 @@ public interface IAuthenticatedEncryptor
     /// <returns>The ciphertext blob, including authentication tag.</returns>
     /// <remarks>All cryptography-related exceptions should be homogenized to CryptographicException.</remarks>
     byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData);
+
+#if NET10_0_OR_GREATER
+    int GetEncryptedSize(int plainTextLength);
+    bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
+#endif
 }

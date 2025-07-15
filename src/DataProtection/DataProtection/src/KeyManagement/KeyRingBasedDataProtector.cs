@@ -90,6 +90,23 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         return retVal;
     }
 
+#if NET10_0_OR_GREATER
+    public int GetProtectedSize(ReadOnlySpan<byte> plainText)
+    {
+        // Get the current key ring to access the encryptor
+        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+        var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
+        CryptoUtil.Assert(defaultEncryptor != null, "defaultEncryptorInstance != null");
+
+        return defaultEncryptor.GetEncryptedSize(plainText.Length);
+    }
+
+    public bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten)
+    {
+        throw new NotImplementedException();
+    }
+#endif
+
     public byte[] Protect(byte[] plaintext)
     {
         ArgumentNullThrowHelper.ThrowIfNull(plaintext);

@@ -141,6 +141,17 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         }
     }
 
+    public int GetEncryptedSize(int plainTextLength)
+        => GetEncryptedSize(plainTextLength, 0, 0);
+
+    public int GetEncryptedSize(int plainTextLength, uint preBufferSize, uint postBufferSize)
+        => checked((int)(preBufferSize + KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES + postBufferSize));
+
+    public bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        throw new NotImplementedException();
+    }
+
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
     {
         plaintext.Validate();

@@ -294,6 +294,20 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
     }
 
+#if NET10_0_OR_GREATER
+    public int GetEncryptedSize(int plainTextLength)
+    {
+        var symmetricAlgorithm = CreateSymmetricAlgorithm();
+        var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plainTextLength);
+        return KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes /* IV */ + cipherTextLength + _validationAlgorithmDigestLengthInBytes /* MAC */;
+    }
+
+    public bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        throw new NotImplementedException();
+    }
+#endif
+
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
     {
         plaintext.Validate();
