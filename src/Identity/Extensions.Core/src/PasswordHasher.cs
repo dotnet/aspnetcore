@@ -260,7 +260,7 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
             int saltLength = (int)ReadNetworkByteOrder(hashedPassword, 9);
 
             // Read the salt: must be >= 128 bits
-            if (saltLength < 128 / 8)
+            if (saltLength < 128 / 8 || saltLength + 13 > hashedPassword.Length)
             {
                 return false;
             }
