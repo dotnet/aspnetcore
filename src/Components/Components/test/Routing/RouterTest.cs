@@ -297,8 +297,8 @@ public class RouterTest
             await renderer.Dispatcher.InvokeAsync(() =>
                 router.SetParametersAsync(ParameterView.FromDictionary(parameters))));
 
-        Assert.Contains("Both NotFound and NotFoundPage parameters are set on Router component", exception.Message);
-        Assert.Contains("NotFoundPage is preferred and NotFound will be deprecated", exception.Message);
+        Assert.Contains("Setting NotFound and NotFoundPage properties simultaneously is not supported", exception.Message);
+        Assert.Contains("Use either NotFound or NotFoundPage", exception.Message);
     }
 
     internal class TestNavigationManager : NavigationManager

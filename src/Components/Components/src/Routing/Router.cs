@@ -147,7 +147,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 #pragma warning disable CS0618 // Type or member is obsolete
             if (NotFound != null)
             {
-                throw new InvalidOperationException("Both NotFound and NotFoundPage parameters are set on Router component. NotFoundPage is preferred and NotFound will be deprecated. Consider using only NotFoundPage.");
+                throw new InvalidOperationException($"Setting {nameof(NotFound)} and {nameof(NotFoundPage)} properties simultaneously is not supported. Use either {nameof(NotFound)} or {nameof(NotFoundPage)}.");
             }
 #pragma warning restore CS0618 // Type or member is obsolete
             if (!typeof(IComponent).IsAssignableFrom(NotFoundPage))
