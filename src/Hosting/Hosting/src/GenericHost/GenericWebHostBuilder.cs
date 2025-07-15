@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Hosting;
 
 internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStartup
 {
-    private const string _startupConfigName = "__UseStartup.StartupType";
+    private const string _startupConfigName = "__UseStartup.StartupObject";
     private readonly object _startupKey = new object();
 
     private AggregateException? _hostingStartupErrors;
