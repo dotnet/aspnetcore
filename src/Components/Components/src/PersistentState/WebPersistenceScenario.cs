@@ -8,7 +8,8 @@ namespace Microsoft.AspNetCore.Components;
 internal enum WebPersistenceScenarioType
 {
     Prerendering,
-    Reconnection
+    Reconnection,
+    EnhancedNavigation
 }
 
 /// <summary>
@@ -49,6 +50,8 @@ public sealed class WebPersistenceScenario : IPersistentComponentStateScenario
     /// </code>
     /// </example>
     public static WebPersistenceScenario Reconnection { get; } = new(WebPersistenceScenarioType.Reconnection, isRecurring: false);
+
+    public static WebPersistenceScenario EnhancedNavigation { get; } = new(WebPersistenceScenarioType.EnhancedNavigation, isRecurring: true);
 
     private string GetDebuggerDisplay() => $"{ScenarioType} (IsRecurring: {IsRecurring})";
 }

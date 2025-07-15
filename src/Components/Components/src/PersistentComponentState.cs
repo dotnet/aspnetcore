@@ -89,19 +89,11 @@ public class PersistentComponentState
             filter.ShouldRestore(_currentScenario))))
         {
             callback();
-            return default;
         }
 
-        if (_currentScenario is { IsRecurring: false })
-        {
-            return default;
-        }
-        else
-        {
-            var registration = new RestoreComponentStateRegistration(filter, callback);
-            _registeredRestoringCallbacks.Add(registration);
-            return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);
-        }
+        var registration = new RestoreComponentStateRegistration(filter, callback);
+        _registeredRestoringCallbacks.Add(registration);
+        return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);
     }
 
     /// <summary>

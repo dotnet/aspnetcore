@@ -400,7 +400,7 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         private readonly PersistingComponentStateSubscription? _persistingSubscription;
         private readonly RestoringComponentStateSubscription? _restoringSubscription;
         private object? _lastValue;
-        private bool _shouldComputeInitialValue;
+        private bool _hasComputedValueFirstTime;
         private readonly PersistentComponentState _state;
         private readonly ComponentState _subscriber;
         private readonly string _propertyName;
@@ -437,10 +437,10 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
 
         internal object? GetOrComputeLastValue()
         {
-            if (_shouldComputeInitialValue)
+            if (!_hasComputedValueFirstTime)
             {
+                _hasComputedValueFirstTime = true;
                 RestoreProperty();
-                _shouldComputeInitialValue = false;
             }
 
             return _lastValue;
@@ -476,13 +476,12 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
 
         private void RestoreProperty()
         {
-            if (!_shouldComputeInitialValue)
+            if (!_hasComputedValueFirstTime)
             {
                 // We'll get invoked right away upon subscription. This is too early to try and restore the value as
                 // the component state might not be fully initialized yet.
                 // For that reason, skip the restore operation until GetOrComputeLastValue is called.
                 // It will trigger the restore operation at the right time.
-                _shouldComputeInitialValue = true;
                 return;
             }
 
@@ -496,6 +495,7 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
                     Log.RestoringValueFromState(_logger, storageKey, _propertyType.Name, _propertyName);
                     var sequence = new ReadOnlySequence<byte>(data!);
                     _lastValue = _customSerializer.Restore(_propertyType, sequence);
+                    _subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
                 }
                 else
                 {
@@ -508,6 +508,7 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
                 {
                     Log.RestoredValueFromPersistentState(_logger, storageKey, _propertyType.Name, "null", _propertyName);
                     _lastValue = value;
+                    _subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
                 }
                 else
                 {

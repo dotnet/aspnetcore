@@ -38,6 +38,8 @@ public sealed class WebPersistenceFilter : IPersistentStateFilter
     /// </example>
     public static WebPersistenceFilter Reconnection { get; } = new(WebPersistenceScenarioType.Reconnection, enabled: true);
 
+    public static WebPersistenceFilter EnhancedNavigation { get; } = new(WebPersistenceScenarioType.EnhancedNavigation, enabled: true);
+
     /// <summary>
     /// Determines whether this filter supports the specified scenario.
     /// </summary>

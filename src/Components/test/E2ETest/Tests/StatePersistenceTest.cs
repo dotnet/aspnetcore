@@ -108,6 +108,119 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     }
 
     [Theory]
+    [InlineData(typeof(InteractiveServerRenderMode), (string)null)]
+    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming")]
+    [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null)]
+    [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
+    [InlineData(typeof(InteractiveAutoRenderMode), (string)null)]
+    [InlineData(typeof(InteractiveAutoRenderMode), "AutoStreaming")]
+    public void ComponentWithUpdateStateOnEnhancedNavigationReceivesStateUpdates(Type renderMode, string streaming)
+    {
+        var mode = renderMode switch
+        {
+            var t when t == typeof(InteractiveServerRenderMode) => "server",
+            var t when t == typeof(InteractiveWebAssemblyRenderMode) => "wasm",
+            var t when t == typeof(InteractiveAutoRenderMode) => "auto",
+            _ => throw new ArgumentException($"Unknown render mode: {renderMode.Name}")
+        };
+
+        // Step 1: Navigate to page without components first to establish initial state
+        if (streaming == null)
+        {
+            Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
+        }
+        else
+        {
+            Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&streaming-id={streaming}&suppress-autostart");
+        }
+
+        if (mode == "auto")
+        {
+            BlockWebAssemblyResourceLoad();
+        }
+
+        Browser.Click(By.Id("call-blazor-start"));
+        Browser.Click(By.Id("page-with-components-link"));
+
+        // Step 2: Validate initial state - no enhanced nav state should be found
+        ValidateEnhancedNavState(
+            mode: mode,
+            renderMode: renderMode.Name,
+            interactive: streaming == null,
+            enhancedNavStateFound: false,
+            enhancedNavStateValue: "no-enhanced-nav-state",
+            streamingId: streaming,
+            streamingCompleted: false);
+
+        if (streaming != null)
+        {
+            Browser.Click(By.Id("end-streaming"));
+            ValidateEnhancedNavState(
+                mode: mode,
+                renderMode: renderMode.Name,
+                interactive: true,
+                enhancedNavStateFound: false,
+                enhancedNavStateValue: "no-enhanced-nav-state",
+                streamingId: streaming,
+                streamingCompleted: true);
+        }
+
+        // Step 3: Navigate back to page without components (this persists state)
+        Browser.Click(By.Id("page-no-components-link"));
+
+        // Step 4: Navigate back to page with components via enhanced navigation
+        // This should trigger [UpdateStateOnEnhancedNavigation] and update the state
+        Browser.Click(By.Id("page-with-components-link"));
+
+        // Step 5: Validate that enhanced navigation state was updated
+        ValidateEnhancedNavState(
+            mode: mode,
+            renderMode: renderMode.Name,
+            interactive: streaming == null,
+            enhancedNavStateFound: true,
+            enhancedNavStateValue: "enhanced-nav-updated",
+            streamingId: streaming,
+            streamingCompleted: streaming == null);
+
+        if (streaming != null)
+        {
+            Browser.Click(By.Id("end-streaming"));
+            ValidateEnhancedNavState(
+                mode: mode,
+                renderMode: renderMode.Name,
+                interactive: true,
+                enhancedNavStateFound: true,
+                enhancedNavStateValue: "enhanced-nav-updated",
+                streamingId: streaming,
+                streamingCompleted: true);
+        }
+    }
+
+    private void ValidateEnhancedNavState(
+        string mode,
+        string renderMode,
+        bool interactive,
+        bool enhancedNavStateFound,
+        string enhancedNavStateValue,
+        string streamingId = null,
+        bool streamingCompleted = false)
+    {
+        Browser.Equal($"Render mode: {renderMode}", () => Browser.FindElement(By.Id("render-mode")).Text);
+        Browser.Equal($"Streaming id:{streamingId}", () => Browser.FindElement(By.Id("streaming-id")).Text);
+        Browser.Equal($"Interactive: {interactive}", () => Browser.FindElement(By.Id("interactive")).Text);
+        +
+        if (streamingId == null || streamingCompleted)
+        {
+            Browser.Equal($"Enhanced nav state found:{enhancedNavStateFound}", () => Browser.FindElement(By.Id("enhanced-nav-state-found")).Text);
+            Browser.Equal($"Enhanced nav state value:{enhancedNavStateValue}", () => Browser.FindElement(By.Id("enhanced-nav-state-value")).Text);
+        }
+        else
+        {
+            Browser.Equal("Streaming: True", () => Browser.FindElement(By.Id("streaming")).Text);
+        }
+    }
+
+    [Theory]
     [InlineData((string)null)]
     [InlineData("ServerStreaming")]
     public async Task StateIsProvidedEveryTimeACircuitGetsCreated(string streaming)
