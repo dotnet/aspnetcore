@@ -17,6 +17,7 @@ public class PublicProgramSourceGenerator : IIncrementalGenerator
 /// </summary>
 public partial class Program { }
 """;
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var internalGeneratedProgramClass = context.CompilationProvider.Select(static (compilation, cancellationToken) =>
