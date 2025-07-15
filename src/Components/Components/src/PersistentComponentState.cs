@@ -92,10 +92,8 @@ public class PersistentComponentState
             return default;
         }
 
-        if (!_currentScenario.IsRecurring)
+        if (_currentScenario is { IsRecurring: false })
         {
-            // If the scenario is recurring, we don't register the callback.
-            // The host will handle restoring the state for recurring scenarios.
             return default;
         }
         else

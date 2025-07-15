@@ -23,11 +23,11 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
     private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
 
-    private readonly Dictionary<(ComponentState, string), ComponentSubscription> _subscriptions = [];
+    private readonly Dictionary<ComponentSubscriptionKey, ComponentSubscription> _subscriptions = [];
 
     public bool IsFixed => false;
     // For testing purposes only
-    internal Dictionary<(ComponentState, string), ComponentSubscription> Subscriptions => _subscriptions;
+    internal Dictionary<ComponentSubscriptionKey, ComponentSubscription> Subscriptions => _subscriptions;
 
     public bool CanSupplyValue(in CascadingParameterInfo parameterInfo)
         => parameterInfo.Attribute is PersistentStateAttribute;
@@ -44,9 +44,9 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
     {
         var componentState = (ComponentState)key!;
 
-        if (_subscriptions.TryGetValue((componentState, parameterInfo.PropertyName), out var subscription))
+        if (_subscriptions.TryGetValue(new(componentState, parameterInfo.PropertyName), out var subscription))
         {
-            return subscription.LastValue;
+            return subscription.GetOrComputeLastValue();
         }
 
         return null;
@@ -59,59 +59,29 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
     {
         var propertyName = parameterInfo.PropertyName;
         var propertyType = parameterInfo.PropertyType;
-        var storageKey = ComputeKey(subscriber, propertyName);
 
         // Resolve serializer outside the lambda
         var customSerializer = _serializerCache.GetOrAdd(propertyType, SerializerFactory);
 
         var propertyGetter = ResolvePropertyGetter(subscriber.Component.GetType(), propertyName);
 
-        var componentSubscription = new ComponentSubscription();
-        var persistingSubscription = state.RegisterOnPersisting(() =>
-            {
-                var property = propertyGetter.GetValue(subscriber.Component);
-                if (property == null)
-                {
-                    Log.SkippedPersistingNullValue(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name, propertyName);
-                    return Task.CompletedTask;
-                }
+        var componentSubscription = new ComponentSubscription(
+            state,
+            subscriber,
+            propertyName,
+            propertyType,
+            propertyGetter,
+            customSerializer,
+            logger);
 
-                if (customSerializer != null)
-                {
-                    Log.PersistingValueToState(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name, propertyName);
-
-                    using var writer = new PooledArrayBufferWriter<byte>();
-                    customSerializer.Persist(propertyType, property, writer);
-                    state.PersistAsBytes(storageKey, writer.WrittenMemory.ToArray());
-                    return Task.CompletedTask;
-                }
-
-                // Fallback to JSON serialization
-                Log.PersistingValueToState(logger, storageKey, propertyType.Name, subscriber.Component.GetType().Name, propertyName);
-                state.PersistAsJson(storageKey, property, propertyType);
-                return Task.CompletedTask;
-            }, subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
-
-        componentSubscription.SetPersistingSubscription(persistingSubscription);
-
-        var filterAttributes = propertyGetter.PropertyInfo.GetCustomAttributes(inherit: true)
-            .OfType<IPersistentStateFilter>() ?? [];
-
-        var filter = CreateFilter(filterAttributes);
-
-        var defaultRestoringSubscription = state.RegisterOnRestoring(
-        filter,
-        CreateRestoreAction(storageKey, propertyType, componentSubscription, propertyName, customSerializer));
-        componentSubscription.SetRestoringSubscription(defaultRestoringSubscription);
-
-        _subscriptions.Add((subscriber, propertyName), componentSubscription);
+        _subscriptions.Add(new ComponentSubscriptionKey(subscriber, propertyName), componentSubscription);
     }
 
-    private static IPersistentStateFilter? CreateFilter(IEnumerable<IPersistentStateFilter> filterAttributes)
+    private static IPersistentStateFilter? CreateFilter(PropertyInfo propertyInfo)
     {
-        // If no filter attributes return null.
-        // Otherwise, create a composite filter that supports the scenario if any of the filters supports it.
-        // and returns ShouldRestore if the supporting filter returns true.
+        var filterAttributes = propertyInfo.GetCustomAttributes(inherit: true)
+            .OfType<IPersistentStateFilter>() ?? [];
+
         if (!filterAttributes.Any())
         {
             return null;
@@ -122,43 +92,6 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
             return filters[0];
         }
         return new CompositeScenarioFilter(filters);
-    }
-
-    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-    private Action CreateRestoreAction(string storageKey, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type propertyType, ComponentSubscription componentSubscription, string propertyName, IPersistentComponentStateSerializer? customSerializer)
-    {
-        return () =>
-        {
-            if (customSerializer != null)
-            {
-                if (state.TryTakeBytes(storageKey, out var data))
-                {
-                    Log.RestoringValueFromState(logger, storageKey, propertyType.Name, propertyName);
-                    var sequence = new ReadOnlySequence<byte>(data!);
-                    componentSubscription.SetLastValue(customSerializer.Restore(propertyType, sequence));
-                }
-                else
-                {
-                    Log.ValueNotFoundInPersistentState(logger, storageKey, propertyType.Name, componentSubscription.LastValue?.GetType().Name ?? "null", propertyName);
-                }
-            }
-            else
-            {
-                if (state.TryTakeFromJson(storageKey, propertyType, out var value))
-                {
-                    Log.RestoredValueFromPersistentState(logger, storageKey, propertyType.Name, componentSubscription.LastValue?.GetType().Name ?? "null", propertyName);
-                    componentSubscription.SetLastValue(value);
-                }
-                else
-                {
-                    Log.NoValueToRestoreFromState(logger, storageKey, propertyType.Name, propertyName);
-
-                }
-            }
-
-        };
     }
 
     private static PropertyGetter ResolvePropertyGetter(Type type, string propertyName)
@@ -196,10 +129,10 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
 
     public void Unsubscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
-        if (_subscriptions.TryGetValue((subscriber, parameterInfo.PropertyName), out var subscription))
+        if (_subscriptions.TryGetValue(new(subscriber, parameterInfo.PropertyName), out var subscription))
         {
             subscription.Dispose();
-            _subscriptions.Remove((subscriber, parameterInfo.PropertyName));
+            _subscriptions.Remove(new(subscriber, parameterInfo.PropertyName));
         }
     }
 
@@ -464,24 +397,123 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
 
     internal class ComponentSubscription
     {
-        private PersistingComponentStateSubscription? _persistingSubscription;
-        private RestoringComponentStateSubscription? _restoringSubscription;
+        private readonly PersistingComponentStateSubscription? _persistingSubscription;
+        private readonly RestoringComponentStateSubscription? _restoringSubscription;
+        private object? _lastValue;
+        private bool _shouldComputeInitialValue;
+        private readonly PersistentComponentState _state;
+        private readonly ComponentState _subscriber;
+        private readonly string _propertyName;
+        private readonly Type _propertyType;
+        private readonly PropertyGetter _propertyGetter;
+        private readonly IPersistentComponentStateSerializer? _customSerializer;
+        private readonly ILogger _logger;
 
-        public object? LastValue { get; private set; }
-
-        public void SetPersistingSubscription(PersistingComponentStateSubscription subscription)
+        public ComponentSubscription(
+            PersistentComponentState state,
+            ComponentState subscriber,
+            string propertyName,
+            Type propertyType,
+            PropertyGetter propertyGetter,
+            IPersistentComponentStateSerializer? customSerializer,
+            ILogger logger)
         {
-            _persistingSubscription = subscription;
+            _state = state;
+            _subscriber = subscriber;
+            _propertyName = propertyName;
+            _propertyType = propertyType;
+            _propertyGetter = propertyGetter;
+            _customSerializer = customSerializer;
+            _logger = logger;
+
+            _persistingSubscription = state.RegisterOnPersisting(
+                PersistProperty,
+                subscriber.Renderer.GetComponentRenderMode(subscriber.Component));
+
+            _restoringSubscription = state.RegisterOnRestoring(
+                CreateFilter(propertyGetter.PropertyInfo),
+                RestoreProperty);
         }
 
-        public void SetRestoringSubscription(RestoringComponentStateSubscription subscription)
+        internal object? GetOrComputeLastValue()
         {
-            _restoringSubscription = subscription;
+            if (_shouldComputeInitialValue)
+            {
+                RestoreProperty();
+                _shouldComputeInitialValue = false;
+            }
+
+            return _lastValue;
         }
 
-        public void SetLastValue(object? value)
+        private Task PersistProperty()
         {
-            LastValue = value;
+            // The key needs to be computed here, do not move this outside of the lambda.
+            var storageKey = ComputeKey(_subscriber, _propertyName);
+
+            var property = _propertyGetter.GetValue(_subscriber.Component);
+            if (property == null)
+            {
+                Log.SkippedPersistingNullValue(_logger, storageKey, _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
+                return Task.CompletedTask;
+            }
+
+            if (_customSerializer != null)
+            {
+                Log.PersistingValueToState(_logger, storageKey, _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
+
+                using var writer = new PooledArrayBufferWriter<byte>();
+                _customSerializer.Persist(_propertyType, property, writer);
+                _state.PersistAsBytes(storageKey, writer.WrittenMemory.ToArray());
+                return Task.CompletedTask;
+            }
+
+            // Fallback to JSON serialization
+            Log.PersistingValueToState(_logger, storageKey, _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
+            _state.PersistAsJson(storageKey, property, _propertyType);
+            return Task.CompletedTask;
+        }
+
+        private void RestoreProperty()
+        {
+            if (!_shouldComputeInitialValue)
+            {
+                // We'll get invoked right away upon subscription. This is too early to try and restore the value as
+                // the component state might not be fully initialized yet.
+                // For that reason, skip the restore operation until GetOrComputeLastValue is called.
+                // It will trigger the restore operation at the right time.
+                _shouldComputeInitialValue = true;
+                return;
+            }
+
+            // The key needs to be computed here, do not move this outside of the lambda.
+            var storageKey = ComputeKey(_subscriber, _propertyName);
+
+            if (_customSerializer != null)
+            {
+                if (_state.TryTakeBytes(storageKey, out var data))
+                {
+                    Log.RestoringValueFromState(_logger, storageKey, _propertyType.Name, _propertyName);
+                    var sequence = new ReadOnlySequence<byte>(data!);
+                    _lastValue = _customSerializer.Restore(_propertyType, sequence);
+                }
+                else
+                {
+                    Log.ValueNotFoundInPersistentState(_logger, storageKey, _propertyType.Name, "null", _propertyName);
+                }
+            }
+            else
+            {
+                if (_state.TryTakeFromJson(storageKey, _propertyType, out var value))
+                {
+                    Log.RestoredValueFromPersistentState(_logger, storageKey, _propertyType.Name, "null", _propertyName);
+                    _lastValue = value;
+                }
+                else
+                {
+                    Log.NoValueToRestoreFromState(_logger, storageKey, _propertyType.Name, _propertyName);
+                }
+            }
         }
 
         public void Dispose()
@@ -511,4 +543,20 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         [LoggerMessage(6, LogLevel.Debug, "Value not found in persistent state for storage key '{StorageKey}' of type '{PropertyType}' for component '{ComponentType}' for property '{PropertyName}'", EventName = "ValueNotFoundInPersistentState")]
         public static partial void ValueNotFoundInPersistentState(ILogger logger, string storageKey, string propertyType, string componentType, string propertyName);
     }
+}
+
+internal struct ComponentSubscriptionKey(ComponentState subscriber, string propertyName) : IEquatable<ComponentSubscriptionKey>
+{
+    public ComponentState Subscriber { get; } = subscriber;
+
+    public string PropertyName { get; } = propertyName;
+
+    public bool Equals(ComponentSubscriptionKey other)
+        => Subscriber == other.Subscriber && PropertyName == other.PropertyName;
+
+    public override bool Equals(object? obj)
+        => obj is ComponentSubscriptionKey other && Equals(other);
+
+    public override int GetHashCode()
+        => HashCode.Combine(Subscriber, PropertyName);
 }

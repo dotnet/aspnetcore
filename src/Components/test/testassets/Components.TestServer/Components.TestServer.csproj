@@ -11,6 +11,7 @@
     <RazorLangVersion>latest</RazorLangVersion>
     <BlazorRoutingEnableRegexConstraint>true</BlazorRoutingEnableRegexConstraint>
     <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.Http.Validation.Generated;Microsoft.Extensions.Validation.Generated</InterceptorsNamespaces>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
   </PropertyGroup>
 
   <ItemGroup>
