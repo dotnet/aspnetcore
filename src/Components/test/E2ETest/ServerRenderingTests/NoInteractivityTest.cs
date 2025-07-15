@@ -354,6 +354,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     {
         string testUrl = $"{ServerPathBase}/reexecution/post-not-found-ssr?useCustomRouter=true";
         Navigate(testUrl);
+        Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
         AssertReExecutionPageRendered();
         AssertUrlNotChanged(testUrl);
@@ -388,6 +389,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     {
         string testUrl = $"{ServerPathBase}/reexecution/post-not-found-ssr-streaming?useCustomRouter=true";
         Navigate(testUrl);
+        Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
 
         AssertReExecutionPageRendered();
         AssertUrlNotChanged(testUrl);
