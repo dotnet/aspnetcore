@@ -152,7 +152,7 @@ internal sealed class UserManagerMetrics : IDisposable
 
     private static string GetTokenPurpose(string purpose)
     {
-        // Purpose could be any value and can't be used as a tag value. However, there are known purposes
+        // Purpose could be any value and can't be used directly as a tag value. However, there are known purposes
         // on UserManager that we can detect and use as a tag value. Some could have a ':' in them followed by user data.
         // We need to trim them to content before ':' and then match to known values.
         ReadOnlySpan<char> trimmedPurpose = purpose;
@@ -161,7 +161,8 @@ internal sealed class UserManagerMetrics : IDisposable
         {
             trimmedPurpose = purpose.AsSpan(0, colonIndex);
         }
-        
+
+        // These are known purposes that are specified in ASP.NET Core Identity.
         return trimmedPurpose switch
         {
             "ResetPassword" => "reset_password",
