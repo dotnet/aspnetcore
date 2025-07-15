@@ -101,7 +101,7 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
 
         var defaultRestoringSubscription = state.RegisterOnRestoring(
         filter,
-        CreateRestoreAction(storageKey, propertyType, componentSubscription, propertyName));
+        CreateRestoreAction(storageKey, propertyType, componentSubscription, propertyName, customSerializer));
         componentSubscription.SetRestoringSubscription(defaultRestoringSubscription);
 
         _subscriptions.Add((subscriber, propertyName), componentSubscription);
@@ -127,19 +127,37 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
     [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
     [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-    private Action CreateRestoreAction(string storageKey, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type propertyType, ComponentSubscription componentSubscription, string propertyName)
+    private Action CreateRestoreAction(string storageKey, [DynamicallyAccessedMembers(LinkerFlags.Component)] Type propertyType, ComponentSubscription componentSubscription, string propertyName, IPersistentComponentStateSerializer? customSerializer)
     {
         return () =>
         {
-            if (state.TryTakeFromJson(storageKey, propertyType, out var value))
+            if (customSerializer != null)
             {
-                Log.RestoringValueFromState(logger, storageKey, propertyType.Name, propertyName);
-                componentSubscription.SetLastValue(value);
+                if (state.TryTakeBytes(storageKey, out var data))
+                {
+                    Log.RestoringValueFromState(logger, storageKey, propertyType.Name, propertyName);
+                    var sequence = new ReadOnlySequence<byte>(data!);
+                    componentSubscription.SetLastValue(customSerializer.Restore(propertyType, sequence));
+                }
+                else
+                {
+                    Log.ValueNotFoundInPersistentState(logger, storageKey, propertyType.Name, componentSubscription.LastValue?.GetType().Name ?? "null", propertyName);
+                }
             }
             else
             {
-                Log.NoValueToRestoreFromState(logger, storageKey, propertyType.Name, propertyName);
+                if (state.TryTakeFromJson(storageKey, propertyType, out var value))
+                {
+                    Log.RestoredValueFromPersistentState(logger, storageKey, propertyType.Name, componentSubscription.LastValue?.GetType().Name ?? "null", propertyName);
+                    componentSubscription.SetLastValue(value);
+                }
+                else
+                {
+                    Log.NoValueToRestoreFromState(logger, storageKey, propertyType.Name, propertyName);
+
+                }
             }
+
         };
     }
 
