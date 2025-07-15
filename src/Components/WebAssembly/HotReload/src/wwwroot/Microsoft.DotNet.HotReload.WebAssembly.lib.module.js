@@ -1,7 +1,5 @@
 export async function onRuntimeConfigLoaded(config) {
-    const value = "false";
-    debugger;
-    config.environmentVariables["__BLAZOR_WEBASSEMBLY_LEGACY_HOTRELOAD"] = value;
+    config.environmentVariables["__BLAZOR_WEBASSEMBLY_LEGACY_HOTRELOAD"] = "false";
 }
 
 export async function onRuntimeReady({ getAssemblyExports }) {
@@ -13,7 +11,8 @@ export async function onRuntimeReady({ getAssemblyExports }) {
     }
 
     window.Blazor._internal.applyHotReloadDeltas = (deltas, loggingLevel) => {
-        return DotNet.invokeMethod('Microsoft.DotNet.HotReload.WebAssembly', 'ApplyHotReloadDeltas', deltas, loggingLevel) ?? [];
+        const result = exports.Microsoft.DotNet.HotReload.WebAssembly.Interop.ApplyHotReloadDeltas(JSON.stringify(deltas), loggingLevel);
+        return result ? JSON.parse(result) : [];
     };
 
     window.Blazor._internal.getApplyUpdateCapabilities = () => {

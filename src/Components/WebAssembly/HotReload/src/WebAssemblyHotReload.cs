@@ -10,7 +10,7 @@ using System.Reflection.Metadata;
 using System.Runtime.InteropServices.JavaScript;
 using System.Runtime.Versioning;
 using System.Text.Json;
-using Microsoft.JSInterop;
+using System.Text.Json.Serialization;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -144,7 +144,6 @@ public static partial class WebAssemblyHotReload
     /// <summary>
     /// For framework use only.
     /// </summary>
-    [JSInvokable(nameof(ApplyHotReloadDeltas))]
     public static LogEntry[] ApplyHotReloadDeltas(Delta[] deltas, int loggingLevel)
     {
         var agent = GetAgent();
@@ -165,6 +164,8 @@ public static partial class WebAssemblyHotReload
 
 internal static partial class Interop
 {
+    private static readonly WebAssemblyHotReloadJsonSerializerContext jsonContext = new(new(JsonSerializerDefaults.Web));
+
     [JSExport]
     [SupportedOSPlatform("browser")]
     public static Task InitializeAsync(string baseUri)
@@ -183,4 +184,24 @@ internal static partial class Interop
     {
         return WebAssemblyHotReload.GetApplyUpdateCapabilities();
     }
+
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static string ApplyHotReloadDeltas(string deltasJson, int loggingLevel)
+    {
+        var deltas = JsonSerializer.Deserialize(deltasJson, jsonContext.DeltaArray);
+        if (deltas == null)
+        {
+            return null;
+        }
+
+        var result = WebAssemblyHotReload.ApplyHotReloadDeltas(deltas, loggingLevel);
+        return result == null ? null : JsonSerializer.Serialize(result, jsonContext.LogEntryArray);
+    }
+}
+
+[JsonSerializable(typeof(WebAssemblyHotReload.Delta[]))]
+[JsonSerializable(typeof(WebAssemblyHotReload.LogEntry[]))]
+internal sealed partial class WebAssemblyHotReloadJsonSerializerContext : JsonSerializerContext
+{
 }
