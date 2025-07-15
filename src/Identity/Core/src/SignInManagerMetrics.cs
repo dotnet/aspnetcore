@@ -49,7 +49,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
         };
         AddSignInResult(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _checkPasswordCounter.Add(1, tags);
     }
@@ -69,7 +69,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         };
         AddIsPersistent(ref tags, isPersistent);
         AddSignInResult(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _authenticateCounter.Add(1, tags);
     }
@@ -87,7 +87,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.authentication_scheme", authenticationScheme },
         };
         AddIsPersistent(ref tags, isPersistent);
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _signInUserPrincipalCounter.Add(1, tags);
     }
@@ -104,7 +104,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.authentication_scheme", authenticationScheme },
         };
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _signOutUserPrincipalCounter.Add(1, tags);
     }
@@ -121,7 +121,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.authentication_scheme", authenticationScheme }
         };
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _rememberTwoFactorClientCounter.Add(1, tags);
     }
@@ -138,7 +138,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.authentication_scheme", authenticationScheme }
         };
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _forgetTwoFactorCounter.Add(1, tags);
     }
@@ -164,7 +164,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         }
     }
 
-    private static void AddExceptionTags(ref TagList tags, Exception? exception)
+    private static void AddErrorTag(ref TagList tags, Exception? exception)
     {
         if (exception != null)
         {

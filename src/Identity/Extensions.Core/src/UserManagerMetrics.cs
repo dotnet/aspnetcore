@@ -32,9 +32,9 @@ internal sealed class UserManagerMetrics : IDisposable
     public UserManagerMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
-        _createCounter = _meter.CreateCounter<long>(CreateCounterName, "{create}", "The number of users created.");
-        _updateCounter = _meter.CreateCounter<long>(UpdateCounterName, "{update}", "The number of user updates.");
-        _deleteCounter = _meter.CreateCounter<long>(DeleteCounterName, "{delete}", "The number of users deleted.");
+        _createCounter = _meter.CreateCounter<long>(CreateCounterName, "{user}", "The number of users created.");
+        _updateCounter = _meter.CreateCounter<long>(UpdateCounterName, "{user}", "The number of users updated.");
+        _deleteCounter = _meter.CreateCounter<long>(DeleteCounterName, "{user}", "The number of users deleted.");
         _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "{check}", "The number of check password attempts. Only checks whether the password is valid and not whether the user account is in a state that can log in.");
         _verifyTokenCounter = _meter.CreateCounter<long>(VerifyTokenCounterName, "{count}", "The number of token verification attempts.");
         _generateTokenCounter = _meter.CreateCounter<long>(GenerateTokenCounterName, "{count}", "The number of token generation attempts.");
@@ -52,7 +52,7 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType }
         };
         AddIdentityResultTags(ref tags, result);
-        AddExceptionTags(ref tags, exception, result: result);
+        AddErrorTag(ref tags, exception, result: result);
 
         _createCounter.Add(1, tags);
     }
@@ -70,7 +70,7 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user.update_type", GetUpdateType(updateType) },
         };
         AddIdentityResultTags(ref tags, result);
-        AddExceptionTags(ref tags, exception, result: result);
+        AddErrorTag(ref tags, exception, result: result);
 
         _updateCounter.Add(1, tags);
     }
@@ -87,7 +87,7 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType }
         };
         AddIdentityResultTags(ref tags, result);
-        AddExceptionTags(ref tags, exception, result: result);
+        AddErrorTag(ref tags, exception, result: result);
 
         _deleteCounter.Add(1, tags);
     }
@@ -107,7 +107,7 @@ internal sealed class UserManagerMetrics : IDisposable
         {
             tags.Add("aspnetcore.identity.password_check_result", GetPasswordResult(result, passwordMissing: null, userMissing));
         }
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _checkPasswordCounter.Add(1, tags);
     }
@@ -128,7 +128,7 @@ internal sealed class UserManagerMetrics : IDisposable
         {
             tags.Add("aspnetcore.identity.token_verified", result == true ? "success" : "failure");
         }
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _verifyTokenCounter.Add(1, tags);
     }
@@ -145,7 +145,7 @@ internal sealed class UserManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.token_purpose", GetTokenPurpose(purpose) },
         };
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _generateTokenCounter.Add(1, tags);
     }
@@ -187,7 +187,7 @@ internal sealed class UserManagerMetrics : IDisposable
         }
     }
 
-    private static void AddExceptionTags(ref TagList tags, Exception? exception, IdentityResult? result = null)
+    private static void AddErrorTag(ref TagList tags, Exception? exception, IdentityResult? result = null)
     {
         var value = exception?.GetType().FullName ?? result?.Errors.FirstOrDefault()?.Code;
         if (value != null)
