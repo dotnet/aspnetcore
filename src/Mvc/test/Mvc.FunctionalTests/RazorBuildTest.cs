@@ -25,7 +25,6 @@ public class RazorBuildTest : LoggedTest
     {
         base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
         Factory = new MvcTestFixture<RazorBuildWebSite.Startup>(LoggerFactory)
-            .WithWebHostBuilder(b => b.UseStartup<RazorBuildWebSite.Startup>())
             .WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => serviceCollection.Configure<MvcRazorRuntimeCompilationOptions>(ConfigureRuntimeCompilationOptions)));
 
         static void ConfigureRuntimeCompilationOptions(MvcRazorRuntimeCompilationOptions options)

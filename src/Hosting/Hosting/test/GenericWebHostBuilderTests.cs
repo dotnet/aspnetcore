@@ -165,20 +165,24 @@ public class GenericWebHostBuilderTests
 
     private class FirstStartup
     {
-        public void ConfigureServices(IServiceCollection services) { }
-        
+        public void ConfigureServices(IServiceCollection services) { services.AddSingleton<FirstStartup>(); }
+
         public void Configure(IApplicationBuilder app)
         {
+            Assert.NotNull(app.ApplicationServices.GetService<FirstStartup>());
+            Assert.Null(app.ApplicationServices.GetService<SecondStartup>());
             app.Run(context => context.Response.WriteAsync("FirstStartup"));
         }
     }
 
     private class SecondStartup
     {
-        public void ConfigureServices(IServiceCollection services) { }
-        
+        public void ConfigureServices(IServiceCollection services) { services.AddSingleton<SecondStartup>(); }
+
         public void Configure(IApplicationBuilder app)
         {
+            Assert.Null(app.ApplicationServices.GetService<FirstStartup>());
+            Assert.NotNull(app.ApplicationServices.GetService<SecondStartup>());
             app.Run(context => context.Response.WriteAsync("SecondStartup"));
         }
     }
