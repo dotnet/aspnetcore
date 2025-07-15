@@ -107,7 +107,7 @@ public class Program
         #endif
         }
 
-        app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+        app.UseStatusCodePagesWithReExecute("/not-found", createScopeForErrors: true);
 
         #if (HasHttpsProfile)
         app.UseHttpsRedirection();
