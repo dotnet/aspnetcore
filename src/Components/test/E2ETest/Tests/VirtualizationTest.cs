@@ -111,6 +111,33 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     }
 
     [Fact]
+    public void PlaceholdersHaveCorrectValue_Async()
+    {
+        Browser.MountTestComponent<VirtualizationQuickGrid>();
+
+        var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
+        
+        finishLoadingButton.Click(); //not waiting
+
+        Browser.True(() => Browser.Exists(By.Id("loadDone")).Text != "111");
+
+        Browser.True(() => GetItemCount() > 0);
+        Browser.Equal(0, () => GetPlaceholderCount());
+
+        Browser.ExecuteJavaScript("const container = document.getElementById('async-container'); container.scrollTop = container.scrollHeight * 0.5;");
+
+        Browser.Equal(0, () => GetItemCount());
+        Browser.True(() => GetPlaceholderCount() > 0);
+
+        //test that the other placeholder has ...
+        Browser.Equal("LOADING DATA", () => Browser.Exists(By.CssSelector(".async-placeholder")).Text);
+
+
+        int GetItemCount() => Browser.FindElements(By.CssSelector("#async-container tbody tr:not(:has(.grid-cell-placeholder))")).Count;
+        int GetPlaceholderCount() => Browser.FindElements(By.CssSelector(".grid-cell-placeholder")).Count;
+    }
+
+    [Fact]
     public void RerendersWhenItemSizeShrinks_Sync()
     {
         Browser.MountTestComponent<VirtualizationComponent>();
