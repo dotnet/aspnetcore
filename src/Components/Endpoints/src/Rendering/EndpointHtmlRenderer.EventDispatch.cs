@@ -22,7 +22,7 @@ internal partial class EndpointHtmlRenderer
     private readonly Dictionary<(int ComponentId, int FrameIndex), string> _namedSubmitEventsByLocation = new();
     private readonly Dictionary<string, HashSet<(int ComponentId, int FrameIndex)>> _namedSubmitEventsByScopeQualifiedName = new(StringComparer.Ordinal);
 
-    internal Task DispatchSubmitEventAsync(string? handlerName, out bool isBadRequest)
+    internal Task DispatchSubmitEventAsync(string? handlerName, out bool isBadRequest, bool isReExecuted = false)
     {
         if (string.IsNullOrEmpty(handlerName))
         {
@@ -34,6 +34,14 @@ internal partial class EndpointHtmlRenderer
 
         if (!_namedSubmitEventsByScopeQualifiedName.TryGetValue(handlerName, out var locationsForName) || locationsForName.Count == 0)
         {
+            if (isReExecuted)
+            {
+                // If we are re-executing, we do not expect to find a new form on the page we re-execute to.
+                // This does not mean that the request is bad, we want the re-execution to succeed.
+                isBadRequest = false;
+                return Task.CompletedTask;
+            }
+
             // This may happen if you deploy an app update and someone still on the old page submits a form,
             // or if you're dynamically building the UI and the submitted form doesn't exist the next time
             // the page is rendered

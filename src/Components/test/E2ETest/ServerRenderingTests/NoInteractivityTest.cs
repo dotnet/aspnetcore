@@ -149,7 +149,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         }
     }
 
-
     private void AssertUrlNotChanged(string expectedUrl) =>
         Browser.True(() => Browser.Url.Contains(expectedUrl), $"Expected URL to contain '{expectedUrl}', but found '{Browser.Url}'");
 
@@ -274,7 +273,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
 
         if (hasReExecutionMiddleware)
         {
-            AssertReExecutionPageRendered(); 
+            AssertReExecutionPageRendered();
         }
         else
         {
@@ -371,7 +370,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string testUrl = $"{ServerPathBase}{reexecution}/post-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
         Navigate(testUrl);
         Browser.FindElement(By.Id("not-found-form")).FindElement(By.TagName("button")).Click();
-
 
         bool notFoundContentForRenderingProvided = hasCustomNotFoundPageSet || hasReExecutionMiddleware;
         if (notFoundContentForRenderingProvided)

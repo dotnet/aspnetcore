@@ -121,7 +121,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             try
             {
                 var isBadRequest = false;
-                quiesceTask = _renderer.DispatchSubmitEventAsync(result.HandlerName, out isBadRequest);
+                quiesceTask = _renderer.DispatchSubmitEventAsync(result.HandlerName, out isBadRequest, isReExecuted);
                 if (isBadRequest)
                 {
                     return;
