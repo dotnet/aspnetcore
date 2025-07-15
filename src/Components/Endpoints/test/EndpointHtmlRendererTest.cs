@@ -1077,6 +1077,34 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task Dispatching_OnReExecution_WhenNamedEventDoesNotExists_Passes()
+    {
+        // Arrange
+        var renderer = GetEndpointHtmlRenderer();
+        var isBadRequest = false;
+        var httpContext = new DefaultHttpContext();
+        var bodyStream = new MemoryStream();
+        httpContext.Response.Body = bodyStream;
+        httpContext.RequestServices = new ServiceCollection()
+            .AddSingleton<IHostEnvironment>(new TestEnvironment(Environments.Development))
+            .BuildServiceProvider();
+
+        await renderer.Dispatcher.InvokeAsync(async () =>
+        {
+            await renderer.RenderEndpointComponent(httpContext, typeof(NamedEventHandlerComponent), ParameterView.Empty, true);
+
+            // Act
+            await renderer.DispatchSubmitEventAsync("other", out isBadRequest, isReExecuted: true);
+        });
+
+        httpContext.Response.Body.Position = 0;
+
+        Assert.False(isBadRequest);
+        Assert.Equal(200, httpContext.Response.StatusCode);
+        Assert.Empty(await new StreamReader(bodyStream).ReadToEndAsync());
+    }
+
+    [Fact]
     public async Task Dispatching_WhenComponentHasRerendered_UsesCurrentDelegate()
     {
         // Arrange
