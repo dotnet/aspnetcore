@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.Routing;
 public sealed class NotFoundEventArgs : EventArgs
 {
     /// <summary>
-    /// Gets the path of NotFoundPage. If the path is set, it indicates that the router has handled the rendering of the NotFound contents.
+    /// Gets the path of NotFoundPage. If the path is set, it indicates that a subscriber has handled the rendering of the NotFound contents.
     /// </summary>
     public string? Path { get; set; }
 }

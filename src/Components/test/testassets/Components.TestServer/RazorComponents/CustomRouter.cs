@@ -46,7 +46,7 @@ public class CustomRouter : IComponent, IHandleAfterRender, IDisposable
 
     [Inject] private ILoggerFactory LoggerFactory
     {
-        get => throw new InvalidOperationException("This property should only be set via injection.");
+        get => throw new InvalidOperationException($"{nameof(LoggerFactory)} should only be set via injection.");
         set => _logger = value.CreateLogger<CustomRouter>();
     }
 
