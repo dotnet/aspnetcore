@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components;
 internal class ComponentsActivitySource
 {
     internal const string Name = "Microsoft.AspNetCore.Components";
-    internal const string OnRouteName = $"{Name}.RouteChange";
+    internal const string OnRouteName = $"{Name}.Navigate";
     internal const string OnEventName = $"{Name}.HandleEvent";
 
     private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
