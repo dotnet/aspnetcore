@@ -1,8 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder.UseServiceProviderOptions(Microsoft.Extensions.DependencyInjection.ServiceProviderOptions! options) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder!
-Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilderExtensions
-static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilderExtensions.UseDefaultServiceProvider(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder! builder, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Hosting.IWebAssemblyHostEnvironment!, Microsoft.Extensions.DependencyInjection.ServiceProviderOptions!>! configure) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder!
-static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilderExtensions.UseDefaultServiceProvider(this Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder! builder, System.Action<Microsoft.Extensions.DependencyInjection.ServiceProviderOptions!>! configure) -> Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilder!
 Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta
 Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.Delta() -> void
 Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.Delta.ILDelta.get -> byte[]!
