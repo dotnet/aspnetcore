@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BlazorUnitedApp;
+using BlazorUnitedApp.Client.Data;
 using BlazorUnitedApp.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddSingleton<ClientWeatherForecastService>();
 
 var app = builder.Build();
 
@@ -30,6 +32,7 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
+    .AddAdditionalAssemblies(typeof(BlazorUnitedApp.Client.Pages.ClientFetchData).Assembly)
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode();
 

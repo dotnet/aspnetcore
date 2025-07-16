@@ -1,6 +1,8 @@
-﻿@page "/fetchdata"
+﻿@page "/fetchdata/"
 @using BlazorUnitedApp.Data
 @inject WeatherForecastService ForecastService
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
 
 <PageTitle>Weather forecast</PageTitle>
 
@@ -8,7 +10,7 @@
 
 <p>This component demonstrates fetching data from a service.</p>
 
-@if (forecasts == null)
+@if (Forecasts == null)
 {
     <p><em>Loading...</em></p>
 }
@@ -24,7 +26,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var forecast in Forecasts)
             {
                 <tr>
                     <td>@forecast.Date.ToShortDateString()</td>
@@ -37,11 +39,41 @@ else
     </table>
 }
 
+<p>Current Url = @Page</p>
+
+<ul>
+    <li>
+        <a href="fetchdata/?page=0">Page 0</a>
+    </li>
+    <li>
+        <a href="fetchdata/?page=1">Page 1</a>
+    </li>
+    <li>
+        <a href="fetchdata/?page=2">Page 2</a>
+    </li>
+</ul>
+
 @code {
-    private WeatherForecast[]? forecasts;
+    [PersistentState]
+    [UpdateStateOnEnhancedNavigation(true)]
+    public WeatherForecast[]? Forecasts { get; set; }
+
+    public string Page { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
     {
-        forecasts = await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now));
+        // Extract the page from the query string
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var pageParam = query["page"];
+        int pageIndex = 1 + (int.TryParse(pageParam, out int parsedPage) ? parsedPage : 0);
+        pageIndex *= 7;
+
+        Forecasts ??= await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now).AddDays(pageIndex));
+    }
+
+    protected override void OnParametersSet()
+    {
+        Page = NavigationManager.Uri;
     }
 }
