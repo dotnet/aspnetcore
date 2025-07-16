@@ -45,6 +45,10 @@ Microsoft.Extensions.Validation.ValidationOptions.TryGetValidatableTypeInfo(Syst
 Microsoft.Extensions.Validation.ValidationOptions.ValidationOptions() -> void
 abstract Microsoft.Extensions.Validation.ValidatableParameterInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
 abstract Microsoft.Extensions.Validation.ValidatablePropertyInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
+Microsoft.Extensions.Validation.RuntimeValidatableTypeInfoResolver
+Microsoft.Extensions.Validation.RuntimeValidatableTypeInfoResolver.RuntimeValidatableTypeInfoResolver() -> void
+Microsoft.Extensions.Validation.RuntimeValidatableTypeInfoResolver.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo) -> bool
+Microsoft.Extensions.Validation.RuntimeValidatableTypeInfoResolver.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableInfo? info) -> bool
 static Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions.AddValidation(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Validation.ValidationOptions!>? configureOptions = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 virtual Microsoft.Extensions.Validation.ValidatablePropertyInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!

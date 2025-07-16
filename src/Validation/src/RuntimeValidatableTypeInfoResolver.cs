@@ -21,7 +21,7 @@ namespace Microsoft.Extensions.Validation;
 /// </remarks>
 [RequiresUnreferencedCode("RuntimeValidatableTypeInfoResolver uses reflection to inspect types, properties, and attributes at runtime, including JsonDerivedTypeAttribute and record constructors. Trimming or AOT compilation may remove members required for validation.")]
 [Experimental("ASP0029")]
-internal sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolver
+public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolver
 {
     private static readonly ConcurrentDictionary<Type, IValidatableInfo?> _cache = new();
 
