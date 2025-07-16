@@ -14,7 +14,7 @@ using System.Text.Json.Serialization;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
-namespace Microsoft.DotNet.HotReload.WebAssembly;
+namespace Microsoft.DotNet.HotReload.WebAssembly.Browser;
 
 /// <summary>
 /// Contains methods called by interop. Intended for framework use only, not supported for use in application
@@ -63,9 +63,11 @@ internal static partial class WebAssemblyHotReload
     private static bool s_initialized;
     private static HotReloadAgent? s_hotReloadAgent;
 
-    internal static async Task InitializeAsync(string baseUri)
+    [JSExport]
+    [SupportedOSPlatform("browser")]
+    public static async Task InitializeAsync(string baseUri)
     {
-        if (Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
+        if (MetadataUpdater.IsSupported && Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
             OperatingSystem.IsBrowser())
         {
             s_initialized = true;
@@ -131,20 +133,7 @@ internal static partial class WebAssemblyHotReload
     private static HotReloadAgent? GetAgent()
         => s_hotReloadAgent ?? (s_initialized ? throw new InvalidOperationException("Hot Reload agent not initialized") : null);
 
-    /// <summary>
-    /// For framework use only.
-    /// </summary>
-    [Obsolete("Use ApplyHotReloadDeltas instead")]
-    public static void ApplyHotReloadDelta(string moduleIdString, byte[] metadataDelta, byte[] ilDelta, byte[] pdbBytes, int[]? updatedTypes)
-    {
-        GetAgent()?.ApplyDeltas(
-            [new UpdateDelta(Guid.Parse(moduleIdString, CultureInfo.InvariantCulture), metadataDelta, ilDelta, pdbBytes, updatedTypes ?? [])]);
-    }
-
-    /// <summary>
-    /// For framework use only.
-    /// </summary>
-    public static LogEntry[] ApplyHotReloadDeltas(Delta[] deltas, int loggingLevel)
+    private static LogEntry[] ApplyHotReloadDeltas(Delta[] deltas, int loggingLevel)
     {
         var agent = GetAgent();
 
@@ -155,34 +144,13 @@ internal static partial class WebAssemblyHotReload
             .Select(log => new LogEntry() { Message = log.message, Severity = (int)log.severity }).ToArray();
     }
 
-    /// <summary>
-    /// For framework use only.
-    /// </summary>
-    public static string GetApplyUpdateCapabilities()
-        => GetAgent()?.Capabilities ?? "";
-}
-
-internal static partial class Interop
-{
     private static readonly WebAssemblyHotReloadJsonSerializerContext jsonContext = new(new(JsonSerializerDefaults.Web));
 
     [JSExport]
     [SupportedOSPlatform("browser")]
-    public static Task InitializeAsync(string baseUri)
-    {
-        if (MetadataUpdater.IsSupported)
-        {
-            return WebAssemblyHotReload.InitializeAsync(baseUri);
-        }
-
-        return Task.CompletedTask;
-    }
-
-    [JSExport]
-    [SupportedOSPlatform("browser")]
     public static string GetApplyUpdateCapabilities()
     {
-        return WebAssemblyHotReload.GetApplyUpdateCapabilities();
+        return GetAgent()?.Capabilities ?? "";
     }
 
     [JSExport]
@@ -195,7 +163,7 @@ internal static partial class Interop
             return null;
         }
 
-        var result = WebAssemblyHotReload.ApplyHotReloadDeltas(deltas, loggingLevel);
+        var result = ApplyHotReloadDeltas(deltas, loggingLevel);
         return result == null ? null : JsonSerializer.Serialize(result, jsonContext.LogEntryArray);
     }
 }
