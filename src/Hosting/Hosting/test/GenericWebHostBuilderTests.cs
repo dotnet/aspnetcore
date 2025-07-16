@@ -153,6 +153,29 @@ public class GenericWebHostBuilderTests
         await AssertResponseContains(server.RequestDelegate, "SecondStartup");
     }
 
+    [Fact]
+    public async Task MultipleConfigureWebHostCallsWithSameUseStartupOnlyRunsOne()
+    {
+        var server = new TestServer();
+
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseServer(server)
+                    .UseStartup<FirstStartup>();
+            })
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseStartup<FirstStartup>();
+            })
+            .Build();
+
+        await host.StartAsync();
+        Assert.Single(host.Services.GetRequiredService<IEnumerable<FirstStartup>>());
+    }
+
     private async Task AssertResponseContains(RequestDelegate app, string expectedText)
     {
         var httpContext = new DefaultHttpContext();

@@ -178,6 +178,7 @@ internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStart
             if (_builder.Properties.TryGetValue(_startupConfigName, out var startupObject) &&
                 object.ReferenceEquals(startupObject, startupType))
             {
+                _builder.Properties.Remove(_startupConfigName);
                 UseStartup(startupType, context, services);
             }
         });
@@ -205,6 +206,7 @@ internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStart
             if (_builder.Properties.TryGetValue(_startupConfigName, out var startupObject) &&
                 object.ReferenceEquals(startupObject, startupFactory))
             {
+                _builder.Properties.Remove(_startupConfigName);
                 var webHostBuilderContext = GetWebHostBuilderContext(context);
                 var instance = startupFactory(webHostBuilderContext) ?? throw new InvalidOperationException("The specified factory returned null startup instance.");
                 UseStartup(instance.GetType(), context, services, instance);
@@ -325,6 +327,7 @@ internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStart
             if (_builder.Properties.TryGetValue(_startupConfigName, out var startupObject) &&
                 object.ReferenceEquals(startupObject, configure))
             {
+                _builder.Properties.Remove(_startupConfigName);
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
                     options.ConfigureApplication = configure;
@@ -349,6 +352,7 @@ internal sealed class GenericWebHostBuilder : WebHostBuilderBase, ISupportsStart
             if (_builder.Properties.TryGetValue(_startupConfigName, out var startupObject) &&
                 object.ReferenceEquals(startupObject, configure))
             {
+                _builder.Properties.Remove(_startupConfigName);
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
                     var webhostBuilderContext = GetWebHostBuilderContext(context);
