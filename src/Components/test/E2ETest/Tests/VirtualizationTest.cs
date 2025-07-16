@@ -113,28 +113,33 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
     [Fact]
     public void PlaceholdersHaveCorrectValue_Async()
     {
-        Browser.MountTestComponent<VirtualizationQuickGrid>();
+        var component = Browser.MountTestComponent<VirtualizationQuickGrid>();
 
         var finishLoadingButton = Browser.Exists(By.Id("finish-loading-button"));
-        
-        finishLoadingButton.Click(); //not waiting
-
-        Browser.True(() => Browser.Exists(By.Id("loadDone")).Text != "111");
+        var startLoadingButton = Browser.Exists(By.Id("start-loading-button"));
+        //Load the initial data.
+        finishLoadingButton.Click();
 
         Browser.True(() => GetItemCount() > 0);
         Browser.Equal(0, () => GetPlaceholderCount());
 
+        //Start loading the second set of data to check for placeholders.
+        startLoadingButton.Click();
         Browser.ExecuteJavaScript("const container = document.getElementById('async-container'); container.scrollTop = container.scrollHeight * 0.5;");
 
         Browser.Equal(0, () => GetItemCount());
         Browser.True(() => GetPlaceholderCount() > 0);
 
-        //test that the other placeholder has ...
-        Browser.Equal("LOADING DATA", () => Browser.Exists(By.CssSelector(".async-placeholder")).Text);
+        Assert.Equal("\"…\"", Browser.ExecuteJavaScript<string>(@"
+        const p = document.querySelector('td.async-id');
+        return p ? getComputedStyle(p, '::after').content : null;"));
+        Assert.Equal("none", Browser.ExecuteJavaScript<string>(@"
+        const p = document.querySelector('td.async-second');
+        return p ? getComputedStyle(p, '::after').content : null;"));
+        Browser.Equal("LOADING DATA", () => Browser.Exists(By.CssSelector(".async-second .async-placeholder")).Text);
 
-
-        int GetItemCount() => Browser.FindElements(By.CssSelector("#async-container tbody tr:not(:has(.grid-cell-placeholder))")).Count;
-        int GetPlaceholderCount() => Browser.FindElements(By.CssSelector(".grid-cell-placeholder")).Count;
+        int GetItemCount() => Browser.FindElements(By.CssSelector("#async-container tbody td.async-id:not(.grid-cell-placeholder)")).Count;
+        int GetPlaceholderCount() => Browser.FindElements(By.CssSelector("#async-container tbody .async-id.grid-cell-placeholder")).Count;
     }
 
     [Fact]
