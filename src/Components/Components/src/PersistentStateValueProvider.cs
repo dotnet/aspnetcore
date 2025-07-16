@@ -400,6 +400,7 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         private object? _lastValue = _uninitializedValue;
         private bool _hasPendingInitialValue;
         private bool _ignoreUpdatedValues;
+        private string _storageKey;
         private readonly PersistentComponentState _state;
         private readonly ComponentState _subscriber;
         private readonly string _propertyName;
@@ -488,13 +489,13 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
             }
 
             // The key needs to be computed here, do not move this outside of the lambda.
-            var storageKey = ComputeKey(_subscriber, _propertyName);
+            _storageKey ??= ComputeKey(_subscriber, _propertyName);
 
             if (_customSerializer != null)
             {
-                if (_state.TryTakeBytes(storageKey, out var data))
+                if (_state.TryTakeBytes(ComputeKey(_subscriber, _propertyName), out var data))
                 {
-                    Log.RestoringValueFromState(_logger, storageKey, _propertyType.Name, _propertyName);
+                    Log.RestoringValueFromState(_logger, ComputeKey(_subscriber, _propertyName), _propertyType.Name, _propertyName);
                     var sequence = new ReadOnlySequence<byte>(data!);
                     _lastValue = _customSerializer.Restore(_propertyType, sequence);
                     if (!skipNotifications)
@@ -505,14 +506,14 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
                 }
                 else
                 {
-                    Log.ValueNotFoundInPersistentState(_logger, storageKey, _propertyType.Name, "null", _propertyName);
+                    Log.ValueNotFoundInPersistentState(_logger, ComputeKey(_subscriber, _propertyName), _propertyType.Name, "null", _propertyName);
                 }
             }
             else
             {
-                if (_state.TryTakeFromJson(storageKey, _propertyType, out var value))
+                if (_state.TryTakeFromJson(ComputeKey(_subscriber, _propertyName), _propertyType, out var value))
                 {
-                    Log.RestoredValueFromPersistentState(_logger, storageKey, _propertyType.Name, "null", _propertyName);
+                    Log.RestoredValueFromPersistentState(_logger, ComputeKey(_subscriber, _propertyName), _propertyType.Name, "null", _propertyName);
                     _lastValue = value;
                     if (!skipNotifications)
                     {
@@ -522,7 +523,7 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
                 }
                 else
                 {
-                    Log.NoValueToRestoreFromState(_logger, storageKey, _propertyType.Name, _propertyName);
+                    Log.NoValueToRestoreFromState(_logger, ComputeKey(_subscriber, _propertyName), _propertyType.Name, _propertyName);
                 }
             }
         }
@@ -534,28 +535,28 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         private Task PersistProperty()
         {
             // The key needs to be computed here, do not move this outside of the lambda.
-            var storageKey = ComputeKey(_subscriber, _propertyName);
+            _storageKey ??= ComputeKey(_subscriber, _propertyName);
 
             var property = _propertyGetter.GetValue(_subscriber.Component);
             if (property == null)
             {
-                Log.SkippedPersistingNullValue(_logger, storageKey, _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
+                Log.SkippedPersistingNullValue(_logger, ComputeKey(_subscriber, _propertyName), _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
                 return Task.CompletedTask;
             }
 
             if (_customSerializer != null)
             {
-                Log.PersistingValueToState(_logger, storageKey, _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
+                Log.PersistingValueToState(_logger, ComputeKey(_subscriber, _propertyName), _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
 
                 using var writer = new PooledArrayBufferWriter<byte>();
                 _customSerializer.Persist(_propertyType, property, writer);
-                _state.PersistAsBytes(storageKey, writer.WrittenMemory.ToArray());
+                _state.PersistAsBytes(ComputeKey(_subscriber, _propertyName), writer.WrittenMemory.ToArray());
                 return Task.CompletedTask;
             }
 
             // Fallback to JSON serialization
-            Log.PersistingValueToState(_logger, storageKey, _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
-            _state.PersistAsJson(storageKey, property, _propertyType);
+            Log.PersistingValueToState(_logger, ComputeKey(_subscriber, _propertyName), _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
+            _state.PersistAsJson(ComputeKey(_subscriber, _propertyName), property, _propertyType);
             return Task.CompletedTask;
         }
 
