@@ -51,10 +51,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>78061f4bcc414fa2054be6237b1fd3813d8edf6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="10.0.0-alpha.2.24462.2">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>f485d74550db5bd91617accc1bb548ae6013756b</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0-preview.7.25365.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>78061f4bcc414fa2054be6237b1fd3813d8edf6b</Sha>
@@ -445,21 +441,21 @@
       <Sha>54bab2dbb7652269d9ae0758de122f933b254561</Sha>
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
-    <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25365-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>78061f4bcc414fa2054be6237b1fd3813d8edf6b</Sha>
+    <Dependency Name="Microsoft.Build" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Framework" Version="17.15.0-preview-25365-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>78061f4bcc414fa2054be6237b1fd3813d8edf6b</Sha>
+    <Dependency Name="Microsoft.Build.Framework" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.15.0-preview-25365-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>78061f4bcc414fa2054be6237b1fd3813d8edf6b</Sha>
+    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.15.0-preview-25365-101">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>78061f4bcc414fa2054be6237b1fd3813d8edf6b</Sha>
+    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>

@@ -74,7 +74,6 @@
     <MicrosoftNETCoreBrowserDebugHostTransportVersion>10.0.0-preview.7.25365.101</MicrosoftNETCoreBrowserDebugHostTransportVersion>
     <MicrosoftExtensionsCachingAbstractionsVersion>10.0.0-preview.7.25365.101</MicrosoftExtensionsCachingAbstractionsVersion>
     <MicrosoftExtensionsCachingMemoryVersion>10.0.0-preview.7.25365.101</MicrosoftExtensionsCachingMemoryVersion>
-    <MicrosoftExtensionsCachingHybridVersion>10.0.0-alpha.2.24462.2</MicrosoftExtensionsCachingHybridVersion>
     <MicrosoftExtensionsConfigurationAbstractionsVersion>10.0.0-preview.7.25365.101</MicrosoftExtensionsConfigurationAbstractionsVersion>
     <MicrosoftExtensionsConfigurationBinderVersion>10.0.0-preview.7.25365.101</MicrosoftExtensionsConfigurationBinderVersion>
     <MicrosoftExtensionsConfigurationCommandLineVersion>10.0.0-preview.7.25365.101</MicrosoftExtensionsConfigurationCommandLineVersion>
@@ -157,10 +156,10 @@
     <MicrosoftEntityFrameworkCoreVersion>10.0.0-preview.7.25365.101</MicrosoftEntityFrameworkCoreVersion>
     <MicrosoftEntityFrameworkCoreDesignVersion>10.0.0-preview.7.25365.101</MicrosoftEntityFrameworkCoreDesignVersion>
     <!-- Packages from dotnet/msbuild -->
-    <MicrosoftBuildVersion>17.15.0-preview-25365-101</MicrosoftBuildVersion>
-    <MicrosoftBuildFrameworkVersion>17.15.0-preview-25365-101</MicrosoftBuildFrameworkVersion>
-    <MicrosoftBuildTasksCoreVersion>17.15.0-preview-25365-101</MicrosoftBuildTasksCoreVersion>
-    <MicrosoftBuildUtilitiesCoreVersion>17.15.0-preview-25365-101</MicrosoftBuildUtilitiesCoreVersion>
+    <MicrosoftBuildVersion>17.12.36</MicrosoftBuildVersion>
+    <MicrosoftBuildFrameworkVersion>17.12.36</MicrosoftBuildFrameworkVersion>
+    <MicrosoftBuildTasksCoreVersion>17.12.36</MicrosoftBuildTasksCoreVersion>
+    <MicrosoftBuildUtilitiesCoreVersion>17.12.36</MicrosoftBuildUtilitiesCoreVersion>
     <!-- Packages from dotnet/sdk -->
     <MicrosoftDotNetHotReloadAgentVersion>10.0.100-preview.7.25365.101</MicrosoftDotNetHotReloadAgentVersion>
     <MicrosoftDotNetHotReloadAgentDataVersion>10.0.100-preview.7.25365.101</MicrosoftDotNetHotReloadAgentDataVersion>
