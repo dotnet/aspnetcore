@@ -126,13 +126,25 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         return Unprotect(protectedData, out _);
     }
 
+#if NET10_0_OR_GREATER
     public int GetProtectedSize(ReadOnlySpan<byte> plainText)
     {
-        throw new NotImplementedException();
+        var dataProtector = GetInnerProtectorWithTimeLimitedPurpose();
+        var size = dataProtector.GetProtectedSize(plainText);
+
+        // prepended the expiration time as a 64-bit UTC tick count takes 8 bytes;
+        // see Protect(byte[] plaintext, DateTimeOffset expiration) for details
+        return size + 8;
     }
 
-    public bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten)
+    public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
+        => TryProtect(plaintext, destination, DateTimeOffset.MaxValue, out bytesWritten);
+
+    public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, DateTimeOffset expiration, out int bytesWritten)
     {
+        // we cant prepend the expiration time as a 64-bit UTC tick count
+        // because input is ReadOnlySpan<byte>
         throw new NotImplementedException();
     }
+#endif
 }

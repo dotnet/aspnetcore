@@ -35,6 +35,6 @@ public interface IAuthenticatedEncryptor
 
 #if NET10_0_OR_GREATER
     int GetEncryptedSize(int plainTextLength);
-    bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
+    bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
 #endif
 }

@@ -101,9 +101,51 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         return defaultEncryptor.GetEncryptedSize(plainText.Length);
     }
 
-    public bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten)
+    public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
     {
-        throw new NotImplementedException();
+        try
+        {
+            // Perform the encryption operation using the current default encryptor.
+            var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+            var defaultKeyId = currentKeyRing.DefaultKeyId;
+            var defaultEncryptorInstance = currentKeyRing.DefaultAuthenticatedEncryptor;
+            CryptoUtil.Assert(defaultEncryptorInstance != null, "defaultEncryptorInstance != null");
+
+            if (_logger.IsDebugLevelEnabled())
+            {
+                _logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
+            }
+
+            // We'll need to apply the default key id to the template if it hasn't already been applied.
+            // If the default key id has been updated since the last call to Protect, also write back the updated template.
+            var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
+
+            // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
+            var success = defaultEncryptorInstance.TryEncrypt(
+                plaintext: plaintext,
+                additionalAuthenticatedData: aad,
+                destination: destination,
+                preBufferSize: (uint)(sizeof(uint) + sizeof(Guid)),
+                postBufferSize: 0,
+                out bytesWritten);
+
+            // At this point: destination := { 000..000 || encryptorSpecificProtectedPayload },
+            // where 000..000 is a placeholder for our magic header and key id.
+
+            // Write out the magic header and key id
+            BinaryPrimitives.WriteUInt32BigEndian(destination.Slice(0, sizeof(uint)), MAGIC_HEADER_V0);
+            var writeKeyIdResult = defaultKeyId.TryWriteBytes(destination.Slice(sizeof(uint), sizeof(Guid)));
+            Debug.Assert(writeKeyIdResult, "Failed to write Guid to destination.");
+
+            // At this point, destination := { magicHeader || keyId || encryptorSpecificProtectedPayload }
+            // And we're done!
+            return success;
+        }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            // homogenize all errors to CryptographicException
+            throw Error.Common_EncryptionFailed(ex);
+        }
     }
 #endif
 

@@ -32,6 +32,21 @@ internal static class AuthenticatedEncryptorExtensions
         }
     }
 
+#if NET10_0_OR_GREATER
+    public static bool TryEncrypt(
+        this IAuthenticatedEncryptor encryptor,
+        ReadOnlySpan<byte> plaintext,
+        ReadOnlySpan<byte> additionalAuthenticatedData,
+        Span<byte> destination,
+        uint preBufferSize,
+        uint postBufferSize,
+        out int bytesWritten)
+    {
+        var plaintextWithOffsets = plaintext.Slice((int)preBufferSize, plaintext.Length - (int)(preBufferSize + postBufferSize));
+        return encryptor.TryEncrypt(plaintextWithOffsets, additionalAuthenticatedData, destination, out bytesWritten);
+    }
+#endif
+
     /// <summary>
     /// Performs a self-test of this encryptor by running a sample payload through an
     /// encrypt-then-decrypt operation. Throws if the operation fails.
