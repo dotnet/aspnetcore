@@ -21,10 +21,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddValidation();
+builder.Services.AddSingleton<TestService>();
 
 var app = builder.Build();
 
@@ -48,6 +50,10 @@ public record SubTypeWithoutConstructor
 
     [StringLength(10)]
     public string? StringWithLength { get; set; }
+
+    [FromServices]
+    [Required]
+    public TestService ServiceProperty { get; set; } = null!;
 }
 
 public static class CustomValidators
@@ -66,6 +72,12 @@ public static class CustomValidators
     }
 }
 
+public class TestService
+{
+    [Range(10, 100)]
+    public int Value { get; set; } = 4;
+}
+
 public record ValidatableRecord(
     [Range(10, 100)]
     int IntegerWithRange = 10,
@@ -81,7 +93,9 @@ public record ValidatableRecord(
     [CustomValidation(typeof(CustomValidators), nameof(CustomValidators.Validate))]
     int IntegerWithCustomValidation = 0,
     [DerivedValidation, Range(10, 100)]
-    int PropertyWithMultipleAttributes = 10
+    int PropertyWithMultipleAttributes = 10,
+    [FromServices] [Required] TestService ServiceProperty = null!, // This should be ignored because of [FromServices]
+    [FromKeyedServices("serviceKey")] [Range(10, 100)] int KeyedServiceProperty = 5 // This should be ignored because of [FromKeyedServices]
 );
 """;
         await Verify(source, out var compilation);

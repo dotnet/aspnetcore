@@ -110,6 +110,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
 
+        var fromServiceMetadataSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
+        var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
+
         // Special handling for record types to extract properties from
         // the primary constructor.
         if (typeSymbol is INamedTypeSymbol { IsRecord: true } namedType)
@@ -137,6 +142,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                     {
                         resolvedRecordProperty.Add(correspondingProperty);
 
+                        // Skip parameters that are injected as services
+                        if (parameter.IsServiceParameter(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+                        {
+                            continue;
+                        }
+
                         // Check if the property's type is validatable, this resolves
                         // validatable types in the inheritance hierarchy
                         var hasValidatableType = TryExtractValidatableType(
@@ -162,9 +173,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         {
             // Skip compiler generated properties and properties already processed via
             // the record processing logic above.
-            if (member.IsImplicitlyDeclared 
-                || member.IsEqualityContract(wellKnownTypes) 
+            if (member.IsImplicitlyDeclared
+                || member.IsEqualityContract(wellKnownTypes)
                 || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            {
+                continue;
+            }
+
+            // Skip properties that are injected as services
+            if (member.IsServiceProperty(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
             {
                 continue;
             }

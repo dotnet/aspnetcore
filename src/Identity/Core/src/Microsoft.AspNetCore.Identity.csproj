@@ -13,7 +13,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)DefaultMessageEmailSender.cs" />
+    <Compile Include="$(SharedSourceRoot)DefaultMessageEmailSender.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Metrics\MetricsConstants.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
