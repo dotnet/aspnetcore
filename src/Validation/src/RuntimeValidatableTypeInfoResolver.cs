@@ -25,6 +25,12 @@ public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolve
 {
     private static readonly ConcurrentDictionary<Type, IValidatableInfo?> _cache = new();
 
+    /// <summary>
+    /// Attempts to get validatable type information for the specified type using runtime reflection.
+    /// </summary>
+    /// <param name="type">The type to get validation information for.</param>
+    /// <param name="info">When this method returns, contains the validatable type information if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if validatable type information was found; otherwise, <see langword="false"/>.</returns>
     public bool TryGetValidatableTypeInfo(
         Type type,
         [NotNullWhen(true)] out IValidatableInfo? info)
@@ -39,6 +45,15 @@ public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolve
         return info is not null;
     }
 
+    /// <summary>
+    /// Attempts to get validatable parameter information for the specified parameter.
+    /// </summary>
+    /// <param name="parameterInfo">The parameter to get validation information for.</param>
+    /// <param name="validatableInfo">When this method returns, contains the validatable parameter information if found; otherwise, <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if validatable parameter information was found; otherwise, <see langword="false"/>.</returns>
+    /// <remarks>
+    /// This implementation always returns <see langword="false"/> as parameter resolution is handled by <see cref="RuntimeValidatableParameterInfoResolver"/>.
+    /// </remarks>
     public bool TryGetValidatableParameterInfo(
         ParameterInfo parameterInfo,
         [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
