@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+
 namespace Microsoft.AspNetCore.Components;
 
 /// <summary>
@@ -20,26 +22,27 @@ namespace Microsoft.AspNetCore.Components;
 /// public string? NonPrerenderingData { get; set; }
 /// </code>
 /// </example>
+/// <remarks>
+/// Initializes a new instance of the <see cref="RestoreStateOnPrerenderingAttribute"/> class.
+/// </remarks>
+/// <param name="enable">
+/// <see langword="true"/> to enable state restoration during prerendering (default);
+/// <see langword="false"/> to disable state restoration during prerendering.
+/// </param>
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class RestoreStateOnPrerenderingAttribute : Attribute, IPersistentStateFilter
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+public sealed class RestoreStateOnPrerenderingAttribute(bool enable = true) : Attribute, IPersistentStateFilter
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="RestoreStateOnPrerenderingAttribute"/> class.
-    /// </summary>
-    /// <param name="enable">
-    /// <see langword="true"/> to enable state restoration during prerendering (default);
-    /// <see langword="false"/> to disable state restoration during prerendering.
-    /// </param>
-    public RestoreStateOnPrerenderingAttribute(bool enable = true)
-    {
-        Filter = enable ? WebPersistenceFilter.Prerendering : new WebPersistenceFilter(WebPersistenceScenarioType.Prerendering, enabled: false);
-    }
-
-    internal WebPersistenceFilter Filter { get; }
+    internal WebPersistenceFilter Filter { get; } = enable ? WebPersistenceFilter.Prerendering : new WebPersistenceFilter(WebPersistenceScenarioType.Prerendering, enabled: false);
 
     bool IPersistentStateFilter.SupportsScenario(IPersistentComponentStateScenario scenario)
         => Filter.SupportsScenario(scenario);
 
     bool IPersistentStateFilter.ShouldRestore(IPersistentComponentStateScenario scenario)
         => Filter.ShouldRestore(scenario);
+
+    private string GetDebuggerDisplay()
+    {
+        return $"RestoreStateOnPrerenderingAttribute: (Enabled: {enable})";
+    }
 }

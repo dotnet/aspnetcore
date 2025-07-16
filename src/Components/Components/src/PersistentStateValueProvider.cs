@@ -394,10 +394,12 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
 
     internal class ComponentSubscription
     {
+        private static readonly object _uninitializedValue = new();
         private readonly PersistingComponentStateSubscription? _persistingSubscription;
         private readonly RestoringComponentStateSubscription? _restoringSubscription;
-        private object? _lastValue;
-        private bool _hasComputedValueFirstTime;
+        private object? _lastValue = _uninitializedValue;
+        private bool _hasPendingInitialValue;
+        private bool _ignoreUpdatedValues;
         private readonly PersistentComponentState _state;
         private readonly ComponentState _subscriber;
         private readonly string _propertyName;
@@ -434,13 +436,95 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
 
         internal object? GetOrComputeLastValue()
         {
-            if (!_hasComputedValueFirstTime)
+            var isInitialized = !ReferenceEquals(_lastValue, _uninitializedValue);
+            if (!isInitialized)
             {
-                _hasComputedValueFirstTime = true;
-                RestoreProperty();
+                // Remove the uninitialized sentinel.
+                _lastValue = null;
+                if (_hasPendingInitialValue)
+                {
+                    RestoreProperty();
+                    _hasPendingInitialValue = false;
+                }
+            }
+            else
+            {
+                if (_ignoreUpdatedValues)
+                {
+                    // At this point, we just received a value update from `RestoreProperty`.
+                    // The property value might have been modified by the component and in this
+                    // case we want to overwrite it with the value we just restored.
+                    _ignoreUpdatedValues = false;
+                    return _lastValue;
+                }
+                else
+                {
+                    // In this case, the component might have modified the property value after
+                    // we restored it from the persistent state. We don't want to overwrite it
+                    // with a previously restored value.
+                    var currentPropertyValue = _propertyGetter.GetValue(_subscriber.Component);
+                    return currentPropertyValue;
+                }
             }
 
             return _lastValue;
+        }
+
+        [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("Trimming", "IL2077:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes' in call to target method. The source field does not have matching annotations.", Justification = "Property types on components are preserved through other means.")]
+        private void RestoreProperty()
+        {
+            var skipNotifications = _hasPendingInitialValue;
+            if (ReferenceEquals(_lastValue, _uninitializedValue) && !_hasPendingInitialValue)
+            {
+                // Upon subscribing, the callback might be invoked right away,
+                // but this is too early to restore the first value since the component state
+                // hasn't been fully initialized yet.
+                // For that reason, we make a mark to restore the state on GetOrComputeLastValue.
+                _hasPendingInitialValue = true;
+                return;
+            }
+
+            // The key needs to be computed here, do not move this outside of the lambda.
+            var storageKey = ComputeKey(_subscriber, _propertyName);
+
+            if (_customSerializer != null)
+            {
+                if (_state.TryTakeBytes(storageKey, out var data))
+                {
+                    Log.RestoringValueFromState(_logger, storageKey, _propertyType.Name, _propertyName);
+                    var sequence = new ReadOnlySequence<byte>(data!);
+                    _lastValue = _customSerializer.Restore(_propertyType, sequence);
+                    if (!skipNotifications)
+                    {
+                        _ignoreUpdatedValues = true;
+                        _subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
+                    }
+                }
+                else
+                {
+                    Log.ValueNotFoundInPersistentState(_logger, storageKey, _propertyType.Name, "null", _propertyName);
+                }
+            }
+            else
+            {
+                if (_state.TryTakeFromJson(storageKey, _propertyType, out var value))
+                {
+                    Log.RestoredValueFromPersistentState(_logger, storageKey, _propertyType.Name, "null", _propertyName);
+                    _lastValue = value;
+                    if (!skipNotifications)
+                    {
+                        _ignoreUpdatedValues = true;
+                        _subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
+                    }
+                }
+                else
+                {
+                    Log.NoValueToRestoreFromState(_logger, storageKey, _propertyType.Name, _propertyName);
+                }
+            }
         }
 
         [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
@@ -473,53 +557,6 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
             Log.PersistingValueToState(_logger, storageKey, _propertyType.Name, _subscriber.Component.GetType().Name, _propertyName);
             _state.PersistAsJson(storageKey, property, _propertyType);
             return Task.CompletedTask;
-        }
-
-        [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
-        [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-        [UnconditionalSuppressMessage("Trimming", "IL2077:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes' in call to target method. The source field does not have matching annotations.", Justification = "Property types on components are preserved through other means.")]
-        private void RestoreProperty()
-        {
-            if (!_hasComputedValueFirstTime)
-            {
-                // We'll get invoked right away upon subscription. This is too early to try and restore the value as
-                // the component state might not be fully initialized yet.
-                // For that reason, skip the restore operation until GetOrComputeLastValue is called.
-                // It will trigger the restore operation at the right time.
-                return;
-            }
-
-            // The key needs to be computed here, do not move this outside of the lambda.
-            var storageKey = ComputeKey(_subscriber, _propertyName);
-
-            if (_customSerializer != null)
-            {
-                if (_state.TryTakeBytes(storageKey, out var data))
-                {
-                    Log.RestoringValueFromState(_logger, storageKey, _propertyType.Name, _propertyName);
-                    var sequence = new ReadOnlySequence<byte>(data!);
-                    _lastValue = _customSerializer.Restore(_propertyType, sequence);
-                    _subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
-                }
-                else
-                {
-                    Log.ValueNotFoundInPersistentState(_logger, storageKey, _propertyType.Name, "null", _propertyName);
-                }
-            }
-            else
-            {
-                if (_state.TryTakeFromJson(storageKey, _propertyType, out var value))
-                {
-                    Log.RestoredValueFromPersistentState(_logger, storageKey, _propertyType.Name, "null", _propertyName);
-                    _lastValue = value;
-                    _subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
-                }
-                else
-                {
-                    Log.NoValueToRestoreFromState(_logger, storageKey, _propertyType.Name, _propertyName);
-                }
-            }
         }
 
         public void Dispose()
