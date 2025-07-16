@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.DataProtection.Tests.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
@@ -134,13 +136,6 @@ public class CbcAuthenticatedEncryptorTests
         ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
         ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
 
-        var expectedSize = encryptor.GetEncryptedSize(plaintext.Count);
-
-        byte[] ciphertext = encryptor.Encrypt(plaintext, aad);
-        Assert.Equal(expectedSize, ciphertext.Length);
-
-        byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
-
-        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
+        RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
     }
 }

@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.Tests.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection.Managed;
 
@@ -132,23 +133,6 @@ public class ManagedAuthenticatedEncryptorTests
         ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
         ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
 
-        var expectedSize = encryptor.GetEncryptedSize(plaintext.Count);
-        var cipherTextPooled = ArrayPool<byte>.Shared.Rent(expectedSize);
-        var tryEncryptResult = encryptor.TryEncrypt(plaintext, aad, cipherTextPooled, out var bytesWritten);
-        Assert.Equal(expectedSize, bytesWritten);
-        Assert.True(tryEncryptResult);
-
-        byte[] ciphertext = encryptor.Encrypt(plaintext, aad);
-
-        // validate length of the cipherText is the same as pre-calculated size
-        // and TryEncrypt produces the same result as Encrypt API
-        Assert.Equal(expectedSize, ciphertext.Length);
-
-        byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
-        var decipheredTextFromTryEncrypt = encryptor.Decrypt(new ArraySegment<byte>(cipherTextPooled, 0, expectedSize), aad);
-        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
-        Assert.Equal(plaintext.AsSpan(), decipheredTextFromTryEncrypt.AsSpan());
-
-        ArrayPool<byte>.Shared.Return(cipherTextPooled);
+        RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
     }
 }
