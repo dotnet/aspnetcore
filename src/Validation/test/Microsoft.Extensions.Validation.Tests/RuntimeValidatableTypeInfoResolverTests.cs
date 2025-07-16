@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Validation.Tests;
 
 public class RuntimeValidatableTypeInfoResolverTests
 {
-    private readonly RuntimeValidatableInfoResolver _resolver = new();
+    private readonly RuntimeValidatableTypeInfoResolver _resolver = new();
 
     [Fact]
     public void TryGetValidatableParameterInfo_WithStringParameterNoAttributes_ReturnsFalse()
@@ -58,7 +58,7 @@ public class RuntimeValidatableTypeInfoResolverTests
 
         Assert.True(result);
         Assert.NotNull(validatableInfo);
-        Assert.IsType<RuntimeValidatableInfoResolver.RuntimeValidatableTypeInfo>(validatableInfo);
+        Assert.IsType<RuntimeValidatableTypeInfoResolver.RuntimeValidatableTypeInfo>(validatableInfo);
 
         // Test validation with invalid data
         var invalidPoco = new SimplePocoWithValidation
@@ -354,7 +354,7 @@ public class RuntimeValidatableTypeInfoResolverTests
         Assert.True(result);
         Assert.NotNull(validatableInfo);
 
-        var typeInfo = Assert.IsType<RuntimeValidatableInfoResolver.RuntimeValidatableTypeInfo>(validatableInfo);
+        var typeInfo = Assert.IsType<RuntimeValidatableTypeInfoResolver.RuntimeValidatableTypeInfo>(validatableInfo);
 
         // Test validation with invalid writable property (read-only property should be ignored)
         var invalidPoco = new PocoWithReadOnlyProperty

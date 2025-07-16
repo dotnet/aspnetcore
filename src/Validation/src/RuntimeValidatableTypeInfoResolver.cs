@@ -5,31 +5,37 @@
 
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
-using System.Security.Claims;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Validation;
 
-[RequiresUnreferencedCode("RuntimeValidatableInfoResolver uses reflection to inspect types, properties, and attributes at runtime, including JsonDerivedTypeAttribute and record constructors. Trimming or AOT compilation may remove members required for validation.")]
-internal sealed class RuntimeValidatableInfoResolver : IValidatableInfoResolver
+/// <summary>
+/// Experimental runtime implementation of <see cref="IValidatableInfoResolver"/> for type validation.
+/// </summary>
+/// <remarks>
+/// This is an experimental API and may change in future versions.
+/// </remarks>
+[RequiresUnreferencedCode("RuntimeValidatableTypeInfoResolver uses reflection to inspect types, properties, and attributes at runtime, including JsonDerivedTypeAttribute and record constructors. Trimming or AOT compilation may remove members required for validation.")]
+[Experimental("ASP0029")]
+internal sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolver
 {
-    private static readonly ConcurrentDictionary<Type, IValidatableInfo?> _typeCache = new();
+    private static readonly ConcurrentDictionary<Type, IValidatableInfo?> _cache = new();
 
-    public bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? info)
+    public bool TryGetValidatableTypeInfo(
+        Type type,
+        [NotNullWhen(true)] out IValidatableInfo? info)
     {
-        if (_typeCache.TryGetValue(type, out info))
+        if (_cache.TryGetValue(type, out info))
         {
             return info is not null;
         }
 
         info = CreateValidatableTypeInfo(type, new HashSet<Type>());
-        _typeCache.TryAdd(type, info);
+        _cache.TryAdd(type, info);
         return info is not null;
     }
 
@@ -37,38 +43,10 @@ internal sealed class RuntimeValidatableInfoResolver : IValidatableInfoResolver
         ParameterInfo parameterInfo,
         [NotNullWhen(true)] out IValidatableInfo? validatableInfo)
     {
-        if (parameterInfo.Name == null)
-        {
-            throw new InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
-        }
-
-        // Skip parameters marked with [FromService] or [FromKeyedService] attributes
-        if (HasFromServiceAttributes(parameterInfo.GetCustomAttributes()))
-        {
-            validatableInfo = null;
-            return false;
-        }
-
-        var validationAttributes = parameterInfo
-            .GetCustomAttributes<ValidationAttribute>()
-            .ToArray();
-
-        // If there are no validation attributes and this type is not a complex type
-        // we don't need to validate it. Complex types without attributes are still
-        // validatable because we want to run the validations on the properties.
-        if (validationAttributes.Length == 0 && !IsClassForParameter(parameterInfo.ParameterType))
-        {
-            validatableInfo = null;
-            return false;
-        }
-        validatableInfo = new RuntimeValidatableParameterInfo(
-            parameterType: parameterInfo.ParameterType,
-            name: parameterInfo.Name,
-            displayName: GetDisplayNameForParameter(parameterInfo),
-            validationAttributes: validationAttributes
-        );
-        return true;
+        validatableInfo = null;
+        return false;
     }
+
     private static RuntimeValidatableTypeInfo? CreateValidatableTypeInfo(Type type, HashSet<Type> visitedTypes)
     {
         // Prevent infinite recursion by tracking visited types
@@ -205,17 +183,6 @@ internal sealed class RuntimeValidatableInfoResolver : IValidatableInfoResolver
         return property.Name;
     }
 
-    private static string GetDisplayNameForParameter(ParameterInfo parameterInfo)
-    {
-        Debug.Assert(parameterInfo.Name != null, "ParameterInfo.Name should not be null.");
-        var displayAttribute = parameterInfo.GetCustomAttribute<DisplayAttribute>();
-        if (displayAttribute != null)
-        {
-            return displayAttribute.Name ?? parameterInfo.Name;
-        }
-
-        return parameterInfo.Name;
-    }
     private static string? GetDisplayNameFromConstructorParameter(Type type, string propertyName)
     {
         var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
@@ -240,6 +207,7 @@ internal sealed class RuntimeValidatableInfoResolver : IValidatableInfoResolver
 
         return null;
     }
+
     private static bool IsRecordType(Type type)
     {
         // Check if the type is a record by looking for specific record-related compiler-generated methods
@@ -313,6 +281,7 @@ internal sealed class RuntimeValidatableInfoResolver : IValidatableInfoResolver
 
         return type;
     }
+
     private static bool IsParsableType(Type type)
     {
         var unwrappedType = UnwrapType(type);
@@ -377,37 +346,6 @@ internal sealed class RuntimeValidatableInfoResolver : IValidatableInfoResolver
     private static bool IsClassForType(Type type)
         => !IsParsableType(type) && type.IsClass;
 
-    private static bool IsClassForParameter(Type type)
-    {
-        // Skip primitives, enums, common built-in types, and types that are specially
-        // handled by RDF/RDG that don't need validation if they don't have attributes
-        if (type.IsPrimitive ||
-            type.IsEnum ||
-            type == typeof(string) ||
-            type == typeof(decimal) ||
-            type == typeof(DateTime) ||
-            type == typeof(DateTimeOffset) ||
-            type == typeof(TimeOnly) ||
-            type == typeof(DateOnly) ||
-            type == typeof(TimeSpan) ||
-            type == typeof(Guid) ||
-            type == typeof(ClaimsPrincipal) ||
-            type == typeof(CancellationToken) ||
-            type == typeof(Stream) ||
-            type == typeof(PipeReader))
-        {
-            return false;
-        }
-
-        // Check if the underlying type in a nullable is valid
-        if (Nullable.GetUnderlyingType(type) is { } nullableType)
-        {
-            return IsClassForParameter(nullableType);
-        }
-
-        return type.IsClass;
-    }
-
     private static bool HasFromServiceAttributes(IEnumerable<Attribute> attributes)
     {
         // Note: Use name-based comparison for FromServices attribute defined in
@@ -415,18 +353,6 @@ internal sealed class RuntimeValidatableInfoResolver : IValidatableInfoResolver
         return attributes.Any(attr =>
             attr.GetType().Name == "FromServicesAttribute" ||
             attr.GetType() == typeof(FromKeyedServicesAttribute));
-    }
-
-    internal sealed class RuntimeValidatableParameterInfo(
-        Type parameterType,
-        string name,
-        string displayName,
-        ValidationAttribute[] validationAttributes) :
-            ValidatableParameterInfo(parameterType, name, displayName)
-    {
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-
-        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
     }
 
     internal sealed class RuntimeValidatablePropertyInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type declaringType,
@@ -440,6 +366,7 @@ internal sealed class RuntimeValidatableInfoResolver : IValidatableInfoResolver
 
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
     }
+
     internal sealed class RuntimeValidatableTypeInfo(
         [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.Interfaces)] Type type,
         IReadOnlyList<RuntimeValidatablePropertyInfo> members) :
