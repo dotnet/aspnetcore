@@ -109,9 +109,6 @@
   <Folder Name="/src/Components/WebAssembly/DevServer/">
     <Project Path="src/Components/WebAssembly/DevServer/src/Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
   </Folder>
-  <Folder Name="/src/Components/WebAssembly/HotReload/">
-    <Project Path="src/Components/WebAssembly/HotReload/src/Microsoft.DotNet.HotReload.WebAssembly.Browser.csproj" />
-  </Folder>
   <Folder Name="/src/Components/WebAssembly/JSInterop/">
     <Project Path="src/Components/WebAssembly/JSInterop/src/Microsoft.JSInterop.WebAssembly.csproj" />
   </Folder>
