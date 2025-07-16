@@ -208,7 +208,6 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         Browser.Equal($"Render mode: {renderMode}", () => Browser.FindElement(By.Id("render-mode")).Text);
         Browser.Equal($"Streaming id:{streamingId}", () => Browser.FindElement(By.Id("streaming-id")).Text);
         Browser.Equal($"Interactive: {interactive}", () => Browser.FindElement(By.Id("interactive")).Text);
-        +
         if (streamingId == null || streamingCompleted)
         {
             Browser.Equal($"Enhanced nav state found:{enhancedNavStateFound}", () => Browser.FindElement(By.Id("enhanced-nav-state-found")).Text);

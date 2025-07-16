@@ -52,9 +52,6 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         return null;
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
-    [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
     public void Subscribe(ComponentState subscriber, in CascadingParameterInfo parameterInfo)
     {
         var propertyName = parameterInfo.PropertyName;
@@ -446,6 +443,10 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
             return _lastValue;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("Trimming", "IL2077:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes' in call to target method. The source field does not have matching annotations.", Justification = "Property types on components are preserved through other means.")]
         private Task PersistProperty()
         {
             // The key needs to be computed here, do not move this outside of the lambda.
@@ -474,6 +475,10 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
             return Task.CompletedTask;
         }
 
+        [UnconditionalSuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("Trimming", "IL2072:Target parameter argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "OpenComponent already has the right set of attributes")]
+        [UnconditionalSuppressMessage("Trimming", "IL2077:'type' argument does not satisfy 'DynamicallyAccessedMemberTypes' in call to target method. The source field does not have matching annotations.", Justification = "Property types on components are preserved through other means.")]
         private void RestoreProperty()
         {
             if (!_hasComputedValueFirstTime)

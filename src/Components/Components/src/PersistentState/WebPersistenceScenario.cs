@@ -51,6 +51,10 @@ public sealed class WebPersistenceScenario : IPersistentComponentStateScenario
     /// </example>
     public static WebPersistenceScenario Reconnection { get; } = new(WebPersistenceScenarioType.Reconnection, isRecurring: false);
 
+    /// <summary>
+    /// Gets a scenario representing enhanced navigation state restoration.
+    /// This scenario can occur multiple times during enhanced page navigation.
+    /// </summary>
     public static WebPersistenceScenario EnhancedNavigation { get; } = new(WebPersistenceScenarioType.EnhancedNavigation, isRecurring: true);
 
     private string GetDebuggerDisplay() => $"{ScenarioType} (IsRecurring: {IsRecurring})";
