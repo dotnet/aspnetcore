@@ -3,6 +3,7 @@
 
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
 namespace Microsoft.AspNetCore.DataProtection.Managed;
 
@@ -102,5 +103,41 @@ public class ManagedAuthenticatedEncryptorTests
 
         string retValAsString = Convert.ToBase64String(retVal);
         Assert.Equal("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAA=", retValAsString);
+    }
+
+    [Theory]
+    [InlineData(128, "SHA256")]
+    [InlineData(192, "SHA256")]
+    [InlineData(256, "SHA256")]
+    [InlineData(128, "SHA512")]
+    [InlineData(192, "SHA512")]
+    [InlineData(256, "SHA512")]
+    public void Roundtrip_TryEncryptDecrypt_CorrectlyEstimatesDataLength(int symmetricKeySizeBits, string hmacAlgorithm)
+    {
+        Secret kdk = new Secret(new byte[512 / 8]);
+
+        Func<KeyedHashAlgorithm> validationAlgorithmFactory = hmacAlgorithm switch
+        {
+            "SHA256" => () => new HMACSHA256(),
+            "SHA512" => () => new HMACSHA512(),
+            _ => throw new ArgumentException($"Unsupported HMAC algorithm: {hmacAlgorithm}")
+        };
+
+        IAuthenticatedEncryptor encryptor = new ManagedAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmFactory: Aes.Create,
+            symmetricAlgorithmKeySizeInBytes: symmetricKeySizeBits / 8,
+            validationAlgorithmFactory: validationAlgorithmFactory);
+
+        ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
+        ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
+
+        var expectedSize = encryptor.GetEncryptedSize(plaintext.Count);
+
+        byte[] ciphertext = encryptor.Encrypt(plaintext, aad);
+        Assert.Equal(expectedSize, ciphertext.Length);
+
+        byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
+
+        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
     }
 }

@@ -4,6 +4,8 @@
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
 using Microsoft.AspNetCore.InternalTesting;
 
@@ -112,5 +114,33 @@ public class CbcAuthenticatedEncryptorTests
 
         string retValAsString = Convert.ToBase64String(retVal);
         Assert.Equal("AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAAAAAAA", retValAsString);
+    }
+
+    [ConditionalTheory]
+    [ConditionalRunTestOnlyOnWindows]
+    [InlineData(128, "SHA256")]
+    [InlineData(192, "SHA256")]
+    [InlineData(256, "SHA256")]
+    [InlineData(128, "SHA512")]
+    [InlineData(192, "SHA512")]
+    [InlineData(256, "SHA512")]
+    public void Roundtrip_TryEncryptDecrypt_CorrectlyEstimatesDataLength(int symmetricKeySizeBits, string hmacAlgorithm)
+    {
+        Secret kdk = new Secret(new byte[512 / 8]);
+        IAuthenticatedEncryptor encryptor = new CbcAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
+            symmetricAlgorithmKeySizeInBytes: (uint)(symmetricKeySizeBits / 8),
+            hmacAlgorithmHandle: BCryptAlgorithmHandle.OpenAlgorithmHandle(hmacAlgorithm, hmac: true));
+        ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
+        ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
+
+        var expectedSize = encryptor.GetEncryptedSize(plaintext.Count);
+
+        byte[] ciphertext = encryptor.Encrypt(plaintext, aad);
+        Assert.Equal(expectedSize, ciphertext.Length);
+
+        byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
+
+        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
     }
 }

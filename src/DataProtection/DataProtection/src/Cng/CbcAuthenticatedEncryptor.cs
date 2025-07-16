@@ -302,7 +302,8 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
 #if NET10_0_OR_GREATER
     public override int GetEncryptedSize(int plainTextLength, uint preBufferSize, uint postBufferSize)
     {
-        return checked((int)(preBufferSize + KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + plainTextLength + _hmacAlgorithmDigestLengthInBytes + postBufferSize));
+        uint paddedCiphertextLength = GetCbcEncryptedOutputSizeWithPadding((uint)plainTextLength);
+        return checked((int)(preBufferSize + KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + paddedCiphertextLength + _hmacAlgorithmDigestLengthInBytes + postBufferSize));
     }
 
     public override bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
@@ -397,6 +398,41 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
             // Buffer contains sensitive material; delete it.
             UnsafeBufferUtil.SecureZeroMemory(pbTempSubkeys, cbTempSubkeys);
         }
+    }
+
+    /// <summary>
+    /// Should be used only for expected encrypt/decrypt size calculation,
+    /// use the other overload <see cref="GetCbcEncryptedOutputSizeWithPadding(BCryptKeyHandle, byte*, uint)"/>
+    /// for the actual encryption algorithm
+    /// </summary>
+    private uint GetCbcEncryptedOutputSizeWithPadding(uint cbInput)
+    {
+        // Create a temporary key with dummy data for size calculation only
+        // The actual key material doesn't matter for size calculation
+        byte* pbDummyKey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
+        // Leave pbDummyKey uninitialized (all zeros) - BCrypt doesn't care for size queries
+
+        using var tempKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbDummyKey, _symmetricAlgorithmSubkeyLengthInBytes);
+
+        // Use uninitialized IV and input data - only the lengths matter
+        byte* pbDummyIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
+        byte* pbDummyInput = stackalloc byte[checked((int)cbInput)];
+
+        uint dwResult;
+        var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
+            hKey: tempKeyHandle,
+            pbInput: pbDummyInput,
+            cbInput: cbInput,
+            pPaddingInfo: null,
+            pbIV: pbDummyIV,
+            cbIV: _symmetricAlgorithmBlockSizeInBytes,
+            pbOutput: null,  // NULL output = size query only
+            cbOutput: 0,
+            pcbResult: out dwResult,
+            dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
+        UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
+
+        return dwResult;
     }
 
     private uint GetCbcEncryptedOutputSizeWithPadding(BCryptKeyHandle symmetricKeyHandle, byte* pbInput, uint cbInput)
