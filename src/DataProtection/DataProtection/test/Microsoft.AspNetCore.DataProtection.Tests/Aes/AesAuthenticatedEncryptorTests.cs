@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.Managed;
+using Microsoft.AspNetCore.DataProtection.Tests.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection.Tests.Aes;
 public class AesAuthenticatedEncryptorTests
@@ -21,13 +22,6 @@ public class AesAuthenticatedEncryptorTests
         ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
         ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
 
-        var expectedSize = encryptor.GetEncryptedSize(plaintext.Count);
-
-        byte[] ciphertext = encryptor.Encrypt(plaintext, aad);
-        Assert.Equal(expectedSize, ciphertext.Length);
-
-        byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
-
-        Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
+        RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
     }
 }
