@@ -1,0 +1,86 @@
+﻿@using BlazorUnitedApp.Data
+@inject WeatherForecastService ForecastService
+@inject NavigationManager NavigationManager
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from a service.</p>
+
+@if (Forecasts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Temp. (C)</th>
+                <th>Temp. (F)</th>
+                <th>Summary</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var forecast in Forecasts)
+            {
+                <tr>
+                    <td>@forecast.Date.ToShortDateString()</td>
+                    <td>@forecast.TemperatureC</td>
+                    <td>@forecast.TemperatureF</td>
+                    <td>@forecast.Summary</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<button @onclick="ClearData">Clear data</button>
+
+<p>Current Url = @Page</p>
+
+<p>Yay or Nay: @YayOrNay</p>
+
+<ul>
+    <li>
+        <a href="fetchdata/?page=0">Page 0</a>
+    </li>
+    <li>
+        <a href="fetchdata/?page=1">Page 1</a>
+    </li>
+    <li>
+        <a href="fetchdata/?page=2">Page 2</a>
+    </li>
+</ul>
+
+@code {
+    [PersistentState]
+    [UpdateStateOnEnhancedNavigation(true)]
+    public WeatherForecast[]? Forecasts { get; set; }
+
+    [Parameter] public bool YayOrNay { get; set; } = false;
+
+    public string Page { get; set; } = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Extract the page from the query string
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
+        var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        var pageParam = query["page"];
+        int pageIndex = 1 + (int.TryParse(pageParam, out int parsedPage) ? parsedPage : 0);
+        pageIndex *= 7;
+
+        Forecasts ??= await ForecastService.GetForecastAsync(DateOnly.FromDateTime(DateTime.Now).AddDays(pageIndex));
+    }
+
+    protected override void OnParametersSet()
+    {
+        Page = NavigationManager.Uri;
+    }
+
+    private void ClearData()
+    {
+        Forecasts = [];
+    }
+}
