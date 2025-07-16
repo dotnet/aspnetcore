@@ -9,6 +9,6 @@ using Microsoft.AspNetCore.Components;
 namespace TestContentPackage.Services;
 public class InteractiveServerService
 {
-    [SupplyParameterFromPersistentComponentState]
+    [PersistentState]
     public string State { get; set; }
 }

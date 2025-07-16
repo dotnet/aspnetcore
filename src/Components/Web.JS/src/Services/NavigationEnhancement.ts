@@ -455,6 +455,7 @@ function enhancedNavigationIsEnabledForForm(form: HTMLFormElement): boolean {
 function retryEnhancedNavAsFullPageLoad(internalDestinationHref: string) {
   // The ? trick here is the same workaround as described in #10839, and without it, the user
   // would not be able to use the back button afterwards.
+  console.warn(`Enhanced navigation failed for destination ${internalDestinationHref}. Falling back to full page load.`);
   history.replaceState(null, '', internalDestinationHref + '?');
   location.replace(internalDestinationHref);
 }

@@ -365,15 +365,15 @@ public class ProtectedBrowserStorageTest
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
             => InvokeAsync<TValue>(identifier, cancellationToken: CancellationToken.None, args: args);
 
-        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object[] args)
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object[] args)
         {
-            Invocations.Add((identifier, args, JSCallType.NewCall));
+            Invocations.Add((identifier, args, JSCallType.ConstructorCall));
             return (ValueTask<IJSObjectReference>)NextInvocationResult;
         }
 
-        public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object[] args)
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object[] args)
         {
-            Invocations.Add((identifier, args, JSCallType.NewCall));
+            Invocations.Add((identifier, args, JSCallType.ConstructorCall));
             return (ValueTask<IJSObjectReference>)NextInvocationResult;
         }
 

@@ -21,10 +21,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder();
 
 builder.Services.AddValidation();
+builder.Services.AddSingleton<TestService>();
 
 var app = builder.Build();
 
@@ -58,6 +60,10 @@ public class ComplexType
 
     [DerivedValidation, Range(10, 100)]
     public int PropertyWithMultipleAttributes { get; set; } = 10;
+
+    [FromServices]
+    [Required] // This should be ignored because of [FromServices]
+    public TestService ServiceProperty { get; set; } = null!;
 }
 
 public class DerivedValidationAttribute : ValidationAttribute
@@ -95,6 +101,12 @@ public static class CustomValidators
 
         return ValidationResult.Success;
     }
+}
+
+public class TestService
+{
+    [Range(10, 100)]
+    public int Value { get; set; } = 4;
 }
 """;
         await Verify(source, out var compilation);

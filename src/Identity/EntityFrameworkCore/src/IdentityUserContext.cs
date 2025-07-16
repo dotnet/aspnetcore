@@ -57,12 +57,41 @@ public class IdentityUserContext<TUser, TKey> : IdentityUserContext<TUser, TKey,
 /// <typeparam name="TUserClaim">The type of the user claim object.</typeparam>
 /// <typeparam name="TUserLogin">The type of the user login object.</typeparam>
 /// <typeparam name="TUserToken">The type of the user token object.</typeparam>
-public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken> : DbContext
+public class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken> : IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken, IdentityUserPasskey<TKey>>
     where TUser : IdentityUser<TKey>
     where TKey : IEquatable<TKey>
     where TUserClaim : IdentityUserClaim<TKey>
     where TUserLogin : IdentityUserLogin<TKey>
     where TUserToken : IdentityUserToken<TKey>
+{
+    /// <summary>
+    /// Initializes a new instance of the db context.
+    /// </summary>
+    /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
+    public IdentityUserContext(DbContextOptions options) : base(options) { }
+
+    /// <summary>
+    /// Initializes a new instance of the class.
+    /// </summary>
+    protected IdentityUserContext() { }
+}
+
+/// <summary>
+/// Base class for the Entity Framework database context used for identity.
+/// </summary>
+/// <typeparam name="TUser">The type of user objects.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
+/// <typeparam name="TUserClaim">The type of the user claim object.</typeparam>
+/// <typeparam name="TUserLogin">The type of the user login object.</typeparam>
+/// <typeparam name="TUserToken">The type of the user token object.</typeparam>
+/// <typeparam name="TUserPasskey">The type of the user passkey object.</typeparam>
+public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken, TUserPasskey> : DbContext
+    where TUser : IdentityUser<TKey>
+    where TKey : IEquatable<TKey>
+    where TUserClaim : IdentityUserClaim<TKey>
+    where TUserLogin : IdentityUserLogin<TKey>
+    where TUserToken : IdentityUserToken<TKey>
+    where TUserPasskey : IdentityUserPasskey<TKey>
 {
     /// <summary>
     /// Initializes a new instance of the class.
@@ -94,6 +123,11 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// Gets or sets the <see cref="DbSet{TEntity}"/> of User tokens.
     /// </summary>
     public virtual DbSet<TUserToken> UserTokens { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the <see cref="DbSet{TEntity}"/> of User passkeys.
+    /// </summary>
+    public virtual DbSet<TUserPasskey> UserPasskeys { get; set; } = default!;
 
     /// <summary>
     /// Gets the schema version used for versioning.
@@ -133,7 +167,11 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     /// <param name="schemaVersion">The schema version.</param>
     internal virtual void OnModelCreatingVersion(ModelBuilder builder, Version schemaVersion)
     {
-        if (schemaVersion >= IdentitySchemaVersions.Version2)
+        if (schemaVersion >= IdentitySchemaVersions.Version3)
+        {
+            OnModelCreatingVersion3(builder);
+        }
+        else if (schemaVersion >= IdentitySchemaVersions.Version2)
         {
             OnModelCreatingVersion2(builder);
         }
@@ -141,6 +179,116 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
         {
             OnModelCreatingVersion1(builder);
         }
+    }
+
+    /// <summary>
+    /// Configures the schema needed for the identity framework for schema version 3.0
+    /// </summary>
+    /// <param name="builder">
+    /// The builder being used to construct the model for this context.
+    /// </param>
+    internal virtual void OnModelCreatingVersion3(ModelBuilder builder)
+    {
+        // Differences from Version 2:
+        // - Add a passkey entity
+
+        var storeOptions = GetStoreOptions();
+        var maxKeyLength = storeOptions?.MaxLengthForKeys ?? 0;
+        if (maxKeyLength == 0)
+        {
+            maxKeyLength = 128;
+        }
+        var encryptPersonalData = storeOptions?.ProtectPersonalData ?? false;
+        PersonalDataConverter? converter = null;
+
+        builder.Entity<TUser>(b =>
+        {
+            b.HasKey(u => u.Id);
+            b.HasIndex(u => u.NormalizedUserName).HasDatabaseName("UserNameIndex").IsUnique();
+            b.HasIndex(u => u.NormalizedEmail).HasDatabaseName("EmailIndex");
+            b.ToTable("AspNetUsers");
+            b.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
+
+            b.Property(u => u.UserName).HasMaxLength(256);
+            b.Property(u => u.NormalizedUserName).HasMaxLength(256);
+            b.Property(u => u.Email).HasMaxLength(256);
+            b.Property(u => u.NormalizedEmail).HasMaxLength(256);
+            b.Property(u => u.PhoneNumber).HasMaxLength(256);
+
+            if (encryptPersonalData)
+            {
+                converter = new PersonalDataConverter(this.GetService<IPersonalDataProtector>());
+                var personalDataProps = typeof(TUser).GetProperties().Where(
+                                prop => Attribute.IsDefined(prop, typeof(ProtectedPersonalDataAttribute)));
+                foreach (var p in personalDataProps)
+                {
+                    if (p.PropertyType != typeof(string))
+                    {
+                        throw new InvalidOperationException(Resources.CanOnlyProtectStrings);
+                    }
+                    b.Property(typeof(string), p.Name).HasConversion(converter);
+                }
+            }
+
+            b.HasMany<TUserClaim>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
+            b.HasMany<TUserLogin>().WithOne().HasForeignKey(ul => ul.UserId).IsRequired();
+            b.HasMany<TUserToken>().WithOne().HasForeignKey(ut => ut.UserId).IsRequired();
+            b.HasMany<TUserPasskey>().WithOne().HasForeignKey(up => up.UserId).IsRequired();
+        });
+
+        builder.Entity<TUserClaim>(b =>
+        {
+            b.HasKey(uc => uc.Id);
+            b.ToTable("AspNetUserClaims");
+        });
+
+        builder.Entity<TUserLogin>(b =>
+        {
+            b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
+
+            if (maxKeyLength > 0)
+            {
+                b.Property(l => l.LoginProvider).HasMaxLength(maxKeyLength);
+                b.Property(l => l.ProviderKey).HasMaxLength(maxKeyLength);
+            }
+
+            b.ToTable("AspNetUserLogins");
+        });
+
+        builder.Entity<TUserToken>(b =>
+        {
+            b.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
+
+            if (maxKeyLength > 0)
+            {
+                b.Property(t => t.LoginProvider).HasMaxLength(maxKeyLength);
+                b.Property(t => t.Name).HasMaxLength(maxKeyLength);
+            }
+
+            if (encryptPersonalData)
+            {
+                var tokenProps = typeof(TUserToken).GetProperties().Where(
+                                prop => Attribute.IsDefined(prop, typeof(ProtectedPersonalDataAttribute)));
+                foreach (var p in tokenProps)
+                {
+                    if (p.PropertyType != typeof(string))
+                    {
+                        throw new InvalidOperationException(Resources.CanOnlyProtectStrings);
+                    }
+                    b.Property(typeof(string), p.Name).HasConversion(converter);
+                }
+            }
+
+            b.ToTable("AspNetUserTokens");
+        });
+
+        builder.Entity<TUserPasskey>(b =>
+        {
+            b.HasKey(p => p.CredentialId);
+            b.ToTable("AspNetUserPasskeys");
+            b.Property(p => p.CredentialId).HasMaxLength(1024); // Defined in WebAuthn spec to be no longer than 1023 bytes
+            b.Property(p => p.PublicKey).HasMaxLength(1024); // Safe upper limit
+        });
     }
 
     /// <summary>
@@ -243,6 +391,8 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
 
             b.ToTable("AspNetUserTokens");
         });
+
+        builder.Ignore<TUserPasskey>();
     }
 
     /// <summary>
@@ -336,5 +486,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
 
             b.ToTable("AspNetUserTokens");
         });
+
+        builder.Ignore<TUserPasskey>();
     }
 }

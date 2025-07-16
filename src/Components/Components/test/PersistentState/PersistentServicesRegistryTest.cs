@@ -391,13 +391,13 @@ public class PersistentServicesRegistryTest
 
     private class AnotherTestService
     {
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public string State { get; set; }
     }
 
     private class CustomerService
     {
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public Customer Customer { get; set; }
     }
 
@@ -419,7 +419,7 @@ public class PersistentServicesRegistryTest
 
     private class TestService
     {
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public string State { get; set; }
     }
 
@@ -471,19 +471,19 @@ public class PersistentServicesRegistryTest
 
     private class DerivedOne : BaseService
     {
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public string State { get; set; }
     }
 
     private class DerivedTwo : BaseService
     {
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public string State { get; set; }
     }
 
     private class BaseServiceWithProperty
     {
-        [SupplyParameterFromPersistentComponentState]
+        [PersistentState]
         public string State { get; set; }
     }
 

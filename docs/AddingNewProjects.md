@@ -28,13 +28,13 @@ Sample PR of final result: https://github.com/dotnet/aspnetcore/pull/41945
   - If VS has not already modified these files, open the `.slnf` you want to add the project to. Create a solution folder for your project if doesn't exist already. Then right click solution folder -> Add -> Existing Project... -> follow the wizard.
 1. Run the `eng/scripts/GenerateProjectList.ps1` file to regenerate a number of `eng/*.props` files e.g. ProjectReferences.props.
 
-**Note:** If you are adding a new project to the root `src` directory, you will also need to add a reference in both of the `DotNetProjects` lists of the `eng/Build.props` file. The first list (the one with condition `'$(BuildMainlyReferenceProviders)' != 'true'"`) has items in the format of:
+**Note:** If you are adding a new project to the root `src` directory, you will also need to add a reference in both the `ProjectsWithTestsSubsetN` and `DotNetProjects` lists of the `eng/Build.props` file. The `ProjectsWithTestsSubsetN` lists (the one with condition `'$(BuildMainlyReferenceProviders)' != 'true'"`) has items in the format of:
   ```XML
-   <DotNetProjects Include="
+   <ProjectsWithTestsSubsetN Include="
                           $(RepoRoot)src\[YOUR FOLDER]\**\*.csproj;
                           ...
   ```
-while the second (the one with condition `'$(BuildMainlyReferenceProviders)' == 'true'"`) has them in the format of (note the second `src`):
+. You should add your project to whichever `ProjectsWithTestsSubsetN` list is shorter (`ProjectsWithTestsSubset1` or `ProjectsWithTestsSubset2`). The `DotNetProjects` list (the one with condition `'$(BuildMainlyReferenceProviders)' == 'true'"`) has them in the format of (note the second `src`):
   ```XML
   <DotNetProjects Include="
                         $(RepoRoot)src\[YOUR FOLDER]\**\src\*.csproj;

@@ -9,6 +9,12 @@
       "isVisible": true,
       "persistenceScope": "shared",
       "persistenceScopeName": "Microsoft"
+    },
+    {
+      "id": "LocalhostTld",
+      "isVisible": true,
+      "persistenceScope": "shared",
+      "persistenceScopeName": "Microsoft"
     }
   ],
   "disableHttpsSymbol": "NoHttps"

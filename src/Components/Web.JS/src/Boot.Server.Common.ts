@@ -67,7 +67,7 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     return true;
   };
 
-  Blazor.pause = async () => {
+  Blazor.pauseCircuit = async () => {
     if (circuit.didRenderingFail()) {
       // We can't pause after a failure, so exit early.
       return false;
@@ -81,7 +81,7 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     return true;
   };
 
-  Blazor.resume = async () => {
+  Blazor.resumeCircuit = async () => {
     if (circuit.didRenderingFail()) {
       // We can't resume after a failure, so exit early.
       return false;

@@ -146,7 +146,7 @@ public class ServerResumeTests : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     private void TriggerClientPauseAndInteract(IJavaScriptExecutor javascript)
     {
         var previousText = Browser.Exists(By.Id("persistent-counter-render")).Text;
-        javascript.ExecuteScript("Blazor.pause()");
+        javascript.ExecuteScript("Blazor.pauseCircuit()");
         Browser.Equal("block", () => Browser.Exists(By.Id("components-reconnect-modal")).GetCssValue("display"));
 
         // Retry button should be hidden

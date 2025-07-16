@@ -23,4 +23,11 @@ public class BearerTokenTests : SharedAuthenticationTests<BearerTokenOptions>
     {
         services.AddBearerToken(configure);
     }
+
+    [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new BearerTokenOptions();
+        Assert.NotNull(options.Events);
+    }
 }

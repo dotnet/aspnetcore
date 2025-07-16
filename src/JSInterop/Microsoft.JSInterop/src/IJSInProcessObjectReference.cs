@@ -28,7 +28,7 @@ public interface IJSInProcessObjectReference : IJSObjectReference, IDisposable
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An <see cref="IJSInProcessObjectReference"/> instance that represents the created JS object.</returns>
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    IJSInProcessObjectReference InvokeNew(string identifier, object?[]? args)
+    IJSInProcessObjectReference InvokeConstructor(string identifier, object?[]? args)
         => throw new NotImplementedException();
 
     /// <summary>

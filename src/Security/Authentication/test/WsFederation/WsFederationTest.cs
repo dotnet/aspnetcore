@@ -24,6 +24,13 @@ namespace Microsoft.AspNetCore.Authentication.WsFederation;
 public class WsFederationTest
 {
     [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new WsFederationOptions();
+        Assert.NotNull(options.Events);
+    }
+
+    [Fact]
     public async Task VerifySchemeDefaults()
     {
         var services = new ServiceCollection();

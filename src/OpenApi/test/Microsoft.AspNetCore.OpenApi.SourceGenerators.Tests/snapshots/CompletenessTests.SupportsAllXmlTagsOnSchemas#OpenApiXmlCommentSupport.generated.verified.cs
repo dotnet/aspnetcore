@@ -159,34 +159,34 @@ for this instance.", false, null, null, null));
             cache.Add(@"P:GenericParent.TaskOfTupleProp", new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:GenericParent.TupleWithGenericProp", new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:GenericParent.TupleWithNestedGenericProp", new XmlComment(@"This property is a tuple with a nested generic type inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)~System.Int32", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
+            cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
 if (c &gt; 10)
 {
     Console.WriteLine(c);
 }```"], [new XmlParameterComment(@"left", @"The left operand of the addition.", null, false), new XmlParameterComment(@"right", @"The right operand of the addition.", null, false)], null));
-            cache.Add(@"M:ExampleClass.AddAsync(System.Int32,System.Int32)~System.Threading.Tasks.Task{System.Int32}", new XmlComment(@"This method is an example of a method that
+            cache.Add(@"M:ExampleClass.AddAsync(System.Int32,System.Int32)", new XmlComment(@"This method is an example of a method that
 returns an awaitable item.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ExampleClass.DoNothingAsync~System.Threading.Tasks.Task", new XmlComment(@"This method is an example of a method that
+            cache.Add(@"M:ExampleClass.DoNothingAsync", new XmlComment(@"This method is an example of a method that
 returns a Task which should map to a void return type.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ExampleClass.AddNumbers(System.Int32[])~System.Int32", new XmlComment(@"This method is an example of a method that consumes
+            cache.Add(@"M:ExampleClass.AddNumbers(System.Int32[])", new XmlComment(@"This method is an example of a method that consumes
 an params array.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ITestInterface.Method(System.Int32)~System.Int32", new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
+            cache.Add(@"M:ITestInterface.Method(System.Int32)", new XmlComment(@"This method is part of the test interface.", null, @"This content would be inherited by classes
 that implement this interface when the
 implementing class uses ""inheritdoc""", @"The value of arg", null, false, null, [new XmlParameterComment(@"arg", @"The argument to the method", null, false)], null));
-            cache.Add(@"M:InheritOnlyReturns.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:InheritOnlyReturns.MyChildMethod~System.Boolean", new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:InheritAllButRemarks.MyParentMethod(System.Boolean)~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
+            cache.Add(@"M:InheritOnlyReturns.MyParentMethod(System.Boolean)", new XmlComment(@"In this example, this summary is only visible for this method.", null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:InheritOnlyReturns.MyChildMethod", new XmlComment(null, null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:InheritAllButRemarks.MyParentMethod(System.Boolean)", new XmlComment(@"In this example, this summary is visible on all the methods.", null, @"The remarks can be inherited by other methods
 using the xpath expression.", @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:InheritAllButRemarks.MyChildMethod~System.Boolean", new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTaskOfTuple~System.Threading.Tasks.Task{System.ValueTuple{System.Int32,System.String}}", new XmlComment(@"This method returns a generic type containing a tuple.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTupleOfTask~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTupleOfTask1``1~System.ValueTuple{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method return a tuple with a generic type containing a
+            cache.Add(@"M:InheritAllButRemarks.MyChildMethod", new XmlComment(@"In this example, this summary is visible on all the methods.", null, null, @"A boolean", null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTaskOfTuple", new XmlComment(@"This method returns a generic type containing a tuple.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTupleOfTask", new XmlComment(@"This method returns a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetTupleOfTask1``1", new XmlComment(@"This method return a tuple with a generic type containing a
 type parameter inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetTupleOfTask2``1~System.ValueTuple{``0,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method return a tuple with a generic type containing a
+            cache.Add(@"M:GenericParent.GetTupleOfTask2``1", new XmlComment(@"This method return a tuple with a generic type containing a
 type parameter inside.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetNestedGeneric~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,System.String}}", new XmlComment(@"This method returns a nested generic with all types resolved.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:GenericParent.GetNestedGeneric1``1~System.Collections.Generic.Dictionary{System.Int32,System.Collections.Generic.Dictionary{System.Int32,``0}}", new XmlComment(@"This method returns a nested generic with a type parameter.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:ParamsAndParamRefs.GetGenericValue``1(``0)~``0", new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
+            cache.Add(@"M:GenericParent.GetNestedGeneric", new XmlComment(@"This method returns a nested generic with all types resolved.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:GenericParent.GetNestedGeneric1``1", new XmlComment(@"This method returns a nested generic with a type parameter.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:ParamsAndParamRefs.GetGenericValue``1(``0)", new XmlComment(@"The GetGenericValue method.", null, @"This sample shows how to specify the T ParamsAndParamRefs.GetGenericValue&lt;T&gt;(T para)
 method as a cref attribute.
 The parameter and return value are both of an arbitrary type,
 T", null, null, false, null, null, null));
@@ -196,6 +196,7 @@ T", null, null, false, null, null, null));
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class DocumentationCommentIdHelper
     {
         /// <summary>
@@ -405,6 +406,33 @@ T", null, null, false, null, null, null));
             // For non-generic types, use FullName (if available) and replace nested type separators.
             return (type.FullName ?? type.Name).Replace('+', '.');
         }
+
+        /// <summary>
+        /// Normalizes a documentation comment ID to match the compiler-style format.
+        /// Strips the return type suffix for ordinary methods but retains it for conversion operators.
+        /// </summary>
+        /// <param name="docId">The documentation comment ID to normalize.</param>
+        /// <returns>The normalized documentation comment ID.</returns>
+        public static string NormalizeDocId(string docId)
+        {
+            // Find the tilde character that indicates the return type suffix
+            var tildeIndex = docId.IndexOf('~');
+            if (tildeIndex == -1)
+            {
+                // No return type suffix, return as-is
+                return docId;
+            }
+
+            // Check if this is a conversion operator (op_Implicit or op_Explicit)
+            // For these operators, we need to keep the return type suffix
+            if (docId.Contains("op_Implicit") || docId.Contains("op_Explicit"))
+            {
+                return docId;
+            }
+
+            // For ordinary methods, strip the return type suffix
+            return docId.Substring(0, tildeIndex);
+        }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -420,7 +448,7 @@ T", null, null, false, null, null, null));
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue(methodInfo.CreateDocumentationId(), out var methodComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(methodInfo.CreateDocumentationId()), out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -526,7 +554,7 @@ T", null, null, false, null, null, null));
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.Cache.TryGetValue(propertyInfo.CreateDocumentationId(), out var propertyComment))
+                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -535,7 +563,7 @@ T", null, null, false, null, null, null));
                     }
                 }
             }
-            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -547,6 +575,7 @@ T", null, null, false, null, null, null));
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class JsonNodeExtensions
     {
         public static JsonNode? Parse(this string? json)

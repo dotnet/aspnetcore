@@ -121,6 +121,7 @@ export class EventDelegator {
       for (const handlerInfo of infosForElement.enumerateHandlers()) {
         this.eventInfoStore.remove(handlerInfo.eventHandlerId);
       }
+
       delete element[this.eventsCollectionKey];
     }
   }
@@ -135,12 +136,30 @@ export class EventDelegator {
 
   public setStopPropagation(element: Element, eventName: string, value: boolean): void {
     const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    const currentValue = infoForElement.stopPropagation(eventName);
     infoForElement.stopPropagation(eventName, value);
+
+    if (!currentValue && value) {
+      this.eventInfoStore.addGlobalListener(eventName);
+    } else if (currentValue && !value) {
+      this.eventInfoStore.decrementCountByEventName(eventName);
+    }
   }
 
   public setPreventDefault(element: Element, eventName: string, value: boolean): void {
     const infoForElement = this.getEventHandlerInfosForElement(element, true)!;
+    const currentValue = infoForElement.preventDefault(eventName);
     infoForElement.preventDefault(eventName, value);
+
+    if (!currentValue && value) {
+      // To ensure that preventDefault works for wheel and touch events,,
+      // we need to register a listener with the passive mode explicitly disabled.
+      // Note that this does not change behavior for other events as those
+      // use active mode by default.
+      this.eventInfoStore.addActiveGlobalListener(eventName);
+    } else if (currentValue && !value) {
+      this.eventInfoStore.decrementCountByEventName(eventName);
+    }
   }
 
   private onGlobalEvent(evt: Event) {
@@ -278,6 +297,25 @@ class EventInfoStore {
     }
   }
 
+  public addActiveGlobalListener(eventName: string) {
+    // If this event name is an alias, update the global listener for the corresponding browser event
+    eventName = getBrowserEventName(eventName);
+
+    // If the listener for this event is already registered, we recreate it to ensure
+    // that it is using the active mode.
+    if (Object.prototype.hasOwnProperty.call(this.countByEventName, eventName)) {
+      this.countByEventName[eventName]++;
+      document.removeEventListener(eventName, this.globalListener);
+    } else {
+      this.countByEventName[eventName] = 1;
+    }
+
+    // To make delegation work with non-bubbling events, register a 'capture' listener.
+    // We preserve the non-bubbling behavior by only dispatching such events to the targeted element.
+    const useCapture = Object.prototype.hasOwnProperty.call(nonBubblingEvents, eventName);
+    document.addEventListener(eventName, this.globalListener, { capture: useCapture, passive: false });
+  }
+
   public update(oldEventHandlerId: number, newEventHandlerId: number) {
     if (Object.prototype.hasOwnProperty.call(this.infosByEventHandlerId, newEventHandlerId)) {
       // Should never happen, but we want to know if it does
@@ -298,14 +336,17 @@ class EventInfoStore {
 
       // If this event name is an alias, update the global listener for the corresponding browser event
       const eventName = getBrowserEventName(info.eventName);
-
-      if (--this.countByEventName[eventName] === 0) {
-        delete this.countByEventName[eventName];
-        document.removeEventListener(eventName, this.globalListener);
-      }
+      this.decrementCountByEventName(eventName);
     }
 
     return info;
+  }
+
+  public decrementCountByEventName(eventName: string) {
+    if (--this.countByEventName[eventName] === 0) {
+      delete this.countByEventName[eventName];
+      document.removeEventListener(eventName, this.globalListener);
+    }
   }
 
   private handleEventNameAliasAdded(aliasEventName, browserEventName) {

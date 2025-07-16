@@ -3,6 +3,7 @@ artifacts/
 bin/
 obj/
 .dotnet/
+.gradle/
 .nuget/
 .packages/
 .tools/
@@ -13,6 +14,7 @@ BenchmarkDotNet.Artifacts/
 src/SignalR/clients/**/dist/
 modules/
 .ionide/
+TestResults/
 
 # File extensions
 *.aps
@@ -33,6 +35,7 @@ modules/
 *.suo
 *.svclog
 *.tlog
+*.trx
 *.user
 *.userprefs
 *.vspx

@@ -33,15 +33,14 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
 
     protected override void RegisterAuth(AuthenticationBuilder services, Action<JwtBearerOptions> configure)
     {
-        services.AddJwtBearer(o =>
-        {
-            ConfigureDefaults(o);
-            configure.Invoke(o);
-        });
+        services.AddJwtBearer(configure);
     }
 
-    private void ConfigureDefaults(JwtBearerOptions o)
+    [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
     {
+        var options = new JwtBearerOptions();
+        Assert.NotNull(options.Events);
     }
 
     [Fact]

@@ -1,0 +1,145 @@
+﻿@page "/"
+
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity.Test
+
+@inject NavigationManager NavigationManager
+@inject SignInManager<PocoUser> SignInManager
+@inject UserManager<PocoUser> UserManager
+
+<h1>Welcome!</h1>
+
+<PageTitle>Passkey sample</PageTitle>
+
+<p>
+    This app demonstrates how to use passkeys for authentication with ASP.NET Core Identity.
+</p>
+
+<p>
+    See <a href="https://learn.microsoft.com/microsoft-edge/devtools-guide-chromium/webauthn/" target="_blank">these docs</a>
+    to learn how to simplify passkey testing with a virtual authenticator.
+</p>
+
+<p>
+    <b>NOTE:</b> For simplicity, users are stored in memory, so passkeys will be lost when the app restarts.
+</p>
+
+<h3>Log in or register here</h3>
+
+<form id="auth-form" method="post" @formname="auth" @onsubmit="OnSubmitAsync">
+    <AntiforgeryToken />
+    <div>
+        <input type="text" id="input-username" name="username" placeholder="Username" autocomplete="username webauthn" />
+    </div>
+    <div>
+        <button type="submit" name="action" value="register" id="input-register">Register</button>
+        <button type="submit" name="action" value="authenticate" id="input-authenticate">Authenticate</button>
+    </div>
+</form>
+
+<p id="status-message">@statusMessage</p>
+
+@code {
+    private string? statusMessage;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm(Name = "username")]
+    private string? Username { get; set; }
+
+    [SupplyParameterFromForm(Name = "credential")]
+    private string? CredentialJson { get; set; }
+
+    [SupplyParameterFromForm(Name = "action")]
+    private string? Action { get; set; }
+
+    private Task OnSubmitAsync()
+        => Action switch
+        {
+            "register" => RegisterAsync(),
+            "authenticate" => AuthenticateAsync(),
+            var x => throw new InvalidOperationException($"Unknown action '{x}'"),
+        };
+
+    private async Task RegisterAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Username))
+        {
+            statusMessage = "Error: A username is required for registration.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(CredentialJson))
+        {
+            statusMessage = "Error: No credential was submitted by the browser.";
+            return;
+        }
+
+        var options = await SignInManager.RetrievePasskeyCreationOptionsAsync();
+        if (options is null)
+        {
+            statusMessage = "Error: There are no original passkey options present.";
+            return;
+        }
+
+        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(CredentialJson, options);
+        if (!attestationResult.Succeeded)
+        {
+            statusMessage = $"Error: Could not validate credential: {attestationResult.Failure.Message}";
+            return;
+        }
+
+        // Create the user if they don't exist yet.
+        var userEntity = options.UserEntity;
+        var user = await UserManager.FindByIdAsync(userEntity.Id);
+        if (user is null)
+        {
+            user = new PocoUser(userName: userEntity.Name)
+            {
+                Id = userEntity.Id,
+            };
+            var createUserResult = await UserManager.CreateAsync(user);
+            if (!createUserResult.Succeeded)
+            {
+                statusMessage = "Error: Could not create a new user.";
+                return;
+            }
+        }
+
+        var setPasskeyResult = await UserManager.SetPasskeyAsync(user, attestationResult.Passkey);
+        if (!setPasskeyResult.Succeeded)
+        {
+            statusMessage = "Error: Could not update the user with the new passkey.";
+            return;
+        }
+
+        statusMessage = "Registration successful! You can now authenticate with your passkey.";
+    }
+
+    private async Task AuthenticateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(CredentialJson))
+        {
+            statusMessage = "Error: No credential was submitted by the browser.";
+            return;
+        }
+
+        var options = await SignInManager.RetrievePasskeyRequestOptionsAsync();
+        if (options is null)
+        {
+            statusMessage = "Error: There are no original passkey options present.";
+            return;
+        }
+
+        var signInResult = await SignInManager.PasskeySignInAsync(CredentialJson, options);
+        if (!signInResult.Succeeded)
+        {
+            statusMessage = "Error: Could not sign in with the provided credential.";
+            return;
+        }
+
+        NavigationManager.NavigateTo("authenticated", forceLoad: true);
+    }
+}

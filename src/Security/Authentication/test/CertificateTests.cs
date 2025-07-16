@@ -22,6 +22,12 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test;
 
 public class ClientCertificateAuthenticationTests
 {
+    [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
+    {
+        var options = new CertificateAuthenticationOptions();
+        Assert.NotNull(options.Events);
+    }
 
     [Fact]
     public async Task VerifySchemeDefaults()

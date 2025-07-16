@@ -23,7 +23,7 @@ export class DefaultReconnectionHandler implements ReconnectionHandler {
     this._logger = logger;
     this._reconnectionDisplay = overrideDisplay;
     this._reconnectCallback = reconnectCallback || Blazor.reconnect!;
-    this._resumeCallback = resumeCallback || Blazor.resume!;
+    this._resumeCallback = resumeCallback || Blazor.resumeCircuit!;
   }
 
   onConnectionDown(options: ReconnectionOptions, _error?: Error, isClientPause?: boolean, remotePause?: boolean): void {

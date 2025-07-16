@@ -278,6 +278,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/62533")]
     public void PreventDefault_DotNotApplyByDefault()
     {
         var appElement = Browser.MountTestComponent<EventPreventDefaultComponent>();

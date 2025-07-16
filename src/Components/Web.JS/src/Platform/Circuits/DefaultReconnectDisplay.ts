@@ -158,7 +158,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       if (!successful) {
         // Try to resume the circuit if the reconnect failed
         this.update({ type: 'pause', remote: this.remote });
-        const resumeSuccessful = await Blazor.resume!();
+        const resumeSuccessful = await Blazor.resumeCircuit!();
         if (!resumeSuccessful) {
           this.rejected();
         }
@@ -176,7 +176,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       // - true to mean success
       // - false to mean we reached the server, but it rejected the connection (e.g., unknown circuit ID)
       // - exception to mean we didn't reach the server (this can be sync or async)
-      const successful = await Blazor.resume!();
+      const successful = await Blazor.resumeCircuit!();
       if (!successful) {
         this.failed();
       }

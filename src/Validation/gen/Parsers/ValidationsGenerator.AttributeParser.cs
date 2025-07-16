@@ -14,7 +14,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     internal static bool ShouldTransformSymbolWithAttribute(SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
-        return syntaxNode is ClassDeclarationSyntax;
+        return syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax;
     }
 
     internal ImmutableArray<ValidatableType> TransformValidatableTypeWithAttribute(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)

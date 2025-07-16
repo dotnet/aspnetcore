@@ -13,7 +13,7 @@ internal class ResourceCollectionProvider
 {
     private string? _url;
 
-    [SupplyParameterFromPersistentComponentState]
+    [PersistentState]
     public string? ResourceCollectionUrl
     {
         get => _url;

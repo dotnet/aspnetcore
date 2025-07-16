@@ -81,8 +81,16 @@ public class Program
 
     public static IHost BuildWebHost(string[] args) => BuildWebHost<Startup>(args);
 
-    public static IHost BuildWebHost<TStartup>(string[] args) where TStartup : class =>
-        Host.CreateDefaultBuilder(args)
+    public static IHost BuildWebHost<TStartup>(string[] args) where TStartup : class
+    {
+        var unobservedTaskExceptionObserver = new UnobservedTaskExceptionObserver();
+        TaskScheduler.UnobservedTaskException += unobservedTaskExceptionObserver.OnUnobservedTaskException;
+
+        return Host.CreateDefaultBuilder(args)
+            .ConfigureServices(services =>
+            {
+                services.AddSingleton(unobservedTaskExceptionObserver);
+            })
             .ConfigureLogging((ctx, lb) =>
             {
                 TestSink sink = new TestSink();
@@ -98,6 +106,7 @@ public class Program
                 webHostBuilder.UseStaticWebAssets();
             })
             .Build();
+    }
 
     private static int GetNextChildAppPortNumber()
     {

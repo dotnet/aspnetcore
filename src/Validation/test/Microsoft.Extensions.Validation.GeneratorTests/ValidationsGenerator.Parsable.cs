@@ -48,7 +48,7 @@ public class ComplexTypeWithParsableProperties
     [Range(typeof(DateTime), "2023-01-01", "2025-12-31", ErrorMessage = "DateTime must be between 2023-01-01 and 2025-12-31")]
     public DateTime? DateTimeWithRange { get; set; } = DateTime.UtcNow;
 
-    [Range(typeof(decimal), "0.1", "100.5", ErrorMessage = "Amount must be between 0.1 and 100.5")]
+    [Range(typeof(decimal), "0.1", "100.5", ErrorMessage = "Amount must be between 0.1 and 100.5", ParseLimitsInInvariantCulture = true)]
     public decimal? DecimalWithRange { get; set; } = 50.5m;
 
     [Range(0, 12, ErrorMessage = "Hours must be between 0 and 12")]

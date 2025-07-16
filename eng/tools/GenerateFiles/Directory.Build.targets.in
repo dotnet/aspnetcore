@@ -133,14 +133,14 @@
   </ItemGroup>
 
   <!-- When building and running locally, manually resolve the just-built frameworks. On Helix, let the SDK resolve the packs itself (they're laid out on top of the .NET SDK in the work items) -->
-  <PropertyGroup Condition="$(UpdateAspNetCoreKnownFramework) and '$(HELIX_CORRELATION_PAYLOAD)' == ''">
+  <PropertyGroup Condition="'$(UpdateAspNetCoreKnownFramework)' == 'true' AND '$(HELIX_CORRELATION_PAYLOAD)' == ''">
     <!-- Allow additional targeting and runtime packs to be downloaded only if required by a test. -->
     <EnableTargetingPackDownload Condition="'$(TestRequiresTargetingPackDownload)' != 'true'">false</EnableTargetingPackDownload>
     <EnableRuntimePackDownload Condition="'$(TestRequiresRuntimePackDownload)' != 'true'">false</EnableRuntimePackDownload>
     <GenerateErrorForMissingTargetingPacks>false</GenerateErrorForMissingTargetingPacks>
   </PropertyGroup>
 
-  <Target Name="ResolveLiveBuiltAspnetCoreKnownFramework" Condition="$(UpdateAspNetCoreKnownFramework) and '$(HELIX_CORRELATION_PAYLOAD)' == ''" AfterTargets="ResolveFrameworkReferences">
+  <Target Name="ResolveLiveBuiltAspnetCoreKnownFramework" Condition="'$(UpdateAspNetCoreKnownFramework)' == 'true' AND '$(HELIX_CORRELATION_PAYLOAD)' == ''" AfterTargets="ResolveFrameworkReferences">
     <Error Text="Requested Microsoft.AspNetCore.App v${MicrosoftAspNetCoreAppRefVersion} ref pack does not exist."
         Condition="!Exists('$(TargetingPackLayoutRoot)packs\Microsoft.AspNetCore.App.Ref\${MicrosoftAspNetCoreAppRefVersion}\data\FrameworkList.xml') " />
     <ItemGroup>

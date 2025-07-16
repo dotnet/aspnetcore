@@ -166,6 +166,14 @@ internal sealed partial class GenericWebHostService : IHostedService
             foreach (var address in addresses)
             {
                 Log.ListeningOnAddress(LifetimeLogger, address);
+                if (LifetimeLogger.IsEnabled(LogLevel.Information))
+                {
+                    if (address.Contains(".localhost", StringComparison.OrdinalIgnoreCase) && Uri.TryCreate(address, UriKind.Absolute, out var uri) && uri.Host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Log the localhost address without the sub-domain prefix too
+                        Log.ListeningOnAddress(LifetimeLogger, new UriBuilder(uri) { Host = "localhost" }.ToString());
+                    }
+                }
             }
         }
 

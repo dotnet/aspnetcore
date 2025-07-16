@@ -10,6 +10,6 @@ namespace TestContentPackage.Services;
 
 public class InteractiveWebAssemblyService
 {
-    [SupplyParameterFromPersistentComponentState]
+    [PersistentState]
     public string State { get; set; }
 }

@@ -234,7 +234,8 @@ const testObject = {
     },
     set setOnlyProperty(value) {
         this.num = value;
-    }
+    },
+    nullProperty: null
 }
 
 window.jsInteropTests = {
