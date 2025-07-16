@@ -246,7 +246,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             endpointRouteData = RouteTable.ProcessParameters(endpointRouteData);
             _renderHandle.Render(Found(endpointRouteData));
 
-            _renderHandle.ComponentActivitySource?.StopRouteActivity(activityHandle, null);
+            _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
             return;
         }
 
@@ -301,7 +301,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
-        _renderHandle.ComponentActivitySource?.StopRouteActivity(activityHandle, null);
+        _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
     }
 
     private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
@@ -309,7 +309,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         ComponentsActivityHandle activityHandle = default;
         if (_renderHandle.ComponentActivitySource != null)
         {
-            activityHandle = _renderHandle.ComponentActivitySource.StartRouteActivity(componentType, template);
+            activityHandle = _renderHandle.ComponentActivitySource.StartNavigateActivity(componentType, template);
         }
 
         if (_renderHandle.ComponentMetrics != null && _renderHandle.ComponentMetrics.IsNavigationEnabled)
