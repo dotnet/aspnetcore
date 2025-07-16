@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices.JavaScript;
+using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Web;
@@ -26,6 +28,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly Dispatcher _dispatcher;
     private readonly ResourceAssetCollection _resourceCollection;
     private readonly IInternalJSImportMethods _jsMethods;
+    private readonly ComponentStatePersistenceManager _componentStatePersistenceManager;
     private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
@@ -33,6 +36,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     {
         _logger = loggerFactory.CreateLogger<WebAssemblyRenderer>();
         _jsMethods = serviceProvider.GetRequiredService<IInternalJSImportMethods>();
+        _componentStatePersistenceManager = serviceProvider.GetRequiredService<ComponentStatePersistenceManager>();
 
         // if SynchronizationContext.Current is null, it means we are on the single-threaded runtime
         _dispatcher = WebAssemblyDispatcher._mainSynchronizationContext == null
@@ -46,9 +50,13 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "These are root components which belong to the user and are in assemblies that don't get trimmed.")]
-    private void OnUpdateRootComponents(RootComponentOperationBatch batch)
+    private void OnUpdateRootComponents(RootComponentOperationBatch batch, string appState)
     {
         var webRootComponentManager = GetOrCreateWebRootComponentManager();
+
+        var store = new PrerenderComponentApplicationStore(appState);
+        _ = _componentStatePersistenceManager.RestoreStateAsync(store, WebPersistenceScenario.EnhancedNavigation);
+
         for (var i = 0; i < batch.Operations.Length; i++)
         {
             var operation = batch.Operations[i];
@@ -73,6 +81,8 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
                     break;
             }
         }
+
+        store.ExistingState.Clear();
 
         NotifyEndUpdateRootComponents(batch.BatchId);
     }
