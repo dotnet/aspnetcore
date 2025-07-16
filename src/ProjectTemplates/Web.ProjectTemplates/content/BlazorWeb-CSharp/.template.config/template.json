@@ -323,6 +323,19 @@
       },
       "replaces": "44300"
     },
+    "StyleBundleName":{
+      "type": "generated",
+      "generator": "regex",
+      "replaces": "StyleBundleName",
+      "parameters": {
+      "source": "name",
+      "steps": [
+        {
+          "regex": " ",
+          "replacement": "_"
+        }]
+      }
+    },
     "InteractivityPlatform": {
       "type": "parameter",
       "datatype": "choice",
@@ -472,8 +485,8 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false",
-      "displayName": "Use the .localhost TLD in the aplication URL",
-      "description": "Whether to combine the project name with the .localhost TLD in the application URL for local development, e.g. https://myapp.localhost:12345."
+      "displayName": "Use the .dev.localhost TLD in the aplication URL",
+      "description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345."
     }
   },
   "tags": {
