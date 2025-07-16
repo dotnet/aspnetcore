@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.HotReload.WebAssembly;
     "Trimming",
     "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
     Justification = "Hot Reload does not support trimming")]
-public static partial class WebAssemblyHotReload
+internal static partial class WebAssemblyHotReload
 {
     /// <summary>
     /// For framework use only.

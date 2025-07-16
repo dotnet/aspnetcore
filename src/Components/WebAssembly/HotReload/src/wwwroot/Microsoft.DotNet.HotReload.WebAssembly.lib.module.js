@@ -1,4 +1,5 @@
 export async function onRuntimeConfigLoaded(config) {
+    // Disable HotReload built-into the Blazor WebAssembly runtime
     config.environmentVariables["__BLAZOR_WEBASSEMBLY_LEGACY_HOTRELOAD"] = "false";
 }
 
