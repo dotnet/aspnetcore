@@ -304,7 +304,109 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
     public bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
     {
-        throw new NotImplementedException();
+        bytesWritten = 0;
+
+        try
+        {
+            var keyModifierLength = KEY_MODIFIER_SIZE_IN_BYTES;
+            var ivLength = _symmetricAlgorithmBlockSizeInBytes;
+
+            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
+                ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
+                : new byte[_keyDerivationKey.Length];
+
+            byte[]? validationSubkeyArray = null;
+            Span<byte> validationSubkey = _validationAlgorithmSubkeyLengthInBytes <= 128
+                ? stackalloc byte[128].Slice(0, _validationAlgorithmSubkeyLengthInBytes)
+                : (validationSubkeyArray = new byte[_validationAlgorithmSubkeyLengthInBytes]);
+
+            Span<byte> encryptionSubkey = _symmetricAlgorithmSubkeyLengthInBytes <= 128
+                ? stackalloc byte[128].Slice(0, _symmetricAlgorithmSubkeyLengthInBytes)
+                : new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+
+            fixed (byte* decryptedKdkUnsafe = decryptedKdk)
+            fixed (byte* __unused__1 = encryptionSubkey)
+            fixed (byte* __unused__2 = validationSubkeyArray)
+            {
+                // Step 1: Generate a random key modifier and IV for this operation.
+                Span<byte> keyModifier = keyModifierLength <= 128
+                    ? stackalloc byte[128].Slice(0, keyModifierLength)
+                    : new byte[keyModifierLength];
+
+                _genRandom.GenRandom(keyModifier);
+
+                try
+                {
+                    // Step 2: Decrypt the KDK, and use it to generate new encryption and HMAC keys.
+                    _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
+                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
+                        kdk: decryptedKdk,
+                        label: additionalAuthenticatedData,
+                        contextHeader: _contextHeader,
+                        contextData: keyModifier,
+                        operationSubkey: encryptionSubkey,
+                        validationSubkey: validationSubkey);
+
+                    using var symmetricAlgorithm = CreateSymmetricAlgorithm();
+                    symmetricAlgorithm.SetKey(encryptionSubkey);
+
+                    using var validationAlgorithm = CreateValidationAlgorithm();
+
+                    // Calculate ciphertext length for CBC mode
+                    var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plainText.Length);
+                    var macLength = _validationAlgorithmDigestLengthInBytes;
+
+                    // Step 3: Copy the key modifier to the destination
+                    keyModifier.CopyTo(destination.Slice(bytesWritten, keyModifierLength));
+                    bytesWritten += keyModifierLength;
+
+                    // Step 4: Generate IV directly into the destination
+                    var iv = destination.Slice(bytesWritten, ivLength);
+                    _genRandom.GenRandom(iv);
+                    bytesWritten += ivLength;
+
+                    // Step 5: Perform the encryption operation
+                    var ciphertextDestination = destination.Slice(bytesWritten, cipherTextLength);
+                    symmetricAlgorithm.EncryptCbc(plainText, iv, ciphertextDestination);
+                    bytesWritten += cipherTextLength;
+
+                    // Step 6: Calculate the digest over the IV and ciphertext
+                    var ivAndCipherTextSpan = destination.Slice(keyModifierLength, ivLength + cipherTextLength);
+                    var macDestinationSpan = destination.Slice(bytesWritten, macLength);
+
+                    // Use optimized method for specific algorithms when possible
+                    if (validationAlgorithm is HMACSHA256)
+                    {
+                        HMACSHA256.HashData(key: validationSubkey, source: ivAndCipherTextSpan, destination: macDestinationSpan);
+                    }
+                    else if (validationAlgorithm is HMACSHA512)
+                    {
+                        HMACSHA512.HashData(key: validationSubkey, source: ivAndCipherTextSpan, destination: macDestinationSpan);
+                    }
+                    else
+                    {
+                        validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
+                        if (!validationAlgorithm.TryComputeHash(source: ivAndCipherTextSpan, destination: macDestinationSpan, out _))
+                        {
+                            return false;
+                        }
+                    }
+                    bytesWritten += macLength;
+
+                    return true;
+                }
+                finally
+                {
+                    keyModifier.Clear();
+                    decryptedKdk.Clear();
+                }
+            }
+        }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            // Homogenize all exceptions to CryptographicException.
+            throw Error.CryptCommon_GenericError(ex);
+        }
     }
 #endif
 
