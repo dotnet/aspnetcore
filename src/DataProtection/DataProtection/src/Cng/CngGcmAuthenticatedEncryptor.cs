@@ -234,12 +234,77 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
 #if NET10_0_OR_GREATER
     public override int GetEncryptedSize(int plainTextLength, uint preBufferSize, uint postBufferSize)
     {
+        // A buffer to hold the key modifier, nonce, encrypted data, and tag.
+        // In GCM, the encrypted output will be the same length as the plaintext input.
         return checked((int)(preBufferSize + KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES + postBufferSize));
     }
 
     public override bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
     {
-        throw new NotImplementedException();
+        bytesWritten = 0;
+
+        try
+        {
+            fixed (byte* pbDestination = destination)
+            {
+                // Calculate offsets
+                byte* pbKeyModifier = pbDestination;
+                byte* pbNonce = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
+                byte* pbEncryptedData = &pbNonce[NONCE_SIZE_IN_BYTES];
+                byte* pbAuthTag = &pbEncryptedData[plainText.Length];
+
+                // Randomly generate the key modifier and nonce
+                _genRandom.GenRandom(pbKeyModifier, KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES);
+                bytesWritten += checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES));
+
+                // At this point, retVal := { preBuffer | keyModifier | nonce | _____ | _____ | postBuffer }
+
+                // Use the KDF to generate a new symmetric block cipher key
+                // We'll need a temporary buffer to hold the symmetric encryption subkey
+                byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
+                try
+                {
+                    fixed (byte* pbAdditionalAuthenticatedData = additionalAuthenticatedData)
+                    {
+                        _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
+                            pbLabel: pbAdditionalAuthenticatedData,
+                            cbLabel: (uint)additionalAuthenticatedData.Length,
+                            contextHeader: _contextHeader,
+                            pbContext: pbKeyModifier,
+                            cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
+                            pbDerivedKey: pbSymmetricEncryptionSubkey,
+                            cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
+                    }
+
+                    // Perform the encryption operation
+                    fixed (byte* pbPlainText = plainText)
+                    {
+                        DoGcmEncrypt(
+                            pbKey: pbSymmetricEncryptionSubkey,
+                            cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
+                            pbNonce: pbNonce,
+                            pbPlaintextData: pbPlainText,
+                            cbPlaintextData: (uint)plainText.Length,
+                            pbEncryptedData: pbEncryptedData,
+                            pbTag: pbAuthTag);
+                    }
+
+                    // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
+                    // And we're done!
+                    bytesWritten += plainText.Length + checked((int)TAG_SIZE_IN_BYTES);
+                    return true;
+                }
+                finally
+                {
+                    // The buffer contains key material, so delete it.
+                    UnsafeBufferUtil.SecureZeroMemory(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
+                }
+            }
+        }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            throw Error.CryptCommon_GenericError(ex);
+        }
     }
 #endif
 
