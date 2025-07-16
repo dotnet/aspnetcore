@@ -127,14 +127,16 @@ public static class DataProtectionAdvancedExtensions
             return _innerProtector.Unprotect(protectedData, out Expiration);
         }
 
+#if NET10_0_OR_GREATER
         public int GetProtectedSize(ReadOnlySpan<byte> plainText)
         {
-            throw new NotImplementedException();
+            return _innerProtector.GetProtectedSize(plainText);
         }
 
         public bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten)
         {
             throw new NotImplementedException();
         }
+#endif
     }
 }
