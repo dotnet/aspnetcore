@@ -61,7 +61,7 @@ public static class StackExchangeRedisDataProtectionBuilderExtensions
     /// Configures the data protection system to persist keys to the default key ('DataProtection-Keys') in Redis database
     /// </summary>
     /// <param name="builder">The builder instance to modify.</param>
-    /// <param name="databaseFactory">The <see cref="IConnectionMultiplexer"/> for database access.</param>
+    /// <param name="databaseFactory">A factory function that uses <see cref="IServiceProvider"/> to create an <see cref="IDatabase"/> instance.</param>
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, Func<IServiceProvider, IDatabase> databaseFactory)
     {
@@ -72,7 +72,7 @@ public static class StackExchangeRedisDataProtectionBuilderExtensions
     /// Configures the data protection system to persist keys to the specified key in Redis database
     /// </summary>
     /// <param name="builder">The builder instance to modify.</param>
-    /// <param name="databaseFactory">The <see cref="IConnectionMultiplexer"/> for database access.</param>
+    /// <param name="databaseFactory">A factory function that uses <see cref="IServiceProvider"/> to create an <see cref="IDatabase"/> instance.</param>
     /// <param name="key">The <see cref="RedisKey"/> used to store key list.</param>
     /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
     public static IDataProtectionBuilder PersistKeysToStackExchangeRedis(this IDataProtectionBuilder builder, Func<IServiceProvider, IDatabase> databaseFactory, RedisKey key)
