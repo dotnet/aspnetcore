@@ -260,12 +260,11 @@ public class PasswordHasher<TUser> : IPasswordHasher<TUser> where TUser : class
             int saltLength = (int)ReadNetworkByteOrder(hashedPassword, 9);
 
             // Read the salt: must be >= 128 bits
-            if (saltLength < 128 / 8 || saltLength + 13 > hashedPassword.Length)
+            if (saltLength < 128 / 8)
             {
                 return false;
             }
-            byte[] salt = new byte[saltLength];
-            Buffer.BlockCopy(hashedPassword, 13, salt, 0, salt.Length);
+            byte[] salt = hashedPassword.AsSpan(13, saltLength).ToArray();
 
             // Read the subkey (the rest of the payload): must be >= 128 bits
             int subkeyLength = hashedPassword.Length - 13 - salt.Length;

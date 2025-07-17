@@ -113,6 +113,7 @@ public class PasswordHasherTest
     [InlineData("AQAAAAIAAAAyAAAAEOMwvh3+FZxqkdMBz2ekgGhwQ4A=")] // too short
     [InlineData("AQAAAAIAAAAyAAAAEOMwvh3+FZxqkdMBz2ekgGhwQ4B6pZWND6zgESBuWiHwAAAAAAAAAAAA")] // extra data at end
     [InlineData("AQAAAAIAAYagAP///wABAgMEBQYHCAkKCwwNDg/Q8A0WMKbtHQJQ2DHCdoEeeFBrgNlldq6vH4qX/CGqGQ==")] // salt length greater than data length
+    [InlineData("AQAAAAEAACcQf////4r8+J3NDEnMWKlHbhJQ6N5oooZ7hUi3cr/qAjd7Lc1Sv6GhorP7Ly0AzCv9PAmKww==")] // salt length is Int32.MaxValue
     [InlineData("AQAAAAIAAYagAAAACAABAgMEBQYH4qLSh7iNSI12qySxAkyR0XgpXpvNiwqhBJFNLbJKKFw=")] // salt length (8 bytes) less than minimum allowed
     public void VerifyHashedPassword_FailureCases(string hashedPassword)
     {
