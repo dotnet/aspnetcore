@@ -29,6 +29,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     string _locationAbsolute;
     bool _navigationInterceptionEnabled;
     ILogger<Router> _logger;
+    string _notFoundPageRoute;
 
     private string _updateScrollPositionForHashLastLocation;
     private bool _updateScrollPositionForHash;
@@ -166,7 +167,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             var routeAttribute = (RouteAttribute)routeAttributes[0];
             if (routeAttribute.Template != null)
             {
-                NavigationManager.NotFoundPageRoute = routeAttribute.Template;
+                _notFoundPageRoute = routeAttribute.Template;
             }
         }
 
@@ -388,10 +389,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    private void OnNotFound(object sender, EventArgs args)
+    private void OnNotFound(object sender, NotFoundEventArgs args)
     {
-        if (_renderHandle.IsInitialized)
+        if (_renderHandle.IsInitialized && NotFoundPage != null)
         {
+            // setting the path signals to the endpoint renderer that router handled rendering
+            args.Path = _notFoundPageRoute;
             Log.DisplayingNotFound(_logger);
             RenderNotFound();
         }
