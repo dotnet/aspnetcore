@@ -53,8 +53,12 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     {
         var webRootComponentManager = GetOrCreateWebRootComponentManager();
 
-        var store = new PrerenderComponentApplicationStore(appState);
-        _ = _componentStatePersistenceManager.RestoreStateAsync(store, WebPersistenceScenario.EnhancedNavigation);
+        var store = !string.IsNullOrEmpty(appState) ? new PrerenderComponentApplicationStore(appState) : null;
+        if (store != null)
+        {
+            // Restore the state from the store if it exists
+            _ = _componentStatePersistenceManager.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
+        }
 
         for (var i = 0; i < batch.Operations.Length; i++)
         {
@@ -81,7 +85,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
             }
         }
 
-        store.ExistingState.Clear();
+        store?.ExistingState.Clear();
 
         NotifyEndUpdateRootComponents(batch.BatchId);
     }
