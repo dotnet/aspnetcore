@@ -135,12 +135,12 @@ internal partial class CircuitRegistry
         var result = ConnectedCircuits.TryRemove(circuitId, out circuitHost);
         Debug.Assert(result, "This operation operates inside of a lock. We expect the previously inspected value to be still here.");
 
-        var previouslyConnected = circuitHost.SetDisconnected();
+        circuitHost.Client.SetDisconnected();
         RegisterDisconnectedCircuit(circuitHost);
 
         Log.CircuitMarkedDisconnected(_logger, circuitId);
 
-        return previouslyConnected;
+        return true;
     }
 
     public void RegisterDisconnectedCircuit(CircuitHost circuitHost)
@@ -309,13 +309,9 @@ internal partial class CircuitRegistry
 
     private async Task PauseAndDisposeCircuitHost(CircuitHost circuitHost, bool saveStateToClient)
     {
-        if (circuitHost.SetDisconnected())
-        {
-            await circuitHost.Renderer.Dispatcher.InvokeAsync(() => circuitHost.OnConnectionDownAsync(default));
-        }
-
         await _circuitPersistenceManager.PauseCircuitAsync(circuitHost, saveStateToClient);
         circuitHost.UnhandledException -= CircuitHost_UnhandledException;
+        circuitHost.Client.SetDisconnected();
         await circuitHost.DisposeAsync();
     }
 
@@ -381,12 +377,10 @@ internal partial class CircuitRegistry
     }
 
     // We don't expect this to throw. User code only runs inside DisposeAsync and that does its own error handling.
-    public async ValueTask TerminateAsync(CircuitId circuitId)
+    public ValueTask TerminateAsync(CircuitId circuitId)
     {
         CircuitHost circuitHost;
         DisconnectedCircuitEntry entry = default;
-        var circuitHandlerTask = Task.CompletedTask;
-
         lock (CircuitRegistryLock)
         {
             if (ConnectedCircuits.TryGetValue(circuitId, out circuitHost) || DisconnectedCircuits.TryGetValue(circuitId.Secret, out entry))
@@ -395,21 +389,17 @@ internal partial class CircuitRegistry
                 DisconnectedCircuits.Remove(circuitId.Secret);
                 ConnectedCircuits.TryRemove(circuitId, out _);
                 Log.CircuitDisconnectedPermanently(_logger, circuitHost.CircuitId);
-
-                if (circuitHost.SetDisconnected())
-                {
-                    circuitHandlerTask = circuitHost.Renderer.Dispatcher.InvokeAsync(() => circuitHost.OnConnectionDownAsync(default));
-                }
+                circuitHost.Client.SetDisconnected();
             }
         }
-
-        await circuitHandlerTask;
 
         if (circuitHost != null)
         {
             circuitHost.UnhandledException -= CircuitHost_UnhandledException;
-            await circuitHost.DisposeAsync();
+            return circuitHost.DisposeAsync();
         }
+
+        return default;
     }
 
     // We don't need to do anything with the exception here, logging and sending exceptions to the client

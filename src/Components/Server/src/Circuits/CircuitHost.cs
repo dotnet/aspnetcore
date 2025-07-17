@@ -30,6 +30,7 @@ internal partial class CircuitHost : IAsyncDisposable
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
+    private bool _onConnectionDownFired;
     private bool _disposed;
     private long _startTime;
     private PersistedCircuitState _persistedCircuitState;
@@ -188,16 +189,6 @@ internal partial class CircuitHost : IAsyncDisposable
         }));
     }
 
-    public bool SetDisconnected()
-    {
-        if (Client.Connected)
-        {
-            Client.SetDisconnected();
-            return true;
-        }
-        return false;
-    }
-
     // We handle errors in DisposeAsync because there's no real value in letting it propagate.
     // We run user code here (CircuitHandlers) and it's reasonable to expect some might throw, however,
     // there isn't anything better to do than log when one of these exceptions happens - because the
@@ -219,10 +210,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
             try
             {
-                if (this.Client.Connected)
-                {
-                    await OnConnectionDownAsync(CancellationToken.None);
-                }
+                await OnConnectionDownAsync(CancellationToken.None);
             }
             catch
             {
@@ -292,6 +280,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public async Task OnConnectionUpAsync(CancellationToken cancellationToken)
     {
+        _onConnectionDownFired = false;
         Log.ConnectionUp(_logger, CircuitId, Client.ConnectionId);
         _circuitMetrics?.OnConnectionUp();
 
@@ -322,6 +311,12 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public async Task OnConnectionDownAsync(CancellationToken cancellationToken)
     {
+        if(_onConnectionDownFired)
+        {
+            return;
+        }
+
+        _onConnectionDownFired = true;
         Log.ConnectionDown(_logger, CircuitId, Client.ConnectionId);
         _circuitMetrics?.OnConnectionDown();
 
