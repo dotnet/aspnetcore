@@ -116,7 +116,7 @@ internal partial class EndpointHtmlRenderer
             var pathFormat = _httpContext.Items[nameof(StatusCodePagesOptions)] as string;
             if (string.IsNullOrEmpty(pathFormat))
             {
-                throw new InvalidOperationException("The NotFoundPage route must be specified or re-execution middleware has to be set to render NotFoundPage when the response has started.");
+                throw new InvalidOperationException($"The {nameof(Router.NotFoundPage)} route must be specified or re-execution middleware has to be set to render not found content.");
             }
 
             path = pathFormat;
