@@ -56,14 +56,12 @@ public static class Program
                 return 12;
             case "HangOnStop":
                 {
-                    var host = new HostBuilder()
-                        .ConfigureWebHost(webHostBuilder =>
-                        {
-                            webHostBuilder
-                                .UseIIS()
-                                .UseStartup<Startup>();
-                        })
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var host = new WebHostBuilder()
+                        .UseIIS()
+                        .UseStartup<Startup>()
                         .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
                     host.Run();
 
                     Thread.Sleep(Timeout.Infinite);
@@ -71,15 +69,13 @@ public static class Program
                 break;
             case "IncreaseShutdownLimit":
                 {
-                    var host = new HostBuilder()
-                        .ConfigureWebHost(webHostBuilder =>
-                        {
-                            webHostBuilder
-                                .UseIIS()
-                                .UseShutdownTimeout(TimeSpan.FromSeconds(120))
-                                .UseStartup<Startup>();
-                        })
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var host = new WebHostBuilder()
+                        .UseIIS()
+                        .UseShutdownTimeout(TimeSpan.FromSeconds(120))
+                        .UseStartup<Startup>()
                         .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     host.Run();
                 }
@@ -102,15 +98,13 @@ public static class Program
                 return 0;
             case "OverriddenServer":
                 {
-                    var host = new HostBuilder()
-                        .ConfigureWebHost(webHostBuilder =>
-                        {
-                            webHostBuilder
-                                .UseIIS()
-                                .ConfigureServices(services => services.AddSingleton<IServer, DummyServer>())
-                                .Configure(builder => builder.Run(async context => { await context.Response.WriteAsync("I shouldn't work"); }));
-                        })
-                        .Build();
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var host = new WebHostBuilder()
+                            .UseIIS()
+                            .ConfigureServices(services => services.AddSingleton<IServer, DummyServer>())
+                            .Configure(builder => builder.Run(async context => { await context.Response.WriteAsync("I shouldn't work"); }))
+                            .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
                     host.Run();
                 }
                 break;
@@ -123,23 +117,21 @@ public static class Program
 #if !FORWARDCOMPAT
             case "DecreaseRequestLimit":
                 {
-                    var host = new HostBuilder()
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var host = new WebHostBuilder()
                         .ConfigureLogging((_, factory) =>
                         {
                             factory.AddConsole();
                             factory.AddFilter("Console", level => level >= LogLevel.Information);
                         })
-                        .ConfigureWebHost(webHostBuilder =>
+                        .UseIIS()
+                        .ConfigureServices(services =>
                         {
-                            webHostBuilder
-                                .UseIIS()
-                                .ConfigureServices(services =>
-                                {
-                                    services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = 2);
-                                })
-                                .UseStartup<Startup>();
+                            services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = 2);
                         })
+                        .UseStartup<Startup>()
                         .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     host.Run();
                     break;
@@ -147,19 +139,17 @@ public static class Program
 #endif
             case "ThrowInStartup":
                 {
-                    var host = new HostBuilder()
-                        .ConfigureLogging((_, factory) =>
-                        {
-                            factory.AddConsole();
-                            factory.AddFilter("Console", level => level >= LogLevel.Information);
-                        })
-                        .ConfigureWebHost(webHostBuilder =>
-                        {
-                            webHostBuilder
-                                .UseIIS()
-                                .UseStartup<ThrowingStartup>();
-                        })
-                        .Build();
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var host = new WebHostBuilder()
+                                    .ConfigureLogging((_, factory) =>
+                                    {
+                                        factory.AddConsole();
+                                        factory.AddFilter("Console", level => level >= LogLevel.Information);
+                                    })
+                                    .UseIIS()
+                                    .UseStartup<ThrowingStartup>()
+                                    .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     host.Run();
                 }
@@ -209,21 +199,19 @@ public static class Program
 
     private static int StartServer()
     {
-        var host = new HostBuilder()
+#pragma warning disable CS0618 // Type or member is obsolete
+        var host = new WebHostBuilder()
             .ConfigureLogging((_, factory) =>
             {
                 factory.AddConsole();
                 factory.AddFilter("Console", level => level >= LogLevel.Information);
             })
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                    .UseKestrel()
-                    .UseIIS()
-                    .UseIISIntegration()
-                    .UseStartup<Startup>();
-            })
+            .UseKestrel()
+            .UseIIS()
+            .UseIISIntegration()
+            .UseStartup<Startup>()
             .Build();
+#pragma warning restore CS0618 // Type or member is obsolete
 
         host.Run();
         return 0;

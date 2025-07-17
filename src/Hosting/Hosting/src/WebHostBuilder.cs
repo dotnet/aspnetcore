@@ -20,7 +20,9 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// A builder for <see cref="IWebHost"/>
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 [Obsolete("TODO: Add Obsolete message")]
+#pragma warning restore CS0618 // Type or member is obsolete
 public class WebHostBuilder : IWebHostBuilder
 {
     private readonly HostingEnvironment _hostingEnvironment;
