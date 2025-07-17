@@ -10,14 +10,14 @@
 
 @code{
     [Parameter]
-    public bool DoAsyncOperationBeforeSettingNotFound { get; set; } = false;
+    public bool PerformAsyncOperationBeforeSettingNotFound { get; set; } = false;
 
     [Parameter]
     public bool WaitForInteractivity { get; set; } = false;
 
     protected async override Task OnInitializedAsync()
     {
-        if (DoAsyncOperationBeforeSettingNotFound)
+        if (PerformAsyncOperationBeforeSettingNotFound)
         {
             await Task.Yield();
         }

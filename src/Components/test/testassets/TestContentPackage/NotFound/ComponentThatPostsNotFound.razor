@@ -16,14 +16,14 @@
 
 @code{
     [Parameter]
-    public bool DoAsyncOperationBeforeSettingNotFound { get; set; } = false;
+    public bool PerformAsyncOperationBeforeSettingNotFound { get; set; } = false;
 
     [Parameter]
     public bool WaitForInteractivity { get; set; } = false;
 
     private async Task HandleSubmit()
     {
-        if (DoAsyncOperationBeforeSettingNotFound)
+        if (PerformAsyncOperationBeforeSettingNotFound)
         {
             await Task.Yield();
         }
