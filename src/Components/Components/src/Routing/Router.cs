@@ -70,6 +70,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// Gets or sets the content to display when no match is found for the requested route.
     /// </summary>
     [Parameter]
+    [Obsolete("NotFound is deprecated. Use NotFoundPage instead.")]
     public RenderFragment NotFound { get; set; }
 
     /// <summary>
@@ -77,7 +78,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// </summary>
     [Parameter]
     [DynamicallyAccessedMembers(LinkerFlags.Component)]
-    public Type NotFoundPage { get; set; } = default!;
+    public Type? NotFoundPage { get; set; }
 
     /// <summary>
     /// Gets or sets the content to display when a match is found for the requested route.
@@ -143,6 +144,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         if (NotFoundPage != null)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
+            if (NotFound != null)
+            {
+                throw new InvalidOperationException($"Setting {nameof(NotFound)} and {nameof(NotFoundPage)} properties simultaneously is not supported. Use either {nameof(NotFound)} or {nameof(NotFoundPage)}.");
+            }
+#pragma warning restore CS0618 // Type or member is obsolete
             if (!typeof(IComponent).IsAssignableFrom(NotFoundPage))
             {
                 throw new InvalidOperationException($"The type {NotFoundPage.FullName} " +
@@ -401,10 +408,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                     new RouteData(NotFoundPage, _emptyParametersDictionary));
                 builder.CloseComponent();
             }
+#pragma warning disable CS0618 // Type or member is obsolete
             else if (NotFound != null)
             {
                 NotFound(builder);
             }
+#pragma warning restore CS0618 // Type or member is obsolete
             else
             {
                 DefaultNotFoundContent(builder);
@@ -429,6 +438,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private static partial class Log
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         [LoggerMessage(1, LogLevel.Debug, $"Displaying {nameof(NotFound)} because path '{{Path}}' with base URI '{{BaseUri}}' does not match any component route", EventName = "DisplayingNotFound")]
         internal static partial void DisplayingNotFound(ILogger logger, string path, string baseUri);
 
@@ -440,5 +450,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         [LoggerMessage(4, LogLevel.Debug, $"Displaying {nameof(NotFound)} on request", EventName = "DisplayingNotFoundOnRequest")]
         internal static partial void DisplayingNotFound(ILogger logger);
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }
