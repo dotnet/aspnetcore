@@ -63,7 +63,7 @@ internal sealed class ComponentsMetrics : IDisposable
         _batchSize = _lifeCycleMeter.CreateHistogram(
             "aspnetcore.components.render_diff.size",
             unit: "{elements}",
-            description: "Number of HTML elements modified during rendering of batch of changes.",
+            description: "Number of HTML elements modified during a rendering batch.",
             advice: new InstrumentAdvice<int> { HistogramBucketBoundaries = MetricsConstants.BlazorRenderingDiffLengthBucketBoundaries });
     }
 
