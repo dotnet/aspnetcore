@@ -396,17 +396,17 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>78061f4bcc414fa2054be6237b1fd3813d8edf6b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="9.8.0-preview.1.25358.1">
+    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="9.8.0-preview.1.25361.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>23c62b80989f7baf55dc394829895b636f960fdc</Sha>
+      <Sha>cc0d010d068ddab0c5951b6cfc5793d379c0532c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.8.0-preview.1.25358.1">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.8.0-preview.1.25361.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>23c62b80989f7baf55dc394829895b636f960fdc</Sha>
+      <Sha>cc0d010d068ddab0c5951b6cfc5793d379c0532c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.8.0-preview.1.25358.1">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.8.0-preview.1.25361.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>23c62b80989f7baf55dc394829895b636f960fdc</Sha>
+      <Sha>cc0d010d068ddab0c5951b6cfc5793d379c0532c</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="6.2.4">
       <Uri>https://github.com/nuget/nuget.client</Uri>
