@@ -1,7 +1,6 @@
 #if (GenerateApi)
 using System.Net.Http;
 #endif
-#pragma warning disable ASPDEPR002 // WithOpenApi is deprecated
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 #if (GenerateGraph)
@@ -129,7 +128,6 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 #if (EnableOpenAPI)
 })
 .WithName("GetWeatherForecast")
-.WithOpenApi()
 .RequireAuthorization();
 #else
 })
