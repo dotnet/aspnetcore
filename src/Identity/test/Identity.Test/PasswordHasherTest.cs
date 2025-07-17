@@ -112,6 +112,8 @@ public class PasswordHasherTest
     [InlineData("AQAAAAAAAAD6AAAAEAhftMyfTJyAAAAAAAAAAAAAAAAAAAih5WsjXaR3PA9M")] // incorrect password
     [InlineData("AQAAAAIAAAAyAAAAEOMwvh3+FZxqkdMBz2ekgGhwQ4A=")] // too short
     [InlineData("AQAAAAIAAAAyAAAAEOMwvh3+FZxqkdMBz2ekgGhwQ4B6pZWND6zgESBuWiHwAAAAAAAAAAAA")] // extra data at end
+    [InlineData("AQAAAAIAAYagAP///wABAgMEBQYHCAkKCwwNDg/Q8A0WMKbtHQJQ2DHCdoEeeFBrgNlldq6vH4qX/CGqGQ==")] // salt length greater than data length
+    [InlineData("AQAAAAIAAYagAAAACAABAgMEBQYH4qLSh7iNSI12qySxAkyR0XgpXpvNiwqhBJFNLbJKKFw=")] // salt length (8 bytes) less than minimum allowed
     public void VerifyHashedPassword_FailureCases(string hashedPassword)
     {
         // Arrange
