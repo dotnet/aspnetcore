@@ -1,6 +1,7 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
+  <!-- Test -->
   <PropertyGroup>
     <!-- The .csproj files in this folder do not actually produce .dll's. They are only present to produce .nupkgs and enable Visual Studio support -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
