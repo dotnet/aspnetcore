@@ -156,7 +156,7 @@ internal sealed class ComponentsMetrics : IDisposable
         }
         var duration = Stopwatch.GetElapsedTime(startTimestamp);
         _batchDuration.Record(duration.TotalSeconds, tags);
-        _batchSize.Record(diffLength);
+        _batchSize.Record(diffLength, tags);
     }
 
     public void FailBatchSync(Exception ex, long startTimestamp)
