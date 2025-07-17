@@ -25,8 +25,12 @@ public class HostingTests
             .Returns(Mock.Of<IKeyRing>())
             .Callback(() => tcs.TrySetResult());
 
-        var builder = new WebHostBuilder()
-            .UseStartup<TestStartup>()
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseStartup<TestStartup>();
+            })
             .ConfigureServices(s =>
                 s.AddDataProtection()
                 .Services

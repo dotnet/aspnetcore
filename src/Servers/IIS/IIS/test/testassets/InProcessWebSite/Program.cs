@@ -56,9 +56,13 @@ public static class Program
                 return 12;
             case "HangOnStop":
                 {
-                    var host = new WebHostBuilder()
-                        .UseIIS()
-                        .UseStartup<Startup>()
+                    var host = new HostBuilder()
+                        .ConfigureWebHost(webHostBuilder =>
+                        {
+                            webHostBuilder
+                                .UseIIS()
+                                .UseStartup<Startup>();
+                        })
                         .Build();
                     host.Run();
 
@@ -67,10 +71,14 @@ public static class Program
                 break;
             case "IncreaseShutdownLimit":
                 {
-                    var host = new WebHostBuilder()
-                        .UseIIS()
-                        .UseShutdownTimeout(TimeSpan.FromSeconds(120))
-                        .UseStartup<Startup>()
+                    var host = new HostBuilder()
+                        .ConfigureWebHost(webHostBuilder =>
+                        {
+                            webHostBuilder
+                                .UseIIS()
+                                .UseShutdownTimeout(TimeSpan.FromSeconds(120))
+                                .UseStartup<Startup>();
+                        })
                         .Build();
 
                     host.Run();
@@ -94,11 +102,15 @@ public static class Program
                 return 0;
             case "OverriddenServer":
                 {
-                    var host = new WebHostBuilder()
-                            .UseIIS()
-                            .ConfigureServices(services => services.AddSingleton<IServer, DummyServer>())
-                            .Configure(builder => builder.Run(async context => { await context.Response.WriteAsync("I shouldn't work"); }))
-                            .Build();
+                    var host = new HostBuilder()
+                        .ConfigureWebHost(webHostBuilder =>
+                        {
+                            webHostBuilder
+                                .UseIIS()
+                                .ConfigureServices(services => services.AddSingleton<IServer, DummyServer>())
+                                .Configure(builder => builder.Run(async context => { await context.Response.WriteAsync("I shouldn't work"); }));
+                        })
+                        .Build();
                     host.Run();
                 }
                 break;
@@ -111,18 +123,22 @@ public static class Program
 #if !FORWARDCOMPAT
             case "DecreaseRequestLimit":
                 {
-                    var host = new WebHostBuilder()
+                    var host = new HostBuilder()
                         .ConfigureLogging((_, factory) =>
                         {
                             factory.AddConsole();
                             factory.AddFilter("Console", level => level >= LogLevel.Information);
                         })
-                        .UseIIS()
-                        .ConfigureServices(services =>
+                        .ConfigureWebHost(webHostBuilder =>
                         {
-                            services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = 2);
+                            webHostBuilder
+                                .UseIIS()
+                                .ConfigureServices(services =>
+                                {
+                                    services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = 2);
+                                })
+                                .UseStartup<Startup>();
                         })
-                        .UseStartup<Startup>()
                         .Build();
 
                     host.Run();
@@ -131,15 +147,19 @@ public static class Program
 #endif
             case "ThrowInStartup":
                 {
-                    var host = new WebHostBuilder()
-                                    .ConfigureLogging((_, factory) =>
-                                    {
-                                        factory.AddConsole();
-                                        factory.AddFilter("Console", level => level >= LogLevel.Information);
-                                    })
-                                    .UseIIS()
-                                    .UseStartup<ThrowingStartup>()
-                                    .Build();
+                    var host = new HostBuilder()
+                        .ConfigureLogging((_, factory) =>
+                        {
+                            factory.AddConsole();
+                            factory.AddFilter("Console", level => level >= LogLevel.Information);
+                        })
+                        .ConfigureWebHost(webHostBuilder =>
+                        {
+                            webHostBuilder
+                                .UseIIS()
+                                .UseStartup<ThrowingStartup>();
+                        })
+                        .Build();
 
                     host.Run();
                 }
@@ -189,16 +209,20 @@ public static class Program
 
     private static int StartServer()
     {
-        var host = new WebHostBuilder()
+        var host = new HostBuilder()
             .ConfigureLogging((_, factory) =>
             {
                 factory.AddConsole();
                 factory.AddFilter("Console", level => level >= LogLevel.Information);
             })
-            .UseKestrel()
-            .UseIIS()
-            .UseIISIntegration()
-            .UseStartup<Startup>()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseKestrel()
+                    .UseIIS()
+                    .UseIISIntegration()
+                    .UseStartup<Startup>();
+            })
             .Build();
 
         host.Run();
