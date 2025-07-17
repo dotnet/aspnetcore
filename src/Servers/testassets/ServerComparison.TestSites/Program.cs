@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.HttpSys;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace ServerComparison.TestSites;
@@ -18,7 +19,6 @@ public static class Program
             .Build();
 
         var builder = new HostBuilder()
-            .UseConfiguration(configuration)
             .ConfigureLogging((_, factory) =>
             {
                 factory.AddConsole();
@@ -27,6 +27,7 @@ public static class Program
             .ConfigureWebHost(webHostBuilder =>
             {
                 webHostBuilder
+                    .UseConfiguration(configuration)
                     .UseStartup("ServerComparison.TestSites")
                     .UseKestrel()
                     .UseIISIntegration()
