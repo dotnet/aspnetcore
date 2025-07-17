@@ -106,7 +106,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted);
 
         Task quiesceTask;
-        if (!result.IsPost)
+        if (!result.IsPost || isReExecuted)
         {
             quiesceTask = htmlContent.QuiescenceTask;
         }
@@ -115,7 +115,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             try
             {
                 var isBadRequest = false;
-                quiesceTask = _renderer.DispatchSubmitEventAsync(result.HandlerName, out isBadRequest, isReExecuted);
+                quiesceTask = _renderer.DispatchSubmitEventAsync(result.HandlerName, out isBadRequest);
                 if (isBadRequest)
                 {
                     return;
