@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 using System.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -265,6 +267,40 @@ public class RouterTest
         Assert.Equal("Not found", renderedFrame.TextContent);
     }
 
+    [Fact]
+    public async Task ThrowsExceptionWhenBothNotFoundAndNotFoundPageAreSet()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(_navigationManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        renderer.ShouldHandleExceptions = true;
+        var router = (Router)renderer.InstantiateComponent<Router>();
+        router.AppAssembly = Assembly.GetExecutingAssembly();
+        router.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+        renderer.AssignRootComponentId(router);
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.NotFound), (RenderFragment)(builder => builder.AddContent(0, "Custom not found")) },
+            { nameof(Router.NotFoundPage), typeof(NotFoundTestComponent) }
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await renderer.Dispatcher.InvokeAsync(() =>
+                router.SetParametersAsync(ParameterView.FromDictionary(parameters))));
+
+        Assert.Contains("Setting NotFound and NotFoundPage properties simultaneously is not supported", exception.Message);
+        Assert.Contains("Use either NotFound or NotFoundPage", exception.Message);
+    }
+
     internal class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager() =>
@@ -306,4 +342,8 @@ public class RouterTest
 
     [Route("a/b/c")]
     public class MultiSegmentRouteComponent : ComponentBase { }
+
+    [Route("not-found")]
+    public class NotFoundTestComponent : ComponentBase { }
+
 }
