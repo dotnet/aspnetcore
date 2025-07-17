@@ -346,19 +346,19 @@
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
     <!-- These versions are manually updated -->
-    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.13.0-3.24613.7">
+    <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.13.0-3.24613.7" Label="Manual">
+      <Uri>https://github.com/dotnet/roslyn</Uri>
+      <Sha>06f095f368c0ea9d54c80e313279574da9d96ea3</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.13.0-3.24613.7" Label="Manual">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.13.0-3.24613.7">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.13.0-3.24613.7" Label="Manual">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp" Version="4.13.0-3.24613.7">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0-3.24613.7">
+    <Dependency Name="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.13.0-3.24613.7" Label="Manual">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
     </Dependency>
@@ -432,31 +432,31 @@
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
     <!-- These versions are manually updated -->
-    <Dependency Name="Microsoft.Build" Version="17.12.36">
+    <Dependency Name="Microsoft.Build" Version="17.12.36" Label="Manual">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Framework" Version="17.12.36">
+    <Dependency Name="Microsoft.Build.Framework" Version="17.12.36" Label="Manual">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.12.36">
+    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.12.36" Label="Manual">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.12.36">
+    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.12.36" Label="Manual">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="6.2.4">
+    <Dependency Name="NuGet.Frameworks" Version="6.2.4" Label="Manual">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="6.2.4">
+    <Dependency Name="NuGet.Packaging" Version="6.2.4" Label="Manual">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="6.2.4">
+    <Dependency Name="NuGet.Versioning" Version="6.2.4" Label="Manual">
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
     </Dependency>
