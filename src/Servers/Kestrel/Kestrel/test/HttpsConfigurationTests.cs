@@ -75,11 +75,13 @@ public class HttpsConfigurationTests
             });
 
         var host = hostBuilder.Build();
-        await host.StartAsync();
 
-        Assert.Equal(new[] { httpAddress, httpsAddress }, host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses);
+        var ex = Assert.Throws<InvalidOperationException>(host.Start);
+        Assert.Contains("Call UseKestrelHttpsConfiguration()", ex.Message);
 
-        Assert.Throws<InvalidOperationException>(host.Run);
+        var addr = Assert.Single(host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses);
+        // addr will contain the realized port, so we'll remove the port for comparison
+        Assert.Equal(httpAddress[..^2].ToString(), addr.Substring(0, addr.LastIndexOf(':')));
     }
 
     [Theory]
