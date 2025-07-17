@@ -46,16 +46,25 @@
     }
     else
     {
-        <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
-            <Found Context="routeData">
-                <RouteView RouteData="@routeData" />
-                <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
-            </Found>
-            @if (NotFoundPageType is null)
-            {
+        @if (NotFoundPageType is not null)
+        {
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+                </Found>
+            </Router>
+        }
+        else
+        {
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+                </Found>
                 <NotFound><p id="not-found-fragment">There's nothing here</p></NotFound>
-            }
-        </Router>
+            </Router>
+        }
     }
     <script>
         // This script must come before blazor.web.js to test that
