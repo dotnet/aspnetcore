@@ -14,8 +14,8 @@
             </ColumnOptions>
         </PropertyColumn>
         <PropertyColumn Property="@(p => p.LastName)" Sortable="true" />
-        <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" />
-        <PropertyColumn Title="Age in years" Property="@(p => ComputeAge(p.BirthDate))" Sortable="true"/>
+        <PropertyColumn Property="@(p => p.BirthDate)" Format="yyyy-MM-dd" Sortable="true" Align="Align.Center" />
+        <PropertyColumn Title="Age in years" Property="@(p => ComputeAge(p.BirthDate))" Sortable="true" Align="Align.Right"/>
     </QuickGrid>
 </div>
 <Paginator State="@pagination" />

@@ -139,7 +139,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
         await manager.RestoreStateAsync(store);
 
-        if (MetadataUpdater.IsSupported)
+        if (MetadataUpdater.IsSupported && Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_LEGACY_HOTRELOAD") != "false")
         {
             await WebAssemblyHotReload.InitializeAsync();
         }

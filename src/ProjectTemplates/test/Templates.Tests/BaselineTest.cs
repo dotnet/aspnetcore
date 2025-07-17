@@ -88,15 +88,7 @@ public class BaselineTest : LoggedTest
         foreach (var file in filesInFolder)
         {
             var relativePath = file.Replace(Project.TemplateOutputDir, "").Replace("\\", "/").Trim('/');
-            if (relativePath.EndsWith(".csproj", StringComparison.Ordinal) ||
-                relativePath.EndsWith(".fsproj", StringComparison.Ordinal) ||
-                relativePath.EndsWith(".props", StringComparison.Ordinal) ||
-                relativePath.EndsWith(".sln", StringComparison.Ordinal) ||
-                relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
-                relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
-                relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
-                relativePath.Contains("/bin/", StringComparison.Ordinal) ||
-                relativePath.Contains("/obj/", StringComparison.Ordinal))
+            if (IsIgnoredPath(relativePath))
             {
                 continue;
             }
@@ -117,6 +109,12 @@ public class BaselineTest : LoggedTest
             }
         }
     }
+
+    private static bool IsIgnoredPath(string relativePath) =>
+        relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
+        relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
+        relativePath.Contains("/bin/", StringComparison.Ordinal) ||
+        relativePath.Contains("/obj/", StringComparison.Ordinal);
 
     private void AssertFileExists(string basePath, string path, bool shouldExist)
     {

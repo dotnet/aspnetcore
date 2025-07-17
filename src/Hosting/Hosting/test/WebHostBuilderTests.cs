@@ -1681,11 +1681,11 @@ public class WebHostBuilderTests
                        // This check is required because MVC still uses the
                        // IWebHostEnvironment instance before the container is baked
 #pragma warning disable CS0618 // Type or member is obsolete
-                       var heDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IHostingEnvironment));
+                       var heDescriptor = services.LastOrDefault(s => s.ServiceType == typeof(IHostingEnvironment));
                        Assert.NotNull(heDescriptor);
                        Assert.NotNull(heDescriptor.ImplementationInstance);
 #pragma warning restore CS0618 // Type or member is obsolete
-                       var wheDescriptor = services.SingleOrDefault(s => s.ServiceType == typeof(IWebHostEnvironment));
+                       var wheDescriptor = services.LastOrDefault(s => s.ServiceType == typeof(IWebHostEnvironment));
                        Assert.NotNull(wheDescriptor);
                        Assert.NotNull(wheDescriptor.ImplementationInstance);
                    })
