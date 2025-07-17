@@ -405,13 +405,27 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             foreach (var metadata in responseMetadataTypes)
             {
                 if (metadata.StatusCode == apiResponseType.StatusCode &&
-                    metadata.Type == apiResponseType.Type &&
+                    TypesAreCompatible(apiResponseType.Type, metadata.Type) &&
                     metadata.Description is not null)
                 {
                     matchingDescription = metadata.Description;
                 }
             }
             return matchingDescription;
+        }
+
+        static bool TypesAreCompatible(Type? apiResponseType, Type? metadataType)
+        {
+            // We need to a special check for cases where the inferred type is different than the one specified in attributes.
+            // For example, an endpoint that defines [ProducesResponseType<IEnumerable<WeatherForecast>>],
+            // but the endpoint returns weatherForecasts.ToList(). Because List<> is a different type than IEnumerable<>, it would incorrectly set OpenAPI metadata incorrectly.
+            // We use a conservative unidirectional check where the attribute type must be assignable from the inferred type.
+            // This handles inheritance (BaseClass ← DerivedClass) and interface implementation (IEnumerable<T> ← List<T>).
+            // This should be sufficient, as it's more common to specify an interface or base class type in the attribute and a concrete type in the endpoint implementation,
+            // compared to doing the opposite.
+            // For more information, check the related bug: https://github.com/dotnet/aspnetcore/issues/60518
+            return apiResponseType == metadataType ||
+                metadataType?.IsAssignableFrom(apiResponseType) == true;
         }
     }
 

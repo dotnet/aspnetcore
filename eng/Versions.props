@@ -143,9 +143,9 @@
     <SystemNumericsTensorsVersion>10.0.0-preview.7.25358.102</SystemNumericsTensorsVersion>
     <SystemRuntimeCachingVersion>10.0.0-preview.7.25358.102</SystemRuntimeCachingVersion>
     <!-- Packages from dotnet/extensions -->
-    <MicrosoftExtensionsCachingHybridVersion>9.8.0-preview.1.25358.1</MicrosoftExtensionsCachingHybridVersion>
-    <MicrosoftExtensionsDiagnosticsTestingVersion>9.8.0-preview.1.25358.1</MicrosoftExtensionsDiagnosticsTestingVersion>
-    <MicrosoftExtensionsTimeProviderTestingVersion>9.8.0-preview.1.25358.1</MicrosoftExtensionsTimeProviderTestingVersion>
+    <MicrosoftExtensionsCachingHybridVersion>9.8.0-preview.1.25361.1</MicrosoftExtensionsCachingHybridVersion>
+    <MicrosoftExtensionsDiagnosticsTestingVersion>9.8.0-preview.1.25361.1</MicrosoftExtensionsDiagnosticsTestingVersion>
+    <MicrosoftExtensionsTimeProviderTestingVersion>9.8.0-preview.1.25361.1</MicrosoftExtensionsTimeProviderTestingVersion>
     <!-- Packages from dotnet/efcore -->
     <dotnetefVersion>10.0.0-preview.7.25358.102</dotnetefVersion>
     <MicrosoftEntityFrameworkCoreInMemoryVersion>10.0.0-preview.7.25358.102</MicrosoftEntityFrameworkCoreInMemoryVersion>
@@ -325,8 +325,8 @@
     <XunitExtensibilityCoreVersion>$(XunitVersion)</XunitExtensibilityCoreVersion>
     <XunitExtensibilityExecutionVersion>$(XunitVersion)</XunitExtensibilityExecutionVersion>
     <MicrosoftDataSqlClientVersion>5.2.2</MicrosoftDataSqlClientVersion>
-    <MicrosoftOpenApiVersion>2.0.0-preview.29</MicrosoftOpenApiVersion>
-    <MicrosoftOpenApiYamlReaderVersion>2.0.0-preview.29</MicrosoftOpenApiYamlReaderVersion>
+    <MicrosoftOpenApiVersion>2.0.0</MicrosoftOpenApiVersion>
+    <MicrosoftOpenApiYamlReaderVersion>2.0.0</MicrosoftOpenApiYamlReaderVersion>
     <!-- dotnet tool versions (see also auto-updated DotnetEfVersion property). -->
     <DotnetDumpVersion>6.0.322601</DotnetDumpVersion>
     <DotnetServeVersion>1.10.93</DotnetServeVersion>
