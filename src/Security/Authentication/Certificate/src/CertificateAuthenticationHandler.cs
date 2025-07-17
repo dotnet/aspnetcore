@@ -158,9 +158,9 @@ internal sealed class CertificateAuthenticationHandler : AuthenticationHandler<C
         {
             // Disposing the chain does not dispose the elements we potentially built.
             // Do the full walk manually to dispose.
-            for (int chainElementIndex = 0; chainElementIndex < chain.ChainElements.Count; ++chainElementIndex)
+            for (var i = 0; i < chain.ChainElements.Count; i++)
             {
-                chain.ChainElements[chainElementIndex].Certificate.Dispose();
+                chain.ChainElements[i].Certificate.Dispose();
             }
 
             chain.Dispose();
