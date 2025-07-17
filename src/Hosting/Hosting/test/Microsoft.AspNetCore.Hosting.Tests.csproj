@@ -3,7 +3,8 @@
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
     <!-- EXTEXP0003: MetricCollector is experimental -->
-    <NoWarn>$(NoWarn);EXTEXP0003</NoWarn>
+    <!-- CS0618: WebHostBuilder is obsolete -->
+    <NoWarn>$(NoWarn);EXTEXP0003;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
