@@ -55,3 +55,4 @@ virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.GetPasskeysAsync(TUser!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.RemovePasskeyAsync(TUser! user, byte[]! credentialId) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SetPasskeyAsync(TUser! user, Microsoft.AspNetCore.Identity.UserPasskeyInfo! passkey) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult!>!
 virtual Microsoft.AspNetCore.Identity.UserManager<TUser>.SupportsUserPasskey.get -> bool
+Microsoft.AspNetCore.Identity.UserManager<TUser>.ServiceProvider.get -> System.IServiceProvider!

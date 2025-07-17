@@ -51,7 +51,10 @@
                 <RouteView RouteData="@routeData" />
                 <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
             </Found>
-            <NotFound><p id="not-found-fragment">There's nothing here</p></NotFound>
+            @if (NotFoundPageType is null)
+            {
+                <NotFound><p id="not-found-fragment">There's nothing here</p></NotFound>
+            }
         </Router>
     }
     <script>
