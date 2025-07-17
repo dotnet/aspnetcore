@@ -36,6 +36,8 @@ function Test-Template {
     $env:DOTNET_ROOT = "$PSScriptRoot/.dotnet";
     $env:DOTNET_ROOT_X86 = "$PSScriptRoot/.dotnet";
     $env:Path = "$PSScriptRoot/.dotnet;$env:Path";
+    Write-Verbose "PATH: $env:Path";
+    Write-Verbose "DOTNET_ROOT: $env:DOTNET_ROOT";
     $tmpDir = "$PSScriptRoot/$templateName";
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore;
     Push-Location ..;
@@ -50,11 +52,12 @@ function Test-Template {
 
     $PackageName = (Get-Item $PackagePath).Name;
 
-    if (-not (Test-Path "$($env:USERPROFILE)/.templateengine/packages/$PackageName")) {
-        Write-Verbose "Installing package from $PackagePath";
-        dotnet new install $PackagePath;
-    }
-    else {
+    # if (-not (Test-Path "$($env:USERPROFILE)/.templateengine/packages/$PackageName")) {
+    #     Write-Verbose "Installing package from $PackagePath";
+    #     dotnet new install $PackagePath;
+    # }
+    # else {
+    # always try to uninstall first
         Write-Verbose "Uninstalling package from $PackagePath";
         if (-not ($PackageName -match $PackagePattern)) {
             Write-Error "$PackageName did not match $PackagePattern";
@@ -66,7 +69,7 @@ function Test-Template {
 
         Write-Verbose "Installing package from $PackagePath";
         dotnet new install $PackagePath;
-    }
+    # }
 
 
     Write-Verbose "Creating directory $tmpDir"

@@ -78,7 +78,7 @@
         $templateArguments += "--use-program-main"
     }
 
-    Import-Module -Name "$PSScriptRoot/Test-Template.psm1";
+    Import-Module -Name "$PSScriptRoot/Test-Template.psm1" -Force;
 
     Test-Template `
         -TemplateName "MyBlazorApp" `
