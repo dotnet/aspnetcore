@@ -332,7 +332,20 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
     </Dependency>
-    <!-- Not updated automatically -->
+    <Dependency Name="System.Composition" Version="10.0.0-preview.7.25366.103">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.HotReload.Agent" Version="10.0.100-preview.7.25366.103">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.HotReload.Agent.Data" Version="10.0.100-preview.7.25366.103">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
+    </Dependency>
+    <!-- Dependencies required for source build to lift to the previously-source-built version. -->
+    <!-- These versions are manually updated -->
     <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.13.0-3.24613.7">
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
@@ -349,18 +362,7 @@
       <Uri>https://github.com/dotnet/roslyn</Uri>
       <Sha>afdd413cee50c16318620252e4e64dc326e2d300</Sha>
     </Dependency>
-    <Dependency Name="System.Composition" Version="10.0.0-preview.7.25366.103">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.HotReload.Agent" Version="10.0.100-preview.7.25366.103">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.HotReload.Agent.Data" Version="10.0.100-preview.7.25366.103">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
-    </Dependency>
+    <!-- End of manually updated dependencies -->
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
@@ -408,18 +410,6 @@
       <Uri>https://github.com/dotnet/extensions</Uri>
       <Sha>cc0d010d068ddab0c5951b6cfc5793d379c0532c</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="6.2.4">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
-    </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="6.2.4">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
-    </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="6.2.4">
-      <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
-    </Dependency>
     <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.25363.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
       <Sha>54bab2dbb7652269d9ae0758de122f933b254561</Sha>
@@ -441,21 +431,35 @@
       <Sha>54bab2dbb7652269d9ae0758de122f933b254561</Sha>
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
-    <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25366-103">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
+    <!-- These versions are manually updated -->
+    <Dependency Name="Microsoft.Build" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Framework" Version="17.15.0-preview-25366-103">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
+    <Dependency Name="Microsoft.Build.Framework" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.15.0-preview-25366-103">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
+    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.15.0-preview-25366-103">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>d13c858f5792ca573c322dcaf2cf7ea814fa5f31</Sha>
+    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.12.36">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
+    <Dependency Name="NuGet.Frameworks" Version="6.2.4">
+      <Uri>https://github.com/nuget/nuget.client</Uri>
+      <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
+    </Dependency>
+    <Dependency Name="NuGet.Packaging" Version="6.2.4">
+      <Uri>https://github.com/nuget/nuget.client</Uri>
+      <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
+    </Dependency>
+    <Dependency Name="NuGet.Versioning" Version="6.2.4">
+      <Uri>https://github.com/nuget/nuget.client</Uri>
+      <Sha>8fef55f5a55a3b4f2c96cd1a9b5ddc51d4b927f8</Sha>
+    </Dependency>
+    <!-- End of manually updated dependencies -->
   </ToolsetDependencies>
 </Dependencies>
