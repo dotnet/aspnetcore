@@ -1,11 +1,16 @@
 ﻿@using Components.TestServer.RazorComponents.Pages.Forms
 @using Components.WasmMinimal.Pages.NotFound
 @using TestContentPackage.NotFound
+@using Components.TestServer.RazorComponents
 
 @code {
     [Parameter]
     [SupplyParameterFromQuery(Name = "useCustomNotFoundPage")]
     public string? UseCustomNotFoundPage { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useCustomRouter")]
+    public string? UseCustomRouter { get; set; }
 
     private Type? NotFoundPageType { get; set; }
 
@@ -30,13 +35,37 @@
     <HeadOutlet />
 </head>
 <body>
-    <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
-        <Found Context="routeData">
-            <RouteView RouteData="@routeData" />
-            <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
-        </Found>
-        <NotFound><p id="not-found-fragment">There's nothing here</p></NotFound>
-    </Router>
+    @if(string.Equals(UseCustomRouter, "true", StringComparison.OrdinalIgnoreCase))
+    {
+        <CustomRouter AppAssembly="@typeof(App).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="@routeData" />
+                <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+            </Found>
+        </CustomRouter>
+    }
+    else
+    {
+        @if (NotFoundPageType is not null)
+        {
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }" NotFoundPage="NotFoundPageType">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+                </Found>
+            </Router>
+        }
+        else
+        {
+            <Router AppAssembly="@typeof(App).Assembly" AdditionalAssemblies="new[] { typeof(TestContentPackage.NotFound.NotFoundPage).Assembly }">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" />
+                    <FocusOnNavigate RouteData="@routeData" Selector="[data-focus-on-navigate]" />
+                </Found>
+                <NotFound><p id="not-found-fragment">There's nothing here</p></NotFound>
+            </Router>
+        }
+    }
     <script>
         // This script must come before blazor.web.js to test that
         // the framework does the right thing when an element is already focused.

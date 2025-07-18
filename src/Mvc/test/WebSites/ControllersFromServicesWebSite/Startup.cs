@@ -6,6 +6,7 @@ using ControllersFromServicesClassLibrary;
 using ControllersFromServicesWebSite.Components;
 using ControllersFromServicesWebSite.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.Extensions.Hosting;
 
 namespace ControllersFromServicesWebSite;
 
@@ -61,17 +62,21 @@ public class Startup
 
     public static void Main(string[] args)
     {
-        var host = CreateWebHostBuilder(args)
+        using var host = CreateHostBuilder(args)
             .Build();
 
         host.Run();
     }
 
-    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        new WebHostBuilder()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseStartup<Startup>()
-            .UseKestrel()
-            .UseIISIntegration();
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseStartup<Startup>()
+                    .UseKestrel()
+                    .UseIISIntegration();
+            });
 }
 

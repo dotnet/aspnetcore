@@ -20,6 +20,7 @@ internal sealed class ComponentsMetrics : IDisposable
     private readonly Histogram<double> _eventDuration;
     private readonly Histogram<double> _parametersDuration;
     private readonly Histogram<double> _batchDuration;
+    private readonly Histogram<int> _batchSize;
 
     public bool IsNavigationEnabled => _navigationCount.Enabled;
 
@@ -37,27 +38,33 @@ internal sealed class ComponentsMetrics : IDisposable
         _lifeCycleMeter = meterFactory.Create(LifecycleMeterName);
 
         _navigationCount = _meter.CreateCounter<long>(
-            "aspnetcore.components.navigation",
+            "aspnetcore.components.navigate",
             unit: "{route}",
             description: "Total number of route changes.");
 
         _eventDuration = _meter.CreateHistogram(
-            "aspnetcore.components.event_handler",
+            "aspnetcore.components.handle_event.duration",
             unit: "s",
             description: "Duration of processing browser event.  It includes business logic of the component but not affected child components.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.ShortSecondsBucketBoundaries });
 
         _parametersDuration = _lifeCycleMeter.CreateHistogram(
-            "aspnetcore.components.update_parameters",
+            "aspnetcore.components.update_parameters.duration",
             unit: "s",
             description: "Duration of processing component parameters. It includes business logic of the component.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorRenderingSecondsBucketBoundaries });
 
         _batchDuration = _lifeCycleMeter.CreateHistogram(
-            "aspnetcore.components.render_diff",
+            "aspnetcore.components.render_diff.duration",
             unit: "s",
             description: "Duration of rendering component tree and producing HTML diff. It includes business logic of the changed components.",
             advice: new InstrumentAdvice<double> { HistogramBucketBoundaries = MetricsConstants.BlazorRenderingSecondsBucketBoundaries });
+
+        _batchSize = _lifeCycleMeter.CreateHistogram(
+            "aspnetcore.components.render_diff.size",
+            unit: "{elements}",
+            description: "Number of HTML elements modified during a rendering batch.",
+            advice: new InstrumentAdvice<int> { HistogramBucketBoundaries = MetricsConstants.BlazorRenderingDiffLengthBucketBoundaries });
     }
 
     public void Navigation(string componentType, string route)
@@ -137,10 +144,7 @@ internal sealed class ComponentsMetrics : IDisposable
 
     public async Task CaptureBatchDuration(Task task, long startTimestamp, int diffLength)
     {
-        var tags = new TagList
-        {
-            { "aspnetcore.components.diff.length", BucketDiffLength(diffLength) }
-        };
+        var tags = new TagList();
 
         try
         {
@@ -152,6 +156,7 @@ internal sealed class ComponentsMetrics : IDisposable
         }
         var duration = Stopwatch.GetElapsedTime(startTimestamp);
         _batchDuration.Record(duration.TotalSeconds, tags);
+        _batchSize.Record(diffLength, tags);
     }
 
     public void FailBatchSync(Exception ex, long startTimestamp)
@@ -159,28 +164,9 @@ internal sealed class ComponentsMetrics : IDisposable
         var duration = Stopwatch.GetElapsedTime(startTimestamp);
         var tags = new TagList
             {
-                { "aspnetcore.components.diff.length", 0 },
                 { "error.type", ex.GetType().FullName ?? "unknown" }
             };
         _batchDuration.Record(duration.TotalSeconds, tags);
-    }
-
-    private static int BucketDiffLength(int diffLength)
-    {
-        return diffLength switch
-        {
-            <= 1 => 1,
-            <= 2 => 2,
-            <= 5 => 5,
-            <= 10 => 10,
-            <= 20 => 20,
-            <= 50 => 50,
-            <= 100 => 100,
-            <= 500 => 500,
-            <= 1000 => 1000,
-            <= 10000 => 10000,
-            _ => 10001,
-        };
     }
 
     public void Dispose()

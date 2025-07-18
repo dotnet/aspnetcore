@@ -50,7 +50,7 @@ public class ComponentsActivitySourceTest
         linkstore.SetActivityContext(ComponentsActivityLinkStore.Circuit, new ActivityContext(ActivityTraceId.CreateRandom(), ActivitySpanId.CreateRandom(), ActivityTraceFlags.Recorded), new KeyValuePair<string, object>("aspnetcore.components.circuit.id", "test-circuit-id"));
 
         // Act
-        var activityHandle = componentsActivitySource.StartRouteActivity(componentType, route);
+        var activityHandle = componentsActivitySource.StartNavigateActivity(componentType, route);
         var activity = activityHandle.Activity;
 
         // Assert
@@ -63,7 +63,7 @@ public class ComponentsActivitySourceTest
         Assert.Equal(route, activity.GetTagItem("aspnetcore.components.route"));
         Assert.False(activity.IsStopped);
 
-        componentsActivitySource.StopRouteActivity(activityHandle, null);
+        componentsActivitySource.StopNavigateActivity(activityHandle, null);
         Assert.True(activity.IsStopped);
         Assert.Equal("test-circuit-id", activity.GetTagItem("aspnetcore.components.circuit.id"));
         Assert.Single(activity.Links);
@@ -83,10 +83,10 @@ public class ComponentsActivitySourceTest
 
         // First set up a circuit and route context
         linkstore.SetActivityContext(ComponentsActivityLinkStore.Circuit, default, new KeyValuePair<string, object>("aspnetcore.components.circuit.id", "test-circuit-id"));
-        componentsActivitySource.StartRouteActivity("ParentComponent", "/parent");
+        componentsActivitySource.StartNavigateActivity("ParentComponent", "/parent");
 
         // Act
-        var activityHandle = ComponentsActivitySource.StartEventActivity(componentType, methodName, attributeName);
+        var activityHandle = ComponentsActivitySource.StartHandleEventActivity(componentType, methodName, attributeName);
         var activity = activityHandle.Activity;
 
         // Assert
@@ -100,7 +100,7 @@ public class ComponentsActivitySourceTest
         Assert.Equal(attributeName, activity.GetTagItem("aspnetcore.components.attribute.name"));
         Assert.False(activity.IsStopped);
 
-        componentsActivitySource.StopRouteActivity(activityHandle, null);
+        componentsActivitySource.StopNavigateActivity(activityHandle, null);
         Assert.True(activity.IsStopped);
         Assert.Equal("test-circuit-id", activity.GetTagItem("aspnetcore.components.circuit.id"));
         Assert.Empty(activity.Links);
@@ -113,12 +113,12 @@ public class ComponentsActivitySourceTest
         var componentsActivitySource = new ComponentsActivitySource();
         var linkstore = new ComponentsActivityLinkStore(null);
         componentsActivitySource.Init(linkstore);
-        var activityHandle = ComponentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
+        var activityHandle = ComponentsActivitySource.StartHandleEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
 
         // Act
-        componentsActivitySource.StopEventActivity(activityHandle, exception);
+        componentsActivitySource.StopHandleEventActivity(activityHandle, exception);
 
         // Assert
         Assert.True(activity!.IsStopped);
@@ -133,12 +133,12 @@ public class ComponentsActivitySourceTest
         var componentsActivitySource = new ComponentsActivitySource();
         var linkstore = new ComponentsActivityLinkStore(null);
         componentsActivitySource.Init(linkstore);
-        var activityHandle = ComponentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
+        var activityHandle = ComponentsActivitySource.StartHandleEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var task = Task.CompletedTask;
 
         // Act
-        await componentsActivitySource.CaptureEventStopAsync(task, activityHandle);
+        await componentsActivitySource.CaptureHandleEventStopAsync(task, activityHandle);
 
         // Assert
         Assert.True(activity!.IsStopped);
@@ -152,13 +152,13 @@ public class ComponentsActivitySourceTest
         var componentsActivitySource = new ComponentsActivitySource();
         var linkstore = new ComponentsActivityLinkStore(null);
         componentsActivitySource.Init(linkstore);
-        var activityHandle = ComponentsActivitySource.StartEventActivity("TestComponent", "OnClick", "onclick");
+        var activityHandle = ComponentsActivitySource.StartHandleEventActivity("TestComponent", "OnClick", "onclick");
         var activity = activityHandle.Activity;
         var exception = new InvalidOperationException("Test exception");
         var task = Task.FromException(exception);
 
         // Act
-        await componentsActivitySource.CaptureEventStopAsync(task, activityHandle);
+        await componentsActivitySource.CaptureHandleEventStopAsync(task, activityHandle);
 
         // Assert
         Assert.True(activity!.IsStopped);
@@ -175,7 +175,7 @@ public class ComponentsActivitySourceTest
         componentsActivitySource.Init(linkstore);
 
         // Act
-        var activityHandle = componentsActivitySource.StartRouteActivity(null, null);
+        var activityHandle = componentsActivitySource.StartNavigateActivity(null, null);
         var activity = activityHandle.Activity;
 
         // Assert
@@ -192,7 +192,7 @@ public class ComponentsActivitySourceTest
         componentsActivitySource.Init(linkstore);
 
         // Act
-        var activityHandle = ComponentsActivitySource.StartEventActivity(null, null, null);
+        var activityHandle = ComponentsActivitySource.StartHandleEventActivity(null, null, null);
         var activity = activityHandle.Activity;
 
         // Assert
