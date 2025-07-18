@@ -16,11 +16,11 @@
 {
     @if (!string.IsNullOrEmpty(StreamingId))
     {
-        <StreamingComponentWithDeclarativePersistentState @key="@("PersistentComponent")" @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
+        <StreamingComponentWithDeclarativePersistentState @key="0" @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
     }
     else
     {
-        <NonStreamingComponentWithDeclarativePersistentState @key="@("NonStreamingComponent")" @rendermode="@_renderMode" ServerState="@ServerState" />
+        <NonStreamingComponentWithDeclarativePersistentState @key="0" @rendermode="@_renderMode" ServerState="@ServerState" />
     }
 }
 @if (!string.IsNullOrEmpty(StreamingId))
