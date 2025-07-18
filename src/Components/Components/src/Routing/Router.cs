@@ -394,17 +394,18 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         bool renderContentIsProvided = NotFoundPage != null || args.Path != null;
         if (_renderHandle.IsInitialized && renderContentIsProvided)
         {
-            Log.DisplayingNotFound(_logger);
-            if (NotFoundPage == null && !string.IsNullOrEmpty(args.Path))
+            if (!string.IsNullOrEmpty(args.Path))
             {
                 // The path can be set by a subscriber not defined in blazor framework.
                 _renderHandle.Render(builder => RenderComponentByRoute(builder, args.Path));
-                return;
             }
-
-            // Having the path set signals to the endpoint renderer that router handled rendering.
-            args.Path = _notFoundPageRoute;
-            RenderNotFound();
+            else
+            {
+                // Having the path set signals to the endpoint renderer that router handled rendering.
+                args.Path = _notFoundPageRoute;
+                RenderNotFound();
+            }
+            Log.DisplayingNotFound(_logger, args.Path);
         }
     }
 
@@ -490,7 +491,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         internal static partial void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri);
 
         [LoggerMessage(4, LogLevel.Debug, $"Displaying {nameof(NotFound)} on request", EventName = "DisplayingNotFoundOnRequest")]
-        internal static partial void DisplayingNotFound(ILogger logger);
+        internal static partial void DisplayingNotFound(ILogger logger, string displayedPath);
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 }
