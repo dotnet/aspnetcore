@@ -45,23 +45,18 @@ public class IPNetwork
     public bool Contains(IPAddress address) => _network.Contains(address);
 
     /// <inheritdoc cref="System.Net.IPNetwork.Parse(ReadOnlySpan{char})"/>
-    public static IPNetwork Parse(ReadOnlySpan<char> networkSpan) => System.Net.IPNetwork.Parse(networkSpan);
+    public static IPNetwork Parse(ReadOnlySpan<char> networkSpan) => new(System.Net.IPNetwork.Parse(networkSpan));
 
     /// <inheritdoc cref="System.Net.IPNetwork.TryParse(ReadOnlySpan{char}, out System.Net.IPNetwork)"/>
     public static bool TryParse(ReadOnlySpan<char> networkSpan, [NotNullWhen(true)] out IPNetwork? network)
     {
         if (System.Net.IPNetwork.TryParse(networkSpan, out var ipNetwork))
         {
-            network = ipNetwork;
+            network = new(ipNetwork);
             return true;
         }
 
         network = null;
         return false;
     }
-
-    /// <summary>
-    /// Convert <see cref="System.Net.IPNetwork" /> to <see cref="Microsoft.AspNetCore.HttpOverrides.IPNetwork" /> implicitly
-    /// </summary>
-    public static implicit operator IPNetwork(System.Net.IPNetwork ipNetwork) => new IPNetwork(ipNetwork);
 }
