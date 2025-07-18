@@ -38,6 +38,8 @@ function Test-Template {
     $env:Path = "$PSScriptRoot/.dotnet;$env:Path";
     Write-Verbose "PATH: $env:Path";
     Write-Verbose "DOTNET_ROOT: $env:DOTNET_ROOT";
+    Write-Verbose "Running dotnet --info";
+    dotnet --info;
     $tmpDir = "$PSScriptRoot/$templateName";
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore;
     Push-Location ..;
