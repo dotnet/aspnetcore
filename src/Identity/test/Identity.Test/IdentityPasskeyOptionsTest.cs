@@ -3,12 +3,12 @@
 
 namespace Microsoft.AspNetCore.Identity.Test;
 
-public class PasskeyOptionsTest
+public class IdentityPasskeyOptionsTest
 {
     [Fact]
     public void VerifyDefaultOptions()
     {
-        var options = new PasskeyOptions();
+        var options = new IdentityPasskeyOptions();
 
         Assert.Equal(TimeSpan.FromMinutes(5), options.AuthenticatorTimeout);
         Assert.Equal(32, options.ChallengeSize);

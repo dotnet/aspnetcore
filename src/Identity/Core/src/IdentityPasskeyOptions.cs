@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <summary>
 /// Specifies options for passkey requirements.
 /// </summary>
-public class PasskeyOptions
+public class IdentityPasskeyOptions
 {
     /// <summary>
     /// Gets or sets the time that the browser should wait for the authenticator to provide a passkey.

@@ -18,14 +18,14 @@ public sealed class PasskeyHandler<TUser> : IPasskeyHandler<TUser>
     where TUser : class
 {
     private readonly UserManager<TUser> _userManager;
-    private readonly PasskeyOptions _options;
+    private readonly IdentityPasskeyOptions _options;
 
     /// <summary>
     /// Constructs a new <see cref="PasskeyHandler{TUser}"/> instance.
     /// </summary>
     /// <param name="userManager">The <see cref="UserManager{TUser}"/>.</param>
     /// <param name="options">The <see cref="IdentityOptions"/>.</param>
-    public PasskeyHandler(UserManager<TUser> userManager, IOptions<PasskeyOptions> options)
+    public PasskeyHandler(UserManager<TUser> userManager, IOptions<IdentityPasskeyOptions> options)
     {
         ArgumentNullException.ThrowIfNull(userManager);
         ArgumentNullException.ThrowIfNull(options);

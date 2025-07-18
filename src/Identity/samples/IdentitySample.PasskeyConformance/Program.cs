@@ -246,8 +246,8 @@ static ValueTask<bool> ValidateOriginAsync(PasskeyOriginValidationContext contex
     return ValueTask.FromResult(uri.Host == "localhost" && uri.Port == 7020);
 }
 
-static IOptions<PasskeyOptions> GetPasskeyOptionsFromCreationRequest(ServerPublicKeyCredentialCreationOptionsRequest request)
-    => Options.Create(new PasskeyOptions()
+static IOptions<IdentityPasskeyOptions> GetPasskeyOptionsFromCreationRequest(ServerPublicKeyCredentialCreationOptionsRequest request)
+    => Options.Create(new IdentityPasskeyOptions()
     {
         ValidateOrigin = ValidateOriginAsync,
         AttestationConveyancePreference = request.Attestation,
@@ -256,8 +256,8 @@ static IOptions<PasskeyOptions> GetPasskeyOptionsFromCreationRequest(ServerPubli
         UserVerificationRequirement = request.AuthenticatorSelection?.UserVerification,
     });
 
-static IOptions<PasskeyOptions> GetPasskeyOptionsFromGetRequest(ServerPublicKeyCredentialGetOptionsRequest request)
-    => Options.Create(new PasskeyOptions()
+static IOptions<IdentityPasskeyOptions> GetPasskeyOptionsFromGetRequest(ServerPublicKeyCredentialGetOptionsRequest request)
+    => Options.Create(new IdentityPasskeyOptions()
     {
         ValidateOrigin = ValidateOriginAsync,
         UserVerificationRequirement = request.UserVerification,
