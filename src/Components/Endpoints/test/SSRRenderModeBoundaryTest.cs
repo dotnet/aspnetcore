@@ -96,6 +96,117 @@ public class SSRRenderModeBoundaryTest
             => throw new NotImplementedException();
     }
 
+    [Fact]
+    public void GetComponentMarkerKey_WorksWithStringKey()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
+        var stringKey = "test-string-key";
+
+        // Act
+        var markerKey = boundary.GetComponentMarkerKey(1, stringKey);
+
+        // Assert
+        Assert.Equal(stringKey, markerKey.FormattedComponentKey);
+        Assert.NotEmpty(markerKey.LocationHash);
+    }
+
+    [Fact]
+    public void GetComponentMarkerKey_WorksWithIntKey()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
+        var intKey = 42;
+
+        // Act
+        var markerKey = boundary.GetComponentMarkerKey(1, intKey);
+
+        // Assert
+        Assert.Equal("42", markerKey.FormattedComponentKey);
+        Assert.NotEmpty(markerKey.LocationHash);
+    }
+
+    [Fact]
+    public void GetComponentMarkerKey_WorksWithGuidKey()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
+        var guidKey = Guid.Parse("12345678-1234-1234-1234-123456789012");
+
+        // Act
+        var markerKey = boundary.GetComponentMarkerKey(1, guidKey);
+
+        // Assert
+        Assert.Equal("12345678-1234-1234-1234-123456789012", markerKey.FormattedComponentKey);
+        Assert.NotEmpty(markerKey.LocationHash);
+    }
+
+    [Fact]
+    public void GetComponentMarkerKey_WorksWithDoubleKey()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
+        var doubleKey = 123.45;
+
+        // Act
+        var markerKey = boundary.GetComponentMarkerKey(1, doubleKey);
+
+        // Assert
+        Assert.Equal("123.45", markerKey.FormattedComponentKey);
+        Assert.NotEmpty(markerKey.LocationHash);
+    }
+
+    [Fact]
+    public void GetComponentMarkerKey_WorksWithDateTimeKey()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
+        var dateTimeKey = new DateTime(2023, 12, 25, 10, 30, 0, DateTimeKind.Utc);
+
+        // Act
+        var markerKey = boundary.GetComponentMarkerKey(1, dateTimeKey);
+
+        // Assert
+        Assert.Equal("12/25/2023 10:30:00", markerKey.FormattedComponentKey);
+        Assert.NotEmpty(markerKey.LocationHash);
+    }
+
+    [Fact]
+    public void GetComponentMarkerKey_WorksWithNullKey()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
+
+        // Act
+        var markerKey = boundary.GetComponentMarkerKey(1, null);
+
+        // Assert
+        Assert.Equal(string.Empty, markerKey.FormattedComponentKey);
+        Assert.NotEmpty(markerKey.LocationHash);
+    }
+
+    [Fact]
+    public void GetComponentMarkerKey_WorksWithNonFormattableKey()
+    {
+        // Arrange
+        var httpContext = new DefaultHttpContext();
+        var boundary = new SSRRenderModeBoundary(httpContext, typeof(TestComponent), new InteractiveServerRenderMode());
+        var nonFormattableKey = new object();
+
+        // Act
+        var markerKey = boundary.GetComponentMarkerKey(1, nonFormattableKey);
+
+        // Assert
+        Assert.Equal(string.Empty, markerKey.FormattedComponentKey);
+        Assert.NotEmpty(markerKey.LocationHash);
+    }
+
     class ServerRenderModeSubclass : InteractiveServerRenderMode { }
     class WebAssemblyRenderModeSubclass : InteractiveWebAssemblyRenderMode { }
     class AutoRenderModeSubclass : InteractiveAutoRenderMode { }
