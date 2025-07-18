@@ -121,7 +121,7 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
 
   Blazor.disconnect = cleanup;
 
-  window.addEventListener('unload', cleanup, { capture: false, once: true });
+  window.addEventListener('pagehide', cleanup, { capture: false, once: true });
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
