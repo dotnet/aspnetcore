@@ -18,7 +18,9 @@ public class Program
 
     // Do not change the signature of this method. It's used for tests.
     private static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+#pragma warning disable CS0618 // Type or member is obsolete
         new WebHostBuilder()
         .SuppressStatusMessages(true)
         .ConfigureServices(services => services.AddSingleton<IStartup, Startup>());
+#pragma warning restore CS0618 // Type or member is obsolete
 }

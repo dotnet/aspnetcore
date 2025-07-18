@@ -22,6 +22,7 @@ public static class Program
             .AddEnvironmentVariables(prefix: "ASPNETCORE_")
             .Build();
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var builder = new WebHostBuilder()
             .UseServer(new NoopServer())
             .UseConfiguration(config)
@@ -32,6 +33,7 @@ public static class Program
                 factory.AddFilter<ConsoleLoggerProvider>(level => level >= LogLevel.Warning);
             })
             .UseStartup("Microsoft.AspNetCore.Hosting.TestSites");
+#pragma warning restore CS0618 // Type or member is obsolete
 
         if (config["STARTMECHANIC"] == "Run")
         {
