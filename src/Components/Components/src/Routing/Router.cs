@@ -391,13 +391,51 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private void OnNotFound(object sender, NotFoundEventArgs args)
     {
-        if (_renderHandle.IsInitialized && NotFoundPage != null)
+        bool renderContentIsProvided = NotFoundPage != null || args.Path != null;
+        if (_renderHandle.IsInitialized && renderContentIsProvided)
         {
-            // setting the path signals to the endpoint renderer that router handled rendering
-            args.Path = _notFoundPageRoute;
             Log.DisplayingNotFound(_logger);
+            if (NotFoundPage == null && !string.IsNullOrEmpty(args.Path))
+            {
+                // The path can be set by a subscriber not defined in blazor framework.
+                _renderHandle.Render(builder => RenderComponentByRoute(builder, args.Path));
+                return;
+            }
+
+            // Having the path set signals to the endpoint renderer that router handled rendering.
+            args.Path = _notFoundPageRoute;
             RenderNotFound();
         }
+    }
+
+    private void RenderComponentByRoute(RenderTreeBuilder builder, string route)
+    {
+        var componentType = FindComponentTypeByRoute(route);
+
+        if (componentType != null)
+        {
+            builder.OpenComponent<RouteView>(0);
+            builder.AddAttribute(1, nameof(RouteView.RouteData),
+                new RouteData(componentType, new Dictionary<string, object>()));
+            builder.CloseComponent();
+        }
+    }
+
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    private Type? FindComponentTypeByRoute(string route)
+    {
+        RefreshRouteTable();
+        var normalizedRoute = route.StartsWith('/') ? route : $"/{route}";
+
+        var context = new RouteContext(normalizedRoute);
+        Routes.Route(context);
+
+        if (context.Handler is not null && typeof(IComponent).IsAssignableFrom(context.Handler))
+        {
+            return context.Handler;
+        }
+
+        return null;
     }
 
     private void RenderNotFound()
