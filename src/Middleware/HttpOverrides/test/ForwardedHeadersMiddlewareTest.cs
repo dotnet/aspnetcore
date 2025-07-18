@@ -120,6 +120,9 @@ public class ForwardedHeadersMiddlewareTests
                         ForwardLimit = limit,
                     };
                     options.KnownProxies.Clear();
+#pragma warning disable CS0618 // Type or member is obsolete
+                    options.KnownNetworks.Clear();
+#pragma warning restore CS0618 // Type or member is obsolete
                     options.KnownIPNetworks.Clear();
                     app.UseForwardedHeaders(options);
                 });
@@ -861,6 +864,9 @@ public class ForwardedHeadersMiddlewareTests
                     };
                     if (!loopback)
                     {
+#pragma warning disable CS0618 // Type or member is obsolete
+                        options.KnownNetworks.Clear();
+#pragma warning restore CS0618 // Type or member is obsolete
                         options.KnownIPNetworks.Clear();
                         options.KnownProxies.Clear();
                     }
@@ -1134,6 +1140,9 @@ public class ForwardedHeadersMiddlewareTests
                     {
                         options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
                         options.KnownProxies.Clear();
+#pragma warning disable CS0618 // Type or member is obsolete
+                        options.KnownNetworks.Clear();
+#pragma warning restore CS0618 // Type or member is obsolete
                         options.KnownIPNetworks.Clear();
                         options.ForwardLimit = limit;
                     });
@@ -1176,6 +1185,9 @@ public class ForwardedHeadersMiddlewareTests
                         ForwardLimit = limit,
                     };
                     options.KnownProxies.Clear();
+#pragma warning disable CS0618 // Type or member is obsolete
+                    options.KnownNetworks.Clear();
+#pragma warning restore CS0618 // Type or member is obsolete
                     options.KnownIPNetworks.Clear();
                     app.UseForwardedHeaders(options);
                     app.UseForwardedHeaders(options);
