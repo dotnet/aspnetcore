@@ -490,8 +490,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         [LoggerMessage(3, LogLevel.Debug, "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToExternalUri")]
         internal static partial void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri);
 
-        [LoggerMessage(4, LogLevel.Debug, $"Displaying {nameof(NotFound)} on request", EventName = "DisplayingNotFoundOnRequest")]
-        internal static partial void DisplayingNotFound(ILogger logger, string displayedPath);
+        [LoggerMessage(4, LogLevel.Debug, $"Displaying contents of {{displayedContentPath}} on request", EventName = "DisplayingNotFoundOnRequest")]
+        internal static partial void DisplayingNotFound(ILogger logger, string displayedContentPath);
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 }
