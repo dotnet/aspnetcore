@@ -120,7 +120,7 @@ public class ForwardedHeadersMiddlewareTests
                         ForwardLimit = limit,
                     };
                     options.KnownProxies.Clear();
-                    options.KnownNetworks.Clear();
+                    options.KnownIPNetworks.Clear();
                     app.UseForwardedHeaders(options);
                 });
             }).Build();
@@ -861,7 +861,7 @@ public class ForwardedHeadersMiddlewareTests
                     };
                     if (!loopback)
                     {
-                        options.KnownNetworks.Clear();
+                        options.KnownIPNetworks.Clear();
                         options.KnownProxies.Clear();
                     }
                     app.UseForwardedHeaders(options);
@@ -888,7 +888,7 @@ public class ForwardedHeadersMiddlewareTests
         var options = new ForwardedHeadersOptions();
         Assert.True(options.ForwardedHeaders == ForwardedHeaders.None);
         Assert.Equal(1, options.ForwardLimit);
-        Assert.Single(options.KnownNetworks);
+        Assert.Single(options.KnownIPNetworks);
         Assert.Single(options.KnownProxies);
     }
 
@@ -1092,7 +1092,7 @@ public class ForwardedHeadersMiddlewareTests
             var knownNetworkParts = knownNetwork.Split('/');
             var networkIp = IPAddress.Parse(knownNetworkParts[0]);
             var prefixLength = int.Parse(knownNetworkParts[1], CultureInfo.InvariantCulture);
-            options.KnownNetworks.Add(new System.Net.IPNetwork(networkIp, prefixLength));
+            options.KnownIPNetworks.Add(new System.Net.IPNetwork(networkIp, prefixLength));
         }
 
         using var host = new HostBuilder()
@@ -1134,7 +1134,7 @@ public class ForwardedHeadersMiddlewareTests
                     {
                         options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
                         options.KnownProxies.Clear();
-                        options.KnownNetworks.Clear();
+                        options.KnownIPNetworks.Clear();
                         options.ForwardLimit = limit;
                     });
                 })
@@ -1176,7 +1176,7 @@ public class ForwardedHeadersMiddlewareTests
                         ForwardLimit = limit,
                     };
                     options.KnownProxies.Clear();
-                    options.KnownNetworks.Clear();
+                    options.KnownIPNetworks.Clear();
                     app.UseForwardedHeaders(options);
                     app.UseForwardedHeaders(options);
                 });

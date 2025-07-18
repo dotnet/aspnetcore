@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.HttpOverrides;
+using AspNetIPNetwork = Microsoft.AspNetCore.HttpOverrides.IPNetwork;
 using IPAddress = System.Net.IPAddress;
 using IPNetwork = System.Net.IPNetwork;
 
@@ -84,7 +85,13 @@ public class ForwardedHeadersOptions
     /// <summary>
     /// Address ranges of known proxies to accept forwarded headers from.
     /// </summary>
-    public IList<IPNetwork> KnownNetworks { get; } = new List<IPNetwork>() { new IPNetwork(IPAddress.Loopback, 8) };
+    [Obsolete("Please use KnownIPNetworks instead")]
+    public IList<AspNetIPNetwork> KnownNetworks { get; } = new List<AspNetIPNetwork>() { new AspNetIPNetwork(IPAddress.Loopback, 8) };
+
+    /// <summary>
+    /// Address ranges of known proxies to accept forwarded headers from.
+    /// </summary>
+    public IList<IPNetwork> KnownIPNetworks { get; } = new List<IPNetwork>() { new IPNetwork(IPAddress.Loopback, 8) };
 
     /// <summary>
     /// The allowed values from x-forwarded-host. If the list is empty then all hosts are allowed.
