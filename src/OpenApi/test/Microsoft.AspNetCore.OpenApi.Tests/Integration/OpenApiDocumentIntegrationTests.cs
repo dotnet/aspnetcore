@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.OpenApi;
 
 [UsesVerify]
-public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>
+public class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>
 {
     public static TheoryData<string, OpenApiSpecVersion> OpenApiDocuments()
     {
