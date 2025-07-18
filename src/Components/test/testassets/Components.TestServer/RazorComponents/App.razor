@@ -1,4 +1,5 @@
-﻿@using Components.TestServer.RazorComponents.Pages.Forms
+﻿@implements IDisposable
+@using Components.TestServer.RazorComponents.Pages.Forms
 @using Components.WasmMinimal.Pages.NotFound
 @using TestContentPackage.NotFound
 @using Components.TestServer.RazorComponents
@@ -12,7 +13,39 @@
     [SupplyParameterFromQuery(Name = "useCustomRouter")]
     public string? UseCustomRouter { get; set; }
 
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "appSetsEventArgsPath")]
+    public bool AppSetsEventArgsPath { get; set; }
+
     private Type? NotFoundPageType { get; set; }
+    private NavigationManager _navigationManager = default!;
+
+    [Inject]
+    private NavigationManager NavigationManager
+    {
+        get => _navigationManager;
+        set
+        {
+            _navigationManager = value;
+        }
+    }
+
+    private void OnNotFoundEvent(object sender, NotFoundEventArgs e)
+    {
+        var type = typeof(CustomNotFoundPage);
+        var routeAttributes = type.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
+        if (routeAttributes.Length == 0)
+        {
+            throw new InvalidOperationException($"The type {type.FullName} " +
+                $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
+        }
+
+        var routeAttribute = (RouteAttribute)routeAttributes[0];
+        if (routeAttribute.Template != null)
+        {
+            e.Path = routeAttribute.Template;
+        }
+    }
 
     protected override void OnParametersSet()
     {
@@ -23,6 +56,18 @@
         else
         {
             NotFoundPageType = null;
+        }
+        if (AppSetsEventArgsPath && _navigationManager is not null)
+        {
+            _navigationManager.OnNotFound += OnNotFoundEvent;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (AppSetsEventArgsPath)
+        {
+            _navigationManager.OnNotFound -= OnNotFoundEvent;
         }
     }
 }
