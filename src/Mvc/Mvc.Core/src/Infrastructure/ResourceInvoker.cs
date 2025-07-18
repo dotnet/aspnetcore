@@ -15,6 +15,9 @@ internal abstract partial class ResourceInvoker
 {
     protected readonly DiagnosticListener _diagnosticListener;
     protected readonly ILogger _logger;
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
+    protected readonly IActionContextAccessor _actionContextAccessor;
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
     protected readonly IActionResultTypeMapper _mapper;
     protected readonly ActionContext _actionContext;
     protected readonly IFilterMetadata[] _filters;
@@ -36,6 +39,9 @@ internal abstract partial class ResourceInvoker
     public ResourceInvoker(
         DiagnosticListener diagnosticListener,
         ILogger logger,
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
+        IActionContextAccessor actionContextAccessor,
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
         IActionResultTypeMapper mapper,
         ActionContext actionContext,
         IFilterMetadata[] filters,
@@ -43,6 +49,7 @@ internal abstract partial class ResourceInvoker
     {
         _diagnosticListener = diagnosticListener ?? throw new ArgumentNullException(nameof(diagnosticListener));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _actionContextAccessor = actionContextAccessor ?? throw new ArgumentNullException(nameof(actionContextAccessor));
         _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         _actionContext = actionContext ?? throw new ArgumentNullException(nameof(actionContext));
 
@@ -58,6 +65,7 @@ internal abstract partial class ResourceInvoker
             return Logged(this);
         }
 
+        _actionContextAccessor.ActionContext = _actionContext;
         var scope = _logger.ActionScope(_actionContext.ActionDescriptor);
 
         Task task;
@@ -92,6 +100,7 @@ internal abstract partial class ResourceInvoker
         static async Task Logged(ResourceInvoker invoker)
         {
             var actionContext = invoker._actionContext;
+            invoker._actionContextAccessor.ActionContext = actionContext;
             try
             {
                 var logger = invoker._logger;

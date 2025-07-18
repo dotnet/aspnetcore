@@ -29,9 +29,11 @@ public class StartupRoutingDifferentBranches
 
         ConfigureRoutingServices(services);
 
-        services.AddHttpContextAccessor();
         services.AddScoped<TestResponseGenerator>();
         // This is used by test response generator
+        #pragma warning disable ASPDEPR004 // Type or member is obsolete
+        services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
         services.AddSingleton<BranchesTransformer>();
     }
 
