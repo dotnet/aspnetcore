@@ -25,9 +25,9 @@ internal sealed class PageActionInvokerProvider : IActionInvokerProvider
     private readonly DiagnosticListener _diagnosticListener;
     private readonly ILogger<PageActionInvoker> _logger;
     private readonly IActionResultTypeMapper _mapper;
-#pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
     private readonly IActionContextAccessor _actionContextAccessor;
-#pragma warning restore ASPDEPR004 // Type or member is obsolete
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
 
     public PageActionInvokerProvider(
         PageLoader pageLoader,
@@ -40,9 +40,9 @@ internal sealed class PageActionInvokerProvider : IActionInvokerProvider
         DiagnosticListener diagnosticListener,
         ILoggerFactory loggerFactory,
         IActionResultTypeMapper mapper,
-#pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
         IActionContextAccessor? actionContextAccessor = null)
-#pragma warning restore ASPDEPR004 // Type or member is obsolete
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
     {
         _pageLoader = pageLoader;
         _pageActionInvokerCache = pageActionInvokerCache;
@@ -54,9 +54,9 @@ internal sealed class PageActionInvokerProvider : IActionInvokerProvider
         _diagnosticListener = diagnosticListener;
         _logger = loggerFactory.CreateLogger<PageActionInvoker>();
         _mapper = mapper;
-#pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR006 // Type or member is obsolete
         _actionContextAccessor = actionContextAccessor ?? ActionContextAccessor.Null;
-#pragma warning restore ASPDEPR004 // Type or member is obsolete
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
     }
 
     // For testing
