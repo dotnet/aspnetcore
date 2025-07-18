@@ -42,19 +42,21 @@ public class HttpsConfigurationTests
                 }
             });
 
-        var host = hostBuilder.Build();
-        await host.StartAsync();
-
-        Assert.Single(host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses, address);
+        using var host = hostBuilder.Build();
 
         if (address.StartsWith("https", StringComparison.OrdinalIgnoreCase) && !useKestrelHttpsConfiguration)
         {
-            Assert.Throws<InvalidOperationException>(host.Run);
+            Assert.Throws<InvalidOperationException>(host.Start);
+            Assert.Empty(host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses);
         }
         else
         {
-            // Binding succeeds - server is already started, so we just stop it
-            await host.StopAsync();
+            //// Binding succeeds - server is already started, so we just stop it
+            await host.StartAsync();
+
+            var addr = Assert.Single(host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses);
+            // addr will contain the realized port, so we'll remove the port for comparison
+            Assert.Equal(address[..^2].ToString(), addr.Substring(0, addr.LastIndexOf(':')));
         }
     }
 

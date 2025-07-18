@@ -25,18 +25,16 @@ public class HostingTests
             .Returns(Mock.Of<IKeyRing>())
             .Callback(() => tcs.TrySetResult());
 
-        var builder = new HostBuilder()
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                    .UseStartup<TestStartup>();
-            })
+#pragma warning disable CS0618 // Type or member is obsolete
+        var builder = new WebHostBuilder()
+            .UseStartup<TestStartup>()
             .ConfigureServices(s =>
                 s.AddDataProtection()
                 .Services
                 .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
                 .AddSingleton<IServer>(
                     new FakeServer(onStart: () => tcs.TrySetException(new InvalidOperationException("Server was started before key ring was initialized")))));
+#pragma warning restore CS0618 // Type or member is obsolete
 
         using (var host = builder.Build())
         {
