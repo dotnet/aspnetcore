@@ -9,6 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Validation;
@@ -83,6 +84,9 @@ public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolve
                 .GetCustomAttributes<ValidationAttribute>()
                 .ToArray();
 
+            // Skip early if the type has no validation attributes and no validatable properties
+            var hasTypeValidationAttributes = typeValidationAttributes.Length > 0;
+
             // Get all public instance properties
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             var validatableProperties = new List<RuntimeValidatablePropertyInfo>();
@@ -90,7 +94,7 @@ public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolve
             foreach (var property in properties)
             {
                 // Skip properties without setters (read-only properties) for normal classes
-                if (!property.CanWrite && !IsRecordType(type))
+                if (!property.CanWrite && !IsRecordType(type) && !IsRecordStruct(type))
                 {
                     continue;
                 }
@@ -107,12 +111,15 @@ public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolve
                     .ToArray();
 
                 // For record types, also check constructor parameters for validation attributes
-                if (propertyValidationAttributes.Length == 0 && IsRecordType(type))
+                if (IsRecordType(type) || IsRecordStruct(type))
                 {
                     var constructorValidationAttributes = GetValidationAttributesFromConstructorParameter(type, property.Name);
                     if (constructorValidationAttributes.Length > 0)
                     {
-                        propertyValidationAttributes = constructorValidationAttributes;
+                        // Merge property and constructor validation attributes
+                        var allAttributes = new List<ValidationAttribute>(propertyValidationAttributes);
+                        allAttributes.AddRange(constructorValidationAttributes);
+                        propertyValidationAttributes = [.. allAttributes];
                     }
                 }
 
@@ -141,12 +148,16 @@ public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolve
             var derivedTypes = GetDerivedTypes(type);
             foreach (var derivedType in derivedTypes)
             {
-                // Recursively ensure derived types are also cached
-                CreateValidatableTypeInfo(derivedType, visitedTypes);
+                // Ensure derived types are also available for validation
+                // We don't need to use the return value as it's automatically cached
+                if (!_cache.ContainsKey(derivedType))
+                {
+                    CreateValidatableTypeInfo(derivedType, visitedTypes);
+                }
             }
 
             // Only create type info if there are validation attributes on the type or validatable properties
-            if (typeValidationAttributes.Length > 0 || validatableProperties.Count > 0)
+            if (hasTypeValidationAttributes || validatableProperties.Count > 0)
             {
                 return new RuntimeValidatableTypeInfo(type, validatableProperties);
             }
@@ -186,7 +197,7 @@ public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolve
         }
 
         // For record types, also check constructor parameter for Display attribute
-        if (IsRecordType(property.DeclaringType!))
+        if (IsRecordType(property.DeclaringType!) || IsRecordStruct(property.DeclaringType!))
         {
             var constructorDisplayName = GetDisplayNameFromConstructorParameter(property.DeclaringType!, property.Name);
             if (!string.IsNullOrEmpty(constructorDisplayName))
@@ -230,6 +241,37 @@ public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolve
         return type.IsClass &&
                type.GetMethods(BindingFlags.Public | BindingFlags.Instance)
                    .Any(m => m.Name == "<Clone>$" || m.Name == "get_EqualityContract");
+    }
+
+    private static bool IsRecordStruct(Type type)
+    {
+        // Check if the type is a record struct by looking for record-specific characteristics
+        // Record structs are value types with specific compiler-generated methods
+        if (!type.IsValueType || type.IsEnum || type.IsPrimitive)
+        {
+            return false;
+        }
+
+        // Record structs have an EqualityContract property like classes but as static readonly
+        var equalityContract = type.GetProperty("EqualityContract", BindingFlags.Public | BindingFlags.Static);
+        if (equalityContract?.GetMethod?.IsStatic == true)
+        {
+            return true;
+        }
+
+        // Alternative check: Record structs have a primary constructor pattern
+        // They typically have a ToString() override and specific constructor patterns
+        var constructors = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance);
+        var hasParameterizedConstructor = constructors.Any(c => c.GetParameters().Length > 0);
+        
+        if (hasParameterizedConstructor)
+        {
+            // Check for ToString override that's compiler generated for records
+            var toStringMethod = type.GetMethod("ToString", BindingFlags.Public | BindingFlags.Instance, null, Type.EmptyTypes, null);
+            return toStringMethod?.DeclaringType == type;
+        }
+
+        return false;
     }
 
     private static ValidationAttribute[] GetValidationAttributesFromConstructorParameter(Type type, string propertyName)
@@ -359,15 +401,13 @@ public sealed class RuntimeValidatableTypeInfoResolver : IValidatableInfoResolve
     }
 
     private static bool IsClassForType(Type type)
-        => !IsParsableType(type) && type.IsClass;
+        => !IsParsableType(type) && (type.IsClass || IsRecordStruct(type));
 
     private static bool HasFromServiceAttributes(IEnumerable<Attribute> attributes)
     {
-        // Note: Use name-based comparison for FromServices attribute defined in
-        // MVC assemblies.
         return attributes.Any(attr =>
-            attr.GetType().Name == "FromServicesAttribute" ||
-            attr.GetType() == typeof(FromKeyedServicesAttribute));
+            attr is IFromServiceMetadata ||
+            attr is FromKeyedServicesAttribute);
     }
 
     internal sealed class RuntimeValidatablePropertyInfo([DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] Type declaringType,

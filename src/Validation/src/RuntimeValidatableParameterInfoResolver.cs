@@ -9,6 +9,7 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Validation;
@@ -101,11 +102,9 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
 
     private static bool HasFromServiceAttributes(IEnumerable<Attribute> attributes)
     {
-        // Note: Use name-based comparison for FromServices attribute defined in
-        // MVC assemblies.
         return attributes.Any(attr =>
-            attr.GetType().Name == "FromServicesAttribute" ||
-            attr.GetType() == typeof(FromKeyedServicesAttribute));
+            attr is IFromServiceMetadata ||
+            attr is FromKeyedServicesAttribute);
     }
 
     internal sealed class RuntimeValidatableParameterInfo(
