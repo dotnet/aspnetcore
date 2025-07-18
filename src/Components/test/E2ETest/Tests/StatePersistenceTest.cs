@@ -136,14 +136,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
 
         // Navigate to a page without components first to make sure that we exercise rendering components
         // with enhanced navigation on.
-        if (streaming == null)
-        {
-            Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
-        }
-        else
-        {
-            Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&streaming-id={streaming}&suppress-autostart");
-        }
+        NavigateToInitialPage(streaming, mode);
         if (mode == "auto")
         {
             BlockWebAssemblyResourceLoad();
@@ -159,12 +152,27 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
         {
             // For auto mode, validate that the state is persisted for both runtimes and is able
             // to be loaded on server and wasm.
-            RenderComponentsWithDeclarativePersistentStateAndValidate(mode, renderMode, streaming, interactiveRuntime: "server");
+            RenderComponentsWithDeclarativePersistentStateAndValidate(mode, renderMode, streaming, interactiveRuntime: "server", stateValue: "other");
 
             UnblockWebAssemblyResourceLoad();
             Browser.Navigate().Refresh();
+            NavigateToInitialPage(streaming, mode);
+            Browser.Click(By.Id("call-blazor-start"));
+            Browser.Click(By.Id("page-with-components-link-and-declarative-state"));
 
-            RenderComponentsWithDeclarativePersistentStateAndValidate(mode, renderMode, streaming, interactiveRuntime: "wasm");
+            RenderComponentsWithDeclarativePersistentStateAndValidate(mode, renderMode, streaming, interactiveRuntime: "wasm", stateValue: "other");
+        }
+
+        void NavigateToInitialPage(string streaming, string mode)
+        {
+            if (streaming == null)
+            {
+                Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
+            }
+            else
+            {
+                Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&streaming-id={streaming}&suppress-autostart");
+            }
         }
     }
 
