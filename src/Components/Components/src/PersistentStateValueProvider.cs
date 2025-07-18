@@ -400,7 +400,7 @@ internal sealed partial class PersistentStateValueProvider(PersistentComponentSt
         private object? _lastValue = _uninitializedValue;
         private bool _hasPendingInitialValue;
         private bool _ignoreUpdatedValues;
-        private string _storageKey;
+        private string? _storageKey;
         private readonly PersistentComponentState _state;
         private readonly ComponentState _subscriber;
         private readonly string _propertyName;
