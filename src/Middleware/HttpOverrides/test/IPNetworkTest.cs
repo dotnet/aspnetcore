@@ -4,7 +4,6 @@ using System.Net;
 
 namespace Microsoft.AspNetCore.HttpOverrides;
 
-[Obsolete("IPNetwork is obsolete")]
 public class IPNetworkTest
 {
     [Theory]
