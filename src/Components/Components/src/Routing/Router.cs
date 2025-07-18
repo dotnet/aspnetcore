@@ -409,21 +409,24 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
-    private void RenderComponentByRoute(RenderTreeBuilder builder, string route)
+    internal void RenderComponentByRoute(RenderTreeBuilder builder, string route)
     {
         var componentType = FindComponentTypeByRoute(route);
 
-        if (componentType != null)
+        if (componentType is null)
         {
-            builder.OpenComponent<RouteView>(0);
-            builder.AddAttribute(1, nameof(RouteView.RouteData),
-                new RouteData(componentType, new Dictionary<string, object>()));
-            builder.CloseComponent();
+            throw new InvalidOperationException($"No component found for route '{route}'. " +
+                $"Ensure the route matches a component with a [Route] attribute.");
         }
+
+        builder.OpenComponent<RouteView>(0);
+        builder.AddAttribute(1, nameof(RouteView.RouteData),
+            new RouteData(componentType, new Dictionary<string, object>()));
+        builder.CloseComponent();
     }
 
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
-    private Type? FindComponentTypeByRoute(string route)
+    internal Type? FindComponentTypeByRoute(string route)
     {
         RefreshRouteTable();
         var normalizedRoute = route.StartsWith('/') ? route : $"/{route}";
