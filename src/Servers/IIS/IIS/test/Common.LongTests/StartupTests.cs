@@ -702,6 +702,7 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/62802")]
     public async Task SetCurrentDirectoryHandlerSettingWorks()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
