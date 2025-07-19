@@ -55,16 +55,17 @@ public class PersistentStateValueProviderKeyResolverTests
             NullLogger<ComponentStatePersistenceManager>.Instance,
             new ServiceCollection().BuildServiceProvider());
 
+        persistenceManager.State.InitializeExistingState(state, RestoreContext.InitialValue);
+
         var renderer = new TestRenderer();
         var component1 = new TestComponent { State = "state1" };
         var component2 = new TestComponent { State = "state2" };
 
         var parentComponent = new ParentComponent();
 
-        var componentStates1 = CreateComponentState(renderer, [(component1, "key1")], parentComponent);
-        var componentStates2 = CreateComponentState(renderer, [(component2, "key2")], parentComponent);
-        var componentState1 = componentStates1.First();
-        var componentState2 = componentStates2.First();
+        var componentStates = CreateComponentState(renderer, [(component1, "key1"), (component2, "key2")], parentComponent);
+        var componentState1 = componentStates[0];
+        var componentState2 = componentStates[1];
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
 
@@ -109,16 +110,17 @@ public class PersistentStateValueProviderKeyResolverTests
             NullLogger<ComponentStatePersistenceManager>.Instance,
             new ServiceCollection().BuildServiceProvider());
 
+        persistenceManager.State.InitializeExistingState(state, RestoreContext.InitialValue);
+
         var renderer = new TestRenderer();
         var component1 = new TestComponent { State = "state1" };
         var component2 = new TestComponent { State = "state2" };
 
         var parentComponent = new ParentComponent();
 
-        var componentStates1 = CreateComponentState(renderer, [(component1, componentKey1)], parentComponent);
-        var componentStates2 = CreateComponentState(renderer, [(component2, componentKey2)], parentComponent);
-        var componentState1 = componentStates1.First();
-        var componentState2 = componentStates2.First();
+        var componentStates = CreateComponentState(renderer, [(component1, componentKey1), (component2, componentKey2)], parentComponent);
+        var componentState1 = componentStates[0];
+        var componentState2 = componentStates[1];
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
 
@@ -161,14 +163,15 @@ public class PersistentStateValueProviderKeyResolverTests
             logger,
             new ServiceCollection().BuildServiceProvider());
 
+        persistenceManager.State.InitializeExistingState(state, RestoreContext.InitialValue);
+
         var renderer = new TestRenderer();
         var component1 = new TestComponent { State = "state1" };
         var component2 = new TestComponent { State = "state2" };
 
-        var componentStates1 = CreateComponentState(renderer, [(component1, null)], null);
-        var componentStates2 = CreateComponentState(renderer, [(component2, null)], null);
-        var componentState1 = componentStates1.First();
-        var componentState2 = componentStates2.First();
+        var componentStates = CreateComponentState(renderer, [(component1, null), (component2, null)], null);
+        var componentState1 = componentStates[0];
+        var componentState2 = componentStates[1];
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
 
@@ -210,16 +213,17 @@ public class PersistentStateValueProviderKeyResolverTests
             logger,
             new ServiceCollection().BuildServiceProvider());
 
+        persistenceManager.State.InitializeExistingState(state, RestoreContext.InitialValue);
+
         var renderer = new TestRenderer();
         var component1 = new TestComponent { State = "state1" };
         var component2 = new TestComponent { State = "state2" };
 
         var parentComponent = new TestComponent();
 
-        var componentStates1 = CreateComponentState(renderer, [(component1, null)], parentComponent);
-        var componentStates2 = CreateComponentState(renderer, [(component2, null)], parentComponent);
-        var componentState1 = componentStates1.First();
-        var componentState2 = componentStates2.First();
+        var componentStates = CreateComponentState(renderer, [(component1, null), (component2, null)], parentComponent);
+        var componentState1 = componentStates[0];
+        var componentState2 = componentStates[1];
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
 
@@ -247,16 +251,17 @@ public class PersistentStateValueProviderKeyResolverTests
             logger,
             new ServiceCollection().BuildServiceProvider());
 
+        persistenceManager.State.InitializeExistingState(state, RestoreContext.InitialValue);
+
         var renderer = new TestRenderer();
         var component1 = new TestComponent { State = "state1" };
         var component2 = new TestComponent { State = "state2" };
 
         var parentComponent = new ParentComponent();
 
-        var componentStates1 = CreateComponentState(renderer, [(component1, "key1")], parentComponent);
-        var componentStates2 = CreateComponentState(renderer, [(component2, "key1")], parentComponent);
-        var componentState1 = componentStates1.First();
-        var componentState2 = componentStates2.First();
+        var componentStates = CreateComponentState(renderer, [(component1, "key1"), (component2, "key1")], parentComponent);
+        var componentState1 = componentStates[0];
+        var componentState2 = componentStates[1];
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
 
@@ -285,16 +290,17 @@ public class PersistentStateValueProviderKeyResolverTests
             logger,
             new ServiceCollection().BuildServiceProvider());
 
+        persistenceManager.State.InitializeExistingState(state, RestoreContext.InitialValue);
+
         var renderer = new TestRenderer();
         var component1 = new TestComponent { State = "state1" };
         var component2 = new TestComponent { State = "state2" };
 
         var parentComponent = new ParentComponent();
 
-        var componentStates1 = CreateComponentState(renderer, [(component1, componentKeyType1)], parentComponent);
-        var componentStates2 = CreateComponentState(renderer, [(component2, componentKeyType2)], parentComponent);
-        var componentState1 = componentStates1.First();
-        var componentState2 = componentStates2.First();
+        var componentStates = CreateComponentState(renderer, [(component1, componentKeyType1), (component2, componentKeyType2)], parentComponent);
+        var componentState1 = componentStates[0];
+        var componentState2 = componentStates[1];
 
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
 
