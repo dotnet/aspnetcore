@@ -783,8 +783,31 @@ public class TestServerTests
         RequestDelegate appDelegate = ctx =>
             ctx.Response.WriteAsync(ctx.Request.Headers.Host);
 
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+
+            .ConfigureWebHost(webBuilder =>
+
+
+            {
+
+
+                webBuilder
+
+
+                    .UseTestServer()
+
+
+                    .Configure(app => app.Run(appDelegate));
+
+
+            })
+
+
+            .Build();
+
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var request = new HttpRequestMessage(HttpMethod.Get, uri);

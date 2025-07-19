@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// A builder for <see cref="IWebHost"/>
 /// </summary>
+[Obsolete("TODO: Add Obsolete message")]
 public class WebHostBuilder : IWebHostBuilder
 {
     private readonly HostingEnvironment _hostingEnvironment;
