@@ -17,12 +17,7 @@
     [PersistentState]
     public int CustomValue { get; set; }
 
-    [PersistentState]
-    [RestoreStateOnPrerendering]
-    public string PrerenderingEnabledValue { get; set; }
-
-    [PersistentState]
-    [RestoreStateOnPrerendering(false)]
+    [PersistentState(RestoreBehavior = RestoreBehavior.SkipInitialValue)]
     public string PrerenderingDisabledValue { get; set; }
 
     private string _renderMode = "SSR";
@@ -36,8 +31,6 @@
         }
         _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
 
-        // Set initial values for prerendering test properties
-        PrerenderingEnabledValue ??= !RendererInfo.IsInteractive ? "prerender-enabled-initial" : "prerender-enabled-restored";
         PrerenderingDisabledValue ??= !RendererInfo.IsInteractive ? "prerender-disabled-initial" : "prerender-disabled-not-restored";
     }
 }

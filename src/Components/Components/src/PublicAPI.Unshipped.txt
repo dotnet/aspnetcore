@@ -1,5 +1,6 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.RestoreContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(System.Action! callback, Microsoft.AspNetCore.Components.RestoreOptions options) -> Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistentStateAttribute.AllowUpdates.get -> bool
 Microsoft.AspNetCore.Components.PersistentStateAttribute.AllowUpdates.set -> void
@@ -18,6 +19,9 @@ Microsoft.AspNetCore.Components.RestoreOptions.AllowUpdates.init -> void
 Microsoft.AspNetCore.Components.RestoreOptions.RestoreBehavior.get -> Microsoft.AspNetCore.Components.RestoreBehavior
 Microsoft.AspNetCore.Components.RestoreOptions.RestoreBehavior.init -> void
 Microsoft.AspNetCore.Components.RestoreOptions.RestoreOptions() -> void
+Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
+Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.Dispose() -> void
+Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.RestoringComponentStateSubscription() -> void
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type?
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions
@@ -38,39 +42,12 @@ Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>
 Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.PersistentComponentStateSerializer() -> void
 abstract Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.Persist(T value, System.Buffers.IBufferWriter<byte>! writer) -> void
 abstract Microsoft.AspNetCore.Components.PersistentComponentStateSerializer<T>.Restore(System.Buffers.ReadOnlySequence<byte> data) -> T
-Microsoft.AspNetCore.Components.UpdateStateOnEnhancedNavigation
-Microsoft.AspNetCore.Components.UpdateStateOnEnhancedNavigation.UpdateStateOnEnhancedNavigation(bool enable = false) -> void
 static Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.IComponentRenderMode! componentRenderMode) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.RestoreContext.InitialValue.get -> Microsoft.AspNetCore.Components.RestoreContext!
 static Microsoft.AspNetCore.Components.RestoreContext.LastSnapshot.get -> Microsoft.AspNetCore.Components.RestoreContext!
 static Microsoft.AspNetCore.Components.RestoreContext.ValueUpdate.get -> Microsoft.AspNetCore.Components.RestoreContext!
-static Microsoft.AspNetCore.Components.WebPersistenceFilter.EnhancedNavigation.get -> Microsoft.AspNetCore.Components.WebPersistenceFilter!
-static Microsoft.AspNetCore.Components.WebPersistenceScenario.EnhancedNavigation.get -> Microsoft.AspNetCore.Components.WebPersistenceScenario!
 virtual Microsoft.AspNetCore.Components.OwningComponentBase.DisposeAsyncCore() -> System.Threading.Tasks.ValueTask
 static Microsoft.AspNetCore.Components.Infrastructure.PersistentStateProviderServiceCollectionExtensions.AddSupplyValueFromPersistentComponentStateProvider(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.GetComponentKey() -> object?
-Microsoft.AspNetCore.Components.IPersistentComponentStateScenario
-Microsoft.AspNetCore.Components.IPersistentComponentStateScenario.IsRecurring.get -> bool
-Microsoft.AspNetCore.Components.IPersistentStateFilter
-Microsoft.AspNetCore.Components.IPersistentStateFilter.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
-Microsoft.AspNetCore.Components.IPersistentStateFilter.SupportsScenario(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
-Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(Microsoft.AspNetCore.Components.IPersistentStateFilter? filter, System.Action! callback) -> Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
-Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.IPersistentComponentStateScenario? scenario) -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute
-Microsoft.AspNetCore.Components.RestoreStateOnPrerenderingAttribute.RestoreStateOnPrerenderingAttribute(bool enable = true) -> void
-Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute
-Microsoft.AspNetCore.Components.RestoreStateOnReconnectionAttribute.RestoreStateOnReconnectionAttribute(bool enabled = true) -> void
-Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
-Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.Dispose() -> void
-Microsoft.AspNetCore.Components.RestoringComponentStateSubscription.RestoringComponentStateSubscription() -> void
-Microsoft.AspNetCore.Components.WebPersistenceFilter
-static Microsoft.AspNetCore.Components.WebPersistenceFilter.Prerendering.get -> Microsoft.AspNetCore.Components.WebPersistenceFilter!
-static Microsoft.AspNetCore.Components.WebPersistenceFilter.Reconnection.get -> Microsoft.AspNetCore.Components.WebPersistenceFilter!
-Microsoft.AspNetCore.Components.WebPersistenceFilter.ShouldRestore(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
-Microsoft.AspNetCore.Components.WebPersistenceFilter.SupportsScenario(Microsoft.AspNetCore.Components.IPersistentComponentStateScenario! scenario) -> bool
-Microsoft.AspNetCore.Components.WebPersistenceScenario
-Microsoft.AspNetCore.Components.WebPersistenceScenario.IsRecurring.get -> bool
-static Microsoft.AspNetCore.Components.WebPersistenceScenario.Prerendering.get -> Microsoft.AspNetCore.Components.WebPersistenceScenario!
-static Microsoft.AspNetCore.Components.WebPersistenceScenario.Reconnection.get -> Microsoft.AspNetCore.Components.WebPersistenceScenario!

@@ -796,9 +796,9 @@ internal partial class CircuitHost : IAsyncDisposable
                     // Use the appropriate scenario based on whether this is a restore operation
                     var scenario = (isRestore, _isFirstUpdate) switch
                     {
-                        (_, false) => WebPersistenceScenario.EnhancedNavigation,
-                        (true, _) => WebPersistenceScenario.Reconnection,
-                        (false, _) => WebPersistenceScenario.Prerendering
+                        (_, false) => RestoreContext.ValueUpdate,
+                        (true, _) => RestoreContext.LastSnapshot,
+                        (false, _) => RestoreContext.InitialValue
                     };
 
                     await appLifetime.RestoreStateAsync(store, scenario);

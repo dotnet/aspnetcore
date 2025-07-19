@@ -3,11 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components;
 
-internal readonly struct RestoreComponentStateRegistration(
-    IPersistentStateFilter? filter,
-    Action callback)
+internal readonly struct RestoreComponentStateRegistration(Action callback)
 {
-    public IPersistentStateFilter? Filter { get; } = filter;
-
     public Action Callback { get; } = callback;
 }

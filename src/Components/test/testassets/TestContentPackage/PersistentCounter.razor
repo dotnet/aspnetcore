@@ -19,8 +19,7 @@
 
     [PersistentState] public CounterState State { get; set; }
 
-    [PersistentState]
-    [RestoreStateOnReconnection(false)]
+    [PersistentState(RestoreBehavior = RestoreBehavior.SkipLastSnapshot)]
     public int NonPersistedCounter { get; set; }
 
     public class CounterState

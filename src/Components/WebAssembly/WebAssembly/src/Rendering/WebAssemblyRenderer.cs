@@ -57,7 +57,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
         if (store != null)
         {
             // Restore the state from the store if it exists
-            _ = _componentStatePersistenceManager.RestoreStateAsync(store, WebPersistenceScenario.Prerendering);
+            _ = _componentStatePersistenceManager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
         }
 
         for (var i = 0; i < batch.Operations.Length; i++)

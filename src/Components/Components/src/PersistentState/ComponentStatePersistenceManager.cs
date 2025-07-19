@@ -58,26 +58,26 @@ public class ComponentStatePersistenceManager
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public async Task RestoreStateAsync(IPersistentComponentStateStore store)
     {
-        await RestoreStateAsync(store, scenario: null);
+        await RestoreStateAsync(store, RestoreContext.InitialValue);
     }
 
     /// <summary>
-    /// Restores the component application state from the given <see cref="IPersistentComponentStateStore"/> using the specified scenario.
+    /// Restores the application state.
     /// </summary>
-    /// <param name="store">The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
-    /// <param name="scenario">The restoration scenario that determines which filters should be applied.</param>
+    /// <param name="store"> The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
+    /// <param name="context">The <see cref="RestoreContext"/> that provides additional context for the restoration.</param>
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
-    public async Task RestoreStateAsync(IPersistentComponentStateStore store, IPersistentComponentStateScenario? scenario)
+    public async Task RestoreStateAsync(IPersistentComponentStateStore store, RestoreContext context)
     {
         var data = await store.GetPersistedStateAsync();
 
         if (_stateIsInitialized)
         {
-            State.UpdateExistingState(data, scenario);
+            State.UpdateExistingState(data, context);
         }
         else
         {
-            State.InitializeExistingState(data, scenario);
+            State.InitializeExistingState(data, context);
             _servicesRegistry?.Restore(State);
             _stateIsInitialized = true;
         }

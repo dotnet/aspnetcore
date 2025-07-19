@@ -135,7 +135,7 @@ public class PersistentStateValueProviderTests
         newState.InitializeExistingState(store.State, null);
 
         // The key used for storing the property value is computed by the PersistentStateValueProvider
-        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key, out var retrievedValue));
         Assert.Equal("testValue", retrievedValue);
     }
@@ -175,7 +175,7 @@ public class PersistentStateValueProviderTests
         newState.InitializeExistingState(store.State, null);
 
         // The key used for storing the property value is computed by the PersistentStateValueProvider
-        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key, out var retrievedValue));
         Assert.Equal("testValue", retrievedValue);
     }
@@ -218,11 +218,11 @@ public class PersistentStateValueProviderTests
         newState.InitializeExistingState(store.State, null);
 
         // The key used for storing the property value is computed by the PersistentStateValueProvider
-        var key1 = PersistentStateValueProvider.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
+        var key1 = PersistentStateKeyResolver.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key1, out var retrievedValue));
         Assert.Equal("testValue1", retrievedValue);
 
-        var key2 = PersistentStateValueProvider.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
+        var key2 = PersistentStateKeyResolver.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key2, out retrievedValue));
         Assert.Equal("testValue2", retrievedValue);
     }
@@ -293,11 +293,11 @@ public class PersistentStateValueProviderTests
         newState.InitializeExistingState(store.State, null);
 
         // The key used for storing the property value is computed by the PersistentStateValueProvider
-        var key1 = PersistentStateValueProvider.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
+        var key1 = PersistentStateKeyResolver.ComputeKey(componentState1, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key1, out var retrievedValue));
         Assert.Equal("testValue1", retrievedValue);
 
-        var key2 = PersistentStateValueProvider.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
+        var key2 = PersistentStateKeyResolver.ComputeKey(componentState2, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<string>(key2, out retrievedValue));
         Assert.Equal("testValue2", retrievedValue);
     }
@@ -488,7 +488,7 @@ public class PersistentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State, null);
 
-        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<int>(key, out var retrievedValue));
         Assert.Equal(42, retrievedValue);
     }
@@ -525,7 +525,7 @@ public class PersistentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State, null);
 
-        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<int?>(key, out var retrievedValue));
         Assert.Equal(123, retrievedValue);
     }
@@ -562,7 +562,7 @@ public class PersistentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State, null);
 
-        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<(string, int)>(key, out var retrievedValue));
         Assert.Equal(("test", 456), retrievedValue);
     }
@@ -599,7 +599,7 @@ public class PersistentStateValueProviderTests
         var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         newState.InitializeExistingState(store.State, null);
 
-        var key = PersistentStateValueProvider.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
+        var key = PersistentStateKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
         Assert.True(newState.TryTakeFromJson<(string, int)?>(key, out var retrievedValue));
         Assert.Equal(("test2", 789), retrievedValue);
     }
@@ -609,7 +609,7 @@ public class PersistentStateValueProviderTests
         var dictionary = new Dictionary<string, byte[]>();
         foreach (var item in items)
         {
-            var key = PersistentStateValueProvider.ComputeKey(item.componentState, item.propertyName);
+            var key = PersistentStateKeyResolver.ComputeKey(item.componentState, item.propertyName);
             dictionary[key] = JsonSerializer.SerializeToUtf8Bytes(item.value, JsonSerializerOptions.Web);
         }
         state.InitializeExistingState(dictionary, null);

@@ -32,8 +32,7 @@ else
 
     [Parameter] public string ServerState { get; set; }
 
-    [PersistentState]
-    [UpdateStateOnEnhancedNavigation(true)]
+    [PersistentState(AllowUpdates = true)]
     public string EnhancedNavState { get; set; }
 
     protected override async Task OnInitializedAsync()

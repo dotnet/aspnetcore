@@ -17,8 +17,7 @@ public class PersistentComponentState
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
     private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks;
-    private IPersistentComponentStateScenario? _currentScenario;
-    private RestoreContext? _currentContext = null;
+    private RestoreContext? _currentContext;
 
     internal PersistentComponentState(
         IDictionary<string, byte[]> currentState,
@@ -33,15 +32,14 @@ public class PersistentComponentState
     internal bool PersistingState { get; set; }
 
     // TODO: Replace IPersistentComponentStateScenario with RestoreContext
-    internal void InitializeExistingState(IDictionary<string, byte[]> existingState, IPersistentComponentStateScenario? scenario = null)
+    internal void InitializeExistingState(IDictionary<string, byte[]> existingState, RestoreContext context)
     {
         if (_existingState != null)
         {
             throw new InvalidOperationException("PersistentComponentState already initialized.");
         }
         _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
-        _currentScenario = scenario;
-        _currentContext = null!;
+        _currentContext = context;
     }
 
     /// <summary>
@@ -76,6 +74,12 @@ public class PersistentComponentState
         return new PersistingComponentStateSubscription(_registeredCallbacks, persistenceCallback);
     }
 
+    /// <summary>
+    /// Register a callback to restore the state when the application state is being restored.
+    /// </summary>
+    /// <param name="callback"> The callback to invoke when the application state is being restored.</param>
+    /// <param name="options">Options that control the restoration behavior.</param>
+    /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
     public RestoringComponentStateSubscription RegisterOnRestoring(Action callback, RestoreOptions options)
     {
         if (_currentContext!.ShouldRestore(options))
@@ -86,34 +90,12 @@ public class PersistentComponentState
         if (options.AllowUpdates)
         {
             // TODO: Remove the filter from registration
-            var registration = new RestoreComponentStateRegistration(null, callback);
+            var registration = new RestoreComponentStateRegistration(callback);
             _registeredRestoringCallbacks.Add(registration);
             return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);
         }
-    }
 
-    /// <summary>
-    /// Register a callback to restore the component state during specific scenarios.
-    /// The callback will only be invoked if the filter supports the current restoration scenario.
-    /// </summary>
-    /// <param name="filter">The filter that determines when this callback should be invoked.</param>
-    /// <param name="callback">The callback to invoke during state restoration.</param>
-    /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
-    // TODO: Remove this method.
-    public RestoringComponentStateSubscription RegisterOnRestoring(IPersistentStateFilter? filter, Action callback)
-    {
-        ArgumentNullException.ThrowIfNull(callback);
-
-        if (_currentScenario == null || filter == null ||
-            (filter != null && (!filter.SupportsScenario(_currentScenario) ||
-            filter.ShouldRestore(_currentScenario))))
-        {
-            callback();
-        }
-
-        var registration = new RestoreComponentStateRegistration(filter, callback);
-        _registeredRestoringCallbacks.Add(registration);
-        return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);
+        return default;
     }
 
     /// <summary>
@@ -263,13 +245,7 @@ public class PersistentComponentState
         }
     }
 
-    /// <summary>
-    /// Updates the existing state with the given <paramref name="state"/> dictionary.
-    /// </summary>
-    /// <param name="state">The new state to apply.</param>
-    /// <param name="scenario">The scenario for which the state is being updated.</param>
-    // TODO: Replace scenario with context.
-    internal void UpdateExistingState(IDictionary<string, byte[]> state, IPersistentComponentStateScenario? scenario)
+    internal void UpdateExistingState(IDictionary<string, byte[]> state, RestoreContext context)
     {
         ArgumentNullException.ThrowIfNull(state);
 
@@ -279,6 +255,6 @@ public class PersistentComponentState
         }
 
         _existingState = state;
-        _currentScenario = scenario;
+        _currentContext = context;
     }
 }

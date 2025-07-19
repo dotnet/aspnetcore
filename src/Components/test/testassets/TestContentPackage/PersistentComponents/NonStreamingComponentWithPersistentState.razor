@@ -21,9 +21,7 @@
 
     [Parameter] public string ServerState { get; set; }
 
-    [Parameter]
-    [PersistentState]
-    [UpdateStateOnEnhancedNavigation(true)]
+    [PersistentState(AllowUpdates = true)]
     public string EnhancedNavState { get; set; }
 
     protected override void OnInitialized()
