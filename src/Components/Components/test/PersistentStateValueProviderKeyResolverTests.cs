@@ -110,7 +110,7 @@ public class PersistentStateValueProviderKeyResolverTests
             NullLogger<ComponentStatePersistenceManager>.Instance,
             new ServiceCollection().BuildServiceProvider());
 
-        persistenceManager.State.InitializeExistingState(state, RestoreContext.InitialValue);
+        await persistenceManager.RestoreStateAsync(new TestStore([]), RestoreContext.InitialValue);
 
         var renderer = new TestRenderer();
         var component1 = new TestComponent { State = "state1" };

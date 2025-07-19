@@ -120,6 +120,8 @@ public class ComponentStatePersistenceManagerTest
         persistenceManager.SetPlatformRenderMode(new TestRenderMode());
         var testStore = new TestStore([]);
 
+        await persistenceManager.RestoreStateAsync(new TestStore([]), RestoreContext.InitialValue);
+
         // Act
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
 

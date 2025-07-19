@@ -33,6 +33,8 @@ public class PersistentServicesRegistryTest
 
         var registry = persistenceManager.ServicesRegistry;
 
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
         var componentState = new PersistentComponentState(testStore.State, [], []);
 
@@ -73,6 +75,8 @@ public class PersistentServicesRegistryTest
             scope);
         persistenceManagerOne.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
+
+        await persistenceManagerOne.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
 
         await persistenceManagerOne.PersistStateAsync(testStore, new TestRenderer());
 
@@ -140,6 +144,7 @@ public class PersistentServicesRegistryTest
             scope);
         persistenceManager.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
 
         // Act
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
@@ -210,6 +215,8 @@ public class PersistentServicesRegistryTest
         persistenceManagerOne.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
 
+        await persistenceManagerOne.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+
         await persistenceManagerOne.PersistStateAsync(testStore, new TestRenderer());
 
         var scopeTwo = serviceProviderTwo.CreateAsyncScope().ServiceProvider;
@@ -217,7 +224,7 @@ public class PersistentServicesRegistryTest
             NullLogger<ComponentStatePersistenceManager>.Instance,
             scopeTwo);
 
-        await persistenceManagerTwo.RestoreStateAsync(new TestStore(testStore.State));
+        await persistenceManagerTwo.RestoreStateAsync(new TestStore(testStore.State), RestoreContext.InitialValue);
 
         // Assert
         var derivedTwo = scopeTwo.GetRequiredService<BaseService>() as DerivedTwo;
@@ -324,6 +331,8 @@ public class PersistentServicesRegistryTest
         persistenceManager.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
 
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
+
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
 
         var secondScope = serviceProvider.CreateAsyncScope().ServiceProvider;
@@ -368,6 +377,7 @@ public class PersistentServicesRegistryTest
             scope);
         persistenceManager.SetPlatformRenderMode(componentRenderMode);
         var testStore = new TestStore(new Dictionary<string, byte[]>());
+        await persistenceManager.RestoreStateAsync(new TestStore(new Dictionary<string, byte[]>()), RestoreContext.InitialValue);
 
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
 

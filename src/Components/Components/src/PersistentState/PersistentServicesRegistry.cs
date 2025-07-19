@@ -45,6 +45,7 @@ internal sealed class PersistentServicesRegistry
             return;
         }
 
+        UpdateRegistrations(state);
         var subscriptions = new List<(PersistingComponentStateSubscription, RestoringComponentStateSubscription)>(
             _registrations.Length + 1);
         for (var i = 0; i < _registrations.Length; i++)
@@ -83,7 +84,7 @@ internal sealed class PersistentServicesRegistry
                 }, RenderMode),
                 state.RegisterOnRestoring(() =>
                 {
-                    Restore(state);
+                    RestoreRegistrationsIfAvailable(state);
                 }, new RestoreOptions { RestoreBehavior = RestoreBehavior.SkipLastSnapshot })));
         }
 
@@ -109,14 +110,12 @@ internal sealed class PersistentServicesRegistry
         "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code",
         Justification = "Types registered for persistence are preserved in the API call to register them and typically live in assemblies that aren't trimmed.")]
     [DynamicDependency(LinkerFlags.JsonSerialized, typeof(PersistentServiceRegistration))]
-    internal void Restore(PersistentComponentState state)
+    private void UpdateRegistrations(PersistentComponentState state)
     {
         if (state.TryTakeFromJson<PersistentServiceRegistration[]>(_registryKey, out var registry) && registry != null)
         {
             _registrations = ResolveRegistrations(_registrations.Concat(registry));
         }
-
-        RestoreRegistrationsIfAvailable(state);
     }
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "Types registered for persistence are preserved in the API call to register them and typically live in assemblies that aren't trimmed.")]
