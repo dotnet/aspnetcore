@@ -362,7 +362,7 @@ public class ComponentState : IAsyncDisposable
         {
             ref var currentFrame = ref frames.Array[i];
 
-            //Debug.Assert(currentFrame.FrameType == RenderTreeFrameType.Component && currentFrame.Component == null, "GetComponentKey is being invoked too soon, ComponentState is not fully constructed.");
+            Debug.Assert(currentFrame.FrameType == RenderTreeFrameType.Component && currentFrame.Component == null, "GetComponentKey is being invoked too soon, ComponentState is not fully constructed.");
 
             if (currentFrame.FrameType != RenderTreeFrameType.Component ||
                 !ReferenceEquals(Component, currentFrame.Component))

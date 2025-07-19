@@ -18,7 +18,7 @@ public class ComponentApplicationStateTest
         };
 
         // Act
-        applicationState.InitializeExistingState(existingState, null);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Assert
         Assert.True(applicationState.TryTakeFromJson<byte[]>("MyState", out var existing));
@@ -35,7 +35,7 @@ public class ComponentApplicationStateTest
             ["MyState"] = new byte[] { 1, 2, 3, 4 }
         };
 
-        applicationState.InitializeExistingState(existingState, null);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => applicationState.InitializeExistingState(existingState, null));
@@ -66,7 +66,7 @@ public class ComponentApplicationStateTest
         };
 
         // Act
-        applicationState.InitializeExistingState(existingState, null);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Assert
         Assert.True(applicationState.TryTakeFromJson<byte[]>("MyState", out var existing));
@@ -156,7 +156,7 @@ public class ComponentApplicationStateTest
         var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
         var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
 
-        applicationState.InitializeExistingState(existingState, null);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Act
         Assert.True(applicationState.TryTakeFromJson<byte[]>("MyState", out var stored));
@@ -174,7 +174,7 @@ public class ComponentApplicationStateTest
         var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
         var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
 
-        applicationState.InitializeExistingState(existingState, null);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Act
         Assert.True(applicationState.TryTakeFromJson<byte[]>("MyState", out var stored));
