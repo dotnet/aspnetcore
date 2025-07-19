@@ -31,7 +31,6 @@ public class PersistentComponentState
 
     internal bool PersistingState { get; set; }
 
-    // TODO: Replace IPersistentComponentStateScenario with RestoreContext
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState, RestoreContext context)
     {
         if (_existingState != null)
@@ -89,7 +88,6 @@ public class PersistentComponentState
 
         if (options.AllowUpdates)
         {
-            // TODO: Remove the filter from registration
             var registration = new RestoreComponentStateRegistration(callback);
             _registeredRestoringCallbacks.Add(registration);
             return new RestoringComponentStateSubscription(_registeredRestoringCallbacks, registration);

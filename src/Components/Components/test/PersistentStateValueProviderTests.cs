@@ -52,6 +52,9 @@ public class PersistentStateValueProviderTests
             new Dictionary<string, byte[]>(),
             [],
             []);
+
+        InitializeState(state, []);
+
         var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
         var renderer = new TestRenderer();
         var component = new TestComponent();
@@ -75,6 +78,8 @@ public class PersistentStateValueProviderTests
             new Dictionary<string, byte[]>(),
             [],
             []);
+
+        InitializeState(state, []);
 
         var provider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
 
@@ -102,7 +107,7 @@ public class PersistentStateValueProviderTests
             var key = PersistentStateValueProviderKeyResolver.ComputeKey(item.componentState, item.propertyName);
             dictionary[key] = JsonSerializer.SerializeToUtf8Bytes(item.value, JsonSerializerOptions.Web);
         }
-        state.InitializeExistingState(dictionary, null);
+        state.InitializeExistingState(dictionary, RestoreContext.InitialValue);
     }
 
     private static CascadingParameterInfo CreateCascadingParameterInfo(string propertyName, Type propertyType)
