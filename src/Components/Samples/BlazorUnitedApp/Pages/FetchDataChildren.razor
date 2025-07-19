@@ -54,8 +54,7 @@ else
 </ul>
 
 @code {
-    [PersistentState]
-    [UpdateStateOnEnhancedNavigation(true)]
+    [PersistentState(AllowUpdates = true)]
     public WeatherForecast[]? Forecasts { get; set; }
 
     [Parameter] public bool YayOrNay { get; set; } = false;

@@ -55,8 +55,7 @@ else
 </ul>
 
 @code {
-    [PersistentState]
-    [UpdateStateOnEnhancedNavigation(true)]
+    [PersistentState(AllowUpdates = true)]
     public ClientWeatherForecast[]? Forecasts { get; set; }
 
     public string Page { get; set; } = "";
