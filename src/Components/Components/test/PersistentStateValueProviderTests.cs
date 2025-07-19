@@ -1,13 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Buffers;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Components.Infrastructure;
-using Microsoft.AspNetCore.Components.PersistentState;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
@@ -604,6 +601,57 @@ public class PersistentStateValueProviderTests
         Assert.Equal(("test2", 789), retrievedValue);
     }
 
+    [Fact]
+    public void PersistAsync_CanUseCustomSerializer()
+    {
+        // Arrange
+        var currentState = new Dictionary<string, byte[]>();
+        var state = new PersistentComponentState(currentState, [], []);
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var stateValueProvider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, serviceProvider);
+        var customSerializer = new TestStringSerializer();
+        var testValue = "Hello, World!";
+
+        state.PersistingState = true;
+
+        // Act
+        stateValueProvider.PersistAsync("test-key", testValue, customSerializer);
+
+        // Assert
+        state.PersistingState = false;
+
+        // Simulate the state transfer that happens between persist and restore phases
+        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        newState.InitializeExistingState(currentState, RestoreContext.InitialValue);
+        var newStateValueProvider = new PersistentStateValueProvider(newState, NullLogger<PersistentStateValueProvider>.Instance, serviceProvider);
+
+        Assert.True(newStateValueProvider.TryTake("test-key", customSerializer, out var retrievedValue));
+        Assert.Equal(testValue, retrievedValue);
+    }
+
+    [Fact]
+    public void TryTake_CanUseCustomSerializer()
+    {
+        // Arrange
+        var customData = "Custom Data";
+        var customBytes = Encoding.UTF8.GetBytes(customData);
+        var existingState = new Dictionary<string, byte[]> { { "test-key", customBytes } };
+
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(existingState, RestoreContext.InitialValue);
+
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var stateValueProvider = new PersistentStateValueProvider(state, NullLogger<PersistentStateValueProvider>.Instance, serviceProvider);
+        var customSerializer = new TestStringSerializer();
+
+        // Act
+        var success = stateValueProvider.TryTake("test-key", customSerializer, out var retrievedValue);
+
+        // Assert
+        Assert.True(success);
+        Assert.Equal(customData, retrievedValue);
+    }
+
     private static void InitializeState(PersistentComponentState state, List<(ComponentState componentState, string propertyName, string value)> items)
     {
         var dictionary = new Dictionary<string, byte[]>();
@@ -722,5 +770,20 @@ public class PersistentStateValueProviderTests
     {
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
         public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    private class TestStringSerializer : PersistentComponentStateSerializer<string>
+    {
+        public override void Persist(string value, IBufferWriter<byte> writer)
+        {
+            var bytes = Encoding.UTF8.GetBytes(value);
+            writer.Write(bytes);
+        }
+
+        public override string Restore(ReadOnlySequence<byte> data)
+        {
+            var bytes = data.ToArray();
+            return Encoding.UTF8.GetString(bytes);
+        }
     }
 }
