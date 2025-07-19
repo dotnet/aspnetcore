@@ -213,9 +213,11 @@ public class ForwardedHeadersMiddleware
             // Host and Scheme initial values are never inspected, no need to set them here.
         };
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        var checkKnownIps = _options.KnownIPNetworks.Count > 0 || _options.KnownNetworks.Count > 0 || _options.KnownProxies.Count > 0;
-#pragma warning restore CS0618 // Type or member is obsolete
+        var checkKnownIps = _options.KnownIPNetworks.Count > 0
+#pragma warning disable ASPDEPR005 // KnownNetworks is obsolete
+            || _options.KnownNetworks.Count > 0
+#pragma warning restore ASPDEPR005 // KnownNetworks is obsolete
+            || _options.KnownProxies.Count > 0;
         bool applyChanges = false;
         int entriesConsumed = 0;
 
@@ -408,7 +410,7 @@ public class ForwardedHeadersMiddleware
                 return true;
             }
         }
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR005 // KnownNetworks is obsolete
         foreach (var network in _options.KnownNetworks)
         {
             if (network.Contains(address))
@@ -416,7 +418,7 @@ public class ForwardedHeadersMiddleware
                 return true;
             }
         }
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR005 // KnownNetworks is obsolete
         return false;
     }
 
