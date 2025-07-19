@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.TestHost;
@@ -17,8 +18,15 @@ public class HttpContextBuilderTests
     [Fact]
     public async Task ExpectedValuesAreAvailable()
     {
-        var builder = new WebHostBuilder().Configure(app => { });
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
+            {
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app => { });
+            })
+            .Build();
+        var server = host.GetTestServer();
         server.BaseAddress = new Uri("https://example.com/A/Path/");
         var context = await server.SendAsync(c =>
         {
@@ -48,8 +56,15 @@ public class HttpContextBuilderTests
     public async Task UserAgentHeaderWorks()
     {
         var userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:71.0) Gecko/20100101 Firefox/71.0";
-        var builder = new WebHostBuilder().Configure(app => { });
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
+            {
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app => { });
+            })
+            .Build();
+        var server = host.GetTestServer();
         server.BaseAddress = new Uri("https://example.com/");
         var context = await server.SendAsync(c =>
         {
@@ -63,8 +78,23 @@ public class HttpContextBuilderTests
     [Fact]
     public async Task SingleSlashNotMovedToPathBase()
     {
-        var builder = new WebHostBuilder().Configure(app => { });
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => { });
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var context = await server.SendAsync(c =>
         {
             c.Request.Path = "/";
