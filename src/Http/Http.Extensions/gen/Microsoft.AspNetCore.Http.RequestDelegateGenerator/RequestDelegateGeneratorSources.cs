@@ -479,19 +479,39 @@ internal static class RequestDelegateGeneratorSources
     }
 """;
 
-    public static string AntiforgeryMetadataType = """
-file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
-{
-    public static readonly IAntiforgeryMetadata ValidationRequired = new AntiforgeryMetadata(true);
-
-    public AntiforgeryMetadata(bool requiresValidation)
+    public static string AntiforgeryMetadataClass = """
+    file sealed class AntiforgeryMetadata : IAntiforgeryMetadata
     {
-        RequiresValidation = requiresValidation;
-    }
+        public static readonly IAntiforgeryMetadata ValidationRequired = new AntiforgeryMetadata(true);
 
-    public bool RequiresValidation { get; }
-}
+        public AntiforgeryMetadata(bool requiresValidation)
+        {
+            RequiresValidation = requiresValidation;
+        }
+
+        public bool RequiresValidation { get; }
+    }
 """;
+
+    public static string ApiEndpointMetadataClass = """
+    file sealed class ApiEndpointMetadata : IApiEndpointMetadata
+    {
+        public static readonly ApiEndpointMetadata Instance = new();
+
+        private ApiEndpointMetadata()
+        {
+        }
+
+        public static void AddApiEndpointMetadataIfMissing(EndpointBuilder builder)
+        {
+            if (!builder.Metadata.Any(m => m is IApiEndpointMetadata))
+            {
+                builder.Metadata.Add(Instance);
+            }
+        }
+    }
+""";
+
     public static string GetGeneratedRouteBuilderExtensionsSource(string endpoints, string helperMethods, string helperTypes, ImmutableHashSet<string> verbs) => $$"""
 {{SourceHeader}}
 

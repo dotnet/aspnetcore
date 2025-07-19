@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies;
@@ -41,7 +42,7 @@ public class CookieAuthenticationEvents
     /// </summary>
     public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToLogin { get; set; } = context =>
     {
-        if (IsAjaxRequest(context.Request))
+        if (IsAjaxRequest(context.Request) || IsApiEndpoint(context.HttpContext))
         {
             context.Response.Headers.Location = context.RedirectUri;
             context.Response.StatusCode = 401;
@@ -58,7 +59,7 @@ public class CookieAuthenticationEvents
     /// </summary>
     public Func<RedirectContext<CookieAuthenticationOptions>, Task> OnRedirectToAccessDenied { get; set; } = context =>
     {
-        if (IsAjaxRequest(context.Request))
+        if (IsAjaxRequest(context.Request) || IsApiEndpoint(context.HttpContext))
         {
             context.Response.Headers.Location = context.RedirectUri;
             context.Response.StatusCode = 403;
@@ -106,6 +107,12 @@ public class CookieAuthenticationEvents
     {
         return string.Equals(request.Query[HeaderNames.XRequestedWith], "XMLHttpRequest", StringComparison.Ordinal) ||
             string.Equals(request.Headers.XRequestedWith, "XMLHttpRequest", StringComparison.Ordinal);
+    }
+
+    private static bool IsApiEndpoint(HttpContext context)
+    {
+        var endpoint = context.GetEndpoint();
+        return endpoint?.Metadata.GetMetadata<IApiEndpointMetadata>() is not null;
     }
 
     /// <summary>

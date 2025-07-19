@@ -428,6 +428,22 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
+    file sealed class ApiEndpointMetadata : IApiEndpointMetadata
+    {
+        public static readonly ApiEndpointMetadata Instance = new();
+
+        private ApiEndpointMetadata()
+        {
+        }
+
+        public static void AddApiEndpointMetadataIfMissing(EndpointBuilder builder)
+        {
+            if (!builder.Metadata.Any(m => m is IApiEndpointMetadata))
+            {
+                builder.Metadata.Add(Instance);
+            }
+        }
+    }
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedMetadataConstants
     {

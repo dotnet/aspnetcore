@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
@@ -94,6 +95,30 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
         var responded = transaction.Response.Headers.GetValues("Location");
         Assert.Single(responded);
         Assert.StartsWith("http://example.com/Account/Login", responded.Single());
+    }
+
+    [Fact]
+    public async Task ApiEndpointChallengeReturns401WithLocationHeader()
+    {
+        using var host = await CreateHost(s => { });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/api/challenge");
+        Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
+        var responded = transaction.Response.Headers.GetValues("Location");
+        Assert.Single(responded);
+        Assert.StartsWith("http://example.com/Account/Login", responded.Single());
+    }
+
+    [Fact]
+    public async Task ApiEndpointForbidReturns403WithLocationHeader()
+    {
+        using var host = await CreateHost(s => { });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/api/forbid");
+        Assert.Equal(HttpStatusCode.Forbidden, transaction.Response.StatusCode);
+        var responded = transaction.Response.Headers.GetValues("Location");
+        Assert.Single(responded);
+        Assert.StartsWith("http://example.com/Account/AccessDenied", responded.Single());
     }
 
     [Fact]
@@ -1879,8 +1904,28 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                                 await next(context);
                             }
                         });
+
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
+                        {
+                            var apiRouteGroup = endpoints.MapGroup("/api").WithMetadata(new TestApiEndpointMetadata());
+                            // Add endpoints with IApiEndpointMetadata
+                            apiRouteGroup.MapGet("/challenge", async context =>
+                            {
+                                await context.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                            });
+
+                            apiRouteGroup.MapGet("/forbid", async context =>
+                            {
+                                await context.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                            });
+                        });
                     })
-                    .ConfigureServices(configureServices))
+                    .ConfigureServices(services =>
+                    {
+                        services.AddRoutingCore();
+                        configureServices(services);
+                    }))
             .Build();
 
         await host.StartAsync();
@@ -1948,5 +1993,9 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
 
         public string ResponseText { get; set; }
         public XElement ResponseElement { get; set; }
+    }
+
+    private class TestApiEndpointMetadata : IApiEndpointMetadata
+    {
     }
 }
