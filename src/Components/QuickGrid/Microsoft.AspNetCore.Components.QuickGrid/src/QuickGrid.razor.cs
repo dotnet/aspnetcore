@@ -124,6 +124,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // We cascade the InternalGridContext to descendants, which in turn call it to add themselves to _columns
     // This happens on every render so that the column list can be updated dynamically
     private readonly InternalGridContext<TGridItem> _internalGridContext;
+
+    /// <summary>
+    /// Gets or sets a <see cref="RenderFragment" /> that will be rendered when no data is available to display.
+    /// This allows derived components to specify a default if the user does not specify it.
+    /// </summary>
+    protected internal RenderFragment? EmptyContent { get; protected set; }
+
     private readonly List<ColumnBase<TGridItem>> _columns;
     private bool _collectingColumns; // Columns might re-render themselves arbitrarily. We only want to capture them at a defined time.
 
@@ -214,6 +221,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             _checkColumnOptionsPosition = false;
             _ = _jsModule?.InvokeVoidAsync("checkColumnOptionsPosition", _tableReference).AsTask();
         }
+    }
+
+    internal void SetEmptyContent(EmptyContentTemplate<TGridItem> emptyContentTemplate)
+    {
+        EmptyContent = emptyContentTemplate.ChildContent;
     }
 
     // Invoked by descendant columns at a special time during rendering
