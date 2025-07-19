@@ -34,7 +34,7 @@ public class PersistentServicesRegistryTest
         var registry = persistenceManager.ServicesRegistry;
 
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
-        var componentState = new PersistentComponentState(testStore.State, []);
+        var componentState = new PersistentComponentState(testStore.State, [], []);
 
         var secondScope = serviceProvider.CreateAsyncScope().ServiceProvider;
         var secondManager = new ComponentStatePersistenceManager(

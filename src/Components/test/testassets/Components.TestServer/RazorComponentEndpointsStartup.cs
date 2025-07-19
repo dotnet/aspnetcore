@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using System.Reflection;
 using System.Security.Claims;
@@ -31,6 +32,14 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     public void ConfigureServices(IServiceCollection services)
     {
         services.AddValidation();
+        if (Debugger.IsAttached)
+        {
+            services.AddSignalR(options =>
+            {
+                options.KeepAliveInterval = TimeSpan.FromMinutes(10); // default is 15 seconds
+                options.ClientTimeoutInterval = TimeSpan.FromMinutes(20); // must be longer than KeepAliveInterval
+            });
+        }
 
         services.AddRazorComponents(options =>
         {
@@ -38,24 +47,24 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         })
-            .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
-            .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
-            .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
-            .AddInteractiveWebAssemblyComponents()
-            .AddInteractiveServerComponents(options =>
+        .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
+        .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
+        .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
+        .AddInteractiveWebAssemblyComponents()
+        .AddInteractiveServerComponents(options =>
+        {
+            if (Configuration.GetValue<bool>("DisableReconnectionCache"))
             {
-                if (Configuration.GetValue<bool>("DisableReconnectionCache"))
-                {
-                    // This disables the reconnection cache, which forces the server to persist the circuit state.
-                    options.DisconnectedCircuitMaxRetained = 0;
-                    options.DetailedErrors = true;
-                }
-            })
-            .AddAuthenticationStateSerialization(options =>
-            {
-                bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
-                options.SerializeAllClaims = serializeAllClaims;
-            });
+                // This disables the reconnection cache, which forces the server to persist the circuit state.
+                options.DisconnectedCircuitMaxRetained = 0;
+                options.DetailedErrors = true;
+            }
+        })
+        .AddAuthenticationStateSerialization(options =>
+        {
+            bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
+            options.SerializeAllClaims = serializeAllClaims;
+        });
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
         {

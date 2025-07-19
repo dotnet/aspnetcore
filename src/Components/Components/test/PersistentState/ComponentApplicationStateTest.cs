@@ -11,14 +11,14 @@ public class ComponentApplicationStateTest
     public void InitializeExistingState_SetupsState()
     {
         // Arrange
-        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         var existingState = new Dictionary<string, byte[]>
         {
             ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(new byte[] { 1, 2, 3, 4 })
         };
 
         // Act
-        applicationState.InitializeExistingState(existingState);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Assert
         Assert.True(applicationState.TryTakeFromJson<byte[]>("MyState", out var existing));
@@ -29,16 +29,16 @@ public class ComponentApplicationStateTest
     public void InitializeExistingState_ThrowsIfAlreadyInitialized()
     {
         // Arrange
-        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         var existingState = new Dictionary<string, byte[]>
         {
             ["MyState"] = new byte[] { 1, 2, 3, 4 }
         };
 
-        applicationState.InitializeExistingState(existingState);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Act & Assert
-        Assert.Throws<InvalidOperationException>(() => applicationState.InitializeExistingState(existingState));
+        Assert.Throws<InvalidOperationException>(() => applicationState.InitializeExistingState(existingState, null));
     }
 
     [Fact]
@@ -46,11 +46,11 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(currentState, [])
+        var applicationState = new PersistentComponentState(currentState, [], [])
         {
             PersistingState = true
         };
-        
+
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => applicationState.RegisterOnPersisting(() => Task.CompletedTask));
     }
@@ -59,14 +59,14 @@ public class ComponentApplicationStateTest
     public void TryRetrieveState_ReturnsStateWhenItExists()
     {
         // Arrange
-        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
         var existingState = new Dictionary<string, byte[]>
         {
             ["MyState"] = JsonSerializer.SerializeToUtf8Bytes(new byte[] { 1, 2, 3, 4 })
         };
 
         // Act
-        applicationState.InitializeExistingState(existingState);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Assert
         Assert.True(applicationState.TryTakeFromJson<byte[]>("MyState", out var existing));
@@ -79,7 +79,7 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(currentState, [])
+        var applicationState = new PersistentComponentState(currentState, [], [])
         {
             PersistingState = true
         };
@@ -98,7 +98,7 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(currentState, [])
+        var applicationState = new PersistentComponentState(currentState, [], [])
         {
             PersistingState = true
         };
@@ -115,7 +115,7 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(currentState, [])
+        var applicationState = new PersistentComponentState(currentState, [], [])
         {
             PersistingState = true
         };
@@ -134,7 +134,7 @@ public class ComponentApplicationStateTest
     {
         // Arrange
         var currentState = new Dictionary<string, byte[]>();
-        var applicationState = new PersistentComponentState(currentState, [])
+        var applicationState = new PersistentComponentState(currentState, [], [])
         {
             PersistingState = true
         };
@@ -154,9 +154,9 @@ public class ComponentApplicationStateTest
         var myState = new byte[] { 1, 2, 3, 4 };
         var serialized = JsonSerializer.SerializeToUtf8Bytes(myState);
         var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
-        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
 
-        applicationState.InitializeExistingState(existingState);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Act
         Assert.True(applicationState.TryTakeFromJson<byte[]>("MyState", out var stored));
@@ -172,9 +172,9 @@ public class ComponentApplicationStateTest
         // Arrange
         var serialized = JsonSerializer.SerializeToUtf8Bytes<byte[]>(null);
         var existingState = new Dictionary<string, byte[]>() { ["MyState"] = serialized };
-        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), []);
+        var applicationState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
 
-        applicationState.InitializeExistingState(existingState);
+        applicationState.InitializeExistingState(existingState, RestoreContext.InitialValue);
 
         // Act
         Assert.True(applicationState.TryTakeFromJson<byte[]>("MyState", out var stored));

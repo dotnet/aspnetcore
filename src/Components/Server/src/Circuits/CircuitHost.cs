@@ -761,6 +761,7 @@ internal partial class CircuitHost : IAsyncDisposable
     internal Task UpdateRootComponents(
         RootComponentOperationBatch operationBatch,
         ProtectedPrerenderComponentApplicationStore store,
+        bool isRestore,
         CancellationToken cancellation)
     {
         Log.UpdateRootComponentsStarted(_logger);
@@ -780,19 +781,33 @@ internal partial class CircuitHost : IAsyncDisposable
                     throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
                         " been provided during circuit start up.");
                 }
+
+                if (store != null)
+                {
+                    shouldClearStore = true;
+                    // We only do this if we have no root components. Otherwise, the state would have been
+                    // provided during the start up process
+                    var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                    if (_isFirstUpdate)
+                    {
+                        appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
+                    }
+
+                    // Use the appropriate scenario based on whether this is a restore operation
+                    var scenario = (isRestore, _isFirstUpdate) switch
+                    {
+                        (_, false) => RestoreContext.ValueUpdate,
+                        (true, _) => RestoreContext.LastSnapshot,
+                        (false, _) => RestoreContext.InitialValue
+                    };
+
+                    await appLifetime.RestoreStateAsync(store, scenario);
+                }
+
                 if (_isFirstUpdate)
                 {
                     _isFirstUpdate = false;
                     shouldWaitForQuiescence = true;
-                    if (store != null)
-                    {
-                        shouldClearStore = true;
-                        // We only do this if we have no root components. Otherwise, the state would have been
-                        // provided during the start up process
-                        var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
-                        appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
-                        await appLifetime.RestoreStateAsync(store);
-                    }
 
                     // Retrieve the circuit handlers at this point.
                     _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];

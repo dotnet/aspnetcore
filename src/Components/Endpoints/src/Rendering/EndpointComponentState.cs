@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Reflection;
 using System.Reflection.Metadata;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -19,6 +20,7 @@ internal sealed class EndpointComponentState : ComponentState
     public EndpointComponentState(Renderer renderer, int componentId, IComponent component, ComponentState? parentComponentState)
         : base(renderer, componentId, component, parentComponentState)
     {
+        Debug.Assert(renderer != null && renderer is EndpointHtmlRenderer);
         _renderer = (EndpointHtmlRenderer)renderer;
 
         var streamRenderingAttribute = _streamRenderingAttributeByComponentType.GetOrAdd(component.GetType(),
