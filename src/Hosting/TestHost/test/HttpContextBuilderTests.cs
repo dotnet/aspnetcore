@@ -79,21 +79,13 @@ public class HttpContextBuilderTests
     public async Task SingleSlashNotMovedToPathBase()
     {
         using var host = new HostBuilder()
-
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => { });
-
             })
-
             .Build();
-
         var server = host.GetTestServer();
         var context = await server.SendAsync(c =>
         {
@@ -107,15 +99,22 @@ public class HttpContextBuilderTests
     [Fact]
     public async Task MiddlewareOnlySetsHeaders()
     {
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(c =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                c.Response.Headers["TestHeader"] = "TestValue";
-                return Task.FromResult(0);
-            });
-        });
-        var server = new TestServer(builder);
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(c =>
+                        {
+                            c.Response.Headers["TestHeader"] = "TestValue";
+                            return Task.FromResult(0);
+                        });
+                    });
+            })
+            .Build();
+        var server = host.GetTestServer();
         var context = await server.SendAsync(c => { });
 
         Assert.Equal("TestValue", context.Response.Headers["TestHeader"]);
@@ -336,19 +335,25 @@ public class HttpContextBuilderTests
     {
         // This logger will attempt to access information from HttpRequest once the HttpContext is created
         var logger = new VerifierLogger();
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                services.AddSingleton<ILogger<IWebHost>>(logger);
+                webBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<ILogger<IWebHost>>(logger);
+                    })
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            return Task.FromResult(0);
+                        });
+                    });
             })
-            .Configure(app =>
-            {
-                app.Run(context =>
-                {
-                    return Task.FromResult(0);
-                });
-            });
-        var server = new TestServer(builder);
+            .Build();
+        var server = host.GetTestServer();
 
         // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
         var ctx = await server.SendAsync(c => { });
