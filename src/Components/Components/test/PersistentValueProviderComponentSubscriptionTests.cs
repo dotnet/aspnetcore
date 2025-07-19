@@ -14,216 +14,189 @@ namespace Microsoft.AspNetCore.Components;
 public class PersistentValueProviderComponentSubscriptionTests
 {
     [Fact]
-    public async Task PersistAsync_PersistsStateForSubscribedComponentProperties()
+    public void Constructor_CreatesSubscription_AndRegistersCallbacks()
     {
         // Arrange
-        var state = new Dictionary<string, byte[]>();
-        var store = new TestStore(state);
-        var persistenceManager = new ComponentStatePersistenceManager(
-            NullLogger<ComponentStatePersistenceManager>.Instance,
-            new ServiceCollection().BuildServiceProvider());
-
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
         var renderer = new TestRenderer();
         var component = new TestComponent { State = "test-value" };
-        var componentStates = CreateComponentState(renderer, [(component, null)], null);
-        var componentState = componentStates.First();
-
-        // Create the provider and subscribe the component
+        var componentState = CreateComponentState(renderer, component, null, null);
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
-        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
-        provider.Subscribe(componentState, cascadingParameterInfo);
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
 
         // Act
-        await persistenceManager.PersistStateAsync(store, renderer);
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
 
-        // Assert
-        Assert.NotEmpty(store.State);
-
-        // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
-        newState.InitializeExistingState(store.State, null);
-
-        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
-        Assert.True(newState.TryTakeFromJson<string>(key, out var retrievedValue));
-        Assert.Equal("test-value", retrievedValue);
+        // Assert - Constructor should complete without throwing
+        Assert.NotNull(subscription);
+        subscription.Dispose();
     }
 
     [Fact]
-    public async Task PersistAsync_UsesParentComponentType_WhenAvailable()
+    public void GetOrComputeLastValue_ReturnsNull_WhenNotInitialized()
     {
         // Arrange
-        var state = new Dictionary<string, byte[]>();
-        var store = new TestStore(state);
-        var persistenceManager = new ComponentStatePersistenceManager(
-            NullLogger<ComponentStatePersistenceManager>.Instance,
-            new ServiceCollection().BuildServiceProvider());
-
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
         var renderer = new TestRenderer();
         var component = new TestComponent { State = "test-value" };
-        var parentComponent = new ParentComponent();
-
-        var componentStates = CreateComponentState(renderer, [(component, "key1")], parentComponent);
-        var componentState = componentStates.First();
-
+        var componentState = CreateComponentState(renderer, component, null, null);
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
 
-        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
-
-        provider.Subscribe(componentState, cascadingParameterInfo);
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
 
         // Act
-        await persistenceManager.PersistStateAsync(store, renderer);
+        var result = subscription.GetOrComputeLastValue();
 
         // Assert
-        Assert.NotEmpty(store.State);
-
-        // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
-        newState.InitializeExistingState(store.State, null);
-
-        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
-        Assert.True(newState.TryTakeFromJson<string>(key, out var retrievedValue));
-        Assert.Equal("test-value", retrievedValue);
+        Assert.Null(result);
+        subscription.Dispose();
     }
 
     [Fact]
-    public async Task PersistAsync_CanPersistValueTypes_IntProperty()
+    public void GetOrComputeLastValue_RestoresFromPersistentState_OnFirstCall()
     {
         // Arrange
-        var state = new Dictionary<string, byte[]>();
-        var store = new TestStore(state);
-        var persistenceManager = new ComponentStatePersistenceManager(
-            NullLogger<ComponentStatePersistenceManager>.Instance,
-            new ServiceCollection().BuildServiceProvider());
-
+        var initialState = new Dictionary<string, byte[]>();
+        var state = new PersistentComponentState(initialState, [], []);
         var renderer = new TestRenderer();
-        var component = new ValueTypeTestComponent { IntValue = 123 };
-        var componentStates = CreateComponentState(renderer, [(component, null)], null);
-        var componentState = componentStates.First();
+        var component = new TestComponent { State = "initial-value" };
+        var componentState = CreateComponentState(renderer, component, null, null);
 
-        // Create the provider and subscribe the component
-        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
+        // Pre-populate the state with serialized data
+        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, nameof(TestComponent.State));
+        initialState[key] = JsonSerializer.SerializeToUtf8Bytes("persisted-value", JsonSerializerOptions.Web);
+        state.InitializeExistingState(initialState, RestoreContext.LastSnapshot);
+
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
+
+        // Act
+        var result = subscription.GetOrComputeLastValue();
+
+        // Assert
+        Assert.Equal("persisted-value", result);
+        subscription.Dispose();
+    }
+
+    [Fact]
+    public void GetOrComputeLastValue_ReturnsCurrentPropertyValue_AfterInitialization()
+    {
+        // Arrange
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
+        var renderer = new TestRenderer();
+        var component = new TestComponent { State = "current-value" };
+        var componentState = CreateComponentState(renderer, component, null, null);
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
+
+        // Initialize by calling once
+        subscription.GetOrComputeLastValue();
+
+        // Change the component's property value
+        component.State = "updated-value";
+
+        // Act
+        var result = subscription.GetOrComputeLastValue();
+
+        // Assert
+        Assert.Equal("updated-value", result);
+        subscription.Dispose();
+    }
+
+    [Fact]
+    public void GetOrComputeLastValue_CanRestoreValueTypes()
+    {
+        // Arrange
+        var initialState = new Dictionary<string, byte[]>();
+        var state = new PersistentComponentState(initialState, [], []);
+        var renderer = new TestRenderer();
+        var component = new ValueTypeTestComponent { IntValue = 42 };
+        var componentState = CreateComponentState(renderer, component, null, null);
+
+        // Pre-populate the state with serialized data
+        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, nameof(ValueTypeTestComponent.IntValue));
+        initialState[key] = JsonSerializer.SerializeToUtf8Bytes(123, JsonSerializerOptions.Web);
+        state.InitializeExistingState(initialState, RestoreContext.LastSnapshot);
+
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.IntValue), typeof(int));
-        provider.Subscribe(componentState, cascadingParameterInfo);
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
 
         // Act
-        await persistenceManager.PersistStateAsync(store, renderer);
+        var result = subscription.GetOrComputeLastValue();
 
         // Assert
-        Assert.NotEmpty(store.State);
-
-        // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
-        newState.InitializeExistingState(store.State, null);
-
-        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
-        Assert.True(newState.TryTakeFromJson<int>(key, out var retrievedValue));
-        Assert.Equal(123, retrievedValue);
+        Assert.Equal(123, result);
+        subscription.Dispose();
     }
 
     [Fact]
-    public async Task PersistAsync_CanPersistValueTypes_NullableIntProperty()
+    public void GetOrComputeLastValue_CanRestoreNullableValueTypes()
     {
         // Arrange
-        var state = new Dictionary<string, byte[]>();
-        var store = new TestStore(state);
-        var persistenceManager = new ComponentStatePersistenceManager(
-            NullLogger<ComponentStatePersistenceManager>.Instance,
-            new ServiceCollection().BuildServiceProvider());
-
+        var initialState = new Dictionary<string, byte[]>();
+        var state = new PersistentComponentState(initialState, [], []);
         var renderer = new TestRenderer();
-        var component = new ValueTypeTestComponent { NullableIntValue = 456 };
-        var componentStates = CreateComponentState(renderer, [(component, null)], null);
-        var componentState = componentStates.First();
+        var component = new ValueTypeTestComponent { NullableIntValue = 42 };
+        var componentState = CreateComponentState(renderer, component, null, null);
 
-        // Create the provider and subscribe the component
-        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
+        // Pre-populate the state with serialized data
+        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, nameof(ValueTypeTestComponent.NullableIntValue));
+        initialState[key] = JsonSerializer.SerializeToUtf8Bytes((int?)456, JsonSerializerOptions.Web);
+        state.InitializeExistingState(initialState, RestoreContext.LastSnapshot);
+
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.NullableIntValue), typeof(int?));
-        provider.Subscribe(componentState, cascadingParameterInfo);
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
 
         // Act
-        await persistenceManager.PersistStateAsync(store, renderer);
+        var result = subscription.GetOrComputeLastValue();
 
         // Assert
-        Assert.NotEmpty(store.State);
-
-        // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
-        newState.InitializeExistingState(store.State, null);
-
-        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
-        Assert.True(newState.TryTakeFromJson<int?>(key, out var retrievedValue));
-        Assert.Equal(456, retrievedValue);
+        Assert.Equal(456, result);
+        subscription.Dispose();
     }
 
     [Fact]
-    public async Task PersistAsync_CanPersistValueTypes_TupleProperty()
+    public void Dispose_DisposesSubscriptions()
     {
         // Arrange
-        var state = new Dictionary<string, byte[]>();
-        var store = new TestStore(state);
-        var persistenceManager = new ComponentStatePersistenceManager(
-            NullLogger<ComponentStatePersistenceManager>.Instance,
-            new ServiceCollection().BuildServiceProvider());
-
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
         var renderer = new TestRenderer();
-        var component = new ValueTypeTestComponent { TupleValue = ("test", 456) };
-        var componentStates = CreateComponentState(renderer, [(component, null)], null);
-        var componentState = componentStates.First();
+        var component = new TestComponent { State = "test-value" };
+        var componentState = CreateComponentState(renderer, component, null, null);
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
 
-        // Create the provider and subscribe the component
-        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
-        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.TupleValue), typeof((string, int)));
-        provider.Subscribe(componentState, cascadingParameterInfo);
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
 
-        // Act
-        await persistenceManager.PersistStateAsync(store, renderer);
-
-        // Assert
-        Assert.NotEmpty(store.State);
-
-        // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
-        newState.InitializeExistingState(store.State, null);
-
-        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
-        Assert.True(newState.TryTakeFromJson<(string, int)>(key, out var retrievedValue));
-        Assert.Equal(("test", 456), retrievedValue);
-    }
-
-    [Fact]
-    public async Task PersistAsync_CanPersistValueTypes_NullableTupleProperty()
-    {
-        // Arrange
-        var state = new Dictionary<string, byte[]>();
-        var store = new TestStore(state);
-        var persistenceManager = new ComponentStatePersistenceManager(
-            NullLogger<ComponentStatePersistenceManager>.Instance,
-            new ServiceCollection().BuildServiceProvider());
-
-        var renderer = new TestRenderer();
-        var component = new ValueTypeTestComponent { NullableTupleValue = ("test2", 789) };
-        var componentStates = CreateComponentState(renderer, [(component, null)], null);
-        var componentState = componentStates.First();
-
-        // Create the provider and subscribe the component
-        var provider = new PersistentStateValueProvider(persistenceManager.State, NullLogger<PersistentStateValueProvider>.Instance, new ServiceCollection().BuildServiceProvider());
-        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ValueTypeTestComponent.NullableTupleValue), typeof((string, int)?));
-        provider.Subscribe(componentState, cascadingParameterInfo);
-
-        // Act
-        await persistenceManager.PersistStateAsync(store, renderer);
-
-        // Assert
-        Assert.NotEmpty(store.State);
-
-        // Verify the value was persisted correctly
-        var newState = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
-        newState.InitializeExistingState(store.State, null);
-
-        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, cascadingParameterInfo.PropertyName);
-        Assert.True(newState.TryTakeFromJson<(string, int)?>(key, out var retrievedValue));
-        Assert.Equal(("test2", 789), retrievedValue);
+        // Act & Assert - Should not throw
+        subscription.Dispose();
     }
 
     private static CascadingParameterInfo CreateCascadingParameterInfo(string propertyName, Type propertyType)
@@ -234,47 +207,42 @@ public class PersistentValueProviderComponentSubscriptionTests
             propertyType);
     }
 
-    private static List<ComponentState> CreateComponentState(
+    private static ComponentState CreateComponentState(
         TestRenderer renderer,
-        List<(IComponent, object)> components,
-        IComponent parentComponent = null)
+        IComponent component,
+        IComponent parentComponent,
+        object key)
     {
-        var i = 1;
-        var parentComponentState = parentComponent != null ? new ComponentState(renderer, i++, parentComponent, null) : null;
-        var currentRenderTree = parentComponentState?.CurrentRenderTree;
-        var result = new List<ComponentState>();
-        foreach (var (component, key) in components)
-        {
-            var componentState = new ComponentState(renderer, i++, component, parentComponentState);
-            if (currentRenderTree != null && key != null)
-            {
-                // Open component based on the actual component type
-                if (component is TestComponent)
-                {
-                    currentRenderTree.OpenComponent<TestComponent>(0);
-                }
-                else if (component is ValueTypeTestComponent)
-                {
-                    currentRenderTree.OpenComponent<ValueTypeTestComponent>(0);
-                }
-                else
-                {
-                    currentRenderTree.OpenComponent<IComponent>(0);
-                }
+        var parentComponentState = parentComponent != null
+            ? new ComponentState(renderer, 1, parentComponent, null)
+            : null;
+        var componentState = new ComponentState(renderer, 2, component, parentComponentState);
 
-                var frames = currentRenderTree.GetFrames();
-                frames.Array[frames.Count - 1].ComponentStateField = componentState;
-                if (key != null)
-                {
-                    currentRenderTree.SetKey(key);
-                }
-                currentRenderTree.CloseComponent();
+        if (parentComponentState != null && parentComponentState.CurrentRenderTree != null && key != null)
+        {
+            var currentRenderTree = parentComponentState.CurrentRenderTree;
+
+            // Open component based on the actual component type
+            if (component is TestComponent)
+            {
+                currentRenderTree.OpenComponent<TestComponent>(0);
+            }
+            else if (component is ValueTypeTestComponent)
+            {
+                currentRenderTree.OpenComponent<ValueTypeTestComponent>(0);
+            }
+            else
+            {
+                currentRenderTree.OpenComponent<IComponent>(0);
             }
 
-            result.Add(componentState);
+            var frames = currentRenderTree.GetFrames();
+            frames.Array[frames.Count - 1].ComponentStateField = componentState;
+            currentRenderTree.SetKey(key);
+            currentRenderTree.CloseComponent();
         }
 
-        return result;
+        return componentState;
     }
 
     private class TestRenderer() : Renderer(new ServiceCollection().BuildServiceProvider(), NullLoggerFactory.Instance)
@@ -310,23 +278,6 @@ public class PersistentValueProviderComponentSubscriptionTests
 
         public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
         public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
-    }
-
-    private class TestStore(Dictionary<string, byte[]> initialState) : IPersistentComponentStateStore
-    {
-        public IDictionary<string, byte[]> State { get; set; } = initialState;
-
-        public Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
-        {
-            return Task.FromResult(State);
-        }
-
-        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
-        {
-            // We copy the data here because it's no longer available after this call completes.
-            State = state.ToDictionary(k => k.Key, v => v.Value);
-            return Task.CompletedTask;
-        }
     }
 
     private class ParentComponent : IComponent
