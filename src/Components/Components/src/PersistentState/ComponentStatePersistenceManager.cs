@@ -78,20 +78,19 @@ public class ComponentStatePersistenceManager
         else
         {
             State.InitializeExistingState(data, scenario);
+            _servicesRegistry?.Restore(State);
             _stateIsInitialized = true;
         }
 
         foreach (var registration in _registeredRestoringCallbacks)
         {
-            if (scenario == null || registration.Filter == null ||
-                (registration.Filter.SupportsScenario(scenario) && registration.Filter.ShouldRestore(scenario)) ||
-                (!registration.Filter.SupportsScenario(scenario) && !scenario.IsRecurring))
-            {
-                registration.Callback();
-            }
+            //if (scenario == null || registration.Filter == null ||
+            //    (registration.Filter.SupportsScenario(scenario) && registration.Filter.ShouldRestore(scenario)) ||
+            //    (!registration.Filter.SupportsScenario(scenario) && !scenario.IsRecurring))
+            //{
+            registration.Callback();
+            //}
         }
-
-        _servicesRegistry?.Restore(State);
     }
 
     /// <summary>

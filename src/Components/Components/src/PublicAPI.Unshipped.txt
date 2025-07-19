@@ -1,7 +1,23 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(System.Action! callback, Microsoft.AspNetCore.Components.RestoreOptions options) -> Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
+Microsoft.AspNetCore.Components.PersistentStateAttribute.AllowUpdates.get -> bool
+Microsoft.AspNetCore.Components.PersistentStateAttribute.AllowUpdates.set -> void
+Microsoft.AspNetCore.Components.PersistentStateAttribute.RestoreBehavior.get -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.PersistentStateAttribute.RestoreBehavior.set -> void
 Microsoft.AspNetCore.Components.Rendering.ComponentState.Renderer.get -> Microsoft.AspNetCore.Components.RenderTree.Renderer!
 Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties = null) -> void
+Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreBehavior.Default = 0 -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreBehavior.SkipInitialValue = 1 -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreBehavior.SkipLastSnapshot = 2 -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreContext
+Microsoft.AspNetCore.Components.RestoreOptions
+Microsoft.AspNetCore.Components.RestoreOptions.AllowUpdates.get -> bool
+Microsoft.AspNetCore.Components.RestoreOptions.AllowUpdates.init -> void
+Microsoft.AspNetCore.Components.RestoreOptions.RestoreBehavior.get -> Microsoft.AspNetCore.Components.RestoreBehavior
+Microsoft.AspNetCore.Components.RestoreOptions.RestoreBehavior.init -> void
+Microsoft.AspNetCore.Components.RestoreOptions.RestoreOptions() -> void
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type?
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions
@@ -27,6 +43,9 @@ Microsoft.AspNetCore.Components.UpdateStateOnEnhancedNavigation.UpdateStateOnEnh
 static Microsoft.AspNetCore.Components.Infrastructure.RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<TService>(Microsoft.Extensions.DependencyInjection.IServiceCollection! services, Microsoft.AspNetCore.Components.IComponentRenderMode! componentRenderMode) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.AspNetCore.Components.Infrastructure.ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.AspNetCore.Components.RestoreContext.InitialValue.get -> Microsoft.AspNetCore.Components.RestoreContext!
+static Microsoft.AspNetCore.Components.RestoreContext.LastSnapshot.get -> Microsoft.AspNetCore.Components.RestoreContext!
+static Microsoft.AspNetCore.Components.RestoreContext.ValueUpdate.get -> Microsoft.AspNetCore.Components.RestoreContext!
 static Microsoft.AspNetCore.Components.WebPersistenceFilter.EnhancedNavigation.get -> Microsoft.AspNetCore.Components.WebPersistenceFilter!
 static Microsoft.AspNetCore.Components.WebPersistenceScenario.EnhancedNavigation.get -> Microsoft.AspNetCore.Components.WebPersistenceScenario!
 virtual Microsoft.AspNetCore.Components.OwningComponentBase.DisposeAsyncCore() -> System.Threading.Tasks.ValueTask
