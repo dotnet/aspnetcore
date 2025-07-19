@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -26,8 +27,23 @@ public class TestClientTests
         var expected = "GET Response";
         RequestDelegate appDelegate = ctx =>
             ctx.Response.WriteAsync(expected);
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => app.Run(appDelegate));
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         // Act
@@ -48,8 +64,23 @@ public class TestClientTests
             Assert.Equal("/", ctx.Request.Path.Value);
             return ctx.Response.WriteAsync(expected);
         };
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => app.Run(appDelegate));
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         // Act
@@ -70,8 +101,23 @@ public class TestClientTests
             Assert.Equal("/", ctx.Request.Path.Value);
             return ctx.Response.WriteAsync(expected);
         };
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => app.Run(appDelegate));
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         // Act
@@ -90,8 +136,23 @@ public class TestClientTests
             var content = await new StreamReader(ctx.Request.Body).ReadToEndAsync();
             await ctx.Response.WriteAsync(content + " PUT Response");
         };
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => app.Run(appDelegate));
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         // Act
@@ -108,8 +169,23 @@ public class TestClientTests
         // Arrange
         RequestDelegate appDelegate = async ctx =>
             await ctx.Response.WriteAsync(await new StreamReader(ctx.Request.Body).ReadToEndAsync() + " POST Response");
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => app.Run(appDelegate));
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         // Act
@@ -189,8 +265,31 @@ public class TestClientTests
 
         Stream requestStream = null;
 
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+
+            .ConfigureWebHost(webBuilder =>
+
+
+            {
+
+
+                webBuilder
+
+
+                    .UseTestServer()
+
+
+                    .Configure(app => app.Run(appDelegate));
+
+
+            })
+
+
+            .Build();
+
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
@@ -246,8 +345,31 @@ public class TestClientTests
             return Task.CompletedTask;
         };
 
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+
+            .ConfigureWebHost(webBuilder =>
+
+
+            {
+
+
+                webBuilder
+
+
+                    .UseTestServer()
+
+
+                    .Configure(app => app.Run(appDelegate));
+
+
+            })
+
+
+            .Build();
+
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
@@ -297,8 +419,31 @@ public class TestClientTests
 
         Stream requestStream = null;
 
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+
+            .ConfigureWebHost(webBuilder =>
+
+
+            {
+
+
+                webBuilder
+
+
+                    .UseTestServer()
+
+
+                    .Configure(app => app.Run(appDelegate));
+
+
+            })
+
+
+            .Build();
+
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
@@ -354,8 +499,31 @@ public class TestClientTests
 
         Stream requestStream = null;
 
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+
+            .ConfigureWebHost(webBuilder =>
+
+
+            {
+
+
+                webBuilder
+
+
+                    .UseTestServer()
+
+
+                    .Configure(app => app.Run(appDelegate));
+
+
+            })
+
+
+            .Build();
+
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
@@ -416,8 +584,31 @@ public class TestClientTests
 
         Stream requestStream = null;
 
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+
+            .ConfigureWebHost(webBuilder =>
+
+
+            {
+
+
+                webBuilder
+
+
+                    .UseTestServer()
+
+
+                    .Configure(app => app.Run(appDelegate));
+
+
+            })
+
+
+            .Build();
+
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
@@ -463,8 +654,31 @@ public class TestClientTests
 
         Stream requestStream = null;
 
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+
+            .ConfigureWebHost(webBuilder =>
+
+
+            {
+
+
+                webBuilder
+
+
+                    .UseTestServer()
+
+
+                    .Configure(app => app.Run(appDelegate));
+
+
+            })
+
+
+            .Build();
+
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
@@ -514,8 +728,31 @@ public class TestClientTests
 
         Stream requestStream = null;
 
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+
+            .ConfigureWebHost(webBuilder =>
+
+
+            {
+
+
+                webBuilder
+
+
+                    .UseTestServer()
+
+
+                    .Configure(app => app.Run(appDelegate));
+
+
+            })
+
+
+            .Build();
+
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
@@ -844,8 +1081,23 @@ public class TestClientTests
         };
 
         // Act
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => app.Run(appDelegate));
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
         var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
         var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
@@ -946,8 +1198,23 @@ public class TestClientTests
             protocol = ctx.Request.Protocol;
             await ctx.Response.WriteAsync(expected);
         };
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => app.Run(appDelegate));
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
         var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
 
@@ -972,8 +1239,23 @@ public class TestClientTests
             protocol = ctx.Request.Protocol;
             await ctx.Response.WriteAsync(expected);
         };
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => app.Run(appDelegate));
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
         var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
         request.Version = new Version(2, 0);
@@ -999,8 +1281,23 @@ public class TestClientTests
             protocol = ctx.Request.Protocol;
             await ctx.Response.WriteAsync(expected);
         };
-        var builder = new WebHostBuilder().Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
+        using var host = new HostBuilder()
+
+            .ConfigureWebHost(webBuilder =>
+
+            {
+
+                webBuilder
+
+                    .UseTestServer()
+
+                    .Configure(app => app.Run(appDelegate));
+
+            })
+
+            .Build();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
         var request = new HttpRequestMessage(HttpMethod.Get, "http://localhost:12345");
         request.Version = new Version(3, 0);
