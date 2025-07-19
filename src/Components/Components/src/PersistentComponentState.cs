@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using static Microsoft.AspNetCore.Internal.LinkerFlags;
@@ -81,7 +82,8 @@ public class PersistentComponentState
     /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
     public RestoringComponentStateSubscription RegisterOnRestoring(Action callback, RestoreOptions options)
     {
-        if (_currentContext!.ShouldRestore(options))
+        Debug.Assert(_currentContext != null);
+        if (_currentContext.ShouldRestore(options))
         {
             callback();
         }

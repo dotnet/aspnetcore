@@ -82,14 +82,13 @@ public class ComponentStatePersistenceManager
             _stateIsInitialized = true;
         }
 
-        foreach (var registration in _registeredRestoringCallbacks)
+        if (context == RestoreContext.ValueUpdate)
         {
-            //if (scenario == null || registration.Filter == null ||
-            //    (registration.Filter.SupportsScenario(scenario) && registration.Filter.ShouldRestore(scenario)) ||
-            //    (!registration.Filter.SupportsScenario(scenario) && !scenario.IsRecurring))
-            //{
-            registration.Callback();
-            //}
+            foreach (var registration in _registeredRestoringCallbacks)
+            {
+                registration.Callback();
+            }
+            return;
         }
     }
 
