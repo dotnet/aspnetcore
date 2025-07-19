@@ -167,7 +167,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
     {
         var export = certificate.Export(X509ContentType.Pkcs12, "");
         certificate.Dispose();
-        certificate = new X509Certificate2(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
+        certificate = X509CertificateLoader.LoadPkcs12(export, "", X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable);
         Array.Clear(export, 0, export.Length);
 
         using (var store = new X509Store(storeName, storeLocation))

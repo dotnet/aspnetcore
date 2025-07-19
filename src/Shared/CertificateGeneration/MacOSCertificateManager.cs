@@ -442,7 +442,7 @@ internal sealed class MacOSCertificateManager : CertificateManager
             {
                 try
                 {
-                    var certificate = new X509Certificate2(file);
+                    var certificate = X509CertificateLoader.LoadCertificateFromFile(file);
                     certsFromDisk.Add(certificate);
                 }
                 catch (Exception)

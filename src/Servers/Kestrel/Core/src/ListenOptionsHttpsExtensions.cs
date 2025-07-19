@@ -36,7 +36,7 @@ public static class ListenOptionsHttpsExtensions
     public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName)
     {
         var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName)));
+        return listenOptions.UseHttps(X509CertificateLoader.LoadCertificateFromFile(Path.Combine(env.ContentRootPath, fileName)));
     }
 
     /// <summary>
@@ -50,7 +50,7 @@ public static class ListenOptionsHttpsExtensions
     public static ListenOptions UseHttps(this ListenOptions listenOptions, string fileName, string? password)
     {
         var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName), password));
+        return listenOptions.UseHttps(X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(env.ContentRootPath, fileName), password));
     }
 
     /// <summary>
@@ -65,7 +65,7 @@ public static class ListenOptionsHttpsExtensions
         Action<HttpsConnectionAdapterOptions> configureOptions)
     {
         var env = listenOptions.ApplicationServices.GetRequiredService<IHostEnvironment>();
-        return listenOptions.UseHttps(new X509Certificate2(Path.Combine(env.ContentRootPath, fileName), password), configureOptions);
+        return listenOptions.UseHttps(X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(env.ContentRootPath, fileName), password), configureOptions);
     }
 
     /// <summary>
