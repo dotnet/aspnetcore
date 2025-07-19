@@ -1132,8 +1132,13 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/persist-services-state?mode={mode}");
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode")).Text);
         Browser.Equal(expectedServerState, () => Browser.FindElement(By.Id("server-state")).Text);
+
         Browser.Equal(expectedAutoState, () => Browser.FindElement(By.Id("auto-state")).Text);
         Browser.Equal(expectedWebAssemblyState, () => Browser.FindElement(By.Id("wasm-state")).Text);
+
+        Browser.Equal("not restored", () => Browser.FindElement(By.Id("filtered-server-state")).Text);
+        Browser.Equal("not restored", () => Browser.FindElement(By.Id("filtered-auto-state")).Text);
+        Browser.Equal("not restored", () => Browser.FindElement(By.Id("filtered-wasm-state")).Text);
     }
 
     [Theory]
@@ -1150,6 +1155,10 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal(expectedServerState, () => Browser.FindElement(By.Id("server-state")).Text);
         Browser.Equal(expectedAutoState, () => Browser.FindElement(By.Id("auto-state")).Text);
         Browser.Equal(expectedWebAssemblyState, () => Browser.FindElement(By.Id("wasm-state")).Text);
+
+        Browser.Equal("not restored", () => Browser.FindElement(By.Id("filtered-server-state")).Text);
+        Browser.Equal("not restored", () => Browser.FindElement(By.Id("filtered-auto-state")).Text);
+        Browser.Equal("not restored", () => Browser.FindElement(By.Id("filtered-wasm-state")).Text);
     }
 
     [Fact]
