@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 internal sealed class PersistentServicesRegistry
 {
     private static readonly string _registryKey = typeof(PersistentServicesRegistry).FullName!;
-    private static readonly RootTypeCache _persistentServiceTypeCache = new RootTypeCache();
+    private static readonly RootTypeCache _persistentServiceTypeCache = new();
 
     private readonly IServiceProvider _serviceProvider;
     private IPersistentServiceRegistration[] _registrations;
-    private List<PersistingComponentStateSubscription> _subscriptions = [];
+    private List<(PersistingComponentStateSubscription, RestoringComponentStateSubscription)> _subscriptions = [];
     private static readonly ConcurrentDictionary<Type, PropertiesAccessor> _cachedAccessorsByType = new();
 
     public PersistentServicesRegistry(IServiceProvider serviceProvider)
@@ -45,7 +45,8 @@ internal sealed class PersistentServicesRegistry
             return;
         }
 
-        var subscriptions = new List<PersistingComponentStateSubscription>(_registrations.Length + 1);
+        var subscriptions = new List<(PersistingComponentStateSubscription, RestoringComponentStateSubscription)>(
+            _registrations.Length + 1);
         for (var i = 0; i < _registrations.Length; i++)
         {
             var registration = _registrations[i];
@@ -58,20 +59,32 @@ internal sealed class PersistentServicesRegistry
             var renderMode = registration.GetRenderModeOrDefault();
 
             var instance = _serviceProvider.GetRequiredService(type);
-            subscriptions.Add(state.RegisterOnPersisting(() =>
-            {
-                PersistInstanceState(instance, type, state);
-                return Task.CompletedTask;
-            }, renderMode));
+            subscriptions.Add((
+                state.RegisterOnPersisting(() =>
+                {
+                    PersistInstanceState(instance, type, state);
+                    return Task.CompletedTask;
+                }, renderMode),
+                // In order to avoid registering one callback per property, we register a single callback with the most
+                // permissive options and perform the filtering inside of it.
+                state.RegisterOnRestoring(() =>
+                {
+                    RestoreInstanceState(instance, type, state);
+                }, new RestoreOptions { AllowUpdates = true })));
         }
 
         if (RenderMode != null)
         {
-            subscriptions.Add(state.RegisterOnPersisting(() =>
-            {
-                state.PersistAsJson(_registryKey, _registrations);
-                return Task.CompletedTask;
-            }, RenderMode));
+            subscriptions.Add((
+                state.RegisterOnPersisting(() =>
+                {
+                    state.PersistAsJson(_registryKey, _registrations);
+                    return Task.CompletedTask;
+                }, RenderMode),
+                state.RegisterOnRestoring(() =>
+                {
+                    Restore(state);
+                }, new RestoreOptions { RestoreBehavior = RestoreBehavior.SkipLastSnapshot })));
         }
 
         _subscriptions = subscriptions;
@@ -83,7 +96,7 @@ internal sealed class PersistentServicesRegistry
         var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
         foreach (var (key, propertyType) in accessors.KeyTypePairs)
         {
-            var (setter, getter) = accessors.GetAccessor(key);
+            var (setter, getter, options) = accessors.GetAccessor(key);
             var value = getter.GetValue(instance);
             if (value != null)
             {
@@ -131,9 +144,13 @@ internal sealed class PersistentServicesRegistry
         var accessors = _cachedAccessorsByType.GetOrAdd(instance.GetType(), static (runtimeType, declaredType) => new PropertiesAccessor(runtimeType, declaredType), type);
         foreach (var (key, propertyType) in accessors.KeyTypePairs)
         {
+            var (setter, getter, options) = accessors.GetAccessor(key);
+            if (!state.CurrentContext.ShouldRestore(options))
+            {
+                continue;
+            }
             if (state.TryTakeFromJson(key, propertyType, out var result))
             {
-                var (setter, getter) = accessors.GetAccessor(key);
                 setter.SetValue(instance, result!);
             }
         }
@@ -156,12 +173,12 @@ internal sealed class PersistentServicesRegistry
     {
         internal const BindingFlags BindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
-        private readonly Dictionary<string, (PropertySetter, PropertyGetter)> _underlyingAccessors;
+        private readonly Dictionary<string, (PropertySetter, PropertyGetter, RestoreOptions)> _underlyingAccessors;
         private readonly (string, Type)[] _cachedKeysForService;
 
         public PropertiesAccessor([DynamicallyAccessedMembers(LinkerFlags.Component)] Type targetType, Type keyType)
         {
-            _underlyingAccessors = new Dictionary<string, (PropertySetter, PropertyGetter)>(StringComparer.OrdinalIgnoreCase);
+            _underlyingAccessors = new Dictionary<string, (PropertySetter, PropertyGetter, RestoreOptions)>(StringComparer.OrdinalIgnoreCase);
 
             var keys = new List<(string, Type)>();
             foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
@@ -195,10 +212,16 @@ internal sealed class PersistentServicesRegistry
                         $"The type '{targetType.FullName}' declares a property matching the name '{propertyName}' that is not public. Persistent service properties must be public.");
                 }
 
+                var restoreOptions = new RestoreOptions
+                {
+                    RestoreBehavior = parameterAttribute.RestoreBehavior,
+                    AllowUpdates = parameterAttribute.AllowUpdates,
+                };
+
                 var propertySetter = new PropertySetter(targetType, propertyInfo);
                 var propertyGetter = new PropertyGetter(targetType, propertyInfo);
 
-                _underlyingAccessors.Add(key, (propertySetter, propertyGetter));
+                _underlyingAccessors.Add(key, (propertySetter, propertyGetter, restoreOptions));
             }
 
             _cachedKeysForService = [.. keys];
@@ -227,7 +250,7 @@ internal sealed class PersistentServicesRegistry
             [DynamicallyAccessedMembers(LinkerFlags.Component)] Type targetType)
             => MemberAssignment.GetPropertiesIncludingInherited(targetType, BindablePropertyFlags);
 
-        internal (PropertySetter setter, PropertyGetter getter) GetAccessor(string key) =>
+        internal (PropertySetter setter, PropertyGetter getter, RestoreOptions options) GetAccessor(string key) =>
             _underlyingAccessors.TryGetValue(key, out var result) ? result : default;
     }
 

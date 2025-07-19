@@ -18,7 +18,6 @@ public class PersistentComponentState
 
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks;
     private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks;
-    private RestoreContext? _currentContext;
 
     internal PersistentComponentState(
         IDictionary<string, byte[]> currentState,
@@ -32,6 +31,8 @@ public class PersistentComponentState
 
     internal bool PersistingState { get; set; }
 
+    internal RestoreContext CurrentContext { get; private set; }
+
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState, RestoreContext context)
     {
         if (_existingState != null)
@@ -39,7 +40,7 @@ public class PersistentComponentState
             throw new InvalidOperationException("PersistentComponentState already initialized.");
         }
         _existingState = existingState ?? throw new ArgumentNullException(nameof(existingState));
-        _currentContext = context;
+        CurrentContext = context;
     }
 
     /// <summary>
@@ -82,8 +83,8 @@ public class PersistentComponentState
     /// <returns>A subscription that can be used to unregister the callback when disposed.</returns>
     public RestoringComponentStateSubscription RegisterOnRestoring(Action callback, RestoreOptions options)
     {
-        Debug.Assert(_currentContext != null);
-        if (_currentContext.ShouldRestore(options))
+        Debug.Assert(CurrentContext != null);
+        if (CurrentContext.ShouldRestore(options))
         {
             callback();
         }
@@ -255,6 +256,6 @@ public class PersistentComponentState
         }
 
         _existingState = state;
-        _currentContext = context;
+        CurrentContext = context;
     }
 }

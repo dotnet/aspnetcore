@@ -78,7 +78,7 @@ public class ComponentStatePersistenceManager
         else
         {
             State.InitializeExistingState(data, context);
-            _servicesRegistry?.Restore(State);
+            _servicesRegistry?.RegisterForPersistence(State);
             _stateIsInitialized = true;
         }
 
