@@ -9,6 +9,8 @@ using System.IO.Pipelines;
 using System.Linq;
 using System.Reflection;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.Extensions.Validation;
 
@@ -26,6 +28,13 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         if (parameterInfo.Name == null)
         {
             throw new InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
+        }
+
+        // Skip parameters marked with [FromService] or [FromKeyedService] attributes
+        if (HasFromServiceAttributes(parameterInfo.GetCustomAttributes()))
+        {
+            validatableInfo = null;
+            return false;
         }
 
         var validationAttributes = parameterInfo
@@ -60,18 +69,6 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         return parameterInfo.Name!;
     }
 
-    internal sealed class RuntimeValidatableParameterInfo(
-        Type parameterType,
-        string name,
-        string displayName,
-        ValidationAttribute[] validationAttributes) :
-            ValidatableParameterInfo(parameterType, name, displayName)
-    {
-        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
-
-        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
-    }
-
     private static bool IsClass(Type type)
     {
         // Skip primitives, enums, common built-in types, and types that are specially
@@ -101,5 +98,24 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
         }
 
         return type.IsClass;
+    }
+
+    private static bool HasFromServiceAttributes(IEnumerable<Attribute> attributes)
+    {
+        return attributes.Any(attr =>
+            attr is IFromServiceMetadata ||
+            attr is FromKeyedServicesAttribute);
+    }
+
+    internal sealed class RuntimeValidatableParameterInfo(
+        Type parameterType,
+        string name,
+        string displayName,
+        ValidationAttribute[] validationAttributes) :
+            ValidatableParameterInfo(parameterType, name, displayName)
+    {
+        protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
+
+        private readonly ValidationAttribute[] _validationAttributes = validationAttributes;
     }
 }
