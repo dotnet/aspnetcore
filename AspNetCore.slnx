@@ -1143,7 +1143,6 @@
     <Project Path="src/SignalR/server/StackExchangeRedis/src/Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
     <Project Path="src/SignalR/server/StackExchangeRedis/test/Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj" />
   </Folder>
-  <Folder Name="/src/SiteExtensions/" />
   <Folder Name="/src/SiteExtensions/Microsoft.Web.Xdt.Extensions/">
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/src/Microsoft.Web.Xdt.Extensions.csproj" />
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/tests/Microsoft.Web.Xdt.Extensions.Tests.csproj" />
