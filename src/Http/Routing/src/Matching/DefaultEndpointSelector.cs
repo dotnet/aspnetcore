@@ -60,6 +60,8 @@ internal sealed class DefaultEndpointSelector : EndpointSelector
         Endpoint? endpoint = null;
         RouteValueDictionary? values = null;
         int? foundScore = null;
+        var candidatesWithSameScore = new List<CandidateState>();
+
         for (var i = 0; i < candidateState.Length; i++)
         {
             ref var state = ref candidateState[i];
@@ -74,6 +76,7 @@ internal sealed class DefaultEndpointSelector : EndpointSelector
                 endpoint = state.Endpoint;
                 values = state.Values;
                 foundScore = state.Score;
+                candidatesWithSameScore.Add(state);
             }
             else if (foundScore < state.Score)
             {
@@ -85,15 +88,27 @@ internal sealed class DefaultEndpointSelector : EndpointSelector
             }
             else if (foundScore == state.Score)
             {
-                // This is the second match we've found of the same score, so there
-                // must be an ambiguity.
-                //
-                // Don't worry about the 'null == state.Score' case, it returns false.
+                // Same score - collect for constraint specificity analysis. We cant
+                // just dismiss these candidate and report an ambiguity, we need to
+                // analyze them for constraint specificity.
+                candidatesWithSameScore.Add(state);
+            }
+        }
 
+        // If we have multiple candidates with the same score, try to resolve using
+        // constraint specificity rules
+        if (candidatesWithSameScore.Count > 1)
+        {
+            var mostSpecific = SelectMostSpecificEndpoint(candidatesWithSameScore);
+            if (mostSpecific.HasValue)
+            {
+                endpoint = mostSpecific.Value.Endpoint;
+                values = mostSpecific.Value.Values;
+            }
+            else
+            {
+                // Still ambiguous after constraint analysis
                 ReportAmbiguity(candidateState);
-
-                // Unreachable, ReportAmbiguity always throws.
-                throw new NotSupportedException();
             }
         }
 
@@ -102,6 +117,104 @@ internal sealed class DefaultEndpointSelector : EndpointSelector
             httpContext.SetEndpoint(endpoint);
             httpContext.Request.RouteValues = values!;
         }
+    }
+
+    private static CandidateState? SelectMostSpecificEndpoint(List<CandidateState> candidates)
+    {
+        CandidateState? mostSpecific = null;
+        var highestSpecificity = -1;
+        var hasAmbiguity = false;
+
+        foreach (var candidate in candidates)
+        {
+            if (candidate.Endpoint is not RouteEndpoint routeEndpoint)
+            {
+                continue;
+            }
+
+            var specificity = CalculateConstraintSpecificity(routeEndpoint);
+
+            if (specificity > highestSpecificity)
+            {
+                highestSpecificity = specificity;
+                mostSpecific = candidate;
+                hasAmbiguity = false;
+            }
+            else if (specificity == highestSpecificity)
+            {
+                // Okay, note the ambiguity and continue trying
+                // to determine a higher level of specificity.
+                hasAmbiguity = true;
+            }
+        }
+
+        return hasAmbiguity ? null : mostSpecific;
+    }
+
+    private static int CalculateConstraintSpecificity(RouteEndpoint endpoint)
+    {
+        var specificity = 0;
+        var routePattern = endpoint.RoutePattern;
+
+        foreach (var parameter in routePattern.Parameters)
+        {
+            // We may have parameter without constraints, e.g. "id" in "/products/{id}"
+            if (parameter.ParameterPolicies?.Count > 0)
+            {
+                foreach (var policy in parameter.ParameterPolicies)
+                {
+                    if (policy.Content != null)
+                    {
+                        specificity += GetConstraintSpecificityWeight(policy.Content);
+                    }
+                }
+            }
+        }
+
+        return specificity;
+    }
+
+    private static int GetConstraintSpecificityWeight(string constraintName)
+    {
+        return constraintName.ToLowerInvariant() switch
+        {
+            // Strong typed constraints that are very restrictive and has
+            // the highest specificity
+            "guid" => 100,
+            "datetime" => 90,
+            "decimal" => 85,
+            "double" => 80,
+            "float" => 75,
+            "long" => 70,
+            "int" => 65,
+            "bool" => 60,
+
+            // Range constraint are more restrictive than other types
+            var range when range.StartsWith("range(", StringComparison.OrdinalIgnoreCase) => 55,
+            var min when min.StartsWith("min(", StringComparison.OrdinalIgnoreCase) => 50,
+            var max when max.StartsWith("max(", StringComparison.OrdinalIgnoreCase) => 50,
+
+            // This one is a bit odd, but we will consider it less specific than range,
+            // since it defines only the length of the value and will consider it as raw
+            // string not a number.
+            var length when length.StartsWith("length(", StringComparison.OrdinalIgnoreCase) => 45,
+            var minlength when minlength.StartsWith("minlength(", StringComparison.OrdinalIgnoreCase) => 40,
+            var maxlength when maxlength.StartsWith("maxlength(", StringComparison.OrdinalIgnoreCase) => 40,
+
+            // String patterns, which are less specific than length
+            "alpha" => 35,
+            var regex when regex.StartsWith("regex(", StringComparison.OrdinalIgnoreCase) => 30,
+
+            // File constraints
+            "file" => 25,
+            "nonfile" => 25,
+
+            // Least specific just requires non empty
+            "required" => 10,
+
+            // Unknown constraint, assign medium specificity to it
+            _ => 20
+        };
     }
 
     private static void ReportAmbiguity(Span<CandidateState> candidateState)
