@@ -14,8 +14,8 @@ internal sealed class SignInManagerMetrics : IDisposable
     public const string RememberTwoFactorCounterName = "aspnetcore.identity.sign_in.remember_two_factor";
     public const string ForgetTwoFactorCounterName = "aspnetcore.identity.sign_in.forget_two_factor";
     public const string CheckPasswordCounterName = "aspnetcore.identity.sign_in.check_password";
-    public const string SignInUserPrincipalCounterName = "aspnetcore.identity.sign_in.sign_in_principal";
-    public const string SignOutUserPrincipalCounterName = "aspnetcore.identity.sign_in.sign_out_principal";
+    public const string SignInUserPrincipalCounterName = "aspnetcore.identity.sign_in.sign_in";
+    public const string SignOutUserPrincipalCounterName = "aspnetcore.identity.sign_in.sign_out";
 
     private readonly Meter _meter;
     private readonly Counter<long> _authenticateCounter;
@@ -29,12 +29,12 @@ internal sealed class SignInManagerMetrics : IDisposable
     {
         _meter = meterFactory.Create(MeterName);
 
-        _authenticateCounter = _meter.CreateCounter<long>(AuthenticateCounterName, "count", "The number of authenticate attempts. The authenticate counter is incremented by sign in methods such as PasswordSignInAsync and TwoFactorSignInAsync.");
-        _rememberTwoFactorClientCounter = _meter.CreateCounter<long>(RememberTwoFactorCounterName, "count", "The number of two factor clients remembered.");
-        _forgetTwoFactorCounter = _meter.CreateCounter<long>(ForgetTwoFactorCounterName, "count", "The number of two factor clients forgotten.");
-        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "count", "The number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.");
-        _signInUserPrincipalCounter = _meter.CreateCounter<long>(SignInUserPrincipalCounterName, "count", "The number of calls to sign in user principals.");
-        _signOutUserPrincipalCounter = _meter.CreateCounter<long>(SignOutUserPrincipalCounterName, "count", "The number of calls to sign out user principals.");
+        _authenticateCounter = _meter.CreateCounter<long>(AuthenticateCounterName, "{count}", "The number of authenticate attempts. The authenticate counter is incremented by sign in methods such as PasswordSignInAsync and TwoFactorSignInAsync.");
+        _rememberTwoFactorClientCounter = _meter.CreateCounter<long>(RememberTwoFactorCounterName, "{count}", "The number of two factor clients remembered.");
+        _forgetTwoFactorCounter = _meter.CreateCounter<long>(ForgetTwoFactorCounterName, "{count}", "The number of two factor clients forgotten.");
+        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "{check}", "The number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.");
+        _signInUserPrincipalCounter = _meter.CreateCounter<long>(SignInUserPrincipalCounterName, "{sign_in}", "The number of calls to sign in user principals.");
+        _signOutUserPrincipalCounter = _meter.CreateCounter<long>(SignOutUserPrincipalCounterName, "{sign_out}", "The number of calls to sign out user principals.");
     }
 
     internal void CheckPasswordSignIn(string userType, SignInResult? result, Exception? exception = null)
@@ -49,7 +49,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
         };
         AddSignInResult(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _checkPasswordCounter.Add(1, tags);
     }
@@ -69,7 +69,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         };
         AddIsPersistent(ref tags, isPersistent);
         AddSignInResult(ref tags, result);
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _authenticateCounter.Add(1, tags);
     }
@@ -87,7 +87,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.authentication_scheme", authenticationScheme },
         };
         AddIsPersistent(ref tags, isPersistent);
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _signInUserPrincipalCounter.Add(1, tags);
     }
@@ -104,7 +104,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.authentication_scheme", authenticationScheme },
         };
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _signOutUserPrincipalCounter.Add(1, tags);
     }
@@ -121,7 +121,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.authentication_scheme", authenticationScheme }
         };
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _rememberTwoFactorClientCounter.Add(1, tags);
     }
@@ -138,7 +138,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             { "aspnetcore.identity.user_type", userType },
             { "aspnetcore.identity.authentication_scheme", authenticationScheme }
         };
-        AddExceptionTags(ref tags, exception);
+        AddErrorTag(ref tags, exception);
 
         _forgetTwoFactorCounter.Add(1, tags);
     }
@@ -164,7 +164,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         }
     }
 
-    private static void AddExceptionTags(ref TagList tags, Exception? exception)
+    private static void AddErrorTag(ref TagList tags, Exception? exception)
     {
         if (exception != null)
         {
@@ -182,7 +182,7 @@ internal sealed class SignInManagerMetrics : IDisposable
             SignInType.TwoFactor => "two_factor",
             SignInType.External => "external",
             SignInType.Passkey => "passkey",
-            _ => "_UNKNOWN"
+            _ => "_OTHER"
         };
     }
 

@@ -174,7 +174,7 @@ public class UserManagerTest
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "failure"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.result_error_code", "ConcurrencyFailure")
+                KeyValuePair.Create<string, object>("aspnetcore.identity.error_code", "ConcurrencyFailure")
             ]));
     }
 
@@ -664,7 +664,7 @@ public class UserManagerTest
         Assert.Collection(checkPassword.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.user.password_result", "success_rehash_needed")
+                KeyValuePair.Create<string, object>("aspnetcore.identity.password_check_result", "success_rehash_needed")
             ]));
     }
 
@@ -871,7 +871,7 @@ public class UserManagerTest
         Assert.Collection(checkPassword.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.user.password_result", "user_missing")
+                KeyValuePair.Create<string, object>("aspnetcore.identity.password_check_result", "user_missing")
             ]));
     }
 
@@ -952,13 +952,13 @@ public class UserManagerTest
         Assert.Collection(generateToken.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_UNKNOWN"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_OTHER"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
         Assert.Collection(verifyToken.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_UNKNOWN"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_OTHER"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
     }
