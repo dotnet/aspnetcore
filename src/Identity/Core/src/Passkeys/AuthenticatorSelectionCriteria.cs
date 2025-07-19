@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Identity;
 /// <remarks>
 /// See <see href="https://www.w3.org/TR/webauthn-3/#dictdef-authenticatorselectioncriteria"/>.
 /// </remarks>
-public sealed class AuthenticatorSelectionCriteria
+internal sealed class AuthenticatorSelectionCriteria
 {
     /// <summary>
     /// Gets or sets the authenticator attachment.
@@ -42,5 +42,5 @@ public sealed class AuthenticatorSelectionCriteria
     /// <remarks>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#dom-authenticatorselectioncriteria-userverification"/>.
     /// </remarks>
-    public string UserVerification { get; set; } = "preferred";
+    public string? UserVerification { get; set; }
 }

@@ -138,6 +138,8 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
     where TRoleClaim : IdentityRoleClaim<TKey>, new()
     where TUserPasskey : IdentityUserPasskey<TKey>, new()
 {
+    private bool? _dbContextSupportsPasskeys;
+
     /// <summary>
     /// Creates a new instance of the store.
     /// </summary>
@@ -160,7 +162,14 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
     private DbSet<TUserRole> UserRoles { get { return Context.Set<TUserRole>(); } }
     private DbSet<TUserLogin> UserLogins { get { return Context.Set<TUserLogin>(); } }
     private DbSet<TUserToken> UserTokens { get { return Context.Set<TUserToken>(); } }
-    private DbSet<TUserPasskey> UserPasskeys { get { return Context.Set<TUserPasskey>(); } }
+    private DbSet<TUserPasskey> UserPasskeys
+    {
+        get
+        {
+            ThrowIfPasskeysNotSupported();
+            return Context.Set<TUserPasskey>();
+        }
+    }
 
     /// <summary>
     /// Gets or sets a flag indicating if changes should be persisted after CreateAsync, UpdateAsync and DeleteAsync are called.
@@ -702,16 +711,19 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         {
             UserId = user.Id,
             CredentialId = passkey.CredentialId,
-            PublicKey = passkey.PublicKey,
-            Name = passkey.Name,
-            CreatedAt = passkey.CreatedAt,
-            Transports = passkey.Transports,
-            SignCount = passkey.SignCount,
-            IsUserVerified = passkey.IsUserVerified,
-            IsBackupEligible = passkey.IsBackupEligible,
-            IsBackedUp = passkey.IsBackedUp,
-            AttestationObject = passkey.AttestationObject,
-            ClientDataJson = passkey.ClientDataJson,
+            Data = new()
+            {
+                PublicKey = passkey.PublicKey,
+                Name = passkey.Name,
+                CreatedAt = passkey.CreatedAt,
+                Transports = passkey.Transports,
+                SignCount = passkey.SignCount,
+                IsUserVerified = passkey.IsUserVerified,
+                IsBackupEligible = passkey.IsBackupEligible,
+                IsBackedUp = passkey.IsBackedUp,
+                AttestationObject = passkey.AttestationObject,
+                ClientDataJson = passkey.ClientDataJson,
+            }
         };
     }
 
@@ -722,7 +734,7 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
     /// <param name="credentialId">The credential id to search for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The user passkey if it exists.</returns>
-    protected virtual Task<TUserPasskey?> FindUserPasskeyAsync(TKey userId, byte[] credentialId, CancellationToken cancellationToken)
+    private Task<TUserPasskey?> FindUserPasskeyAsync(TKey userId, byte[] credentialId, CancellationToken cancellationToken)
     {
         return UserPasskeys.SingleOrDefaultAsync(
             userPasskey => userPasskey.UserId.Equals(userId) && userPasskey.CredentialId.SequenceEqual(credentialId),
@@ -735,7 +747,7 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
     /// <param name="credentialId">The credential id to search for.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The user passkey if it exists.</returns>
-    protected virtual Task<TUserPasskey?> FindUserPasskeyByIdAsync(byte[] credentialId, CancellationToken cancellationToken)
+    private Task<TUserPasskey?> FindUserPasskeyByIdAsync(byte[] credentialId, CancellationToken cancellationToken)
     {
         return UserPasskeys.SingleOrDefaultAsync(userPasskey => userPasskey.CredentialId.SequenceEqual(credentialId), cancellationToken);
     }
@@ -748,7 +760,7 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
     /// <param name="passkey"></param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-    public virtual async Task SetPasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+    public virtual async Task AddOrUpdatePasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
@@ -758,9 +770,9 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         var userPasskey = await FindUserPasskeyByIdAsync(passkey.CredentialId, cancellationToken).ConfigureAwait(false);
         if (userPasskey != null)
         {
-            userPasskey.SignCount = passkey.SignCount;
-            userPasskey.IsBackedUp = passkey.IsBackedUp;
-            userPasskey.IsUserVerified = passkey.IsUserVerified;
+            userPasskey.Data.SignCount = passkey.SignCount;
+            userPasskey.Data.IsBackedUp = passkey.IsBackedUp;
+            userPasskey.Data.IsUserVerified = passkey.IsUserVerified;
             UserPasskeys.Update(userPasskey);
         }
         else
@@ -789,16 +801,18 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
             .Where(p => p.UserId.Equals(userId))
             .Select(p => new UserPasskeyInfo(
                 p.CredentialId,
-                p.PublicKey,
-                p.Name,
-                p.CreatedAt,
-                p.SignCount,
-                p.Transports,
-                p.IsUserVerified,
-                p.IsBackupEligible,
-                p.IsBackedUp,
-                p.AttestationObject,
-                p.ClientDataJson))
+                p.Data.PublicKey,
+                p.Data.CreatedAt,
+                p.Data.SignCount,
+                p.Data.Transports,
+                p.Data.IsUserVerified,
+                p.Data.IsBackupEligible,
+                p.Data.IsBackedUp,
+                p.Data.AttestationObject,
+                p.Data.ClientDataJson)
+            {
+                Name = p.Data.Name
+            })
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -844,16 +858,18 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         {
             return new UserPasskeyInfo(
                 passkey.CredentialId,
-                passkey.PublicKey,
-                passkey.Name,
-                passkey.CreatedAt,
-                passkey.SignCount,
-                passkey.Transports,
-                passkey.IsUserVerified,
-                passkey.IsBackupEligible,
-                passkey.IsBackedUp,
-                passkey.AttestationObject,
-                passkey.ClientDataJson);
+                passkey.Data.PublicKey,
+                passkey.Data.CreatedAt,
+                passkey.Data.SignCount,
+                passkey.Data.Transports,
+                passkey.Data.IsUserVerified,
+                passkey.Data.IsBackupEligible,
+                passkey.Data.IsBackedUp,
+                passkey.Data.AttestationObject,
+                passkey.Data.ClientDataJson)
+            {
+                Name = passkey.Data.Name
+            };
         }
         return null;
     }
@@ -877,6 +893,24 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         {
             UserPasskeys.Remove(passkey);
             await SaveChanges(cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    private void ThrowIfPasskeysNotSupported()
+    {
+        if (_dbContextSupportsPasskeys == true)
+        {
+            return;
+        }
+
+        _dbContextSupportsPasskeys ??= Context.Model.FindEntityType(typeof(TUserPasskey)) is not null;
+        if (_dbContextSupportsPasskeys == false)
+        {
+            throw new InvalidOperationException(
+                $"This operation is not permitted because the underlying '{nameof(DbContext)}' does not include '{typeof(TUserPasskey).Name}' in its model. " +
+                $"When using '{nameof(IdentityDbContext)}', make sure that '{nameof(IdentityOptions)}.{nameof(IdentityOptions.Stores)}.{nameof(StoreOptions.SchemaVersion)}' " +
+                $"is set to '{nameof(IdentitySchemaVersions)}.{nameof(IdentitySchemaVersions.Version3)}' or higher. " +
+                $"See https://aka.ms/aspnet/passkeys for more information.");
         }
     }
 }

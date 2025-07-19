@@ -119,9 +119,12 @@ public class SignInManagerTest
             ]));
     }
 
-    private static Mock<UserManager<PocoUser>> SetupUserManager(PocoUser user, IMeterFactory meterFactory = null)
+    private static Mock<UserManager<PocoUser>> SetupUserManager(
+        PocoUser user,
+        IMeterFactory meterFactory = null,
+        IPasskeyHandler<PocoUser> passkeyHandler = null)
     {
-        var manager = MockHelpers.MockUserManager<PocoUser>(meterFactory);
+        var manager = MockHelpers.MockUserManager<PocoUser>(meterFactory, passkeyHandler);
         manager.Setup(m => m.FindByNameAsync(user.UserName)).ReturnsAsync(user);
         manager.Setup(m => m.FindByIdAsync(user.Id)).ReturnsAsync(user);
         manager.Setup(m => m.GetUserIdAsync(user)).ReturnsAsync(user.Id.ToString());
@@ -134,8 +137,7 @@ public class SignInManagerTest
         HttpContext context,
         ILogger logger = null,
         IdentityOptions identityOptions = null,
-        IAuthenticationSchemeProvider schemeProvider = null,
-        IPasskeyHandler<PocoUser> passkeyHandler = null)
+        IAuthenticationSchemeProvider schemeProvider = null)
     {
         var contextAccessor = new Mock<IHttpContextAccessor>();
         contextAccessor.Setup(a => a.HttpContext).Returns(context);
@@ -145,7 +147,6 @@ public class SignInManagerTest
         options.Setup(a => a.Value).Returns(identityOptions);
         var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager, roleManager.Object, options.Object);
         schemeProvider = schemeProvider ?? new MockSchemeProvider();
-        passkeyHandler = passkeyHandler ?? Mock.Of<IPasskeyHandler<PocoUser>>();
         var sm = new SignInManager<PocoUser>(
             manager,
             contextAccessor.Object,
@@ -153,8 +154,7 @@ public class SignInManagerTest
             options.Object,
             null,
             schemeProvider,
-            new DefaultUserConfirmation<PocoUser>(),
-            passkeyHandler);
+            new DefaultUserConfirmation<PocoUser>());
         sm.Logger = logger ?? NullLogger<SignInManager<PocoUser>>.Instance;
         return sm;
     }
@@ -432,27 +432,37 @@ public class SignInManagerTest
         using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
-        var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
         var assertionResult = PasskeyAssertionResult.Success(passkey, user);
         var passkeyHandler = new Mock<IPasskeyHandler<PocoUser>>();
+        var expectedOptionsJson = "<some-options-json>";
         passkeyHandler
-            .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext<PocoUser>>()))
+            .Setup(h => h.MakeRequestOptionsAsync(user, It.IsAny<HttpContext>()))
+            .Returns(Task.FromResult(new PasskeyRequestOptionsResult
+            {
+                AssertionState = "<some-assertion-state>",
+                RequestOptionsJson = expectedOptionsJson,
+            }));
+        passkeyHandler
+            .Setup(h => h.PerformAssertionAsync(It.IsAny<PasskeyAssertionContext>()))
             .Returns(Task.FromResult(assertionResult));
-        var manager = SetupUserManager(user, meterFactory: testMeterFactory);
+        var manager = SetupUserManager(user, meterFactory: testMeterFactory, passkeyHandler: passkeyHandler.Object);
         manager
-            .Setup(m => m.SetPasskeyAsync(user, passkey))
+            .Setup(m => m.AddOrUpdatePasskeyAsync(user, passkey))
             .Returns(Task.FromResult(IdentityResult.Success))
             .Verifiable();
         var context = new DefaultHttpContext();
         var auth = MockAuth(context);
         SetupSignIn(context, auth, user.Id, isPersistent: false, loginProvider: null);
-        var helper = SetupSignInManager(manager.Object, context, passkeyHandler: passkeyHandler.Object);
+        SetupPasskeyAuth(context, auth);
+        var helper = SetupSignInManager(manager.Object, context);
 
         // Act
-        var passkeyRequestOptions = new PasskeyRequestOptions(userId: user.Id, "<some-options>");
-        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>", passkeyRequestOptions);
+        var optionsJson = await helper.MakePasskeyRequestOptionsAsync(user);
+        var signInResult = await helper.PasskeySignInAsync(credentialJson: "<some-passkey>");
 
         // Assert
+        Assert.Equal(expectedOptionsJson, optionsJson);
         Assert.True(assertionResult.Succeeded);
         Assert.Same(SignInResult.Success, signInResult);
         manager.Verify();
@@ -474,6 +484,45 @@ public class SignInManagerTest
                 KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
             ]));
+    }
+
+    private static void SetupPasskeyAuth(HttpContext context, Mock<IAuthenticationService> auth)
+    {
+        // Calling AuthenticateAsync will return a failure result
+        // unless SignInAsync has been called first.
+        var failedAuthenticateResult = AuthenticateResult.Fail("Not currently signed in.");
+        var authenticateResult = failedAuthenticateResult;
+
+        auth.Setup(a => a.SignInAsync(
+            context,
+            IdentityConstants.TwoFactorUserIdScheme,
+            It.IsAny<ClaimsPrincipal>(),
+            It.IsAny<AuthenticationProperties>()))
+            .Callback((HttpContext context, string scheme, ClaimsPrincipal claimsPrincipal, AuthenticationProperties authenticationProperties) =>
+            {
+                var authenticationTicket = new AuthenticationTicket(
+                    claimsPrincipal,
+                    authenticationProperties,
+                    IdentityConstants.TwoFactorUserIdScheme);
+                authenticateResult = AuthenticateResult.Success(authenticationTicket);
+            })
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        auth.Setup(a => a.SignOutAsync(
+            context,
+            IdentityConstants.TwoFactorUserIdScheme,
+            It.IsAny<AuthenticationProperties>()))
+            .Callback(() =>
+            {
+                authenticateResult = failedAuthenticateResult;
+            })
+            .Returns(Task.CompletedTask)
+            .Verifiable();
+
+        auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.TwoFactorUserIdScheme))
+            .Returns(() => Task.FromResult(authenticateResult))
+            .Verifiable();
     }
 
     private class GoodTokenProvider : AuthenticatorTokenProvider<PocoUser>
@@ -1612,114 +1661,6 @@ public class SignInManagerTest
         Assert.Same(expectedSignInResult, result);
         manager.Verify();
         auth.Verify();
-    }
-
-    [Fact]
-    public async Task GeneratePasskeyCreationOptionsAsyncReturnsExpectedOptions()
-    {
-        // Arrange
-        var user = new PocoUser { UserName = "Foo" };
-        var userManager = SetupUserManager(user);
-        var context = new DefaultHttpContext();
-        var identityOptions = new IdentityOptions()
-        {
-            Passkey = new()
-            {
-                ChallengeSize = 32,
-                Timeout = TimeSpan.FromMinutes(10),
-                ServerDomain = "example.com",
-            },
-        };
-        var signInManager = SetupSignInManager(userManager.Object, context, identityOptions: identityOptions);
-        var userEntity = new PasskeyUserEntity(id: "1234", name: "Foo", displayName: "Foo");
-        var creationArgs = new PasskeyCreationArgs(userEntity)
-        {
-            Attestation = "some-attestation-value",
-            AuthenticatorSelection = new AuthenticatorSelectionCriteria
-            {
-                AuthenticatorAttachment = "cross-platform",
-                ResidentKey = "required",
-                UserVerification = "preferred"
-            },
-            Extensions = JsonElement.Parse("""
-                {
-                    "my.bool.extension": true,
-                    "my.object.extension": {
-                        "key": "value"
-                    }
-                }
-                """),
-        };
-
-        // Act
-        var options = await signInManager.GeneratePasskeyCreationOptionsAsync(creationArgs);
-        var optionsJson = JsonNode.Parse(options.AsJson()).AsObject();
-        var challenge = Base64Url.DecodeFromChars(optionsJson["challenge"].ToString());
-
-        // Assert
-        Assert.NotNull(options);
-        Assert.Same(userEntity, options.UserEntity);
-        Assert.Equal(identityOptions.Passkey.ServerDomain, optionsJson["rp"]["id"].ToString());
-        Assert.Equal(identityOptions.Passkey.ServerDomain, optionsJson["rp"]["name"].ToString());
-        Assert.Equal(identityOptions.Passkey.ChallengeSize, challenge.Length);
-        Assert.Equal((uint)identityOptions.Passkey.Timeout.TotalMilliseconds, (uint)optionsJson["timeout"]);
-        Assert.Equal(creationArgs.Attestation, optionsJson["attestation"].ToString());
-        Assert.Equal(
-            creationArgs.AuthenticatorSelection.AuthenticatorAttachment,
-            optionsJson["authenticatorSelection"]["authenticatorAttachment"].ToString());
-        Assert.Equal(
-            creationArgs.AuthenticatorSelection.ResidentKey,
-            optionsJson["authenticatorSelection"]["residentKey"].ToString());
-        Assert.Equal(
-            creationArgs.AuthenticatorSelection.UserVerification,
-            optionsJson["authenticatorSelection"]["userVerification"].ToString());
-        Assert.True((bool)optionsJson["extensions"]["my.bool.extension"]);
-        Assert.Equal("value", optionsJson["extensions"]["my.object.extension"]["key"].ToString());
-    }
-
-    [Fact]
-    public async Task GeneratePasskeyRequestOptionsAsyncReturnsExpectedOptions()
-    {
-        // Arrange
-        var user = new PocoUser { UserName = "Foo" };
-        var userManager = SetupUserManager(user);
-        var context = new DefaultHttpContext();
-        var identityOptions = new IdentityOptions()
-        {
-            Passkey = new()
-            {
-                ChallengeSize = 32,
-                Timeout = TimeSpan.FromMinutes(10),
-                ServerDomain = "example.com",
-            },
-        };
-        var signInManager = SetupSignInManager(userManager.Object, context, identityOptions: identityOptions);
-        var requestArgs = new PasskeyRequestArgs<PocoUser>
-        {
-            UserVerification = "preferred",
-            Extensions = JsonElement.Parse("""
-                {
-                    "my.bool.extension": true,
-                    "my.object.extension": {
-                        "key": "value"
-                    }
-                }
-                """),
-        };
-
-        // Act
-        var options = await signInManager.GeneratePasskeyRequestOptionsAsync(requestArgs);
-        var optionsJson = JsonNode.Parse(options.AsJson()).AsObject();
-        var challenge = Base64Url.DecodeFromChars(optionsJson["challenge"].ToString());
-
-        // Assert
-        Assert.NotNull(options);
-        Assert.Equal(identityOptions.Passkey.ServerDomain, optionsJson["rpId"].ToString());
-        Assert.Equal(identityOptions.Passkey.ChallengeSize, challenge.Length);
-        Assert.Equal((uint)identityOptions.Passkey.Timeout.TotalMilliseconds, (uint)optionsJson["timeout"]);
-        Assert.Equal(requestArgs.UserVerification, optionsJson["userVerification"].ToString());
-        Assert.True((bool)optionsJson["extensions"]["my.bool.extension"]);
-        Assert.Equal("value", optionsJson["extensions"]["my.object.extension"]["key"].ToString());
     }
 
     private static SignInManager<PocoUser> SetupSignInManagerType(UserManager<PocoUser> manager, HttpContext context, string typeName)
