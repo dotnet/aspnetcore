@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits;
 /// <see cref="DisconnectedCircuits"/> should ensure we no longer have to concern ourselves with entry expiration.
 ///
 /// Knowing when a client disconnected is not an exact science. There's a fair possibility that a client may reconnect before the server realizes.
-/// Consequently, we have to account for reconnects and disconnects occuring simultaneously as well as appearing out of order.
+/// Consequently, we have to account for reconnects and disconnects occurring simultaneously as well as appearing out of order.
 /// To manage this, we use a critical section to manage all state transitions.
 /// </remarks>
 #pragma warning disable CA1852 // Seal internal types
@@ -43,6 +43,7 @@ internal partial class CircuitRegistry
     private readonly CircuitIdFactory _circuitIdFactory;
     private readonly CircuitPersistenceManager _circuitPersistenceManager;
     private readonly PostEvictionCallbackRegistration _postEvictionCallback;
+    private static readonly TimeSpan _terminateOnHiddenPeriod = TimeSpan.FromMinutes(3);
 
     public CircuitRegistry(
         IOptions<CircuitOptions> options,
@@ -90,6 +91,11 @@ internal partial class CircuitRegistry
     public virtual Task DisconnectAsync(CircuitHost circuitHost, string connectionId)
     {
         Log.CircuitDisconnectStarted(_logger, circuitHost.CircuitId, connectionId);
+
+        if (CircuitQualifiesForTermination(circuitHost))
+        {
+            return TerminateAsync(circuitHost.CircuitId).AsTask();
+        }
 
         Task circuitHandlerTask;
         lock (CircuitRegistryLock)
@@ -400,6 +406,36 @@ internal partial class CircuitRegistry
         }
 
         return default;
+    }
+
+    public void UpdatePageHiddenTimestamp(CircuitId circuitId, bool isVisible)
+    {
+        if (ConnectedCircuits.TryGetValue(circuitId, out var circuitHost))
+        {
+            circuitHost.PageHiddenAt = isVisible ? null : DateTime.UtcNow;
+        }
+
+        Debug.Assert(isVisible || !DisconnectedCircuits.TryGetValue(circuitId.Secret, out _));
+    }
+
+    /// <summary>
+    /// Provides a heuristic to determine if the disconnected circuit can be fully terminated and disposed, or should be moved to the <see cref="DisconnectedCircuits"/> cache.
+    ///
+    /// This optimization is intended mainly for mobile browsers where the client often doesn't send the explicit cleanup beacon processed by <see cref="CircuitDisconnectMiddleware"/>.
+    /// However, we check how recently the page has been hidden against a threshold because we don't want to dispose circuits that have been disconnected due to other client-side optimizations (e.g. tab freezing or throttling).
+    /// </summary>
+    /// <returns>True if the circuit can be terminated, false otherwise.</returns>
+    private static bool CircuitQualifiesForTermination(CircuitHost circuitHost)
+    {
+        if (!circuitHost.PageHiddenAt.HasValue)
+        {
+            // If the server doesn't know that the page has been hidden, assume that the client might want to restore the circuit.
+            return false;
+        }
+
+        // If the page has been hidden recently, assume that the client will not want to restore the circuit.
+        var timeSinceHidden = DateTime.UtcNow - circuitHost.PageHiddenAt.Value;
+        return timeSinceHidden <= _terminateOnHiddenPeriod;
     }
 
     // We don't need to do anything with the exception here, logging and sending exceptions to the client

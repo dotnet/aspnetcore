@@ -80,11 +80,16 @@ public static class ComponentEndpointRouteBuilderExtensions
             endpoints.CreateApplicationBuilder().UseMiddleware<CircuitDisconnectMiddleware>().Build())
             .WithDisplayName("Blazor disconnect");
 
+        var visibilityChangeEndpoint = endpoints.Map(
+            (path.EndsWith('/') ? path : path + "/") + "visibility/",
+            endpoints.CreateApplicationBuilder().UseMiddleware<CircuitVisibilityChangeMiddleware>().Build())
+            .WithDisplayName("Blazor visibility change");
+
         var jsInitializersEndpoint = endpoints.Map(
             (path.EndsWith('/') ? path : path + "/") + "initializers/",
             endpoints.CreateApplicationBuilder().UseMiddleware<CircuitJavaScriptInitializationMiddleware>().Build())
             .WithDisplayName("Blazor initializers");
 
-        return new ComponentEndpointConventionBuilder(hubEndpoint, disconnectEndpoint, jsInitializersEndpoint);
+        return new ComponentEndpointConventionBuilder(hubEndpoint, disconnectEndpoint, visibilityChangeEndpoint, jsInitializersEndpoint);
     }
 }
