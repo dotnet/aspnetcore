@@ -31,7 +31,7 @@ public class PersistentComponentState
 
     internal bool PersistingState { get; set; }
 
-    internal RestoreContext CurrentContext { get; private set; }
+    internal RestoreContext CurrentContext { get; private set; } = RestoreContext.InitialValue;
 
     internal void InitializeExistingState(IDictionary<string, byte[]> existingState, RestoreContext context)
     {
