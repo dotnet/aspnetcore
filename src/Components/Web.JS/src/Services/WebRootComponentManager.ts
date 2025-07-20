@@ -269,10 +269,16 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
   private refreshRootComponents(components: Iterable<RootComponentInfo>) {
     const operationsByRendererId = new Map<WebRendererId, RootComponentOperation[]>();
-
     for (const component of components) {
       const operation = this.determinePendingOperation(component);
       if (!operation) {
+        if (component.assignedRendererId) {
+          // If there are operations we will update the persisted component state for that
+          // render mode. But if we detect a component that doesn't require any update we
+          // still want to add an entry so that we process any persisted state update.
+          // This case is specially common during streaming rendering.
+          operationsByRendererId.set(component.assignedRendererId, []);
+        }
         continue;
       }
 
