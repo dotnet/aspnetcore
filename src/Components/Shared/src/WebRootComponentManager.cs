@@ -230,7 +230,6 @@ internal partial class WebAssemblyRenderer
                 await renderer.RenderRootComponentAsync(_interactiveComponentId, _latestParameters.Parameters);
             }
 
-
             public void Remove(Renderer renderer)
             {
                 renderer.RemoveRootComponent(_interactiveComponentId);
