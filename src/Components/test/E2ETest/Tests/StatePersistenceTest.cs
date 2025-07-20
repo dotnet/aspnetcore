@@ -117,7 +117,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     // For server we validate that the state is provided every time a circuit is initialized.
     [Theory]
     [InlineData(typeof(InteractiveServerRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming", Skip = "Streaming not yet supported")]
+    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming")]
     [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null)]
     [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming", Skip = "Streaming not yet supported")]
     [InlineData(typeof(InteractiveAutoRenderMode), (string)null)]

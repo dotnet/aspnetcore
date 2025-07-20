@@ -1,11 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Globalization;
 using System.Text;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.Rendering;
 
 // Holds different types of outputs that can be written to BufferedTextWriter
+
+[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
 internal readonly struct TextChunk
 {
     private readonly TextChunkType _type;
@@ -74,4 +78,16 @@ internal readonly struct TextChunk
     }
 
     private enum TextChunkType { Int, String, Char, CharArraySegment };
+
+    internal string GetDebuggerDisplay()
+    {
+        return _type switch
+        {
+            TextChunkType.String => _stringValue!,
+            TextChunkType.Char => $"{_charValue}",
+            TextChunkType.CharArraySegment => "<<Buffer>>",
+            TextChunkType.Int => _intValue.ToString(CultureInfo.InvariantCulture),
+            _ => throw new NotImplementedException(),
+        };
+    }
 }
