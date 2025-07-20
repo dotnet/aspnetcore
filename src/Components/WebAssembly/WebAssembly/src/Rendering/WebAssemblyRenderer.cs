@@ -52,13 +52,16 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private void OnUpdateRootComponents(RootComponentOperationBatch batch, string appState)
     {
         var webRootComponentManager = GetOrCreateWebRootComponentManager();
-
+        TaskCompletionSource? taskCompletionSource = null;
+        var stateUpdateTask = Task.CompletedTask;
         var store = !string.IsNullOrEmpty(appState) ? new PrerenderComponentApplicationStore(appState) : null;
         if (store != null)
         {
-            // Restore the state from the store if it exists
-            _ = _componentStatePersistenceManager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
+            taskCompletionSource = new TaskCompletionSource();
+            stateUpdateTask = EnqueueRestore(taskCompletionSource.Task, _componentStatePersistenceManager, store);
         }
+
+        webRootComponentManager.SetCurrentUpdateTask(stateUpdateTask);
 
         for (var i = 0; i < batch.Operations.Length; i++)
         {
@@ -84,10 +87,19 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
                     break;
             }
         }
-
+        taskCompletionSource?.SetResult();
         store?.ExistingState.Clear();
 
         NotifyEndUpdateRootComponents(batch.BatchId);
+    }
+
+    private static async Task EnqueueRestore(
+        Task task,
+        ComponentStatePersistenceManager componentStatePersistenceManager,
+        PrerenderComponentApplicationStore store)
+    {
+        await task;
+        await componentStatePersistenceManager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
     }
 
     protected override IComponentRenderMode? GetComponentRenderMode(IComponent component) => RenderMode.InteractiveWebAssembly;

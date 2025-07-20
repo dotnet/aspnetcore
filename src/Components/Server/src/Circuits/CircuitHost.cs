@@ -311,7 +311,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public async Task OnConnectionDownAsync(CancellationToken cancellationToken)
     {
-        if(_onConnectionDownFired)
+        if (_onConnectionDownFired)
         {
             return;
         }
@@ -772,6 +772,8 @@ internal partial class CircuitHost : IAsyncDisposable
             var shouldWaitForQuiescence = false;
             var operations = operationBatch.Operations;
             var batchId = operationBatch.BatchId;
+            var postRemovalTask = Task.CompletedTask;
+            TaskCompletionSource? taskCompletionSource = null;
             try
             {
                 if (Descriptors.Count > 0)
@@ -787,21 +789,29 @@ internal partial class CircuitHost : IAsyncDisposable
                     shouldClearStore = true;
                     // We only do this if we have no root components. Otherwise, the state would have been
                     // provided during the start up process
-                    var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                    var persistenceManager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
                     if (_isFirstUpdate)
                     {
-                        appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
+                        persistenceManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
                     }
 
                     // Use the appropriate scenario based on whether this is a restore operation
-                    var scenario = (isRestore, _isFirstUpdate) switch
+                    var context = (isRestore, _isFirstUpdate) switch
                     {
                         (_, false) => RestoreContext.ValueUpdate,
                         (true, _) => RestoreContext.LastSnapshot,
                         (false, _) => RestoreContext.InitialValue
                     };
-
-                    await appLifetime.RestoreStateAsync(store, scenario);
+                    if (context == RestoreContext.ValueUpdate)
+                    {
+                        taskCompletionSource = new();
+                        postRemovalTask = EnqueueRestore(taskCompletionSource, persistenceManager, store);
+                    }
+                    else
+                    {
+                        // Trigger the restore of the state right away.
+                        await persistenceManager.RestoreStateAsync(store, context);
+                    }
                 }
 
                 if (_isFirstUpdate)
@@ -825,7 +835,10 @@ internal partial class CircuitHost : IAsyncDisposable
                     }
                 }
 
-                await PerformRootComponentOperations(operations, shouldWaitForQuiescence);
+                var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask);
+                taskCompletionSource?.SetResult();
+
+                await operationsTask;
 
                 await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
 
@@ -851,11 +864,23 @@ internal partial class CircuitHost : IAsyncDisposable
         });
     }
 
+    private static async Task EnqueueRestore(
+        TaskCompletionSource taskCompletionSource,
+        ComponentStatePersistenceManager manager,
+        IPersistentComponentStateStore store)
+    {
+        await taskCompletionSource.Task;
+        await manager.RestoreStateAsync(store);
+    }
+
     private async ValueTask PerformRootComponentOperations(
         RootComponentOperation[] operations,
-        bool shouldWaitForQuiescence)
+        bool shouldWaitForQuiescence,
+        Task postStateTask)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
+        webRootComponentManager.SetCurrentUpdateTask(postStateTask);
+
         var pendingTasks = shouldWaitForQuiescence
             ? new Task[operations.Length]
             : null;
@@ -875,6 +900,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             operation.Descriptor.ComponentType,
                             operation.Marker.Value.Key,
                             operation.Descriptor.Parameters);
+
                         pendingTasks?[i] = task;
                         break;
                     case RootComponentOperationType.Update:

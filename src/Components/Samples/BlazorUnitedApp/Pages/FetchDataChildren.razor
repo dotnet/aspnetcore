@@ -1,7 +1,6 @@
 ﻿@using BlazorUnitedApp.Data
 @inject WeatherForecastService ForecastService
 @inject NavigationManager NavigationManager
-@attribute [StreamRendering]
 
 <h1>Weather forecast</h1>
 
@@ -47,7 +46,7 @@ else
         <a href="fetchdata/?page=0">Page 0</a>
     </li>
     <li>
-        <a href="fetchdata/?page=1">Page 1</a>
+        <a href="fetchdata/?page=1&YayOrNay=true">Page 1</a>
     </li>
     <li>
         <a href="fetchdata/?page=2">Page 2</a>
