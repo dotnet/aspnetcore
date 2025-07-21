@@ -28,20 +28,15 @@ public class TestClientTests
         RequestDelegate appDelegate = ctx =>
             ctx.Response.WriteAsync(expected);
         using var host = new HostBuilder()
-
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => app.Run(appDelegate));
-
             })
-
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -67,18 +62,15 @@ public class TestClientTests
         using var host = new HostBuilder()
 
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => app.Run(appDelegate));
 
             })
-
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -101,21 +93,17 @@ public class TestClientTests
             Assert.Equal("/", ctx.Request.Path.Value);
             return ctx.Response.WriteAsync(expected);
         };
+
         using var host = new HostBuilder()
-
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => app.Run(appDelegate));
-
             })
-
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -139,18 +127,14 @@ public class TestClientTests
         using var host = new HostBuilder()
 
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => app.Run(appDelegate));
-
             })
-
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -172,18 +156,14 @@ public class TestClientTests
         using var host = new HostBuilder()
 
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => app.Run(appDelegate));
-
             })
-
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -276,6 +256,8 @@ public class TestClientTests
             })
             .Build();
 
+        await host.StartAsync();
+
         var server = host.GetTestServer();
         var client = server.CreateClient();
 
@@ -341,6 +323,8 @@ public class TestClientTests
             })
             .Build();
 
+        await host.StartAsync();
+
         var server = host.GetTestServer();
         var client = server.CreateClient();
 
@@ -399,6 +383,8 @@ public class TestClientTests
                     .Configure(app => app.Run(appDelegate));
             })
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -464,6 +450,8 @@ public class TestClientTests
                     .Configure(app => app.Run(appDelegate));
             })
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -536,6 +524,9 @@ public class TestClientTests
             .Build();
 
         var server = host.GetTestServer();
+
+        await host.StartAsync();
+
         var client = server.CreateClient();
 
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
@@ -589,6 +580,8 @@ public class TestClientTests
                     .Configure(app => app.Run(appDelegate));
             })
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -650,6 +643,9 @@ public class TestClientTests
             .Build();
 
         var server = host.GetTestServer();
+
+        await host.StartAsync();
+
         var client = server.CreateClient();
 
         var httpRequest = new HttpRequestMessage(HttpMethod.Post, "http://localhost:12345");
@@ -989,20 +985,15 @@ public class TestClientTests
 
         // Act
         using var host = new HostBuilder()
-
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => app.Run(appDelegate));
-
             })
-
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -1112,20 +1103,15 @@ public class TestClientTests
             await ctx.Response.WriteAsync(expected);
         };
         using var host = new HostBuilder()
-
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => app.Run(appDelegate));
-
             })
-
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -1153,20 +1139,15 @@ public class TestClientTests
             await ctx.Response.WriteAsync(expected);
         };
         using var host = new HostBuilder()
-
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => app.Run(appDelegate));
-
             })
-
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();
@@ -1195,20 +1176,15 @@ public class TestClientTests
             await ctx.Response.WriteAsync(expected);
         };
         using var host = new HostBuilder()
-
             .ConfigureWebHost(webBuilder =>
-
             {
-
                 webBuilder
-
                     .UseTestServer()
-
                     .Configure(app => app.Run(appDelegate));
-
             })
-
             .Build();
+
+        await host.StartAsync();
 
         var server = host.GetTestServer();
         var client = server.CreateClient();

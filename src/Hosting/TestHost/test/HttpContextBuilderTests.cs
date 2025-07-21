@@ -29,6 +29,9 @@ public class HttpContextBuilderTests
             })
             .Build();
         var server = host.GetTestServer();
+
+        await host.StartAsync();
+
         server.BaseAddress = new Uri("https://example.com/A/Path/");
         var context = await server.SendAsync(c =>
         {
@@ -67,6 +70,9 @@ public class HttpContextBuilderTests
             })
             .Build();
         var server = host.GetTestServer();
+
+        await host.StartAsync();
+
         server.BaseAddress = new Uri("https://example.com/");
         var context = await server.SendAsync(c =>
         {
@@ -89,6 +95,9 @@ public class HttpContextBuilderTests
             })
             .Build();
         var server = host.GetTestServer();
+
+        await host.StartAsync();
+
         var context = await server.SendAsync(c =>
         {
             c.Request.Path = "/";
@@ -117,6 +126,9 @@ public class HttpContextBuilderTests
             })
             .Build();
         var server = host.GetTestServer();
+
+        await host.StartAsync();
+
         var context = await server.SendAsync(c => { });
 
         Assert.Equal("TestValue", context.Response.Headers["TestHeader"]);
@@ -356,6 +368,8 @@ public class HttpContextBuilderTests
             })
             .Build();
         var server = host.GetTestServer();
+
+        await host.StartAsync();
 
         // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
         var ctx = await server.SendAsync(c => { });

@@ -712,6 +712,8 @@ public class ClientHandlerTests
             .Build();
         var server = host.GetTestServer();
 
+        await host.StartAsync();
+
         // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
         var result = await server.CreateClient().GetStringAsync("/");
     }

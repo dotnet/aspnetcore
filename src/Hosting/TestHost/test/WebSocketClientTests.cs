@@ -41,6 +41,8 @@ public class WebSocketClientTests
             })
             .Build();
 
+        await host.StartAsync();
+
         var testServer = host.GetTestServer();
         var client = testServer.CreateWebSocketClient();
 
@@ -89,6 +91,8 @@ public class WebSocketClientTests
             })
             .Build();
 
+        await host.StartAsync();
+
         var testServer = host.GetTestServer();
         var client = testServer.CreateWebSocketClient();
 
@@ -128,6 +132,8 @@ public class WebSocketClientTests
                     });
             })
             .Build();
+
+        await host.StartAsync();
 
         var testServer = host.GetTestServer();
         var client = testServer.CreateWebSocketClient();

@@ -848,6 +848,8 @@ public class TestServerTests
             })
             .Build();
 
+        await host.StartAsync();
+
         var server = host.GetTestServer();
         var client = server.CreateClient();
 
