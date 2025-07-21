@@ -4,7 +4,7 @@ on:
   schedule:
     # Runs on the first day of every month at midnight UTC
     - cron: '0 0 1 * *'
-  workflow_dispatch:
+  workflow_dispatch: # for manual triggering
 
 jobs:
   create-issue:
