@@ -51,7 +51,6 @@ public class HttpsConfigurationTests
         }
         else
         {
-            //// Binding succeeds - server is already started, so we just stop it
             await host.StartAsync();
 
             var addr = Assert.Single(host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses);

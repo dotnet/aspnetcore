@@ -1791,4 +1791,3 @@ public class WebHostBuilderTests
         public void AddProvider(ILoggerProvider provider) { }
     }
 }
-//#pragma warning restore CS0618 // Type or member is obsolete

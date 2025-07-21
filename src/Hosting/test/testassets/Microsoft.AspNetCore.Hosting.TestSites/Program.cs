@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 
@@ -22,38 +23,39 @@ public static class Program
             .AddEnvironmentVariables(prefix: "ASPNETCORE_")
             .Build();
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder()
-            .UseServer(new NoopServer())
-            .UseConfiguration(config)
-            .SuppressStatusMessages(true)
-            .ConfigureLogging((_, factory) =>
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                factory.AddConsole();
-                factory.AddFilter<ConsoleLoggerProvider>(level => level >= LogLevel.Warning);
-            })
-            .UseStartup("Microsoft.AspNetCore.Hosting.TestSites");
-#pragma warning restore CS0618 // Type or member is obsolete
+                webHostBuilder.UseServer(new NoopServer())
+                    .UseConfiguration(config)
+                    .SuppressStatusMessages(true)
+                    .ConfigureLogging((_, factory) =>
+                    {
+                        factory.AddConsole();
+                        factory.AddFilter<ConsoleLoggerProvider>(level => level >= LogLevel.Warning);
+                    })
+                    .UseStartup("Microsoft.AspNetCore.Hosting.TestSites");
+            });
 
         if (config["STARTMECHANIC"] == "Run")
-        {
-            var host = builder.Build();
-
-            host.Run();
-        }
-        else if (config["STARTMECHANIC"] == "WaitForShutdown")
-        {
-            using (var host = builder.Build())
             {
-                host.Start();
+                var host = builder.Build();
 
-                host.WaitForShutdown();
+                host.Run();
             }
-        }
-        else
-        {
-            throw new InvalidOperationException("Starting mechanic not specified");
-        }
+            else if (config["STARTMECHANIC"] == "WaitForShutdown")
+            {
+                using (var host = builder.Build())
+                {
+                    host.Start();
+
+                    host.WaitForShutdown();
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Starting mechanic not specified");
+            }
     }
 }
 
