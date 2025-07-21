@@ -5,6 +5,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -301,6 +302,192 @@ public class RouterTest
         Assert.Contains("Use either NotFound or NotFoundPage", exception.Message);
     }
 
+    [Fact]
+    public async Task OnNotFound_WithNotFoundPageSet_UsesNotFoundPage()
+    {
+        // Create a new router instance for this test to control Attach() timing
+        var services = new ServiceCollection();
+        var testNavManager = new TestNavigationManager();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(testNavManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        testRenderer.ShouldHandleExceptions = true;
+        var testRouter = (Router)testRenderer.InstantiateComponent<Router>();
+        testRouter.AppAssembly = Assembly.GetExecutingAssembly();
+        testRouter.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.NotFoundPage), typeof(NotFoundTestComponent) }
+        };
+
+        // Assign the root component ID which will call Attach()
+        testRenderer.AssignRootComponentId(testRouter);
+
+        // Act
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            testRouter.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Trigger the NavigationManager's OnNotFound event
+        await testRenderer.Dispatcher.InvokeAsync(() => testNavManager.TriggerNotFound());
+
+        // Assert
+        var lastBatch = testRenderer.Batches.Last();
+        var renderedFrame = lastBatch.ReferenceFrames.First();
+        Assert.Equal(RenderTreeFrameType.Component, renderedFrame.FrameType);
+        Assert.Equal(typeof(RouteView), renderedFrame.ComponentType);
+
+        // Verify that the RouteData contains the NotFoundTestComponent
+        var routeViewFrame = lastBatch.ReferenceFrames.Skip(1).First();
+        Assert.Equal(RenderTreeFrameType.Attribute, routeViewFrame.FrameType);
+        var routeData = (RouteData)routeViewFrame.AttributeValue;
+        Assert.Equal(typeof(NotFoundTestComponent), routeData.PageType);
+    }
+
+    [Fact]
+    public async Task OnNotFound_WithArgsPathSet_RendersComponentByRoute()
+    {
+        // Create a new router instance for this test to control Attach() timing
+        var services = new ServiceCollection();
+        var testNavManager = new TestNavigationManager();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(testNavManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        testRenderer.ShouldHandleExceptions = true;
+        var testRouter = (Router)testRenderer.InstantiateComponent<Router>();
+        testRouter.AppAssembly = Assembly.GetExecutingAssembly();
+        testRouter.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly }
+        };
+
+        // Subscribe to OnNotFound event BEFORE router attaches and set args.Path
+        testNavManager.OnNotFound += (sender, args) =>
+        {
+            args.Path = "/jan"; // Point to an existing route
+        };
+
+        // Assign the root component ID which will call Attach()
+        testRenderer.AssignRootComponentId(testRouter);
+
+        // Act
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            testRouter.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Trigger the NavigationManager's OnNotFound event
+        await testRenderer.Dispatcher.InvokeAsync(() => testNavManager.TriggerNotFound());
+
+        // Assert
+        var lastBatch = testRenderer.Batches.Last();
+        var renderedFrame = lastBatch.ReferenceFrames.First();
+        Assert.Equal(RenderTreeFrameType.Component, renderedFrame.FrameType);
+        Assert.Equal(typeof(RouteView), renderedFrame.ComponentType);
+
+        // Verify that the RouteData contains the correct component type
+        var routeViewFrame = lastBatch.ReferenceFrames.Skip(1).First();
+        Assert.Equal(RenderTreeFrameType.Attribute, routeViewFrame.FrameType);
+        var routeData = (RouteData)routeViewFrame.AttributeValue;
+        Assert.Equal(typeof(JanComponent), routeData.PageType);
+    }
+
+    [Fact]
+    public async Task OnNotFound_WithBothNotFoundPageAndArgsPath_PreferArgs()
+    {
+        // Create a new router instance for this test to control Attach() timing
+        var services = new ServiceCollection();
+        var testNavManager = new TestNavigationManager();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(testNavManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        testRenderer.ShouldHandleExceptions = true;
+        var testRouter = (Router)testRenderer.InstantiateComponent<Router>();
+        testRouter.AppAssembly = Assembly.GetExecutingAssembly();
+        testRouter.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.NotFoundPage), typeof(NotFoundTestComponent) }
+        };
+
+        // Subscribe to OnNotFound event BEFORE router attaches and sets up its own subscription
+        testNavManager.OnNotFound += (sender, args) =>
+        {
+            args.Path = "/jan"; // This should take precedence over NotFoundPage
+        };
+
+        // Now assign the root component ID which will call Attach()
+        testRenderer.AssignRootComponentId(testRouter);
+
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            testRouter.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // trigger the NavigationManager's OnNotFound event
+        await testRenderer.Dispatcher.InvokeAsync(() => testNavManager.TriggerNotFound());
+
+        // The Router should have rendered using RenderComponentByRoute (args.Path) instead of NotFoundPage
+        var lastBatch = testRenderer.Batches.Last();
+        var renderedFrame = lastBatch.ReferenceFrames.First();
+        Assert.Equal(RenderTreeFrameType.Component, renderedFrame.FrameType);
+        Assert.Equal(typeof(RouteView), renderedFrame.ComponentType);
+
+        // Verify that the RouteData contains the JanComponent (from args.Path), not NotFoundTestComponent
+        var routeViewFrame = lastBatch.ReferenceFrames.Skip(1).First();
+        Assert.Equal(RenderTreeFrameType.Attribute, routeViewFrame.FrameType);
+        var routeData = (RouteData)routeViewFrame.AttributeValue;
+        Assert.Equal(typeof(JanComponent), routeData.PageType);
+    }
+
+    [Fact]
+    public async Task FindComponentTypeByRoute_WithValidRoute_ReturnsComponentType()
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly }
+        };
+
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        var result = _router.FindComponentTypeByRoute("/jan");
+        Assert.Equal(typeof(JanComponent), result);
+    }
+
+    [Fact]
+    public async Task RenderComponentByRoute_WithInvalidRoute_ThrowsException()
+    {
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly }
+        };
+
+        await _renderer.Dispatcher.InvokeAsync(() =>
+            _router.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        var builder = new RenderTreeBuilder();
+
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            _router.RenderComponentByRoute(builder, "/nonexistent-route");
+        });
+        Assert.Contains("No component found for route '/nonexistent-route'", exception.Message);
+    }
+
     internal class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager() =>
@@ -310,6 +497,11 @@ public class RouterTest
         {
             Uri = uri;
             NotifyLocationChanged(intercepted);
+        }
+
+        public void TriggerNotFound()
+        {
+            base.NotFound();
         }
     }
 

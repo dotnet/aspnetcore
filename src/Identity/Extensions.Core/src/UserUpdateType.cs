@@ -35,6 +35,6 @@ internal enum UserUpdateType
     ResetAuthenticatorKey,
     GenerateNewTwoFactorRecoveryCodes,
     RedeemTwoFactorRecoveryCode,
-    SetPasskey,
+    AddOrUpdatePasskey,
     RemovePasskey
 }

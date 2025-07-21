@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Shared;
 namespace Microsoft.AspNetCore.Routing;
 
 /// <summary>
-/// Attribute for providing host metdata that is used during routing.
+/// Attribute for providing host metadata that is used during routing.
 /// </summary>
 [DebuggerDisplay("{ToString(),nq}")]
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = false)]
