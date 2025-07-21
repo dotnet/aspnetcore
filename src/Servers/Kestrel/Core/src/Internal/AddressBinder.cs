@@ -152,10 +152,11 @@ internal sealed class AddressBinder
             }
 
             // Check for use of .localhost TLD (Top Level Domain)
-            if (host.Length > 10 && host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase))
+            const string localhostTld = ".localhost";
+            if (host.Length > localhostTld.Length && host.EndsWith(localhostTld, StringComparison.OrdinalIgnoreCase))
             {
                 // Take all but the .localhost TLD as the prefix
-                prefix = host[..^10]; // 10 is the length of ".localhost"
+                prefix = host[..^localhostTld.Length];
                 return true;
             }
 
