@@ -13,6 +13,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # copilot can be assigned to the issue
+      # https://cli.github.com/manual/gh_issue_create
       - name: Create Issue From Template
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
