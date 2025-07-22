@@ -2785,8 +2785,10 @@ class HubConnectionTest {
 
     @Test
     public void closeWithPendingNegotiate() {
+        SingleSubject<HttpResponse> responseSubject = SingleSubject.create();
+
         TestHttpClient client = new TestHttpClient()
-                .on("POST", (req) -> Single.just(new HttpResponse(404, "", TestUtils.emptyByteBuffer)).delay(200, TimeUnit.MILLISECONDS));
+                .on("POST", (req) -> responseSubject);
 
         HubConnection hubConnection = HubConnectionBuilder
                 .create("http://example.com")
@@ -2795,7 +2797,11 @@ class HubConnectionTest {
 
         Completable start = hubConnection.start();
         assertEquals(HubConnectionState.CONNECTING, hubConnection.getConnectionState());
-        hubConnection.stop().timeout(3, TimeUnit.SECONDS).blockingAwait();
+
+        Completable stop = hubConnection.stop();
+
+        responseSubject.onSuccess(new HttpResponse(404, "", TestUtils.emptyByteBuffer));
+        stop.timeout(3, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.DISCONNECTED, hubConnection.getConnectionState());
 
         HttpRequestException exception = assertThrows(HttpRequestException.class, () -> start.blockingAwait(10, TimeUnit.SECONDS));
