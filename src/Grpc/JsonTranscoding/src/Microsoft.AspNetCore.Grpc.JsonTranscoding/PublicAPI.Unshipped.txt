@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.FieldNamesCaseInsensitive.get -> bool
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.FieldNamesCaseInsensitive.set -> void
