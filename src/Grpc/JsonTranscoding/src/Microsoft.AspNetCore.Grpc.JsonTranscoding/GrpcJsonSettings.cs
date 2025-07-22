@@ -39,8 +39,8 @@ public sealed class GrpcJsonSettings
     /// </summary>
     /// <remarks>
     /// <para>
-    /// The Protobuf JSON specification requires JSON property names to match field names exactly, including case. 
-    /// Enabling this option may reduce interoperability, as case-insensitive field matching might not be supported 
+    /// The Protobuf JSON specification requires JSON property names to match field names exactly, including case.
+    /// Enabling this option may reduce interoperability, as case-insensitive field matching might not be supported
     /// by other JSON transcoding implementations.
     /// </para>
     /// <para>
