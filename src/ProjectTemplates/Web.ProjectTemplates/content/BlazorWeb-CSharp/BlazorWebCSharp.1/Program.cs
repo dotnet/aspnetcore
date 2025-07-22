@@ -101,7 +101,7 @@ if (!app.Environment.IsDevelopment())
 #endif
 }
 
-app.UseStatusCodePagesWithReExecute("/Error", createScopeForStatusCodePages: true);
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 
 #if (HasHttpsProfile)
 app.UseHttpsRedirection();
