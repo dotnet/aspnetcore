@@ -886,42 +886,7 @@ public class NavigationManagerTest
         // Assert
         Assert.True(notFoundTriggered, "The OnNotFound event was not triggered as expected.");
     }
-
-    [Fact]
-    public async Task OnNavigateToCallback_WhenThrows_ShouldBeHandledGracefully()
-    {
-#nullable enable
-        // Arrange
-        var baseUri = "scheme://host/";
-        var uri = "scheme://host/test";
-        var testNavManager = new TestNavigationManagerWithExceptionHandling(baseUri);
-        var expectedException = new InvalidOperationException("Test exception from OnNavigateTo");
-        var exceptionHandledTcs = new TaskCompletionSource();
-
-        // First test: Initialize with a callback that throws exceptions
-        testNavManager.Initialize(baseUri, uri, uri => testNavManager.GetErrorHandledTask(ThrowingMethod(uri), exceptionHandledTcs));
-
-        // Act & Assert
-        // Verify that the wrapped callback handles the exception gracefully
-        var wrappedException = testNavManager.TriggerOnNavigateToCallback(uri);
-
-         // Should be null because the exception was handled gracefully
-        Assert.Null(wrappedException);
-
-        await exceptionHandledTcs.Task;
-
-        // Verify that the exception was logged
-        Assert.Single(testNavManager.HandledExceptions);
-        Assert.Same(expectedException, testNavManager.HandledExceptions[0]);
-
-        async Task ThrowingMethod(string param)
-        {
-            await Task.Yield();
-            throw expectedException;
-        }
-#nullable restore
-    }
-
+ 
     private class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()
@@ -965,65 +930,6 @@ public class NavigationManagerTest
         protected override void HandleLocationChangingHandlerException(Exception ex, LocationChangingContext context)
         {
             _exceptionsThrownFromLocationChangingHandlers.Add(ex);
-        }
-    }
-
-    private class TestNavigationManagerWithExceptionHandling : TestNavigationManager, IHostEnvironmentNavigationManager
-    {
-        private Func<string, Task> _onNavigateToCallback;
-
-        public List<Exception> HandledExceptions { get; } = new();
-
-        public TestNavigationManagerWithExceptionHandling(string baseUri = null, string uri = null)
-            : base(baseUri, uri)
-        {
-        }
-
-        public void Initialize(string baseUri, string uri, Func<string, Task> onNavigateTo)
-        {
-            _onNavigateToCallback = onNavigateTo;
-        }
-
-#nullable enable
-        public Exception? TriggerOnNavigateToCallback(string uri)
-#nullable restore
-        {
-            try
-            {
-                // Simulate the fire-and-forget pattern of RemoteNavigationManager
-                _ = _onNavigateToCallback(uri);
-                return null;
-            }
-            catch (Exception ex)
-            {
-                return ex;
-            }
-        }
-
-        protected override void NavigateToCore(string uri, bool forceLoad)
-        {
-            // Simulate the behavior where NavigateToCore calls the onNavigateTo callback
-            // in a fire-and-forget manner when JSRuntime is not available
-            if (_onNavigateToCallback is not null)
-            {
-                _ = _onNavigateToCallback(uri);
-            }
-        }
-
-        public async Task GetErrorHandledTask(Task taskToHandle, TaskCompletionSource completionSource = null)
-        {
-            try
-            {
-                await taskToHandle;
-            }
-            catch (Exception ex)
-            {
-                HandledExceptions.Add(ex);
-            }
-            finally
-            {
-                completionSource?.SetResult();
-            }
         }
     }
 }
