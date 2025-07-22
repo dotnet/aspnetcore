@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Identity.Test;
 using static JsonHelpers;
 using static CredentialHelpers;
 
-public class DefaultPasskeyHandlerAssertionTest
+public class PasskeyHandlerAssertionTest
 {
     [Fact]
     public async Task CanSucceed()
@@ -165,10 +165,10 @@ public class DefaultPasskeyHandlerAssertionTest
     }
 
     [Fact]
-    public async Task Fails_WhenOriginalOptionsChallengeIsMissing()
+    public async Task Fails_WhenAssertionStateChallengeIsMissing()
     {
         var test = new AssertionTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AssertionStateJson.TransformAsJsonObject(originalOptionsJson =>
         {
             Assert.True(originalOptionsJson.Remove("challenge"));
         });
@@ -177,43 +177,25 @@ public class DefaultPasskeyHandlerAssertionTest
 
         Assert.False(result.Succeeded);
 
-        Assert.StartsWith("The original passkey request options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The assertion state JSON had an invalid format", result.Failure.Message);
         Assert.Contains("was missing required properties including: 'challenge'", result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Fails_WhenOriginalOptionsChallengeIsNotBase64UrlEncoded()
-    {
-        var test = new AssertionTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
-        {
-            var base64UrlChallenge = (string)originalOptionsJson["challenge"]!;
-            originalOptionsJson["challenge"] = GetInvalidBase64UrlValue(base64UrlChallenge);
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey request options had an invalid format", result.Failure.Message);
-        Assert.Contains("base64url string", result.Failure.Message);
     }
 
     [Theory]
     [InlineData("42")]
-    [InlineData("null")]
     [InlineData("{}")]
-    public async Task Fails_WhenOriginalOptionsChallengeIsNotString(string jsonValue)
+    public async Task Fails_WhenAssertionStateChallengeIsNotString(string jsonValue)
     {
         var test = new AssertionTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AssertionStateJson.TransformAsJsonObject(assertionStateJson =>
         {
-            originalOptionsJson["challenge"] = JsonNode.Parse(jsonValue);
+            assertionStateJson["challenge"] = JsonNode.Parse(jsonValue);
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey request options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The assertion state JSON had an invalid format", result.Failure.Message);
     }
 
     [Fact]
@@ -590,15 +572,11 @@ public class DefaultPasskeyHandlerAssertionTest
     public async Task Fails_WhenClientDataJsonChallengeIsNotRequestChallenge()
     {
         var test = new AssertionTest();
-        var modifiedChallenge = (byte[])[.. test.Challenge.Span];
-        for (var i = 0; i < modifiedChallenge.Length; i++)
-        {
-            modifiedChallenge[i]++;
-        }
-
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
         {
-            clientDataJson["challenge"] = Base64Url.EncodeToString(modifiedChallenge);
+            var challenge = Base64Url.DecodeFromChars((string)clientDataJson["challenge"]!);
+            challenge[0]++;
+            clientDataJson["challenge"] = Base64Url.EncodeToString(challenge);
         });
 
         var result = await test.RunAsync();
@@ -734,10 +712,7 @@ public class DefaultPasskeyHandlerAssertionTest
     public async Task Succeeds_WhenUserVerificationIsRequiredAndUserIsVerified()
     {
         var test = new AssertionTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(optionsJson =>
-        {
-            optionsJson["userVerification"] = "required";
-        });
+        test.PasskeyOptions.UserVerificationRequirement = "required";
         test.AuthenticatorDataArgs.Transform(args => args with
         {
             Flags = args.Flags | AuthenticatorDataFlags.UserVerified,
@@ -752,10 +727,7 @@ public class DefaultPasskeyHandlerAssertionTest
     public async Task Succeeds_WhenUserVerificationIsDiscouragedAndUserIsVerified()
     {
         var test = new AssertionTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(optionsJson =>
-        {
-            optionsJson["userVerification"] = "discouraged";
-        });
+        test.PasskeyOptions.UserVerificationRequirement = "discouraged";
         test.AuthenticatorDataArgs.Transform(args => args with
         {
             Flags = args.Flags | AuthenticatorDataFlags.UserVerified,
@@ -770,10 +742,7 @@ public class DefaultPasskeyHandlerAssertionTest
     public async Task Fails_WhenUserVerificationIsRequiredAndUserIsNotVerified()
     {
         var test = new AssertionTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(optionsJson =>
-        {
-            optionsJson["userVerification"] = "required";
-        });
+        test.PasskeyOptions.UserVerificationRequirement = "required";
 
         var result = await test.RunAsync();
 
@@ -948,144 +917,6 @@ public class DefaultPasskeyHandlerAssertionTest
         Assert.StartsWith("The credential is backed up, but the authenticator data flags did not have the 'BackupEligible' flag", result.Failure.Message);
     }
 
-    [Theory]
-    [InlineData(PasskeyOptions.CredentialBackupPolicy.Allowed)]
-    [InlineData(PasskeyOptions.CredentialBackupPolicy.Required)]
-    public async Task Succeeds_WhenAuthenticatorDataIsBackupEligible(PasskeyOptions.CredentialBackupPolicy backupEligibility)
-    {
-        var test = new AssertionTest();
-        test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = backupEligibility;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags | AuthenticatorDataFlags.BackupEligible,
-        });
-
-        // This test simulates an RP policy failure, not a mismatch between the stored passkey
-        // and the authenticator data flags, so we'll make the stored passkey match the
-        // authenticator data flags
-        test.IsStoredPasskeyBackupEligible = true;
-
-        var result = await test.RunAsync();
-
-        Assert.True(result.Succeeded);
-    }
-
-    [Fact]
-    public async Task Fails_WhenAuthenticatorDataIsBackupEligibleButDisallowed()
-    {
-        var test = new AssertionTest();
-        test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Disallowed;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags | AuthenticatorDataFlags.BackupEligible,
-        });
-
-        // This test simulates an RP policy failure, not a mismatch between the stored passkey
-        // and the authenticator data flags, so we'll make the stored passkey match the
-        // authenticator data flags
-        test.IsStoredPasskeyBackupEligible = true;
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith(
-            "Credential backup eligibility is disallowed, but the credential was eligible for backup",
-            result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Fails_WhenAuthenticatorDataIsNotBackupEligibleButRequired()
-    {
-        var test = new AssertionTest();
-        test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Required;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags & ~AuthenticatorDataFlags.BackupEligible,
-        });
-
-        // This test simulates an RP policy failure, not a mismatch between the stored passkey
-        // and the authenticator data flags, so we'll make the stored passkey match the
-        // authenticator data flags
-        test.IsStoredPasskeyBackupEligible = false;
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith(
-            "Credential backup eligibility is required, but the credential was not eligible for backup",
-            result.Failure.Message);
-    }
-
-    [Theory]
-    [InlineData(PasskeyOptions.CredentialBackupPolicy.Allowed)]
-    [InlineData(PasskeyOptions.CredentialBackupPolicy.Required)]
-    public async Task Attestation_Fails_WhenAuthenticatorDataIsBackedUp(PasskeyOptions.CredentialBackupPolicy backedUpPolicy)
-    {
-        var test = new AssertionTest();
-        test.IdentityOptions.Passkey.BackedUpCredentialPolicy = backedUpPolicy;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags | AuthenticatorDataFlags.BackupEligible | AuthenticatorDataFlags.BackedUp,
-        });
-
-        // This test simulates an RP policy failure, not a mismatch between the stored passkey
-        // and the authenticator data flags, so we'll make the stored passkey match the
-        // authenticator data flags
-        test.IsStoredPasskeyBackupEligible = true;
-        test.IsStoredPasskeyBackedUp = true;
-
-        var result = await test.RunAsync();
-
-        Assert.True(result.Succeeded);
-    }
-
-    [Fact]
-    public async Task Fails_WhenAuthenticatorDataIsBackedUpButDisallowed()
-    {
-        var test = new AssertionTest();
-        test.IdentityOptions.Passkey.BackedUpCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Disallowed;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags | AuthenticatorDataFlags.BackupEligible | AuthenticatorDataFlags.BackedUp,
-        });
-
-        // This test simulates an RP policy failure, not a mismatch between the stored passkey
-        // and the authenticator data flags, so we'll make the stored passkey match the
-        // authenticator data flags
-        test.IsStoredPasskeyBackupEligible = true;
-        test.IsStoredPasskeyBackedUp = true;
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith(
-            "Credential backup is disallowed, but the credential was backed up",
-            result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Fails_WhenAuthenticatorDataIsNotBackedUpButRequired()
-    {
-        var test = new AssertionTest();
-        test.IdentityOptions.Passkey.BackedUpCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Required;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags & ~AuthenticatorDataFlags.BackedUp,
-        });
-
-        // This test simulates an RP policy failure, not a mismatch between the stored passkey
-        // and the authenticator data flags, so we'll make the stored passkey match the
-        // authenticator data flags
-        test.IsStoredPasskeyBackedUp = false;
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith(
-            "Credential backup is required, but the credential was not backed up",
-            result.Failure.Message);
-    }
-
     [Fact]
     public async Task Fails_WhenAuthenticatorDataIsNotBackupEligibleButStoredPasskeyIs()
     {
@@ -1122,36 +953,6 @@ public class DefaultPasskeyHandlerAssertionTest
             result.Failure.Message);
     }
 
-    [Fact]
-    public async Task Fails_WhenProvidedCredentialIsNotInAllowedCredentials()
-    {
-        var test = new AssertionTest();
-        var allowedCredentialId = test.CredentialId.ToArray();
-        allowedCredentialId[0]++;
-        test.AddAllowedCredential(allowedCredentialId);
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith(
-            "The provided credential ID was not in the list of allowed credentials",
-            result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Succeeds_WhenProvidedCredentialIsInAllowedCredentials()
-    {
-        var test = new AssertionTest();
-        var otherAllowedCredentialId = test.CredentialId.ToArray();
-        otherAllowedCredentialId[0]++;
-        test.AddAllowedCredential(test.CredentialId);
-        test.AddAllowedCredential(otherAllowedCredentialId);
-
-        var result = await test.RunAsync();
-
-        Assert.True(result.Succeeded);
-    }
-
     [Theory]
     [InlineData(false)]
     [InlineData(true)]
@@ -1177,14 +978,10 @@ public class DefaultPasskeyHandlerAssertionTest
 
     private sealed class AssertionTest : PasskeyScenarioTest<PasskeyAssertionResult<PocoUser>>
     {
-        private static readonly byte[] _defaultChallenge = [1, 2, 3, 4, 5, 6, 7, 8];
         private static readonly byte[] _defaultCredentialId = [1, 2, 3, 4, 5, 6, 7, 8];
 
-        private readonly List<PublicKeyCredentialDescriptor> _allowCredentials = [];
-
-        public IdentityOptions IdentityOptions { get; } = new();
-        public string? RpId { get; set; } = "example.com";
-        public string? Origin { get; set; } = "https://example.com";
+        public IdentityPasskeyOptions PasskeyOptions { get; } = new();
+        public string Origin { get; set; } = "https://example.com";
         public PocoUser User { get; set; } = new()
         {
             Id = "df0a3af4-bd65-440f-82bd-5b839e300dcd",
@@ -1195,55 +992,79 @@ public class DefaultPasskeyHandlerAssertionTest
         public bool IsStoredPasskeyBackedUp { get; set; }
         public bool DoesCredentialExistOnUser { get; set; } = true;
         public COSEAlgorithmIdentifier Algorithm { get; set; } = COSEAlgorithmIdentifier.ES256;
-        public ReadOnlyMemory<byte> Challenge { get; set; } = _defaultChallenge;
         public ReadOnlyMemory<byte> CredentialId { get; set; } = _defaultCredentialId;
         public ComputedValue<AuthenticatorDataArgs> AuthenticatorDataArgs { get; } = new();
         public ComputedValue<ReadOnlyMemory<byte>> AuthenticatorData { get; } = new();
         public ComputedValue<ReadOnlyMemory<byte>> ClientDataHash { get; } = new();
         public ComputedValue<ReadOnlyMemory<byte>> Signature { get; } = new();
-        public ComputedJsonObject OriginalOptionsJson { get; } = new();
+        public ComputedJsonObject AssertionStateJson { get; } = new();
         public ComputedJsonObject ClientDataJson { get; } = new();
         public ComputedJsonObject CredentialJson { get; } = new();
         public ComputedValue<UserPasskeyInfo> StoredPasskey { get; } = new();
 
-        public void AddAllowedCredential(ReadOnlyMemory<byte> credentialId)
-        {
-            _allowCredentials.Add(new()
-            {
-                Id = BufferSource.FromBytes(credentialId),
-                Type = "public-key",
-                Transports = ["internal"],
-            });
-        }
-
         protected override async Task<PasskeyAssertionResult<PocoUser>> RunCoreAsync()
         {
-            var identityOptions = Options.Create(IdentityOptions);
-            var handler = new DefaultPasskeyHandler<PocoUser>(identityOptions);
             var credential = CredentialKeyPair.Generate(Algorithm);
-            var allowCredentialsJson = JsonSerializer.Serialize(
-                _allowCredentials,
-                IdentityJsonSerializerContext.Default.IReadOnlyListPublicKeyCredentialDescriptor);
-            var originalOptionsJson = OriginalOptionsJson.Compute($$"""
-                {
-                  "challenge": {{ToBase64UrlJsonValue(Challenge)}},
-                  "rpId": {{ToJsonValue(RpId)}},
-                  "allowCredentials": {{allowCredentialsJson}},
-                  "timeout": 60000,
-                  "userVerification": "preferred",
-                  "hints": []
-                }
-                """);
+            var credentialPublicKey = credential.EncodePublicKeyCbor();
+            var storedPasskey = StoredPasskey.Compute(new(
+                CredentialId.ToArray(),
+                credentialPublicKey.ToArray(),
+                createdAt: default,
+                signCount: 0,
+                transports: null,
+                isUserVerified: true,
+                isBackupEligible: IsStoredPasskeyBackupEligible,
+                isBackedUp: IsStoredPasskeyBackedUp,
+                attestationObject: [],
+                clientDataJson: []));
+
+            var httpContext = new Mock<HttpContext>();
+            httpContext.Setup(c => c.Request.Headers.Origin).Returns(new StringValues(Origin));
+
+            var userManager = MockHelpers.MockUserManager<PocoUser>();
+            userManager
+                .Setup(m => m.FindByIdAsync(User.Id))
+                .Returns(Task.FromResult<PocoUser?>(User));
+            userManager
+                .Setup(m => m.GetPasskeyAsync(It.IsAny<PocoUser>(), It.IsAny<byte[]>()))
+                .Returns((PocoUser user, byte[] credentialId) => Task.FromResult(
+                    DoesCredentialExistOnUser && user == User && CredentialId.Span.SequenceEqual(credentialId)
+                        ? storedPasskey
+                        : null));
+            userManager
+                .Setup(m => m.GetPasskeysAsync(It.IsAny<PocoUser>()))
+                .Returns((PocoUser user) => Task.FromResult<IList<UserPasskeyInfo>>(
+                    DoesCredentialExistOnUser && user == User ? [storedPasskey] : []));
+
+            if (IsUserIdentified)
+            {
+                userManager
+                    .Setup(m => m.GetUserIdAsync(User))
+                    .Returns(Task.FromResult(User.Id));
+            }
+
+            var passkeyOptions = Options.Create(PasskeyOptions);
+            var handler = new PasskeyHandler<PocoUser>(userManager.Object, passkeyOptions);
+
+            var requestOptionsResult = await handler.MakeRequestOptionsAsync(
+                IsUserIdentified ? User : null,
+                httpContext.Object);
+
+            var requestOptions = JsonSerializer.Deserialize(
+                requestOptionsResult.RequestOptionsJson,
+                IdentityJsonSerializerContext.Default.PublicKeyCredentialRequestOptions)
+                ?? throw new InvalidOperationException("Failed to deserialize request options JSON.");
+            var assertionStateJson = AssertionStateJson.Compute(requestOptionsResult.AssertionState);
             var authenticatorDataArgs = AuthenticatorDataArgs.Compute(new()
             {
-                RpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(RpId ?? string.Empty)),
+                RpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(requestOptions.RpId ?? string.Empty)),
                 Flags = AuthenticatorDataFlags.UserPresent,
                 SignCount = 1,
             });
             var authenticatorData = AuthenticatorData.Compute(MakeAuthenticatorData(authenticatorDataArgs));
             var clientDataJson = ClientDataJson.Compute($$"""
                 {
-                  "challenge": {{ToBase64UrlJsonValue(Challenge)}},
+                  "challenge": {{ToBase64UrlJsonValue(requestOptions.Challenge.AsMemory())}},
                   "origin": {{ToJsonValue(Origin)}},
                   "type": "webauthn.get"
                 }
@@ -1267,48 +1088,11 @@ public class DefaultPasskeyHandlerAssertionTest
                 }
                 """);
 
-            var credentialPublicKey = credential.EncodePublicKeyCbor();
-            var storedPasskey = StoredPasskey.Compute(new(
-                CredentialId.ToArray(),
-                credentialPublicKey.ToArray(),
-                name: null,
-                createdAt: default,
-                signCount: 0,
-                transports: null,
-                isUserVerified: true,
-                isBackupEligible: IsStoredPasskeyBackupEligible,
-                isBackedUp: IsStoredPasskeyBackedUp,
-                attestationObject: [],
-                clientDataJson: []));
-
-            var httpContext = new Mock<HttpContext>();
-            httpContext.Setup(c => c.Request.Headers.Origin).Returns(new StringValues(Origin));
-
-            var userManager = MockHelpers.MockUserManager<PocoUser>();
-            userManager
-                .Setup(m => m.FindByIdAsync(User.Id))
-                .Returns(Task.FromResult<PocoUser?>(User));
-            userManager
-                .Setup(m => m.GetPasskeyAsync(It.IsAny<PocoUser>(), It.IsAny<byte[]>()))
-                .Returns((PocoUser user, byte[] credentialId) => Task.FromResult(
-                    DoesCredentialExistOnUser && user == User && CredentialId.Span.SequenceEqual(credentialId)
-                        ? storedPasskey
-                        : null));
-
-            if (IsUserIdentified)
+            var context = new PasskeyAssertionContext
             {
-                userManager
-                    .Setup(m => m.GetUserIdAsync(User))
-                    .Returns(Task.FromResult(User.Id));
-            }
-
-            var context = new PasskeyAssertionContext<PocoUser>
-            {
-                CredentialJson = credentialJson,
-                OriginalOptionsJson = originalOptionsJson,
+                CredentialJson = credentialJson!,
+                AssertionState = assertionStateJson,
                 HttpContext = httpContext.Object,
-                UserManager = userManager.Object,
-                User = IsUserIdentified ? User : null,
             };
 
             return await handler.PerformAssertionAsync(context);

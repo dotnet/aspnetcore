@@ -109,14 +109,7 @@
         if (!string.IsNullOrEmpty(Input.Passkey?.CredentialJson))
         {
             // When performing passkey sign-in, don't perform form validation.
-            var options = await SignInManager.RetrievePasskeyRequestOptionsAsync();
-            if (options is null)
-            {
-                errorMessage = "Error: Could not complete passkey login. Please try again.";
-                return;
-            }
-
-            result = await SignInManager.PasskeySignInAsync(Input.Passkey.CredentialJson, options);
+            result = await SignInManager.PasskeySignInAsync(Input.Passkey.CredentialJson);
         }
         else
         {

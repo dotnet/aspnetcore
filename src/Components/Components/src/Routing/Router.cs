@@ -391,13 +391,55 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private void OnNotFound(object sender, NotFoundEventArgs args)
     {
-        if (_renderHandle.IsInitialized && NotFoundPage != null)
+        bool renderContentIsProvided = NotFoundPage != null || args.Path != null;
+        if (_renderHandle.IsInitialized && renderContentIsProvided)
         {
-            // setting the path signals to the endpoint renderer that router handled rendering
-            args.Path = _notFoundPageRoute;
-            Log.DisplayingNotFound(_logger);
-            RenderNotFound();
+            if (!string.IsNullOrEmpty(args.Path))
+            {
+                // The path can be set by a subscriber not defined in blazor framework.
+                _renderHandle.Render(builder => RenderComponentByRoute(builder, args.Path));
+            }
+            else
+            {
+                // Having the path set signals to the endpoint renderer that router handled rendering.
+                args.Path = _notFoundPageRoute;
+                RenderNotFound();
+            }
+            Log.DisplayingNotFound(_logger, args.Path);
         }
+    }
+
+    internal void RenderComponentByRoute(RenderTreeBuilder builder, string route)
+    {
+        var componentType = FindComponentTypeByRoute(route);
+
+        if (componentType is null)
+        {
+            throw new InvalidOperationException($"No component found for route '{route}'. " +
+                $"Ensure the route matches a component with a [Route] attribute.");
+        }
+
+        builder.OpenComponent<RouteView>(0);
+        builder.AddAttribute(1, nameof(RouteView.RouteData),
+            new RouteData(componentType, new Dictionary<string, object>()));
+        builder.CloseComponent();
+    }
+
+    [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    internal Type? FindComponentTypeByRoute(string route)
+    {
+        RefreshRouteTable();
+        var normalizedRoute = route.StartsWith('/') ? route : $"/{route}";
+
+        var context = new RouteContext(normalizedRoute);
+        Routes.Route(context);
+
+        if (context.Handler is not null && typeof(IComponent).IsAssignableFrom(context.Handler))
+        {
+            return context.Handler;
+        }
+
+        return null;
     }
 
     private void RenderNotFound()
@@ -451,8 +493,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         [LoggerMessage(3, LogLevel.Debug, "Navigating to non-component URI '{ExternalUri}' in response to path '{Path}' with base URI '{BaseUri}'", EventName = "NavigatingToExternalUri")]
         internal static partial void NavigatingToExternalUri(ILogger logger, string externalUri, string path, string baseUri);
 
-        [LoggerMessage(4, LogLevel.Debug, $"Displaying {nameof(NotFound)} on request", EventName = "DisplayingNotFoundOnRequest")]
-        internal static partial void DisplayingNotFound(ILogger logger);
+        [LoggerMessage(4, LogLevel.Debug, $"Displaying contents of {{displayedContentPath}} on request", EventName = "DisplayingNotFoundOnRequest")]
+        internal static partial void DisplayingNotFound(ILogger logger, string displayedContentPath);
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 }
