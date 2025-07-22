@@ -22,5 +22,5 @@ jobs:
         run: |
           gh issue create \
             --title "Request Browser-Testing Dependencies Update" \
-            --body-file ".github/ISSUE_TEMPLATE/70_browsertesting_update_body.md" \
+            --body-file ".github/workflows/browsertesting-issue-body.md" \
             --assignee "@copilot"
