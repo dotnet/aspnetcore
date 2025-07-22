@@ -696,6 +696,10 @@ public class KestrelConfigurationLoaderTests
     [InlineData("https-dsa.pem", "https-dsa-protected.key", "test")]
     [InlineData("https-dsa.crt", "https-dsa.key", null)]
     [InlineData("https-dsa.crt", "https-dsa-protected.key", "test")]
+    [InlineData("https-mldsa44.pem", "https-mldsa44.key", "aspnetcore")]
+    [InlineData("https-mldsa44.pem", "https-mldsa44-protected.key", "aspnetcore")]
+    [InlineData("https-mldsa44.crt", "https-mldsa44.key", "aspnetcore")]
+    [InlineData("https-mldsa44.crt", "https-mldsa44-protected.key", "aspnetcore")]
     public void ConfigureEndpoint_CanLoadPemCertificates(string certificateFile, string certificateKey, string password)
     {
         var serverOptions = CreateServerOptions();

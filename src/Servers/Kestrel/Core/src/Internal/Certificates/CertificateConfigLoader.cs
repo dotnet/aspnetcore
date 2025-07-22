@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -95,6 +97,7 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         const string RSAOid = "1.2.840.113549.1.1.1";
         const string DSAOid = "1.2.840.10040.4.1";
         const string ECDsaOid = "1.2.840.10045.2.1";
+        const string MLDSA44Oid = "2.16.840.1.101.3.4.3.17";
 
         // Duplication is required here because there are separate CopyWithPrivateKey methods for each algorithm.
         var keyText = File.ReadAllText(keyPath);
@@ -142,6 +145,21 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                         throw CreateErrorGettingPrivateKeyException(keyPath, ex);
                     }
                 }
+            case MLDSA44Oid:
+                {
+#pragma warning disable SYSLIB5006 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                    using var mlDsa = ImportMLDsaKeyFromFile(keyText, password);
+
+                    try
+                    {
+                        return certificate.CopyWithPrivateKey(mlDsa);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateErrorGettingPrivateKeyException(keyPath, ex);
+                    }
+#pragma warning restore SYSLIB5006 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                }
             default:
                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value));
         }
@@ -171,6 +189,19 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         else
         {
             asymmetricAlgorithm.ImportFromEncryptedPem(keyText, password);
+        }
+    }
+
+    [Experimental("SYSLIB5006")]
+    private static MLDsa ImportMLDsaKeyFromFile(string keyText, string? password)
+    {
+        if (password == null)
+        {
+            return MLDsa.ImportFromPem(keyText);
+        }
+        else
+        {
+            return MLDsa.ImportFromEncryptedPem(keyText, password);
         }
     }
 
