@@ -100,13 +100,14 @@ public class TestServerTests
     [Fact]
     public void CreateWithDelegate_DI()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder()
-            .Configure(app => { })
-            .UseTestServer();
-
-        using var host = builder.Build();
-#pragma warning restore CS0618 // Type or member is obsolete
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
+            {
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app => { });
+            })
+            .Build();
         host.Start();
     }
 
@@ -203,16 +204,23 @@ public class TestServerTests
     [Fact]
     public async Task RequestServicesAutoCreated()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                return context.Response.WriteAsync("RequestServices:" + (context.RequestServices != null));
-            });
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("RequestServices:" + (context.RequestServices != null));
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         string result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("RequestServices:True", result);
@@ -221,19 +229,26 @@ public class TestServerTests
     [Fact]
     public async Task DispoingTheRequestBodyDoesNotDisposeClientStreams()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(async context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                using (var sr = new StreamReader(context.Request.Body))
-                {
-                    await context.Response.WriteAsync(await sr.ReadToEndAsync());
-                }
-            });
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(async context =>
+                        {
+                            using (var sr = new StreamReader(context.Request.Body))
+                            {
+                                await context.Response.WriteAsync(await sr.ReadToEndAsync());
+                            }
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         var stream = new ThrowOnDisposeStream();
         stream.Write(Encoding.ASCII.GetBytes("Hello World"));
@@ -449,21 +464,28 @@ public class TestServerTests
     [Fact]
     public async Task ExistingRequestServicesWillNotBeReplaced()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                var service = context.RequestServices.GetService<TestService>();
-                return context.Response.WriteAsync("Found:" + (service != null));
-            });
-        })
-        .ConfigureServices(services =>
-        {
-            services.AddTransient<IStartupFilter, RequestServicesFilter>();
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            var service = context.RequestServices.GetService<TestService>();
+                            return context.Response.WriteAsync("Found:" + (service != null));
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddTransient<IStartupFilter, RequestServicesFilter>();
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         string result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("Found:True", result);
@@ -472,22 +494,29 @@ public class TestServerTests
     [Fact]
     public async Task CanSetCustomServiceProvider()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                context.RequestServices = new ServiceCollection()
-                .AddTransient<TestService>()
-                .BuildServiceProvider();
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            context.RequestServices = new ServiceCollection()
+                            .AddTransient<TestService>()
+                            .BuildServiceProvider();
 
-                var s = context.RequestServices.GetRequiredService<TestService>();
+                            var s = context.RequestServices.GetRequiredService<TestService>();
 
-                return context.Response.WriteAsync("Success");
-            });
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                            return context.Response.WriteAsync("Success");
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         string result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("Success", result);
@@ -523,21 +552,28 @@ public class TestServerTests
     public async Task ExistingServiceProviderFeatureWillNotBeReplaced()
     {
         var appServices = new ServiceCollection().BuildServiceProvider();
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                Assert.Equal(appServices, context.RequestServices);
-                return context.Response.WriteAsync("Success");
-            });
-        })
-        .ConfigureServices(services =>
-        {
-            services.AddSingleton<IStartupFilter>(new ReplaceServiceProvidersFeatureFilter(appServices, appServices));
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            Assert.Equal(appServices, context.RequestServices);
+                            return context.Response.WriteAsync("Success");
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<IStartupFilter>(new ReplaceServiceProvidersFeatureFilter(appServices, appServices));
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         var result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("Success", result);
@@ -566,21 +602,28 @@ public class TestServerTests
     [Fact]
     public async Task WillReplaceServiceProviderFeatureWithNullRequestServices()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                Assert.Null(context.RequestServices);
-                return context.Response.WriteAsync("Success");
-            });
-        })
-        .ConfigureServices(services =>
-        {
-            services.AddTransient<IStartupFilter, NullServiceProvidersFeatureFilter>();
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            Assert.Null(context.RequestServices);
+                            return context.Response.WriteAsync("Success");
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddTransient<IStartupFilter, NullServiceProvidersFeatureFilter>();
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         var result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("Success", result);
@@ -589,17 +632,24 @@ public class TestServerTests
     [Fact]
     public async Task CanAccessLogger()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                var logger = app.ApplicationServices.GetRequiredService<ILogger<HttpContext>>();
-                return context.Response.WriteAsync("FoundLogger:" + (logger != null));
-            });
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            var logger = app.ApplicationServices.GetRequiredService<ILogger<HttpContext>>();
+                            return context.Response.WriteAsync("FoundLogger:" + (logger != null));
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         string result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("FoundLogger:True", result);
@@ -608,21 +658,28 @@ public class TestServerTests
     [Fact]
     public async Task CanAccessHttpContext()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                var accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
-                return context.Response.WriteAsync("HasContext:" + (accessor.HttpContext != null));
-            });
-        })
-        .ConfigureServices(services =>
-        {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            var accessor = app.ApplicationServices.GetRequiredService<IHttpContextAccessor>();
+                            return context.Response.WriteAsync("HasContext:" + (accessor.HttpContext != null));
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         string result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("HasContext:True", result);
@@ -641,22 +698,29 @@ public class TestServerTests
     [Fact]
     public async Task CanAddNewHostServices()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                var accessor = app.ApplicationServices.GetRequiredService<ContextHolder>();
-                return context.Response.WriteAsync("HasContext:" + (accessor.Accessor.HttpContext != null));
-            });
-        })
-        .ConfigureServices(services =>
-        {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<ContextHolder>();
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            var accessor = app.ApplicationServices.GetRequiredService<ContextHolder>();
+                            return context.Response.WriteAsync("HasContext:" + (accessor.Accessor.HttpContext != null));
+                        });
+                    })
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+                        services.AddSingleton<ContextHolder>();
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         string result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("HasContext:True", result);
@@ -665,16 +729,23 @@ public class TestServerTests
     [Fact]
     public async Task CreateInvokesApp()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                return context.Response.WriteAsync("CreateInvokesApp");
-            });
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            return context.Response.WriteAsync("CreateInvokesApp");
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         string result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("CreateInvokesApp", result);
@@ -683,17 +754,24 @@ public class TestServerTests
     [Fact]
     public async Task DisposeStreamIgnored()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(async context =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
             {
-                await context.Response.WriteAsync("Response");
-                context.Response.Body.Dispose();
-            });
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run(async context =>
+                        {
+                            await context.Response.WriteAsync("Response");
+                            context.Response.Body.Dispose();
+                        });
+                    });
+            })
+            .Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         HttpResponseMessage result = await server.CreateClient().GetAsync("/");
         Assert.Equal(HttpStatusCode.OK, result.StatusCode);
