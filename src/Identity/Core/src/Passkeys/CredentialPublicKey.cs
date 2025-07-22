@@ -16,6 +16,46 @@ internal sealed class CredentialPublicKey
 
     public COSEAlgorithmIdentifier Alg => _alg;
 
+    /// <summary>
+    /// Contains all supported public key credential parameters.
+    /// </summary>
+    /// <remarks>
+    /// This list is sorted in the order of preference, with the most preferred algorithm first.
+    /// </remarks>
+    internal static IReadOnlyList<PublicKeyCredentialParameters> AllSupportedParameters { get; } =
+        // Keep this list in sync with IsSupportedAlgorithm.
+        [
+            new() { Type = "public-key", Alg = COSEAlgorithmIdentifier.ES256 },
+            new() { Type = "public-key", Alg = COSEAlgorithmIdentifier.PS256 },
+            new() { Type = "public-key", Alg = COSEAlgorithmIdentifier.ES384 },
+            new() { Type = "public-key", Alg = COSEAlgorithmIdentifier.PS384 },
+            new() { Type = "public-key", Alg = COSEAlgorithmIdentifier.PS512 },
+            new() { Type = "public-key", Alg = COSEAlgorithmIdentifier.RS256 },
+            new() { Type = "public-key", Alg = COSEAlgorithmIdentifier.ES512 },
+            new() { Type = "public-key", Alg = COSEAlgorithmIdentifier.RS384 },
+            new() { Type = "public-key", Alg = COSEAlgorithmIdentifier.RS512 },
+        ];
+
+    /// <summary>
+    /// Gets whether the specified COSE algorithm identifier is supported.
+    /// </summary>
+    /// <param name="alg">The algorithm identifier.</param>
+    internal static bool IsSupportedAlgorithm(COSEAlgorithmIdentifier alg)
+        // Keep this in sync with AllSupportedParameters.
+        => alg switch
+        {
+            COSEAlgorithmIdentifier.ES256 or
+            COSEAlgorithmIdentifier.PS256 or
+            COSEAlgorithmIdentifier.ES384 or
+            COSEAlgorithmIdentifier.PS384 or
+            COSEAlgorithmIdentifier.PS512 or
+            COSEAlgorithmIdentifier.RS256 or
+            COSEAlgorithmIdentifier.ES512 or
+            COSEAlgorithmIdentifier.RS384 or
+            COSEAlgorithmIdentifier.RS512 => true,
+            _ => false,
+        };
+
     private CredentialPublicKey(ReadOnlyMemory<byte> bytes)
     {
         var reader = Ctap2CborReader.Create(bytes);

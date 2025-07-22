@@ -143,6 +143,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         var factory = new DelegatedWebApplicationFactory(
             ClientOptions,
             CreateServer,
+            CreateServer,
             CreateHost,
             CreateWebHostBuilder,
             CreateHostBuilder,
@@ -337,7 +338,10 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             }
             else
             {
-                webHostBuilder.UseTestServer();
+                webHostBuilder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IServer>(CreateServer);
+                });
             }
         });
         _host = CreateHost(hostBuilder);
@@ -566,9 +570,18 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
 
     /// <summary>
+    /// Creates the <see cref="TestServer"/> with the <see cref="IServiceProvider"/> from the bootstrapped application.
+    /// This is only called for applications using <see cref="IHostBuilder"/>. Applications based on
+    /// <see cref="IWebHostBuilder"/> will use <see cref="CreateHost"/> instead.
+    /// </summary>
+    /// <param name="serviceProvider">The <see cref="IServiceProvider"/> from the bootstrapped application.</param>
+    /// <returns></returns>
+    protected virtual TestServer CreateServer(IServiceProvider serviceProvider) => new(serviceProvider);
+
+    /// <summary>
     /// Creates the <see cref="IHost"/> with the bootstrapped application in <paramref name="builder"/>.
     /// This is only called for applications using <see cref="IHostBuilder"/>. Applications based on
-    /// <see cref="IWebHostBuilder"/> will use <see cref="CreateServer"/> instead.
+    /// <see cref="IWebHostBuilder"/> will use <see cref="CreateServer(IWebHostBuilder)"/> instead.
     /// </summary>
     /// <param name="builder">The <see cref="IHostBuilder"/> used to create the host.</param>
     /// <returns>The <see cref="IHost"/> with the bootstrapped application.</returns>
@@ -801,6 +814,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     private sealed class DelegatedWebApplicationFactory : WebApplicationFactory<TEntryPoint>
     {
         private readonly Func<IWebHostBuilder, TestServer> _createServer;
+        private readonly Func<IServiceProvider, TestServer> _createServerFromServiceProvider;
         private readonly Func<IHostBuilder, IHost> _createHost;
         private readonly Func<IWebHostBuilder?> _createWebHostBuilder;
         private readonly Func<IHostBuilder?> _createHostBuilder;
@@ -810,6 +824,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         public DelegatedWebApplicationFactory(
             WebApplicationFactoryClientOptions options,
             Func<IWebHostBuilder, TestServer> createServer,
+            Func<IServiceProvider, TestServer> createServerFromServiceProvider,
             Func<IHostBuilder, IHost> createHost,
             Func<IWebHostBuilder?> createWebHostBuilder,
             Func<IHostBuilder?> createHostBuilder,
@@ -819,6 +834,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         {
             ClientOptions = new WebApplicationFactoryClientOptions(options);
             _createServer = createServer;
+            _createServerFromServiceProvider = createServerFromServiceProvider;
             _createHost = createHost;
             _createWebHostBuilder = createWebHostBuilder;
             _createHostBuilder = createHostBuilder;
@@ -828,6 +844,8 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
 
         protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
+
+        protected override TestServer CreateServer(IServiceProvider serviceProvider) => _createServerFromServiceProvider(serviceProvider);
 
         protected override IHost CreateHost(IHostBuilder builder) => _createHost(builder);
 
@@ -846,6 +864,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             return new DelegatedWebApplicationFactory(
                 ClientOptions,
                 _createServer,
+                _createServerFromServiceProvider,
                 _createHost,
                 _createWebHostBuilder,
                 _createHostBuilder,

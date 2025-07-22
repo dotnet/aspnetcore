@@ -73,6 +73,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Navigate($"{ServerPathBase}/nav");
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-HTML page")).Click();
         Browser.Equal("Hello, this is plain text", () => Browser.Exists(By.TagName("html")).Text);
+
+        //Check if the fall back because of the non-html response sends a warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.Contains(logs, log => log.Message.Contains("Enhanced navigation failed for destination") && log.Message.Contains("Falling back to full page load.") && !log.Message.Contains("Error"));
     }
 
     [Fact]
@@ -465,6 +469,11 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("Non-Blazor HTML page")).Click();
         Browser.Equal("This is a non-Blazor endpoint", () => Browser.Exists(By.TagName("h1")).Text);
         Assert.Equal("undefined", Browser.ExecuteJavaScript<string>("return typeof Blazor")); // Blazor JS is NOT loaded
+
+        //Check if the fall back because of the non-blazor endpoint navigation sends a warning
+        var logs = Browser.GetBrowserLogs(LogLevel.Warning);
+        Assert.Contains(logs, log => log.Message.Contains("Enhanced navigation failed for destination") && log.Message.Contains("Falling back to full page load.") && !log.Message.Contains("Error"));
+
     }
 
     [Theory]

@@ -128,7 +128,6 @@ app.MapGet("/weatherforecast", (HttpContext httpContext) =>
 #if (EnableOpenAPI)
 })
 .WithName("GetWeatherForecast")
-.WithOpenApi()
 .RequireAuthorization();
 #else
 })
