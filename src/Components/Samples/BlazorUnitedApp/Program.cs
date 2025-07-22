@@ -3,6 +3,8 @@
 
 using BlazorUnitedApp;
 using BlazorUnitedApp.Data;
+using BlazorUnitedApp.Client.Data;
+using BlazorShared;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<WeatherForecastService>();
+builder.Services.AddSingleton<ServerImageRepository>();
 
 var app = builder.Build();
 

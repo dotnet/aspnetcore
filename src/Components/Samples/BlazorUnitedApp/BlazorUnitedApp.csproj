@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj" />
+    <ProjectReference Include="..\BlazorShared\BlazorShared.csproj" />
   </ItemGroup>
 
   <ItemGroup>

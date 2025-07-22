@@ -1,0 +1,571 @@
+﻿@page "/galleryInteractiveAuto"
+@using BlazorUnitedApp.Data
+@using BlazorShared
+@inject ServerImageRepository ImageRepository
+@inject IJSRuntime JSRuntime
+@rendermode @(new InteractiveAutoRenderMode(prerender: false))
+
+<PageTitle>Image Gallery</PageTitle>
+
+<div class="gallery-container">
+    <div class="gallery-header">
+        <h1>🖼️ Image Gallery Demo</h1>
+        <div class="host-indicator">
+            Running on: <strong>Blazor Interactive Auto</strong>
+        </div>
+    </div>
+
+    <div class="gallery-controls">
+        <button class="btn btn-secondary" @onclick="RefreshGallery">
+            <i class="fas fa-sync"></i> Refresh
+        </button>
+    </div>
+
+    @if (_isLoading)
+    {
+        <div class="loading-container">
+            <div class="spinner"></div>
+            <p>Loading gallery...</p>
+        </div>
+    }
+    else if (!_images.Any())
+    {
+        <div class="empty-gallery">
+            <i class="fas fa-image fa-3x"></i>
+            <h3>No Images Found</h3>
+            <p>No images are currently available in the gallery.</p>
+        </div>
+    }
+    else
+    {
+        <div class="image-grid">
+            @foreach (var image in _images)
+            {
+                <div class="image-card">
+                    <div class="image-wrapper" @onclick="() => OpenImageModal(image)">
+                        <Image
+                            Source="@GetImageSource(image.Id)"
+                            Alt="@image.Title"
+                            CacheStrategy="CacheStrategy.Memory"
+                            OnImageLoaded="@(() => OnImageLoaded(image.Id))"
+                            OnImageError="@((error) => OnImageError(image.Id, error))"
+                            style="width: 100%; height: 100%; object-fit: cover;" />
+                    </div>
+                    <div class="image-info">
+                        <h4>@image.Title</h4>
+                        <p>@image.Description</p>
+                        <div class="image-metadata">
+                            <span><i class="fas fa-ruler"></i> @image.Width x @image.Height</span>
+                            <span><i class="fas fa-weight"></i> @FormatFileSize(image.FileSize)</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<!-- Image View Modal -->
+@if (_showImageModal && _currentImage != null)
+{
+    <div class="modal-backdrop" @onclick="CloseImageModal"></div>
+    <div class="modal-container large" @onclick:stopPropagation="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>@_currentImage.Title</h3>
+                <button class="btn-close" @onclick="CloseImageModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="full-image-container">
+                    <Image
+                        Source="@GetImageSource(_currentImage.Id)"
+                        Alt="@_currentImage.Title"
+                        CacheStrategy="CacheStrategy.Memory"
+                        style="max-width: 100%; max-height: 70vh; object-fit: contain;" />
+                </div>
+                <div class="image-details">
+                    <h4>Image Details</h4>
+                    <div class="detail-grid">
+                        <div class="detail">
+                            <span class="label">Description:</span>
+                            <span class="value">@_currentImage.Description</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">Dimensions:</span>
+                            <span class="value">@_currentImage.Width x @_currentImage.Height px</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">Size:</span>
+                            <span class="value">@FormatFileSize(_currentImage.FileSize)</span>
+                        </div>
+                        <div class="detail">
+                            <span class="label">Type:</span>
+                            <span class="value">@_currentImage.MimeType</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" @onclick="() => DeleteImage(_currentImage.Id)">Delete Image</button>
+                <button class="btn btn-secondary" @onclick="CloseImageModal">Close</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _isLoading = true;
+    private List<ImageMetadata> _images = new();
+    private Dictionary<int, BinaryImageSource> _imageSources = new();
+
+    // View state
+    private bool _showImageModal = false;
+    private ImageMetadata? _currentImage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ImageRepository.InitializeAsync();
+        await LoadImagesAsync();
+        _isLoading = false;
+    }
+
+    private async Task LoadImagesAsync()
+    {
+        _images = await ImageRepository.GetAllImagesMetadataAsync();
+        //_imageSources.Clear(); // Clear cached sources when refreshing
+    }
+
+    private BinaryImageSource GetImageSource(int imageId)
+    {
+        if (_imageSources.TryGetValue(imageId, out var source))
+            return source;
+
+        // Get image metadata to get the mime type
+        var metadata = _images.FirstOrDefault(i => i.Id == imageId);
+        if (metadata == null)
+            return new BinaryImageSource("", new byte[0]);
+
+        // Create a lazy-loading image source
+        var imageSource = BinaryImageSource.FromRepository(
+            imageId,
+            metadata.MimeType,
+            () => ImageRepository.GetImageBytesAsync(imageId)
+        );
+
+        // Cache the source for future use
+        _imageSources[imageId] = imageSource;
+        return imageSource;
+    }
+
+    private async Task RefreshGallery()
+    {
+        _isLoading = true;
+        await LoadImagesAsync();
+        _isLoading = false;
+    }
+
+    private void OpenImageModal(ImageMetadata image)
+    {
+        _currentImage = image;
+        _showImageModal = true;
+    }
+
+    private void CloseImageModal()
+    {
+        _showImageModal = false;
+        _currentImage = null;
+    }
+
+    private async Task DeleteImage(int id)
+    {
+        try
+        {
+            var success = await ImageRepository.DeleteImageAsync(id);
+            if (success)
+            {
+                // Remove from cache
+                _imageSources.Remove(id);
+                await LoadImagesAsync();
+                CloseImageModal();
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error deleting image: {ex.Message}");
+        }
+    }
+
+    private void OnImageLoaded(int imageId)
+    {
+        Console.WriteLine($"Image loaded: {imageId}");
+    }
+
+    private void OnImageError(int imageId, string error)
+    {
+        Console.WriteLine($"Error loading image {imageId}: {error}");
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+        int order = 0;
+        double size = bytes;
+
+        while (size >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            size /= 1024;
+        }
+
+        return $"{size:0.##} {sizes[order]}";
+    }
+}
+
+<style>
+    .gallery-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .gallery-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .gallery-header h1 {
+        margin-bottom: 10px;
+    }
+
+    .host-indicator {
+        display: inline-block;
+        padding: 5px 10px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        margin-top: 10px;
+    }
+
+    .gallery-controls {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 30px;
+        justify-content: center;
+    }
+
+    .loading-container {
+        text-align: center;
+        padding: 40px;
+    }
+
+    .spinner {
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #3498db;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+    }
+
+    .spinner-sm {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s linear infinite;
+        vertical-align: middle;
+        margin-right: 5px;
+    }
+
+    @@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    .empty-gallery {
+        text-align: center;
+        padding: 60px 20px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .empty-gallery i {
+        color: #adb5bd;
+        margin-bottom: 15px;
+    }
+
+    .image-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+    }
+
+    .image-card {
+        border-radius: 8px;
+        overflow: hidden;
+        background-color: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .image-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+    }
+
+    .image-wrapper {
+        height: 200px;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .image-info {
+        padding: 15px;
+    }
+
+    .image-info h4 {
+        margin: 0 0 8px 0;
+    }
+
+    .image-info p {
+        margin: 0 0 12px 0;
+        color: #6c757d;
+    }
+
+    .image-metadata {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: #6c757d;
+        margin-bottom: 8px;
+    }
+
+    /* Modal Styles */
+    .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+    }
+
+    .modal-container {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1050;
+        width: 90%;
+        max-width: 500px;
+        max-height: 90vh;
+    }
+
+    .modal-container.large {
+        max-width: 800px;
+    }
+
+    .modal-content {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        max-height: 90vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .modal-header h3 {
+        margin: 0;
+    }
+
+    .btn-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #6c757d;
+    }
+
+    .btn-close:hover {
+        color: #343a40;
+    }
+
+    .modal-body {
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .modal-footer {
+        padding: 15px 20px;
+        border-top: 1px solid #dee2e6;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 16px;
+    }
+
+    .form-control:focus {
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+
+    /* Button Styles */
+    .btn {
+        padding: 8px 16px;
+        border-radius: 4px;
+        font-size: 16px;
+        cursor: pointer;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .btn-primary {
+        background-color: #0d6efd;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background-color: #0b5ed7;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5c636a;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .btn-warning:hover {
+        background-color: #ffca2c;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background-color: #bb2d3b;
+    }
+
+    .btn:disabled {
+        opacity: 0.65;
+        pointer-events: none;
+    }
+
+    /* Full Image Container */
+    .full-image-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+    }
+
+    .image-details {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+
+    .image-details h4 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #dee2e6;
+        padding-bottom: 8px;
+    }
+
+    .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 10px;
+    }
+
+    .detail {
+        margin-bottom: 8px;
+    }
+
+    .detail .label {
+        font-weight: 500;
+        display: block;
+    }
+
+    .detail .value {
+        color: #6c757d;
+    }
+
+    .technical-info {
+        background-color: #e9f7fe;
+        border-left: 4px solid #0d6efd;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 20px;
+    }
+
+    .technical-info h4 {
+        margin-top: 0;
+        margin-bottom: 10px;
+        color: #0d6efd;
+    }
+
+    .technical-info p {
+        margin-bottom: 10px;
+    }
+
+    /* Responsive Adjustments */
+    @@media (max-width: 768px) {
+        .image-grid {
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        }
+
+        .modal-container {
+            width: 95%;
+            max-width: none;
+        }
+
+        .detail-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>

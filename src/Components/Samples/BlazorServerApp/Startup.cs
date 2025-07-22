@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BlazorServerApp.Data;
+using BlazorServerApp.Client.Data;
 
 namespace BlazorServerApp;
 
@@ -21,6 +22,7 @@ public class Startup
         services.AddRazorPages();
         services.AddServerSideBlazor();
         services.AddSingleton<WeatherForecastService>();
+        services.AddSingleton<ImageRepository>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
