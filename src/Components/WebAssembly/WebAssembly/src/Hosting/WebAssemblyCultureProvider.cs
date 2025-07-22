@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -62,7 +63,7 @@ internal partial class WebAssemblyCultureProvider
             throw new PlatformNotSupportedException("This method is only supported in the browser.");
         }
 
-        var culturesToLoad = GetCultures(CultureInfo.CurrentCulture);
+        var culturesToLoad = GetCultures(CultureInfo.CurrentCulture).Union(GetCultures(CultureInfo.CurrentUICulture)).ToArray();
 
         if (culturesToLoad.Length == 0)
         {
