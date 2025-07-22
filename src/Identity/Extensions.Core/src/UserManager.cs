@@ -2555,29 +2555,29 @@ public class UserManager<TUser> : IDisposable where TUser : class
     /// <param name="user">The user for whom the passkey should be added or updated.</param>
     /// <param name="passkey">The passkey to add or update.</param>
     /// <returns>Whether the passkey was successfully set.</returns>
-    public virtual async Task<IdentityResult> SetPasskeyAsync(TUser user, UserPasskeyInfo passkey)
+    public virtual async Task<IdentityResult> AddOrUpdatePasskeyAsync(TUser user, UserPasskeyInfo passkey)
     {
         try
         {
-            var result = await SetPasskeyCoreAsync(user, passkey).ConfigureAwait(false);
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.SetPasskey);
+            var result = await AddOrUpdatePasskeyCoreAsync(user, passkey).ConfigureAwait(false);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result, UserUpdateType.AddOrUpdatePasskey);
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetPasskey, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AddOrUpdatePasskey, ex);
             throw;
         }
     }
 
-    private async Task<IdentityResult> SetPasskeyCoreAsync(TUser user, UserPasskeyInfo passkey)
+    private async Task<IdentityResult> AddOrUpdatePasskeyCoreAsync(TUser user, UserPasskeyInfo passkey)
     {
         ThrowIfDisposed();
         var passkeyStore = GetUserPasskeyStore();
         ArgumentNullThrowHelper.ThrowIfNull(user);
         ArgumentNullThrowHelper.ThrowIfNull(passkey);
 
-        await passkeyStore.SetPasskeyAsync(user, passkey, CancellationToken).ConfigureAwait(false);
+        await passkeyStore.AddOrUpdatePasskeyAsync(user, passkey, CancellationToken).ConfigureAwait(false);
         return await UpdateUserAsync(user).ConfigureAwait(false);
     }
 

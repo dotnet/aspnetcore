@@ -36,6 +36,11 @@ internal sealed class CollectedClientData
     public bool? CrossOrigin { get; init; }
 
     /// <summary>
+    /// Gets or sets the fully qualified top-level origin of the requester.
+    /// </summary>
+    public string? TopOrigin { get; init; }
+
+    /// <summary>
     /// Gets or sets information about the state of the token binding protocol.
     /// </summary>
     public TokenBinding? TokenBinding { get; init; }
