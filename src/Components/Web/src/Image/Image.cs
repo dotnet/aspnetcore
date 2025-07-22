@@ -86,6 +86,16 @@ public class Image : ComponentBase, IAsyncDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// Gets or sets the size of the chunks used when sending image data.
+    /// </summary>
+    [Parameter] public int ChunkSize { get; set; } = 64 * 1024;
+
+    /// <summary>
+    /// Event callback invoked to report the progress of image loading.
+    /// </summary>
+    [Parameter] public EventCallback<double> OnProgress { get; set; }
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {
@@ -157,9 +167,9 @@ public class Image : ComponentBase, IAsyncDisposable
         await base.SetParametersAsync(parameters);
 
         // Reload if source changed
-        if (!_isDisposed && !ReferenceEquals(previousSource, Source) && Source != null)
+        if (Source?.CacheKey != previousSource?.CacheKey && Source != null && !_isDisposed)
         {
-            await LoadImageIfSourceProvided();
+            //await LoadImageIfSourceProvided();
         }
 
         _lastSource = Source;
@@ -177,16 +187,55 @@ public class Image : ComponentBase, IAsyncDisposable
 
             byte[] imageData = await Source.GetBytesAsync();
 
-            await JSRuntime.InvokeVoidAsync(
-                "Blazor._internal.BinaryImageComponent.createImageFromBytes",
-                _id, imageData, Source.MimeType, Source.CacheKey,
-                CacheStrategy.ToString().ToLowerInvariant());
+            //await JSRuntime.InvokeVoidAsync(
+            //    "Blazor._internal.BinaryImageComponent.createImageFromBytes",
+            //    _id, imageData, Source.MimeType, Source.CacheKey,
+            //    CacheStrategy.ToString().ToLowerInvariant());
+
+            await SendImageInChunks(imageData, Source.MimeType, Source.CacheKey);
 
             await SetSuccessState();
         }
         catch (Exception ex)
         {
             await SetErrorState(ex.Message);
+        }
+    }
+
+    private async Task SendImageInChunks(byte[] imageData, string mimeType, string cacheKey)
+    {
+        try
+        {
+            int totalChunks = (int)Math.Ceiling((double)imageData.Length / ChunkSize);
+            string transferId = $"{_id}-{Guid.NewGuid():N}";
+
+            await JSRuntime.InvokeVoidAsync(
+                "imageComponent.initChunkedTransfer",
+                _id, transferId, totalChunks, imageData.Length, mimeType, cacheKey,
+                CacheStrategy.ToString().ToLowerInvariant());
+
+            for (int i = 0; i < totalChunks; i++)
+            {
+                int offset = i * ChunkSize;
+                int length = Math.Min(ChunkSize, imageData.Length - offset);
+                byte[] chunk = new byte[length];
+                Array.Copy(imageData, offset, chunk, 0, length);
+
+                await JSRuntime.InvokeVoidAsync(
+                    "imageComponent.addChunk",
+                    transferId, i, chunk);
+
+                double progress = (i + 1) / (double)totalChunks;
+                await OnProgress.InvokeAsync(progress);
+            }
+
+            await JSRuntime.InvokeVoidAsync(
+                "imageComponent.finalizeChunkedTransfer",
+                transferId, _id);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to send chunked image data: {ex.Message}", ex);
         }
     }
 
