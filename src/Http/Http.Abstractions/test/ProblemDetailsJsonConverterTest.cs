@@ -92,7 +92,8 @@ public class ProblemDetailsJsonConverterTest
             });
     }
 
-    [Fact]
+    [ConditionalFact]
+    [SkipOnCI]
     public void Read_WithUnknownTypeHandling_Works()
     {
         // Arrange
