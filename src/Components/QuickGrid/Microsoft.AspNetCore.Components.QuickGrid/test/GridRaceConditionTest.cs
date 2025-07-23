@@ -95,9 +95,13 @@ internal class Person
     public string Name { get; set; } = string.Empty;
 }
 
-internal class SimpleTestComponent : ComponentBase, IAsyncDisposable
+internal abstract class BaseTestComponent<TGrid> : ComponentBase, IAsyncDisposable
+    where TGrid : ComponentBase
 {
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+
+    protected TGrid _grid;
+    public TGrid Grid => _grid;
 
     private readonly List<Person> _people = [
         new() { Id = 1, Name = "John" },
@@ -106,7 +110,7 @@ internal class SimpleTestComponent : ComponentBase, IAsyncDisposable
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenComponent<QuickGrid<Person>>(0);
+        builder.OpenComponent<TGrid>(0);
         builder.AddAttribute(1, "Items", _people.AsQueryable());
         builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
         {
@@ -114,58 +118,34 @@ internal class SimpleTestComponent : ComponentBase, IAsyncDisposable
             b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<Person, int>>)(p => p.Id));
             b.CloseComponent();
         }));
+        if (typeof(TGrid) != typeof(QuickGrid<Person>))
+        {
+            builder.AddComponentReferenceCapture(3, component => _grid = (TGrid)component);
+        }
         builder.CloseComponent();
     }
 
-    public ValueTask DisposeAsync()
+    public virtual async ValueTask DisposeAsync()
     {
         if (JSRuntime is TestJsRuntime testRuntime)
         {
             testRuntime.MarkDisposed();
         }
-        return ValueTask.CompletedTask;
+
+        if (_grid is IAsyncDisposable disposableGrid)
+        {
+            await disposableGrid.DisposeAsync();
+        }
     }
 }
 
-internal class FailingGridTestComponent : ComponentBase, IAsyncDisposable
+internal class SimpleTestComponent : BaseTestComponent<QuickGrid<Person>>
 {
-    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+}
 
-    private FailingQuickGrid<Person> _failingGrid;
-
-    public FailingQuickGrid<Person> FailingQuickGrid => _failingGrid;
-
-    private readonly List<Person> _people = [
-        new() { Id = 1, Name = "John" },
-        new() { Id = 2, Name = "Jane" }
-    ];
-
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        builder.OpenComponent<FailingQuickGrid<Person>>(0);
-        builder.AddAttribute(1, "Items", _people.AsQueryable());
-        builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
-        {
-            b.OpenComponent<PropertyColumn<Person, int>>(0);
-            b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<Person, int>>)(p => p.Id));
-            b.CloseComponent();
-        }));
-        builder.AddComponentReferenceCapture(3, component => _failingGrid = (FailingQuickGrid<Person>)component);
-        builder.CloseComponent();
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        if (JSRuntime is TestJsRuntime testRuntime)
-        {
-            testRuntime.MarkDisposed();
-        }
-
-        if (_failingGrid is not null)
-        {
-            await _failingGrid.DisposeAsync();
-        }
-    }
+internal class FailingGridTestComponent : BaseTestComponent<FailingQuickGrid<Person>>
+{
+    public FailingQuickGrid<Person> FailingQuickGrid => Grid;
 }
 
 internal class TestJsRuntime(TaskCompletionSource moduleCompletion, TaskCompletionSource importStarted) : IJSRuntime
@@ -207,9 +187,6 @@ internal class TestJsRuntime(TaskCompletionSource moduleCompletion, TaskCompleti
         InvokeAsync<TValue>(identifier, args);
 }
 
-/// <summary>
-/// Mock JS object reference for the QuickGrid module
-/// </summary>
 internal class TestJSObjectReference(TestJsRuntime jsRuntime) : IJSObjectReference
 {
     private readonly TestJsRuntime _jsRuntime = jsRuntime;
@@ -223,20 +200,8 @@ internal class TestJSObjectReference(TestJsRuntime jsRuntime) : IJSObjectReferen
         return ValueTask.FromResult(default(TValue)!);
     }
 
-    public ValueTask InvokeVoidAsync(string identifier, object[] args)
-    {
-        if (identifier == "init")
-        {
-            _jsRuntime.RecordInitCall();
-        }
-        return ValueTask.CompletedTask;
-    }
-
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) =>
         InvokeAsync<TValue>(identifier, args);
-
-    public ValueTask InvokeVoidAsync(string identifier, CancellationToken cancellationToken, object[] args) =>
-        InvokeVoidAsync(identifier, args);
 
     public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }
