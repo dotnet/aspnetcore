@@ -214,7 +214,7 @@ public class DefaultModelMetadataProviderTest
         // The parameter itself has no attributes
         Assert.Empty(defaultMetadata.Attributes.ParameterAttributes);
 
-        // Type attributes exist (but we don't care what they are - that's CoreCLR's business)
+        // Type attributes exist (but we don't care what they are - that's runtime implementation detail)
         Assert.NotEmpty(defaultMetadata.Attributes.TypeAttributes);
 
         // Combined attributes = ParameterAttributes + TypeAttributes (when parameter has no attributes)
