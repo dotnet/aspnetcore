@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -31,7 +32,6 @@ public class Image : ComponentBase, IAsyncDisposable
     private bool _isLoading = true;
     private bool _hasError;
     private bool _isDisposed;
-    private IImageSource? _lastSource;
 
     /// <summary>
     /// Gets or sets the associated <see cref="ElementReference"/>.
@@ -163,16 +163,7 @@ public class Image : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     public override async Task SetParametersAsync(ParameterView parameters)
     {
-        var previousSource = _lastSource;
         await base.SetParametersAsync(parameters);
-
-        // Reload if source changed
-        if (Source?.CacheKey != previousSource?.CacheKey && Source != null && !_isDisposed)
-        {
-            //await LoadImageIfSourceProvided();
-        }
-
-        _lastSource = Source;
     }
 
     private async Task LoadImageIfSourceProvided()
@@ -185,14 +176,20 @@ public class Image : ComponentBase, IAsyncDisposable
         {
             SetLoadingState();
 
-            byte[] imageData = await Source.GetBytesAsync();
-
-            //await JSRuntime.InvokeVoidAsync(
-            //    "Blazor._internal.BinaryImageComponent.createImageFromBytes",
-            //    _id, imageData, Source.MimeType, Source.CacheKey,
-            //    CacheStrategy.ToString().ToLowerInvariant());
-
-            await SendImageInChunks(imageData, Source.MimeType, Source.CacheKey);
+            if (Source is IStreamingImageSource streamingSource)
+            {
+                await StreamImageInChunks(streamingSource);
+            }
+            else if (Source is ILoadableImageSource loadableSource)
+            {
+                byte[] imageData = await loadableSource.GetBytesAsync();
+                await SendImageInChunks(imageData, loadableSource.MimeType, loadableSource.CacheKey);
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "The provided image source must be either ILoadableImageSource or IStreamingImageSource.");
+            }
 
             await SetSuccessState();
         }
@@ -209,33 +206,88 @@ public class Image : ComponentBase, IAsyncDisposable
             int totalChunks = (int)Math.Ceiling((double)imageData.Length / ChunkSize);
             string transferId = $"{_id}-{Guid.NewGuid():N}";
 
+            byte[] chunkBuffer = ArrayPool<byte>.Shared.Rent(ChunkSize);
+
             await JSRuntime.InvokeVoidAsync(
                 "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
                 _id, transferId, totalChunks, imageData.Length, mimeType, cacheKey,
                 CacheStrategy.ToString().ToLowerInvariant());
-
-            for (int i = 0; i < totalChunks; i++)
+            try
             {
-                int offset = i * ChunkSize;
-                int length = Math.Min(ChunkSize, imageData.Length - offset);
-                byte[] chunk = new byte[length];
-                Array.Copy(imageData, offset, chunk, 0, length);
+                for (int i = 0; i < totalChunks; i++)
+                {
+                    int offset = i * ChunkSize;
+                    int length = Math.Min(ChunkSize, imageData.Length - offset);
 
-                await JSRuntime.InvokeVoidAsync(
-                    "Blazor._internal.BinaryImageComponent.addChunk",
-                    transferId, i, chunk);
+                    Array.Copy(imageData, offset, chunkBuffer, 0, length);
 
-                double progress = (i + 1) / (double)totalChunks;
-                await OnProgress.InvokeAsync(progress);
+                    await JSRuntime.InvokeVoidAsync(
+                        "Blazor._internal.BinaryImageComponent.addChunk",
+                        transferId, i, chunkBuffer.AsMemory(0, length).ToArray());
+
+                    double progress = (i + 1) / (double)totalChunks;
+                    await OnProgress.InvokeAsync(progress);
+                }
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(chunkBuffer);
             }
 
-            await JSRuntime.InvokeVoidAsync(
+        await JSRuntime.InvokeVoidAsync(
                 "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
                 transferId, _id);
         }
         catch (Exception ex)
         {
             throw new InvalidOperationException($"Failed to send chunked image data: {ex.Message}", ex);
+        }
+    }
+
+    private async Task StreamImageInChunks(IStreamingImageSource source)
+    {
+        try
+        {
+            long totalSize = await source.GetSizeAsync();
+            int totalChunks = (int)Math.Ceiling((double)totalSize / ChunkSize);
+            string transferId = $"{_id}-{Guid.NewGuid():N}";
+
+            await JSRuntime.InvokeVoidAsync(
+                "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
+                _id, transferId, totalChunks, totalSize, source.MimeType, source.CacheKey,
+                CacheStrategy.ToString().ToLowerInvariant());
+
+            byte[] buffer = ArrayPool<byte>.Shared.Rent(ChunkSize);
+            try
+            {
+                using Stream stream = await source.OpenReadStreamAsync();
+                int chunkIndex = 0;
+                int bytesRead;
+
+                while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, ChunkSize))) > 0)
+                {
+                    await JSRuntime.InvokeVoidAsync(
+                        "Blazor._internal.BinaryImageComponent.addChunk",
+                        transferId, chunkIndex, buffer.AsMemory(0, bytesRead).ToArray());
+
+                    double progress = (chunkIndex + 1) / (double)totalChunks;
+                    await OnProgress.InvokeAsync(progress);
+
+                    chunkIndex++;
+                }
+
+                await JSRuntime.InvokeVoidAsync(
+                    "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
+                    transferId, _id);
+            }
+            finally
+            {
+                ArrayPool<byte>.Shared.Return(buffer);
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Failed to stream image data: {ex.Message}", ex);
         }
     }
 

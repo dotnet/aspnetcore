@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Web.Image;
+
 namespace BlazorShared;
 
-public class BinaryImageSource : ILoadableImageSource
+public class StreamingImageSource : IStreamingImageSource
 {
     private readonly byte[]? _data;
     private readonly Func<Task<byte[]>>? _dataProvider;
@@ -12,7 +13,7 @@ public class BinaryImageSource : ILoadableImageSource
     public string MimeType { get; }
     public string CacheKey { get; }
 
-    public BinaryImageSource(string mimeType, byte[] data, string? cacheKey = null)
+    public StreamingImageSource(string mimeType, byte[] data, string? cacheKey = null)
     {
         MimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
         _data = data ?? throw new ArgumentNullException(nameof(data));
@@ -20,7 +21,7 @@ public class BinaryImageSource : ILoadableImageSource
         CacheKey = cacheKey ?? ComputeCacheKey(data);
     }
 
-    public BinaryImageSource(string mimeType, Func<Task<byte[]>> dataProvider, string cacheKey)
+    public StreamingImageSource(string mimeType, Func<Task<byte[]>> dataProvider, string cacheKey)
     {
         MimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
         _dataProvider = dataProvider ?? throw new ArgumentNullException(nameof(dataProvider));
@@ -28,14 +29,36 @@ public class BinaryImageSource : ILoadableImageSource
         CacheKey = cacheKey ?? throw new ArgumentNullException(nameof(cacheKey));
     }
 
-    public async ValueTask<byte[]> GetBytesAsync(CancellationToken ct)
+    public async ValueTask<long> GetSizeAsync(CancellationToken cancellationToken = default)
     {
         if (_data != null)
         {
-            return _data;
+            return _data.Length;
         }
 
-        return _dataProvider != null ? await _dataProvider() : throw new InvalidOperationException("No image data source available");
+        if (_dataProvider != null)
+        {
+            var data = await _dataProvider();
+            return data?.Length ?? 0;
+        }
+
+        throw new InvalidOperationException("No image data source available");
+    }
+
+    public async ValueTask<Stream> OpenReadStreamAsync(CancellationToken cancellationToken = default)
+    {
+        if (_data != null)
+        {
+            return new MemoryStream(_data);
+        }
+
+        if (_dataProvider != null)
+        {
+            var data = await _dataProvider();
+            return new MemoryStream(data ?? Array.Empty<byte>());
+        }
+
+        throw new InvalidOperationException("No image data source available");
     }
 
     private static string ComputeCacheKey(byte[] data)
@@ -51,6 +74,6 @@ public class BinaryImageSource : ILoadableImageSource
         }
     }
 
-    public static BinaryImageSource FromRepository(int imageId, string mimeType, Func<Task<byte[]?>> dataProvider)
-        => new BinaryImageSource(mimeType, async () => await dataProvider() ?? Array.Empty<byte>(), $"img-{imageId}");
+    public static StreamingImageSource FromRepository(int imageId, string mimeType, Func<Task<byte[]?>> dataProvider)
+        => new StreamingImageSource(mimeType, async () => await dataProvider() ?? Array.Empty<byte>(), $"streaming-img-{imageId}");
 }

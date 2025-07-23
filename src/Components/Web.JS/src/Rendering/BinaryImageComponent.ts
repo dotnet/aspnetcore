@@ -28,95 +28,95 @@ export class BinaryImageComponent {
 
   private static pendingTransfers: Map<string, ChunkedTransfer> = new Map();
 
-  /**
-   * Creates an image from binary data with optional caching. NOT USED ANYMORE.
-   * @param elementId - The ID of the target image element
-   * @param imageBytes - The binary image data
-   * @param mimeType - The MIME type of the image
-   * @param cacheKey - A unique key for caching
-   * @param cacheStrategy - The caching strategy to use ("none", "memory", "persistent")
-   * @returns True if successful, false otherwise
-   */
-  public static createImageFromBytes(
-    elementId: string,
-    imageBytes: Uint8Array,
-    mimeType: string,
-    cacheKey: string,
-    cacheStrategy = 'memory'
-  ): boolean {
-    console.log(`Creating image for ${elementId} with cacheKey: ${cacheKey}`);
-    const imgElement = document.getElementById(elementId) as HTMLImageElement;
-    if (!imgElement) {
-      return false;
-    }
+  // /**
+  // * Creates an image from binary data with optional caching. NOT USED ANYMORE.
+  // * @param elementId - The ID of the target image element
+  // * @param imageBytes - The binary image data
+  // * @param mimeType - The MIME type of the image
+  // * @param cacheKey - A unique key for caching
+  // * @param cacheStrategy - The caching strategy to use ("none", "memory", "persistent")
+  // * @returns True if successful, false otherwise
+  // */
+  // public static createImageFromBytes(
+  //  elementId: string,
+  //  imageBytes: Uint8Array,
+  //  mimeType: string,
+  //  cacheKey: string,
+  //  cacheStrategy = 'memory'
+  // ): boolean {
+  //  console.log(`Creating image for ${elementId} with cacheKey: ${cacheKey}`);
+  //  const imgElement = document.getElementById(elementId) as HTMLImageElement;
+  //  if (!imgElement) {
+  //    return false;
+  //  }
 
-    // Set loading state
-    this.loadingImages.add(elementId);
-    imgElement.dispatchEvent(new CustomEvent('blazorImageLoading'));
+  //  // Set loading state
+  //  this.loadingImages.add(elementId);
+  //  imgElement.dispatchEvent(new CustomEvent('blazorImageLoading'));
 
-    try {
-      // Check if we have this image cached by key
-      let url: string | null = null;
-      if (cacheKey && cacheStrategy === 'memory') {
-        url = this.memoryCache.get(cacheKey) || null;
-      }
+  //  try {
+  //    // Check if we have this image cached by key
+  //    let url: string | null = null;
+  //    if (cacheKey && cacheStrategy === 'memory') {
+  //      url = this.memoryCache.get(cacheKey) || null;
+  //    }
 
-      // If not in cache, create new Blob URL
-      if (!url) {
-        // Convert from byte array to Blob
-        const blob = new Blob([imageBytes], { type: mimeType });
-        url = URL.createObjectURL(blob);
+  //    // If not in cache, create new Blob URL
+  //    if (!url) {
+  //      // Convert from byte array to Blob
+  //      const blob = new Blob([imageBytes], { type: mimeType });
+  //      url = URL.createObjectURL(blob);
 
-        // Store in cache if we have a key
-        if (cacheKey && cacheStrategy === 'memory') {
-          this.memoryCache.set(cacheKey, url);
-        }
+  //      // Store in cache if we have a key
+  //      if (cacheKey && cacheStrategy === 'memory') {
+  //        this.memoryCache.set(cacheKey, url);
+  //      }
 
-        console.log(`Created blob URL for ${cacheKey}: ${url}`);
-      } else {
-        console.log(`Using cached blob URL for ${cacheKey}`);
-      }
+  //      console.log(`Created blob URL for ${cacheKey}: ${url}`);
+  //    } else {
+  //      console.log(`Using cached blob URL for ${cacheKey}`);
+  //    }
 
-      // Store URL reference for this element (for cleanup)
-      if (this.blobUrls.has(elementId)) {
-        // If this element already had an image, revoke the old URL if not cached
-        const oldUrl = this.blobUrls.get(elementId);
-        if (oldUrl) {
-          const isCached = Array.from(this.memoryCache.values()).includes(oldUrl);
-          if (!isCached) {
-            URL.revokeObjectURL(oldUrl);
-            console.log(`Revoked old blob URL for ${elementId}`);
-          }
-        }
-      }
+  //    // Store URL reference for this element (for cleanup)
+  //    if (this.blobUrls.has(elementId)) {
+  //      // If this element already had an image, revoke the old URL if not cached
+  //      const oldUrl = this.blobUrls.get(elementId);
+  //      if (oldUrl) {
+  //        const isCached = Array.from(this.memoryCache.values()).includes(oldUrl);
+  //        if (!isCached) {
+  //          URL.revokeObjectURL(oldUrl);
+  //          console.log(`Revoked old blob URL for ${elementId}`);
+  //        }
+  //      }
+  //    }
 
-      // Update the element with new URL
-      this.blobUrls.set(elementId, url);
-      imgElement.src = url;
+  //    // Update the element with new URL
+  //    this.blobUrls.set(elementId, url);
+  //    imgElement.src = url;
 
-      // Handle load and error events
-      imgElement.onload = () => {
-        this.loadingImages.delete(elementId);
-        imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
-      };
+  //    // Handle load and error events
+  //    imgElement.onload = () => {
+  //      this.loadingImages.delete(elementId);
+  //      imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
+  //    };
 
-      imgElement.onerror = (e) => {
-        this.loadingImages.delete(elementId);
-        imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
-          detail: (e as ErrorEvent).message || 'Failed to load image',
-        }));
-      };
+  //    imgElement.onerror = (e) => {
+  //      this.loadingImages.delete(elementId);
+  //      imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
+  //        detail: (e as ErrorEvent).message || 'Failed to load image',
+  //      }));
+  //    };
 
-      return true;
-    } catch (error) {
-      console.error(`Error creating image from bytes: ${error}`);
-      this.loadingImages.delete(elementId);
-      imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
-        detail: (error as Error).message,
-      }));
-      return false;
-    }
-  }
+  //    return true;
+  //  } catch (error) {
+  //    console.error(`Error creating image from bytes: ${error}`);
+  //    this.loadingImages.delete(elementId);
+  //    imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
+  //      detail: (error as Error).message,
+  //    }));
+  //    return false;
+  //  }
+  // }
 
   /**
      * Initializes a chunked image transfer.
