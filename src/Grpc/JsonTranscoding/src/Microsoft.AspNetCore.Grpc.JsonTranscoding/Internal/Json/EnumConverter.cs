@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Google.Protobuf.Reflection;
-using Grpc.Shared;
 using Type = System.Type;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
@@ -28,7 +27,7 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
                 }
 
                 var value = reader.GetString()!;
-                var valueDescriptor = enumDescriptor.FindValueByName(value);
+                var valueDescriptor = JsonNamingHelpers.GetEnumFieldReadValue(enumDescriptor, value, Context.Settings);
                 if (valueDescriptor == null)
                 {
                     throw new InvalidOperationException(@$"Error converting value ""{value}"" to enum type {typeToConvert}.");
@@ -52,7 +51,13 @@ internal sealed class EnumConverter<TEnum> : SettingsConverterBase<TEnum> where 
         }
         else
         {
-            var name = Legacy.OriginalEnumValueHelper.GetOriginalName(value);
+            var enumDescriptor = (EnumDescriptor?)Context.DescriptorRegistry.FindDescriptorByType(value.GetType());
+            if (enumDescriptor == null)
+            {
+                throw new InvalidOperationException($"Unable to resolve descriptor for {value.GetType()}.");
+            }
+
+            var name = JsonNamingHelpers.GetEnumFieldWriteName(enumDescriptor, value, Context.Settings);
             if (name != null)
             {
                 writer.WriteStringValue(name);
