@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <CustomBeforeWixTargets>$(MSBuildThisFileDirectory)BeforeWix.Common.targets</CustomBeforeWixTargets>
     <TargetFrameworkMoniker>Native,Version=v0.0</TargetFrameworkMoniker>
 
     <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
