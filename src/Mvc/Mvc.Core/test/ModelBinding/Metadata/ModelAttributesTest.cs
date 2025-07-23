@@ -189,7 +189,7 @@ public class ModelAttributesTest
         Assert.Empty(attributes.ParameterAttributes);
         Assert.Null(attributes.PropertyAttributes);
 
-        // Type attributes exist (but we don't care what they are - that's CoreCLR's business)
+        // Type attributes exist (but we don't care what they are - that's runtime implementation detail)
         Assert.NotEmpty(attributes.TypeAttributes);
 
         // Combined attributes = ParameterAttributes + TypeAttributes (when parameter has no attributes)
