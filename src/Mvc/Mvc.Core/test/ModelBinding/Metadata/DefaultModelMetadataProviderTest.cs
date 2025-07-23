@@ -211,8 +211,14 @@ public class DefaultModelMetadataProviderTest
         // Assert
         var defaultMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
 
-        // Not exactly "no attributes" due to SerializableAttribute on object.
-        Assert.IsType<SerializableAttribute>(Assert.Single(defaultMetadata.Attributes.Attributes));
+        // Not exactly "no attributes" due to pseudo-attributes on object.
+        // After CoreCLR consistency fix, object.GetCustomAttributes() returns all pseudo-attributes.
+        Assert.Equal(5, defaultMetadata.Attributes.Attributes.Count);
+        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr is SerializableAttribute);
+        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr.GetType().Name == "NullableContextAttribute");
+        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr.GetType().Name == "ClassInterfaceAttribute");
+        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr.GetType().Name == "ComVisibleAttribute");
+        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr.GetType().Name == "TypeForwardedFromAttribute");
     }
 
     [Fact]
