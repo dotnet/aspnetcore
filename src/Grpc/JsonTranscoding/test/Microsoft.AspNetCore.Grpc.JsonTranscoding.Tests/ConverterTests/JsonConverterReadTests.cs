@@ -512,6 +512,8 @@ public class JsonConverterReadTests
   }
 }";
 
+        // Note: JSON property names here are keys in a dictionary, not fields. So FieldNamesCaseInsensitive doesn't apply.
+        // The new serializer supports converting true/false to boolean keys while ignoring case.
         AssertReadJson<HelloRequest>(json, serializeOld: false);
     }
 
