@@ -1,7 +1,5 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project Sdk="Microsoft.WixToolset.Sdk">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
-
   <PropertyGroup>
     <Name>$(HostOptionsName)</Name>
     <OutputName>$(HostOptionsName)</OutputName>
@@ -12,6 +10,8 @@
     <ProjectGuid>20248cd1-c5aa-4f42-ad88-bc260d64deea</ProjectGuid>
     <IsShipping>true</IsShipping>
     <SchemaVersion>2.0</SchemaVersion>
+    <!-- We import D.B.T ourselves in this file -->
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
 
     <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THIS. -->
     <NamespaceGuid>$(HostingBundleNamespaceGuid)</NamespaceGuid>
