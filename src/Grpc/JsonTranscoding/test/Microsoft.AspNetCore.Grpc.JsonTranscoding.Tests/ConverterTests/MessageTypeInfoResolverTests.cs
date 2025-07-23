@@ -4,10 +4,8 @@
 using System.Text.Json;
 using Google.Protobuf;
 using Google.Protobuf.Reflection;
-using Google.Protobuf.WellKnownTypes;
 using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
-using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobutMessages;
 using Transcoding;
 
 namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.ConverterTests;
