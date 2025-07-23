@@ -506,6 +506,11 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
         // Act
         var endpoint = GetEndpointFromCompilation(compilation);
 
+        // IApiEndpointMetadata is tricky to order consistently because it depends on whether AddsCustomParameterMetadata is registered
+        // as a service at runtime. However, the order of IApiEndpointMetadata is not significant since there's no way to override it
+        // other than removing it.
+        Assert.Single(endpoint.Metadata, m => m is IApiEndpointMetadata);
+
         // Assert
         // NOTE: Depending on whether we are running under RDG or RDG, there are some generated types which
         //       don't have equivalents in the opposite. The two examples here are NullableContextAttribute which
@@ -519,13 +524,12 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
             m is not HttpMethodMetadata &&
             m is not Attribute1 &&
             m is not Attribute2 &&
-            m is not IRouteDiagnosticsMetadata);
+            m is not IRouteDiagnosticsMetadata &&
+            m is not IApiEndpointMetadata);
 
         Assert.Collection(filteredMetadata,
             // Inferred AcceptsMetadata from RDF for complex type
             m => Assert.True(m is IAcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
-            // Inferred IApiEndpointMetadata from RDF for complex request and response type
-            m => Assert.True(m is IApiEndpointMetadata),
             // Parameter binding metadata inferred by RDF
             m => Assert.True(m is IParameterBindingMetadata { Name: "param1" }),
             // Inferred ProducesResopnseTypeMetadata from RDF for complex type
