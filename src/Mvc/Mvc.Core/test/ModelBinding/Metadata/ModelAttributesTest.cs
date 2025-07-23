@@ -185,11 +185,15 @@ public class ModelAttributesTest
                 .GetParameters()[0]);
 
         // Assert
-        // Not exactly "no attributes" due to SerializableAttribute on object.
-        Assert.IsType<SerializableAttribute>(Assert.Single(attributes.Attributes));
+        // The parameter itself has no attributes
         Assert.Empty(attributes.ParameterAttributes);
         Assert.Null(attributes.PropertyAttributes);
-        Assert.Equal(attributes.Attributes, attributes.TypeAttributes);
+
+        // Type attributes exist (but we don't care what they are - that's runtime implementation detail)
+        Assert.NotEmpty(attributes.TypeAttributes);
+
+        // Combined attributes = ParameterAttributes + TypeAttributes (when parameter has no attributes)
+        Assert.Equal(attributes.TypeAttributes, attributes.Attributes);
     }
 
     [Fact]
