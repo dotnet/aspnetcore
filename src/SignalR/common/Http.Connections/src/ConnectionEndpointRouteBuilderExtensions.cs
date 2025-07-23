@@ -127,7 +127,7 @@ public static class ConnectionEndpointRouteBuilderExtensions
                 e.Metadata.Add(data);
             }
 
-            // Add INonBrowserEndpointMetadata to indicate this is a non-browser endpoint (SignalR)
+            // Add IApiEndpointMetadata to indicate this is a non-browser endpoint (SignalR)
             e.Metadata.Add(ApiEndpointMetadata.Instance);
         });
 
