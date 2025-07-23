@@ -185,17 +185,15 @@ public class ModelAttributesTest
                 .GetParameters()[0]);
 
         // Assert
-        // Not exactly "no attributes" due to pseudo-attributes on object.
-        // After CoreCLR consistency fix, object.GetCustomAttributes() returns all pseudo-attributes.
-        Assert.Equal(5, attributes.Attributes.Count);
-        Assert.Contains(attributes.Attributes, attr => attr is SerializableAttribute);
-        Assert.Contains(attributes.Attributes, attr => attr.GetType().Name == "NullableContextAttribute");
-        Assert.Contains(attributes.Attributes, attr => attr.GetType().Name == "ClassInterfaceAttribute");
-        Assert.Contains(attributes.Attributes, attr => attr.GetType().Name == "ComVisibleAttribute");
-        Assert.Contains(attributes.Attributes, attr => attr.GetType().Name == "TypeForwardedFromAttribute");
+        // The parameter itself has no attributes
         Assert.Empty(attributes.ParameterAttributes);
         Assert.Null(attributes.PropertyAttributes);
-        Assert.Equal(attributes.Attributes, attributes.TypeAttributes);
+
+        // Type attributes exist (but we don't care what they are - that's CoreCLR's business)
+        Assert.NotEmpty(attributes.TypeAttributes);
+
+        // Combined attributes = ParameterAttributes + TypeAttributes (when parameter has no attributes)
+        Assert.Equal(attributes.TypeAttributes, attributes.Attributes);
     }
 
     [Fact]

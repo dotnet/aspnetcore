@@ -211,14 +211,14 @@ public class DefaultModelMetadataProviderTest
         // Assert
         var defaultMetadata = Assert.IsType<DefaultModelMetadata>(metadata);
 
-        // Not exactly "no attributes" due to pseudo-attributes on object.
-        // After CoreCLR consistency fix, object.GetCustomAttributes() returns all pseudo-attributes.
-        Assert.Equal(5, defaultMetadata.Attributes.Attributes.Count);
-        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr is SerializableAttribute);
-        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr.GetType().Name == "NullableContextAttribute");
-        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr.GetType().Name == "ClassInterfaceAttribute");
-        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr.GetType().Name == "ComVisibleAttribute");
-        Assert.Contains(defaultMetadata.Attributes.Attributes, attr => attr.GetType().Name == "TypeForwardedFromAttribute");
+        // The parameter itself has no attributes
+        Assert.Empty(defaultMetadata.Attributes.ParameterAttributes);
+
+        // Type attributes exist (but we don't care what they are - that's CoreCLR's business)
+        Assert.NotEmpty(defaultMetadata.Attributes.TypeAttributes);
+
+        // Combined attributes = ParameterAttributes + TypeAttributes (when parameter has no attributes)
+        Assert.Equal(defaultMetadata.Attributes.TypeAttributes, defaultMetadata.Attributes.Attributes);
     }
 
     [Fact]
