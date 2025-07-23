@@ -64,7 +64,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                     app.UseExceptionHandler("/Error", createScopeForErrors: true);
                 }
 
-                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForErrors: true);
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
                 reexecutionApp.UseStaticFiles();
                 reexecutionApp.UseRouting();
                 RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(reexecutionApp);

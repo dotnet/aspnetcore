@@ -212,7 +212,12 @@ internal class SSRRenderModeBoundary : IComponent
         var sequenceString = sequence.ToString(CultureInfo.InvariantCulture);
 
         var locationHash = $"{componentTypeNameHash}:{sequenceString}";
-        var formattedComponentKey = (componentKey as IFormattable)?.ToString(null, CultureInfo.InvariantCulture) ?? string.Empty;
+        var formattedComponentKey = componentKey switch
+        {
+            string str => str,
+            IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
+            _ => string.Empty
+        };
 
         return new()
         {

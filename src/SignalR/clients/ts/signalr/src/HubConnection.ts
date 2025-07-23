@@ -871,7 +871,7 @@ export class HubConnection {
         let previousReconnectAttempts = 0;
         let retryError = error !== undefined ? error : new Error("Attempting to reconnect due to a unknown error.");
 
-        let nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts++, 0, retryError);
+        let nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts, 0, retryError);
 
         if (nextRetryDelay === null) {
             this._logger.log(LogLevel.Debug, "Connection not reconnecting because the IRetryPolicy returned null on the first reconnect attempt.");
@@ -902,7 +902,7 @@ export class HubConnection {
         }
 
         while (nextRetryDelay !== null) {
-            this._logger.log(LogLevel.Information, `Reconnect attempt number ${previousReconnectAttempts} will start in ${nextRetryDelay} ms.`);
+            this._logger.log(LogLevel.Information, `Reconnect attempt number ${previousReconnectAttempts + 1} will start in ${nextRetryDelay} ms.`);
 
             await new Promise((resolve) => {
                 this._reconnectDelayHandle = setTimeout(resolve, nextRetryDelay!);
@@ -941,8 +941,9 @@ export class HubConnection {
                     return;
                 }
 
+                previousReconnectAttempts++;
                 retryError = e instanceof Error ? e : new Error((e as any).toString());
-                nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime, retryError);
+                nextRetryDelay = this._getNextRetryDelay(previousReconnectAttempts, Date.now() - reconnectStartTime, retryError);
             }
         }
 

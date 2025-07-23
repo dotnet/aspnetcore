@@ -32,3 +32,11 @@
 ## Running tests
 
 * To build and run tests in the repo, use the `build.sh` script that is located in each subdirectory within the `src` folder. For example, to run the build with tests in the `src/Http` directory, run `./src/Http/build.sh -test`.
+
+## .NET Environment
+
+* Before running any `dotnet` commands in this repository, always activate the locally installed .NET environment first by running the appropriate activation script from the repository root:
+  * On Windows: `. ./activate.ps1` (from repository root)
+  * On Linux/Mac: `source activate.sh` (from repository root)
+* If not in the repository root, navigate there first or use the full path to the activation script.
+* This ensures that the correct version of .NET SDK is used for the repository.

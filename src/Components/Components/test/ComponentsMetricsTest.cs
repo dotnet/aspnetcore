@@ -87,7 +87,7 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
         Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
-        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", measurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("code.function.name", measurements[0].Tags));
         Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurements[0].Tags));
         Assert.DoesNotContain("error.type", measurements[0].Tags);
     }
@@ -112,7 +112,7 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
         Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
-        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", measurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("code.function.name", measurements[0].Tags));
         Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurements[0].Tags));
         Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
@@ -137,7 +137,7 @@ public class ComponentsMetricsTest
         Assert.Single(measurements);
         Assert.True(measurements[0].Value > 0);
         Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", measurements[0].Tags));
-        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", measurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("code.function.name", measurements[0].Tags));
         Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", measurements[0].Tags));
         Assert.Equal("System.InvalidOperationException", Assert.Contains("error.type", measurements[0].Tags));
     }
@@ -372,7 +372,7 @@ public class ComponentsMetricsTest
         // Check event duration
         Assert.True(eventMeasurements[0].Value > 0);
         Assert.Equal("TestComponent", Assert.Contains("aspnetcore.components.type", eventMeasurements[0].Tags));
-        Assert.Equal("OnClick", Assert.Contains("aspnetcore.components.method", eventMeasurements[0].Tags));
+        Assert.Equal("OnClick", Assert.Contains("code.function.name", eventMeasurements[0].Tags));
         Assert.Equal("onclick", Assert.Contains("aspnetcore.components.attribute.name", eventMeasurements[0].Tags));
 
         // Check parameters duration

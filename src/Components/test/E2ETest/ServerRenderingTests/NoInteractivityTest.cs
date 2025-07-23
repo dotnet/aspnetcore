@@ -138,6 +138,9 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         );
     }
 
+    private void AssertLandingPageRendered() =>
+        Browser.Equal("Any content", () => Browser.Exists(By.Id("test-info")).Text);
+
     private void AssertNotFoundPageRendered()
     {
         Browser.Equal("Welcome On Custom Not Found Page", () => Browser.FindElement(By.Id("test-info")).Text);
@@ -179,6 +182,30 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         else
         {
             AssertNotFoundContentNotRendered(responseHasStarted: false);
+        }
+        AssertUrlNotChanged(testUrl);
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    // This tests the application subscribing to OnNotFound event and setting NotFoundEventArgs.Path, opposed to the framework doing it for the app.
+    public void NotFoundSetOnInitialization_ApplicationSubscribesToNotFoundEventToSetNotFoundPath_SSR (bool streaming, bool customRouter)
+    {
+        string streamingPath = streaming ? "-streaming" : "";
+        string testUrl = $"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomRouter={customRouter}&appSetsEventArgsPath=true";
+        Navigate(testUrl);
+
+        bool onlyReExecutionCouldRenderNotFoundPage = !streaming && customRouter;
+        if (onlyReExecutionCouldRenderNotFoundPage)
+        {
+            AssertLandingPageRendered();
+        }
+        else
+        {
+            AssertNotFoundPageRendered();
         }
         AssertUrlNotChanged(testUrl);
     }
