@@ -251,4 +251,27 @@ public class UnaryTests : IntegrationTestBase
         Assert.Equal("utf-8", response.Content.Headers.ContentType!.CharSet);
         Assert.Equal("Hello Jane!", result.RootElement.GetProperty("message").GetString());
     }
+
+    [Fact]
+    public async Task Request_sdfsdf_Success()
+    {
+        // Arrange
+        Task<HelloReplyStringValue> UnaryMethod(HelloRequest request, ServerCallContext context)
+        {
+            return Task.FromResult(new HelloReplyStringValue { Message = $"Hello {request.Name}!" });
+        }
+        var method = Fixture.DynamicGrpc.AddUnaryMethod<HelloRequest, HelloReplyStringValue>(
+            UnaryMethod,
+            Greeter.Descriptor.FindMethodByName("SayHelloStringValue"));
+
+        var client = new HttpClient(Fixture.Handler) { BaseAddress = new Uri("http://localhost") };
+
+        // Act
+        var response = await client.GetAsync("/v1/greeter_stringvalue").DefaultTimeout();
+        var responseStream = await response.Content.ReadAsStreamAsync();
+        using var result = await JsonDocument.ParseAsync(responseStream);
+
+        // Assert
+        Assert.Equal("Hello test!", result.RootElement.GetProperty("message").GetString());
+    }
 }

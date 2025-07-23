@@ -3,6 +3,7 @@ syntax = "proto3";
 option csharp_namespace = "IntegrationTestsWebsite";
 
 import "google/api/annotations.proto";
+import "google/protobuf/wrappers.proto";
 
 package greet;
 
@@ -83,6 +84,11 @@ service Greeter {
       body: "*"
     };
   }
+  rpc SayHelloStringValue (HelloRequest) returns (HelloReplyStringValue) {
+    option (google.api.http) = {
+      get: "/v1/greeter_stringvalue"
+    };
+  }
 }
 
 // The request message containing the user's name.
@@ -112,4 +118,8 @@ enum NameOptions {
 // The response message containing the greetings.
 message HelloReply {
   string message = 1;
+}
+
+message HelloReplyStringValue {
+  google.protobuf.StringValue message = 1;
 }
