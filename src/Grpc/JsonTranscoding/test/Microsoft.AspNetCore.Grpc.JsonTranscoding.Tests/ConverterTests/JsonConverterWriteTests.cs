@@ -11,7 +11,7 @@ using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
-using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobutMessages;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobufMessages;
 using Transcoding;
 using Xunit.Abstractions;
 using Type = System.Type;

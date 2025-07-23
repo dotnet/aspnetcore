@@ -93,7 +93,7 @@ internal sealed class MessageTypeInfoResolver : IJsonTypeInfoResolver
             JsonConverterHelper.GetFieldType(field),
             name);
 
-        // A propery with a wrapper type is usually the underlying type on the DTO.
+        // A property with a wrapper type is usually the underlying type on the DTO.
         // For example, a field of type google.protobuf.StringValue will have a property of type string.
         // Sometimes the wrapper type is exposed so we need to do some extra work to translate the value.
         FieldDescriptor? wrapperTypeValueField = null;

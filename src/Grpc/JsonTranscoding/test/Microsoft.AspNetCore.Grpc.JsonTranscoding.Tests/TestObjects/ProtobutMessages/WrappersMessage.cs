@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobutMessages
+namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobufMessages
 {
 
     /// <summary>Holder for reflection information generated from Protos/extra.proto</summary>
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobutMe
             descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
                 new pbr::FileDescriptor[] { global::Google.Protobuf.WellKnownTypes.WrappersReflection.Descriptor, global::Google.Api.AnnotationsReflection.Descriptor, },
                 new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobutMessages.WrappersMessage), global::Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobutMessages.WrappersMessage.Parser, new[]{ "StringValue", "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "BoolValue", "Uint32Value", "Uint64Value", "BytesValue" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobufMessages.WrappersMessage), global::Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobufMessages.WrappersMessage.Parser, new[]{ "StringValue", "Int32Value", "Int64Value", "FloatValue", "DoubleValue", "BoolValue", "Uint32Value", "Uint64Value", "BytesValue" }, null, null, null, null)
                 }));
         }
         #endregion
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobutMe
         [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
         public static pbr::MessageDescriptor Descriptor
         {
-            get { return global::Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobutMessages.ExtraReflection.Descriptor.MessageTypes[0]; }
+            get { return global::Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobufMessages.ExtraReflection.Descriptor.MessageTypes[0]; }
         }
 
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
