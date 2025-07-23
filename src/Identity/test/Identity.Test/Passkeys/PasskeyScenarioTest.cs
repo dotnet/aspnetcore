@@ -74,7 +74,7 @@ internal abstract class PasskeyScenarioTest<TResult>
         }
     }
 
-    public sealed class ComputedJsonObject : ComputedValue<string>
+    public sealed class ComputedJsonObject : ComputedValue<string?>
     {
         private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
         {
@@ -107,6 +107,11 @@ internal abstract class PasskeyScenarioTest<TResult>
             {
                 try
                 {
+                    if (value is null)
+                    {
+                        throw new InvalidOperationException("Cannot transform a null JSON value.");
+                    }
+
                     var jsonObject = JsonNode.Parse(value)?.AsObject()
                         ?? throw new InvalidOperationException("Could not transform the JSON value because it was unexpectedly null.");
                     transform(jsonObject);
