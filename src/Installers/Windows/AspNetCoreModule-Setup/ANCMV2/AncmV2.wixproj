@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <Compile Include="aspnetcoremodulev2.wxs" />
-    <Compile Include="$(IIS-Setup)iisca\wix3\iisca.wxs">
+    <Compile Include="$(IIS-Setup)iisca\wix5\iisca.wxs">
       <Link>iisca.wxs</Link>
     </Compile>
     <EmbeddedResource Include="..\setupstrings.wxl">

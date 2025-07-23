@@ -5,6 +5,8 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProductVersion>3.14</ProductVersion>
     <WixVersion>$(MicrosoftSignedWixVersion)</WixVersion>
+    <Wix5Version>$(MicrosoftWixToolsetVersion)</Wix5Version>
+    <UseWix5>true</UseWix5>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -19,8 +21,19 @@
 
   <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" Condition="'$(_ProjectExtensionsWereImported)' != 'true'" />
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(UseWix5)' != 'true'">
     <PackageReference Include="Microsoft.Signed.Wix" Version="$(WixVersion)" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(UseWix5)' == 'true'">
+    <!-- Microsoft.Wix is a dotnet tool package, so exlude its assets. -->
+    <PackageReference Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetVersion)" ExcludeAssets="all" />
+    <!-- Installers needs the $(PkgMicrosoftWixToolsetUIwixext) property to locate the extension. -->
+    <PackageReference Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetVersion)" />
   </ItemGroup>
 
   <PropertyGroup>
