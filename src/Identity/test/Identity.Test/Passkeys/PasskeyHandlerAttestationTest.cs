@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Identity.Test;
 using static JsonHelpers;
 using static CredentialHelpers;
 
-public class DefaultPasskeyHandlerAttestationTest
+public class PasskeyHandlerAttestationTest
 {
     [Fact]
     public async Task CanSucceed()
@@ -165,122 +165,54 @@ public class DefaultPasskeyHandlerAttestationTest
     }
 
     [Fact]
-    public async Task Fails_WhenOriginalOptionsRpNameIsMissing()
+    public async Task Fails_WhenAttestationStateUserEntityIdIsMissing()
     {
         var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AttestationStateJson.TransformAsJsonObject(attestationStateJson =>
         {
-            var rp = originalOptionsJson["rp"]!.AsObject();
-            Assert.True(rp.Remove("name"));
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
-        Assert.Contains("was missing required properties including: 'name'", result.Failure.Message);
-    }
-
-    [Theory]
-    [InlineData("42")]
-    [InlineData("null")]
-    [InlineData("{}")]
-    public async Task Fails_WhenOriginalOptionsRpNameIsNotString(string jsonValue)
-    {
-        var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
-        {
-            originalOptionsJson["rp"]!["name"] = JsonNode.Parse(jsonValue);
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Fails_WhenOriginalOptionsRpIsMissing()
-    {
-        var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
-        {
-            Assert.True(originalOptionsJson.Remove("rp"));
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
-        Assert.Contains("was missing required properties including: 'rp'", result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Fails_WhenOriginalOptionsUserIdIsMissing()
-    {
-        var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
-        {
-            var user = originalOptionsJson["user"]!.AsObject();
+            var user = attestationStateJson["userEntity"]!.AsObject();
             Assert.True(user.Remove("id"));
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The attestation state JSON had an invalid format", result.Failure.Message);
         Assert.Contains("was missing required properties including: 'id'", result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Fails_WhenOriginalOptionsUserIdIsNotBase64UrlEncoded()
-    {
-        var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
-        {
-            var base64UrlUserId = (string)originalOptionsJson["user"]!["id"]!;
-            originalOptionsJson["user"]!["id"] = GetInvalidBase64UrlValue(base64UrlUserId);
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
-        Assert.Contains("base64url string", result.Failure.Message);
     }
 
     [Theory]
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Fails_WhenOriginalOptionsUserIdIsNotString(string jsonValue)
+    public async Task Fails_WhenAttestationStateUserEntityIdIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AttestationStateJson.TransformAsJsonObject(attestationStateJson =>
         {
-            originalOptionsJson["user"]!["id"] = JsonNode.Parse(jsonValue);
+            attestationStateJson["userEntity"]!["id"] = JsonNode.Parse(jsonValue);
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The attestation state JSON had an invalid format", result.Failure.Message);
     }
 
     [Fact]
-    public async Task Fails_WhenOriginalOptionsUserNameIsMissing()
+    public async Task Fails_WhenAttestationStateUserEntityNameIsMissing()
     {
         var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AttestationStateJson.TransformAsJsonObject(attestationStateJson =>
         {
-            var user = originalOptionsJson["user"]!.AsObject();
+            var user = attestationStateJson["userEntity"]!.AsObject();
             Assert.True(user.Remove("name"));
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The attestation state JSON had an invalid format", result.Failure.Message);
         Assert.Contains("was missing required properties including: 'name'", result.Failure.Message);
     }
 
@@ -288,34 +220,34 @@ public class DefaultPasskeyHandlerAttestationTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Fails_WhenOriginalOptionsUserNameIsNotString(string jsonValue)
+    public async Task Fails_WhenAttestationStateUserEntityNameIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AttestationStateJson.TransformAsJsonObject(attestationStateJson =>
         {
-            originalOptionsJson["user"]!["name"] = JsonNode.Parse(jsonValue);
+            attestationStateJson["userEntity"]!["name"] = JsonNode.Parse(jsonValue);
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The attestation state JSON had an invalid format", result.Failure.Message);
     }
 
     [Fact]
-    public async Task Fails_WhenOriginalOptionsUserDisplayNameIsMissing()
+    public async Task Fails_WhenAttestationStateUserEntityDisplayNameIsMissing()
     {
         var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AttestationStateJson.TransformAsJsonObject(attestationStateJson =>
         {
-            var user = originalOptionsJson["user"]!.AsObject();
+            var user = attestationStateJson["userEntity"]!.AsObject();
             Assert.True(user.Remove("displayName"));
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The attestation state JSON had an invalid format", result.Failure.Message);
         Assert.Contains("was missing required properties including: 'displayName'", result.Failure.Message);
     }
 
@@ -323,87 +255,68 @@ public class DefaultPasskeyHandlerAttestationTest
     [InlineData("42")]
     [InlineData("null")]
     [InlineData("{}")]
-    public async Task Fails_WhenOriginalOptionsUserDisplayNameIsNotString(string jsonValue)
+    public async Task Fails_WhenAttestationStateUserEntityDisplayNameIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AttestationStateJson.TransformAsJsonObject(attestationStateJson =>
         {
-            originalOptionsJson["user"]!["displayName"] = JsonNode.Parse(jsonValue);
+            attestationStateJson["userEntity"]!["displayName"] = JsonNode.Parse(jsonValue);
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The attestation state JSON had an invalid format", result.Failure.Message);
     }
 
     [Fact]
-    public async Task Fails_WhenOriginalOptionsUserIsMissing()
+    public async Task Fails_WhenAttestationStateUserEntityIsMissing()
     {
         var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AttestationStateJson.TransformAsJsonObject(attestationStateJson =>
         {
-            Assert.True(originalOptionsJson.Remove("user"));
+            Assert.True(attestationStateJson.Remove("userEntity"));
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
-        Assert.Contains("was missing required properties including: 'user'", result.Failure.Message);
+        Assert.StartsWith("The attestation state JSON had an invalid format", result.Failure.Message);
+        Assert.Contains("was missing required properties including: 'userEntity'", result.Failure.Message);
     }
 
     [Fact]
-    public async Task Fails_WhenOriginalOptionsChallengeIsMissing()
+    public async Task Fails_WhenAttestationStateChallengeIsMissing()
     {
         var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AttestationStateJson.TransformAsJsonObject(attestationStateJson =>
         {
-            Assert.True(originalOptionsJson.Remove("challenge"));
+            Assert.True(attestationStateJson.Remove("challenge"));
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
 
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The attestation state JSON had an invalid format", result.Failure.Message);
         Assert.Contains("was missing required properties including: 'challenge'", result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Fails_WhenOriginalOptionsChallengeIsNotBase64UrlEncoded()
-    {
-        var test = new AttestationTest();
-
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
-        {
-            var base64UrlChallenge = (string)originalOptionsJson["challenge"]!;
-            originalOptionsJson["challenge"] = GetInvalidBase64UrlValue(base64UrlChallenge);
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
-        Assert.Contains("base64url string", result.Failure.Message);
     }
 
     [Theory]
     [InlineData("42")]
-    [InlineData("null")]
     [InlineData("{}")]
-    public async Task Fails_WhenOriginalOptionsChallengeIsNotString(string jsonValue)
+    public async Task Fails_WhenAttestationStateChallengeIsNotString(string jsonValue)
     {
         var test = new AttestationTest();
-        test.OriginalOptionsJson.TransformAsJsonObject(originalOptionsJson =>
+        test.AttestationStateJson.TransformAsJsonObject(attestationStateJson =>
         {
-            originalOptionsJson["challenge"] = JsonNode.Parse(jsonValue);
+            attestationStateJson["challenge"] = JsonNode.Parse(jsonValue);
         });
 
         var result = await test.RunAsync();
 
         Assert.False(result.Succeeded);
-        Assert.StartsWith("The original passkey creation options had an invalid format", result.Failure.Message);
+        Assert.StartsWith("The attestation state JSON had an invalid format", result.Failure.Message);
     }
 
     [Fact]
@@ -628,15 +541,11 @@ public class DefaultPasskeyHandlerAttestationTest
     public async Task Fails_WhenClientDataJsonChallengeIsNotRequestChallenge()
     {
         var test = new AttestationTest();
-        var modifiedChallenge = (byte[])[.. test.Challenge.Span];
-        for (var i = 0; i < modifiedChallenge.Length; i++)
-        {
-            modifiedChallenge[i]++;
-        }
-
         test.ClientDataJson.TransformAsJsonObject(clientDataJson =>
         {
-            clientDataJson["challenge"] = Base64Url.EncodeToString(modifiedChallenge);
+            var challenge = Base64Url.DecodeFromChars((string)clientDataJson["challenge"]!);
+            challenge[0]++;
+            clientDataJson["challenge"] = Base64Url.EncodeToString(challenge);
         });
 
         var result = await test.RunAsync();
@@ -798,13 +707,10 @@ public class DefaultPasskeyHandlerAttestationTest
         Assert.StartsWith("The credential is backed up, but the authenticator data flags did not have the 'BackupEligible' flag", result.Failure.Message);
     }
 
-    [Theory]
-    [InlineData(PasskeyOptions.CredentialBackupPolicy.Allowed)]
-    [InlineData(PasskeyOptions.CredentialBackupPolicy.Required)]
-    public async Task Succeeds_WhenAuthDataIsBackupEligible(PasskeyOptions.CredentialBackupPolicy backupEligibility)
+    [Fact]
+    public async Task Succeeds_WhenAuthDataIsBackupEligible()
     {
         var test = new AttestationTest();
-        test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = backupEligibility;
         test.AuthenticatorDataArgs.Transform(args => args with
         {
             Flags = args.Flags | AuthenticatorDataFlags.BackupEligible,
@@ -812,95 +718,6 @@ public class DefaultPasskeyHandlerAttestationTest
 
         var result = await test.RunAsync();
         Assert.True(result.Succeeded);
-    }
-
-    [Fact]
-    public async Task Fails_WhenAuthDataIsBackupEligibleButDisallowed()
-    {
-        var test = new AttestationTest();
-        test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Disallowed;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags | AuthenticatorDataFlags.BackupEligible,
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith(
-            "Credential backup eligibility is disallowed, but the credential was eligible for backup",
-            result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Fails_WhenAuthDataIsNotBackupEligibleButRequired()
-    {
-        var test = new AttestationTest();
-        test.IdentityOptions.Passkey.BackupEligibleCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Required;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags & ~AuthenticatorDataFlags.BackupEligible,
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith(
-            "Credential backup eligibility is required, but the credential was not eligible for backup",
-            result.Failure.Message);
-    }
-
-    [Theory]
-    [InlineData(PasskeyOptions.CredentialBackupPolicy.Allowed)]
-    [InlineData(PasskeyOptions.CredentialBackupPolicy.Required)]
-    public async Task Fails_WhenAuthDataIsBackedUp(PasskeyOptions.CredentialBackupPolicy backedUpPolicy)
-    {
-        var test = new AttestationTest();
-        test.IdentityOptions.Passkey.BackedUpCredentialPolicy = backedUpPolicy;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags | AuthenticatorDataFlags.BackupEligible | AuthenticatorDataFlags.BackedUp,
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.True(result.Succeeded);
-    }
-
-    [Fact]
-    public async Task Fails_WhenAuthDataIsBackedUpButDisallowed()
-    {
-        var test = new AttestationTest();
-        test.IdentityOptions.Passkey.BackedUpCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Disallowed;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags | AuthenticatorDataFlags.BackupEligible | AuthenticatorDataFlags.BackedUp,
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith(
-            "Credential backup is disallowed, but the credential was backed up",
-            result.Failure.Message);
-    }
-
-    [Fact]
-    public async Task Fails_WhenAuthDataIsNotBackedUpButRequired()
-    {
-        var test = new AttestationTest();
-        test.IdentityOptions.Passkey.BackedUpCredentialPolicy = PasskeyOptions.CredentialBackupPolicy.Required;
-        test.AuthenticatorDataArgs.Transform(args => args with
-        {
-            Flags = args.Flags & ~AuthenticatorDataFlags.BackedUp,
-        });
-
-        var result = await test.RunAsync();
-
-        Assert.False(result.Succeeded);
-        Assert.StartsWith(
-            "Credential backup is required, but the credential was not backed up",
-            result.Failure.Message);
     }
 
     [Fact]
@@ -1057,10 +874,7 @@ public class DefaultPasskeyHandlerAttestationTest
         {
             Algorithm = (COSEAlgorithmIdentifier)algorithm,
         };
-
-        // Only include the specific algorithm we're testing,
-        // just to sanity check that we're using the algorithm we expect
-        test.SupportedPublicKeyCredentialParameters.Transform(_ => [new((COSEAlgorithmIdentifier)algorithm)]);
+        test.PasskeyOptions.IsAllowedAlgorithm = alg => alg == algorithm;
 
         var result = await test.RunAsync();
 
@@ -1083,11 +897,7 @@ public class DefaultPasskeyHandlerAttestationTest
         {
             Algorithm = (COSEAlgorithmIdentifier)algorithm,
         };
-        test.SupportedPublicKeyCredentialParameters.Transform(parameters =>
-        {
-            // Exclude the specific algorithm we're testing, which should cause the failure
-            return [.. parameters.Where(p => p.Alg != (COSEAlgorithmIdentifier)algorithm)];
-        });
+        test.PasskeyOptions.IsAllowedAlgorithm = alg => alg != algorithm;
 
         var result = await test.RunAsync();
 
@@ -1098,10 +908,8 @@ public class DefaultPasskeyHandlerAttestationTest
     [Fact]
     public async Task Fails_WhenVerifyAttestationStatementAsyncReturnsFalse()
     {
-        var test = new AttestationTest
-        {
-            ShouldFailAttestationStatementVerification = true,
-        };
+        var test = new AttestationTest();
+        test.PasskeyOptions.VerifyAttestationStatement = context => ValueTask.FromResult(false);
 
         var result = await test.RunAsync();
 
@@ -1166,114 +974,30 @@ public class DefaultPasskeyHandlerAttestationTest
 
     private sealed class AttestationTest : PasskeyScenarioTest<PasskeyAttestationResult>
     {
-        private static readonly byte[] _defaultChallenge = [1, 2, 3, 4, 5, 6, 7, 8];
         private static readonly byte[] _defaultCredentialId = [1, 2, 3, 4, 5, 6, 7, 8];
         private static readonly byte[] _defaultAaguid = new byte[16];
         private static readonly byte[] _defaultAttestationStatement = [0xA0]; // Empty CBOR map
 
-        public IdentityOptions IdentityOptions { get; } = new();
-        public string? RpId { get; set; } = "example.com";
-        public string? RpName { get; set; } = "Example";
+        public IdentityPasskeyOptions PasskeyOptions { get; } = new();
         public string? UserId { get; set; } = "df0a3af4-bd65-440f-82bd-5b839e300dcd";
         public string? UserName { get; set; } = "johndoe";
         public string? UserDisplayName { get; set; } = "John Doe";
         public string? Origin { get; set; } = "https://example.com";
-        public bool ShouldFailAttestationStatementVerification { get; set; }
         public bool DoesCredentialAlreadyExistForAnotherUser { get; set; }
         public COSEAlgorithmIdentifier Algorithm { get; set; } = COSEAlgorithmIdentifier.ES256;
-        public ReadOnlyMemory<byte> Challenge { get; set; } = _defaultChallenge;
         public ReadOnlyMemory<byte> CredentialId { get; set; } = _defaultCredentialId;
-        public ComputedValue<IReadOnlyList<PublicKeyCredentialParameters>> SupportedPublicKeyCredentialParameters { get; } = new();
         public ComputedValue<AttestedCredentialDataArgs> AttestedCredentialDataArgs { get; } = new();
         public ComputedValue<AuthenticatorDataArgs> AuthenticatorDataArgs { get; } = new();
         public ComputedValue<AttestationObjectArgs> AttestationObjectArgs { get; } = new();
         public ComputedValue<ReadOnlyMemory<byte>> AttestedCredentialData { get; } = new();
         public ComputedValue<ReadOnlyMemory<byte>> AuthenticatorData { get; } = new();
         public ComputedValue<ReadOnlyMemory<byte>> AttestationObject { get; } = new();
-        public ComputedJsonObject OriginalOptionsJson { get; } = new();
+        public ComputedJsonObject AttestationStateJson { get; } = new();
         public ComputedJsonObject ClientDataJson { get; } = new();
         public ComputedJsonObject CredentialJson { get; } = new();
 
         protected override async Task<PasskeyAttestationResult> RunCoreAsync()
         {
-            var identityOptions = Options.Create(IdentityOptions);
-            var handler = new TestPasskeyHandler(identityOptions)
-            {
-                ShouldFailAttestationStatementVerification = ShouldFailAttestationStatementVerification,
-            };
-            var supportedPublicKeyCredentialParameters = SupportedPublicKeyCredentialParameters.Compute(
-                PublicKeyCredentialParameters.AllSupportedParameters);
-            var pubKeyCredParamsJson = JsonSerializer.Serialize(
-                supportedPublicKeyCredentialParameters,
-                IdentityJsonSerializerContext.Default.IReadOnlyListPublicKeyCredentialParameters);
-            var originalOptionsJson = OriginalOptionsJson.Compute($$"""
-                {
-                  "rp": {
-                    "name": {{ToJsonValue(RpName)}},
-                    "id": {{ToJsonValue(RpId)}}
-                  },
-                  "user": {
-                    "id": {{ToBase64UrlJsonValue(UserId)}},
-                    "name": {{ToJsonValue(UserName)}},
-                    "displayName": {{ToJsonValue(UserDisplayName)}}
-                  },
-                  "challenge": {{ToBase64UrlJsonValue(Challenge)}},
-                  "pubKeyCredParams": {{pubKeyCredParamsJson}},
-                  "timeout": 60000,
-                  "excludeCredentials": [],
-                  "attestation": "none",
-                  "hints": [],
-                  "extensions": {}
-                }
-                """);
-            var credential = CredentialKeyPair.Generate(Algorithm);
-            var credentialPublicKey = credential.EncodePublicKeyCbor();
-            var attestedCredentialDataArgs = AttestedCredentialDataArgs.Compute(new()
-            {
-                Aaguid = _defaultAaguid,
-                CredentialId = CredentialId,
-                CredentialPublicKey = credentialPublicKey,
-            });
-            var attestedCredentialData = AttestedCredentialData.Compute(MakeAttestedCredentialData(attestedCredentialDataArgs));
-            var authenticatorDataArgs = AuthenticatorDataArgs.Compute(new()
-            {
-                SignCount = 1,
-                RpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(RpId ?? string.Empty)),
-                AttestedCredentialData = attestedCredentialData,
-                Flags = AuthenticatorDataFlags.UserPresent | AuthenticatorDataFlags.HasAttestedCredentialData,
-            });
-            var authenticatorData = AuthenticatorData.Compute(MakeAuthenticatorData(authenticatorDataArgs));
-            var attestationObjectArgs = AttestationObjectArgs.Compute(new()
-            {
-                CborMapLength = 3, // Format, AuthenticatorData, AttestationStatement
-                Format = "none",
-                AuthenticatorData = authenticatorData,
-                AttestationStatement = _defaultAttestationStatement,
-            });
-            var attestationObject = AttestationObject.Compute(MakeAttestationObject(attestationObjectArgs));
-            var clientDataJson = ClientDataJson.Compute($$"""
-                {
-                  "challenge": {{ToBase64UrlJsonValue(Challenge)}},
-                  "origin": {{ToJsonValue(Origin)}},
-                  "type": "webauthn.create"
-                }
-                """);
-            var credentialJson = CredentialJson.Compute($$"""
-                {
-                  "id": {{ToBase64UrlJsonValue(CredentialId)}},
-                  "response": {
-                    "attestationObject": {{ToBase64UrlJsonValue(attestationObject)}},
-                    "clientDataJSON": {{ToBase64UrlJsonValue(clientDataJson)}},
-                    "transports": [
-                      "internal"
-                    ]
-                  },
-                  "type": "public-key",
-                  "clientExtensionResults": {},
-                  "authenticatorAttachment": "platform"
-                }
-                """);
-
             var httpContext = new Mock<HttpContext>();
             httpContext.Setup(c => c.Request.Headers.Origin).Returns(new StringValues(Origin));
 
@@ -1295,36 +1019,77 @@ public class DefaultPasskeyHandlerAttestationTest
                     });
             }
 
-            var context = new PasskeyAttestationContext<PocoUser>
+            var passkeyOptions = Options.Create(PasskeyOptions);
+            var handler = new PasskeyHandler<PocoUser>(userManager.Object, passkeyOptions);
+            var userEntity = new PasskeyUserEntity()
             {
-                CredentialJson = credentialJson,
-                OriginalOptionsJson = originalOptionsJson,
+                Id = UserId!,
+                Name = UserName!,
+                DisplayName = UserDisplayName!,
+            };
+
+            var creationOptionsResult = await handler.MakeCreationOptionsAsync(userEntity, httpContext.Object);
+            var creationOptions = JsonSerializer.Deserialize(
+                creationOptionsResult.CreationOptionsJson,
+                IdentityJsonSerializerContext.Default.PublicKeyCredentialCreationOptions)
+                ?? throw new InvalidOperationException("Failed to deserialize creation options JSON.");
+
+            var attestationState = AttestationStateJson.Compute(creationOptionsResult.AttestationState);
+            var credential = CredentialKeyPair.Generate(Algorithm);
+            var credentialPublicKey = credential.EncodePublicKeyCbor();
+            var attestedCredentialDataArgs = AttestedCredentialDataArgs.Compute(new()
+            {
+                Aaguid = _defaultAaguid,
+                CredentialId = CredentialId,
+                CredentialPublicKey = credentialPublicKey,
+            });
+            var attestedCredentialData = AttestedCredentialData.Compute(MakeAttestedCredentialData(attestedCredentialDataArgs));
+            var authenticatorDataArgs = AuthenticatorDataArgs.Compute(new()
+            {
+                SignCount = 1,
+                RpIdHash = SHA256.HashData(Encoding.UTF8.GetBytes(creationOptions.Rp.Id ?? string.Empty)),
+                AttestedCredentialData = attestedCredentialData,
+                Flags = AuthenticatorDataFlags.UserPresent | AuthenticatorDataFlags.HasAttestedCredentialData,
+            });
+            var authenticatorData = AuthenticatorData.Compute(MakeAuthenticatorData(authenticatorDataArgs));
+            var attestationObjectArgs = AttestationObjectArgs.Compute(new()
+            {
+                CborMapLength = 3, // Format, AuthenticatorData, AttestationStatement
+                Format = "none",
+                AuthenticatorData = authenticatorData,
+                AttestationStatement = _defaultAttestationStatement,
+            });
+            var attestationObject = AttestationObject.Compute(MakeAttestationObject(attestationObjectArgs));
+            var clientDataJson = ClientDataJson.Compute($$"""
+                {
+                  "challenge": {{ToBase64UrlJsonValue(creationOptions.Challenge.AsMemory())}},
+                  "origin": {{ToJsonValue(Origin)}},
+                  "type": "webauthn.create"
+                }
+                """);
+            var credentialJson = CredentialJson.Compute($$"""
+                {
+                  "id": {{ToBase64UrlJsonValue(CredentialId)}},
+                  "response": {
+                    "attestationObject": {{ToBase64UrlJsonValue(attestationObject)}},
+                    "clientDataJSON": {{ToBase64UrlJsonValue(clientDataJson)}},
+                    "transports": [
+                      "internal"
+                    ]
+                  },
+                  "type": "public-key",
+                  "clientExtensionResults": {},
+                  "authenticatorAttachment": "platform"
+                }
+                """);
+            var context = new PasskeyAttestationContext
+            {
+                CredentialJson = credentialJson!,
                 HttpContext = httpContext.Object,
-                UserManager = userManager.Object,
+                AttestationState = attestationState,
             };
 
             return await handler.PerformAttestationAsync(context);
-        }
-
-        private sealed class TestPasskeyHandler(IOptions<IdentityOptions> options) : DefaultPasskeyHandler<PocoUser>(options)
-        {
-            public bool ShouldFailAttestationStatementVerification { get; init; }
-
-            protected override Task<bool> VerifyAttestationStatementAsync(
-                ReadOnlyMemory<byte> attestationObject,
-                ReadOnlyMemory<byte> clientDataHash,
-                HttpContext httpContext)
-            {
-                if (ShouldFailAttestationStatementVerification)
-                {
-                    return Task.FromResult(false);
-                }
-
-                return base.VerifyAttestationStatementAsync(
-                    attestationObject,
-                    clientDataHash,
-                    httpContext);
-            }
         }
     }
 }

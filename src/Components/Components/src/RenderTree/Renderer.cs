@@ -461,7 +461,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         {
             receiverName ??= (callback.Receiver?.GetType() ?? callback.Delegate.Target?.GetType())?.FullName;
             methodName ??= callback.Delegate.Method?.Name;
-            activityHandle = ComponentsActivitySource.StartEventActivity(receiverName, methodName, attributeName);
+            activityHandle = ComponentsActivitySource.StartHandleEventActivity(receiverName, methodName, attributeName);
         }
 
         var eventStartTimestamp = ComponentMetrics != null && ComponentMetrics.IsEventEnabled ? Stopwatch.GetTimestamp() : 0;
@@ -518,7 +518,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             // stop activity/trace
             if (ComponentActivitySource != null && activityHandle.Activity != null)
             {
-                _ = ComponentActivitySource.CaptureEventStopAsync(task, activityHandle);
+                _ = ComponentActivitySource.CaptureHandleEventStopAsync(task, activityHandle);
             }
         }
         catch (Exception e)
@@ -532,7 +532,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
             if (ComponentActivitySource != null && activityHandle.Activity != null)
             {
-                ComponentActivitySource.StopEventActivity(activityHandle, e);
+                ComponentActivitySource.StopHandleEventActivity(activityHandle, e);
             }
 
             HandleExceptionViaErrorBoundary(e, receiverComponentState);
