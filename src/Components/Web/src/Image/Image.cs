@@ -210,7 +210,7 @@ public class Image : ComponentBase, IAsyncDisposable
             string transferId = $"{_id}-{Guid.NewGuid():N}";
 
             await JSRuntime.InvokeVoidAsync(
-                "imageComponent.initChunkedTransfer",
+                "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
                 _id, transferId, totalChunks, imageData.Length, mimeType, cacheKey,
                 CacheStrategy.ToString().ToLowerInvariant());
 
@@ -222,7 +222,7 @@ public class Image : ComponentBase, IAsyncDisposable
                 Array.Copy(imageData, offset, chunk, 0, length);
 
                 await JSRuntime.InvokeVoidAsync(
-                    "imageComponent.addChunk",
+                    "Blazor._internal.BinaryImageComponent.addChunk",
                     transferId, i, chunk);
 
                 double progress = (i + 1) / (double)totalChunks;
@@ -230,7 +230,7 @@ public class Image : ComponentBase, IAsyncDisposable
             }
 
             await JSRuntime.InvokeVoidAsync(
-                "imageComponent.finalizeChunkedTransfer",
+                "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
                 transferId, _id);
         }
         catch (Exception ex)

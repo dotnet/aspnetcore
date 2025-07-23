@@ -29,7 +29,7 @@ export class BinaryImageComponent {
   private static pendingTransfers: Map<string, ChunkedTransfer> = new Map();
 
   /**
-   * Creates an image from binary data with optional caching.
+   * Creates an image from binary data with optional caching. NOT USED ANYMORE.
    * @param elementId - The ID of the target image element
    * @param imageBytes - The binary image data
    * @param mimeType - The MIME type of the image
