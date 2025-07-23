@@ -5,6 +5,7 @@ using BlazorUnitedApp;
 using BlazorUnitedApp.Data;
 using BlazorUnitedApp.Client.Data;
 using BlazorShared;
+using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,15 @@ builder.Services.AddRazorComponents()
 
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<ServerImageRepository>();
+
+// Register HttpClient and ClientImageRepository for prerendering support
+builder.Services.AddSingleton<HttpClient>(sp =>
+{
+    var httpClient = new HttpClient();
+    httpClient.BaseAddress = new Uri("http://localhost:5265");
+    return httpClient;
+});
+builder.Services.AddTransient<ClientImageRepository>();
 
 var app = builder.Build();
 

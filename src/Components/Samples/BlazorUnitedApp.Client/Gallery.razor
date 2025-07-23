@@ -22,7 +22,7 @@
         </button>
     </div>
 
-    @if (_isLoading)
+    @if (_isLoading || !_hasRendered)
     {
         <div class="loading-container">
             <div class="spinner"></div>
@@ -120,10 +120,21 @@
     private Dictionary<int, BinaryImageSource> _binaryImageSources = new();
     private Dictionary<int, StreamingImageSource> _streamingImageSources = new();
     private bool _useStreamingSource = true;
+    private bool _hasRendered = false;
 
     // View state
     private bool _showImageModal = false;
     private ImageMetadata? _currentImage;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _hasRendered = true;
+            StateHasChanged(); // Trigger a re-render now that we're past prerendering
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
 
     protected override async Task OnInitializedAsync()
     {

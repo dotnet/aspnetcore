@@ -109,7 +109,6 @@ public class Image : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        // Open container div
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", "blazor-image-container");
 
@@ -119,7 +118,6 @@ public class Image : ComponentBase, IAsyncDisposable
             builder.AddAttribute(2, "style", containerStyle);
         }
 
-        // Add loading content if needed
         if (_isLoading && LoadingContent != null)
         {
             builder.AddContent(3, LoadingContent);
@@ -129,7 +127,6 @@ public class Image : ComponentBase, IAsyncDisposable
             builder.AddContent(4, ErrorContent);
         }
 
-        // Add the image element
         builder.OpenElement(5, "img");
         builder.AddAttribute(6, "id", _id);
 
@@ -146,9 +143,9 @@ public class Image : ComponentBase, IAsyncDisposable
 
         builder.AddMultipleAttributes(9, AdditionalAttributes);
         builder.AddElementReferenceCapture(10, inputReference => Element = inputReference);
-        builder.CloseElement(); // close img
 
-        builder.CloseElement(); // close div
+        builder.CloseElement();
+        builder.CloseElement();
     }
 
     /// <inheritdoc />
@@ -367,7 +364,7 @@ public class Image : ComponentBase, IAsyncDisposable
                 }
                 catch (JSDisconnectedException)
                 {
-                    // Client disconnected, ignore
+                    // Client disconnected
                 }
             }
         }
