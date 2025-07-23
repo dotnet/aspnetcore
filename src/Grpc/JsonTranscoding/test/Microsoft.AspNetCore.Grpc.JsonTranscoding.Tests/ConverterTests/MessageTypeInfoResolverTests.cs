@@ -52,27 +52,6 @@ public class MessageTypeInfoResolverTests
         Assert.NotEmpty(typeInfo.Properties);
     }
 
-    //[Fact]
-    //public void GetTypeInfo_StringValuesMessage_Success()
-    //{
-    //    var descriptorRegistry = new DescriptorRegistry();
-    //    descriptorRegistry.RegisterFileDescriptor(StringValuesMessage.Descriptor.File);
-
-    //    var resolver = CreateResolver(descriptorRegistry);
-
-    //    var typeInfo = resolver.GetTypeInfo(typeof(StringValuesMessage), new JsonSerializerOptions());
-    //    Assert.NotNull(typeInfo);
-
-    //    Assert.NotEmpty(typeInfo.Properties);
-
-    //    var message = new StringValuesMessage();
-    //    message.Message = new StringValue { Value = "test" };
-
-    //    var prop = Assert.Single(typeInfo.Properties);
-
-    //    var value = prop.Get(message);
-    //}
-
     private static MessageTypeInfoResolver CreateResolver(DescriptorRegistry? descriptorRegistry = null)
     {
         var context = new JsonContext(new GrpcJsonSettings(), TypeRegistry.Empty, descriptorRegistry ?? new DescriptorRegistry());
