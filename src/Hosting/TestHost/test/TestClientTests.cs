@@ -188,8 +188,6 @@ public class TestClientTests
             data[i] = character[0];
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder();
         RequestDelegate app = async ctx =>
         {
             var disposable = new TestDisposable();
@@ -201,9 +199,17 @@ public class TestClientTests
             await ctx.Response.Body.WriteAsync(data, 1024, 1024);
         };
 
-        builder.Configure(appBuilder => appBuilder.Run(app));
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webBuilder =>
+            {
+                webBuilder
+                    .UseTestServer()
+                    .Configure(appBuilder => appBuilder.Run(app));
+            });
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         // Act & Assert
@@ -728,18 +734,25 @@ public class TestClientTests
                 }
             }
         };
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                services.AddSingleton<ILogger<IWebHost>>(logger);
-            })
-            .Configure(app =>
-            {
-                app.Run(appDelegate);
+                webHostBuilder
+                .UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<ILogger<IWebHost>>(logger);
+                })
+                .Configure(app =>
+                {
+                    app.Run(appDelegate);
+                });
             });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+        using var host = builder.Build();
+
+        await host.StartAsync();
+        var server = host.GetTestServer();
 
         // Act
         var client = server.CreateWebSocketClient();
@@ -800,13 +813,18 @@ public class TestClientTests
                 }
             }
         };
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder()
-            .Configure(app =>
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                app.Run(appDelegate);
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app.Run(appDelegate));
             });
-        var server = new TestServer(builder);
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
 #pragma warning restore CS0618 // Type or member is obsolete
 
         // Act
@@ -854,12 +872,19 @@ public class TestClientTests
                 }
             }
         };
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services => services.AddSingleton<ILogger<IWebHost>>(logger))
-            .Configure(app => app.Run(appDelegate));
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services => services.AddSingleton<ILogger<IWebHost>>(logger))
+                    .Configure(app => app.Run(appDelegate));
+            });
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
 
         // Act
         var client = server.CreateWebSocketClient();
@@ -899,13 +924,18 @@ public class TestClientTests
                 websocket.Dispose();
             }
         };
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(appDelegate);
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app.Run(appDelegate));
+            });
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
 
         // Act
         var client = server.CreateWebSocketClient();
@@ -934,13 +964,18 @@ public class TestClientTests
                 }
             }
         };
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app =>
-        {
-            app.Run(appDelegate);
-        });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app.Run(appDelegate));
+            });
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
 
         // Act
         var client = server.CreateWebSocketClient();
@@ -1010,23 +1045,31 @@ public class TestClientTests
     public async Task ClientCancellationAbortsRequest()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder().Configure(app => app.Run(async ctx =>
-        {
-            try
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                await Task.Delay(TimeSpan.FromSeconds(30), ctx.RequestAborted);
-                tcs.SetResult();
-            }
-            catch (Exception e)
-            {
-                tcs.SetException(e);
-                return;
-            }
-            throw new InvalidOperationException("The request was not aborted");
-        }));
-        using var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app => app.Run(async ctx =>
+                    {
+                        try
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(30), ctx.RequestAborted);
+                            tcs.SetResult();
+                        }
+                        catch (Exception e)
+                        {
+                            tcs.SetException(e);
+                            return;
+                        }
+                        throw new InvalidOperationException("The request was not aborted");
+                    }));
+            });
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        using var server = host.GetTestServer();
         using var client = server.CreateClient();
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
         var response = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => client.GetAsync("http://localhost:12345", cts.Token));
@@ -1042,18 +1085,25 @@ public class TestClientTests
         asyncLocal.Value = value;
 
         object capturedValue = null;
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder()
-            .Configure(app =>
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                app.Run((context) =>
-                {
-                    capturedValue = asyncLocal.Value;
-                    return context.Response.WriteAsync("Done");
-                });
+                webHostBuilder
+                    .UseTestServer()
+                    .Configure(app =>
+                    {
+                        app.Run((context) =>
+                        {
+                            capturedValue = asyncLocal.Value;
+                            return context.Response.WriteAsync("Done");
+                        });
+                    });
             });
-        var server = new TestServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var resp = await client.GetAsync("/");
@@ -1069,21 +1119,28 @@ public class TestClientTests
         asyncLocal.Value = value;
 
         object capturedValue = null;
-#pragma warning disable CS0618 // Type or member is obsolete
-        var builder = new WebHostBuilder()
-            .Configure(app =>
+
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                app.Run((context) =>
-                {
-                    capturedValue = asyncLocal.Value;
-                    return context.Response.WriteAsync("Done");
-                });
+                webHostBuilder
+                    .UseTestServer(o =>
+                    {
+                        o.PreserveExecutionContext = true;
+                    })
+                    .Configure(app =>
+                    {
+                        app.Run((context) =>
+                        {
+                            capturedValue = asyncLocal.Value;
+                            return context.Response.WriteAsync("Done");
+                        });
+                    });
             });
-        var server = new TestServer(builder)
-        {
-            PreserveExecutionContext = true
-        };
-#pragma warning restore CS0618 // Type or member is obsolete
+        using var host = builder.Build();
+        await host.StartAsync();
+
+        var server = host.GetTestServer();
         var client = server.CreateClient();
 
         var resp = await client.GetAsync("/");
@@ -1204,8 +1261,10 @@ public class TestClientTests
     [Fact]
     public async Task VerifyWebSocketAndUpgradeFeaturesForNonWebSocket()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
-        using (var testServer = new TestServer(new WebHostBuilder()
+        var builder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            webHostBuilder
+            .UseTestServer()
             .Configure(app =>
             {
                 app.UseWebSockets();
@@ -1223,13 +1282,14 @@ public class TestClientTests
 
                     await c.Response.WriteAsync("test");
                 });
-            })))
-#pragma warning restore CS0618 // Type or member is obsolete
-        {
-            var client = testServer.CreateClient();
+            }));
+        using var host = builder.Build();
+        await host.StartAsync();
 
-            var actual = await client.GetStringAsync("http://localhost:12345/");
-            Assert.Equal("test", actual);
-        }
+        var testServer = host.GetTestServer();
+        var client = testServer.CreateClient();
+
+        var actual = await client.GetStringAsync("http://localhost:12345/");
+        Assert.Equal("test", actual);
     }
 }

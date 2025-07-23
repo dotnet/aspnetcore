@@ -38,24 +38,24 @@ public static class Program
             });
 
         if (config["STARTMECHANIC"] == "Run")
-            {
-                var host = builder.Build();
+        {
+            var host = builder.Build();
 
-                host.Run();
-            }
-            else if (config["STARTMECHANIC"] == "WaitForShutdown")
+            host.Run();
+        }
+        else if (config["STARTMECHANIC"] == "WaitForShutdown")
+        {
+            using (var host = builder.Build())
             {
-                using (var host = builder.Build())
-                {
-                    host.Start();
+                host.Start();
 
-                    host.WaitForShutdown();
-                }
+                host.WaitForShutdown();
             }
-            else
-            {
-                throw new InvalidOperationException("Starting mechanic not specified");
-            }
+        }
+        else
+        {
+            throw new InvalidOperationException("Starting mechanic not specified");
+        }
     }
 }
 
