@@ -244,7 +244,7 @@ internal sealed class UserManagerMetrics : IDisposable
             UserUpdateType.ResetAuthenticatorKey => "reset_authenticator_key",
             UserUpdateType.GenerateNewTwoFactorRecoveryCodes => "generate_new_two_factor_recovery_codes",
             UserUpdateType.RedeemTwoFactorRecoveryCode => "redeem_two_factor_recovery_code",
-            UserUpdateType.SetPasskey => "set_passkey",
+            UserUpdateType.AddOrUpdatePasskey => "add_or_update_passkey",
             UserUpdateType.RemovePasskey => "remove_passkey",
             _ => "_OTHER"
         };

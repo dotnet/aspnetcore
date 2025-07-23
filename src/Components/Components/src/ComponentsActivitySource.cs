@@ -78,7 +78,7 @@ internal class ComponentsActivitySource
                 }
                 if (methodName != null)
                 {
-                    activity.SetTag("aspnetcore.components.method", methodName);
+                    activity.SetTag("code.function.name", methodName);
                 }
                 if (attributeName != null)
                 {
