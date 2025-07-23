@@ -6,8 +6,9 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
+using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Components.QuickGrid.Test;
+namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
 
 public class GridRaceConditionTest
 {
@@ -33,14 +34,16 @@ public class GridRaceConditionTest
 
         // Dispose component while JS module loading is pending
         testJsRuntime.MarkDisposed();
-        await testComponent.DisposeAsync();
+        await renderer.DisposeAsync();
 
         // Complete the JS module loading
         moduleLoadCompletion.SetResult();
 
-        // Assert that init was not called after disposal (the fix working correctly)
+        // Assert that init was not called after disposal
         Assert.False(testJsRuntime.InitWasCalledAfterDisposal,
-            "Init should not be called on a disposed component - this indicates the race condition fix is not working");
+            "Init should not be called on a disposed component.");
+        await Task.Yield();
+        Assert.True(testJsRuntime.JsModuleDisposed);
     }
 
     [Fact]
@@ -64,13 +67,13 @@ public class GridRaceConditionTest
 
         // Dispose component while JS module loading is pending
         testJsRuntime.MarkDisposed();
-        await testComponent.DisposeAsync();
+        await renderer.DisposeAsync();
 
         // Verify our FailingQuickGrid's DisposeAsync was called and _disposeBool should still be false
         var failingGrid = testComponent.FailingQuickGrid;
         Assert.NotNull(failingGrid);
         Assert.True(failingGrid.DisposeAsyncWasCalled, "FailingQuickGrid.DisposeAsync should have been called");
-        Assert.True(failingGrid.IsDisposeBoolFalse(), "_disposeBool should still be false since we didn't call base.DisposeAsync()");
+        Assert.True(failingGrid.IsWasDisposedFalse(), "_wasDisposed should still be false since we didn't call base.DisposeAsync()");
 
         // Complete the JS module loading - this allows the FailingQuickGrid's OnAfterRenderAsync to continue
         // and demonstrate the race condition by calling init after disposal
@@ -85,7 +88,8 @@ public class GridRaceConditionTest
             $"FailingQuickGrid should call init after disposal, demonstrating the race condition bug. " +
             $"InitWasCalledAfterDisposal: {testJsRuntime.InitWasCalledAfterDisposal}, " +
             $"DisposeAsyncWasCalled: {failingGrid.DisposeAsyncWasCalled}, " +
-            $"_disposeBool is false: {failingGrid.IsDisposeBoolFalse()}");
+            $"_disposeBool is false: {failingGrid.IsWasDisposedFalse()}");
+        Assert.False(testJsRuntime.JsModuleDisposed);
     }
 }
 
@@ -95,7 +99,7 @@ internal class Person
     public string Name { get; set; } = string.Empty;
 }
 
-internal abstract class BaseTestComponent<TGrid> : ComponentBase, IAsyncDisposable
+internal abstract class BaseTestComponent<TGrid> : ComponentBase
     where TGrid : ComponentBase
 {
     [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
@@ -124,19 +128,6 @@ internal abstract class BaseTestComponent<TGrid> : ComponentBase, IAsyncDisposab
         }
         builder.CloseComponent();
     }
-
-    public virtual async ValueTask DisposeAsync()
-    {
-        if (JSRuntime is TestJsRuntime testRuntime)
-        {
-            testRuntime.MarkDisposed();
-        }
-
-        if (_grid is IAsyncDisposable disposableGrid)
-        {
-            await disposableGrid.DisposeAsync();
-        }
-    }
 }
 
 internal class SimpleTestComponent : BaseTestComponent<QuickGrid<Person>>
@@ -154,6 +145,8 @@ internal class TestJsRuntime(TaskCompletionSource moduleCompletion, TaskCompleti
     private readonly TaskCompletionSource _importStarted = importStarted;
     private bool _disposed;
 
+    public bool JsModuleDisposed { get; private set; }
+
     public bool InitWasCalledAfterDisposal { get; private set; }
 
     public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args = null)
@@ -166,14 +159,14 @@ internal class TestJsRuntime(TaskCompletionSource moduleCompletion, TaskCompleti
 
             // Wait for test to control when import completes
             await _moduleCompletion.Task;
-
-            // Return a mock IJSObjectReference
             return (TValue)(object)new TestJSObjectReference(this);
         }
         throw new InvalidOperationException($"Unexpected JS call: {identifier}");
     }
 
     public void MarkDisposed() => _disposed = true;
+
+    public void MarkJsModuleDisposed() => JsModuleDisposed = true;
 
     public void RecordInitCall()
     {
@@ -197,11 +190,14 @@ internal class TestJSObjectReference(TestJsRuntime jsRuntime) : IJSObjectReferen
         {
             _jsRuntime.RecordInitCall();
         }
-        return ValueTask.FromResult(default(TValue)!);
+        return default!;
     }
 
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) =>
         InvokeAsync<TValue>(identifier, args);
 
-    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    public ValueTask DisposeAsync() {
+        _jsRuntime.MarkJsModuleDisposed();
+        return default!;
+    }
 }

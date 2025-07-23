@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.JSInterop;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Components.QuickGrid.Test;
+namespace Microsoft.AspNetCore.Components.QuickGrid.Tests;
 
 /// <summary>
 /// A QuickGrid implementation that simulates the behavior before the race condition fix.
@@ -55,9 +55,9 @@ internal class FailingQuickGrid<TGridItem> : QuickGrid<TGridItem>, IAsyncDisposa
     /// Check if _disposeBool is false, proving we didn't call base.DisposeAsync().
     /// This is used by tests to verify that our simulation is working correctly.
     /// </summary>
-    public bool IsDisposeBoolFalse()
+    public bool IsWasDisposedFalse()
     {
-        var field = typeof(QuickGrid<TGridItem>).GetField("_disposeBool", BindingFlags.NonPublic | BindingFlags.Instance);
+        var field = typeof(QuickGrid<TGridItem>).GetField("_wasDisposed", BindingFlags.NonPublic | BindingFlags.Instance);
         return field?.GetValue(this) is false;
     }
 
@@ -71,19 +71,12 @@ internal class FailingQuickGrid<TGridItem> : QuickGrid<TGridItem>, IAsyncDisposa
         {
             if (firstRender)
             {
-                // Get the IJSRuntime (same as base class)
                 if (JS != null)
                 {
                     // Import the JS module (this will trigger our TestJsRuntime's import logic)
                     var jsModule = await JS.InvokeAsync<IJSObjectReference>("import",
                         "./_content/Microsoft.AspNetCore.Components.QuickGrid/QuickGrid.razor.js");
 
-                    // THE KEY DIFFERENCE: The original code did NOT check _disposeBool here
-                    // The fix added: if (_disposeBool) return;
-                    // By omitting this check, we demonstrate the race condition where init gets called on disposed components
-
-                    // Call init - this happens even if component was disposed during import
-                    // For our test, we don't need a real table reference, just need to trigger the JS call
                     await jsModule.InvokeAsync<IJSObjectReference>("init", new object());
 
                     // Signal completion only after the init call has completed, and only once
