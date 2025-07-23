@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.QuickGrid;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,133 +11,232 @@ namespace Microsoft.AspNetCore.Components.QuickGrid.Test;
 
 public class GridRaceConditionTest
 {
-    private TestRenderer _renderer = new();
-    private TaskCompletionSource _tcs = new();
-
-    public GridRaceConditionTest()
-    {
-        var testJsRuntime = new TestJsRuntime(_tcs);
-        var serviceProvider = new ServiceCollection()
-            .AddSingleton<IJSRuntime>(testJsRuntime)
-            .BuildServiceProvider();
-        _renderer = new(serviceProvider);
-    }
 
     [Fact]
     public async Task CanCorrectlyDisposeAsync()
     {
-        var testComponent = new TestComponent();
+        var moduleLoadCompletion = new TaskCompletionSource();
+        var moduleImportStarted = new TaskCompletionSource();
+        var testJsRuntime = new TestJsRuntime(moduleLoadCompletion, moduleImportStarted);
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(testJsRuntime)
+            .BuildServiceProvider();
+        var renderer = new TestRenderer(serviceProvider);
 
-        var componentId = _renderer.AssignRootComponentId(testComponent);
-        _renderer.RenderRootComponent(componentId);
-        await Task.Delay(10);
-        _renderer.RenderRootComponent(componentId);
-        _tcs.SetResult();
+        var testComponent = new SimpleTestComponent();
+
+        var componentId = renderer.AssignRootComponentId(testComponent);
+        renderer.RenderRootComponent(componentId);
+
+        // Wait until JS import has started but not completed
+        await moduleImportStarted.Task;
+
+        // Dispose component while JS module loading is pending
+        testJsRuntime.MarkDisposed();
+        await testComponent.DisposeAsync();
+
+        // Complete the JS module loading
+        moduleLoadCompletion.SetResult();
+
+        // Assert that init was not called after disposal (the fix working correctly)
+        Assert.False(testJsRuntime.InitWasCalledAfterDisposal,
+            "Init should not be called on a disposed component - this indicates the race condition fix is not working");
+    }
+
+    [Fact]
+    public async Task FailingQuickGrid_CallsInitAfterDisposal_DemonstratesRaceCondition()
+    {
+        var moduleLoadCompletion = new TaskCompletionSource();
+        var moduleImportStarted = new TaskCompletionSource();
+        var testJsRuntime = new TestJsRuntime(moduleLoadCompletion, moduleImportStarted);
+        var serviceProvider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(testJsRuntime)
+            .BuildServiceProvider();
+        var renderer = new TestRenderer(serviceProvider);
+
+        var testComponent = new FailingGridTestComponent();
+
+        var componentId = renderer.AssignRootComponentId(testComponent);
+        renderer.RenderRootComponent(componentId);
+
+        // Wait until JS import has started but not completed
+        await moduleImportStarted.Task;
+
+        // Dispose component while JS module loading is pending
+        testJsRuntime.MarkDisposed();
+        await testComponent.DisposeAsync();
+
+        // Verify our FailingQuickGrid's DisposeAsync was called and _disposeBool should still be false
+        var failingGrid = testComponent.FailingQuickGrid;
+        Assert.NotNull(failingGrid);
+        Assert.True(failingGrid.DisposeAsyncWasCalled, "FailingQuickGrid.DisposeAsync should have been called");
+        Assert.True(failingGrid.IsDisposeBoolFalse(), "_disposeBool should still be false since we didn't call base.DisposeAsync()");
+
+        // Complete the JS module loading - this allows the FailingQuickGrid's OnAfterRenderAsync to continue
+        // and demonstrate the race condition by calling init after disposal
+        moduleLoadCompletion.SetResult();
+
+        // Wait for OnAfterRenderAsync to complete - deterministic timing instead of arbitrary delay
+        await failingGrid.OnAfterRenderCompleted;
+
+        // Assert that init WAS called after disposal (demonstrating the race condition bug)
+        // The FailingQuickGrid's OnAfterRenderAsync should have called init despite being disposed
+        Assert.True(testJsRuntime.InitWasCalledAfterDisposal,
+            $"FailingQuickGrid should call init after disposal, demonstrating the race condition bug. " +
+            $"InitWasCalledAfterDisposal: {testJsRuntime.InitWasCalledAfterDisposal}, " +
+            $"DisposeAsyncWasCalled: {failingGrid.DisposeAsyncWasCalled}, " +
+            $"_disposeBool is false: {failingGrid.IsDisposeBoolFalse()}");
     }
 }
 
-internal class TestComponent : ComponentBase
+internal class Person
 {
-    private bool _firstRender = true;
-    private PaginationState _pagination = new() { ItemsPerPage = 2 };
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
 
-    internal class Person
-    {
-        public int Id { get; set; }
-        public string Name { get; set; } = string.Empty;
-        public int Age { get; set; }
-    }
+internal class SimpleTestComponent : ComponentBase, IAsyncDisposable
+{
+    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
 
-    private IQueryable<Person> _people = new List<Person>
-    {
-        new Person { Id = 1, Name = "John Doe", Age = 30 },
-        new Person { Id = 2, Name = "Jane Smith", Age = 25 },
-        new Person { Id = 3, Name = "Alice Johnson", Age = 22 }
-    }.AsQueryable();
+    private readonly List<Person> _people = [
+        new() { Id = 1, Name = "John" },
+        new() { Id = 2, Name = "Jane" }
+    ];
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        if (_firstRender)
+        builder.OpenComponent<QuickGrid<Person>>(0);
+        builder.AddAttribute(1, "Items", _people.AsQueryable());
+        builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
         {
-            //Render the QuickGrid
-            builder.OpenComponent<QuickGrid<Person>>(0);
-            builder.AddAttribute(1, "Items", _people);
-            builder.AddAttribute(2, "Pagination", _pagination);
-            builder.AddAttribute(3, nameof(QuickGrid<Person>.ChildContent),
-                (RenderFragment)(builder => BuildColumnsRenderFragment(builder)));
-            builder.CloseComponent();
-
-            builder.OpenComponent<Paginator>(4);
-            builder.AddAttribute(5, "State", _pagination);
-            builder.CloseComponent();
-            _firstRender = false;
-        }
-    }
-
-    protected void BuildColumnsRenderFragment(RenderTreeBuilder builder)
-    {
-        //Render the PropertyColumn for Id
-        builder.OpenComponent<PropertyColumn<Person, int>>(0);
-        builder.AddAttribute(1, nameof(PropertyColumn<Person, int>.Property),
-            (System.Linq.Expressions.Expression<Func<Person, int>>)(p => p.Id));
-        builder.AddAttribute(2, nameof(PropertyColumn<Person, int>.Sortable), true);
-        builder.CloseComponent();
-
-        //Render the PropertyColumn for Name
-        builder.OpenComponent<PropertyColumn<Person, string>>(3);
-        builder.AddAttribute(4, nameof(PropertyColumn<Person, string>.Property),
-            (System.Linq.Expressions.Expression<Func<Person, string>>)(p => p.Name));
-        builder.AddAttribute(5, nameof(PropertyColumn<Person, string>.Sortable), true);
-        builder.CloseComponent();
-
-        //Render the PropertyColumn for Age
-        builder.OpenComponent<PropertyColumn<Person, int>>(6);
-        builder.AddAttribute(7, nameof(PropertyColumn<Person, int>.Property),
-            (System.Linq.Expressions.Expression<Func<Person, int>>)(p => p.Age));
-        builder.AddAttribute(8, nameof(PropertyColumn<Person, int>.Sortable), true);
+            b.OpenComponent<PropertyColumn<Person, int>>(0);
+            b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<Person, int>>)(p => p.Id));
+            b.CloseComponent();
+        }));
         builder.CloseComponent();
     }
 
-    public void TriggerRender()
+    public ValueTask DisposeAsync()
     {
-        InvokeAsync(StateHasChanged);
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+        if (JSRuntime is TestJsRuntime testRuntime)
         {
-            await Task.Delay(1);
-            StateHasChanged();
+            testRuntime.MarkDisposed();
         }
-        await base.OnAfterRenderAsync(firstRender);
+        return ValueTask.CompletedTask;
     }
 }
 
-internal class TestJsRuntime(TaskCompletionSource tcs) : IJSRuntime
+internal class FailingGridTestComponent : ComponentBase, IAsyncDisposable
 {
-    private readonly TaskCompletionSource _tcs = tcs;
+    [Inject] public IJSRuntime JSRuntime { get; set; } = default!;
+
+    private FailingQuickGrid<Person> _failingGrid;
+
+    public FailingQuickGrid<Person> FailingQuickGrid => _failingGrid;
+
+    private readonly List<Person> _people = [
+        new() { Id = 1, Name = "John" },
+        new() { Id = 2, Name = "Jane" }
+    ];
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<FailingQuickGrid<Person>>(0);
+        builder.AddAttribute(1, "Items", _people.AsQueryable());
+        builder.AddAttribute(2, "ChildContent", (RenderFragment)(b =>
+        {
+            b.OpenComponent<PropertyColumn<Person, int>>(0);
+            b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<Person, int>>)(p => p.Id));
+            b.CloseComponent();
+        }));
+        builder.AddComponentReferenceCapture(3, component => _failingGrid = (FailingQuickGrid<Person>)component);
+        builder.CloseComponent();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (JSRuntime is TestJsRuntime testRuntime)
+        {
+            testRuntime.MarkDisposed();
+        }
+
+        if (_failingGrid is not null)
+        {
+            await _failingGrid.DisposeAsync();
+        }
+    }
+}
+
+internal class TestJsRuntime(TaskCompletionSource moduleCompletion, TaskCompletionSource importStarted) : IJSRuntime
+{
+    private readonly TaskCompletionSource _moduleCompletion = moduleCompletion;
+    private readonly TaskCompletionSource _importStarted = importStarted;
+    private bool _disposed;
+
+    public bool InitWasCalledAfterDisposal { get; private set; }
 
     public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args = null)
     {
-        if (identifier == "import" && args != null && args.Length > 0 && args[0] is string modulePath)
+        if (identifier == "import" && args?.Length > 0 && args[0] is string modulePath &&
+            modulePath == "./_content/Microsoft.AspNetCore.Components.QuickGrid/QuickGrid.razor.js")
         {
-            if (modulePath == "./_content/Microsoft.AspNetCore.Components.QuickGrid/QuickGrid.razor.js")
-            {
-                await _tcs.Task;
-                return default!;
-            }
+            // Signal that import has started
+            _importStarted.TrySetResult();
+
+            // Wait for test to control when import completes
+            await _moduleCompletion.Task;
+
+            // Return a mock IJSObjectReference
+            return (TValue)(object)new TestJSObjectReference(this);
         }
-        throw new Exception("JS import was not correctly processed while disposing of the component.");
+        throw new InvalidOperationException($"Unexpected JS call: {identifier}");
     }
 
-    public ValueTask<IJSObjectReference> InvokeAsync(string identifier, params object[] args)
+    public void MarkDisposed() => _disposed = true;
+
+    public void RecordInitCall()
     {
-        throw new NotImplementedException();
+        if (_disposed)
+        {
+            InitWasCalledAfterDisposal = true;
+        }
     }
 
-    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args)
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) =>
+        InvokeAsync<TValue>(identifier, args);
+}
+
+/// <summary>
+/// Mock JS object reference for the QuickGrid module
+/// </summary>
+internal class TestJSObjectReference(TestJsRuntime jsRuntime) : IJSObjectReference
+{
+    private readonly TestJsRuntime _jsRuntime = jsRuntime;
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object[] args)
     {
-        throw new NotImplementedException();
+        if (identifier == "init")
+        {
+            _jsRuntime.RecordInitCall();
+        }
+        return ValueTask.FromResult(default(TValue)!);
     }
+
+    public ValueTask InvokeVoidAsync(string identifier, object[] args)
+    {
+        if (identifier == "init")
+        {
+            _jsRuntime.RecordInitCall();
+        }
+        return ValueTask.CompletedTask;
+    }
+
+    public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object[] args) =>
+        InvokeAsync<TValue>(identifier, args);
+
+    public ValueTask InvokeVoidAsync(string identifier, CancellationToken cancellationToken, object[] args) =>
+        InvokeVoidAsync(identifier, args);
+
+    public ValueTask DisposeAsync() => ValueTask.CompletedTask;
 }
