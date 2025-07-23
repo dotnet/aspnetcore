@@ -48,6 +48,5 @@
     <DefineConstants>$(WixVariables);$(DefineConstants)</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="$(NuGetRestoreTargets)" />
   <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.targets" />
 </Project>
