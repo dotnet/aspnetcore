@@ -39,8 +39,8 @@
   "symbols/NoHttps/description": "Określa, czy wyłączyć protokół HTTPS. Ta opcja ma zastosowanie tylko wtedy, gdy opcja Individual nie została użyta dla opcji --auth.",
   "symbols/UseProgramMain/displayName": "Nie używaj ins_trukcji najwyższego poziomu",
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
-  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the application URL",
-  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345.",
+  "symbols/LocalhostTld/displayName": "Użyj pliku .dev.localhost TLD w adresie URL aplikacji",
+  "symbols/LocalhostTld/description": "Określa, czy połączyć nazwę projektu z domeną najwyższego poziomu .dev.localhost w adresie URL aplikacji na potrzeby programowania lokalnego, np. https://myapp.dev.localhost:12345.",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie \"dotnet restore\""
 }
