@@ -304,7 +304,7 @@
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
     <NSwagApiDescriptionClientVersion>13.0.4</NSwagApiDescriptionClientVersion>
     <PhotinoNETVersion>2.5.2</PhotinoNETVersion>
-    <MicrosoftPlaywrightVersion>1.53.0</MicrosoftPlaywrightVersion>
+    <MicrosoftPlaywrightVersion>1.54.0</MicrosoftPlaywrightVersion>
     <PollyExtensionsHttpVersion>3.0.0</PollyExtensionsHttpVersion>
     <PollyVersion>7.2.4</PollyVersion>
     <SeleniumSupportVersion>4.34.0</SeleniumSupportVersion>
