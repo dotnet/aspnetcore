@@ -48,44 +48,50 @@ internal static class JsonNamingHelpers
 
     private static EnumMapping GetEnumMapping(EnumDescriptor enumDescriptor)
     {
-        var enumType = enumDescriptor.ClrType;
-
-        EnumMapping? enumMapping;
-        lock (_enumMappings)
-        {
-            if (!_enumMappings.TryGetValue(enumType, out enumMapping))
-            {
-                _enumMappings[enumType] = enumMapping = GetEnumMapping(enumDescriptor.Name, enumType);
-            }
-        }
-
-        return enumMapping;
+        return _enumMappings.GetOrAdd(
+            enumDescriptor.ClrType,
+            static (t, descriptor) => GetEnumMapping(descriptor.Name, t),
+            enumDescriptor);
     }
 
     private static EnumMapping GetEnumMapping(string enumName, Type enumType)
     {
-        var enumFields = enumType.GetTypeInfo().DeclaredFields
+        var nameMappings = enumType.GetTypeInfo().DeclaredFields
             .Where(f => f.IsStatic)
             .Where(f => f.GetCustomAttributes<OriginalNameAttribute>().FirstOrDefault()?.PreferredAlias ?? true)
-            .ToList();
-
-        var writeMapping = enumFields.ToDictionary(
-            f => f.GetValue(null)!,
-            f =>
+            .Select(f =>
             {
                 // If the attribute hasn't been applied, fall back to the name of the field.
                 var fieldName = f.GetCustomAttributes<OriginalNameAttribute>().FirstOrDefault()?.Name ?? f.Name;
 
                 return new NameMapping
                 {
+                    Value = f.GetValue(null)!,
                     OriginalName = fieldName,
                     RemoveEnumPrefixName = GetEnumValueName(enumName, fieldName)
                 };
-            });
+            })
+            .ToList();
 
-        var removeEnumPrefixMapping = writeMapping.Values.ToDictionary(
-            m => m.RemoveEnumPrefixName,
-            m => m.OriginalName);
+        var writeMapping = nameMappings.ToDictionary(m => m.Value, m => m);
+
+        // Protobuf codegen prevents collision of enum names when the prefix is removed.
+        // For example, the following enum will fail to build because both fields would resolve to "OK":
+        //
+        // enum Status {
+        //     STATUS_OK = 0;
+        //     OK = 1;
+        // }
+        //
+        // Tooling error message:
+        // ----------------------
+        // Enum name OK has the same name as STATUS_OK if you ignore case and strip out the enum name prefix (if any).
+        // (If you are using allow_alias, please assign the same number to each enum value name.)
+        //
+        // Just in case it does happen, map to the first value rather than error.
+        var removeEnumPrefixMapping = nameMappings
+            .GroupBy(m => m.RemoveEnumPrefixName)
+            .ToDictionary(g => g.Key, g => g.First().OriginalName, StringComparer.Ordinal);
 
         return new EnumMapping { WriteMapping = writeMapping, RemoveEnumPrefixMapping = removeEnumPrefixMapping };
     }
@@ -146,6 +152,7 @@ internal static class JsonNamingHelpers
 
     private sealed class NameMapping
     {
+        public required object Value { get; init; }
         public required string OriginalName { get; init; }
         public required string RemoveEnumPrefixName { get; init; }
     }

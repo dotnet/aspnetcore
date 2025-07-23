@@ -50,8 +50,8 @@ public sealed class GrpcJsonSettings
     /// }
     /// </code>
     /// <para>
-    /// When <see cref="RemoveEnumPrefix"/> is set to <see langword="true"/>, the enum values above
-    /// will be read and written as <c>UNKNOWN</c> and <c>OK</c> instead of <c>STATUS_UNKNOWN</c>
+    /// <c>STATUS</c> prefix is removed from enum values when <see cref="RemoveEnumPrefix"/> is set to <see langword="true"/>.
+    /// The enum values above will be read and written as <c>UNKNOWN</c> and <c>OK</c> instead of <c>STATUS_UNKNOWN</c>
     /// and <c>STATUS_OK</c>.
     /// </para>
     /// </remarks>
