@@ -124,13 +124,10 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             // If the default key id has been updated since the last call to Protect, also write back the updated template.
             var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
 
-            var success = defaultEncryptorInstance.TryEncrypt(
-                plaintext: plaintext,
-                additionalAuthenticatedData: aad,
-                destination: destination,
-                preBufferSize: _magicHeaderKeyIdSize,
-                postBufferSize: 0,
-                out bytesWritten);
+            var preBufferSize = _magicHeaderKeyIdSize;
+            var postBufferSize = 0;
+            var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - (preBufferSize + postBufferSize));
+            var success = defaultEncryptorInstance.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
 
             // At this point: destination := { 000..000 || encryptorSpecificProtectedPayload },
             // where 000..000 is a placeholder for our magic header and key id.
