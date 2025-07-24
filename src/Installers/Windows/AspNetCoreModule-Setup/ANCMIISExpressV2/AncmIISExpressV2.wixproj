@@ -19,21 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <WixExtension Include="WixUtilExtension">
-      <HintPath>$(PkgMicrosoft_WixToolset_Util_wixext)\wixext5\WixUtilExtension.dll</HintPath>
-      <Name>WixUtilExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixDependencyExtension">
-      <HintPath>$(PkgMicrosoft_WixToolset_Dependency_wixext)\wixext5\WixDependencyExtension.dll</HintPath>
-      <Name>WixDependencyExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixBalExtension">
-      <HintPath>$(PkgMicrosoft_WixToolset_Bal_wixext)\wixext5\WixBalExtension.dll</HintPath>
-      <Name>WixBalExtension</Name>
-    </WixExtension>
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="ancm_iis_expressv2.wxs" />
     <Compile Include="$(IIS-Setup)iisca\wix5\iisca.wxs">
       <Link>iisca.wxs</Link>
