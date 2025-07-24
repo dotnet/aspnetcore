@@ -43,7 +43,6 @@ internal static class AuthenticatedEncryptorExtensions
         out int bytesWritten)
     {
         var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - (preBufferSize + postBufferSize));
-        // var plaintextWithOffsets = plaintext.Slice((int)preBufferSize, plaintext.Length - (int)(preBufferSize + postBufferSize));
         return encryptor.TryEncrypt(plaintext, additionalAuthenticatedData, destinationBufferOffsets, out bytesWritten);
     }
 #endif

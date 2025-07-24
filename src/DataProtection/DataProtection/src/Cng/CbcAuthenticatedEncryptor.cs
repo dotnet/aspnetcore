@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -363,7 +364,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
                             byte* pbOutputHmac = &pbOutputCiphertext[cbOutputCiphertext];
 
                             // Copy key modifier and IV to destination
-                            UnsafeBufferUtil.BlockCopy(from: pbKeyModifierAndIV, to: pbOutputKeyModifier, byteCount: cbKeyModifierAndIV);
+                            Unsafe.CopyBlock(pbOutputKeyModifier, pbKeyModifierAndIV, cbKeyModifierAndIV);
                             bytesWritten += checked((int)cbKeyModifierAndIV);
 
                             // Perform CBC encryption directly into destination
@@ -512,7 +513,6 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
         byte* pbDummyIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
         byte* pbDummyInput = stackalloc byte[checked((int)cbInput)];
 
-        uint dwResult;
         var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
             hKey: tempKeyHandle,
             pbInput: pbDummyInput,
@@ -522,7 +522,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
             cbIV: _symmetricAlgorithmBlockSizeInBytes,
             pbOutput: null,  // NULL output = size query only
             cbOutput: 0,
-            pcbResult: out dwResult,
+            pcbResult: out var dwResult,
             dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
         UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
 
@@ -536,7 +536,6 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
 
         // Calling BCryptEncrypt with a null output pointer will cause it to return the total number
         // of bytes required for the output buffer.
-        uint dwResult;
         var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
             hKey: symmetricKeyHandle,
             pbInput: pbInput,
@@ -546,7 +545,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
             cbIV: _symmetricAlgorithmBlockSizeInBytes,
             pbOutput: null,
             cbOutput: 0,
-            pcbResult: out dwResult,
+            pcbResult: out var dwResult,
             dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
         UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
 
