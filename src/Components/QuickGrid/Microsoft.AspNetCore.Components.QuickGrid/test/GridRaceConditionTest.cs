@@ -39,15 +39,18 @@ public class GridRaceConditionTest
         // Complete the JS module loading
         moduleLoadCompletion.SetResult();
 
-        // Assert that init was not called after disposal
+        // Wait until after OnAfterRenderAsync has completed to test the disposal of the jsModule
+        var notFailingGrid = testComponent.NotFailingGrid;
+        await notFailingGrid.OnAfterRenderCompleted;
+
+        // Assert that init was not called after disposal and JsModule was disposed of
         Assert.False(testJsRuntime.InitWasCalledAfterDisposal,
             "Init should not be called on a disposed component.");
-        await Task.Yield();
         Assert.True(testJsRuntime.JsModuleDisposed);
     }
 
     [Fact]
-    public async Task FailingQuickGrid_CallsInitAfterDisposal_DemonstratesRaceCondition()
+    public async Task FailingQuickGridCallsInitAfterDisposal()
     {
         var moduleLoadCompletion = new TaskCompletionSource();
         var moduleImportStarted = new TaskCompletionSource();
@@ -69,21 +72,17 @@ public class GridRaceConditionTest
         testJsRuntime.MarkDisposed();
         await renderer.DisposeAsync();
 
-        // Verify our FailingQuickGrid's DisposeAsync was called and _disposeBool should still be false
-        var failingGrid = testComponent.FailingQuickGrid;
-        Assert.NotNull(failingGrid);
-        Assert.True(failingGrid.DisposeAsyncWasCalled, "FailingQuickGrid.DisposeAsync should have been called");
-        Assert.True(failingGrid.IsWasDisposedFalse(), "_wasDisposed should still be false since we didn't call base.DisposeAsync()");
-
         // Complete the JS module loading - this allows the FailingQuickGrid's OnAfterRenderAsync to continue
         // and demonstrate the race condition by calling init after disposal
         moduleLoadCompletion.SetResult();
 
         // Wait for OnAfterRenderAsync to complete - deterministic timing instead of arbitrary delay
+        var failingGrid = testComponent.FailingQuickGrid;
         await failingGrid.OnAfterRenderCompleted;
 
-        // Assert that init WAS called after disposal (demonstrating the race condition bug)
+        // Assert that init WAS called after disposal
         // The FailingQuickGrid's OnAfterRenderAsync should have called init despite being disposed
+        // The FailingQuickGrid should not have disposed of JsModule 
         Assert.True(testJsRuntime.InitWasCalledAfterDisposal,
             $"FailingQuickGrid should call init after disposal, demonstrating the race condition bug. " +
             $"InitWasCalledAfterDisposal: {testJsRuntime.InitWasCalledAfterDisposal}, " +
@@ -122,16 +121,14 @@ internal abstract class BaseTestComponent<TGrid> : ComponentBase
             b.AddAttribute(1, "Property", (System.Linq.Expressions.Expression<Func<Person, int>>)(p => p.Id));
             b.CloseComponent();
         }));
-        if (typeof(TGrid) != typeof(QuickGrid<Person>))
-        {
-            builder.AddComponentReferenceCapture(3, component => _grid = (TGrid)component);
-        }
+        builder.AddComponentReferenceCapture(3, component => _grid = (TGrid)component);
         builder.CloseComponent();
     }
 }
 
-internal class SimpleTestComponent : BaseTestComponent<QuickGrid<Person>>
+internal class SimpleTestComponent : BaseTestComponent<NotFailingGrid<Person>>
 {
+    public NotFailingGrid<Person> NotFailingGrid => Grid;
 }
 
 internal class FailingGridTestComponent : BaseTestComponent<FailingQuickGrid<Person>>

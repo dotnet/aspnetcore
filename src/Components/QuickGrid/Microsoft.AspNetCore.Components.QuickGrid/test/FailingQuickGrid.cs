@@ -35,11 +35,6 @@ internal class FailingQuickGrid<TGridItem> : QuickGrid<TGridItem>, IAsyncDisposa
     public new async ValueTask DisposeAsync()
     {
         DisposeAsyncWasCalled = true;
-        // Intentionally do nothing to prevent _disposeBool from being set to true
-        // This means the OnAfterRenderAsync method will not detect that the component is disposed
-        // and will proceed to call init() even after disposal, demonstrating the race condition
-
-        // DO NOT call base.DisposeAsync() - this is the key to simulating the race condition
         await Task.CompletedTask;
     }
 
