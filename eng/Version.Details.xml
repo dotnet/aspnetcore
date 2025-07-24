@@ -336,14 +336,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>c0e325f90fb79db0da6be5128dc292f2aabb264f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.HotReload.Agent" Version="10.0.100-preview.7.25373.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>c0e325f90fb79db0da6be5128dc292f2aabb264f</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.HotReload.Agent.Data" Version="10.0.100-preview.7.25373.104">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>c0e325f90fb79db0da6be5128dc292f2aabb264f</Sha>
-    </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
     <!-- These versions are manually updated -->
     <Dependency Name="Microsoft.CodeAnalysis.Common" Version="4.13.0-3.24613.7" Label="Manual">
