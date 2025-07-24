@@ -416,6 +416,17 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         additionalAuthenticatedData.Validate();
         var plainTextSpan = plaintext.AsSpan();
 
+#if NET10_0_OR_GREATER
+        var size = GetEncryptedSize(plainTextSpan.Length);
+        var retVal = new byte[size];
+
+        if (!TryEncrypt(plainTextSpan, additionalAuthenticatedData.AsSpan(), retVal, out var bytesWritten))
+        {
+            throw Error.CryptCommon_PayloadInvalid();
+        }
+
+        return retVal;
+#else
         try
         {
             var keyModifierLength = KEY_MODIFIER_SIZE_IN_BYTES;
@@ -494,6 +505,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             // Homogenize all exceptions to CryptographicException.
             throw Error.CryptCommon_GenericError(ex);
         }
+#endif
     }
 
     private void CalculateAndValidateMac(
