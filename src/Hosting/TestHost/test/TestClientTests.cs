@@ -825,8 +825,6 @@ public class TestClientTests
         await host.StartAsync();
 
         var server = host.GetTestServer();
-#pragma warning restore CS0618 // Type or member is obsolete
-
         // Act
         var client = server.CreateWebSocketClient();
         client.SubProtocols.Add("alpha");
