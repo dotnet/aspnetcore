@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,6 +24,14 @@ internal sealed class PersistentServicesRegistry
     private IPersistentServiceRegistration[] _registrations;
     private List<PersistingComponentStateSubscription> _subscriptions = [];
     private static readonly ConcurrentDictionary<Type, PropertiesAccessor> _cachedAccessorsByType = new();
+
+    static PersistentServicesRegistry()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += _cachedAccessorsByType.Clear;
+        }
+    }
 
     public PersistentServicesRegistry(IServiceProvider serviceProvider)
     {

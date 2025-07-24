@@ -12,7 +12,13 @@ namespace Microsoft.AspNetCore.Components.Reflection;
 
 internal static class ComponentProperties
 {
-    static ComponentProperties() => HotReloadManager.Default.OnDeltaApplied += ClearCache;
+    static ComponentProperties()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
 
     internal const BindingFlags BindablePropertyFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase;
 
