@@ -354,7 +354,7 @@ public class Image : ComponentBase, IAsyncDisposable
         {
             _isDisposed = true;
 
-            if (Source != null)
+            if (Source != null && RendererInfo.IsInteractive == true)
             {
                 try
                 {

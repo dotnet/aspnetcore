@@ -22,7 +22,7 @@
         </button>
     </div>
 
-    @if (_isLoading || !_hasRendered)
+    @if (_isLoading)
     {
         <div class="loading-container">
             <div class="spinner"></div>
@@ -120,9 +120,6 @@
     private Dictionary<int, BinaryImageSource> _binaryImageSources = new();
     private Dictionary<int, StreamingImageSource> _streamingImageSources = new();
     private bool _useStreamingSource = true;
-    private bool _hasRendered = false;
-
-    // View state
     private bool _showImageModal = false;
     private ImageMetadata? _currentImage;
 
@@ -130,8 +127,7 @@
     {
         if (firstRender)
         {
-            _hasRendered = true;
-            StateHasChanged(); // Trigger a re-render now that we're past prerendering
+            StateHasChanged();
         }
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -146,14 +142,12 @@
     private async Task LoadImagesAsync()
     {
         _images = await ImageRepository.GetAllImagesMetadataAsync();
-        // Clear cached sources when refreshing
         _binaryImageSources.Clear();
         _streamingImageSources.Clear();
     }
 
     private IImageSource GetImageSource(int imageId)
     {
-        // Get image metadata to get the mime type
         var metadata = _images.FirstOrDefault(i => i.Id == imageId);
         if (metadata == null)
             return new BinaryImageSource("", new byte[0]);
@@ -163,14 +157,12 @@
             if (_streamingImageSources.TryGetValue(imageId, out var streamingSource))
                 return streamingSource;
 
-            // Create a streaming image source
             var streamingImageSource = StreamingImageSource.FromRepository(
                 imageId,
                 metadata.MimeType,
                 () => ImageRepository.GetImageBytesAsync(imageId)
             );
 
-            // Cache the source for future use
             _streamingImageSources[imageId] = streamingImageSource;
             return streamingImageSource;
         }
@@ -179,14 +171,12 @@
             if (_binaryImageSources.TryGetValue(imageId, out var binarySource))
                 return binarySource;
 
-            // Create a binary image source
             var binaryImageSource = BinaryImageSource.FromRepository(
                 imageId,
                 metadata.MimeType,
                 () => ImageRepository.GetImageBytesAsync(imageId)
             );
 
-            // Cache the source for future use
             _binaryImageSources[imageId] = binaryImageSource;
             return binaryImageSource;
         }

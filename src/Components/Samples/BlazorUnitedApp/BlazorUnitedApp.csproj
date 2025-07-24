@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <!-- <TreatWarningsAsErrors>false</TreatWarningsAsErrors> -->
     <IsShippingPackage>false</IsShippingPackage>
     <Nullable>enable</Nullable>
   </PropertyGroup>
