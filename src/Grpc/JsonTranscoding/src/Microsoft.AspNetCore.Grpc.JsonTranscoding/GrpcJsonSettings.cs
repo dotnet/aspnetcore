@@ -54,6 +54,14 @@ public sealed class GrpcJsonSettings
     /// The enum values above will be read and written as <c>UNKNOWN</c> and <c>OK</c> instead of <c>STATUS_UNKNOWN</c>
     /// and <c>STATUS_OK</c>.
     /// </para>
+    /// <para>
+    /// The Protobuf JSON specification requires enum values in JSON to match enum fields exactly.
+    /// Enabling this option may reduce interoperability, as removing enum prefix might not be supported
+    /// by other JSON transcoding implementations.
+    /// </para>
+    /// <para>
+    /// For more information, see <see href="https://protobuf.dev/programming-guides/json/"/>.
+    /// </para>
     /// </remarks>
     public bool RemoveEnumPrefix { get; set; }
 }
