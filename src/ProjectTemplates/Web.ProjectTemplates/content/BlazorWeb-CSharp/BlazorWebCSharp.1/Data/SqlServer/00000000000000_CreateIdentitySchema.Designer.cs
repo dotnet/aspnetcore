@@ -198,40 +198,6 @@ namespace BlazorWebCSharp._1.Migrations
                         .HasMaxLength(1024)
                         .HasColumnType("varbinary(1024)");
 
-                    b.Property<byte[]>("AttestationObject")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<byte[]>("ClientDataJson")
-                        .IsRequired()
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<DateTimeOffset>("CreatedAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("IsBackedUp")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsBackupEligible")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsUserVerified")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<byte[]>("PublicKey")
-                        .IsRequired()
-                        .HasMaxLength(1024)
-                        .HasColumnType("varbinary(1024)");
-
-                    b.Property<long>("SignCount")
-                        .HasColumnType("bigint");
-
-                    b.PrimitiveCollection<string>("Transports")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("UserId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -312,6 +278,57 @@ namespace BlazorWebCSharp._1.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Microsoft.AspNetCore.Identity.IdentityPasskeyData", "Data", b1 =>
+                        {
+                            b1.Property<byte[]>("IdentityUserPasskeyCredentialId")
+                                .HasColumnType("varbinary(1024)");
+
+                            b1.Property<byte[]>("AttestationObject")
+                                .IsRequired()
+                                .HasColumnType("varbinary(max)");
+
+                            b1.Property<byte[]>("ClientDataJson")
+                                .IsRequired()
+                                .HasColumnType("varbinary(max)");
+
+                            b1.Property<DateTimeOffset>("CreatedAt")
+                                .HasColumnType("datetimeoffset");
+
+                            b1.Property<bool>("IsBackedUp")
+                                .HasColumnType("bit");
+
+                            b1.Property<bool>("IsBackupEligible")
+                                .HasColumnType("bit");
+
+                            b1.Property<bool>("IsUserVerified")
+                                .HasColumnType("bit");
+
+                            b1.Property<string>("Name")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.Property<byte[]>("PublicKey")
+                                .IsRequired()
+                                .HasColumnType("varbinary(max)");
+
+                            b1.Property<long>("SignCount")
+                                .HasColumnType("bigint");
+
+                            b1.PrimitiveCollection<string>("Transports")
+                                .HasColumnType("nvarchar(max)");
+
+                            b1.HasKey("IdentityUserPasskeyCredentialId");
+
+                            b1.ToTable("AspNetUserPasskeys");
+
+                            b1.ToJson("Data");
+
+                            b1.WithOwner()
+                                .HasForeignKey("IdentityUserPasskeyCredentialId");
+                        });
+
+                    b.Navigation("Data")
                         .IsRequired();
                 });
 

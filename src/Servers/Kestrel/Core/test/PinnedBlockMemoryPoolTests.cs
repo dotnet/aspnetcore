@@ -231,7 +231,7 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     public void CurrentMemoryMetricTracksPooledMemory()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var currentMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.current_memory");
+        using var currentMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.current_memory");
 
         var pool = new PinnedBlockMemoryPool(testMeterFactory);
 
@@ -267,7 +267,7 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     public void TotalAllocatedMetricTracksAllocatedMemory()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var totalMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.total_allocated");
+        using var totalMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.total_allocated");
 
         var pool = new PinnedBlockMemoryPool(testMeterFactory);
 
@@ -290,7 +290,7 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     public void TotalRentedMetricTracksRentOperations()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.total_rented");
+        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.total_rented");
 
         var pool = new PinnedBlockMemoryPool(testMeterFactory);
 
@@ -315,7 +315,7 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     public void EvictedMemoryMetricTracksEvictedMemory()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var evictMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.evicted_memory");
+        using var evictMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.evicted_memory");
 
         var pool = new PinnedBlockMemoryPool(testMeterFactory);
 
@@ -352,7 +352,7 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     public void MetricsAreAggregatedAcrossPoolsWithSameMeterFactory()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memorypool.total_rented");
+        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.total_rented");
 
         var pool1 = new PinnedBlockMemoryPool(testMeterFactory);
         var pool2 = new PinnedBlockMemoryPool(testMeterFactory);

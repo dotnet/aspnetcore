@@ -9,7 +9,9 @@ namespace Microsoft.AspNetCore.HttpOverrides;
 
 /// <summary>
 /// A representation of an IP network based on CIDR notation.
+/// Please use <see cref="System.Net.IPNetwork"/> instead
 /// </summary>
+[Obsolete("Please use System.Net.IPNetwork instead. For more information, visit https://aka.ms/aspnet/deprecate/005.", DiagnosticId = "ASPDEPR005")]
 public class IPNetwork
 {
     /// <summary>

@@ -174,7 +174,7 @@ public class UserManagerTest
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "failure"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.result_error_code", "ConcurrencyFailure")
+                KeyValuePair.Create<string, object>("aspnetcore.identity.error_code", "ConcurrencyFailure")
             ]));
     }
 
@@ -664,7 +664,7 @@ public class UserManagerTest
         Assert.Collection(checkPassword.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.user.password_result", "success_rehash_needed")
+                KeyValuePair.Create<string, object>("aspnetcore.identity.password_check_result", "success_rehash_needed")
             ]));
     }
 
@@ -785,18 +785,18 @@ public class UserManagerTest
     }
 
     [Fact]
-    public async Task SetPasskeyAsyncCallsStore()
+    public async Task AddOrUpdatePasskeyAsyncCallsStore()
     {
         // Setup
         var store = new Mock<IUserPasskeyStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
-        var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
-        store.Setup(s => s.SetPasskeyAsync(user, passkey, CancellationToken.None)).Returns(Task.CompletedTask).Verifiable();
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
+        store.Setup(s => s.AddOrUpdatePasskeyAsync(user, passkey, CancellationToken.None)).Returns(Task.CompletedTask).Verifiable();
         store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
         var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
 
         // Act
-        var result = await userManager.SetPasskeyAsync(user, passkey);
+        var result = await userManager.AddOrUpdatePasskeyAsync(user, passkey);
 
         // Assert
         Assert.True(result.Succeeded);
@@ -809,7 +809,7 @@ public class UserManagerTest
         // Setup
         var store = new Mock<IUserPasskeyStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
-        var passkey = new UserPasskeyInfo(null, null, null, default, 0, null, false, false, false, null, null);
+        var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
         var passkeys = (IList<UserPasskeyInfo>)[passkey];
         store.Setup(s => s.GetPasskeysAsync(user, CancellationToken.None)).Returns(Task.FromResult(passkeys)).Verifiable();
         var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
@@ -871,7 +871,7 @@ public class UserManagerTest
         Assert.Collection(checkPassword.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.user.password_result", "user_missing")
+                KeyValuePair.Create<string, object>("aspnetcore.identity.password_check_result", "user_missing")
             ]));
     }
 
@@ -952,13 +952,13 @@ public class UserManagerTest
         Assert.Collection(generateToken.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_UNKNOWN"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_OTHER"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
         Assert.Collection(verifyToken.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_UNKNOWN"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.token_purpose", "_OTHER"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
     }
@@ -1371,7 +1371,7 @@ public class UserManagerTest
         Assert.Throws<ArgumentNullException>("provider", () => manager.RegisterTokenProvider("whatever", null));
         await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.AddToRolesAsync(new PocoUser(), null));
         await Assert.ThrowsAsync<ArgumentNullException>("roles", async () => await manager.RemoveFromRolesAsync(new PocoUser(), null));
-        await Assert.ThrowsAsync<ArgumentNullException>("passkey", async () => await manager.SetPasskeyAsync(new PocoUser(), null));
+        await Assert.ThrowsAsync<ArgumentNullException>("passkey", async () => await manager.AddOrUpdatePasskeyAsync(new PocoUser(), null));
         await Assert.ThrowsAsync<ArgumentNullException>("credentialId", async () => await manager.GetPasskeyAsync(new PocoUser(), null));
         await Assert.ThrowsAsync<ArgumentNullException>("credentialId", async () => await manager.FindByPasskeyIdAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("credentialId", async () => await manager.RemovePasskeyAsync(new PocoUser(), null));
@@ -1477,7 +1477,7 @@ public class UserManagerTest
         await Assert.ThrowsAsync<ArgumentNullException>("user",
             async () => await manager.IsLockedOutAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user",
-            async () => await manager.SetPasskeyAsync(null, null));
+            async () => await manager.AddOrUpdatePasskeyAsync(null, null));
         await Assert.ThrowsAsync<ArgumentNullException>("user",
             async () => await manager.GetPasskeysAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user",
@@ -1523,7 +1523,7 @@ public class UserManagerTest
         await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GenerateEmailConfirmationTokenAsync(null));
         await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.IsEmailConfirmedAsync(null));
         await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.ConfirmEmailAsync(null, null));
-        await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.SetPasskeyAsync(null, null));
+        await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.AddOrUpdatePasskeyAsync(null, null));
         await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetPasskeysAsync(null));
         await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.GetPasskeyAsync(null, null));
         await Assert.ThrowsAsync<ObjectDisposedException>(() => manager.FindByPasskeyIdAsync(null));
@@ -1813,7 +1813,7 @@ public class UserManagerTest
             return Task.FromResult(0);
         }
 
-        public Task SetPasskeyAsync(PocoUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+        public Task AddOrUpdatePasskeyAsync(PocoUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
@@ -2110,7 +2110,7 @@ public class UserManagerTest
             throw new NotImplementedException();
         }
 
-        public Task SetPasskeyAsync(PocoUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+        public Task AddOrUpdatePasskeyAsync(PocoUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }
