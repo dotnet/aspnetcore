@@ -431,7 +431,7 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
                 if (valueQuality > currentQuality)
                 {
                     var newDestination = GetDestination(valueToken);
-                    if (newDestination != -1)
+                    if (newDestination >= 0)
                     {
                         currentSelectedValue = valueToken;
                         selectedDestination = newDestination;
@@ -447,7 +447,7 @@ internal abstract class NegotiationMatcherPolicy<TNegotiateMetadata> : MatcherPo
                     if (newServerQuality > currentServerQuality)
                     {
                         var newDestination = GetDestination(valueToken);
-                        if (newDestination != -1)
+                        if (newDestination >= 0)
                         {
                             currentSelectedValue = valueToken;
                             selectedDestination = newDestination;
