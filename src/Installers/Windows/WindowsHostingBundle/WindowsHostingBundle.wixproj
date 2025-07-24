@@ -1,5 +1,6 @@
 ﻿<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
-<Project Sdk="Microsoft.WixToolset.Sdk">
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
     <Name>WindowsServerHostingBundle</Name>
     <OutputName>WindowsServerHostingBundle</OutputName>
@@ -94,6 +95,7 @@
 
   <Import Project="Product.targets" />
 
+  <Import Project="Sdk.targets" Sdk="Microsoft.WixToolset.Sdk" />
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
