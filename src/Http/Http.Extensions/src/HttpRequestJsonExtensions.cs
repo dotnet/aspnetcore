@@ -73,6 +73,7 @@ public static class HttpRequestJsonExtensions
 
         var encoding = GetEncodingFromCharset(charset);
         Stream? inputStream = null;
+        ValueTask<TValue?> deserializeTask;
 
         try
         {
@@ -80,13 +81,20 @@ public static class HttpRequestJsonExtensions
             {
                 if (_useStreamJsonOverload)
                 {
-                    return await JsonSerializer.DeserializeAsync<TValue>(request.Body, options, cancellationToken);
+                    deserializeTask = JsonSerializer.DeserializeAsync<TValue>(request.Body, options, cancellationToken);
                 }
-                return await JsonSerializer.DeserializeAsync<TValue>(request.BodyReader, options, cancellationToken);
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync<TValue>(request.BodyReader, options, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync<TValue>(inputStream, options, cancellationToken);
             }
 
-            inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
-            return await JsonSerializer.DeserializeAsync<TValue>(inputStream, options, cancellationToken);
+            return await deserializeTask;
         }
         finally
         {
@@ -121,6 +129,7 @@ public static class HttpRequestJsonExtensions
 
         var encoding = GetEncodingFromCharset(charset);
         Stream? inputStream = null;
+        ValueTask<TValue?> deserializeTask;
 
         try
         {
@@ -128,13 +137,20 @@ public static class HttpRequestJsonExtensions
             {
                 if (_useStreamJsonOverload)
                 {
-                    return await JsonSerializer.DeserializeAsync(request.Body, jsonTypeInfo, cancellationToken);
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.Body, jsonTypeInfo, cancellationToken);
                 }
-                return await JsonSerializer.DeserializeAsync(request.BodyReader, jsonTypeInfo, cancellationToken);
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.BodyReader, jsonTypeInfo, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
             }
 
-            inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
-            return await JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
+            return await deserializeTask;
         }
         finally
         {
@@ -169,6 +185,7 @@ public static class HttpRequestJsonExtensions
 
         var encoding = GetEncodingFromCharset(charset);
         Stream? inputStream = null;
+        ValueTask<object?> deserializeTask;
 
         try
         {
@@ -176,13 +193,20 @@ public static class HttpRequestJsonExtensions
             {
                 if (_useStreamJsonOverload)
                 {
-                    return await JsonSerializer.DeserializeAsync(request.Body, jsonTypeInfo, cancellationToken);
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.Body, jsonTypeInfo, cancellationToken);
                 }
-                return await JsonSerializer.DeserializeAsync(request.BodyReader, jsonTypeInfo, cancellationToken);
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.BodyReader, jsonTypeInfo, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
             }
 
-            inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
-            return await JsonSerializer.DeserializeAsync(inputStream, jsonTypeInfo, cancellationToken);
+            return await deserializeTask;
         }
         finally
         {
@@ -241,6 +265,7 @@ public static class HttpRequestJsonExtensions
 
         var encoding = GetEncodingFromCharset(charset);
         Stream? inputStream = null;
+        ValueTask<object?> deserializeTask;
 
         try
         {
@@ -248,13 +273,20 @@ public static class HttpRequestJsonExtensions
             {
                 if (_useStreamJsonOverload)
                 {
-                    return await JsonSerializer.DeserializeAsync(request.Body, type, options, cancellationToken);
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.Body, type, options, cancellationToken);
                 }
-                return await JsonSerializer.DeserializeAsync(request.BodyReader, type, options, cancellationToken);
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.BodyReader, type, options, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync(inputStream, type, options, cancellationToken);
             }
 
-            inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
-            return await JsonSerializer.DeserializeAsync(inputStream, type, options, cancellationToken);
+            return await deserializeTask;
         }
         finally
         {
@@ -293,6 +325,7 @@ public static class HttpRequestJsonExtensions
 
         var encoding = GetEncodingFromCharset(charset);
         Stream? inputStream = null;
+        ValueTask<object?> deserializeTask;
 
         try
         {
@@ -300,13 +333,20 @@ public static class HttpRequestJsonExtensions
             {
                 if (_useStreamJsonOverload)
                 {
-                    return await JsonSerializer.DeserializeAsync(request.Body, type, context, cancellationToken);
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.Body, type, context, cancellationToken);
                 }
-                return await JsonSerializer.DeserializeAsync(request.BodyReader, type, context, cancellationToken);
+                else
+                {
+                    deserializeTask = JsonSerializer.DeserializeAsync(request.BodyReader, type, context, cancellationToken);
+                }
+            }
+            else
+            {
+                inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
+                deserializeTask = JsonSerializer.DeserializeAsync(inputStream, type, context, cancellationToken);
             }
 
-            inputStream = Encoding.CreateTranscodingStream(request.Body, encoding, Encoding.UTF8, leaveOpen: true);
-            return await JsonSerializer.DeserializeAsync(inputStream, type, context, cancellationToken);
+            return await deserializeTask;
         }
         finally
         {
