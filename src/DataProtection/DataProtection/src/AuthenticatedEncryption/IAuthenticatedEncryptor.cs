@@ -39,7 +39,7 @@ public interface IAuthenticatedEncryptor
     /// </summary>
     /// <param name="plainTextLength">Length of the plain text that will be encrypted later</param>
     /// <returns>The length of the encrypted data</returns>
-    internal int GetEncryptedSize(int plainTextLength);
+    int GetEncryptedSize(int plainTextLength);
 
     /// <summary>
     /// Attempts to encrypt and tamper-proof a piece of data.
@@ -53,6 +53,6 @@ public interface IAuthenticatedEncryptor
     /// <param name="destination">The ciphertext blob, including authentication tag.</param>
     /// <param name="bytesWritten">When this method returns, the total number of bytes written into destination</param>
     /// <returns>true if destination is long enough to receive the encrypted data; otherwise, false.</returns>
-    internal bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
+    bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
 #endif
 }

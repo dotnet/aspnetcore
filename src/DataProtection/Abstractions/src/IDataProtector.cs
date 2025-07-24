@@ -34,7 +34,7 @@ public interface IDataProtector : IDataProtectionProvider
     /// </summary>
     /// <param name="plainText">The plain text that will be encrypted later</param>
     /// <returns>The length of the encrypted data</returns>
-    internal int GetProtectedSize(ReadOnlySpan<byte> plainText);
+    int GetProtectedSize(ReadOnlySpan<byte> plainText);
 
     /// <summary>
     /// Attempts to encrypt and tamper-proof a piece of data.
@@ -43,6 +43,6 @@ public interface IDataProtector : IDataProtectionProvider
     /// <param name="destination">The ciphertext blob, including authentication tag.</param>
     /// <param name="bytesWritten">When this method returns, the total number of bytes written into destination</param>
     /// <returns>true if destination is long enough to receive the encrypted data; otherwise, false.</returns>
-    internal bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten);
+    bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten);
 #endif
 }
