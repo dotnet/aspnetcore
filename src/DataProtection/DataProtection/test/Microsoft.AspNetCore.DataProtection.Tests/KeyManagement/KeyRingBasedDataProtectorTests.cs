@@ -4,10 +4,12 @@
 using System.Buffers.Binary;
 using System.Globalization;
 using System.Net;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
+using Microsoft.AspNetCore.DataProtection.Managed;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -620,11 +622,87 @@ public class KeyRingBasedDataProtectorTests
         Assert.Equal(expectedProtectedData, retVal);
     }
 
-    [Fact]
-    public void GetProtectedSize_TryProtect_CorrectlyEstimatesDataLength()
+    [Theory]
+    [InlineData("", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("small", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("This is a medium length plaintext message", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("This is a very long plaintext message that spans multiple blocks and should test the encryption and size estimation with larger payloads to ensure everything works correctly", EncryptionAlgorithm.AES_128_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("small", EncryptionAlgorithm.AES_256_CBC, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("This is a medium length plaintext message", EncryptionAlgorithm.AES_256_CBC, ValidationAlgorithm.HMACSHA512)]
+    [InlineData("small", EncryptionAlgorithm.AES_128_GCM, ValidationAlgorithm.HMACSHA256)]
+    [InlineData("This is a medium length plaintext message", EncryptionAlgorithm.AES_256_GCM, ValidationAlgorithm.HMACSHA256)]
+    public void GetProtectedSize_TryProtect_CorrectlyEstimatesDataLength_MultipleScenarios(string plaintextStr, EncryptionAlgorithm encryptionAlgorithm, ValidationAlgorithm validationAlgorithm)
     {
         // Arrange
-        byte[] plaintext = new byte[] { 0x10, 0x20, 0x30, 0x40, 0x50 };
+        byte[] plaintext = Encoding.UTF8.GetBytes(plaintextStr);
+        var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+        
+        // Create a configuration for the specified encryption and validation algorithms
+        var configuration = new AuthenticatedEncryptorConfiguration
+        {
+            EncryptionAlgorithm = encryptionAlgorithm,
+            ValidationAlgorithm = validationAlgorithm
+        };
+        
+        Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, configuration.CreateNewDescriptor(), new[] { encryptorFactory });
+        var keyRing = new KeyRing(key, new[] { key });
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+        var protector = new KeyRingBasedDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: "purpose");
+
+        // Act - get estimated size
+        int estimatedSize = protector.GetProtectedSize(plaintext);
+
+        // verify simple protect works
+        var protectedData = protector.Protect(plaintext);
+
+        // Act - allocate buffer and try protect
+        byte[] destination = new byte[estimatedSize];
+        bool success = protector.TryProtect(plaintext, destination, out int bytesWritten);
+
+        // Assert
+        Assert.True(success, $"TryProtect should succeed with estimated buffer size for {encryptionAlgorithm}");
+        Assert.Equal(estimatedSize, bytesWritten);
+        Assert.True(bytesWritten > 0, "Should write some bytes");
+        Assert.True(bytesWritten >= plaintext.Length, "Protected data should be at least as large as plaintext");
+
+        // Verify the protected data can be unprotected to get original plaintext
+        byte[] actualDestination = new byte[bytesWritten];
+        Array.Copy(destination, actualDestination, bytesWritten);
+        byte[] unprotectedData = protector.Unprotect(actualDestination);
+        Assert.Equal(plaintext, unprotectedData);
+
+        // Additional verification: test with regular Protect method to ensure consistency
+        byte[] protectedDataRegular = protector.Protect(plaintext);
+        Assert.Equal(estimatedSize, protectedDataRegular.Length);
+        byte[] unprotectedDataRegular = protector.Unprotect(protectedDataRegular);
+        Assert.Equal(plaintext, unprotectedDataRegular);
+    }
+
+    [Theory]
+    [InlineData(16)]     // 16 bytes
+    [InlineData(32)]     // 32 bytes  
+    [InlineData(64)]     // 64 bytes
+    [InlineData(128)]    // 128 bytes
+    [InlineData(256)]    // 256 bytes
+    [InlineData(512)]    // 512 bytes
+    [InlineData(1024)]   // 1 KB
+    [InlineData(4096)]   // 4 KB
+    public void GetProtectedSize_TryProtect_VariousPlaintextSizes(int plaintextSize)
+    {
+        // Arrange
+        byte[] plaintext = new byte[plaintextSize];
+        // Fill with a pattern to make debugging easier if needed
+        for (int i = 0; i < plaintextSize; i++)
+        {
+            plaintext[i] = (byte)(i % 256);
+        }
+
         var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
         Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration().CreateNewDescriptor(), new[] { encryptorFactory });
         var keyRing = new KeyRing(key, new[] { key });
@@ -645,7 +723,7 @@ public class KeyRingBasedDataProtectorTests
         bool success = protector.TryProtect(plaintext, destination, out int bytesWritten);
 
         // Assert
-        Assert.True(success, "TryProtect should succeed with estimated buffer size");
+        Assert.True(success, $"TryProtect should succeed with estimated buffer size for {plaintextSize} byte plaintext");
         Assert.Equal(estimatedSize, bytesWritten);
         Assert.True(bytesWritten > 0, "Should write some bytes");
         Assert.True(bytesWritten >= plaintext.Length, "Protected data should be at least as large as plaintext");
