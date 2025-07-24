@@ -29,7 +29,20 @@ public interface IDataProtector : IDataProtectionProvider
     byte[] Unprotect(byte[] protectedData);
 
 #if NET10_0_OR_GREATER
-    int GetProtectedSize(ReadOnlySpan<byte> plainText);
-    bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten);
+    /// <summary>
+    /// Returns the size of the encrypted data for a given plaintext length.
+    /// </summary>
+    /// <param name="plainText">The plain text that will be encrypted later</param>
+    /// <returns>The length of the encrypted data</returns>
+    internal int GetProtectedSize(ReadOnlySpan<byte> plainText);
+
+    /// <summary>
+    /// Attempts to encrypt and tamper-proof a piece of data.
+    /// </summary>
+    /// <param name="plainText">The input to encrypt.</param>
+    /// <param name="destination">The ciphertext blob, including authentication tag.</param>
+    /// <param name="bytesWritten">When this method returns, the total number of bytes written into destination</param>
+    /// <returns>true if destination is long enough to receive the encrypted data; otherwise, false.</returns>
+    internal bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten);
 #endif
 }
