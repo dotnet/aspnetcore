@@ -34,7 +34,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
     private readonly IKeyRingProvider _keyRingProvider;
     private readonly ILogger? _logger;
 
-    private static readonly int _magicHeaderKeyIdSize = (sizeof(uint) + sizeof(Guid));
+    private static readonly int _magicHeaderKeyIdSize = sizeof(uint) + sizeof(Guid);
 
     public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
     {

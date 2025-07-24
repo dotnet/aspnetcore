@@ -416,19 +416,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         additionalAuthenticatedData.Validate();
         var plainTextSpan = plaintext.AsSpan();
 
-#if NET10_0_OR_GREATER
-        var size = GetEncryptedSize(plainTextSpan.Length);
-        var retVal = new byte[size];
-        if (!TryEncrypt(plaintext.AsSpan(), additionalAuthenticatedData.AsSpan(), retVal, out var bytesWritten))
-        {
-            // TODO understand what we really expect here
-            throw Error.CryptCommon_GenericError();
-        }
-
-        Debug.Assert(bytesWritten == size, "bytesWritten == size");
-        return retVal;
-#endif
-
         try
         {
             var keyModifierLength = KEY_MODIFIER_SIZE_IN_BYTES;
