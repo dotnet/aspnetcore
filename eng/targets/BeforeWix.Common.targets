@@ -47,6 +47,4 @@
     <DefineConstants>$(DefineConstants);BinPath=$(OutputPath)$(Culture)\</DefineConstants>
     <DefineConstants>$(WixVariables);$(DefineConstants)</DefineConstants>
   </PropertyGroup>
-
-  <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.targets" />
 </Project>
