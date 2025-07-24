@@ -239,7 +239,7 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
         return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES));
     }
 
-    public override bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    public override bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
     {
         bytesWritten = 0;
 
@@ -251,7 +251,7 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
                 byte* pbKeyModifier = pbDestination;
                 byte* pbNonce = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
                 byte* pbEncryptedData = &pbNonce[NONCE_SIZE_IN_BYTES];
-                byte* pbAuthTag = &pbEncryptedData[plainText.Length];
+                byte* pbAuthTag = &pbEncryptedData[plaintext.Length];
 
                 // Randomly generate the key modifier and nonce
                 _genRandom.GenRandom(pbKeyModifier, KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES);
@@ -277,21 +277,24 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
                     }
 
                     // Perform the encryption operation
-                    fixed (byte* pbPlainText = plainText)
+                    byte dummy;
+                    fixed (byte* pbPlaintextArray = plaintext)
                     {
+                        var pbPlaintext = (pbPlaintextArray != null) ? pbPlaintextArray : &dummy;
+
                         DoGcmEncrypt(
                             pbKey: pbSymmetricEncryptionSubkey,
                             cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
                             pbNonce: pbNonce,
-                            pbPlaintextData: pbPlainText,
-                            cbPlaintextData: (uint)plainText.Length,
+                            pbPlaintextData: pbPlaintext,
+                            cbPlaintextData: (uint)plaintext.Length,
                             pbEncryptedData: pbEncryptedData,
                             pbTag: pbAuthTag);
                     }
 
                     // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
                     // And we're done!
-                    bytesWritten += plainText.Length + checked((int)TAG_SIZE_IN_BYTES);
+                    bytesWritten += plaintext.Length + checked((int)TAG_SIZE_IN_BYTES);
                     return true;
                 }
                 finally

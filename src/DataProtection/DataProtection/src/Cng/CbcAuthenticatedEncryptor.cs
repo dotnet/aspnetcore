@@ -306,7 +306,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
         return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + paddedCiphertextLength + _hmacAlgorithmDigestLengthInBytes));
     }
 
-    public override bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    public override bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
     {
         bytesWritten = 0;
 
@@ -348,9 +348,11 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
                 using (var symmetricKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
                 {
                     // Get the padded output size
-                    fixed (byte* pbPlainText = plainText)
+                    byte dummy;
+                    fixed (byte* pbPlaintextArray = plaintext)
                     {
-                        var cbOutputCiphertext = GetCbcEncryptedOutputSizeWithPadding(symmetricKeyHandle, pbPlainText, (uint)plainText.Length);
+                        var pbPlaintext = (pbPlaintextArray != null) ? pbPlaintextArray : &dummy;
+                        var cbOutputCiphertext = GetCbcEncryptedOutputSizeWithPadding(symmetricKeyHandle, pbPlaintext, (uint)plaintext.Length);
 
                         fixed (byte* pbDestination = destination)
                         {
@@ -368,8 +370,8 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
                             DoCbcEncrypt(
                                 symmetricKeyHandle: symmetricKeyHandle,
                                 pbIV: pbIV,
-                                pbInput: pbPlainText,
-                                cbInput: (uint)plainText.Length,
+                                pbInput: pbPlaintext,
+                                cbInput: (uint)plaintext.Length,
                                 pbOutput: pbOutputCiphertext,
                                 cbOutput: cbOutputCiphertext);
                             bytesWritten += checked((int)cbOutputCiphertext);
