@@ -34,6 +34,7 @@ public static class DataProtectionServiceCollectionExtensions
         ArgumentNullThrowHelper.ThrowIfNull(services);
 
         services.TryAddSingleton<IActivator, TypeForwardingActivator>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, MetricsLoggerProvider>());
         services.AddOptions();
         AddDataProtectionServices(services);
 
