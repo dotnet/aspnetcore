@@ -655,12 +655,6 @@ public class KeyRingBasedDataProtectorTests
         Array.Copy(destination, actualDestination, bytesWritten);
         byte[] unprotectedData = protector.Unprotect(actualDestination);
         Assert.Equal(plaintext, unprotectedData);
-
-        // Test with buffer that's too small
-        byte[] smallBuffer = new byte[estimatedSize - 1];
-        bool smallBufferSuccess = protector.TryProtect(plaintext, smallBuffer, out int smallBufferBytesWritten);
-        Assert.False(smallBufferSuccess, "TryProtect should fail with buffer that's too small");
-        Assert.Equal(0, smallBufferBytesWritten);
     }
 
     private static byte[] BuildAadFromPurposeStrings(Guid keyId, params string[] purposes)

@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
@@ -19,7 +18,6 @@ using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
