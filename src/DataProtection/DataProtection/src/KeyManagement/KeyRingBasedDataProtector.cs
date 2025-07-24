@@ -2,22 +2,24 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Buffers.Binary;
 using System.Buffers;
+using System.Buffers.Binary;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
-using System.Buffers.Text;
-using Microsoft.AspNetCore.DataProtection.Internal;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -33,6 +35,8 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
     private AdditionalAuthenticatedDataTemplate _aadTemplate;
     private readonly IKeyRingProvider _keyRingProvider;
     private readonly ILogger? _logger;
+
+    private static readonly int _magicHeaderKeyIdSize = (sizeof(uint) + sizeof(Guid));
 
     public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
     {
@@ -98,7 +102,9 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
         CryptoUtil.Assert(defaultEncryptor != null, "defaultEncryptorInstance != null");
 
-        return defaultEncryptor.GetEncryptedSize(plainText.Length);
+        // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
+        // See Protect() / TryProtect() for details
+        return _magicHeaderKeyIdSize + defaultEncryptor.GetEncryptedSize(plainText.Length);
     }
 
     public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
@@ -125,7 +131,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
                 plaintext: plaintext,
                 additionalAuthenticatedData: aad,
                 destination: destination,
-                preBufferSize: (uint)(sizeof(uint) + sizeof(Guid)),
+                preBufferSize: _magicHeaderKeyIdSize,
                 postBufferSize: 0,
                 out bytesWritten);
 
@@ -136,6 +142,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             BinaryPrimitives.WriteUInt32BigEndian(destination.Slice(0, sizeof(uint)), MAGIC_HEADER_V0);
             var writeKeyIdResult = defaultKeyId.TryWriteBytes(destination.Slice(sizeof(uint), sizeof(Guid)));
             Debug.Assert(writeKeyIdResult, "Failed to write Guid to destination.");
+            bytesWritten += _magicHeaderKeyIdSize;
 
             // At this point, destination := { magicHeader || keyId || encryptorSpecificProtectedPayload }
             // And we're done!

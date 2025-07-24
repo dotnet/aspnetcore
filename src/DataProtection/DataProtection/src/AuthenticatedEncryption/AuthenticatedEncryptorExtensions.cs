@@ -38,12 +38,13 @@ internal static class AuthenticatedEncryptorExtensions
         ReadOnlySpan<byte> plaintext,
         ReadOnlySpan<byte> additionalAuthenticatedData,
         Span<byte> destination,
-        uint preBufferSize,
-        uint postBufferSize,
+        int preBufferSize,
+        int postBufferSize,
         out int bytesWritten)
     {
-        var plaintextWithOffsets = plaintext.Slice((int)preBufferSize, plaintext.Length - (int)(preBufferSize + postBufferSize));
-        return encryptor.TryEncrypt(plaintextWithOffsets, additionalAuthenticatedData, destination, out bytesWritten);
+        var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - (preBufferSize + postBufferSize));
+        // var plaintextWithOffsets = plaintext.Slice((int)preBufferSize, plaintext.Length - (int)(preBufferSize + postBufferSize));
+        return encryptor.TryEncrypt(plaintext, additionalAuthenticatedData, destinationBufferOffsets, out bytesWritten);
     }
 #endif
 

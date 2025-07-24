@@ -142,13 +142,10 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
     }
 
     public int GetEncryptedSize(int plainTextLength)
-        => GetEncryptedSize(plainTextLength, 0, 0);
-
-    public int GetEncryptedSize(int plainTextLength, uint preBufferSize, uint postBufferSize)
     {
         // A buffer to hold the key modifier, nonce, encrypted data, and tag.
         // In GCM, the encrypted output will be the same length as the plaintext input.
-        return checked((int)(preBufferSize + KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES + postBufferSize));
+        return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES));
     }
 
     public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)

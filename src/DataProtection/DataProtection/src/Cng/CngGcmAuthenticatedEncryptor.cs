@@ -232,11 +232,11 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
     }
 
 #if NET10_0_OR_GREATER
-    public override int GetEncryptedSize(int plainTextLength, uint preBufferSize, uint postBufferSize)
+    public override int GetEncryptedSize(int plainTextLength)
     {
         // A buffer to hold the key modifier, nonce, encrypted data, and tag.
         // In GCM, the encrypted output will be the same length as the plaintext input.
-        return checked((int)(preBufferSize + KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES + postBufferSize));
+        return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES));
     }
 
     public override bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)

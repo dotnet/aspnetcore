@@ -623,7 +623,44 @@ public class KeyRingBasedDataProtectorTests
     [Fact]
     public void GetProtectedSize_TryProtect_CorrectlyEstimatesDataLength()
     {
-        // TODO!
+        // Arrange
+        byte[] plaintext = new byte[] { 0x10, 0x20, 0x30, 0x40, 0x50 };
+        var encryptorFactory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
+        Key key = new Key(Guid.NewGuid(), DateTimeOffset.Now, DateTimeOffset.Now, DateTimeOffset.Now, new AuthenticatedEncryptorConfiguration().CreateNewDescriptor(), new[] { encryptorFactory });
+        var keyRing = new KeyRing(key, new[] { key });
+        var mockKeyRingProvider = new Mock<IKeyRingProvider>();
+        mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
+
+        var protector = new KeyRingBasedDataProtector(
+            keyRingProvider: mockKeyRingProvider.Object,
+            logger: GetLogger(),
+            originalPurposes: null,
+            newPurpose: "purpose");
+
+        // Act - get estimated size
+        int estimatedSize = protector.GetProtectedSize(plaintext);
+        
+        // Act - allocate buffer and try protect
+        byte[] destination = new byte[estimatedSize];
+        bool success = protector.TryProtect(plaintext, destination, out int bytesWritten);
+
+        // Assert
+        Assert.True(success, "TryProtect should succeed with estimated buffer size");
+        Assert.Equal(estimatedSize, bytesWritten);
+        Assert.True(bytesWritten > 0, "Should write some bytes");
+        Assert.True(bytesWritten >= plaintext.Length, "Protected data should be at least as large as plaintext");
+
+        // Verify the protected data can be unprotected to get original plaintext
+        byte[] actualDestination = new byte[bytesWritten];
+        Array.Copy(destination, actualDestination, bytesWritten);
+        byte[] unprotectedData = protector.Unprotect(actualDestination);
+        Assert.Equal(plaintext, unprotectedData);
+
+        // Test with buffer that's too small
+        byte[] smallBuffer = new byte[estimatedSize - 1];
+        bool smallBufferSuccess = protector.TryProtect(plaintext, smallBuffer, out int smallBufferBytesWritten);
+        Assert.False(smallBufferSuccess, "TryProtect should fail with buffer that's too small");
+        Assert.Equal(0, smallBufferBytesWritten);
     }
 
     private static byte[] BuildAadFromPurposeStrings(Guid keyId, params string[] purposes)

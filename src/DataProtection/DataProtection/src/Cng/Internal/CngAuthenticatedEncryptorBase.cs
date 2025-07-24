@@ -85,8 +85,7 @@ internal abstract unsafe class CngAuthenticatedEncryptorBase : IOptimizedAuthent
     protected abstract byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer);
 
 #if NET10_0_OR_GREATER
-    public int GetEncryptedSize(int plainTextLength) => GetEncryptedSize(plainTextLength, 0, 0);
-    public abstract int GetEncryptedSize(int plainTextLength, uint preBufferSize, uint postBufferSize);
+    public abstract int GetEncryptedSize(int plainTextLength);
     public abstract bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
 #endif
 }
