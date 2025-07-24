@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -63,7 +62,7 @@ internal partial class WebAssemblyCultureProvider
             throw new PlatformNotSupportedException("This method is only supported in the browser.");
         }
 
-        var culturesToLoad = GetCultures(CultureInfo.CurrentCulture).Union(GetCultures(CultureInfo.CurrentUICulture)).ToArray();
+        var culturesToLoad = GetCultures(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
         if (culturesToLoad.Length == 0)
         {
@@ -73,25 +72,34 @@ internal partial class WebAssemblyCultureProvider
         await WebAssemblyCultureProviderInterop.LoadSatelliteAssemblies(culturesToLoad);
     }
 
-    internal static string[] GetCultures(CultureInfo cultureInfo)
+    internal static string[] GetCultures(CultureInfo? cultureInfo, CultureInfo? uiCultureInfo = null)
     {
         var culturesToLoad = new List<string>();
+
+        if (uiCultureInfo == null)
+        {
+            uiCultureInfo = cultureInfo;
+        }
 
         // Once WASM is ready, we have to use .NET's assembly loading to load additional assemblies.
         // First calculate all possible cultures that the application might want to load. We do this by
         // starting from the current culture and walking up the graph of parents.
         // At the end of the the walk, we'll have a list of culture names that look like
         // [ "fr-FR", "fr" ]
-        while (cultureInfo != null && cultureInfo != CultureInfo.InvariantCulture)
+        while ((cultureInfo != null && cultureInfo != CultureInfo.InvariantCulture) || (uiCultureInfo != null && uiCultureInfo != CultureInfo.InvariantCulture))
         {
-            culturesToLoad.Add(cultureInfo.Name);
-
-            if (cultureInfo.Parent == cultureInfo)
+            if (cultureInfo != null && cultureInfo != CultureInfo.InvariantCulture)
             {
-                break;
+                culturesToLoad.Add(cultureInfo.Name);
             }
 
-            cultureInfo = cultureInfo.Parent;
+            if (uiCultureInfo?.Name != cultureInfo?.Name && uiCultureInfo != null && uiCultureInfo != CultureInfo.InvariantCulture)
+            {
+                culturesToLoad.Add(uiCultureInfo.Name);
+            }
+
+            cultureInfo = cultureInfo?.Parent;
+            uiCultureInfo = uiCultureInfo?.Parent;
         }
 
         return culturesToLoad.ToArray();
