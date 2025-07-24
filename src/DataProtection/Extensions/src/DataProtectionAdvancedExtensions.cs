@@ -128,15 +128,8 @@ public static class DataProtectionAdvancedExtensions
         }
 
 #if NET10_0_OR_GREATER
-        public int GetProtectedSize(ReadOnlySpan<byte> plainText)
-        {
-            return _innerProtector.GetProtectedSize(plainText);
-        }
-
-        public bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten)
-        {
-            throw new NotImplementedException();
-        }
+        public int GetProtectedSize(ReadOnlySpan<byte> plainText) => _innerProtector.GetProtectedSize(plainText);
+        public bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten) => _innerProtector.TryProtect(plainText, destination, out bytesWritten);
 #endif
     }
 }

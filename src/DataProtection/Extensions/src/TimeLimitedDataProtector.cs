@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.AspNetCore.DataProtection.Extensions;
@@ -20,6 +22,8 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     private readonly IDataProtector _innerProtector;
     private IDataProtector? _innerProtectorWithTimeLimitedPurpose; // created on-demand
+
+    private const int ExpirationTimeHeaderSize = 8; // size of the expiration time header in bytes (64-bit UTC tick count)
 
     public TimeLimitedDataProtector(IDataProtector innerProtector)
     {
@@ -50,9 +54,9 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         // We prepend the expiration time (as a 64-bit UTC tick count) to the unprotected data.
-        byte[] plaintextWithHeader = new byte[checked(8 + plaintext.Length)];
+        byte[] plaintextWithHeader = new byte[checked(ExpirationTimeHeaderSize + plaintext.Length)];
         BitHelpers.WriteUInt64(plaintextWithHeader, 0, (ulong)expiration.UtcTicks);
-        Buffer.BlockCopy(plaintext, 0, plaintextWithHeader, 8, plaintext.Length);
+        Buffer.BlockCopy(plaintext, 0, plaintextWithHeader, ExpirationTimeHeaderSize, plaintext.Length);
 
         return GetInnerProtectorWithTimeLimitedPurpose().Protect(plaintextWithHeader);
     }
@@ -71,7 +75,7 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         try
         {
             byte[] plaintextWithHeader = GetInnerProtectorWithTimeLimitedPurpose().Unprotect(protectedData);
-            if (plaintextWithHeader.Length < 8)
+            if (plaintextWithHeader.Length < ExpirationTimeHeaderSize)
             {
                 // header isn't present
                 throw new CryptographicException(Resources.TimeLimitedDataProtector_PayloadInvalid);
@@ -88,8 +92,8 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
             }
 
             // Not expired - split and return payload
-            byte[] retVal = new byte[plaintextWithHeader.Length - 8];
-            Buffer.BlockCopy(plaintextWithHeader, 8, retVal, 0, retVal.Length);
+            byte[] retVal = new byte[plaintextWithHeader.Length - ExpirationTimeHeaderSize];
+            Buffer.BlockCopy(plaintextWithHeader, ExpirationTimeHeaderSize, retVal, 0, retVal.Length);
             expiration = embeddedExpiration;
             return retVal;
         }
@@ -132,9 +136,9 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         var dataProtector = GetInnerProtectorWithTimeLimitedPurpose();
         var size = dataProtector.GetProtectedSize(plainText);
 
-        // prepended the expiration time as a 64-bit UTC tick count takes 8 bytes;
+        // prepended the expiration time as a 64-bit UTC tick count takes ExpirationTimeHeaderSize bytes;
         // see Protect(byte[] plaintext, DateTimeOffset expiration) for details
-        return size + 8;
+        return size + ExpirationTimeHeaderSize;
     }
 
     public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
@@ -142,9 +146,28 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, DateTimeOffset expiration, out int bytesWritten)
     {
-        // we cant prepend the expiration time as a 64-bit UTC tick count
-        // because input is ReadOnlySpan<byte>
-        throw new NotImplementedException();
+        // we need to prepend the expiration time, so we need to allocate a buffer for the plaintext with header
+        byte[]? plainTextWithHeader = null;
+        try
+        {
+            plainTextWithHeader = ArrayPool<byte>.Shared.Rent(plaintext.Length + ExpirationTimeHeaderSize);
+            var plainTextWithHeaderSpan = plainTextWithHeader.AsSpan();
+
+            // We prepend the expiration time (as a 64-bit UTC tick count) to the unprotected data.
+            BitHelpers.WriteUInt64(plainTextWithHeaderSpan, 0, (ulong)expiration.UtcTicks);
+
+            // and copy the plaintext into the buffer
+            plaintext.CopyTo(plainTextWithHeaderSpan.Slice(ExpirationTimeHeaderSize));
+
+            return _innerProtector.TryProtect(plainTextWithHeaderSpan, destination, out bytesWritten);
+        }
+        finally
+        {
+            if (plainTextWithHeader is not null)
+            {
+                ArrayPool<byte>.Shared.Return(plainTextWithHeader);
+            }
+        }
     }
 #endif
 }
