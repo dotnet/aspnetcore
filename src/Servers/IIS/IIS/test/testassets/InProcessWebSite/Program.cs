@@ -56,12 +56,12 @@ public static class Program
                 return 12;
             case "HangOnStop":
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
                     var host = new WebHostBuilder()
                         .UseIIS()
                         .UseStartup<Startup>()
                         .Build();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
                     host.Run();
 
                     Thread.Sleep(Timeout.Infinite);
@@ -69,13 +69,13 @@ public static class Program
                 break;
             case "IncreaseShutdownLimit":
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
                     var host = new WebHostBuilder()
                         .UseIIS()
                         .UseShutdownTimeout(TimeSpan.FromSeconds(120))
                         .UseStartup<Startup>()
                         .Build();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
                     host.Run();
                 }
@@ -98,13 +98,13 @@ public static class Program
                 return 0;
             case "OverriddenServer":
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
                     var host = new WebHostBuilder()
                             .UseIIS()
                             .ConfigureServices(services => services.AddSingleton<IServer, DummyServer>())
                             .Configure(builder => builder.Run(async context => { await context.Response.WriteAsync("I shouldn't work"); }))
                             .Build();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
                     host.Run();
                 }
                 break;
@@ -117,7 +117,7 @@ public static class Program
 #if !FORWARDCOMPAT
             case "DecreaseRequestLimit":
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
                     var host = new WebHostBuilder()
                         .ConfigureLogging((_, factory) =>
                         {
@@ -131,7 +131,7 @@ public static class Program
                         })
                         .UseStartup<Startup>()
                         .Build();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
                     host.Run();
                     break;
@@ -139,7 +139,7 @@ public static class Program
 #endif
             case "ThrowInStartup":
                 {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
                     var host = new WebHostBuilder()
                                     .ConfigureLogging((_, factory) =>
                                     {
@@ -149,7 +149,7 @@ public static class Program
                                     .UseIIS()
                                     .UseStartup<ThrowingStartup>()
                                     .Build();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
                     host.Run();
                 }
@@ -199,7 +199,7 @@ public static class Program
 
     private static int StartServer()
     {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         var host = new WebHostBuilder()
             .ConfigureLogging((_, factory) =>
             {
@@ -211,7 +211,7 @@ public static class Program
             .UseIISIntegration()
             .UseStartup<Startup>()
             .Build();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         host.Run();
         return 0;
