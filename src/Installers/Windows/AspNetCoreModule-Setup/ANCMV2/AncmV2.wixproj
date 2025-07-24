@@ -17,16 +17,16 @@
 
   <ItemGroup>
     <WixExtension Include="WixUtilExtension">
-      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
+      <HintPath>$(PkgMicrosoft_WixToolset_Util_wixext)\wixext5\WixUtilExtension.dll</HintPath>
       <Name>WixUtilExtension</Name>
     </WixExtension>
     <WixExtension Include="WixDependencyExtension">
-      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
+      <HintPath>$(PkgMicrosoft_WixToolset_Dependency_wixext)\wixext5\WixDependencyExtension.dll</HintPath>
       <Name>WixDependencyExtension</Name>
     </WixExtension>
-    <WixExtension Include="WixUIExtension">
-      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
-      <Name>WixUIExtension</Name>
+    <WixExtension Include="WixBalExtension">
+      <HintPath>$(PkgMicrosoft_WixToolset_Bal_wixext)\wixext5\WixBalExtension.dll</HintPath>
+      <Name>WixBalExtension</Name>
     </WixExtension>
   </ItemGroup>
 
