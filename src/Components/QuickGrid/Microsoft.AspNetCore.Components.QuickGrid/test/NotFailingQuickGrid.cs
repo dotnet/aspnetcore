@@ -32,14 +32,18 @@ internal class NotFailingGrid<TGridItem> : QuickGrid<TGridItem>
             if (firstRender)
             {
                 await base.OnAfterRenderAsync(firstRender);
-                _onAfterRenderCompleted.TrySetResult();
-                _completionSignaled = true;
+                if (!_completionSignaled)
+                {
+                    _completionSignaled = true;
+                    _onAfterRenderCompleted.TrySetResult();
+                }
+                ;
                 return;
             }
         }
         finally
         {
-            if (firstRender && _completionSignaled)
+            if (firstRender && !_completionSignaled)
             {
                 _onAfterRenderCompleted.TrySetResult();
                 _completionSignaled = true;
