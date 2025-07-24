@@ -15,7 +15,7 @@ public class EncryptedXmlDecryptorTests
     [Fact]
     public void ThrowsIfCannotDecrypt()
     {
-        var testCert1 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
+        var testCert1 = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
         var encryptor = new CertificateXmlEncryptor(testCert1, NullLoggerFactory.Instance);
         var data = new XElement("SampleData", "Lorem ipsum");
         var encryptedXml = encryptor.Encrypt(data);
@@ -29,8 +29,8 @@ public class EncryptedXmlDecryptorTests
     [Fact]
     public void ThrowsIfProvidedCertificateDoesNotMatch()
     {
-        var testCert1 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
-        var testCert2 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert2.pfx"), "password");
+        var testCert1 = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
+        var testCert2 = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert2.pfx"), "password");
         var services = new ServiceCollection()
             .Configure<XmlKeyDecryptionOptions>(o => o.AddKeyDecryptionCertificate(testCert2))
             .BuildServiceProvider();
@@ -47,8 +47,8 @@ public class EncryptedXmlDecryptorTests
     [Fact]
     public void ThrowsIfProvidedCertificateDoesHavePrivateKey()
     {
-        var fullCert = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
-        var publicKeyOnly = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.PublicKeyOnly.cer"), "");
+        var fullCert = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
+        var publicKeyOnly = X509CertificateLoader.LoadCertificateFromFile(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.PublicKeyOnly.cer"));
         var services = new ServiceCollection()
             .Configure<XmlKeyDecryptionOptions>(o => o.AddKeyDecryptionCertificate(publicKeyOnly))
             .BuildServiceProvider();
@@ -65,8 +65,8 @@ public class EncryptedXmlDecryptorTests
     [Fact]
     public void XmlCanRoundTrip()
     {
-        var testCert1 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
-        var testCert2 = new X509Certificate2(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert2.pfx"), "password");
+        var testCert1 = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert1.pfx"), "password");
+        var testCert2 = X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(AppContext.BaseDirectory, "TestFiles", "TestCert2.pfx"), "password");
         var services = new ServiceCollection()
             .Configure<XmlKeyDecryptionOptions>(o =>
             {

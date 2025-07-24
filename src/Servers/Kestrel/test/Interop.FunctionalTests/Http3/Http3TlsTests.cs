@@ -430,7 +430,7 @@ public class Http3TlsTests : LoggedTest
     [MsQuicSupported]
     public async Task LoadDevelopmentCertificateViaConfiguration()
     {
-        var expectedCertificate = new X509Certificate2(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
+        var expectedCertificate = X509CertificateLoader.LoadPkcs12FromFile(TestResources.GetCertPath("aspnetdevcert.pfx"), "testPassword", X509KeyStorageFlags.Exportable);
         var bytes = expectedCertificate.Export(X509ContentType.Pkcs12, "1234");
         var path = GetCertificatePath();
         Directory.CreateDirectory(Path.GetDirectoryName(path));

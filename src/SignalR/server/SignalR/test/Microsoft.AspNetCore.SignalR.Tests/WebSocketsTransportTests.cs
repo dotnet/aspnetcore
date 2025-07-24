@@ -31,7 +31,7 @@ public class WebSocketsTransportTests : FunctionalTestBase
 
         var httpOptions = new HttpConnectionOptions();
         httpOptions.Cookies.Add(new Cookie("Name", "Value", string.Empty, "fakeuri.org"));
-        var clientCertificate = new X509Certificate(Array.Empty<byte>());
+        var clientCertificate = X509CertificateLoader.LoadCertificate(Array.Empty<byte>());
         httpOptions.ClientCertificates.Add(clientCertificate);
         httpOptions.UseDefaultCredentials = false;
         httpOptions.Credentials = Mock.Of<ICredentials>();
