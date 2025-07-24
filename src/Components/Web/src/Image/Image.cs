@@ -315,9 +315,28 @@ public class Image : ComponentBase, IAsyncDisposable
     {
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", "blazor-image-loading");
+        builder.AddAttribute(2, "style", "display: flex; justify-content: center; align-items: center; padding: 20px;");
 
-        builder.OpenElement(2, "div");
-        builder.AddAttribute(3, "class", "loading-spinner");
+        builder.OpenElement(3, "div");
+        builder.AddAttribute(4, "class", "loading-spinner");
+        builder.AddAttribute(5, "style", @"
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: blazor-image-spin 1s linear infinite;
+            margin: 0 auto;
+        ");
+        builder.CloseElement();
+
+        builder.OpenElement(6, "style");
+        builder.AddContent(7, @"
+            @keyframes blazor-image-spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        ");
         builder.CloseElement();
 
         builder.CloseElement();
@@ -327,15 +346,18 @@ public class Image : ComponentBase, IAsyncDisposable
     {
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", "blazor-image-error");
+        builder.AddAttribute(2, "style", "display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column; text-align: center;");
 
-        builder.OpenElement(2, "span");
-        builder.AddAttribute(3, "class", "error-icon");
-        builder.AddContent(4, "⚠️");
+        builder.OpenElement(3, "span");
+        builder.AddAttribute(4, "class", "error-icon");
+        builder.AddAttribute(5, "style", "font-size: 24px; margin-bottom: 8px;");
+        builder.AddContent(6, "⚠️");
         builder.CloseElement();
 
-        builder.OpenElement(5, "span");
-        builder.AddAttribute(6, "class", "error-message");
-        builder.AddContent(7, "Failed to load image");
+        builder.OpenElement(7, "span");
+        builder.AddAttribute(8, "class", "error-message");
+        builder.AddAttribute(9, "style", "color: #dc3545; font-size: 14px;");
+        builder.AddContent(10, "Failed to load image");
         builder.CloseElement();
 
         builder.CloseElement();

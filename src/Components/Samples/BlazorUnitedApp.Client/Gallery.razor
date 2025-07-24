@@ -119,7 +119,8 @@
     private List<ImageMetadata> _images = new();
     private Dictionary<int, BinaryImageSource> _binaryImageSources = new();
     private Dictionary<int, StreamingImageSource> _streamingImageSources = new();
-    private bool _useStreamingSource = true;
+    private bool _useStreamingSource = false;
+
     private bool _showImageModal = false;
     private ImageMetadata? _currentImage;
 
