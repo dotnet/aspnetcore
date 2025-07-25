@@ -126,8 +126,6 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             }
             CryptoUtil.Assert(optimizedAuthenticatedEncryptor != null, "optimizedAuthenticatedEncryptor != null");
 
-
-
             if (_logger.IsDebugLevelEnabled())
             {
                 _logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
