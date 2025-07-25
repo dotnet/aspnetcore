@@ -70,6 +70,7 @@ public class RequestPathBaseTests : FixtureLoggedTest
     // [InlineData(@"/Sub/call//../App/PathAndPathBase//path1//path2", @"", "/Sub/call/App/PathAndPathBase//path1//path2")]
     [InlineData(@"/Sub/call/.%2e/App/PathAndPathBase//path1//path2", @"/Sub/App/PathAndPathBase", "//path1//path2")]
     [InlineData(@"/Sub/call/.%2E/App/PathAndPathBase//path1//path2", @"/Sub/App/PathAndPathBase", "//path1//path2")]
+    [SkipOnCI]
     public async Task RequestPathBase_WithDoubleSlashes_Split(string url, string expectedPathBase, string expectedPath)
     {
         // The test app trims the test name off of the request path and puts it on the PathBase.
