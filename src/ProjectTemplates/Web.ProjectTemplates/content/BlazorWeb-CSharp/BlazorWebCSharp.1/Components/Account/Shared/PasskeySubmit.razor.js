@@ -164,7 +164,7 @@ customElements.define('passkey-submit', class extends HTMLElement {
         // Uint8Array to base64
         if (o instanceof Uint8Array) {
             var str = "";
-            var len = o.byteLength;
+            const len = o.byteLength;
 
             for (var i = 0; i < len; i++) {
                 str += String.fromCharCode(o[i]);
