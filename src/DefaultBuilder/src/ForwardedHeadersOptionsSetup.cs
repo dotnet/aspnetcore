@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
-using System.Net;
 
 namespace Microsoft.AspNetCore;
 
@@ -53,7 +53,7 @@ internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<Forwarded
         var knownNetworks = _configuration["ForwardedHeaders_KnownIPNetworks"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
         foreach (var network in knownNetworks)
         {
-            if (IPNetwork.TryParse(network, out var ipNetwork))
+            if (System.Net.IPNetwork.TryParse(network, out var ipNetwork))
             {
                 options.KnownIPNetworks.Add(ipNetwork);
             }
@@ -62,7 +62,7 @@ internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<Forwarded
         var knownProxies = _configuration["ForwardedHeaders_KnownProxies"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
         foreach (var proxy in knownProxies)
         {
-            if (IPAddress.TryParse(proxy, out var ipAddress))
+            if (System.Net.IPAddress.TryParse(proxy, out var ipAddress))
             {
                 options.KnownProxies.Add(ipAddress);
             }
