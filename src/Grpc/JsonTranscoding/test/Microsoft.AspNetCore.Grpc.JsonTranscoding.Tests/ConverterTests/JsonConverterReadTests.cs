@@ -66,7 +66,7 @@ public class JsonConverterReadTests
   ""HIDING_FIELD_NAME"": ""A field name""
 }";
 
-        var m = AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        var m = AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
         Assert.Equal("A field name", m.HidingFieldName);
     }
 
@@ -77,7 +77,7 @@ public class JsonConverterReadTests
   ""FIELD_NAME"": ""A field name""
 }";
 
-        var m = AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        var m = AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
         Assert.Equal("", m.FieldName);
         Assert.Equal("A field name", m.HidingFieldName);
     }
@@ -89,7 +89,7 @@ public class JsonConverterReadTests
   ""JSON_CUSTOMIZED_NAME"": ""A field name""
 }";
 
-        var m = AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        var m = AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
         Assert.Equal("A field name", m.FieldName);
     }
 
@@ -486,7 +486,7 @@ public class JsonConverterReadTests
   }
 }";
 
-        AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
     }
 
     [Fact]
@@ -547,7 +547,7 @@ public class JsonConverterReadTests
   ""ONEOFNAME1"": ""test""
 }";
 
-        AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        AssertReadJson<HelloRequest>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
     }
 
     [Fact]
@@ -569,7 +569,7 @@ public class JsonConverterReadTests
   ""ONEOFNAME2"": ""test""
 }";
 
-        AssertReadJsonError<HelloRequest>(json, ex => Assert.Equal("Multiple values specified for oneof oneof_test", ex.Message.TrimEnd('.')), deserializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        AssertReadJsonError<HelloRequest>(json, ex => Assert.Equal("Multiple values specified for oneof oneof_test", ex.Message.TrimEnd('.')), deserializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
     }
 
     [Fact]
@@ -634,7 +634,7 @@ public class JsonConverterReadTests
   ""BYTESVALUE"": ""SGVsbG8gd29ybGQ=""
 }";
 
-        var result = AssertReadJson<HelloRequest.Types.Wrappers>(json, serializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        var result = AssertReadJson<HelloRequest.Types.Wrappers>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
         Assert.Equal("A string", result.StringValue);
     }
 
@@ -728,7 +728,7 @@ public class JsonConverterReadTests
     {
         var json = @"{""B"":10,""A"":20,""D"":30}";
 
-        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
 
         Assert.Equal(10, m.A);
         Assert.Equal(20, m.B);
@@ -752,7 +752,7 @@ public class JsonConverterReadTests
     {
         var json = @"{""B"":10,""A"":20,""C"":30}";
 
-        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        var m = AssertReadJson<Issue047349Message>(json, serializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
 
         Assert.Equal(10, m.A);
         Assert.Equal(20, m.B);
@@ -775,7 +775,7 @@ public class JsonConverterReadTests
     {
         var json = @"{""a"":10,""A"":20}";
 
-        AssertReadJsonError<FieldNameCaseMessage>(json, ex => Assert.Equal("The JSON property name for 'Transcoding.FieldNameCaseMessage.A' collides with another property.", ex.Message), deserializeOld: false, settings: new GrpcJsonSettings { FieldNamesCaseInsensitive = true });
+        AssertReadJsonError<FieldNameCaseMessage>(json, ex => Assert.Equal("The JSON property name for 'Transcoding.FieldNameCaseMessage.A' collides with another property.", ex.Message), deserializeOld: false, settings: new GrpcJsonSettings { PropertyNameCaseInsensitive = true });
     }
 
     private TValue AssertReadJson<TValue>(string value, GrpcJsonSettings? settings = null, DescriptorRegistry? descriptorRegistry = null, bool serializeOld = true) where TValue : IMessage, new()
