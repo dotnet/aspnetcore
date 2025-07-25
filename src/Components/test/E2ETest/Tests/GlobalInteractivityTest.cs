@@ -22,23 +22,31 @@ public class GlobalInteractivityTest(
 {
 
     [Theory]
+    [InlineData("server", false)]
+    [InlineData("webassembly", false)]
     [InlineData("server", true)]
     [InlineData("webassembly", true)]
-    [InlineData("ssr", false)]
-    public void CanRenderNotFoundInteractive(string renderingMode, bool isInteractive)
+    public void CanRenderNotFoundInteractive(string renderingMode, bool useCustomNotFoundPage)
     {
-        Navigate($"/subdir/render-not-found-{renderingMode}");
+        string query = useCustomNotFoundPage ? "?useCustomNotFoundPage=true" : "";
+        Navigate($"{ServerPathBase}/render-not-found-{renderingMode}{query}");
 
-        if (isInteractive)
+        var buttonId = "trigger-not-found";
+        Browser.WaitForElementToBeVisible(By.Id(buttonId));
+        Browser.Exists(By.Id(buttonId)).Click();
+
+        if (useCustomNotFoundPage)
         {
-            var buttonId = "trigger-not-found";
-            Browser.WaitForElementToBeVisible(By.Id(buttonId));
-            Browser.Exists(By.Id(buttonId)).Click();
+            AssertNotFoundPageRendered();
         }
-
-        var bodyText = Browser.FindElement(By.TagName("body")).Text;
-        Assert.Contains("There's nothing here", bodyText);
+        else
+        {
+            AssertNotFoundContentNotRendered();
+        }
     }
+
+    private void AssertNotFoundContentNotRendered() =>
+        Browser.Equal("Any content", () => Browser.FindElement(By.Id("test-info")).Text);
 
     [Fact]
     public async Task CanSetNotFoundStatus()
@@ -130,4 +138,61 @@ public class GlobalInteractivityTest(
         Browser.Equal("Global interactivity page: Static via attribute", () => h1.Text);
         Browser.Equal("static", () => Browser.Exists(By.Id("execution-mode")).Text);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanRenderNotFoundPage_SSR(bool streamingStarted)
+    {
+        string streamingPath = streamingStarted ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomNotFoundPage=true");
+        AssertNotFoundPageRendered();
+    }
+
+    [Theory]
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void CanRenderNotFoundPage_Interactive(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/set-not-found?useCustomNotFoundPage=true&renderMode={renderMode}");
+        AssertNotFoundPageRendered();
+    }
+
+    private void AssertNotFoundPageRendered()
+    {
+        Browser.Equal("Welcome On Custom Not Found Page", () => Browser.FindElement(By.Id("test-info")).Text);
+        // custom page should have a custom layout
+        Browser.Equal("About", () => Browser.FindElement(By.Id("about-link")).Text);
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void CanRenderNotFoundIfNotFoundPageTypeNotProvided_SSR(bool streamingStarted)
+    {
+        string streamingPath = streamingStarted ? "-streaming" : "";
+        Navigate($"{ServerPathBase}/reexecution/set-not-found-ssr{streamingPath}");
+        AssertReExecutedPageRendered();
+    }
+
+    [Theory]
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void DoesNotReExecuteIf404WasHandled_Interactive(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/reexecution/set-not-found?useCustomNotFoundPage=true&renderMode={renderMode}");
+        AssertNotFoundPageRendered();
+    }
+
+    private void AssertNotFoundFragmentRendered() =>
+        Browser.Equal("There's nothing here", () => Browser.FindElement(By.Id("not-found-fragment")).Text);
+
+    [Fact]
+    public void StatusCodePagesWithReExecution()
+    {
+        Navigate($"{ServerPathBase}/reexecution/trigger-404");
+        AssertReExecutedPageRendered();
+    }
+    private void AssertReExecutedPageRendered() =>
+        Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 }

@@ -30,6 +30,7 @@ public sealed class WebAssemblyHostBuilder
     private Func<IServiceProvider> _createServiceProvider;
     private RootTypeCache? _rootComponentCache;
     private string? _persistedState;
+    private ServiceProviderOptions? _serviceProviderOptions;
 
     /// <summary>
     /// Creates an instance of <see cref="WebAssemblyHostBuilder"/> using the most common
@@ -91,7 +92,16 @@ public sealed class WebAssemblyHostBuilder
 
         _createServiceProvider = () =>
         {
-            return Services.BuildServiceProvider(validateScopes: WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment));
+            var isDevelopment = WebAssemblyHostEnvironmentExtensions.IsDevelopment(hostEnvironment);
+
+            // Use custom options if provided, otherwise use defaults
+            var options = _serviceProviderOptions ?? new ServiceProviderOptions
+            {
+                ValidateScopes = isDevelopment,
+                ValidateOnBuild = isDevelopment
+            };
+
+            return Services.BuildServiceProvider(options);
         };
     }
 
@@ -276,6 +286,17 @@ public sealed class WebAssemblyHostBuilder
         };
     }
 
+    // In WebAssemblyHostBuilder class:
+    /// <summary>
+    /// Configures the service provider options for this host builder.
+    /// </summary>
+    /// <param name="options">The service provider options to use.</param>
+    public WebAssemblyHostBuilder UseServiceProviderOptions(ServiceProviderOptions options)
+    {
+        _serviceProviderOptions = options ?? throw new ArgumentNullException(nameof(options));
+        return this;
+    }
+
     /// <summary>
     /// Builds a <see cref="WebAssemblyHost"/> instance based on the configuration of this builder.
     /// </summary>
@@ -308,6 +329,7 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSupplyValueFromPersistentComponentStateProvider();
         Services.AddSingleton<IErrorBoundaryLogger, WebAssemblyErrorBoundaryLogger>();
         Services.AddSingleton<ResourceCollectionProvider>();
+        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(Services, RenderMode.InteractiveWebAssembly);
         Services.AddLogging(builder =>
         {
             builder.AddProvider(new WebAssemblyConsoleLoggerProvider(DefaultWebAssemblyJSRuntime.Instance));

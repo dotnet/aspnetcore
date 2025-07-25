@@ -105,9 +105,11 @@
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Features" />
+    <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Validation" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.App.Internal.Assets" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.SqlServer" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Caching.StackExchangeRedis" />
+    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.JsonPatch.SystemTextJson" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.JsonPatch" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" />

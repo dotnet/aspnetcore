@@ -58,9 +58,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using Microsoft.AspNetCore.OpenApi;
     using Microsoft.AspNetCore.Mvc.Controllers;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.OpenApi.Models;
-    using Microsoft.OpenApi.Models.References;
-    using Microsoft.OpenApi.Any;
+    using Microsoft.OpenApi;
 
     {{GeneratedCodeAttribute}}
     file record XmlComment(
@@ -95,6 +93,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         }
     }
 
+    {{GeneratedCodeAttribute}}
     file static class DocumentationCommentIdHelper
     {
         /// <summary>
@@ -304,6 +303,33 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             // For non-generic types, use FullName (if available) and replace nested type separators.
             return (type.FullName ?? type.Name).Replace('+', '.');
         }
+
+        /// <summary>
+        /// Normalizes a documentation comment ID to match the compiler-style format.
+        /// Strips the return type suffix for ordinary methods but retains it for conversion operators.
+        /// </summary>
+        /// <param name="docId">The documentation comment ID to normalize.</param>
+        /// <returns>The normalized documentation comment ID.</returns>
+        public static string NormalizeDocId(string docId)
+        {
+            // Find the tilde character that indicates the return type suffix
+            var tildeIndex = docId.IndexOf('~');
+            if (tildeIndex == -1)
+            {
+                // No return type suffix, return as-is
+                return docId;
+            }
+
+            // Check if this is a conversion operator (op_Implicit or op_Explicit)
+            // For these operators, we need to keep the return type suffix
+            if (docId.Contains("op_Implicit") || docId.Contains("op_Explicit"))
+            {
+                return docId;
+            }
+
+            // For ordinary methods, strip the return type suffix
+            return docId.Substring(0, tildeIndex);
+        }
     }
 
     {{GeneratedCodeAttribute}}
@@ -319,7 +345,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue(methodInfo.CreateDocumentationId(), out var methodComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(methodInfo.CreateDocumentationId()), out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -341,9 +367,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         var operationParameter = operation.Parameters?.SingleOrDefault(parameter => parameter.Name == parameterComment.Name);
                         if (operationParameter is not null)
                         {
-                            var targetOperationParameter = operationParameter is OpenApiParameterReference reference
-                                ? reference.Target
-                                : (OpenApiParameter)operationParameter;
+                            var targetOperationParameter = UnwrapOpenApiParameter(operationParameter);
                             targetOperationParameter.Description = parameterComment.Description;
                             if (parameterComment.Example is { } jsonString)
                             {
@@ -359,7 +383,12 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                 requestBody.Description = parameterComment.Description;
                                 if (parameterComment.Example is { } jsonString)
                                 {
-                                    foreach (var mediaType in requestBody.Content.Values)
+                                    var content = requestBody?.Content?.Values;
+                                    if (content is null)
+                                    {
+                                        continue;
+                                    }
+                                    foreach (var mediaType in content)
                                     {
                                         mediaType.Example = jsonString.Parse();
                                     }
@@ -368,6 +397,13 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         }
                     }
                 }
+                // Applies `<returns>` on XML comments for operation with single response value.
+                if (methodComment.Returns is { } returns && operation.Responses is { Count: 1 })
+                {
+                    var response = operation.Responses.First();
+                    response.Value.Description = returns;
+                }
+                // Applies `<response>` on XML comments for operation with multiple response values.
                 if (methodComment.Responses is { Count: > 0} && operation.Responses is { Count: > 0 })
                 {
                     foreach (var response in operation.Responses)
@@ -383,6 +419,29 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
             return Task.CompletedTask;
         }
+
+        private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
+        {
+            if (sourceParameter is OpenApiParameterReference parameterReference)
+            {
+                if (parameterReference.Target is OpenApiParameter target)
+                {
+                    return target;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+                }
+            }
+            else if (sourceParameter is OpenApiParameter directParameter)
+            {
+                return directParameter;
+            }
+            else
+            {
+                throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+            }
+        }
     }
 
     {{GeneratedCodeAttribute}}
@@ -392,7 +451,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.Cache.TryGetValue(propertyInfo.CreateDocumentationId(), out var propertyComment))
+                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -401,7 +460,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                 }
             }
-            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -413,6 +472,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         }
     }
 
+    {{GeneratedCodeAttribute}}
     file static class JsonNodeExtensions
     {
         public static JsonNode? Parse(this string? json)

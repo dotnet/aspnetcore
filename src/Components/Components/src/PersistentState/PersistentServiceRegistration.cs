@@ -13,5 +13,7 @@ internal sealed class PersistentServiceRegistration<TService>(IComponentRenderMo
 
     public IComponentRenderMode? GetRenderModeOrDefault() => componentRenderMode;
 
+    public Type? GetResolvedTypeOrNull() => typeof(TService);
+
     private string GetDebuggerDisplay() => $"{Assembly}::{FullTypeName}";
 }

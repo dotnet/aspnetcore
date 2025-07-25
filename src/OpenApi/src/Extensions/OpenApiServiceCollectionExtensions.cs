@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
+using OpenApiConstants = Microsoft.AspNetCore.OpenApi.OpenApiConstants;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -110,6 +111,8 @@ public static class OpenApiServiceCollectionExtensions
         services.AddEndpointsApiExplorer();
         services.AddKeyedSingleton<OpenApiSchemaService>(documentName);
         services.AddKeyedSingleton<OpenApiDocumentService>(documentName);
+        services.AddKeyedSingleton<IOpenApiDocumentProvider, OpenApiDocumentService>(documentName);
+
         // Required for build-time generation
         services.AddSingleton<IDocumentProvider, OpenApiDocumentProvider>();
         // Required to resolve document names for build-time generation

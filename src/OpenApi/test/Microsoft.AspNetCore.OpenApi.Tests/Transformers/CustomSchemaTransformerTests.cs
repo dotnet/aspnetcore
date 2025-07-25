@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
@@ -8,9 +9,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
@@ -32,7 +30,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
                 operation.Responses["500"] = new OpenApiResponse
                 {
                     Description = "Error",
-                    Content =
+                    Content = new Dictionary<string, OpenApiMediaType>()
                     {
                         ["application/problem+json"] = new OpenApiMediaType
                         {
@@ -99,7 +97,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "Success",
-                Content =
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
@@ -111,7 +109,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["400"] = new OpenApiResponse
             {
                 Description = "Bad Request",
-                Content =
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/problem+json"] = new OpenApiMediaType
                     {
@@ -157,7 +155,8 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
                 context.Document.AddComponent("TriangleExample", exampleSchema);
 
                 // Add a reference to the example in the shape schema
-                schema.Extensions["x-example-component"] = new OpenApiAny("#/components/schemas/TriangleExample");
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+                schema.Extensions["x-example-component"] = new JsonNodeExtension("#/components/schemas/TriangleExample");
                 schema.Description = "A shape with an example reference";
             }
         });
@@ -231,7 +230,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             Assert.Equal(JsonSchemaType.Integer, limitSchema.Type);
 
             // Operation should now have 4 parameters (2 original + 2 custom)
-            var operation = document.Paths["/items"].Operations[OperationType.Post];
+            var operation = document.Paths["/items"].Operations[HttpMethod.Post];
             Assert.Equal(4, operation.Parameters.Count);
         });
     }
@@ -261,7 +260,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
                     ["200"] = new OpenApiResponse
                     {
                         Description = "Success",
-                        Content =
+                        Content = new Dictionary<string, OpenApiMediaType>()
                         {
                             ["application/json"] = new OpenApiMediaType
                             {
@@ -272,7 +271,8 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
                 }
             };
 
-            path.Operations[OperationType.Get] = operation;
+            path.Operations ??= [];
+            path.Operations[HttpMethod.Get] = operation;
             document.Paths["/nested"] = path;
         });
 
@@ -318,6 +318,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Product))
             {
+                schema.Required ??= new HashSet<string>();
                 schema.Required.Add("name");
                 schema.Required.Add("price");
                 transformerApplied = true;
@@ -345,7 +346,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "A product",
-                Content =
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
@@ -413,7 +414,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "Concurrent schema generation test",
-                Content =
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {
@@ -466,7 +467,7 @@ public class CustomSchemaTransformerTests : OpenApiDocumentServiceTestBase
             operation.Responses["200"] = new OpenApiResponse
             {
                 Description = "User with custom JSON options",
-                Content =
+                Content = new Dictionary<string, OpenApiMediaType>()
                 {
                     ["application/json"] = new OpenApiMediaType
                     {

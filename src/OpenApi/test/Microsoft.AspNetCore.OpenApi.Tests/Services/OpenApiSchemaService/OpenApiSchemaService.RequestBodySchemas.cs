@@ -4,14 +4,12 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
+using System.Net.Http;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -27,7 +25,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
 
             Assert.NotNull(requestBody);
@@ -84,7 +82,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
 
             Assert.NotNull(requestBody);
@@ -97,8 +95,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("id", property.Key);
                     Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
-                    Assert.Equal(1, property.Value.Minimum);
-                    Assert.Equal(100, property.Value.Maximum);
+                    Assert.Equal("1", property.Value.Minimum);
+                    Assert.Equal("100", property.Value.Maximum);
                     Assert.Null(property.Value.Default);
                 },
                 property =>
@@ -164,7 +162,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         static OpenApiRequestBody GetRequestBodyForPath(OpenApiDocument document, string path)
         {
-            var operation = document.Paths[path].Operations[OperationType.Post];
+            var operation = document.Paths[path].Operations[HttpMethod.Post];
             return operation.RequestBody as OpenApiRequestBody;
         }
     }
@@ -181,7 +179,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/required-properties"].Operations[OperationType.Post];
+            var operation = document.Paths["/required-properties"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -208,7 +206,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             foreach (var path in paths)
             {
-                var operation = document.Paths[$"/{path}"].Operations[OperationType.Post];
+                var operation = document.Paths[$"/{path}"].Operations[HttpMethod.Post];
                 var requestBody = operation.RequestBody;
 
                 var effectiveSchema = requestBody.Content["application/octet-stream"].Schema;
@@ -231,7 +229,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths[$"/proposal"].Operations[OperationType.Post];
+            var operation = document.Paths[$"/proposal"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var schema = requestBody.Content["application/json"].Schema;
             Assert.Equal("Proposal", ((OpenApiSchemaReference)schema).Reference.Id);
@@ -264,9 +262,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var enumerableTodo = document.Paths["/enumerable-todo"].Operations[OperationType.Post];
-            var arrayTodo = document.Paths["/array-todo"].Operations[OperationType.Post];
-            var arrayParsable = document.Paths["/array-parsable"].Operations[OperationType.Get];
+            var enumerableTodo = document.Paths["/enumerable-todo"].Operations[HttpMethod.Post];
+            var arrayTodo = document.Paths["/array-todo"].Operations[HttpMethod.Post];
+            var arrayParsable = document.Paths["/array-parsable"].Operations[HttpMethod.Get];
 
             Assert.NotNull(enumerableTodo.RequestBody);
             Assert.NotNull(arrayTodo.RequestBody);
@@ -325,13 +323,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
             var schema = mediaType.Schema;
             Assert.Equal(JsonSchemaType.Object, schema.Type);
-            Assert.Empty(schema.AnyOf);
+            Assert.Null(schema.AnyOf);
             Assert.Collection(schema.Properties,
                 property =>
                 {
@@ -365,7 +363,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -413,7 +411,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.Equal("The todo item to create.", operation.RequestBody.Description);
         });
@@ -431,7 +429,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -478,7 +476,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("NestedType", ((OpenApiSchemaReference)content.Value.Schema).Reference.Id);
@@ -523,7 +521,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("NestedType", ((OpenApiSchemaReference)content.Value.Schema).Reference.Id);
@@ -588,7 +586,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.Collection(operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.AllOf,
                 schema =>
                 {
@@ -620,7 +618,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -646,7 +644,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -684,7 +682,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -710,4 +708,51 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         public IDictionary<string, Parent> SelfReferenceDictionary { get; set; } = new Dictionary<string, Parent>();
     }
 
+    /// <remarks>
+    /// Regression test for https://github.com/dotnet/aspnetcore/issues/61327
+    /// </remarks>
+    [Fact]
+    public async Task RespectsEnumDefaultValueInControllerFormParameters()
+    {
+        // Arrange
+        var actionDescriptor = CreateActionDescriptor(nameof(TestBodyController.FormPostWithOptionalEnumParam), typeof(TestBodyController));
+
+        // Assert
+        await VerifyOpenApiDocument(actionDescriptor, VerifyOptionalEnum);
+    }
+
+    [Fact]
+    public async Task RespectsEnumDefaultValueInMinimalApiFormParameters()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/optionalEnum", ([FromForm(Name = "status")] Status status = Status.Approved) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, VerifyOptionalEnum);
+    }
+
+    private void VerifyOptionalEnum(OpenApiDocument document)
+    {
+        var operation = document.Paths["/optionalEnum"].Operations[HttpMethod.Post];
+        var properties = operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.Properties;
+        var property = properties["status"];
+
+        Assert.NotNull(property);
+        Assert.Equal(3, property.Enum.Count);
+        Assert.Equal("Approved", property.Default.GetValue<string>());
+    }
+
+    [ApiController]
+    [Produces("application/json")]
+    public class TestBodyController
+    {
+        [Route("/optionalEnum")]
+        [HttpPost]
+        internal Status FormPostWithOptionalEnumParam(
+            [FromForm(Name = "status")] Status status = Status.Approved
+        ) => status;
+    }
 }

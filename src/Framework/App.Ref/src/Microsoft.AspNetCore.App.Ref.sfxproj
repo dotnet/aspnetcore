@@ -77,7 +77,7 @@
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
 
-    <ProjectReference Include="$(RepoRoot)src\Http\Http.Extensions\gen\Microsoft.AspNetCore.Http.ValidationsGenerator\Microsoft.AspNetCore.Http.ValidationsGenerator.csproj"
+    <ProjectReference Include="$(RepoRoot)src\Validation\gen\Microsoft.Extensions.Validation.ValidationsGenerator.csproj"
       Private="false"
       OutputItemType="AspNetCoreAnalyzer"
       ReferenceOutputAssembly="false" />
@@ -160,11 +160,11 @@
             '%(ReferencePath.NuGetSourceType)' == 'Package' " />
 
       <!--
-        Use NETCore.App version for Runtime references.
+        Use NETCore.App.Ref version for Runtime references.
         This is the same as above except in "stabilized" version builds, where the transport package version
         would be a non-shipping unstablized version, but the NETCore.App version is the shipping version.
       -->
-      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(MicrosoftNETCoreAppRuntimeVersion)')"
+      <_AspNetCoreAppPackageOverrides Include="@(ReferencePath->'%(FileName)|$(MicrosoftNETCoreAppRefVersion)')"
       Condition="'%(ReferencePath.NuGetPackageId)' == 'Microsoft.Internal.Runtime.AspNetCore.Transport' AND
                  '%(ReferencePath.NuGetSourceType)' == 'Package' " />
 

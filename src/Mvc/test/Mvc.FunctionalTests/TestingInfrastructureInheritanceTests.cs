@@ -26,11 +26,11 @@ public class TestingInfrastructureInheritanceTests
         // Assert
         Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
         Assert.True(factory.CreateServerCalled);
-        Assert.True(factory.CreateWebHostBuilderCalled);
+        Assert.False(factory.CreateWebHostBuilderCalled);
         // GetTestAssemblies is not called when reading content roots from MvcAppManifest
         Assert.False(factory.GetTestAssembliesCalled);
         Assert.True(factory.CreateHostBuilderCalled);
-        Assert.False(factory.CreateHostCalled);
+        Assert.True(factory.CreateHostCalled);
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public class TestingInfrastructureInheritanceTests
         Assert.False(factory.GetTestAssembliesCalled);
         Assert.True(factory.CreateHostBuilderCalled);
         Assert.True(factory.CreateHostCalled);
-        Assert.False(factory.CreateServerCalled);
+        Assert.True(factory.CreateServerCalled);
         Assert.False(factory.CreateWebHostBuilderCalled);
     }
 
@@ -145,6 +145,12 @@ public class TestingInfrastructureInheritanceTests
         {
             CreateServerCalled = true;
             return base.CreateServer(builder);
+        }
+
+        protected override TestServer CreateServer(IServiceProvider serviceProvider)
+        {
+            CreateServerCalled = true;
+            return base.CreateServer(serviceProvider);
         }
 
         protected override IHost CreateHost(IHostBuilder builder)

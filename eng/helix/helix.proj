@@ -6,6 +6,7 @@
       This must be reset in order for Build.props to evaluate a list of projects to be tested on Helix.
     -->
     <ProjectToBuild Condition="'$(ProjectToBuild)' == '$(MSBuildProjectFullPath)'"/>
+    <ProjectToBuild Condition="'$(OnlyTestProjectTemplates)' == 'true'">$(RepoRoot)src\ProjectTemplates\test\**\*.csproj</ProjectToBuild>
 
     <!--
       Do not load NuGet.targets since this project doesn't reference anything from NuGet. Reduces `msbuild`
@@ -58,12 +59,12 @@
       <PackageType>runtime</PackageType>
     </AdditionalDotNetPackage>
 
-    <AdditionalDotNetPackageFeed Include="https://dotnetbuilds.blob.core.windows.net/internal"
+    <AdditionalDotNetPackageFeed Include="https://ci.dot.net/internal"
                                  Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
       <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
     </AdditionalDotNetPackageFeed>
 
-    <AdditionalDotNetPackageFeed Include="https://dotnetbuilds.blob.core.windows.net/internal"
+    <AdditionalDotNetPackageFeed Include="https://ci.dot.net/internal"
                                  Condition="'$(SYSTEM_TEAMPROJECT)' == 'internal'">
       <SasToken>$([System.Environment]::GetEnvironmentVariable('DotNetBuildsInternalReadSasToken'))</SasToken>
     </AdditionalDotNetPackageFeed>

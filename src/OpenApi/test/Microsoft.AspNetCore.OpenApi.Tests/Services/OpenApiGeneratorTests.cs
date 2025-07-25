@@ -15,7 +15,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi.Tests;
 
@@ -85,7 +84,7 @@ public class OpenApiOperationGeneratorTests
         {
             Assert.NotNull(operation.Parameters);
             Assert.Empty(operation.Parameters);
-            var content = operation.RequestBody.Content.Keys.FirstOrDefault();
+            var content = operation.RequestBody.Content!.Keys.FirstOrDefault();
             Assert.Equal("application/custom", content);
         }
 
@@ -105,9 +104,9 @@ public class OpenApiOperationGeneratorTests
         Assert.NotNull(operation.Parameters);
         Assert.Empty(operation.Parameters);
 
-        var content = operation.RequestBody.Content;
+        var content = operation.RequestBody.Content!;
         Assert.Equal(2, content.Count);
-        Assert.Equal(new[] { "application/custom0", "application/custom1" }, content.Keys);
+        Assert.Equal(["application/custom0", "application/custom1"], content.Keys);
     }
 
     [Fact]
@@ -137,8 +136,8 @@ public class OpenApiOperationGeneratorTests
         var request = operation.RequestBody;
         Assert.NotNull(request);
 
-        Assert.Equal("application/custom0", request.Content.First().Key);
-        Assert.Equal("application/custom1", request.Content.Last().Key);
+        Assert.Equal("application/custom0", request.Content!.First().Key);
+        Assert.Equal("application/custom1", request.Content!.Last().Key);
         Assert.True(request.Required);
         Assert.NotNull(operation.Parameters);
         Assert.Empty(operation.Parameters);
@@ -335,7 +334,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
-            Assert.Empty(param.Content);
+            Assert.Null(param.Content);
         }
 
         AssertPathParameter(GetOpenApiOperation((int foo) => { }, "/{foo}"));
@@ -349,7 +348,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
-            Assert.Empty(param.Content);
+            Assert.Null(param.Content);
         }
         AssertPathParameter(GetOpenApiOperation((TryParseStringRecord foo) => { }, pattern: "/{foo}"));
     }
@@ -361,7 +360,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
-            Assert.Empty(param.Content);
+            Assert.Null(param.Content);
         }
 
         AssertPathParameter(GetOpenApiOperation((int? foo) => { }, "/{foo}"));
@@ -375,7 +374,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Path, param.In);
-            Assert.Empty(param.Content);
+            Assert.Null(param.Content);
         }
         AssertPathParameter(GetOpenApiOperation((TryParseStringRecordStruct foo) => { }, pattern: "/{foo}"));
     }
@@ -387,7 +386,7 @@ public class OpenApiOperationGeneratorTests
         {
             var param = Assert.Single(operation.Parameters);
             Assert.Equal(ParameterLocation.Query, param.In);
-            Assert.Empty(param.Content);
+            Assert.Null(param.Content);
         }
 
         AssertQueryParameter(GetOpenApiOperation((int foo) => { }, "/"), JsonSchemaType.Integer);
@@ -406,7 +405,7 @@ public class OpenApiOperationGeneratorTests
         var param = Assert.Single(operation.Parameters);
 
         Assert.Equal(ParameterLocation.Header, param.In);
-        Assert.Empty(param.Content);
+        Assert.Null(param.Content);
     }
 
     [Fact]
@@ -430,7 +429,7 @@ public class OpenApiOperationGeneratorTests
         {
             var requestBody = operation.RequestBody;
             Assert.NotNull(requestBody);
-            var content = Assert.Single(requestBody.Content);
+            var content = Assert.Single(requestBody.Content!);
             Assert.Equal("application/json", content.Key);
             Assert.NotNull(operation.Parameters);
             Assert.Empty(operation.Parameters);
@@ -453,17 +452,17 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("foo", fooParam.Name);
         Assert.Equal(ParameterLocation.Path, fooParam.In);
         Assert.True(fooParam.Required);
-        Assert.Empty(fooParam.Content);
+        Assert.Null(fooParam.Content);
 
         var barParam = operation.Parameters[1];
         Assert.Equal("bar", barParam.Name);
         Assert.Equal(ParameterLocation.Query, barParam.In);
         Assert.True(barParam.Required);
-        Assert.Empty(barParam.Content);
+        Assert.Null(barParam.Content);
 
         var fromBodyParam = operation.RequestBody;
         Assert.NotNull(fromBodyParam);
-        var fromBodyContent = Assert.Single(fromBodyParam.Content);
+        var fromBodyContent = Assert.Single(fromBodyParam.Content!);
         Assert.Equal("application/json", fromBodyContent.Key);
         Assert.True(fromBodyParam.Required);
     }
@@ -481,14 +480,14 @@ public class OpenApiOperationGeneratorTests
                     Assert.Equal(capturedName, param.Name);
                     Assert.Equal(ParameterLocation.Path, param.In);
                     Assert.True(param.Required);
-                    Assert.Empty(param.Content);
+                    Assert.Null(param.Content);
                 },
                 param =>
                 {
                     Assert.Equal("Bar", param.Name);
                     Assert.Equal(ParameterLocation.Query, param.In);
                     Assert.True(param.Required);
-                    Assert.Empty(param.Content);
+                    Assert.Null(param.Content);
                 }
             );
         }
@@ -513,13 +512,13 @@ public class OpenApiOperationGeneratorTests
         Assert.Equal("foo", fooParam.Name);
         Assert.Equal(ParameterLocation.Path, fooParam.In);
         Assert.True(fooParam.Required);
-        Assert.Empty(fooParam.Content);
+        Assert.Null(fooParam.Content);
 
         var barParam = operation.Parameters[1];
         Assert.Equal("bar", barParam.Name);
         Assert.Equal(ParameterLocation.Query, barParam.In);
         Assert.False(barParam.Required);
-        Assert.Empty(barParam.Content);
+        Assert.Null(barParam.Content);
     }
 
     [Fact]
@@ -675,7 +674,7 @@ public class OpenApiOperationGeneratorTests
         Assert.NotNull(operation.Parameters);
         Assert.Empty(operation.Parameters);
         Assert.Collection(
-            requestBody.Content,
+            requestBody.Content!,
             parameter =>
             {
                 Assert.Equal("application/json", parameter.Key);
@@ -699,7 +698,7 @@ public class OpenApiOperationGeneratorTests
         // Assert
         var requestBody = operation.RequestBody;
         Assert.NotNull(requestBody);
-        var content = Assert.Single(requestBody.Content);
+        var content = Assert.Single(requestBody.Content!);
         Assert.False(requestBody.Required);
         Assert.NotNull(operation.Parameters);
         Assert.Empty(operation.Parameters);
@@ -716,7 +715,7 @@ public class OpenApiOperationGeneratorTests
         // Assert
         var requestBody = operation.RequestBody;
         Assert.NotNull(requestBody);
-        var content = Assert.Single(requestBody.Content);
+        var content = Assert.Single(requestBody.Content!);
         Assert.Equal("application/json", content.Key);
         Assert.True(requestBody.Required);
         Assert.NotNull(operation.Parameters);
@@ -732,7 +731,7 @@ public class OpenApiOperationGeneratorTests
         // Assert
         var requestBody = operation.RequestBody;
         Assert.NotNull(requestBody);
-        var content = Assert.Single(requestBody.Content);
+        var content = Assert.Single(requestBody.Content!);
         Assert.Equal("application/json", content.Key);
         Assert.False(requestBody.Required);
         Assert.NotNull(operation.Parameters);
@@ -748,7 +747,7 @@ public class OpenApiOperationGeneratorTests
         // Assert
         var requestBody = operation.RequestBody;
         Assert.NotNull(requestBody);
-        var content = Assert.Single(requestBody.Content);
+        var content = Assert.Single(requestBody.Content!);
         Assert.Equal("application/xml", content.Key);
         Assert.False(requestBody.Required);
         Assert.NotNull(operation.Parameters);
@@ -764,7 +763,7 @@ public class OpenApiOperationGeneratorTests
         // Assert
         var requestBody = operation.RequestBody;
         Assert.NotNull(requestBody);
-        var content = Assert.Single(requestBody.Content);
+        var content = Assert.Single(requestBody.Content!);
         Assert.Equal("multipart/form-data", content.Key);
         Assert.True(requestBody.Required);
         Assert.NotNull(operation.Parameters);
@@ -780,7 +779,7 @@ public class OpenApiOperationGeneratorTests
         // Assert
         var requestBody = operation.RequestBody;
         Assert.NotNull(requestBody);
-        var content = Assert.Single(requestBody.Content);
+        var content = Assert.Single(requestBody.Content!);
         Assert.Equal("multipart/form-data", content.Key);
         Assert.False(requestBody.Required);
         Assert.NotNull(operation.Parameters);
@@ -796,7 +795,7 @@ public class OpenApiOperationGeneratorTests
         // Assert
         var requestBody = operation.RequestBody;
         Assert.NotNull(requestBody);
-        var content = Assert.Single(requestBody.Content);
+        var content = Assert.Single(requestBody.Content!);
         Assert.Equal("multipart/form-data", content.Key);
         Assert.True(requestBody.Required);
         Assert.NotNull(operation.Parameters);
@@ -811,7 +810,7 @@ public class OpenApiOperationGeneratorTests
 
         var requestBody = operation.RequestBody;
         Assert.NotNull(requestBody);
-        var content = requestBody.Content;
+        var content = requestBody.Content!;
 
         Assert.Equal(2, content.Count);
 
@@ -834,12 +833,12 @@ public class OpenApiOperationGeneratorTests
         Assert.NotNull(operation1.RequestBody);
 
         var fromFileParam0 = operation0.RequestBody;
-        var fromFileParam0ContentType = Assert.Single(fromFileParam0.Content.Values);
+        var fromFileParam0ContentType = Assert.Single(fromFileParam0.Content!.Values);
         Assert.Equal("multipart/form-data", fromFileParam0.Content.Keys.SingleOrDefault());
         Assert.True(fromFileParam0.Required);
 
         var fromFileParam1 = operation1.RequestBody;
-        var fromFileParam1ContentType = Assert.Single(fromFileParam1.Content.Values);
+        var fromFileParam1ContentType = Assert.Single(fromFileParam1.Content!.Values);
         Assert.Equal("multipart/form-data", fromFileParam1.Content.Keys.SingleOrDefault());
         Assert.False(fromFileParam1.Required);
     }
@@ -851,7 +850,7 @@ public class OpenApiOperationGeneratorTests
         {
             var requestBody = operation.RequestBody;
             Assert.NotNull(requestBody);
-            var content = Assert.Single(requestBody.Content);
+            var content = Assert.Single(requestBody.Content!);
             Assert.Equal("multipart/form-data", content.Key);
             Assert.NotNull(operation.Parameters);
             Assert.Empty(operation.Parameters);
@@ -875,7 +874,7 @@ public class OpenApiOperationGeneratorTests
             // Assert
             var requestBody = operation.RequestBody;
             Assert.NotNull(requestBody);
-            var content = Assert.Single(requestBody.Content);
+            var content = Assert.Single(requestBody.Content!);
             Assert.Equal("multipart/form-data", content.Key);
             Assert.True(requestBody.Required);
             Assert.NotNull(operation.Parameters);

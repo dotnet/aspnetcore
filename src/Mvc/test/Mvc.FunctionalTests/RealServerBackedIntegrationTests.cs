@@ -4,6 +4,8 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -40,9 +42,6 @@ public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWebApp
     [Fact]
     public async Task ServerReachableViaGenericHttpClient()
     {
-        // Arrange
-        var baseAddress = new Uri("http://localhost:5000");
-
         // Act
         using var factoryClient = Factory.CreateClient();
         using var client = new HttpClient() { BaseAddress = factoryClient.BaseAddress };
@@ -51,5 +50,16 @@ public class RealServerBackedIntegrationTests : IClassFixture<KestrelBasedWebApp
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public void CanResolveServices()
+    {
+        // Act
+        var server = Factory.Services.GetRequiredService<IServer>();
+
+        // Assert
+        Assert.NotNull(server);
+        Assert.Contains("Kestrel", server.GetType().FullName);
     }
 }

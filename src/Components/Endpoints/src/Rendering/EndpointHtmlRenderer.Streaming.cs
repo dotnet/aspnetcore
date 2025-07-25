@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -23,11 +22,13 @@ internal partial class EndpointHtmlRenderer
     private HashSet<int>? _visitedComponentIdsInCurrentStreamingBatch;
     private string? _ssrFramingCommentMarkup;
     private bool _isHandlingErrors;
+    private bool _isReExecuted;
 
-    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler)
+    public void InitializeStreamingRenderingFraming(HttpContext httpContext, bool isErrorHandler, bool isReExecuted)
     {
         _isHandlingErrors = isErrorHandler;
-        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        _isReExecuted = isReExecuted;
+        if (!isReExecuted && IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
             var id = Guid.NewGuid().ToString();
             httpContext.Response.Headers.Add(_streamingRenderingFramingHeaderName, id);
@@ -224,16 +225,27 @@ internal partial class EndpointHtmlRenderer
         writer.Write("</template><blazor-ssr-end></blazor-ssr-end></blazor-ssr>");
     }
 
+    private static void HandleNotFoundAfterResponseStarted(TextWriter writer, HttpContext httpContext, string notFoundUrl)
+    {
+        writer.Write("<blazor-ssr><template type=\"not-found\"");
+        WriteResponseTemplate(writer, httpContext, notFoundUrl, useEnhancedNav: true);
+    }
+
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
         writer.Write("<blazor-ssr><template type=\"redirection\"");
+        bool useEnhancedNav = IsProgressivelyEnhancedNavigation(httpContext.Request);
+        WriteResponseTemplate(writer, httpContext, destinationUrl, useEnhancedNav);
+    }
 
-        if (string.Equals(httpContext.Request.Method, "POST", StringComparison.OrdinalIgnoreCase))
+    private static void WriteResponseTemplate(TextWriter writer, HttpContext httpContext, string destinationUrl, bool useEnhancedNav)
+    {
+        if (HttpMethods.IsPost(httpContext.Request.Method))
         {
             writer.Write(" from=\"form-post\"");
         }
 
-        if (IsProgressivelyEnhancedNavigation(httpContext.Request))
+        if (useEnhancedNav)
         {
             writer.Write(" enhanced=\"true\"");
         }
@@ -276,12 +288,6 @@ internal partial class EndpointHtmlRenderer
             {
                 if (_httpContext.RequestServices.GetRequiredService<WebAssemblySettingsEmitter>().TryGetSettingsOnce(out var settings))
                 {
-                    if (marker.Type is ComponentMarker.WebAssemblyMarkerType)
-                    {
-                        // Preload WebAssembly assets when using WebAssembly (not Auto) mode
-                        AppendWebAssemblyPreloadHeaders();
-                    }
-
                     var settingsJson = JsonSerializer.Serialize(settings, ServerComponentSerializationSettings.JsonSerializationOptions);
                     output.Write($"<!--Blazor-WebAssembly:{settingsJson}-->");
                 }
@@ -315,15 +321,6 @@ internal partial class EndpointHtmlRenderer
             output.Write("<!--Blazor:");
             output.Write(serializedEndRecord);
             output.Write("-->");
-        }
-    }
-
-    private void AppendWebAssemblyPreloadHeaders()
-    {
-        var preloads = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourcePreloadCollection>();
-        if (preloads != null && preloads.TryGetLinkHeaders("webassembly", out var linkHeaders))
-        {
-            _httpContext.Response.Headers.Link = StringValues.Concat(_httpContext.Response.Headers.Link, linkHeaders);
         }
     }
 

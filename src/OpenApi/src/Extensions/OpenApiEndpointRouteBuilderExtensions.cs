@@ -8,8 +8,6 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi.Extensions;
-using Microsoft.OpenApi.Writers;
 
 namespace Microsoft.AspNetCore.Builder;
 
@@ -25,10 +23,10 @@ public static class OpenApiEndpointRouteBuilderExtensions
     /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
     /// <param name="pattern">The route to register the endpoint on. Must include the 'documentName' route parameter.</param>
     /// <returns>An <see cref="IEndpointRouteBuilder"/> that can be used to further customize the endpoint.</returns>
-    public static IEndpointConventionBuilder MapOpenApi(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern = OpenApiConstants.DefaultOpenApiRoute)
+    public static IEndpointConventionBuilder MapOpenApi(this IEndpointRouteBuilder endpoints, [StringSyntax("Route")] string pattern = OpenApi.OpenApiConstants.DefaultOpenApiRoute)
     {
         var options = endpoints.ServiceProvider.GetRequiredService<IOptionsMonitor<OpenApiOptions>>();
-        return endpoints.MapGet(pattern, async (HttpContext context, string documentName = OpenApiConstants.DefaultDocumentName) =>
+        return endpoints.MapGet(pattern, async (HttpContext context, string documentName = OpenApi.OpenApiConstants.DefaultDocumentName) =>
             {
                 // We need to retrieve the document name in a case-insensitive manner to support case-insensitive document name resolution.
                 // The document service is registered with a key equal to the document name, but in lowercase.
@@ -53,29 +51,29 @@ public static class OpenApiEndpointRouteBuilderExtensions
                 {
                     var document = await documentService.GetOpenApiDocumentAsync(context.RequestServices, context.Request, context.RequestAborted);
                     var documentOptions = options.Get(lowercasedDocumentName);
-                    using var output = MemoryBufferWriter.Get();
-                    using var writer = Utf8BufferTextWriter.Get(output);
-                    try
+
+                    using var textWriter = new Utf8BufferTextWriter();
+                    textWriter.SetWriter(context.Response.BodyWriter);
+
+                    string contentType;
+                    OpenApiWriterBase openApiWriter;
+
+                    if (UseYaml(pattern))
                     {
-                        if (UseYaml(pattern))
-                        {
-                            await document.SerializeAsync(new OpenApiYamlWriter(writer), documentOptions.OpenApiVersion);
-                            context.Response.ContentType = "text/plain+yaml;charset=utf-8";
-                        }
-                        else
-                        {
-                            await document.SerializeAsync(new OpenApiJsonWriter(writer), documentOptions.OpenApiVersion);
-                            context.Response.ContentType = "application/json;charset=utf-8";
-                        }
-                        await context.Response.BodyWriter.WriteAsync(output.ToArray(), context.RequestAborted);
-                        await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
+                        contentType = "text/plain+yaml;charset=utf-8";
+                        openApiWriter = new OpenApiYamlWriter(textWriter);
                     }
-                    finally
+                    else
                     {
-                        MemoryBufferWriter.Return(output);
-                        Utf8BufferTextWriter.Return(writer);
+                        contentType = "application/json;charset=utf-8";
+                        openApiWriter = new OpenApiJsonWriter(textWriter);
                     }
 
+                    context.Response.ContentType = contentType;
+
+                    await context.Response.StartAsync();
+                    await document.SerializeAsync(openApiWriter, documentOptions.OpenApiVersion, context.RequestAborted);
+                    await context.Response.BodyWriter.FlushAsync(context.RequestAborted);
                 }
             }).ExcludeFromDescription();
     }

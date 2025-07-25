@@ -83,6 +83,30 @@ internal partial class WebAssemblyRenderer
             return component;
         }
 
+#if COMPONENTS_SERVER
+        internal IEnumerable<(int id, ComponentMarkerKey key, (Type componentType, ParameterView parameters))> GetRootComponents()
+        {
+            foreach (var (id, (_, key, type, parameters)) in _webRootComponents)
+            {
+                yield return (id, key, (type, parameters));
+            }
+        }
+
+#endif
+        internal ComponentMarkerKey GetRootComponentKey(int componentId)
+        {
+            foreach (var (_, candidate) in _webRootComponents)
+            {
+                var(id, key, _, _) = candidate;
+                if (id == componentId)
+                {
+                    return key;
+                }
+            }
+
+            return default;
+        }
+
         private sealed class WebRootComponent
         {
             [DynamicallyAccessedMembers(Component)]
@@ -123,6 +147,18 @@ internal partial class WebAssemblyRenderer
                 _key = key;
                 _interactiveComponentId = interactiveComponentId;
                 _latestParameters = initialParameters;
+            }
+
+            public void Deconstruct(
+                out int interactiveComponentId,
+                out ComponentMarkerKey key,
+                out Type componentType,
+                out ParameterView parameters)
+            {
+                interactiveComponentId = _interactiveComponentId;
+                key = _key;
+                componentType = _componentType;
+                parameters = _latestParameters.Parameters;
             }
 
             public Task UpdateAsync(

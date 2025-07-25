@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.OpenApi.Models;
 
 public class ApiDescriptionExtensionsTests
 {
@@ -31,17 +31,25 @@ public class ApiDescriptionExtensionsTests
         Assert.Equal(expectedItemPath, itemPath);
     }
 
+    public static class HttpMethodTestData
+    {
+        public static IEnumerable<object[]> TestCases => new List<object[]>
+        {
+            new object[] { "GET", HttpMethod.Get },
+            new object[] { "POST", HttpMethod.Post },
+            new object[] { "PUT", HttpMethod.Put },
+            new object[] { "DELETE", HttpMethod.Delete },
+            new object[] { "PATCH", HttpMethod.Patch },
+            new object[] { "HEAD", HttpMethod.Head },
+            new object[] { "OPTIONS", HttpMethod.Options },
+            new object[] { "TRACE", HttpMethod.Trace },
+            new object[] { "gEt", HttpMethod.Get }, // Test case-insensitivity
+        };
+    }
+
     [Theory]
-    [InlineData("GET", OperationType.Get)]
-    [InlineData("POST", OperationType.Post)]
-    [InlineData("PUT", OperationType.Put)]
-    [InlineData("DELETE", OperationType.Delete)]
-    [InlineData("PATCH", OperationType.Patch)]
-    [InlineData("HEAD", OperationType.Head)]
-    [InlineData("OPTIONS", OperationType.Options)]
-    [InlineData("TRACE", OperationType.Trace)]
-    [InlineData("gEt", OperationType.Get)]
-    public void ToOperationType_ReturnsOperationTypeForApiDescription(string httpMethod, OperationType expectedOperationType)
+    [MemberData(nameof(HttpMethodTestData.TestCases), MemberType = typeof(HttpMethodTestData))]
+    public void GetHttpMethod_ReturnsHttpMethodForApiDescription(string httpMethod, HttpMethod expectedHttpMethod)
     {
         // Arrange
         var apiDescription = new ApiDescription
@@ -50,16 +58,16 @@ public class ApiDescriptionExtensionsTests
         };
 
         // Act
-        var operationType = apiDescription.GetOperationType();
+        var result = apiDescription.GetHttpMethod();
 
         // Assert
-        Assert.Equal(expectedOperationType, operationType);
+        Assert.Equal(expectedHttpMethod, result);
     }
 
     [Theory]
     [InlineData("UNKNOWN")]
     [InlineData("unknown")]
-    public void ToOperationType_ThrowsForUnknownHttpMethod(string methodName)
+    public void GetHttpMethod_ThrowsForUnknownHttpMethod(string methodName)
     {
         // Arrange
         var apiDescription = new ApiDescription
@@ -68,7 +76,7 @@ public class ApiDescriptionExtensionsTests
         };
 
         // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => apiDescription.GetOperationType());
+        var exception = Assert.Throws<InvalidOperationException>(() => apiDescription.GetHttpMethod());
         Assert.Equal($"Unsupported HTTP method: {methodName}", exception.Message);
     }
 }

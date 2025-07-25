@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Text.Json.Nodes;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
 
@@ -55,6 +55,7 @@ public static class RouteHandlerExtensionMethods
     /// <description>
     /// A description of the action.
     /// </description>
+    /// <returns>Returns the greeting.</returns>
     public static string Get()
     {
         return "Hello, World!";
@@ -68,17 +69,20 @@ public static class RouteHandlerExtensionMethods
     }
 
     /// <param name="name" example="Testy McTester">The name of the person.</param>
+    /// <returns>Returns the greeting.</returns>
+    /// <returns>Returns a different greeting.</returns>
     public static string Get3(string name)
     {
         return $"Hello, {name}!";
     }
 
-    /// <response code="404">Indicates that the value was not found.</response>
+    /// <returns>Indicates that the value was not found.</returns>
     public static NotFound<string> Get4()
     {
         return TypedResults.NotFound("Not found!");
     }
 
+    /// <returns>This gets ignored.</returns>
     /// <response code="200">Indicates that the value is even.</response>
     /// <response code="201">Indicates that the value is less than 50.</response>
     /// <response code="404">Indicates that the value was not found.</response>
@@ -174,6 +178,7 @@ public static class RouteHandlerExtensionMethods
     /// <summary>
     /// A summary of Get14.
     /// </summary>
+    /// <returns>Returns the greeting.</returns>
     public static async Task<Holder<string>> Get14()
     {
         await Task.Delay(1000);
@@ -182,6 +187,7 @@ public static class RouteHandlerExtensionMethods
     /// <summary>
     /// A summary of Get15.
     /// </summary>
+    /// <response code="200">Returns the greeting.</response>
     public static Task<Holder<string>> Get15()
     {
         return Task.FromResult(new Holder<string> { Value = "Hello, World!" });
@@ -231,68 +237,72 @@ public class Example : Task<int>
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
         await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
         {
-            var path = document.Paths["/1"].Operations[OperationType.Get];
+            var path = document.Paths["/1"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of the action.", path.Summary);
             Assert.Equal("A description of the action.", path.Description);
+            Assert.Equal("Returns the greeting.", path.Responses["200"].Description);
 
-            var path2 = document.Paths["/2"].Operations[OperationType.Get];
+            var path2 = document.Paths["/2"].Operations[HttpMethod.Get];
             Assert.Equal("The name of the person.", path2.Parameters[0].Description);
             Assert.Equal("Returns the greeting.", path2.Responses["200"].Description);
 
-            var path3 = document.Paths["/3"].Operations[OperationType.Get];
+            var path3 = document.Paths["/3"].Operations[HttpMethod.Get];
             Assert.Equal("The name of the person.", path3.Parameters[0].Description);
             var example = Assert.IsAssignableFrom<JsonNode>(path3.Parameters[0].Example);
             Assert.Equal("\"Testy McTester\"", example.ToJsonString());
+            Assert.Equal("Returns the greeting.", path3.Responses["200"].Description);
 
-            var path4 = document.Paths["/4"].Operations[OperationType.Get];
+            var path4 = document.Paths["/4"].Operations[HttpMethod.Get];
             var response = path4.Responses["404"];
             Assert.Equal("Indicates that the value was not found.", response.Description);
 
-            var path5 = document.Paths["/5"].Operations[OperationType.Get];
+            var path5 = document.Paths["/5"].Operations[HttpMethod.Get];
             Assert.Equal("Indicates that the value was not found.", path5.Responses["404"].Description);
             Assert.Equal("Indicates that the value is even.", path5.Responses["200"].Description);
             Assert.Equal("Indicates that the value is less than 50.", path5.Responses["201"].Description);
 
-            var path6 = document.Paths["/6"].Operations[OperationType.Post];
+            var path6 = document.Paths["/6"].Operations[HttpMethod.Post];
             Assert.Equal("Creates a new user.", path6.Summary);
             Assert.Contains("Sample request:", path6.Description);
             var userParam = path6.RequestBody.Content["application/json"];
             var userExample = Assert.IsAssignableFrom<JsonNode>(userParam.Example);
             Assert.Equal("johndoe", userExample["username"].GetValue<string>());
 
-            var path7 = document.Paths["/7"].Operations[OperationType.Put];
+            var path7 = document.Paths["/7"].Operations[HttpMethod.Put];
             var idParam = path7.Parameters.First(p => p.Name == "id");
             Assert.True(idParam.Deprecated);
             Assert.Equal("Legacy ID parameter - use uuid instead.", idParam.Description);
 
-            var path8 = document.Paths["/8"].Operations[OperationType.Get];
+            var path8 = document.Paths["/8"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get8.", path8.Summary);
 
-            var path9 = document.Paths["/9"].Operations[OperationType.Get];
+            var path9 = document.Paths["/9"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get9.", path9.Summary);
 
-            var path10 = document.Paths["/10"].Operations[OperationType.Get];
+            var path10 = document.Paths["/10"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get10.", path10.Summary);
 
-            var path11 = document.Paths["/11"].Operations[OperationType.Get];
+            var path11 = document.Paths["/11"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get11.", path11.Summary);
 
-            var path12 = document.Paths["/12"].Operations[OperationType.Get];
+            var path12 = document.Paths["/12"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get12.", path12.Summary);
 
-            var path13 = document.Paths["/13"].Operations[OperationType.Get];
+            var path13 = document.Paths["/13"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get13.", path13.Summary);
 
-            var path14 = document.Paths["/14"].Operations[OperationType.Get];
+            var path14 = document.Paths["/14"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get14.", path14.Summary);
+            Assert.Equal("Returns the greeting.", path14.Responses["200"].Description);
 
-            var path15 = document.Paths["/15"].Operations[OperationType.Get];
+            var path15 = document.Paths["/15"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get15.", path15.Summary);
+            Assert.Equal("Returns the greeting.", path15.Responses["200"].Description);
 
-            var path16 = document.Paths["/16"].Operations[OperationType.Post];
+            var path16 = document.Paths["/16"].Operations[HttpMethod.Post];
             Assert.Equal("A summary of Post16.", path16.Summary);
 
-            var path17 = document.Paths["/17"].Operations[OperationType.Get];
+            var path17 = document.Paths["/17"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get17.", path17.Summary);
         });
     }

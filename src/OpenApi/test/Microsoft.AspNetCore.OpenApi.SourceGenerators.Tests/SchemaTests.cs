@@ -1,9 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
+using System.Net.Http;
 using System.Text.Json.Nodes;
-using Microsoft.OpenApi.Models;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
 
@@ -181,36 +180,36 @@ internal class User : IUser
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
         await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
         {
-            var path = document.Paths["/todo"].Operations[OperationType.Post];
+            var path = document.Paths["/todo"].Operations[HttpMethod.Post];
             var todo = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This is a todo item.", todo.Description);
 
-            path = document.Paths["/project"].Operations[OperationType.Post];
+            path = document.Paths["/project"].Operations[HttpMethod.Post];
             var project = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("The project that contains Todo items.", project.Description);
 
-            path = document.Paths["/board"].Operations[OperationType.Post];
+            path = document.Paths["/board"].Operations[HttpMethod.Post];
             var board = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("An item on the board.", board.Description);
 
-            path = document.Paths["/protected-internal-element"].Operations[OperationType.Post];
+            path = document.Paths["/protected-internal-element"].Operations[HttpMethod.Post];
             var element = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("The unique identifier for the element.", element.Properties["name"].Description);
             Assert.Equal("Can find this XML comment.", element.Description);
 
-            path = document.Paths["/project-record"].Operations[OperationType.Post];
+            path = document.Paths["/project-record"].Operations[HttpMethod.Post];
             project = path.RequestBody.Content["application/json"].Schema;
 
             Assert.Equal("The name of the project.", project.Properties["name"].Description);
             Assert.Equal("The description of the project.", project.Properties["description"].Description);
 
-            path = document.Paths["/todo-with-description"].Operations[OperationType.Post];
+            path = document.Paths["/todo-with-description"].Operations[HttpMethod.Post];
             todo = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("The identifier of the todo.", todo.Properties["id"].Description);
             Assert.Equal("The name of the todo.", todo.Properties["name"].Description);
             Assert.Equal("Another description of the todo.", todo.Properties["description"].Description);
 
-            path = document.Paths["/type-with-examples"].Operations[OperationType.Post];
+            path = document.Paths["/type-with-examples"].Operations[HttpMethod.Post];
             var typeWithExamples = path.RequestBody.Content["application/json"].Schema;
 
             var booleanTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["booleanType"].Example);
@@ -255,7 +254,7 @@ internal class User : IUser
             var uriTypeExample = Assert.IsAssignableFrom<JsonNode>(typeWithExamples.Properties["uriType"].Example);
             Assert.Equal("https://example.com", uriTypeExample.GetValue<string>());
 
-            path = document.Paths["/user"].Operations[OperationType.Post];
+            path = document.Paths["/user"].Operations[HttpMethod.Post];
             var user = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("The unique identifier for the user.", user.Properties["id"].Description);
             Assert.Equal("The user's display name.", user.Properties["name"].Description);

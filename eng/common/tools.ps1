@@ -65,10 +65,8 @@ $ErrorActionPreference = 'Stop'
 # Base-64 encoded SAS token that has permission to storage container described by $runtimeSourceFeed
 [string]$runtimeSourceFeedKey = if (Test-Path variable:runtimeSourceFeedKey) { $runtimeSourceFeedKey } else { $null }
 
-# True if the build is a product build
-[bool]$productBuild = if (Test-Path variable:productBuild) { $productBuild } else { $false }
-
-[String[]]$properties = if (Test-Path variable:properties) { $properties } else { @() }
+# True when the build is running within the VMR.
+[bool]$fromVMR = if (Test-Path variable:fromVMR) { $fromVMR } else { $false }
 
 function Create-Directory ([string[]] $path) {
     New-Item -Path $path -Force -ItemType 'Directory' | Out-Null
@@ -416,7 +414,7 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
 
   # Locate Visual Studio installation or download x-copy msbuild.
   $vsInfo = LocateVisualStudio $vsRequirements
-  if ($vsInfo -ne $null) {
+  if ($vsInfo -ne $null -and $env:ForceUseXCopyMSBuild -eq $null) {
     # Ensure vsInstallDir has a trailing slash
     $vsInstallDir = Join-Path $vsInfo.installationPath "\"
     $vsMajorVersion = $vsInfo.installationVersion.Split('.')[0]
@@ -646,7 +644,6 @@ function GetNuGetPackageCachePath() {
       $env:NUGET_PACKAGES = Join-Path $env:UserProfile '.nuget\packages\'
     } else {
       $env:NUGET_PACKAGES = Join-Path $RepoRoot '.packages\'
-      $env:RESTORENOHTTPCACHE = $true
     }
   }
 
@@ -768,28 +765,13 @@ function MSBuild() {
 
     $toolsetBuildProject = InitializeToolset
     $basePath = Split-Path -parent $toolsetBuildProject
-    $possiblePaths = @(
-      # new scripts need to work with old packages, so we need to look for the old names/versions
-      (Join-Path $basePath (Join-Path $buildTool.Framework 'Microsoft.DotNet.ArcadeLogging.dll')),
-      (Join-Path $basePath (Join-Path $buildTool.Framework 'Microsoft.DotNet.Arcade.Sdk.dll')),
+    $selectedPath = Join-Path $basePath (Join-Path $buildTool.Framework 'Microsoft.DotNet.ArcadeLogging.dll')
 
-      # This list doesn't need to be updated anymore and can eventually be removed.
-      (Join-Path $basePath (Join-Path net9.0 'Microsoft.DotNet.ArcadeLogging.dll')),
-      (Join-Path $basePath (Join-Path net9.0 'Microsoft.DotNet.Arcade.Sdk.dll')),
-      (Join-Path $basePath (Join-Path net8.0 'Microsoft.DotNet.ArcadeLogging.dll')),
-      (Join-Path $basePath (Join-Path net8.0 'Microsoft.DotNet.Arcade.Sdk.dll'))
-    )
-    $selectedPath = $null
-    foreach ($path in $possiblePaths) {
-      if (Test-Path $path -PathType Leaf) {
-        $selectedPath = $path
-        break
-      }
-    }
     if (-not $selectedPath) {
-      Write-PipelineTelemetryError -Category 'Build' -Message 'Unable to find arcade sdk logger assembly.'
+      Write-PipelineTelemetryError -Category 'Build' -Message "Unable to find arcade sdk logger assembly: $selectedPath"
       ExitWithExitCode 1
     }
+
     $args += "/logger:$selectedPath"
   }
 
@@ -852,8 +834,8 @@ function MSBuild-Core() {
     }
 
     # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-    # Skip this when the build is a child of the VMR orchestrator build.
-    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$productBuild -and -not($properties -like "*DotNetBuildRepo=true*")) {
+    # Skip this when the build is a child of the VMR build.
+    if ($ci -and $env:SYSTEM_TEAMPROJECT -ne $null -and !$fromVMR) {
       Write-PipelineSetResult -Result "Failed" -Message "msbuild execution failed."
       # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
       # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error

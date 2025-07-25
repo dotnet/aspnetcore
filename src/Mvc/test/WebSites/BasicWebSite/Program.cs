@@ -1,20 +1,29 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.Extensions.Hosting;
 
 namespace BasicWebSite;
 
 public class Program
 {
-    public static void Main(string[] args) => CreateWebHostBuilder(args).Build().Run();
+    public static void Main(string[] args)
+    {
+        using var host = CreateHostBuilder(args).Build();
+        host.Run();
+    }
 
-    // Do not change. This is the pattern our test infrastructure uses to initialize a IWebHostBuilder from
-    // a users app.
-    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        new WebHostBuilder()
-            .UseContentRoot(Directory.GetCurrentDirectory())
-            .UseStartup<StartupWithoutEndpointRouting>()
-            .UseKestrel()
-            .UseIISIntegration();
+    // This method now returns IHostBuilder and uses the new pattern with HostBuilder and ConfigureWebHost
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                webHostBuilder
+                    .UseContentRoot(Directory.GetCurrentDirectory())
+                    .UseStartup<StartupWithoutEndpointRouting>()
+                    .UseKestrel()
+                    .UseIISIntegration();
+            });
 }
 
 public class TestService

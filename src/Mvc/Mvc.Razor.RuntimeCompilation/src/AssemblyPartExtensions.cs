@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts;
 /// <summary>
 /// Static class that adds methods to <see cref="AssemblyPart"/>.
 /// </summary>
+[Obsolete("Razor runtime compilation is obsolete and is not recommended for production scenarios. For production scenarios, use the default build time compilation. For development scenarios, use Hot Reload instead. For more information, visit https://aka.ms/aspnet/deprecate/003.", DiagnosticId = "ASPDEPR003")]
 public static class AssemblyPartExtensions
 {
     /// <inheritdoc />

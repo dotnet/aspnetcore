@@ -118,6 +118,12 @@ internal static class WellKnownTypeData
         Microsoft_AspNetCore_Authorization_IAllowAnonymous,
         Microsoft_AspNetCore_Authorization_IAuthorizeData,
         System_AttributeUsageAttribute,
+        System_Text_Json_Serialization_JsonDerivedTypeAttribute,
+        System_ComponentModel_DataAnnotations_DisplayAttribute,
+        System_ComponentModel_DataAnnotations_ValidationAttribute,
+        System_ComponentModel_DataAnnotations_RequiredAttribute,
+        System_ComponentModel_DataAnnotations_CustomValidationAttribute,
+        System_Type,
     }
 
     public static string[] WellKnownTypeNames =
@@ -233,5 +239,11 @@ internal static class WellKnownTypeData
         "Microsoft.AspNetCore.Authorization.IAllowAnonymous",
         "Microsoft.AspNetCore.Authorization.IAuthorizeData",
         "System.AttributeUsageAttribute",
+        "System.Text.Json.Serialization.JsonDerivedTypeAttribute",
+        "System.ComponentModel.DataAnnotations.DisplayAttribute",
+        "System.ComponentModel.DataAnnotations.ValidationAttribute",
+        "System.ComponentModel.DataAnnotations.RequiredAttribute",
+        "System.ComponentModel.DataAnnotations.CustomValidationAttribute",
+        "System.Type",
     ];
 }

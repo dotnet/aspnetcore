@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.OpenApi.Models;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -23,15 +23,15 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[OperationType.Get].Parameters);
+            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("id", pathParameter.Name);
             Assert.Equal(ParameterLocation.Path, pathParameter.In);
 
-            var queryParameter = Assert.Single(document.Paths["/api/todos"].Operations[OperationType.Get].Parameters);
+            var queryParameter = Assert.Single(document.Paths["/api/todos"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("id", queryParameter.Name);
             Assert.Equal(ParameterLocation.Query, queryParameter.In);
 
-            var headerParameter = Assert.Single(document.Paths["/api"].Operations[OperationType.Get].Parameters);
+            var headerParameter = Assert.Single(document.Paths["/api"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("X-Header", headerParameter.Name);
             Assert.Equal(ParameterLocation.Header, headerParameter.In);
         });
@@ -52,13 +52,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[OperationType.Get].Parameters!);
+            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("id", pathParameter.Name);
             Assert.True(pathParameter.Required);
-            var guidParameter = Assert.Single(document.Paths["/api/todos/{guid}"].Operations[OperationType.Get].Parameters!);
+            var guidParameter = Assert.Single(document.Paths["/api/todos/{guid}"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("guid", guidParameter.Name);
             Assert.True(guidParameter.Required);
-            var isCompletedParameter = Assert.Single(document.Paths["/api/todos/{isCompleted}"].Operations[OperationType.Get].Parameters!);
+            var isCompletedParameter = Assert.Single(document.Paths["/api/todos/{isCompleted}"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("isCompleted", isCompletedParameter.Name);
             Assert.True(isCompletedParameter.Required);
         });
@@ -78,13 +78,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var queryParameter = Assert.Single(document.Paths["/api/todos"].Operations[OperationType.Get].Parameters!);
+            var queryParameter = Assert.Single(document.Paths["/api/todos"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("id", queryParameter.Name);
             Assert.True(queryParameter.Required);
-            var nullableQueryParameter = Assert.Single(document.Paths["/api/users"].Operations[OperationType.Get].Parameters!);
+            var nullableQueryParameter = Assert.Single(document.Paths["/api/users"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("id", nullableQueryParameter.Name);
             Assert.False(nullableQueryParameter.Required);
-            var defaultQueryParameter = Assert.Single(document.Paths["/api/projects"].Operations[OperationType.Get].Parameters!);
+            var defaultQueryParameter = Assert.Single(document.Paths["/api/projects"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("id", defaultQueryParameter.Name);
             Assert.False(defaultQueryParameter.Required);
         });
@@ -104,13 +104,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var headerParameter = Assert.Single(document.Paths["/api/todos"].Operations[OperationType.Get].Parameters!);
+            var headerParameter = Assert.Single(document.Paths["/api/todos"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("X-Header", headerParameter.Name);
             Assert.True(headerParameter.Required);
-            var nullableHeaderParameter = Assert.Single(document.Paths["/api/users"].Operations[OperationType.Get].Parameters!);
+            var nullableHeaderParameter = Assert.Single(document.Paths["/api/users"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("X-Header", nullableHeaderParameter.Name);
             Assert.False(nullableHeaderParameter.Required);
-            var defaultHeaderParameter = Assert.Single(document.Paths["/api/projects"].Operations[OperationType.Get].Parameters!);
+            var defaultHeaderParameter = Assert.Single(document.Paths["/api/projects"].Operations![HttpMethod.Get].Parameters!);
             Assert.Equal("X-Header", defaultHeaderParameter.Name);
             Assert.False(defaultHeaderParameter.Required);
         });
@@ -133,13 +133,13 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[OperationType.Get].Parameters);
+            var pathParameter = Assert.Single(document.Paths["/api/todos/{id}"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("id", pathParameter.Name);
             Assert.True(pathParameter.Required);
-            var guidParameter = Assert.Single(document.Paths["/api/todos/{guid}"].Operations[OperationType.Get].Parameters);
+            var guidParameter = Assert.Single(document.Paths["/api/todos/{guid}"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("guid", guidParameter.Name);
             Assert.True(guidParameter.Required);
-            var isCompletedParameter = Assert.Single(document.Paths["/api/todos/{isCompleted}"].Operations[OperationType.Get].Parameters);
+            var isCompletedParameter = Assert.Single(document.Paths["/api/todos/{isCompleted}"].Operations[HttpMethod.Get].Parameters);
             Assert.Equal("isCompleted", isCompletedParameter.Name);
             Assert.True(isCompletedParameter.Required);
         });
@@ -159,9 +159,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var usersOperation = document.Paths["/api/users"].Operations[OperationType.Post];
+            var usersOperation = document.Paths["/api/users"].Operations[HttpMethod.Post];
             Assert.Null(usersOperation.Parameters);
-            var todosOperation = document.Paths["/api/todos"].Operations[OperationType.Post];
+            var todosOperation = document.Paths["/api/todos"].Operations[HttpMethod.Post];
             Assert.Null(todosOperation.Parameters);
         });
     }
@@ -183,12 +183,12 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            Assert.Null(document.Paths["/api/accept"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/accept-lower"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/authorization"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/authorization-lower"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/content-type"].Operations[OperationType.Get].Parameters);
-            Assert.Null(document.Paths["/api/content-type-lower"].Operations[OperationType.Get].Parameters);
+            Assert.Null(document.Paths["/api/accept"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/accept-lower"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/authorization"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/authorization-lower"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/content-type"].Operations[HttpMethod.Get].Parameters);
+            Assert.Null(document.Paths["/api/content-type-lower"].Operations[HttpMethod.Get].Parameters);
         });
     }
 
@@ -199,7 +199,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
 
         await VerifyOpenApiDocument(action, document =>
         {
-            var operation = document.Paths["/custom-binding"].Operations[OperationType.Get];
+            var operation = document.Paths["/custom-binding"].Operations[HttpMethod.Get];
             var parameter = Assert.Single(operation.Parameters);
             Assert.Equal("model", parameter.Name);
             Assert.Equal(ParameterLocation.Query, parameter.In);

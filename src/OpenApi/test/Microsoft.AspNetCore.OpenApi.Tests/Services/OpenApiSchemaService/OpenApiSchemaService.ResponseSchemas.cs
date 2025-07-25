@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Net.Http;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -43,7 +42,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue(contentType, out var mediaType));
@@ -64,7 +63,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
@@ -108,7 +107,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
             var response = operation.Responses["200"];
 
             Assert.NotNull(response);
@@ -122,8 +121,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("id", property.Key);
                     Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
-                    Assert.Equal(1, property.Value.Minimum);
-                    Assert.Equal(100, property.Value.Maximum);
+                    Assert.Equal("1", property.Value.Minimum);
+                    Assert.Equal("100", property.Value.Maximum);
                 },
                 property =>
                 {
@@ -178,7 +177,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
@@ -222,7 +221,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/required-properties"].Operations[OperationType.Post];
+            var operation = document.Paths["/required-properties"].Operations[HttpMethod.Post];
             var response = operation.Responses["200"];
             var content = Assert.Single(response.Content);
             var schema = content.Value.Schema;
@@ -244,7 +243,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
@@ -298,7 +297,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
@@ -366,13 +365,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
             var schema = mediaType.Schema;
             Assert.Equal(JsonSchemaType.Object, schema.Type);
-            Assert.Empty(schema.AnyOf);
+            Assert.Null(schema.AnyOf);
             Assert.Collection(schema.Properties,
                 property =>
                 {
@@ -406,7 +405,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Get];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
@@ -468,7 +467,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
@@ -517,7 +516,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // OpenAPI 3.1.0.
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
@@ -597,7 +596,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/problem+json", out var mediaType));
@@ -655,7 +654,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
@@ -685,7 +684,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         await VerifyOpenApiDocument(actionDescriptor, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Get];
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
             var responses = Assert.Single(operation.Responses);
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));

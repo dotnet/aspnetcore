@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
-using Microsoft.OpenApi.Writers;
 
 public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTestBase
 {
@@ -27,11 +24,11 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var parameter = operation.RequestBody.Content["multipart/form-data"];
             var schema = parameter.Schema;
 
-            var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
+            var operation2 = document.Paths["/api-2"].Operations[HttpMethod.Post];
             var parameter2 = operation2.RequestBody.Content["multipart/form-data"];
             var schema2 = parameter2.Schema;
 
@@ -81,7 +78,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody.Content["application/json"];
             var requestBodySchema = requestBody.Schema;
 
@@ -136,11 +133,11 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody.Content["application/json"];
             var requestBodySchema = requestBody.Schema;
 
-            var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
+            var operation2 = document.Paths["/api-2"].Operations[HttpMethod.Post];
             var requestBody2 = operation2.RequestBody.Content["application/json"];
             var requestBodySchema2 = requestBody2.Schema;
 
@@ -193,11 +190,11 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody.Content["multipart/form-data"];
             var requestBodySchema = requestBody.Schema;
 
-            var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
+            var operation2 = document.Paths["/api-2"].Operations[HttpMethod.Post];
             var requestBody2 = operation2.RequestBody.Content["multipart/form-data"];
             var requestBodySchema2 = requestBody2.Schema;
 
@@ -229,11 +226,11 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody.Content["application/json"];
             var requestBodySchema = requestBody.Schema;
 
-            var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
+            var operation2 = document.Paths["/api-2"].Operations[HttpMethod.Post];
             var requestBody2 = operation2.RequestBody.Content["application/json"];
             var requestBodySchema2 = requestBody2.Schema;
 
@@ -285,7 +282,8 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         {
             if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription is not null)
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny(context.ParameterDescription.Name);
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension(context.ParameterDescription.Name);
             }
             return Task.CompletedTask;
         });
@@ -293,13 +291,13 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             // Schemas are distinct because of applied transformer so no reference is used.
             Assert.NotEqual(((OpenApiSchemaReference)requestSchema).Reference.Id, ((OpenApiSchemaReference)responseSchema).Reference.Id);
-            Assert.Equal("todo", ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            Assert.Equal("todo", ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
             Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
         });
     }
@@ -321,11 +319,11 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         static void VerifyDocument(OpenApiDocument document)
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.Responses["200"].Content["application/json"];
             var requestBodySchema = requestBody.Schema;
 
-            var operation2 = document.Paths["/api-2"].Operations[OperationType.Post];
+            var operation2 = document.Paths["/api-2"].Operations[HttpMethod.Post];
             var requestBody2 = operation2.Responses["200"].Content["application/json"];
             var requestBodySchema2 = requestBody2.Schema;
 
@@ -378,7 +376,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
@@ -442,7 +440,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         // Act & Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
@@ -468,7 +466,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
@@ -545,7 +543,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
@@ -614,7 +612,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
@@ -641,16 +639,16 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
-            var listOperation = document.Paths["/list"].Operations[OperationType.Post];
+            var listOperation = document.Paths["/list"].Operations[HttpMethod.Post];
             var listRequestSchema = listOperation.RequestBody.Content["application/json"].Schema;
 
-            var arrayOperation = document.Paths["/array"].Operations[OperationType.Post];
+            var arrayOperation = document.Paths["/array"].Operations[HttpMethod.Post];
             var arrayRequestSchema = arrayOperation.RequestBody.Content["application/json"].Schema;
 
-            var dictionaryOperation = document.Paths["/dictionary"].Operations[OperationType.Post];
+            var dictionaryOperation = document.Paths["/dictionary"].Operations[HttpMethod.Post];
             var dictionaryRequestSchema = dictionaryOperation.RequestBody.Content["application/json"].Schema;
 
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
@@ -691,7 +689,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
@@ -710,18 +708,15 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
             // Assert items are arrays of strings
             Assert.Equal(JsonSchemaType.Array, seq1Schema.Items.Type);
-            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
-            // Assert.Equal(JsonSchemaType.Array, seq2Schema.Items.Type);
+            Assert.Equal(JsonSchemaType.Array, seq2Schema.Items.Type);
 
             // Since both Seq1 and Seq2 are the same type (List<List<string>>),
             // they should reference the same schema structure
-            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
-            // Assert.Equal(seq1Schema.Items.Type, seq2Schema.Items.Type);
+            Assert.Equal(seq1Schema.Items.Type, seq2Schema.Items.Type);
 
             // Verify the inner arrays contain strings
             Assert.Equal(JsonSchemaType.String, seq1Schema.Items.Items.Type);
-            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
-            // Assert.Equal(JsonSchemaType.String, seq2Schema.Items.Items.Type);
+            Assert.Equal(JsonSchemaType.String, seq2Schema.Items.Items.Type);
 
             Assert.Equal(["ContainerType"], document.Components.Schemas.Keys);
         });
@@ -738,7 +733,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
@@ -776,7 +771,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/parent-object"].Operations[OperationType.Post];
+            var operation = document.Paths["/parent-object"].Operations[HttpMethod.Post];
             var requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for top-level
@@ -789,7 +784,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             var childSchema = requestSchema.Properties["children"].Items;
             Assert.Equal("ParentObject", ((OpenApiSchemaReference)childSchema.Properties["parent"]).Reference.Id);
 
-            operation = document.Paths["/list"].Operations[OperationType.Post];
+            operation = document.Paths["/list"].Operations[HttpMethod.Post];
             requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for items in the list definition
@@ -800,7 +795,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             childSchema = parentSchema.Properties["children"].Items;
             Assert.Equal("ParentObject", ((OpenApiSchemaReference)childSchema.Properties["parent"]).Reference.Id);
 
-            operation = document.Paths["/dictionary"].Operations[OperationType.Post];
+            operation = document.Paths["/dictionary"].Operations[HttpMethod.Post];
             requestSchema = operation.RequestBody.Content["application/json"].Schema;
 
             // Assert $ref used for items in the dictionary definition

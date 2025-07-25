@@ -1,10 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -20,7 +18,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -33,8 +31,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 item => Assert.Equal("square", item.Key)
             );
             Assert.Collection(schema.Discriminator.Mapping,
-                item => Assert.Equal("#/components/schemas/ShapeTriangle", item.Value),
-                item => Assert.Equal("#/components/schemas/ShapeSquare", item.Value)
+                item => Assert.Equal("#/components/schemas/ShapeTriangle", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/ShapeSquare", item.Value.Reference.ReferenceV3)
             );
             // Assert the schemas with the discriminator have been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("ShapeTriangle", out var triangleSchema));
@@ -57,7 +55,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -71,9 +69,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 item => Assert.Equal("2", item.Key)
             );
             Assert.Collection(schema.Discriminator.Mapping,
-                item => Assert.Equal("#/components/schemas/WeatherForecastBaseWeatherForecastWithCity", item.Value),
-                item => Assert.Equal("#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries", item.Value),
-                item => Assert.Equal("#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews", item.Value)
+                item => Assert.Equal("#/components/schemas/WeatherForecastBaseWeatherForecastWithCity", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/WeatherForecastBaseWeatherForecastWithTimeSeries", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/WeatherForecastBaseWeatherForecastWithLocalNews", item.Value.Reference.ReferenceV3)
             );
             // Assert schema with discriminator = 0 has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("WeatherForecastBaseWeatherForecastWithCity", out var citySchema));
@@ -102,7 +100,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -115,8 +113,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 item => Assert.Equal("teacher", item.Key)
             );
             Assert.Collection(schema.Discriminator.Mapping,
-                item => Assert.Equal("#/components/schemas/PersonStudent", item.Value),
-                item => Assert.Equal("#/components/schemas/PersonTeacher", item.Value)
+                item => Assert.Equal("#/components/schemas/PersonStudent", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/PersonTeacher", item.Value.Reference.ReferenceV3)
             );
             // Assert schema with discriminator = 0 has been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("PersonStudent", out var citySchema));
@@ -141,7 +139,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -180,7 +178,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -193,9 +191,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 item => Assert.Equal("pet", item.Key)
             );
             Assert.Collection(schema.Discriminator.Mapping,
-                item => Assert.Equal("#/components/schemas/PetCat", item.Value),
-                item => Assert.Equal("#/components/schemas/PetDog", item.Value),
-                item => Assert.Equal("#/components/schemas/PetPet", item.Value)
+                item => Assert.Equal("#/components/schemas/PetCat", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/PetDog", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/PetPet", item.Value.Reference.ReferenceV3)
             );
             // OpenAPI requires that derived types in a polymorphic schema _always_ have a discriminator
             // property associated with them. STJ permits the discriminator to be omitted from the
@@ -233,7 +231,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -268,7 +266,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -281,8 +279,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 item => Assert.Equal("employee", item.Key)
             );
             Assert.Collection(schema.Discriminator.Mapping,
-                item => Assert.Equal("#/components/schemas/EmployeeManager", item.Value),
-                item => Assert.Equal("#/components/schemas/EmployeeEmployee", item.Value)
+                item => Assert.Equal("#/components/schemas/EmployeeManager", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/EmployeeEmployee", item.Value.Reference.ReferenceV3)
             );
             // Assert that anyOf schemas use the correct reference IDs.
             Assert.Collection(schema.AnyOf,

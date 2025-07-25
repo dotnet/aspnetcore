@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi;
-using Microsoft.OpenApi.Extensions;
-using System.Text.RegularExpressions;
 
 [UsesVerify]
 public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>

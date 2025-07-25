@@ -3,7 +3,7 @@
 
 import { RenderBatch, ArrayBuilderSegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './Events/EventDelegator';
-import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, permuteLogicalChildren, getClosestDomElement, emptyLogicalElement, getLogicalChildrenArray, depthFirstNodeTreeTraversal } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 import { attachToEventDelegator as attachNavigationManagerToEventDelegator } from '../Services/NavigationManager';
 import { applyAnyDeferredValue, tryApplySpecialProperty } from './DomSpecialPropertyUtil';
@@ -63,6 +63,7 @@ export class BrowserRenderer {
 
     // On the first render for each root component, clear any existing content (e.g., prerendered)
     if (elementsToClearOnRootComponentRender.delete(element)) {
+      this.detachEventHandlersFromElement(element);
       emptyLogicalElement(element);
 
       if (element instanceof Comment) {
@@ -107,6 +108,14 @@ export class BrowserRenderer {
 
   private attachComponentToElement(componentId: number, element: LogicalElement) {
     this.childComponentLocations[componentId] = element;
+  }
+
+  private detachEventHandlersFromElement(element: LogicalElement): void {
+    for (const childNode of depthFirstNodeTreeTraversal(element)) {
+      if (childNode instanceof Element) {
+        this.eventDelegator.removeListenersForElement(childNode as Element);
+      }
+    }
   }
 
   private applyEdits(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, edits: ArrayBuilderSegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
@@ -376,7 +385,7 @@ export class BrowserRenderer {
   }
 }
 
-function markAsInteractiveRootComponentElement(element: LogicalElement, isInteractive: boolean) {
+export function markAsInteractiveRootComponentElement(element: LogicalElement, isInteractive: boolean) {
   element[interactiveRootComponentPropname] = isInteractive;
 }
 
@@ -386,6 +395,10 @@ export function isInteractiveRootComponentElement(element: LogicalElement): bool
 
 export function setShouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement, shouldPreserve: boolean) {
   element[preserveContentOnDisposalPropname] = shouldPreserve;
+}
+
+export function setClearContentOnRootComponentRerender(element: LogicalElement): void {
+  elementsToClearOnRootComponentRender.add(element);
 }
 
 function shouldPreserveContentOnInteractiveComponentDisposal(element: LogicalElement): boolean {

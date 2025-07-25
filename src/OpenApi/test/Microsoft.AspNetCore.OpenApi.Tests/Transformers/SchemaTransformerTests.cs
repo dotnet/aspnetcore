@@ -2,14 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
 {
@@ -154,14 +152,16 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            schema.Extensions["x-my-extension"] = new OpenApiAny("1");
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+            schema.Extensions["x-my-extension"] = new JsonNodeExtension("1");
             schema.Format = "1";
             return Task.CompletedTask;
         });
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            Assert.Equal("1", ((OpenApiAny)schema.Extensions["x-my-extension"]).Node.GetValue<string>());
-            schema.Extensions["x-my-extension"] = new OpenApiAny("2");
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+            Assert.Equal("1", ((JsonNodeExtension)schema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            schema.Extensions["x-my-extension"] = new JsonNodeExtension("2");
             return Task.CompletedTask;
         });
 
@@ -169,7 +169,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             var operation = Assert.Single(document.Paths.Values).Operations.Values.Single();
             var schema = operation.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("2", ((OpenApiAny)schema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            Assert.Equal("2", ((JsonNodeExtension)schema.Extensions["x-my-extension"]).Node.GetValue<string>());
         });
     }
 
@@ -186,7 +186,8 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Todo))
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("1");
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("1");
             }
             return Task.CompletedTask;
         });
@@ -194,12 +195,12 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("1", ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
-            var getOperation = path.Operations[OperationType.Get];
+            Assert.Equal("1", ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            Assert.Equal("1", ((OpenApiAny)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            Assert.Equal("1", ((JsonNodeExtension)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
         });
     }
 
@@ -216,7 +217,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription is not null)
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny(context.ParameterDescription.Name);
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension(context.ParameterDescription.Name);
             }
             return Task.CompletedTask;
         });
@@ -224,10 +225,10 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("todo", ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
-            var getOperation = path.Operations[OperationType.Get];
+            Assert.Equal("todo", ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             Assert.False(responseSchema.Extensions.TryGetValue("x-my-extension", out var _));
         });
@@ -247,12 +248,12 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("1", ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
-            var getOperation = path.Operations[OperationType.Get];
+            Assert.Equal("1", ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            Assert.Equal("1", ((OpenApiAny)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            Assert.Equal("1", ((JsonNodeExtension)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
         });
     }
 
@@ -270,12 +271,12 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("1", ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
-            var getOperation = path.Operations[OperationType.Get];
+            Assert.Equal("1", ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            Assert.Equal("1", ((OpenApiAny)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            Assert.Equal("1", ((JsonNodeExtension)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
         });
     }
 
@@ -297,23 +298,23 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            value = ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>();
+            value = ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>();
             Assert.Equal(Dependency.InstantiationCount.ToString(CultureInfo.InvariantCulture), value);
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            Assert.Equal(value, ((OpenApiAny)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            Assert.Equal(value, ((JsonNodeExtension)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
         });
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            Assert.Equal(value, ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
-            var getOperation = path.Operations[OperationType.Get];
+            Assert.Equal(value, ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            Assert.Equal(value, ((OpenApiAny)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            Assert.Equal(value, ((JsonNodeExtension)responseSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
         });
     }
 
@@ -333,20 +334,20 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
             Assert.True(requestSchema.Extensions.ContainsKey("x-my-extension"));
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             Assert.True(responseSchema.Extensions.ContainsKey("x-my-extension"));
         });
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
             Assert.True(requestSchema.Extensions.ContainsKey("x-my-extension"));
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             Assert.True(responseSchema.Extensions.ContainsKey("x-my-extension"));
         });
@@ -370,10 +371,10 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
             Assert.Equal("Schema Description", requestSchema.Description);
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             Assert.Equal("Schema Description", responseSchema.Description);
         });
@@ -396,10 +397,10 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = Assert.Single(document.Paths.Values);
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
             Assert.Equal("Schema Description", requestSchema.Description);
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             Assert.Equal("Schema Description", responseSchema.Description);
         });
@@ -429,12 +430,12 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             // Assert that parameter schema has been update
             var path = Assert.Single(document.Paths.Values);
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Parameters[0].Schema;
             Assert.Equal("modified-number-format", responseSchema.Format);
 
             // Assert that property in request body schema has been updated
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
             Assert.Equal("modified-number-format", requestSchema.Properties["id"].Format);
         });
@@ -464,19 +465,19 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             // Assert that the schema represent list elements has been modified
             var path = document.Paths["/list"];
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             Assert.Equal("modified-number-format", responseSchema.Items.Format);
 
             // Assert that top-level schema associated with the standalone integer has been updated
             path = document.Paths["/single"];
-            getOperation = path.Operations[OperationType.Get];
+            getOperation = path.Operations[HttpMethod.Get];
             responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             Assert.Equal("modified-number-format", responseSchema.Format);
 
             // Assert that the schema represent dictionary values has been modified
             path = document.Paths["/dictionary"];
-            getOperation = path.Operations[OperationType.Get];
+            getOperation = path.Operations[HttpMethod.Get];
             responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             Assert.Equal("modified-number-format", responseSchema.AdditionalProperties.Format);
         });
@@ -495,7 +496,8 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Triangle))
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("this-is-a-triangle");
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-triangle");
             }
             return Task.CompletedTask;
         });
@@ -504,16 +506,16 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             // Assert that the polymorphic sub-type `Triangle` has been updated
             var path = document.Paths["/shape"];
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
             var triangleSubschema = Assert.Single(requestSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
             Assert.True(triangleSubschema.Extensions.TryGetValue("x-my-extension", out var _));
 
             // Assert that the standalone `Triangle` type has been updated
             path = document.Paths["/triangle"];
-            postOperation = path.Operations[OperationType.Post];
+            postOperation = path.Operations[HttpMethod.Post];
             requestSchema = postOperation.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("this-is-a-triangle", ((OpenApiAny)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
+            Assert.Equal("this-is-a-triangle", ((JsonNodeExtension)requestSchema.Extensions["x-my-extension"]).Node.GetValue<string>());
         });
     }
 
@@ -539,14 +541,14 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             // Assert that the `id` property in the `Todo` within the array has been updated
             var path = document.Paths["/list-of-todo"];
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             var itemSchema = responseSchema.Items;
             Assert.Equal("modified-number-format", itemSchema.Properties["id"].Format);
 
             // Assert that the integer type within the list has been updated
             var otherPath = document.Paths["/list-of-int"];
-            var otherGetOperation = otherPath.Operations[OperationType.Get];
+            var otherGetOperation = otherPath.Operations[HttpMethod.Get];
             var otherResponseSchema = otherGetOperation.Responses["200"].Content["application/json"].Schema;
             var otherItemSchema = otherResponseSchema.Items;
             Assert.Equal("modified-number-format", otherItemSchema.Format);
@@ -563,13 +565,14 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             if (context.JsonTypeInfo.Type == typeof(Triangle))
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("this-is-a-triangle");
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-triangle");
             }
             if (context.JsonTypeInfo.Type == typeof(Square))
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("this-is-a-square");
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-square");
             }
             return Task.CompletedTask;
         });
@@ -578,19 +581,19 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             // Assert that the `Triangle` type within the list has been updated
             var path = document.Paths["/list"];
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             var itemSchema = responseSchema.Items;
             var triangleSubschema = Assert.Single(itemSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
             // Assert that the x-my-extension type is set to this-is-a-triangle
             Assert.True(triangleSubschema.Extensions.TryGetValue("x-my-extension", out var triangleExtension));
-            Assert.Equal("this-is-a-triangle", ((OpenApiAny)triangleExtension).Node.GetValue<string>());
+            Assert.Equal("this-is-a-triangle", ((JsonNodeExtension)triangleExtension).Node.GetValue<string>());
 
             // Assert that the `Square` type within the polymorphic type list has been updated
             var squareSubschema = Assert.Single(itemSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeSquare"));
             // Assert that the x-my-extension type is set to this-is-a-square
             Assert.True(squareSubschema.Extensions.TryGetValue("x-my-extension", out var squareExtension));
-            Assert.Equal("this-is-a-square", ((OpenApiAny)squareExtension).Node.GetValue<string>());
+            Assert.Equal("this-is-a-square", ((JsonNodeExtension)squareExtension).Node.GetValue<string>());
         });
     }
 
@@ -604,13 +607,14 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             if (context.JsonTypeInfo.Type == typeof(Triangle))
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("this-is-a-triangle");
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-triangle");
             }
             if (context.JsonTypeInfo.Type == typeof(Square))
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("this-is-a-square");
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-square");
             }
             return Task.CompletedTask;
         });
@@ -619,19 +623,19 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             // Assert that the `Triangle` type within the list has been updated
             var path = document.Paths["/list"];
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             var someShapeSchema = responseSchema.Properties["someShape"];
             var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
             // Assert that the x-my-extension type is set to this-is-a-triangle
             Assert.True(triangleSubschema.Extensions.TryGetValue("x-my-extension", out var triangleExtension));
-            Assert.Equal("this-is-a-triangle", ((OpenApiAny)triangleExtension).Node.GetValue<string>());
+            Assert.Equal("this-is-a-triangle", ((JsonNodeExtension)triangleExtension).Node.GetValue<string>());
 
             // Assert that the `Square` type within the polymorphic type list has been updated
             var squareSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeSquare"));
             // Assert that the x-my-extension type is set to this-is-a-square
             Assert.True(squareSubschema.Extensions.TryGetValue("x-my-extension", out var squareExtension));
-            Assert.Equal("this-is-a-square", ((OpenApiAny)squareExtension).Node.GetValue<string>());
+            Assert.Equal("this-is-a-square", ((JsonNodeExtension)squareExtension).Node.GetValue<string>());
         });
     }
 
@@ -645,13 +649,14 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             if (context.JsonTypeInfo.Type == typeof(Triangle))
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("this-is-a-triangle");
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-triangle");
             }
             if (context.JsonTypeInfo.Type == typeof(Square))
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("this-is-a-square");
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("this-is-a-square");
             }
             return Task.CompletedTask;
         });
@@ -660,19 +665,19 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             // Assert that the `Triangle` type within the list has been updated
             var path = document.Paths["/list"];
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
             var someShapeSchema = responseSchema.Items.Properties["someShape"];
             var triangleSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
             // Assert that the x-my-extension type is set to this-is-a-triangle
             Assert.True(triangleSubschema.Extensions.TryGetValue("x-my-extension", out var triangleExtension));
-            Assert.Equal("this-is-a-triangle", ((OpenApiAny)triangleExtension).Node.GetValue<string>());
+            Assert.Equal("this-is-a-triangle", ((JsonNodeExtension)triangleExtension).Node.GetValue<string>());
 
             // Assert that the `Square` type within the polymorphic type list has been updated
             var squareSubschema = Assert.Single(someShapeSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeSquare"));
             // Assert that the x-my-extension type is set to this-is-a-square
             Assert.True(squareSubschema.Extensions.TryGetValue("x-my-extension", out var squareExtension));
-            Assert.Equal("this-is-a-square", ((OpenApiAny)squareExtension).Node.GetValue<string>());
+            Assert.Equal("this-is-a-square", ((JsonNodeExtension)squareExtension).Node.GetValue<string>());
         });
     }
 
@@ -700,7 +705,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = document.Paths["/todo"];
-            var postOperation = path.Operations[OperationType.Post];
+            var postOperation = path.Operations[HttpMethod.Post];
             var requestSchema = postOperation.RequestBody.Content["application/x-www-form-urlencoded"].Schema;
             Assert.Equal(2, requestSchema.AllOf.Count);
             var todoSchema = requestSchema.AllOf[0];
@@ -733,7 +738,8 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         });
         UseNotSchemaTransformer(options, (schema, context, cancellationToken) =>
         {
-            schema.Extensions["modified-by-not-schema-transformer"] = new OpenApiAny(true);
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+            schema.Extensions["modified-by-not-schema-transformer"] = new JsonNodeExtension(true);
             return Task.CompletedTask;
         });
 
@@ -741,15 +747,15 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, options, document =>
         {
             var path = document.Paths["/todo"];
-            var getOperation = path.Operations[OperationType.Get];
+            var getOperation = path.Operations[HttpMethod.Get];
             var responseSchema = getOperation.Responses["200"].Content["application/json"].Schema;
-            Assert.True(((OpenApiAny)responseSchema.Not.Extensions["modified-by-not-schema-transformer"]).Node.GetValue<bool>());
+            Assert.True(((JsonNodeExtension)responseSchema.Not.Extensions["modified-by-not-schema-transformer"]).Node.GetValue<bool>());
 
             var shapePath = document.Paths["/shape"];
-            var shapeOperation = shapePath.Operations[OperationType.Post];
+            var shapeOperation = shapePath.Operations[HttpMethod.Post];
             var shapeRequestSchema = shapeOperation.RequestBody.Content["application/json"].Schema;
             var triangleSchema = Assert.Single(shapeRequestSchema.AnyOf.Where(s => ((OpenApiSchemaReference)s).Reference.Id == "ShapeTriangle"));
-            Assert.True(((OpenApiAny)triangleSchema.Not.Extensions["modified-by-not-schema-transformer"]).Node.GetValue<bool>());
+            Assert.True(((JsonNodeExtension)triangleSchema.Not.Extensions["modified-by-not-schema-transformer"]).Node.GetValue<bool>());
         });
 
         static void UseNotSchemaTransformer(OpenApiOptions options, Func<OpenApiSchema, OpenApiSchemaTransformerContext, CancellationToken, Task> func)
@@ -758,7 +764,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
             {
                 if (schema.Not != null)
                 {
-                    var targetSchema = schema.Not is OpenApiSchemaReference reference ? reference.Target : (OpenApiSchema)schema.Not;
+                    OpenApiSchema targetSchema = schema.Not is OpenApiSchemaReference reference ? (OpenApiSchema)reference.Target : (OpenApiSchema)schema.Not;
                     await func(targetSchema, context, cancellationToken);
                 }
                 return;
@@ -948,7 +954,8 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         {
             if (context.JsonTypeInfo.Type == typeof(Todo))
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("1");
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("1");
             }
             return Task.CompletedTask;
         }
@@ -996,7 +1003,8 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
             dependency.TestMethod();
-            schema.Extensions["x-my-extension"] = new OpenApiAny(Dependency.InstantiationCount.ToString(CultureInfo.InvariantCulture));
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
+            schema.Extensions["x-my-extension"] = new JsonNodeExtension(Dependency.InstantiationCount.ToString(CultureInfo.InvariantCulture));
             return Task.CompletedTask;
         }
     }

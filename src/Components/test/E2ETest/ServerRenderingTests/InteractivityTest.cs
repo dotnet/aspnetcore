@@ -1059,6 +1059,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/persist-state?server=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("server")).Text);
+        Browser.Equal("42", () => Browser.FindElement(By.Id("custom-server")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server")).Text);
     }
 
@@ -1077,6 +1078,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/persist-state?wasm=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("wasm")).Text);
+        Browser.Equal("42", () => Browser.FindElement(By.Id("custom-wasm")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm")).Text);
     }
 
@@ -1095,6 +1097,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/persist-state?auto=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
+        Browser.Equal("42", () => Browser.FindElement(By.Id("custom-auto")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
     }
 
@@ -1156,6 +1159,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Navigate($"{ServerPathBase}/persist-state?auto=true&declarative=true");
 
         Browser.Equal("restored", () => Browser.FindElement(By.Id("auto")).Text);
+        Browser.Equal("42", () => Browser.FindElement(By.Id("custom-auto")).Text);
         Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto")).Text);
     }
 
@@ -1399,4 +1403,105 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Browser.Equal("restored 2", () => Browser.FindElement(By.Id("auto-2")).Text);
         Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto-2")).Text);
     }
+
+    [Fact]
+    public void CanPersistMultipleRootPrerenderedStateDeclaratively_WebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-multiple-root-component-state-declaratively?wasm=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("wasm-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("wasm-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-wasm-2")).Text);
+    }
+
+    [Fact]
+    public void CanPersistMultipleRootPrerenderedStateDeclaratively_Server()
+    {
+        Navigate($"{ServerPathBase}/persist-multiple-root-component-state-declaratively?server=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("server-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("server-2")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-server-2")).Text);
+    }
+
+    [Fact]
+    public void CanPersistMultipleRootPrerenderedStateDeclaratively_Auto_PersistsOnServer()
+    {
+        Navigate(ServerPathBase);
+        Browser.Equal("Hello", () => Browser.Exists(By.TagName("h1")).Text);
+        BlockWebAssemblyResourceLoad();
+
+        Navigate($"{ServerPathBase}/persist-multiple-root-component-state-declaratively?auto=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("auto-1")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("auto-2")).Text);
+        Browser.Equal("Server", () => Browser.FindElement(By.Id("render-mode-auto-2")).Text);
+    }
+
+    [Fact]
+    public void CanPersistMultipleRootPrerenderedStateDeclaratively_Auto_PersistsOnWebAssembly()
+    {
+        Navigate($"{ServerPathBase}/persist-multiple-root-component-state-declaratively?auto=true");
+
+        Browser.Equal("restored 1", () => Browser.FindElement(By.Id("auto-1")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto-1")).Text);
+
+        Browser.Equal("restored 2", () => Browser.FindElement(By.Id("auto-2")).Text);
+        Browser.Equal("WebAssembly", () => Browser.FindElement(By.Id("render-mode-auto-2")).Text);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void NavigatesWithInteractivityByRequestRedirection(bool controlFlowByException)
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: !controlFlowByException);
+        Navigate($"{ServerPathBase}/routing/ssr-navigate-to");
+        Browser.Equal("Click submit to navigate to home", () => Browser.Exists(By.Id("test-info")).Text);
+        Browser.Click(By.Id("redirectButton"));
+        Browser.Equal("Routing test cases", () => Browser.Exists(By.Id("test-info")).Text);
+    }
+
+    [Theory]
+    // prerendering (SSR) is tested in NoInteractivityTest
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void ProgrammaticNavigationToNotExistingPathReExecutesTo404(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found?renderMode={renderMode}&navigate-programmatically=true");
+        Assert404ReExecuted();
+    }
+
+    [Theory]
+    // prerendering (SSR) is tested in NoInteractivityTest
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void LinkNavigationToNotExistingPathReExecutesTo404(string renderMode)
+    {
+        Navigate($"{ServerPathBase}/reexecution/redirection-not-found?renderMode={renderMode}");
+        Browser.Click(By.Id("link-to-not-existing-page"));
+        Assert404ReExecuted();
+    }
+
+    [Theory]
+    // prerendering (SSR) is tested in NoInteractivityTest
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void BrowserNavigationToNotExistingPathReExecutesTo404(string renderMode)
+    {
+        // non-existing path has to have re-execution middleware set up
+        // so it has to have "reexecution" prefix. Otherwise middleware mapping
+        // will not be activated, see configuration in Startup
+        Navigate($"{ServerPathBase}/reexecution/not-existing-page?renderMode={renderMode}");
+        Assert404ReExecuted();
+    }
+
+    private void Assert404ReExecuted() =>
+        Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 }

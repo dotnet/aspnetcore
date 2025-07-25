@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.ApiDescriptions;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi;
 
@@ -188,5 +190,113 @@ public class OpenApiServiceCollectionExtensions
         var namedOption = options.Get(documentName);
         Assert.Equal(documentName, namedOption.DocumentName);
         Assert.Equal(OpenApiSpecVersion.OpenApi2_0, namedOption.OpenApiVersion);
+    }
+
+    [Fact]
+    public void AddOpenApi_WithDefaultDocumentName_RegistersIOpenApiDocumentProviderInterface()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        // Include dependencies for OpenApiDocumentService
+        services.AddSingleton<IHostEnvironment>(new HostingEnvironment
+        {
+            EnvironmentName = Environments.Development,
+            ApplicationName = "Test Application"
+        });
+        services.AddLogging();
+        services.AddRouting();
+
+        // Act
+        services.AddOpenApi();
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(Microsoft.AspNetCore.OpenApi.OpenApiConstants.DefaultDocumentName);
+        Assert.NotNull(documentProvider);
+        Assert.IsType<OpenApiDocumentService>(documentProvider);
+    }
+
+    [Fact]
+    public void AddOpenApi_WithCustomDocumentName_RegistersIOpenApiDocumentProviderInterface()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        // Include dependencies for OpenApiDocumentService
+        services.AddSingleton<IHostEnvironment>(new HostingEnvironment
+        {
+            EnvironmentName = Environments.Development,
+            ApplicationName = "Test Application"
+        });
+        services.AddLogging();
+        services.AddRouting();
+        var documentName = "v1";
+
+        // Act
+        services.AddOpenApi(documentName);
+        var serviceProvider = services.BuildServiceProvider();
+
+        // Assert
+        var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(documentName.ToLowerInvariant());
+        Assert.NotNull(documentProvider);
+        Assert.IsType<OpenApiDocumentService>(documentProvider);
+    }
+
+    [Fact]
+    public async Task GetOpenApiDocumentAsync_ReturnsDocument()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        // Include dependencies for OpenApiDocumentService
+        services.AddSingleton<IHostEnvironment>(new HostingEnvironment
+        {
+            EnvironmentName = Environments.Development,
+            ApplicationName = "Test Application"
+        });
+        services.AddLogging();
+        services.AddRouting();
+
+        var documentName = "v1";
+        services.AddOpenApi(documentName);
+        var serviceProvider = services.BuildServiceProvider();
+        var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(documentName.ToLowerInvariant());
+
+        // Act
+        var document = await documentProvider.GetOpenApiDocumentAsync();
+
+        // Assert
+        Assert.NotNull(document);
+        Assert.IsType<OpenApiDocument>(document);
+
+        // Verify basic document structure
+        Assert.NotNull(document.Info);
+        Assert.Equal($"Test Application | {documentName.ToLowerInvariant()}", document.Info.Title);
+        Assert.Equal("1.0.0", document.Info.Version);
+    }
+
+    [Fact]
+    public async Task GetOpenApiDocumentAsync_HandlesCancellation()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<IHostEnvironment>(new HostingEnvironment
+        {
+            EnvironmentName = Environments.Development,
+            ApplicationName = "Test Application"
+        });
+        services.AddLogging();
+        services.AddRouting();
+        var documentName = "v1";
+        services.AddOpenApi(documentName);
+        var serviceProvider = services.BuildServiceProvider();
+        var documentProvider = serviceProvider.GetRequiredKeyedService<IOpenApiDocumentProvider>(documentName.ToLowerInvariant());
+
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+        {
+            await documentProvider.GetOpenApiDocumentAsync(cts.Token);
+        });
     }
 }

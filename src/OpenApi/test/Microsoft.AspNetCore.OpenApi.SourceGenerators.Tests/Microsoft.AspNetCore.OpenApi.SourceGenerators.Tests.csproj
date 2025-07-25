@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.OpenApi" />
-    <Reference Include="Microsoft.OpenApi.Readers" />
     <Reference Include="Verify.SourceGenerators" />
     <Reference Include="Verify.Xunit" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
@@ -32,6 +31,10 @@
 
   <ItemGroup>
     <HelixContent Include="$(MSBuildProjectDirectory)\snapshots\**"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.OpenApi" />
   </ItemGroup>
 
 </Project>

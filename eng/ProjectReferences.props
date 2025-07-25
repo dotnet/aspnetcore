@@ -9,6 +9,7 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.Caching.SqlServer" ProjectPath="$(RepoRoot)src\Caching\SqlServer\src\Microsoft.Extensions.Caching.SqlServer.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Caching.StackExchangeRedis" ProjectPath="$(RepoRoot)src\Caching\StackExchangeRedis\src\Microsoft.Extensions.Caching.StackExchangeRedis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore" ProjectPath="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.JsonPatch.SystemTextJson" ProjectPath="$(RepoRoot)src\Features\JsonPatch.SystemTextJson\src\Microsoft.AspNetCore.JsonPatch.SystemTextJson.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.JsonPatch" ProjectPath="$(RepoRoot)src\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.Abstractions" ProjectPath="$(RepoRoot)src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Cryptography.Internal" ProjectPath="$(RepoRoot)src\DataProtection\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
@@ -169,5 +170,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.JsonTranscoding\Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Grpc.Swagger" ProjectPath="$(RepoRoot)src\Grpc\JsonTranscoding\src\Microsoft.AspNetCore.Grpc.Swagger\Microsoft.AspNetCore.Grpc.Swagger.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.OpenApi" ProjectPath="$(RepoRoot)src\OpenApi\src\Microsoft.AspNetCore.OpenApi.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Validation" ProjectPath="$(RepoRoot)src\Validation\src\Microsoft.Extensions.Validation.csproj" />
   </ItemGroup>
 </Project>

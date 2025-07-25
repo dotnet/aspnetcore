@@ -116,30 +116,33 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
     throw new Error('This browser does not support WebAssembly.');
   }
 
-  let src = '_framework/dotnet.js';
 
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
-    const customSrc = startOptions.loadBootResource(resourceType, 'dotnet.js', src, '', 'js-module-dotnet');
+    const customSrc = startOptions.loadBootResource(resourceType, 'dotnet.js', '_framework/dotnet.js', '', 'js-module-dotnet');
     if (typeof (customSrc) === 'string') {
-      src = customSrc;
+      const absoluteSrc = (new URL(customSrc, document.baseURI)).toString();
+      return await import(/* webpackIgnore: true */ absoluteSrc);
     } else if (customSrc) {
       // Since we must load this via a import, it's only valid to supply a URI (and not a Request, say)
       throw new Error(`For a ${resourceType} resource, custom loaders must supply a URI string.`);
     }
   }
 
-  const absoluteSrc = (new URL(src, document.baseURI)).toString();
-  return await import(/* webpackIgnore: true */ absoluteSrc);
+  // @ts-ignore: This dynamic import is handled at runtime and does not need a type declaration.
+  return await import(/* webpackIgnore: true */ "./dotnet.js");
 }
 
 function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfigLoadedCallback?: (loadedConfig: MonoConfig) => void): DotnetModuleConfig {
   const config: MonoConfig = {
     maxParallelDownloads: 1000000, // disable throttling parallel downloads
     enableDownloadRetry: false, // disable retry downloads
-    applicationEnvironment: options.environment,
   };
+
+  if (options.environment) {
+    config.applicationEnvironment = options.environment;
+  }
 
   const onConfigLoaded = async (loadedConfig: MonoConfig) => {
     if (!loadedConfig.environmentVariables) {

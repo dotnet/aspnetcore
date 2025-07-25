@@ -60,6 +60,11 @@ parameters:
       artifactNames: ''
       downloadArtifacts: true
 
+  - name: isAssetlessBuild
+    type: boolean
+    displayName: Is Assetless Build
+    default: false
+
   # These parameters let the user customize the call to sdk-task.ps1 for publishing
   # symbols & general artifacts as well as for signing validation
   - name: symbolPublishingAdditionalParameters
@@ -188,9 +193,6 @@ stages:
             buildId: $(AzDOBuildId)
             artifactName: PackageArtifacts
             checkDownloadedFiles: true
-            itemPattern: |
-              **
-              !**/Microsoft.SourceBuild.Intermediate.*.nupkg
 
         # This is necessary whenever we want to publish/restore to an AzDO private feed
         # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
@@ -320,3 +322,4 @@ stages:
               -RequireDefaultChannels ${{ parameters.requireDefaultChannels }}
               -ArtifactsPublishingAdditionalParameters '${{ parameters.artifactsPublishingAdditionalParameters }}'
               -SymbolPublishingAdditionalParameters '${{ parameters.symbolPublishingAdditionalParameters }}'
+              -SkipAssetsPublishing '${{ parameters.isAssetlessBuild }}'
