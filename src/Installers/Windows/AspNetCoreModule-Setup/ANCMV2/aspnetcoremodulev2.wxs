@@ -263,7 +263,7 @@
                 </RegistryKey>
             </Component>
 
-            <Directory Id="$(var.ProgramFilesFolder32)">
+            <StandardDirectory Id="ProgramFiles6432Folder">
                  <Directory Id="IISModuleDirectory32" Name="IIS">
                     <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="Asp.Net Core Module">
                         <Directory Id="VersionDir32" Name="$(var.ProductVersionString)" SourceName="WowOnly">
@@ -285,7 +285,7 @@
                         </Directory>
                     </Directory>
                 </Directory>
-            </Directory>
+            </StandardDirectory>
             <?endif?>
         </Package>
 
