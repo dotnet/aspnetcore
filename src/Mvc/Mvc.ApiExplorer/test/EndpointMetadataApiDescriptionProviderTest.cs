@@ -795,7 +795,9 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
@@ -1918,4 +1920,8 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     private class GenericClass<TType> { public required TType Value { get; set; } }
+
+    private class CustomFromKeyedServicesAttribute(object key) : FromKeyedServicesAttribute(key);
+
+    private class CustomFromServicesAttribute : FromServicesAttribute;
 }
