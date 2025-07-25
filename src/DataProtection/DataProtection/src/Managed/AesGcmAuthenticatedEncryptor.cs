@@ -141,83 +141,6 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         }
     }
 
-    public int GetEncryptedSize(int plainTextLength)
-    {
-        // A buffer to hold the key modifier, nonce, encrypted data, and tag.
-        // In GCM, the encrypted output will be the same length as the plaintext input.
-        return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES));
-    }
-
-    public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
-    {
-        bytesWritten = 0;
-
-        try
-        {
-            // Generate random key modifier and nonce
-            var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
-            var nonceBytes = _genRandom.GenRandom(NONCE_SIZE_IN_BYTES);
-
-            // KeyModifier and nonce to destination
-            keyModifier.CopyTo(destination.Slice(bytesWritten, KEY_MODIFIER_SIZE_IN_BYTES));
-            bytesWritten += KEY_MODIFIER_SIZE_IN_BYTES;
-            nonceBytes.CopyTo(destination.Slice(bytesWritten, NONCE_SIZE_IN_BYTES));
-            bytesWritten += NONCE_SIZE_IN_BYTES;
-
-            // At this point, destination := { keyModifier | nonce | _____ | _____ }
-
-            // Use the KDF to generate a new symmetric block cipher key
-            // We'll need a temporary buffer to hold the symmetric encryption subkey
-            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
-                ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
-                : new byte[_keyDerivationKey.Length];
-            var derivedKey = _derivedkeySizeInBytes <= 256
-                ? stackalloc byte[256].Slice(0, _derivedkeySizeInBytes)
-                : new byte[_derivedkeySizeInBytes];
-
-            fixed (byte* decryptedKdkUnsafe = decryptedKdk)
-            fixed (byte* __unused__2 = derivedKey)
-            {
-                try
-                {
-                    _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
-                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
-                        kdk: decryptedKdk,
-                        label: additionalAuthenticatedData,
-                        contextHeader: _contextHeader,
-                        contextData: keyModifier,
-                        operationSubkey: derivedKey,
-                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */ );
-
-                    // Perform GCM encryption. Destination buffer expected structure:
-                    // { keyModifier | nonce | encryptedData | authenticationTag }
-                    var nonce = destination.Slice(KEY_MODIFIER_SIZE_IN_BYTES, NONCE_SIZE_IN_BYTES);
-                    var encrypted = destination.Slice(bytesWritten, plaintext.Length);
-                    var tag = destination.Slice(bytesWritten + plaintext.Length, TAG_SIZE_IN_BYTES);
-
-                    using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
-                    aes.Encrypt(nonce, plaintext, encrypted, tag);
-
-                    // At this point, destination := { keyModifier | nonce | encryptedData | authenticationTag }
-                    // And we're done!
-                    bytesWritten += plaintext.Length + TAG_SIZE_IN_BYTES;
-                    return true;
-                }
-                finally
-                {
-                    // delete since these contain secret material
-                    decryptedKdk.Clear();
-                    derivedKey.Clear();
-                }
-            }
-        }
-        catch (Exception ex) when (ex.RequiresHomogenization())
-        {
-            // Homogenize all exceptions to CryptographicException.
-            throw Error.CryptCommon_GenericError(ex);
-        }
-    }
-
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
     {
         plaintext.Validate();
@@ -296,6 +219,85 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
 
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
         => Encrypt(plaintext, additionalAuthenticatedData, 0, 0);
+
+#if NET10_0_OR_GREATER
+    public int GetEncryptedSize(int plainTextLength)
+    {
+        // A buffer to hold the key modifier, nonce, encrypted data, and tag.
+        // In GCM, the encrypted output will be the same length as the plaintext input.
+        return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES));
+    }
+
+    public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        bytesWritten = 0;
+
+        try
+        {
+            // Generate random key modifier and nonce
+            var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
+            var nonceBytes = _genRandom.GenRandom(NONCE_SIZE_IN_BYTES);
+
+            // KeyModifier and nonce to destination
+            keyModifier.CopyTo(destination.Slice(bytesWritten, KEY_MODIFIER_SIZE_IN_BYTES));
+            bytesWritten += KEY_MODIFIER_SIZE_IN_BYTES;
+            nonceBytes.CopyTo(destination.Slice(bytesWritten, NONCE_SIZE_IN_BYTES));
+            bytesWritten += NONCE_SIZE_IN_BYTES;
+
+            // At this point, destination := { keyModifier | nonce | _____ | _____ }
+
+            // Use the KDF to generate a new symmetric block cipher key
+            // We'll need a temporary buffer to hold the symmetric encryption subkey
+            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
+                ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
+                : new byte[_keyDerivationKey.Length];
+            var derivedKey = _derivedkeySizeInBytes <= 256
+                ? stackalloc byte[256].Slice(0, _derivedkeySizeInBytes)
+                : new byte[_derivedkeySizeInBytes];
+
+            fixed (byte* decryptedKdkUnsafe = decryptedKdk)
+            fixed (byte* __unused__2 = derivedKey)
+            {
+                try
+                {
+                    _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
+                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
+                        kdk: decryptedKdk,
+                        label: additionalAuthenticatedData,
+                        contextHeader: _contextHeader,
+                        contextData: keyModifier,
+                        operationSubkey: derivedKey,
+                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */ );
+
+                    // Perform GCM encryption. Destination buffer expected structure:
+                    // { keyModifier | nonce | encryptedData | authenticationTag }
+                    var nonce = destination.Slice(KEY_MODIFIER_SIZE_IN_BYTES, NONCE_SIZE_IN_BYTES);
+                    var encrypted = destination.Slice(bytesWritten, plaintext.Length);
+                    var tag = destination.Slice(bytesWritten + plaintext.Length, TAG_SIZE_IN_BYTES);
+
+                    using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
+                    aes.Encrypt(nonce, plaintext, encrypted, tag);
+
+                    // At this point, destination := { keyModifier | nonce | encryptedData | authenticationTag }
+                    // And we're done!
+                    bytesWritten += plaintext.Length + TAG_SIZE_IN_BYTES;
+                    return true;
+                }
+                finally
+                {
+                    // delete since these contain secret material
+                    decryptedKdk.Clear();
+                    derivedKey.Clear();
+                }
+            }
+        }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            // Homogenize all exceptions to CryptographicException.
+            throw Error.CryptCommon_GenericError(ex);
+        }
+    }
+#endif
 
     public void Dispose()
     {

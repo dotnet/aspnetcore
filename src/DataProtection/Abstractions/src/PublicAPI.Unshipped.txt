@@ -1,3 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.DataProtection.IDataProtector.GetProtectedSize(System.ReadOnlySpan<byte> plainText) -> int
-Microsoft.AspNetCore.DataProtection.IDataProtector.TryProtect(System.ReadOnlySpan<byte> plainText, System.Span<byte> destination, out int bytesWritten) -> bool
+Microsoft.AspNetCore.DataProtection.IOptimizedDataProtector
+Microsoft.AspNetCore.DataProtection.IOptimizedDataProtector.GetProtectedSize(System.ReadOnlySpan<byte> plainText) -> int
+Microsoft.AspNetCore.DataProtection.IOptimizedDataProtector.TryProtect(System.ReadOnlySpan<byte> plainText, System.Span<byte> destination, out int bytesWritten) -> bool
