@@ -693,6 +693,90 @@ public class CircuitHostTest
             ((TestRemoteRenderer)circuitHost.Renderer).GetTestComponentState(0));
     }
 
+    [Fact]
+    public async Task UpdateRootComponents_ValidatesOperationSequencingDuringValueUpdateRestore()
+    {
+        // Arrange
+        var testRenderer = GetRemoteRenderer();
+        var circuitHost = TestCircuitHost.Create(
+            remoteRenderer: testRenderer);
+
+        // Set up initial components for subsequent operations
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 0, new Dictionary<string, object>
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = "Component 0"
+        });
+        await AddComponentAsync<DynamicallyAddedComponent>(circuitHost, 1, new Dictionary<string, object>
+        {
+            [nameof(DynamicallyAddedComponent.Message)] = "Component 1"
+        });
+
+        Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+        var store = new TestComponentApplicationStore(
+            new Dictionary<string, byte[]> { ["test"] = [1, 2, 3] });
+
+        var operations = new RootComponentOperation[]
+        {
+            new()
+            {
+                Type = RootComponentOperationType.Add,
+                SsrComponentId = 2,
+                Marker = CreateMarker(typeof(DynamicallyAddedComponent), "2", new Dictionary<string, object>
+                {
+                    [nameof(DynamicallyAddedComponent.Message)] = "New Component 2"
+                }),
+                Descriptor = new(
+                    componentType: typeof(DynamicallyAddedComponent),
+                    parameters: CreateWebRootComponentParameters(new Dictionary<string, object>
+                    {
+                        [nameof(DynamicallyAddedComponent.Message)] = "New Component 2"
+                    })),
+            },
+
+            new()
+            {
+                Type = RootComponentOperationType.Remove,
+                SsrComponentId = 0,
+            },
+
+            new()
+            {
+                Type = RootComponentOperationType.Update,
+                SsrComponentId = 1,
+                Marker = CreateMarker(typeof(DynamicallyAddedComponent), "1", new Dictionary<string, object>
+                {
+                    [nameof(DynamicallyAddedComponent.Message)] = "Replaced Component 1"
+                }),
+                Descriptor = new(
+                    componentType: typeof(DynamicallyAddedComponent),
+                    parameters: CreateWebRootComponentParameters(new Dictionary<string, object>
+                    {
+                        [nameof(DynamicallyAddedComponent.Message)] = "Replaced Component 1"
+                    })),
+            },
+        };
+
+        var batch = new RootComponentOperationBatch
+        {
+            BatchId = 1,
+            Operations = operations
+        };
+
+        var updateTask = circuitHost.UpdateRootComponents(batch, store, false, CancellationToken.None);
+        Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+        Assert.Equal("Default message", Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(3).Component).Message);
+        Assert.Equal("Default message", Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(2).Component).Message);
+        store.Continue();
+        await updateTask;
+
+        // Enqueue a callback to indirectly await for the remaining operations to complete.
+        await testRenderer.Dispatcher.InvokeAsync(() => { });
+        Assert.Equal("Replaced Component 1", Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(3).Component).Message);
+        Assert.Equal("New Component 2", Assert.IsType<DynamicallyAddedComponent>(testRenderer.GetTestComponentState(2).Component).Message);
+
+        Assert.Equal(2, testRenderer.GetOrCreateWebRootComponentManager().GetRootComponents().Count());
+    }
+
     private async Task AddComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
         where TComponent : IComponent
     {
@@ -707,7 +791,7 @@ public class CircuitHostTest
         };
 
         // Add component
-        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, null, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [addOperation] }, null, false, CancellationToken.None);
     }
 
     private async Task UpdateComponentAsync<TComponent>(CircuitHost circuitHost, int ssrComponentId, Dictionary<string, object> parameters = null, string componentKey = "")
@@ -723,7 +807,7 @@ public class CircuitHostTest
         };
 
         // Update component
-        await circuitHost.UpdateRootComponents(new() { Operations = [updateOperation] }, null, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [updateOperation] }, null, false, CancellationToken.None);
     }
 
     private async Task RemoveComponentAsync(CircuitHost circuitHost, int ssrComponentId)
@@ -735,7 +819,7 @@ public class CircuitHostTest
         };
 
         // Remove component
-        await circuitHost.UpdateRootComponents(new() { Operations = [removeOperation] }, null, CancellationToken.None);
+        await circuitHost.UpdateRootComponents(new() { Operations = [removeOperation] }, null, false, CancellationToken.None);
     }
 
     private ProtectedPrerenderComponentApplicationStore CreateStore()
@@ -823,7 +907,7 @@ public class CircuitHostTest
                   NullLogger.Instance,
                   CreateJSRuntime(new CircuitOptions()),
                   new CircuitJSComponentInterop(new CircuitOptions()))
-        {
+        {            
         }
 
         public ComponentState GetTestComponentState(int id)
@@ -1050,5 +1134,21 @@ public class CircuitHostTest
             var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(_renderFragment));
             Assert.True(task.IsCompletedSuccessfully);
         }
+    }
+
+    private class TestComponentApplicationStore(Dictionary<string, byte[]> dictionary) : IPersistentComponentStateStore, IClearableStore
+    {
+        private readonly TaskCompletionSource _tcs = new();
+
+        public void Clear() => dictionary.Clear();
+
+        public async Task<IDictionary<string, byte[]>> GetPersistedStateAsync()
+        {
+            await _tcs.Task;
+            return dictionary;
+        }
+
+        public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state) => throw new NotImplementedException();
+        internal void Continue() => _tcs.SetResult();
     }
 }
