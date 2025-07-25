@@ -246,3 +246,12 @@ message PrefixEnumType {
   }
   PrefixEnum single_enum = 1;
 }
+
+message CollisionPrefixEnumType {
+  enum CollisionPrefixEnum {
+    COLLISION_PREFIX_ENUM_UNSPECIFIED = 0;
+    COLLISION_PREFIX_ENUM_FOO = 1;
+    COLLISION_PREFIX_ENUM_COLLISION_PREFIX_ENUM_FOO = 2;
+  }
+  CollisionPrefixEnum single_enum = 1;
+}

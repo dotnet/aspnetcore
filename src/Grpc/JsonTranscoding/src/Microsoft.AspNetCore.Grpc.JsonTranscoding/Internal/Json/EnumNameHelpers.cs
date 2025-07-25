@@ -75,6 +75,10 @@ internal static class JsonNamingHelpers
 
         var writeMapping = nameMappings.ToDictionary(m => m.Value, m => m);
 
+        // Add original names as fallback when mapping enum values with removed prefixes.
+        // There are added to the dictionary first so they are overridden by the mappings with removed prefixes.
+        var removeEnumPrefixMapping = nameMappings.ToDictionary(m => m.OriginalName, m => m.OriginalName);
+
         // Protobuf codegen prevents collision of enum names when the prefix is removed.
         // For example, the following enum will fail to build because both fields would resolve to "OK":
         //
@@ -89,9 +93,10 @@ internal static class JsonNamingHelpers
         // (If you are using allow_alias, please assign the same number to each enum value name.)
         //
         // Just in case it does happen, map to the first value rather than error.
-        var removeEnumPrefixMapping = nameMappings
-            .GroupBy(m => m.RemoveEnumPrefixName)
-            .ToDictionary(g => g.Key, g => g.First().OriginalName, StringComparer.Ordinal);
+        foreach (var item in nameMappings.GroupBy(m => m.RemoveEnumPrefixName).Select(g => KeyValuePair.Create(g.Key, g.First().OriginalName)))
+        {
+            removeEnumPrefixMapping[item.Key] = item.Value;
+        }
 
         return new EnumMapping { WriteMapping = writeMapping, RemoveEnumPrefixMapping = removeEnumPrefixMapping };
     }

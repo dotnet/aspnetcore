@@ -50,10 +50,16 @@ public sealed class GrpcJsonSettings
     /// }
     /// </code>
     /// <para>
-    /// <c>STATUS</c> prefix is removed from enum values when <see cref="RemoveEnumPrefix"/> is set to <see langword="true"/>.
-    /// The enum values above will be read and written as <c>UNKNOWN</c> and <c>OK</c> instead of <c>STATUS_UNKNOWN</c>
-    /// and <c>STATUS_OK</c>.
+    /// When <see cref="RemoveEnumPrefix"/> is set to <see langword="true"/>:
     /// </para>
+    /// <list type="bullet">
+    /// <item>
+    /// <description>The <c>STATUS</c> prefix is removed from enum values. The enum values above will be read and written as <c>UNKNOWN</c> and <c>OK</c> instead of <c>STATUS_UNKNOWN</c> and <c>STATUS_OK</c>.</description>
+    /// </item>
+    /// <item>
+    /// <description>Original prefixed values are used as a fallback when reading JSON. For example, <c>STATUS_OK</c> and <c>OK</c> map to the <c>STATUS_OK</c> enum value.</description>
+    /// </item>
+    /// </list>
     /// <para>
     /// The Protobuf JSON specification requires enum values in JSON to match enum fields exactly.
     /// Enabling this option may reduce interoperability, as removing enum prefix might not be supported
