@@ -21,7 +21,7 @@ public class FormatterMappings
     /// </summary>
     /// <param name="format">The format value.</param>
     /// <param name="contentType">The media type for the format value.</param>
-    public void SetMediaTypeMappingForFormat(string format, string? contentType)
+    public void SetMediaTypeMappingForFormat(string format, string contentType)
     {
         ArgumentNullException.ThrowIfNull(format);
         ArgumentNullException.ThrowIfNull(contentType);
@@ -35,7 +35,7 @@ public class FormatterMappings
     /// </summary>
     /// <param name="format">The format value.</param>
     /// <param name="contentType">The media type for the format value.</param>
-    public void SetMediaTypeMappingForFormat(string format, MediaTypeHeaderValue? contentType)
+    public void SetMediaTypeMappingForFormat(string format, MediaTypeHeaderValue contentType)
     {
         ArgumentNullException.ThrowIfNull(format);
         ArgumentNullException.ThrowIfNull(contentType);

@@ -47,7 +47,7 @@ public sealed class MediaTypeOptions
     /// If charset is not specified in the contentType, the encoding will default to UTF-8.
     /// </remarks>
     /// <param name="contentType">The content type to add.</param>
-    public void AddText(string? contentType)
+    public void AddText(string contentType)
     {
         ArgumentNullException.ThrowIfNull(contentType);
 
@@ -59,7 +59,7 @@ public sealed class MediaTypeOptions
     /// </summary>
     /// <param name="contentType">The content type to add.</param>
     /// <param name="encoding">The encoding to use.</param>
-    public void AddText(string? contentType, Encoding encoding)
+    public void AddText(string contentType, Encoding encoding)
     {
         ArgumentNullException.ThrowIfNull(contentType);
         ArgumentNullException.ThrowIfNull(encoding);

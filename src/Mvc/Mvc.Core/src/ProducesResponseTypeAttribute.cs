@@ -45,7 +45,7 @@ public class ProducesResponseTypeAttribute : Attribute, IApiResponseMetadataProv
     /// <param name="statusCode">The HTTP response status code.</param>
     /// <param name="contentType">The content type associated with the response.</param>
     /// <param name="additionalContentTypes">Additional content types supported by the response.</param>
-    public ProducesResponseTypeAttribute(Type type, int statusCode, string? contentType, params string[] additionalContentTypes)
+    public ProducesResponseTypeAttribute(Type type, int statusCode, string contentType, params string[] additionalContentTypes)
     {
         ArgumentNullException.ThrowIfNull(contentType);
 
