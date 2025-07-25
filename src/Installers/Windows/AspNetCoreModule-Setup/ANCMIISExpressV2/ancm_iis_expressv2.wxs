@@ -226,7 +226,7 @@
               </Directory>
             </Directory>
           </Directory>
-        </StandardDirectory>
+        </Directory>
         <?endif?>
       </DirectoryRef>
 
