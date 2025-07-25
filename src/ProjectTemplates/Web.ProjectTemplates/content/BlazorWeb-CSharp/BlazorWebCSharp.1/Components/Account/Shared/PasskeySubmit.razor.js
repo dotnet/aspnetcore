@@ -93,7 +93,38 @@ customElements.define('passkey-submit', class extends HTMLElement {
         const formData = new FormData();
         try {
             const credential = await this.obtainCredential(useConditionalMediation, signal);
-            const credentialJson = JSON.stringify(credential);
+            
+            let credentialJson = "";
+            try {
+                credentialJson = JSON.stringify(credential);
+            } catch (error) {
+                if (error.message !== 'Illegal invocation') {
+                    throw error;
+                }
+                
+                // Some password managers do not implement PublicKeyCredential.prototype.toJSON correctly,
+                // which is required for JSON.stringify() to work.
+                // e.g. https://www.1password.community/discussions/1password/typeerror-illegal-invocation-in-chrome-browser/47399
+                // Try and serialize the credential to JSON manually.
+                credentialJson = JSON.stringify({
+                    authenticatorAttachment: credential.authenticatorAttachment,
+                    clientExtensionResults: credential.getClientExtensionResults(),
+                    id: credential.id,
+                    rawId: this.convertToBase64(credential.rawId),
+                    response: {
+                        attestationObject: this.convertToBase64(credential.response.attestationObject),
+                        authenticatorData: this.convertToBase64(credential.response.authenticatorData ?? credential.response.getAuthenticatorData?.() ?? undefined),
+                        clientDataJSON: this.convertToBase64(credential.response.clientDataJSON),
+                        publicKey: this.convertToBase64(credential.response.getPublicKey?.() ?? undefined),
+                        publicKeyAlgorithm: credential.response.getPublicKeyAlgorithm?.() ?? undefined,
+                        transports: credential.response.getTransports?.() ?? undefined,
+                        signature: this.convertToBase64(credential.response.signature),
+                        userHandle: this.convertToBase64(credential.response.userHandle),
+                    },
+                    type: credential.type,
+                });
+            }
+            
             formData.append(`${this.attrs.name}.CredentialJson`, credentialJson);
         } catch (error) {
             if (error.name === 'AbortError') {
@@ -113,6 +144,42 @@ customElements.define('passkey-submit', class extends HTMLElement {
         }
         this.internals.setFormValue(formData);
         this.internals.form.submit();
+    }
+
+    convertToBase64(o) {
+        if (!o) {
+            return undefined;
+        }
+        
+        // Array or ArrayBuffer to Uint8Array
+        if (Array.isArray(o)) {
+            o = Uint8Array.from(o);
+        }
+
+        if (o instanceof ArrayBuffer) {
+            o = new Uint8Array(o);
+        }
+
+        // Uint8Array to base64
+        if (o instanceof Uint8Array) {
+            var str = "";
+            var len = o.byteLength;
+
+            for (var i = 0; i < len; i++) {
+                str += String.fromCharCode(o[i]);
+            }
+            o = window.btoa(str);
+        }
+
+        if (typeof o !== "string") {
+            throw new Error("could not coerce to string");
+        }
+
+        // base64 to base64url
+        // NOTE: "=" at the end of challenge is optional, strip it off here
+        o = o.replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
+
+        return o;
     }
 
     async tryAutofillPasskey() {
