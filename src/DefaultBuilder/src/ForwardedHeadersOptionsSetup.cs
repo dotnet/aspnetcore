@@ -53,7 +53,7 @@ internal sealed class ForwardedHeadersOptionsSetup : IConfigureOptions<Forwarded
         var knownNetworks = _configuration["ForwardedHeaders_KnownIPNetworks"]?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries) ?? [];
         foreach (var network in knownNetworks)
         {
-            if (IPNetwork.TryParse(network, var ipNetwork))
+            if (IPNetwork.TryParse(network, out var ipNetwork))
             {
                 options.KnownIPNetworks.Add(ipNetwork);
             }
