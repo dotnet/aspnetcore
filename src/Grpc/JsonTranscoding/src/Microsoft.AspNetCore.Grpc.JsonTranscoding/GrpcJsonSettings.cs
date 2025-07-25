@@ -34,13 +34,13 @@ public sealed class GrpcJsonSettings
     public bool WriteIndented { get; set; }
 
     /// <summary>
-    /// Gets or sets a value that indicates whether field names are compared using case-insensitive matching during deserialization.
+    /// Gets or sets a value that indicates whether property names are compared using case-insensitive matching during deserialization.
     /// The default value is <see langword="false"/>.
     /// </summary>
     /// <remarks>
     /// <para>
     /// The Protobuf JSON specification requires JSON property names to match message field names exactly, including case.
-    /// Enabling this option may reduce interoperability, as case-insensitive field matching might not be supported
+    /// Enabling this option may reduce interoperability, as case-insensitive property matching might not be supported
     /// by other JSON transcoding implementations.
     /// </para>
     /// <para>
