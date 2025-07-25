@@ -166,7 +166,7 @@ customElements.define('passkey-submit', class extends HTMLElement {
             var str = "";
             const len = o.byteLength;
 
-            for (var i = 0; i < len; i++) {
+            for (let i = 0; i < len; i++) {
                 str += String.fromCharCode(o[i]);
             }
             o = window.btoa(str);
