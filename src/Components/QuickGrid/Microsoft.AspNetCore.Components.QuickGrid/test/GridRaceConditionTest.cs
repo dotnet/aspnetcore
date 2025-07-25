@@ -76,7 +76,7 @@ public class GridRaceConditionTest
         // and demonstrate the race condition by calling init after disposal
         moduleLoadCompletion.SetResult();
 
-        // Wait for OnAfterRenderAsync to complete - deterministic timing instead of arbitrary delay
+        // Wait until after OnAfterRenderAsync has completed, to make sure jsmodule import started and the reported issue is reproduced
         var failingGrid = testComponent.FailingQuickGrid;
         await failingGrid.OnAfterRenderCompleted;
 
