@@ -125,6 +125,8 @@ public class TestService
                 await endpoint.RequestDelegate(httpContext);
 
                 var problemDetails = await AssertBadRequest(httpContext);
+                // With the fix, IValidatableObject validation should not run when property validation fails
+                // So we should only get the property validation errors, not the IValidatableObject error for Value1
                 Assert.Collection(problemDetails.Errors,
                     error =>
                     {
@@ -141,11 +143,6 @@ public class TestService
                     {
                         Assert.Equal("SubType.Value3", error.Key);
                         Assert.Equal("The field ValidatableSubType must be 'some-value'.", error.Value.Single());
-                    },
-                    error =>
-                    {
-                        Assert.Equal("Value1", error.Key);
-                        Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
                     });
             }
 

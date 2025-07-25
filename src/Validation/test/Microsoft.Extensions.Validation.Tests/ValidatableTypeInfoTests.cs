@@ -586,6 +586,96 @@ public class ValidatableTypeInfoTests
             });
     }
 
+    [Fact]
+    public async Task Validate_IValidatableObject_ShouldNotRunWhenPropertyValidationFails()
+    {
+        // Arrange
+        var testObjectType = new TestValidatableTypeInfo(
+            typeof(TestObjectWithValidation),
+            [
+                CreatePropertyInfo(typeof(TestObjectWithValidation), typeof(string), "Name", "Name",
+                    [new RequiredAttribute()]),
+                CreatePropertyInfo(typeof(TestObjectWithValidation), typeof(int), "Age", "Age",
+                    [new RangeAttribute(1, 100)])
+            ]);
+
+        var testObject = new TestObjectWithValidation
+        {
+            Name = "", // Invalid - required field is empty
+            Age = 25   // Valid
+        };
+
+        var context = new ValidateContext
+        {
+            ValidationOptions = new TestValidationOptions(new Dictionary<Type, ValidatableTypeInfo>
+            {
+                { typeof(TestObjectWithValidation), testObjectType }
+            }),
+            ValidationContext = new ValidationContext(testObject)
+        };
+
+        // Act
+        await testObjectType.ValidateAsync(testObject, context, default);
+
+        // Assert
+        Assert.NotNull(context.ValidationErrors);
+        Assert.Contains("Name", context.ValidationErrors.Keys);
+        
+        // The key assertion: IValidatableObject should NOT be called when property validation fails
+        Assert.False(testObject.IValidatableObjectWasCalled, "IValidatableObject.Validate should not be called when property validation fails");
+    }
+
+    [Fact]
+    public void DoesNotCallObjectValidation_WhenPropertyAttributeValidationFails()
+    {
+        // Arrange
+        var address = new AddressWithValidation { Street = "123" }; // Too short for MinLength(5)
+        var context = new ValidationContext(address);
+        var results = new List<ValidationResult>();
+
+        // Act
+        var isValid = Validator.TryValidateObject(address, context, results, validateAllProperties: true);
+
+        // Assert
+        Assert.False(isValid);
+        Assert.Contains(results, r => r.ErrorMessage!.Contains("minimum length of '5'"));
+        Assert.DoesNotContain(results, r => r.ErrorMessage == "Address-level validation ran.");
+        Assert.False(address.WasValidateCalled);
+    }
+
+    private class AddressWithValidation : IValidatableObject
+    {
+        [MinLength(5)]
+        public string Street { get; set; } = string.Empty;
+
+        public bool WasValidateCalled { get; private set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            WasValidateCalled = true;
+            yield return new ValidationResult("Address-level validation ran.");
+        }
+    }
+
+    // Test class to demonstrate the expected behavior
+    private class TestObjectWithValidation : IValidatableObject
+    {
+        public string Name { get; set; } = string.Empty;
+        public int Age { get; set; }
+        public bool IValidatableObjectWasCalled { get; set; }
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            IValidatableObjectWasCalled = true;
+            
+            // This should NOT be called if there are property validation errors
+            if (Age < 18)
+            {
+                yield return new ValidationResult("Age must be at least 18", new[] { nameof(Age) });
+            }
+        }
+    }
+
     // Returns no member names to validate https://github.com/dotnet/aspnetcore/issues/61739
     private class GlobalErrorObject : IValidatableObject
     {
