@@ -98,7 +98,8 @@ customElements.define('passkey-submit', class extends HTMLElement {
             try {
                 credentialJson = JSON.stringify(credential);
             } catch (error) {
-                if (error.message !== 'Illegal invocation') {
+                // Check for 'TypeError' instead of relying on the exact error message.
+                if (error.name !== 'TypeError') {
                     throw error;
                 }
                 
