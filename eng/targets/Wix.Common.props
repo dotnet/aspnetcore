@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <CustomBeforeWixTargets>$(MSBuildThisFileDirectory)BeforeWix.Common.targets</CustomBeforeWixTargets>
     <TargetFrameworkMoniker>Native,Version=v0.0</TargetFrameworkMoniker>
 
     <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
@@ -18,8 +19,6 @@
     <NuGetRestoreTargets Condition="'$(NuGetRestoreTargets)'=='' and '$([MSBuild]::IsRunningFromVisualStudio())'=='true'">$(MSBuildToolsPath32)\..\..\..\Common7\IDE\CommonExtensions\Microsoft\NuGet\NuGet.targets</NuGetRestoreTargets>
     <NuGetRestoreTargets Condition="'$(NuGetRestoreTargets)'==''">$(MSBuildToolsPath)\NuGet.targets</NuGetRestoreTargets>
   </PropertyGroup>
-
-  <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" Condition="'$(_ProjectExtensionsWereImported)' != 'true'" />
 
   <ItemGroup Condition="'$(UseWix5)' != 'true'">
     <PackageReference Include="Microsoft.Signed.Wix" Version="$(WixVersion)" />

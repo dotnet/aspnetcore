@@ -9,9 +9,10 @@
 
   <!-- Additional parameters for Light/Candle-->
   <PropertyGroup>
-    <LinkerAdditionalOptions>-fv</LinkerAdditionalOptions>
     <SuppressIces>ICE61</SuppressIces>
     <SuppressWarnings>1033</SuppressWarnings>
+    <!-- Currently, WiX only supports 'full' for the -pdbType option. This affects both bundle and package projects. -->
+    <DebugType>full</DebugType>
   </PropertyGroup>
 
   <PropertyGroup>

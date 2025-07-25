@@ -96,28 +96,28 @@
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
-  <Target Name="CreateWixPackageDrop" AfterTargets="CopyToArtifactsDirectory">
-    <MakeDir Directories="$(WixCommandPackagesDir)" />
-    <ItemGroup>
-      <WixInstallerFilesToProcess Include="$(TargetPath)" />
-      <WixInstallerFilesToProcess Include="$(InstallersOutputPath)$(PackageFileName)"
-        Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' " />
-    </ItemGroup>
-    <CreateLightCommandPackageDrop
-      LightCommandWorkingDir="$(WixCommandObjDir)"
-      OutputFolder="$(WixCommandPackagesDir)"
-      NoLogo="true"
-      Cultures="en-us"
-      InstallerFile="%(WixInstallerFilesToProcess.Identity)"
-      AdditionalBasePaths="$(MSBuildProjectDirectory);$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle"
-      WixExtensions="@(WixExtension)"
-      Loc="@(EmbeddedResource)"
-      Sice="$(SuppressIces)"
-      WixProjectFile="$(MSBuildProjectFile)"
-      Fv="true"
-      WixSrcFiles="@(CompileObjOutput);@(WixObject);@(WixLibProjects);@(_ResolvedWixLibraryPaths)">
-      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
-    </CreateLightCommandPackageDrop>
+  <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile">
+    <PropertyGroup>
+      <WixpackWorkingDir>$(IntermediateOutputPath)wixpack</WixpackWorkingDir>
+      <WixpackOutputDir>$(ArtifactsNonShippingPackagesDir)</WixpackOutputDir>
+    </PropertyGroup>
+
+    <CreateWixBuildWixpack
+      BindTrackingFile="$(IntermediateOutputPath)$(BindTrackingFilePrefix)%(CultureGroup.OutputSuffix)$(BindTrackingFileExtension)"
+      Cultures="%(CultureGroup.Identity)"
+      DefineConstants="$(DefineConstants);$(SolutionDefineConstants);$(ProjectDefineConstants);$(ProjectReferenceDefineConstants)"
+      Extensions="@(_ResolvedWixExtensionPaths)"
+      InstallerPlatform="$(InstallerPlatform)"
+      InstallerFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetFileName)"
+      IntermediateDirectory="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)"
+      OutputFolder="$(WixpackOutputDir)"
+      OutputType="$(OutputType)"
+      PdbFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetPdbFileName)"
+      PdbType="$(DebugType)"
+      SourceFiles="@(Compile)"
+      WixpackWorkingDir="$(WixpackWorkingDir)">
+      <Output TaskParameter="OutputFile" PropertyName="_WixBuildCommandPackageNameOutput" />
+    </CreateWixBuildWixpack>
   </Target>
 
   <!-- wixprojs don't do any packaging but the target is called from Arcade's Build.proj. -->
