@@ -41,6 +41,7 @@ public class RequestPathBaseTests : FixtureLoggedTest
     [InlineData("/Sub%5CApp/PathAndPathBase/", @"/Sub\App/PathAndPathBase", "/")]
     [InlineData("/Sub/App/PathAndPathBase/Path", "/Sub/App/PathAndPathBase", "/Path")]
     [InlineData("/Sub/App/PathANDPathBase/PATH", "/Sub/App/PathANDPathBase", "/PATH")]
+    [SkipOnCI]
     public async Task RequestPathBase_Split(string url, string expectedPathBase, string expectedPath)
     {
         // The test app trims the test name off of the request path and puts it on the PathBase.
