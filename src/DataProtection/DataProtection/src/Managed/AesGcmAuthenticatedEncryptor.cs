@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.DataProtection.SP800_108;
 namespace Microsoft.AspNetCore.DataProtection.Managed;
 
 // An encryptor that uses AesGcm to do encryption
-internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthenticatedEncryptor, IDisposable
+internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthenticatedEncryptor, ISpanAuthenticatedEncryptor, IDisposable
 {
     // Having a key modifier ensures with overwhelming probability that no two encryption operations
     // will ever derive the same (encryption subkey, MAC subkey) pair. This limits an attacker's
@@ -220,7 +220,6 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
         => Encrypt(plaintext, additionalAuthenticatedData, 0, 0);
 
-#if NET10_0_OR_GREATER
     public int GetEncryptedSize(int plainTextLength)
     {
         // A buffer to hold the key modifier, nonce, encrypted data, and tag.
@@ -297,7 +296,6 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
             throw Error.CryptCommon_GenericError(ex);
         }
     }
-#endif
 
     public void Dispose()
     {

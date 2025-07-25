@@ -231,7 +231,6 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
         }
     }
 
-#if NET10_0_OR_GREATER
     public override int GetEncryptedSize(int plainTextLength)
     {
         // A buffer to hold the key modifier, nonce, encrypted data, and tag.
@@ -309,7 +308,6 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
             throw Error.CryptCommon_GenericError(ex);
         }
     }
-#endif
 
     protected override byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer)
     {

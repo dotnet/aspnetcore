@@ -300,7 +300,6 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
         CryptoUtil.Assert(dwEncryptedBytes == cbOutput, "dwEncryptedBytes == cbOutput");
     }
 
-#if NET10_0_OR_GREATER
     public override int GetEncryptedSize(int plainTextLength)
     {
         uint paddedCiphertextLength = GetCbcEncryptedOutputSizeWithPadding((uint)plainTextLength);
@@ -405,7 +404,6 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncrypt
             throw Error.CryptCommon_GenericError(ex);
         }
     }
-#endif
 
     protected override byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer)
     {

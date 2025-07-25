@@ -22,6 +22,10 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'">
+    <Reference Include="System.Memory" />
+  </ItemGroup>
+
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Abstractions.Tests" />
   </ItemGroup>

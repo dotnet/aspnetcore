@@ -277,12 +277,11 @@ sealed class MockActivator(IXmlDecryptor decryptor, IAuthenticatedEncryptorDescr
 /// <summary>
 /// A mock authenticated encryptor that only applies the identity function (i.e. does nothing).
 /// </summary>
-sealed class MockAuthenticatedEncryptor : IAuthenticatedEncryptor
+sealed class MockAuthenticatedEncryptor : ISpanAuthenticatedEncryptor
 {
-    byte[] IAuthenticatedEncryptor.Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> _additionalAuthenticatedData) => ciphertext.ToArray();
-    byte[] IAuthenticatedEncryptor.Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> _additionalAuthenticatedData) => plaintext.ToArray();
+    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> _additionalAuthenticatedData) => ciphertext.ToArray();
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> _additionalAuthenticatedData) => plaintext.ToArray();
 
-#if NET10_0_OR_GREATER
     public int GetEncryptedSize(int plainTextLength) => plainTextLength;
 
     public bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
@@ -291,7 +290,6 @@ sealed class MockAuthenticatedEncryptor : IAuthenticatedEncryptor
         bytesWritten = destination.Length;
         return result;
     }
-#endif
 }
 
 /// <summary>
