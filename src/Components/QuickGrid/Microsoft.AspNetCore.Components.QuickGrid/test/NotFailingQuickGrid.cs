@@ -17,8 +17,6 @@ internal class NotFailingGrid<TGridItem> : QuickGrid<TGridItem>
 
     private readonly TaskCompletionSource _onAfterRenderCompleted = new();
 
-    private bool _completionSignaled;
-
     /// <summary>
     /// Task that completes when OnAfterRenderAsync has finished executing.
     /// This allows tests to wait deterministically for the race condition to occur.
@@ -32,21 +30,13 @@ internal class NotFailingGrid<TGridItem> : QuickGrid<TGridItem>
             if (firstRender)
             {
                 await base.OnAfterRenderAsync(firstRender);
-                if (!_completionSignaled)
-                {
-                    _completionSignaled = true;
-                    _onAfterRenderCompleted.TrySetResult();
-                }
-                ;
-                return;
             }
         }
         finally
         {
-            if (firstRender && !_completionSignaled)
+            if (firstRender)
             {
                 _onAfterRenderCompleted.TrySetResult();
-                _completionSignaled = true;
             }
         }
     }

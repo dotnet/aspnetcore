@@ -18,7 +18,6 @@ internal class FailingQuickGrid<TGridItem> : QuickGrid<TGridItem>, IAsyncDisposa
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private readonly TaskCompletionSource _onAfterRenderCompleted = new();
-    private bool _completionSignaled;
 
     public bool DisposeAsyncWasCalled { get; private set; }
 
@@ -71,25 +70,14 @@ internal class FailingQuickGrid<TGridItem> : QuickGrid<TGridItem>, IAsyncDisposa
                     // Import the JS module (this will trigger our TestJsRuntime's import logic)
                     var jsModule = await JS.InvokeAsync<IJSObjectReference>("import",
                         "./_content/Microsoft.AspNetCore.Components.QuickGrid/QuickGrid.razor.js");
-
                     await jsModule.InvokeAsync<IJSObjectReference>("init", new object());
-
-                    // Signal completion only after the init call has completed, and only once
-                    if (!_completionSignaled)
-                    {
-                        _completionSignaled = true;
-                        _onAfterRenderCompleted.TrySetResult();
-                    }
-                    return;
                 }
             }
         }
         finally
         {
-            // Only signal completion if we haven't already done it and this is the first render
-            if (firstRender && !_completionSignaled)
+            if (firstRender)
             {
-                _completionSignaled = true;
                 _onAfterRenderCompleted.TrySetResult();
             }
         }
