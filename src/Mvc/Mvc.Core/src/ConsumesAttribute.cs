@@ -36,7 +36,7 @@ public class ConsumesAttribute :
     /// <param name="contentType">The request content type.</param>
     /// <param name="otherContentTypes">The additional list of allowed request content types.</param>
     /// </summary>
-    public ConsumesAttribute(string contentType, params string[] otherContentTypes)
+    public ConsumesAttribute(string? contentType, params string[] otherContentTypes)
     {
         ArgumentNullException.ThrowIfNull(contentType);
 
@@ -59,7 +59,7 @@ public class ConsumesAttribute :
     /// <param name="contentType">The request content type.</param>
     /// <param name="otherContentTypes">The additional list of allowed request content types.</param>
     /// </summary>
-    public ConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
+    public ConsumesAttribute(Type requestType, string? contentType, params string[] otherContentTypes)
     {
         ArgumentNullException.ThrowIfNull(contentType);
 

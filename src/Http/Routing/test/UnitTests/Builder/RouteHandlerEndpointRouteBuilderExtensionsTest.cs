@@ -1103,7 +1103,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
 
     class TestConsumesAttribute : Attribute, IAcceptsMetadata
     {
-        public TestConsumesAttribute(Type requestType, string contentType, params string[] otherContentTypes)
+        public TestConsumesAttribute(Type requestType, string? contentType, params string[] otherContentTypes)
         {
             ArgumentNullException.ThrowIfNull(contentType);
 

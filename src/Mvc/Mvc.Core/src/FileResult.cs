@@ -19,7 +19,7 @@ public abstract class FileResult : ActionResult
     /// the provided <paramref name="contentType"/>.
     /// </summary>
     /// <param name="contentType">The Content-Type header of the response.</param>
-    protected FileResult(string contentType)
+    protected FileResult(string? contentType)
     {
         ArgumentNullException.ThrowIfNull(contentType);
 
