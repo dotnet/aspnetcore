@@ -11,6 +11,7 @@ using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobufMessages;
 using Transcoding;
 using Xunit.Abstractions;
 
@@ -529,6 +530,25 @@ public class JsonConverterReadTests
 }";
 
         AssertReadJson<HelloRequest.Types.Wrappers>(json);
+    }
+
+    [Fact]
+    public void NullableWrappers_Type()
+    {
+        var json = @"{
+  ""stringValue"": ""A string"",
+  ""int32Value"": 1,
+  ""int64Value"": ""2"",
+  ""floatValue"": 1.2,
+  ""doubleValue"": 1.1,
+  ""boolValue"": true,
+  ""uint32Value"": 3,
+  ""uint64Value"": ""4"",
+  ""bytesValue"": ""SGVsbG8gd29ybGQ=""
+}";
+
+        var result = AssertReadJson<WrappersMessage>(json, serializeOld: false);
+        Assert.Equal("A string", result.StringValue.Value);
     }
 
     [Fact]
