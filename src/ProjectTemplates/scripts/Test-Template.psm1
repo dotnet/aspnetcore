@@ -18,28 +18,129 @@ function Test-Template {
         [string] $TargetFramework = "net10.0"
     )
 
+    Write-Verbose "=== DOTNET ENVIRONMENT DEBUG START ==="
+    Write-Verbose "PSScriptRoot: $PSScriptRoot"
+    Write-Verbose "Current DOTNET_ROOT: $($env:DOTNET_ROOT)"
+    Write-Verbose "Current DOTNET_ROOT_X86: $($env:DOTNET_ROOT_X86)"
+    Write-Verbose "Current PATH: $($env:PATH)"
+
+    # Check what Get-Command dotnet finds
+    $dotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
+    if ($dotnetCommand) {
+        Write-Verbose "Get-Command dotnet found: $($dotnetCommand.Source)"
+        Write-Verbose "Dotnet version from Get-Command location:"
+        & $dotnetCommand.Source --version | ForEach-Object { Write-Verbose "  $_" }
+    } else {
+        Write-Verbose "Get-Command dotnet found: NONE"
+    }
+
     if(-not (Test-Path "$PSScriptRoot/.dotnet")){
+        Write-Verbose "Local .dotnet folder does not exist, creating it..."
+
+        # Original logic: use Get-Command dotnet
         $dotnetFolder = Get-Command dotnet | Select-Object -ExpandProperty Source | Split-Path -Parent;
+        Write-Verbose "Dotnet folder from Get-Command: $dotnetFolder"
+
+        # Let's also check what's in the repo root
+        $repoRoot = "$PSScriptRoot/../../../";
+        $repoDotnetFolder = "$repoRoot/.dotnet";
+        Write-Verbose "Repository root: $repoRoot"
+        Write-Verbose "Repository .dotnet folder: $repoDotnetFolder"
+        Write-Verbose "Repository .dotnet exists: $(Test-Path $repoDotnetFolder)"
+
+        if (Test-Path $repoDotnetFolder) {
+            Write-Verbose "Repository .dotnet contents:"
+            Get-ChildItem $repoDotnetFolder -ErrorAction SilentlyContinue | ForEach-Object { Write-Verbose "  $($_.Name)" }
+
+            # Check version in repo dotnet
+            $repoDotnetExe = "$repoDotnetFolder/dotnet.exe"
+            if (Test-Path $repoDotnetExe) {
+                Write-Verbose "Repository dotnet version:"
+                & $repoDotnetExe --version | ForEach-Object { Write-Verbose "  $_" }
+            }
+        }
+
         Write-Verbose "Copying dotnet folder from $dotnetFolder to $PSScriptRoot/.dotnet";
         Copy-Item -Path $dotnetFolder -Destination "$PSScriptRoot/.dotnet" -Recurse;
+
+        Write-Verbose "Copy completed. Verifying local .dotnet folder..."
+        if (Test-Path "$PSScriptRoot/.dotnet") {
+            Write-Verbose "Local .dotnet folder created successfully"
+            $localDotnetExe = "$PSScriptRoot/.dotnet/dotnet.exe"
+            if (Test-Path $localDotnetExe) {
+                Write-Verbose "Local dotnet version after copy:"
+                & $localDotnetExe --version | ForEach-Object { Write-Verbose "  $_" }
+            }
+        } else {
+            Write-Verbose "ERROR: Local .dotnet folder was not created!"
+        }
+    } else {
+        Write-Verbose "Local .dotnet folder already exists"
+        $localDotnetExe = "$PSScriptRoot/.dotnet/dotnet.exe"
+        if (Test-Path $localDotnetExe) {
+            Write-Verbose "Existing local dotnet version:"
+            & $localDotnetExe --version | ForEach-Object { Write-Verbose "  $_" }
+        }
     }
 
     Write-Verbose "Patching Microsoft.AspNetCore.App";
     $builtRuntime = Resolve-Path "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/aspnetcore-runtime-*-dev-win-x64.zip" | Where-Object { $_ -match "aspnetcore-runtime-[0-9.]+-dev-win-x64.zip" };
+    Write-Verbose "Built runtime package: $builtRuntime";
     Write-Verbose "Patching Microsoft.AspNetCore.App from $builtRuntime";
     Remove-Item "$PSScriptRoot/.runtime" -Recurse -ErrorAction Ignore;
     Expand-Archive -Path $builtRuntime -DestinationPath "$PSScriptRoot/.runtime" -Force;
+
+    Write-Verbose "Extracted runtime contents:";
+    if (Test-Path "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App") {
+        Get-ChildItem "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" | ForEach-Object { Write-Verbose "  $($_.Name)" }
+    }
+
+    Write-Verbose "Removing existing dev runtimes from local .dotnet...";
     Remove-Item "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/*-dev" -Recurse -ErrorAction Ignore;
+
+    Write-Verbose "Before patching - local .dotnet ASP.NET Core runtimes:";
+    if (Test-Path "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App") {
+        Get-ChildItem "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App" | ForEach-Object { Write-Verbose "  $($_.Name)" }
+    }
+
     Write-Verbose "Copying $PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App to $PSScriptRoot/.dotnet/shared";
     Copy-Item -Path "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" -Destination "$PSScriptRoot/.dotnet/shared" -Recurse -Force;
 
+    Write-Verbose "After patching - local .dotnet ASP.NET Core runtimes:";
+    if (Test-Path "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App") {
+        Get-ChildItem "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App" | ForEach-Object { Write-Verbose "  $($_.Name)" }
+    }
+
+    Write-Verbose "=== SETTING UP ENVIRONMENT ==="
+    Write-Verbose "Setting DOTNET_ROOT to: $PSScriptRoot/.dotnet"
     $env:DOTNET_ROOT = "$PSScriptRoot/.dotnet";
+    Write-Verbose "Setting DOTNET_ROOT_X86 to: $PSScriptRoot/.dotnet"
     $env:DOTNET_ROOT_X86 = "$PSScriptRoot/.dotnet";
+    Write-Verbose "Prepending to PATH: $PSScriptRoot/.dotnet"
     $env:Path = "$PSScriptRoot/.dotnet;$env:Path";
+
+    Write-Verbose "Final environment variables:"
+    Write-Verbose "  DOTNET_ROOT: $($env:DOTNET_ROOT)"
+    Write-Verbose "  DOTNET_ROOT_X86: $($env:DOTNET_ROOT_X86)"
+    Write-Verbose "  PATH (first 200 chars): $($env:PATH.Substring(0, [Math]::Min(200, $env:PATH.Length)))"
+
+    # Verify which dotnet we'll use after env changes
+    $finalDotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
+    if ($finalDotnetCommand) {
+        Write-Verbose "After env setup, Get-Command dotnet finds: $($finalDotnetCommand.Source)"
+        Write-Verbose "Final dotnet version:"
+        & $finalDotnetCommand.Source --version | ForEach-Object { Write-Verbose "  $_" }
+        Write-Verbose "Final dotnet --info:"
+        & $finalDotnetCommand.Source --info | ForEach-Object { Write-Verbose "  $_" }
+    }
+    Write-Verbose "=== DOTNET ENVIRONMENT DEBUG END ==="
     $tmpDir = "$PSScriptRoot/$templateName";
+    Write-Verbose "Template working directory: $tmpDir"
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore;
+    Write-Verbose "Running dotnet pack to build template packages..."
     Push-Location ..;
     try {
+        Write-Verbose "Current location for dotnet pack: $(Get-Location)"
         dotnet pack
     }
     finally {
@@ -47,8 +148,10 @@ function Test-Template {
     }
 
     $PackagePath = Resolve-Path "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/$TemplatePackagePath";
+    Write-Verbose "Template package path: $PackagePath"
 
     $PackageName = (Get-Item $PackagePath).Name;
+    Write-Verbose "Template package name: $PackageName"
 
     if (-not (Test-Path "$($env:USERPROFILE)/.templateengine/packages/$PackageName")) {
         Write-Verbose "Installing package from $PackagePath";
@@ -75,7 +178,14 @@ function Test-Template {
     try {
         $TemplateArguments = , "new" + $TemplateArguments + , "--no-restore";
         Write-Verbose "Running dotnet command with arguments: $TemplateArguments";
+        Write-Verbose "Current working directory: $(Get-Location)"
+        Write-Verbose "About to run dotnet new - checking dotnet version one more time:"
+        dotnet --version | ForEach-Object { Write-Verbose "  $_" }
+
         dotnet @TemplateArguments;
+
+        Write-Verbose "Template creation completed. Checking created files:"
+        Get-ChildItem . -Recurse -File | Select-Object -First 10 | ForEach-Object { Write-Verbose "  $($_.FullName)" }
 
         $proj = Get-ChildItem $tmpDir -Recurse -File -Filter '*.csproj' -Depth 3;
         if ($proj.Length -eq 0) {
@@ -119,6 +229,9 @@ function Test-Template {
         }
 
         $publishOutputDir = "./.publish";
+        Write-Verbose "Publishing template to: $publishOutputDir"
+        Write-Verbose "About to run dotnet publish - final dotnet version check:"
+        dotnet --version | ForEach-Object { Write-Verbose "  $_" }
         Write-Verbose "Running dotnet publish --configuration $Configuration --output $publishOutputDir";
         dotnet.exe publish --configuration $Configuration --output $publishOutputDir;
     }
