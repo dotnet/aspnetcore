@@ -152,32 +152,30 @@ customElements.define('passkey-submit', class extends HTMLElement {
             return undefined;
         }
         
-        // Array or ArrayBuffer to Uint8Array
+        // Normalize Array to Uint8Array
         if (Array.isArray(o)) {
             o = Uint8Array.from(o);
         }
-
+        
+        // Normalize ArrayBuffer to Uint8Array
         if (o instanceof ArrayBuffer) {
             o = new Uint8Array(o);
         }
 
-        // Uint8Array to base64
+        // Convert Uint8Array to base64
         if (o instanceof Uint8Array) {
-            var str = "";
-            const len = o.byteLength;
-
-            for (let i = 0; i < len; i++) {
+            let str = '';
+            for (let i = 0; i < o.byteLength; i++) {
                 str += String.fromCharCode(o[i]);
             }
             o = window.btoa(str);
         }
 
-        if (typeof o !== "string") {
-            throw new Error("could not coerce to string");
+        if (typeof o !== 'string') {
+            throw new Error("Could not convert to base64 string");
         }
 
-        // base64 to base64url
-        // NOTE: "=" at the end of challenge is optional, strip it off here
+        // Convert base64 to base64url
         o = o.replace(/\+/g, "-").replace(/\//g, "_").replace(/=*$/g, "");
 
         return o;
