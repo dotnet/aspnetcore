@@ -33,7 +33,7 @@ public class ProducesAttribute : Attribute, IResultFilter, IOrderedFilter, IApiR
     /// </summary>
     /// <param name="contentType">The allowed content type for a response.</param>
     /// <param name="additionalContentTypes">Additional allowed content types for a response.</param>
-    public ProducesAttribute(string? contentType, params string[] additionalContentTypes)
+    public ProducesAttribute(string contentType, params string[] additionalContentTypes)
     {
         ArgumentNullException.ThrowIfNull(contentType);
 
