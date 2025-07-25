@@ -96,7 +96,20 @@ function Test-Template {
     }
 
     Write-Verbose "Removing existing dev runtimes from local .dotnet...";
-    Remove-Item "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/*-dev" -Recurse -ErrorAction Ignore;
+    try {
+        $devRuntimes = Get-ChildItem "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/*-dev" -ErrorAction SilentlyContinue;
+        if ($devRuntimes) {
+            Write-Verbose "Found existing dev runtimes to remove: $($devRuntimes.Name -join ', ')";
+            Remove-Item "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/*-dev" -Recurse -Force -ErrorAction Stop;
+            Write-Verbose "Successfully removed existing dev runtimes";
+        } else {
+            Write-Verbose "No existing dev runtimes found to remove";
+        }
+    }
+    catch {
+        Write-Warning "Failed to remove existing dev runtimes: $($_.Exception.Message)";
+        # Continue anyway - this might not be critical
+    }
 
     Write-Verbose "Before patching - local .dotnet ASP.NET Core runtimes:";
     if (Test-Path "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App") {
@@ -104,11 +117,33 @@ function Test-Template {
     }
 
     Write-Verbose "Copying $PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App to $PSScriptRoot/.dotnet/shared";
-    Copy-Item -Path "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" -Destination "$PSScriptRoot/.dotnet/shared" -Recurse -Force;
+    try {
+        Copy-Item -Path "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" -Destination "$PSScriptRoot/.dotnet/shared" -Recurse -Force -ErrorAction Stop;
+        Write-Verbose "Runtime copy completed successfully";
+    }
+    catch {
+        Write-Error "Failed to copy runtime: $($_.Exception.Message)";
+        throw;
+    }
 
     Write-Verbose "After patching - local .dotnet ASP.NET Core runtimes:";
     if (Test-Path "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App") {
         Get-ChildItem "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App" | ForEach-Object { Write-Verbose "  $($_.Name)" }
+    }
+
+    # Verify critical files were patched correctly
+    Write-Verbose "Verifying patched runtime files...";
+    $devRuntimePath = "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/10.0.0-dev";
+    if (Test-Path $devRuntimePath) {
+        $diagnosticsDll = "$devRuntimePath/Microsoft.AspNetCore.Diagnostics.dll";
+        if (Test-Path $diagnosticsDll) {
+            $fileInfo = Get-Item $diagnosticsDll;
+            Write-Verbose "Microsoft.AspNetCore.Diagnostics.dll found - Size: $($fileInfo.Length) bytes, Modified: $($fileInfo.LastWriteTime)";
+        } else {
+            Write-Warning "Microsoft.AspNetCore.Diagnostics.dll not found in patched runtime!";
+        }
+    } else {
+        Write-Warning "Dev runtime folder not found at $devRuntimePath";
     }
 
     Write-Verbose "=== SETTING UP ENVIRONMENT ==="
