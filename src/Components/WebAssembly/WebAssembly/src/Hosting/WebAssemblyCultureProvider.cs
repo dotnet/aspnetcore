@@ -76,11 +76,6 @@ internal partial class WebAssemblyCultureProvider
     {
         var culturesToLoad = new List<string>();
 
-        if (uiCultureInfo == null)
-        {
-            uiCultureInfo = cultureInfo;
-        }
-
         // Once WASM is ready, we have to use .NET's assembly loading to load additional assemblies.
         // First calculate all possible cultures that the application might want to load. We do this by
         // starting from the current culture and walking up the graph of parents.
@@ -98,8 +93,8 @@ internal partial class WebAssemblyCultureProvider
                 culturesToLoad.Add(uiCultureInfo.Name);
             }
 
-            cultureInfo = cultureInfo?.Parent;
-            uiCultureInfo = uiCultureInfo?.Parent;
+            cultureInfo = (cultureInfo?.Parent == cultureInfo) ? null : cultureInfo?.Parent;
+            uiCultureInfo = (uiCultureInfo?.Parent == uiCultureInfo) ? null : uiCultureInfo?.Parent;
         }
 
         return culturesToLoad.ToArray();

@@ -26,11 +26,13 @@ public class WebAssemblyCultureProviderTest
 
     [Theory]
     [InlineData("fr-FR", "tzm-Latn-DZ", new[] { "fr-FR", "tzm-Latn-DZ", "fr", "tzm-Latn", "tzm" })]
+    [InlineData("fr-FR", null, new[] { "fr-FR", "fr" })]
+    [InlineData(null, null, new string[0])]
     public void GetCultures_ReturnCultureClosureWithUICulture(string cultureName, string uiCultureName, string[] expected)
     {
         // Arrange
-        var culture = new CultureInfo(cultureName);
-        var uiCulture = new CultureInfo(uiCultureName);
+        var culture = cultureName != null ? new CultureInfo(cultureName) : null;
+        var uiCulture = uiCultureName != null ? new CultureInfo(uiCultureName) : null;
         // Act
         var actual = WebAssemblyCultureProvider.GetCultures(culture, uiCulture);
         // Assert
