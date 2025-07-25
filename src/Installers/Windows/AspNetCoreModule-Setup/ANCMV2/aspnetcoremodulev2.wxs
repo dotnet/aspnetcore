@@ -178,7 +178,7 @@
             </Component>
 
             <!-- Schema always to platform config directory -->
-            <Directory Id="$(var.SystemFolder)">
+            <StandardDirectory Id="System6432Folder">
                 <Directory Id="IISInstallDir" Name="inetsrv">
                     <Directory Id="IISConfigDir" Name="config">
                         <Directory Id="IISSchemaDir" Name="schema">
@@ -189,10 +189,10 @@
                        </Directory>
                    </Directory>
                </Directory>
-           </Directory>
+           </StandardDirectory>
 
            <!-- Platform specific core module -->
-           <Directory Id="$(var.ProgramFilesFolder)">
+           <StandardDirectory Id="ProgramFiles6432Folder">
                <Directory Id="IISModuleDirectory" Name="IIS">
                    <Directory Id="INSTALLLOCATION" ShortName="ANCM" Name="Asp.Net Core Module">
                        <Directory Id="VersionDir" Name="$(var.ProductVersionString)">
@@ -250,7 +250,7 @@
                        </Directory>
                    </Directory>
                </Directory>
-           </Directory>
+           </StandardDirectory>
 
            <!-- WOW64 Support -->
            <?if $(var.Platform) != "x86" ?>

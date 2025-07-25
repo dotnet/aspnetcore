@@ -197,7 +197,7 @@
 
         <!-- WOW64 Support -->
         <?if $(var.Platform) != "x86" ?>
-        <Directory Id="$(var.ProgramFilesFolder32)">
+        <StandardDirectory Id="ProgramFiles6432Folder">
           <Directory Id="INSTALLDIR32" Name="IIS Express">
             <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="$(var.ProductName)">
               <Directory Id="VersionDir32" Name="$(var.ProductVersionString)">
@@ -226,7 +226,7 @@
               </Directory>
             </Directory>
           </Directory>
-        </Directory>
+        </StandardDirectory>
         <?endif?>
       </DirectoryRef>
 
@@ -500,9 +500,9 @@
 
         <FeatureRef Id="FT_DepProvider_$(var.ProductNameShort)" />
 
-            <Directory Id="$(var.ProgramFilesFolder)">
+            <StandardDirectory Id="ProgramFiles6432Folder">
                 <Directory Id="INSTALLDIR" Name="IIS Express" />
-            </Directory>
+            </StandardDirectory>
         </Package>
 
     <Fragment><Feature Id="FT_DepProvider_$(var.ProductNameShort)" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" InstallDefault="local" Level="1" Title="RefCounting" TypicalDefault="install" AllowAbsent="no">
