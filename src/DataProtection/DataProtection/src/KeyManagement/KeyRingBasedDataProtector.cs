@@ -101,11 +101,15 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         // Get the current key ring to access the encryptor
         var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
         var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
-        CryptoUtil.Assert(defaultEncryptor != null, "defaultEncryptorInstance != null");
+        if (defaultEncryptor is not IOptimizedAuthenticatedEncryptor optimizedAuthenticatedEncryptor)
+        {
+            throw new NotSupportedException("The current default encryptor does not support optimized protection.");
+        }
+        CryptoUtil.Assert(optimizedAuthenticatedEncryptor != null, "optimizedAuthenticatedEncryptor != null");
 
         // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
         // See Protect() / TryProtect() for details
-        return _magicHeaderKeyIdSize + defaultEncryptor.GetEncryptedSize(plainText.Length);
+        return _magicHeaderKeyIdSize + optimizedAuthenticatedEncryptor.GetEncryptedSize(plainText.Length);
     }
 
     public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
@@ -115,8 +119,14 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             // Perform the encryption operation using the current default encryptor.
             var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
             var defaultKeyId = currentKeyRing.DefaultKeyId;
-            var defaultEncryptorInstance = currentKeyRing.DefaultAuthenticatedEncryptor;
-            CryptoUtil.Assert(defaultEncryptorInstance != null, "defaultEncryptorInstance != null");
+            var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
+            if (defaultEncryptor is not IOptimizedAuthenticatedEncryptor optimizedAuthenticatedEncryptor)
+            {
+                throw new NotSupportedException("The current default encryptor does not support optimized protection.");
+            }
+            CryptoUtil.Assert(optimizedAuthenticatedEncryptor != null, "optimizedAuthenticatedEncryptor != null");
+
+
 
             if (_logger.IsDebugLevelEnabled())
             {
@@ -130,7 +140,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             var preBufferSize = _magicHeaderKeyIdSize;
             var postBufferSize = 0;
             var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - (preBufferSize + postBufferSize));
-            var success = defaultEncryptorInstance.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
+            var success = optimizedAuthenticatedEncryptor.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
 
             // At this point: destination := { 000..000 || encryptorSpecificProtectedPayload },
             // where 000..000 is a placeholder for our magic header and key id.
