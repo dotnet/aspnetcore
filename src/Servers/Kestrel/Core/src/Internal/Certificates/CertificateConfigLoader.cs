@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -95,6 +96,21 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         const string RSAOid = "1.2.840.113549.1.1.1";
         const string DSAOid = "1.2.840.10040.4.1";
         const string ECDsaOid = "1.2.840.10045.2.1";
+        const string MLDSA44Oid = "2.16.840.1.101.3.4.3.17";
+        const string MLDSA65Oid = "2.16.840.1.101.3.4.3.18";
+        const string MLDSA87Oid = "2.16.840.1.101.3.4.3.19";
+        const string SLHDSASHA2128sOid = "2.16.840.1.101.3.4.3.20";
+        const string SLHDSASHA2128fOid = "2.16.840.1.101.3.4.3.21";
+        const string SLHDSASHA2192sOid = "2.16.840.1.101.3.4.3.22";
+        const string SLHDSASHA2192fOid = "2.16.840.1.101.3.4.3.23";
+        const string SLHDSASHA2256sOid = "2.16.840.1.101.3.4.3.24";
+        const string SLHDSASHA2256fOid = "2.16.840.1.101.3.4.3.25";
+        const string SLHDSASHAKE128sOid = "2.16.840.1.101.3.4.3.26";
+        const string SLHDSASHAKE128fOid = "2.16.840.1.101.3.4.3.27";
+        const string SLHDSASHAKE192sOid = "2.16.840.1.101.3.4.3.28";
+        const string SLHDSASHAKE192fOid = "2.16.840.1.101.3.4.3.29";
+        const string SLHDSASHAKE256sOid = "2.16.840.1.101.3.4.3.30";
+        const string SLHDSASHAKE256fOid = "2.16.840.1.101.3.4.3.31";
 
         // Duplication is required here because there are separate CopyWithPrivateKey methods for each algorithm.
         var keyText = File.ReadAllText(keyPath);
@@ -142,6 +158,47 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                         throw CreateErrorGettingPrivateKeyException(keyPath, ex);
                     }
                 }
+            case MLDSA44Oid:
+            case MLDSA65Oid:
+            case MLDSA87Oid:
+                {
+#pragma warning disable SYSLIB5006 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+                    using var mlDsa = ImportMLDsaKeyFromFile(keyText, password);
+
+                    try
+                    {
+                        return certificate.CopyWithPrivateKey(mlDsa);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateErrorGettingPrivateKeyException(keyPath, ex);
+                    }
+                }
+            case SLHDSASHA2128sOid:
+            case SLHDSASHA2128fOid:
+            case SLHDSASHA2192sOid:
+            case SLHDSASHA2192fOid:
+            case SLHDSASHA2256sOid:
+            case SLHDSASHA2256fOid:
+            case SLHDSASHAKE128sOid:
+            case SLHDSASHAKE128fOid:
+            case SLHDSASHAKE192sOid:
+            case SLHDSASHAKE192fOid:
+            case SLHDSASHAKE256sOid:
+            case SLHDSASHAKE256fOid:
+                {
+                    using var slhDsa = ImportSlhDsaKeyFromFile(keyText, password);
+
+                    try
+                    {
+                        return certificate.CopyWithPrivateKey(slhDsa);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateErrorGettingPrivateKeyException(keyPath, ex);
+                    }
+                }
+#pragma warning restore SYSLIB5006 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             default:
                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value));
         }
@@ -171,6 +228,32 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         else
         {
             asymmetricAlgorithm.ImportFromEncryptedPem(keyText, password);
+        }
+    }
+
+    [Experimental("SYSLIB5006")]
+    private static MLDsa ImportMLDsaKeyFromFile(string keyText, string? password)
+    {
+        if (password == null)
+        {
+            return MLDsa.ImportFromPem(keyText);
+        }
+        else
+        {
+            return MLDsa.ImportFromEncryptedPem(keyText, password);
+        }
+    }
+
+    [Experimental("SYSLIB5006")]
+    private static SlhDsa ImportSlhDsaKeyFromFile(string keyText, string? password)
+    {
+        if (password == null)
+        {
+            return SlhDsa.ImportFromPem(keyText);
+        }
+        else
+        {
+            return SlhDsa.ImportFromEncryptedPem(keyText, password);
         }
     }
 
