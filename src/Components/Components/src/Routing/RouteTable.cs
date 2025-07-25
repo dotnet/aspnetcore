@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Routing.Tree;
 
 namespace Microsoft.AspNetCore.Components.Routing;
@@ -12,6 +13,14 @@ internal sealed class RouteTable(TreeRouter treeRouter)
 {
     private readonly TreeRouter _router = treeRouter;
     private static readonly ConcurrentDictionary<(Type, string), InboundRouteEntry> _routeEntryCache = new();
+
+    static RouteTable()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += _routeEntryCache.Clear;
+        }
+    }
 
     public TreeRouter? TreeRouter => _router;
 
