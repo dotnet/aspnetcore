@@ -1,5 +1,7 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+*REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
+*REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
 Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties = null) -> void
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.get -> System.Type?
 Microsoft.AspNetCore.Components.Routing.Router.NotFoundPage.set -> void
