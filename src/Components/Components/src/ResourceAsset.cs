@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Components;
 /// <param name="url">The URL of the resource.</param>
 /// <param name="properties">The properties associated to this resource.</param>
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public sealed class ResourceAsset(string url, IReadOnlyList<ResourceAssetProperty>? properties)
+public sealed class ResourceAsset(string url, IReadOnlyList<ResourceAssetProperty>? properties = null)
 {
     /// <summary>
     /// Gets the URL that identifies this resource.

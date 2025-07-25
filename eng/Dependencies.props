@@ -25,8 +25,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" />
     <LatestPackageReference Include="Microsoft.CodeAnalysis.Razor" />
     <LatestPackageReference Include="Microsoft.CSharp" />
-    <LatestPackageReference Include="Microsoft.DotNet.HotReload.Agent" />
-    <LatestPackageReference Include="Microsoft.DotNet.HotReload.Agent.Data" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Abstractions" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Memory" />
     <LatestPackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
@@ -83,6 +81,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Diagnostics.DiagnosticSource" />
     <LatestPackageReference Include="System.Diagnostics.EventLog" />
     <LatestPackageReference Include="System.DirectoryServices.Protocols" />
+    <LatestPackageReference Include="System.Formats.Cbor" />
     <LatestPackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <LatestPackageReference Include="System.IO.Pipelines" />
     <LatestPackageReference Include="System.Memory" />

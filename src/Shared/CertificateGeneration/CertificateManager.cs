@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 
 internal abstract class CertificateManager
 {
-    internal const int CurrentAspNetCoreCertificateVersion = 3;
-    internal const int CurrentMinimumAspNetCoreCertificateVersion = 3;
+    internal const int CurrentAspNetCoreCertificateVersion = 4;
+    internal const int CurrentMinimumAspNetCoreCertificateVersion = 4;
 
     // OID used for HTTPS certs
     internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
@@ -30,8 +30,12 @@ internal abstract class CertificateManager
     private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
     
     // dns names of the host from a container
-    private const string LocalHostDockerHttpsDnsName = "host.docker.internal";
+    private const string LocalhostDockerHttpsDnsName = "host.docker.internal";
     private const string ContainersDockerHttpsDnsName = "host.containers.internal";
+
+    // wildcard DNS names
+    private const string LocalhostWildcardHttpsDnsName = "*.dev.localhost";
+    private const string InternalWildcardHttpsDnsName = "*.dev.internal";
 
     // main cert subject
     private const string LocalhostHttpsDnsName = "localhost";
@@ -686,7 +690,9 @@ internal abstract class CertificateManager
         var extensions = new List<X509Extension>();
         var sanBuilder = new SubjectAlternativeNameBuilder();
         sanBuilder.AddDnsName(LocalhostHttpsDnsName);
-        sanBuilder.AddDnsName(LocalHostDockerHttpsDnsName);
+        sanBuilder.AddDnsName(LocalhostWildcardHttpsDnsName);
+        sanBuilder.AddDnsName(InternalWildcardHttpsDnsName);
+        sanBuilder.AddDnsName(LocalhostDockerHttpsDnsName);
         sanBuilder.AddDnsName(ContainersDockerHttpsDnsName);
 
         var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, critical: true);

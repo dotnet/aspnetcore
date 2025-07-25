@@ -11,6 +11,7 @@ using Grpc.Shared;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Internal.Json;
 using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.Infrastructure;
+using Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.TestObjects.ProtobufMessages;
 using Transcoding;
 using Xunit.Abstractions;
 using Type = System.Type;
@@ -196,6 +197,25 @@ public class JsonConverterWriteTests
             StringValue = "A string",
             Uint32Value = 3U,
             Uint64Value = 4UL
+        };
+
+        AssertWrittenJson(wrappers);
+    }
+
+    [Fact]
+    public void NullableWrappers_Types()
+    {
+        var wrappers = new WrappersMessage
+        {
+            BoolValue = new BoolValue { Value = true },
+            BytesValue = new BytesValue { Value = ByteString.CopyFrom(Encoding.UTF8.GetBytes("Hello world")) },
+            DoubleValue = new DoubleValue { Value = 1.1 },
+            FloatValue = new FloatValue { Value = 1.2f },
+            Int32Value = new Int32Value { Value = 1 },
+            Int64Value = new Int64Value { Value = 2L },
+            StringValue = new StringValue { Value = "A string" },
+            Uint32Value = new UInt32Value { Value = 3U },
+            Uint64Value = new UInt64Value { Value = 4UL }
         };
 
         AssertWrittenJson(wrappers);

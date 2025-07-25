@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,14 @@ internal sealed class ComponentFactory
         = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
     private static readonly ConcurrentDictionary<Type, ComponentTypeInfoCacheEntry> _cachedComponentTypeInfo = new();
+
+    static ComponentFactory()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
 
     private readonly IComponentActivator _componentActivator;
     private readonly Renderer _renderer;

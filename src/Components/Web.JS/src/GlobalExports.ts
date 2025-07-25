@@ -38,8 +38,8 @@ export interface IBlazor {
   removeEventListener?: typeof JSEventRegistry.prototype.removeEventListener;
   disconnect?: () => void;
   reconnect?: (existingConnection?: HubConnection) => Promise<boolean>;
-  pause?: () => Promise<boolean>;
-  resume?: () => Promise<boolean>;
+  pauseCircuit?: () => Promise<boolean>;
+  resumeCircuit?: () => Promise<boolean>;
   defaultReconnectionHandler?: DefaultReconnectionHandler;
   start?: ((userOptions?: Partial<CircuitStartOptions>) => Promise<void>) | ((options?: Partial<WebAssemblyStartOptions>) => Promise<void>) | ((options?: Partial<WebStartOptions>) => Promise<void>);
   platform?: Platform;
@@ -92,11 +92,6 @@ export interface IBlazor {
 
     // APIs invoked by hot reload
 
-    // obsolete:
-    applyHotReload?: (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined, updatedTypes?: number[]) => void;
-
-    applyHotReloadDeltas?: (deltas: { moduleId: string, metadataDelta: string, ilDelta: string, pdbDelta: string, updatedTypes: number[] }[], loggingLevel: number) => {message: string, severity: number}[];
-    getApplyUpdateCapabilities?: () => string;
     hotReloadApplied?: () => void;
   }
 }

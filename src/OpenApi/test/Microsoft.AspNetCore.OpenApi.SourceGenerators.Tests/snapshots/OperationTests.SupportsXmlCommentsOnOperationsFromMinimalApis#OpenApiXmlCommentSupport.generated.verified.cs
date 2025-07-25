@@ -70,33 +70,34 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var cache = new Dictionary<string, XmlComment>();
 
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get~System.String", new XmlComment(@"A summary of the action.", @"A description of the action.", null, @"Returns the greeting.", null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get2(System.String)~System.String", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get3(System.String)~System.String", new XmlComment(null, null, null, @"Returns the greeting.", null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get4~Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String}", new XmlComment(null, null, null, @"Indicates that the value was not found.", null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get5~Microsoft.AspNetCore.Http.HttpResults.Results{Microsoft.AspNetCore.Http.HttpResults.NotFound{System.String},Microsoft.AspNetCore.Http.HttpResults.Ok{System.String},Microsoft.AspNetCore.Http.HttpResults.Created}", new XmlComment(null, null, null, @"This gets ignored.", null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Post6(User)~Microsoft.AspNetCore.Http.IResult", new XmlComment(@"Creates a new user.", null, @"Sample request:
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get", new XmlComment(@"A summary of the action.", @"A description of the action.", null, @"Returns the greeting.", null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get2(System.String)", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get3(System.String)", new XmlComment(null, null, null, @"Returns the greeting.", null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get4", new XmlComment(null, null, null, @"Indicates that the value was not found.", null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get5", new XmlComment(null, null, null, @"This gets ignored.", null, false, null, null, [new XmlResponseComment(@"200", @"Indicates that the value is even.", @""), new XmlResponseComment(@"201", @"Indicates that the value is less than 50.", @""), new XmlResponseComment(@"404", @"Indicates that the value was not found.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Post6(User)", new XmlComment(@"Creates a new user.", null, @"Sample request:
     POST /6
     {
         ""username"": ""johndoe"",
         ""email"": ""john@example.com""
     }", null, null, false, null, [new XmlParameterComment(@"user", @"The user information.", @"{""username"": ""johndoe"", ""email"": ""john@example.com""}", false)], [new XmlResponseComment(@"201", @"Successfully created the user.", @""), new XmlResponseComment(@"400", @"If the user data is invalid.", @"")]));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Put7(System.Nullable{System.Int32},System.String)~Microsoft.AspNetCore.Http.IResult", new XmlComment(@"Updates an existing record.", null, null, null, null, false, null, [new XmlParameterComment(@"id", @"Legacy ID parameter - use uuid instead.", null, true), new XmlParameterComment(@"uuid", @"Unique identifier for the record.", null, false)], [new XmlResponseComment(@"204", @"Update successful.", @""), new XmlResponseComment(@"404", @"Legacy response - will be removed.", @"")]));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get8~System.Threading.Tasks.Task", new XmlComment(@"A summary of Get8.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get9~System.Threading.Tasks.ValueTask", new XmlComment(@"A summary of Get9.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get10~System.Threading.Tasks.Task", new XmlComment(@"A summary of Get10.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get11~System.Threading.Tasks.ValueTask", new XmlComment(@"A summary of Get11.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get12~System.Threading.Tasks.Task{System.String}", new XmlComment(@"A summary of Get12.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get13~System.Threading.Tasks.ValueTask{System.String}", new XmlComment(@"A summary of Get13.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get14~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get14.", null, null, @"Returns the greeting.", null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get15~System.Threading.Tasks.Task{Holder{System.String}}", new XmlComment(@"A summary of Get15.", null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Put7(System.Nullable{System.Int32},System.String)", new XmlComment(@"Updates an existing record.", null, null, null, null, false, null, [new XmlParameterComment(@"id", @"Legacy ID parameter - use uuid instead.", null, true), new XmlParameterComment(@"uuid", @"Unique identifier for the record.", null, false)], [new XmlResponseComment(@"204", @"Update successful.", @""), new XmlResponseComment(@"404", @"Legacy response - will be removed.", @"")]));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get8", new XmlComment(@"A summary of Get8.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get9", new XmlComment(@"A summary of Get9.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get10", new XmlComment(@"A summary of Get10.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get11", new XmlComment(@"A summary of Get11.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get12", new XmlComment(@"A summary of Get12.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get13", new XmlComment(@"A summary of Get13.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get14", new XmlComment(@"A summary of Get14.", null, null, @"Returns the greeting.", null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get15", new XmlComment(@"A summary of Get15.", null, null, null, null, false, null, null, [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
             cache.Add(@"M:RouteHandlerExtensionMethods.Post16(Example)", new XmlComment(@"A summary of Post16.", null, null, null, null, false, null, null, null));
-            cache.Add(@"M:RouteHandlerExtensionMethods.Get17(System.Int32[])~System.Int32[][]", new XmlComment(@"A summary of Get17.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get17(System.Int32[])", new XmlComment(@"A summary of Get17.", null, null, null, null, false, null, null, null));
 
             return cache;
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class DocumentationCommentIdHelper
     {
         /// <summary>
@@ -306,6 +307,33 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             // For non-generic types, use FullName (if available) and replace nested type separators.
             return (type.FullName ?? type.Name).Replace('+', '.');
         }
+
+        /// <summary>
+        /// Normalizes a documentation comment ID to match the compiler-style format.
+        /// Strips the return type suffix for ordinary methods but retains it for conversion operators.
+        /// </summary>
+        /// <param name="docId">The documentation comment ID to normalize.</param>
+        /// <returns>The normalized documentation comment ID.</returns>
+        public static string NormalizeDocId(string docId)
+        {
+            // Find the tilde character that indicates the return type suffix
+            var tildeIndex = docId.IndexOf('~');
+            if (tildeIndex == -1)
+            {
+                // No return type suffix, return as-is
+                return docId;
+            }
+
+            // Check if this is a conversion operator (op_Implicit or op_Explicit)
+            // For these operators, we need to keep the return type suffix
+            if (docId.Contains("op_Implicit") || docId.Contains("op_Explicit"))
+            {
+                return docId;
+            }
+
+            // For ordinary methods, strip the return type suffix
+            return docId.Substring(0, tildeIndex);
+        }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -321,7 +349,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue(methodInfo.CreateDocumentationId(), out var methodComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(methodInfo.CreateDocumentationId()), out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -427,7 +455,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
-                if (XmlCommentCache.Cache.TryGetValue(propertyInfo.CreateDocumentationId(), out var propertyComment))
+                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                     if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -436,7 +464,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                 }
             }
-            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -448,6 +476,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class JsonNodeExtensions
     {
         public static JsonNode? Parse(this string? json)

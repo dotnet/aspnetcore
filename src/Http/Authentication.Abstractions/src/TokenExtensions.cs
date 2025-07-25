@@ -71,9 +71,9 @@ public static class AuthenticationTokenExtensions
     /// </summary>
     /// <param name="properties">The <see cref="AuthenticationProperties"/> to update.</param>
     /// <param name="tokenName">The token name.</param>
-    /// <param name="tokenValue">The token value.</param>
+    /// <param name="tokenValue">The token value. May be <c>null</c>.</param>
     /// <returns><see langword="true"/> if the token was updated, otherwise <see langword="false"/>.</returns>
-    public static bool UpdateTokenValue(this AuthenticationProperties properties, string tokenName, string tokenValue)
+    public static bool UpdateTokenValue(this AuthenticationProperties properties, string tokenName, string? tokenValue)
     {
         ArgumentNullException.ThrowIfNull(properties);
         ArgumentNullException.ThrowIfNull(tokenName);

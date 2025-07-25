@@ -93,7 +93,7 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 
         ClearHelper();
         ArrayPool<T>.Shared.Return(_rentedBuffer);
-        _rentedBuffer = null;
+        _rentedBuffer = null!;
     }
 
     private void CheckIfDisposed()

@@ -1,17 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+namespace Microsoft.AspNetCore.Components.Server.Circuits;
+
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Infrastructure.Server;
 
 internal class CircuitActivitySource
 {
     internal const string Name = "Microsoft.AspNetCore.Components.Server.Circuits";
-    internal const string OnCircuitName = $"{Name}.CircuitStart";
+    internal const string OnCircuitName = $"{Name}.StartCircuit";
 
     private ComponentsActivityLinkStore? _activityLinkStore;
 
-    private ActivitySource ActivitySource { get; } = new ActivitySource(Name);
+    private static ActivitySource ActivitySource { get; } = new ActivitySource(Name);
 
     public void Init(ComponentsActivityLinkStore store)
     {
@@ -40,13 +42,13 @@ internal class CircuitActivitySource
                 }
                 if (httpActivityContext != default)
                 {
-                    // store the http link
-                    _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivityContext, null);
+                    // add the http link
+                    activity.AddLink(new ActivityLink(httpActivityContext));
                 }
                 if (signalRActivity != null && signalRActivity.Source.Name == "Microsoft.AspNetCore.SignalR.Server")
                 {
-                    // store the SignalR link
-                    _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.SignalR, signalRActivity.Context, null);
+                    // add the SignalR link
+                    activity.AddLink(new ActivityLink(signalRActivity.Context));
                 }
             }
             return new CircuitActivityHandle { Previous = signalRActivity, Activity = activity };
@@ -54,6 +56,8 @@ internal class CircuitActivitySource
         return default;
     }
 
+    // We call this at the end of circuit creation, rather than at the end of the circuit lifecycle
+    // because long-lived traces are difficult to work with in the telemetry UIs
     public void StopCircuitActivity(CircuitActivityHandle activityHandle, Exception? ex)
     {
         var activity = activityHandle.Activity;

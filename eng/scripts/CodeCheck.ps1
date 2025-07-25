@@ -124,6 +124,11 @@ try {
     foreach ($dep in $versionDetails.SelectNodes('//Dependency')) {
         Write-Verbose "Found $dep"
 
+        if ($dep.Label -eq 'Manual') {
+            # skip dependencies that are manually updated
+            continue
+        }
+
         $expectedVersion = $dep.Version
 
         if ($dep.Name -in $globalJson.'msbuild-sdks'.PSObject.Properties.Name) {

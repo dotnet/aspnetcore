@@ -2533,7 +2533,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => new object();
         var result = RequestDelegateFactory.Create(@delegate);
 
-        var responseMetadata = Assert.IsAssignableFrom<IProducesResponseTypeMetadata>(Assert.Single(result.EndpointMetadata));
+        var responseMetadata = Assert.Single(result.EndpointMetadata.OfType<IProducesResponseTypeMetadata>());
 
         Assert.Equal("application/json", Assert.Single(responseMetadata.ContentTypes));
         Assert.Equal(typeof(object), responseMetadata.Type);
@@ -2545,7 +2545,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
         var @delegate = () => "Hello";
         var result = RequestDelegateFactory.Create(@delegate);
 
-        var responseMetadata = Assert.IsAssignableFrom<IProducesResponseTypeMetadata>(Assert.Single(result.EndpointMetadata));
+        var responseMetadata = Assert.Single(result.EndpointMetadata.OfType<IProducesResponseTypeMetadata>());
 
         Assert.Equal("text/plain", Assert.Single(responseMetadata.ContentTypes));
         Assert.Equal(typeof(string), responseMetadata.Type);
@@ -2683,6 +2683,7 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
         Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
@@ -2705,9 +2706,9 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
-        Assert.Contains(result.EndpointMetadata, m => m is ProducesResponseTypeMetadata { Type: { } type } && type == typeof(CountsDefaultEndpointMetadataResult));
-        // Expecting the custom metadata and the implicit metadata associated with a Task-based return type to be inserted
-        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 2 });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
+        // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
+        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
 
     [Fact]
@@ -2728,9 +2729,9 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
-        Assert.Contains(result.EndpointMetadata, m => m is ProducesResponseTypeMetadata { Type: { } type } && type == typeof(CountsDefaultEndpointMetadataResult));
-        // Expecting the custom metadata nad hte implicit metadata associated with a Task-based return type to be inserted
-        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 2 });
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
+        // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
+        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
 
     [Fact]
@@ -2751,9 +2752,9 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         // Assert
         Assert.Contains(result.EndpointMetadata, m => m is CustomEndpointMetadata { Source: MetadataSource.Caller });
-        Assert.Contains(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata { Type: { } type } && type == typeof(CountsDefaultEndpointMetadataResult));
+        Assert.DoesNotContain(result.EndpointMetadata, m => m is IProducesResponseTypeMetadata);
         // Expecting '1' because only initial metadata will be in the metadata list when this metadata item is added
-        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 2 });
+        Assert.Contains(result.EndpointMetadata, m => m is MetadataCountMetadata { Count: 1 });
     }
 
     [Fact]
@@ -2824,14 +2825,16 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
             // Inferred ParameterBinding metadata
             m => Assert.True(m is IParameterBindingMetadata { Name: "param1" }),
-            // Inferred ProducesResopnseTypeMetadata from RDF for complex type
+            // Inferred IApiEndpointMetadata from RDF for complex request and response type
+            m => Assert.True(m is IApiEndpointMetadata),
+            // Inferred ProducesResponseTypeMetadata from RDF for complex type
             m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
             m => Assert.True(m is ParameterNameMetadata { Name: "param1" }),
             // Metadata provided by parameters implementing IEndpointMetadataProvider
             m => Assert.True(m is CustomEndpointMetadata { Source: MetadataSource.Parameter }),
             // Metadata provided by return type implementing IEndpointMetadataProvider
-            m => Assert.True(m is MetadataCountMetadata { Count: 6 }));
+            m => Assert.True(m is MetadataCountMetadata { Count: 7 }));
     }
 
     [Fact]
