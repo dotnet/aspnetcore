@@ -429,6 +429,7 @@ public class WebHostBuilderTests
     public void ServiceProviderDisposedOnBuildException()
     {
         var service = new DisposableService();
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         var hostBuilder = new WebHostBuilder()
             .UseServer(new TestServer())
             .ConfigureServices(services =>
@@ -437,6 +438,7 @@ public class WebHostBuilderTests
                 services.AddSingleton(sp => service);
             })
             .UseStartup<StartupWithResolvedDisposableThatThrows>();
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         Assert.Throws<InvalidOperationException>(() => hostBuilder.Build());
         Assert.True(service.Disposed);
@@ -1483,14 +1485,18 @@ public class WebHostBuilderTests
             .AddInMemoryCollection(vals);
         var config = builder.Build();
 
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         return new WebHostBuilder().UseConfiguration(config);
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
     }
 
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
     public static TheoryData<IWebHostBuilder> DefaultWebHostBuilders => new TheoryData<IWebHostBuilder>
         {
             new WebHostBuilder(),
             new GenericWebHostBuilderWrapper(new HostBuilder())
         };
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
     public static TheoryData<IWebHostBuilder> DefaultWebHostBuildersWithConfig
     {
@@ -1506,10 +1512,12 @@ public class WebHostBuilderTests
                 .AddInMemoryCollection(vals);
             var config = builder.Build();
 
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
             return new TheoryData<IWebHostBuilder> {
                     new WebHostBuilder().UseConfiguration(config),
                     new GenericWebHostBuilderWrapper(new HostBuilder()).UseConfiguration(config)
                 };
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
         }
     }
 

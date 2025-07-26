@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -691,19 +692,27 @@ public class ClientHandlerTests
     {
         // This logger will attempt to access information from HttpRequest once the HttpContext is created
         var logger = new VerifierLogger();
-        var builder = new WebHostBuilder()
-            .ConfigureServices(services =>
+        using var host = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
             {
-                services.AddSingleton<ILogger<IWebHost>>(logger);
+                webHostBuilder
+                    .UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddSingleton<ILogger<IWebHost>>(logger);
+                    })
+                    .Configure(app =>
+                    {
+                        app.Run(context =>
+                        {
+                            return Task.FromResult(0);
+                        });
+                    });
             })
-            .Configure(app =>
-            {
-                app.Run(context =>
-                {
-                    return Task.FromResult(0);
-                });
-            });
-        var server = new TestServer(builder);
+            .Build();
+        var server = host.GetTestServer();
+
+        await host.StartAsync();
 
         // The HttpContext will be created and the logger will make sure that the HttpRequest exists and contains reasonable values
         var result = await server.CreateClient().GetStringAsync("/");
