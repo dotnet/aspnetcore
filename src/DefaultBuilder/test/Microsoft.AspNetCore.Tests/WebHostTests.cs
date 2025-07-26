@@ -156,7 +156,7 @@ public class WebHostTests
         Assert.NotEmpty(forwardedHeadersOptions.KnownIPNetworks);
         Assert.Contains(forwardedHeadersOptions.KnownIPNetworks, network => network.Contains(System.Net.IPAddress.Parse("192.168.0.123")));
         Assert.NotEmpty(forwardedHeadersOptions.KnownProxies);
-        Assert.Contains(forwardedHeadersOptions.KnownProxies, proxy => proxy == System.Net.IPAddress.Parse("127.0.0.1"));
+        Assert.Contains(forwardedHeadersOptions.KnownProxies, System.Net.IPAddress.IsLoopback);
     }
 
     [Fact]
