@@ -172,7 +172,7 @@ Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionGroupNameProvider.GroupName.
 Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionVisibilityProvider
 Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionVisibilityProvider.IgnoreApi.get -> bool
 Microsoft.AspNetCore.Mvc.ApiExplorer.IApiRequestFormatMetadataProvider
-Microsoft.AspNetCore.Mvc.ApiExplorer.IApiRequestFormatMetadataProvider.GetSupportedContentTypes(string! contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
+Microsoft.AspNetCore.Mvc.ApiExplorer.IApiRequestFormatMetadataProvider.GetSupportedContentTypes(string? contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
 Microsoft.AspNetCore.Mvc.ApiExplorer.IApiRequestMetadataProvider
 Microsoft.AspNetCore.Mvc.ApiExplorer.IApiRequestMetadataProvider.SetContentTypes(Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection! contentTypes) -> void
 Microsoft.AspNetCore.Mvc.ApiExplorer.IApiResponseMetadataProvider
@@ -2454,7 +2454,7 @@ virtual Microsoft.AspNetCore.Mvc.Formatters.FormatFilter.GetFormat(Microsoft.Asp
 virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatter.CanRead(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext! context) -> bool
 virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatter.CanReadType(System.Type! type) -> bool
 virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatter.GetDefaultValueForType(System.Type! modelType) -> object?
-virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatter.GetSupportedContentTypes(string! contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
+virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatter.GetSupportedContentTypes(string? contentType, System.Type! objectType) -> System.Collections.Generic.IReadOnlyList<string!>?
 virtual Microsoft.AspNetCore.Mvc.Formatters.InputFormatter.ReadAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 virtual Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter.CanWriteResult(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext! context) -> bool
 virtual Microsoft.AspNetCore.Mvc.Formatters.OutputFormatter.CanWriteType(System.Type? type) -> bool
