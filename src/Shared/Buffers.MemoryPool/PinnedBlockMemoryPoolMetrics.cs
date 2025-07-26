@@ -22,23 +22,23 @@ internal sealed class PinnedBlockMemoryPoolMetrics
         _meter = meterFactory.Create(MeterName);
 
         _currentMemory = _meter.CreateUpDownCounter<long>(
-            "aspnetcore.memorypool.current_memory",
-            unit: "{bytes}",
+            "aspnetcore.memory_pool.current_memory",
+            unit: "By",
             description: "Number of bytes that are currently pooled by the pool.");
 
         _totalAllocatedMemory = _meter.CreateCounter<long>(
-           "aspnetcore.memorypool.total_allocated",
-            unit: "{bytes}",
+           "aspnetcore.memory_pool.total_allocated",
+            unit: "By",
             description: "Total number of allocations made by the pool.");
 
         _evictedMemory = _meter.CreateCounter<long>(
-           "aspnetcore.memorypool.evicted_memory",
-            unit: "{bytes}",
+           "aspnetcore.memory_pool.evicted_memory",
+            unit: "By",
             description: "Total number of bytes that have been evicted.");
 
         _totalRented = _meter.CreateCounter<long>(
-            "aspnetcore.memorypool.total_rented",
-            unit: "{bytes}",
+            "aspnetcore.memory_pool.total_rented",
+            unit: "By",
             description: "Total number of rented bytes from the pool.");
     }
 

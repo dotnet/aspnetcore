@@ -100,22 +100,15 @@ else
             return;
         }
 
-        var options = await SignInManager.RetrievePasskeyCreationOptionsAsync();
-        if (options is null)
-        {
-            RedirectManager.RedirectToCurrentPageWithStatus("Error: Could not retrieve passkey creation options.", HttpContext);
-            return;
-        }
-
-        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson, options);
+        var attestationResult = await SignInManager.PerformPasskeyAttestationAsync(Input.CredentialJson);
         if (!attestationResult.Succeeded)
         {
             RedirectManager.RedirectToCurrentPageWithStatus($"Error: Could not add the passkey: {attestationResult.Failure.Message}", HttpContext);
             return;
         }
 
-        var setPasskeyResult = await UserManager.SetPasskeyAsync(user, attestationResult.Passkey);
-        if (!setPasskeyResult.Succeeded)
+        var addPasskeyResult = await UserManager.AddOrUpdatePasskeyAsync(user, attestationResult.Passkey);
+        if (!addPasskeyResult.Succeeded)
         {
             RedirectManager.RedirectToCurrentPageWithStatus("Error: The passkey could not be added to your account.", HttpContext);
             return;

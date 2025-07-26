@@ -96,7 +96,7 @@ public class ComponentsActivitySourceTest
         Assert.Equal(ActivityKind.Internal, activity.Kind);
         Assert.True(activity.IsAllDataRequested);
         Assert.Equal(componentType, activity.GetTagItem("aspnetcore.components.type"));
-        Assert.Equal(methodName, activity.GetTagItem("aspnetcore.components.method"));
+        Assert.Equal(methodName, activity.GetTagItem("code.function.name"));
         Assert.Equal(attributeName, activity.GetTagItem("aspnetcore.components.attribute.name"));
         Assert.False(activity.IsStopped);
 

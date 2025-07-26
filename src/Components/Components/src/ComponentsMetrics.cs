@@ -83,7 +83,7 @@ internal sealed class ComponentsMetrics : IDisposable
         var tags = new TagList
         {
             { "aspnetcore.components.type", componentType ?? "unknown" },
-            { "aspnetcore.components.method", methodName ?? "unknown" },
+            { "code.function.name", methodName ?? "unknown" },
             { "aspnetcore.components.attribute.name", attributeName ?? "unknown" }
         };
 
@@ -104,7 +104,7 @@ internal sealed class ComponentsMetrics : IDisposable
         var tags = new TagList
         {
             { "aspnetcore.components.type", componentType ?? "unknown" },
-            { "aspnetcore.components.method", methodName ?? "unknown" },
+            { "code.function.name", methodName ?? "unknown" },
             { "aspnetcore.components.attribute.name", attributeName ?? "unknown" },
             { "error.type", ex.GetType().FullName ?? "unknown" }
         };
