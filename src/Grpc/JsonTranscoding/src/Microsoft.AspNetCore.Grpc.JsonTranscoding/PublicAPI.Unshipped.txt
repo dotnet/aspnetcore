@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.PropertyNameCaseInsensitive.get -> bool
+Microsoft.AspNetCore.Grpc.JsonTranscoding.GrpcJsonSettings.PropertyNameCaseInsensitive.set -> void
