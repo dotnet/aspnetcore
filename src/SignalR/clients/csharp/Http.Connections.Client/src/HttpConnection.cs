@@ -148,10 +148,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
         _url = _httpConnectionOptions.Url;
 
-        if (!httpConnectionOptions.SkipNegotiation || httpConnectionOptions.Transports != HttpTransportType.WebSockets)
-        {
-            _httpClient = CreateHttpClient();
-        }
+        _httpClient = CreateHttpClient();
 
         if (httpConnectionOptions.Transports == HttpTransportType.ServerSentEvents && OperatingSystem.IsBrowser())
         {
@@ -550,8 +547,18 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         Log.TransportStarted(_logger, transportType);
     }
 
-    private HttpClient CreateHttpClient()
+    private HttpClient? CreateHttpClient()
     {
+        var clientWebSocketOptions = new ClientWebSocketOptions();
+        _httpConnectionOptions.WebSocketConfiguration?.Invoke(clientWebSocketOptions);
+        if (_httpConnectionOptions.SkipNegotiation
+          && _httpConnectionOptions.Transports == HttpTransportType.WebSockets
+          && clientWebSocketOptions.HttpVersion < HttpVersion.Version20
+          )
+        {
+            return null;
+        }
+
         var httpClientHandler = new HttpClientHandler();
         HttpMessageHandler httpMessageHandler = httpClientHandler;
 
