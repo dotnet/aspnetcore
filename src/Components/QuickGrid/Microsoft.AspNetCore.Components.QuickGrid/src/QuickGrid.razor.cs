@@ -152,6 +152,9 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // If the PaginationState mutates, it raises this event. We use it to trigger a re-render.
     private readonly EventCallbackSubscriber<PaginationState> _currentPageItemsChanged;
 
+    // If the QuickGrid is disposed while the JS module is being loaded, we need to avoid calling JS methods
+    private bool _wasDisposed;
+
     /// <summary>
     /// Constructs an instance of <see cref="QuickGrid{TGridItem}"/>.
     /// </summary>
@@ -206,6 +209,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         if (firstRender)
         {
             _jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Microsoft.AspNetCore.Components.QuickGrid/QuickGrid.razor.js");
+            if (_wasDisposed)
+            {
+                // If the component has been disposed while JS module was being loaded, we don't need to continue
+                await _jsModule.DisposeAsync();
+                return;
+            }
             _jsEventDisposable = await _jsModule.InvokeAsync<IJSObjectReference>("init", _tableReference);
         }
 
@@ -434,6 +443,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        _wasDisposed = true;
         _currentPageItemsChanged.Dispose();
 
         try
