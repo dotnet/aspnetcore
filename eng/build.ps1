@@ -373,6 +373,50 @@ Remove-Item variable:global:_MSBuildExe -ea Ignore
 # Import Arcade
 . "$PSScriptRoot/common/tools.ps1"
 
+# Add debugging for .NET environment after tools.ps1 import
+Write-Host "=== BUILD.PS1 DOTNET ENVIRONMENT DEBUG START ===" -ForegroundColor Yellow
+Write-Host "Repository root: $RepoRoot" -ForegroundColor Cyan
+Write-Host "Current DOTNET_ROOT: $($env:DOTNET_ROOT)" -ForegroundColor Cyan
+Write-Host "Current DOTNET_ROOT_X86: $($env:DOTNET_ROOT_X86)" -ForegroundColor Cyan
+Write-Host "Current DOTNET_MULTILEVEL_LOOKUP: $($env:DOTNET_MULTILEVEL_LOOKUP)" -ForegroundColor Cyan
+Write-Host "Current PATH (first 300 chars): $($env:PATH.Substring(0, [Math]::Min(300, $env:PATH.Length)))" -ForegroundColor Cyan
+
+# Check what Get-Command dotnet finds after tools.ps1
+$buildDotnetCommand = Get-Command dotnet -ErrorAction SilentlyContinue
+if ($buildDotnetCommand) {
+    Write-Host "Get-Command dotnet found: $($buildDotnetCommand.Source)" -ForegroundColor Cyan
+    Write-Host "Build dotnet version:" -ForegroundColor Cyan
+    & $buildDotnetCommand.Source --version | ForEach-Object { Write-Host "  $_" -ForegroundColor Cyan }
+    Write-Host "Build dotnet --info:" -ForegroundColor Cyan
+    & $buildDotnetCommand.Source --info | ForEach-Object { Write-Host "  $_" -ForegroundColor Cyan }
+} else {
+    Write-Host "Get-Command dotnet found: NONE" -ForegroundColor Red
+}
+
+# Check repository .dotnet folder
+$repoDotnetPath = "$RepoRoot\.dotnet"
+Write-Host "Repository .dotnet path: $repoDotnetPath" -ForegroundColor Cyan
+Write-Host "Repository .dotnet exists: $(Test-Path $repoDotnetPath)" -ForegroundColor Cyan
+if (Test-Path $repoDotnetPath) {
+    Write-Host "Repository .dotnet contents:" -ForegroundColor Cyan
+    Get-ChildItem $repoDotnetPath -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "  $($_.Name)" -ForegroundColor Cyan }
+
+    $repoDotnetExe = "$repoDotnetPath\dotnet.exe"
+    if (Test-Path $repoDotnetExe) {
+        Write-Host "Repository dotnet version:" -ForegroundColor Cyan
+        & $repoDotnetExe --version | ForEach-Object { Write-Host "  $_" -ForegroundColor Cyan }
+    }
+}
+
+# Check global.json
+$globalJsonPath = "$RepoRoot\global.json"
+if (Test-Path $globalJsonPath) {
+    Write-Host "global.json content:" -ForegroundColor Cyan
+    Get-Content $globalJsonPath | ForEach-Object { Write-Host "  $_" -ForegroundColor Cyan }
+}
+
+Write-Host "=== BUILD.PS1 DOTNET ENVIRONMENT DEBUG END ===" -ForegroundColor Yellow
+
 function LocateJava {
     $foundJdk = $false
     $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
@@ -501,6 +545,8 @@ try {
     if (-not $OnlyBuildRepoTasks) {
         if ($performDesktopBuild) {
             Write-Host
+            Write-Host "=== PERFORMING DESKTOP BUILD ===" -ForegroundColor Yellow
+            Write-Host "MSBuild engine: vs (desktop)" -ForegroundColor Cyan
             Remove-Item variable:global:_BuildTool -ErrorAction Ignore
             $msbuildEngine = 'vs'
 
@@ -509,13 +555,31 @@ try {
                 $MSBuildOnlyArguments += $dotnetBuildArguments
             }
 
+            Write-Host "MSBuild arguments: @MSBuildArguments @MSBuildOnlyArguments" -ForegroundColor Cyan
+            Write-Host "About to run desktop MSBuild - checking environment:" -ForegroundColor Cyan
+            $currentDotnet = Get-Command dotnet -ErrorAction SilentlyContinue
+            if ($currentDotnet) {
+                Write-Host "Current dotnet: $($currentDotnet.Source)" -ForegroundColor Cyan
+                & $currentDotnet.Source --version | ForEach-Object { Write-Host "  Version: $_" -ForegroundColor Cyan }
+            }
+
             MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments @MSBuildOnlyArguments
         }
 
         if ($performDotnetBuild) {
             Write-Host
+            Write-Host "=== PERFORMING DOTNET BUILD ===" -ForegroundColor Yellow
+            Write-Host "MSBuild engine: dotnet" -ForegroundColor Cyan
             Remove-Item variable:global:_BuildTool -ErrorAction Ignore
             $msbuildEngine = 'dotnet'
+
+            Write-Host "MSBuild arguments: @MSBuildArguments @dotnetBuildArguments" -ForegroundColor Cyan
+            Write-Host "About to run dotnet MSBuild - checking environment:" -ForegroundColor Cyan
+            $currentDotnet = Get-Command dotnet -ErrorAction SilentlyContinue
+            if ($currentDotnet) {
+                Write-Host "Current dotnet: $($currentDotnet.Source)" -ForegroundColor Cyan
+                & $currentDotnet.Source --version | ForEach-Object { Write-Host "  Version: $_" -ForegroundColor Cyan }
+            }
 
             MSBuild $toolsetBuildProj /p:RepoRoot=$RepoRoot @MSBuildArguments @dotnetBuildArguments
         }
