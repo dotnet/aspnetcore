@@ -414,6 +414,7 @@ public class OpenApiOperationGeneratorTests
         Assert.Empty(GetOpenApiOperation((IInferredServiceInterface foo) => { }).Parameters);
         Assert.Empty(GetOpenApiOperation(([FromServices] int foo) => { }).Parameters);
         Assert.Empty(GetOpenApiOperation(([FromKeyedServices("foo")] int foo) => { }).Parameters);
+        Assert.Empty(GetOpenApiOperation(([CustomFromKeyedServices("foo")] int foo) => { }).Parameters);
         Assert.Empty(GetOpenApiOperation((HttpContext context) => { }).Parameters);
         Assert.Empty(GetOpenApiOperation((HttpRequest request) => { }).Parameters);
         Assert.Empty(GetOpenApiOperation((HttpResponse response) => { }).Parameters);
@@ -1083,6 +1084,10 @@ public class OpenApiOperationGeneratorTests
     }
 
     private interface IInferredServiceInterface
+    {
+    }
+
+    private class CustomFromKeyedServicesAttribute(string key) : FromKeyedServicesAttribute("Custom" + key)
     {
     }
 
