@@ -117,7 +117,7 @@ public class WebHostTests
     }
 
     [Fact]
-    public void WebHostConfiguration_EnablesForwardedHeaders_CustomConfig()
+    public async Task WebHostConfiguration_EnablesForwardedHeaders_CustomConfig()
     {
         using var host = WebHost.CreateDefaultBuilder()
             .ConfigureAppConfiguration(configBuilder =>
@@ -125,17 +125,32 @@ public class WebHostTests
                 configBuilder.AddInMemoryCollection(new[]
                 {
                     new KeyValuePair<string, string>("FORWARDEDHEADERS_ENABLED", "true" ),
-                    new KeyValuePair<string, string>("FORWARDEDHEADERS_HEADERS", "XForwardedHost,XForwardedProto,XForwardedFor,XForwardedFor123" ),
+                    new KeyValuePair<string, string>("FORWARDEDHEADERS_HEADERS", "XForwardedHost,XForwardedProto,XForwardedFor123" ),
                     new KeyValuePair<string, string>("ForwardedHeaders_KnownIPNetworks", "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16"),
                     new KeyValuePair<string, string>("ForwardedHeaders_KnownProxies", "127.0.0.1")
                 });
             })
             .UseTestServer()
+            .Configure(app =>
+            {
+                Assert.True(app.Properties.ContainsKey("ForwardedHeadersAdded"), "Forwarded Headers");
+                app.Run(context =>
+                {
+                    Assert.Equal("https", context.Request.Scheme);
+                    return Task.CompletedTask;
+                });
+            })
             .Build();
+        await host.StartAsync();
+        var client = host.GetTestClient();
+        client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
+        var result = await client.GetAsync("http://localhost/");
+        result.EnsureSuccessStatusCode();
+
         var forwardedHeadersOptions = host.Services.GetRequiredService<IOptions<ForwardedHeadersOptions>>().Value;
         Assert.NotNull(forwardedHeadersOptions);
         Assert.Equal(
-            ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
+            ForwardedHeaders.XForwardedHost | ForwardedHeaders.XForwardedProto,
             forwardedHeadersOptions.ForwardedHeaders
             );
         Assert.NotEmpty(forwardedHeadersOptions.KnownIPNetworks);
