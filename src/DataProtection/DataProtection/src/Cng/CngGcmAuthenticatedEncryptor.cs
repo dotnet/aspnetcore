@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -227,6 +228,84 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
                 dwFlags: 0);
             UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
             CryptoUtil.Assert(cbResult == cbPlaintextData, "cbResult == cbPlaintextData");
+        }
+    }
+
+    public override int GetEncryptedSize(int plainTextLength)
+    {
+        // A buffer to hold the key modifier, nonce, encrypted data, and tag.
+        // In GCM, the encrypted output will be the same length as the plaintext input.
+        return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES));
+    }
+
+    public override bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        bytesWritten = 0;
+
+        try
+        {
+            fixed (byte* pbDestination = destination)
+            {
+                // Calculate offsets
+                byte* pbKeyModifier = pbDestination;
+                byte* pbNonce = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
+                byte* pbEncryptedData = &pbNonce[NONCE_SIZE_IN_BYTES];
+                byte* pbAuthTag = &pbEncryptedData[plaintext.Length];
+
+                // Randomly generate the key modifier and nonce
+                _genRandom.GenRandom(pbKeyModifier, KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES);
+                bytesWritten += checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES));
+
+                // At this point, retVal := { preBuffer | keyModifier | nonce | _____ | _____ | postBuffer }
+
+                // Use the KDF to generate a new symmetric block cipher key
+                // We'll need a temporary buffer to hold the symmetric encryption subkey
+                byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
+                try
+                {
+                    fixed (byte* pbAdditionalAuthenticatedData = additionalAuthenticatedData)
+                    {
+                        _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
+                            pbLabel: pbAdditionalAuthenticatedData,
+                            cbLabel: (uint)additionalAuthenticatedData.Length,
+                            contextHeader: _contextHeader,
+                            pbContext: pbKeyModifier,
+                            cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
+                            pbDerivedKey: pbSymmetricEncryptionSubkey,
+                            cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
+                    }
+
+                    // Perform the encryption operation
+                    byte dummy;
+                    fixed (byte* pbPlaintextArray = plaintext)
+                    {
+                        var pbPlaintext = (pbPlaintextArray != null) ? pbPlaintextArray : &dummy;
+
+                        DoGcmEncrypt(
+                            pbKey: pbSymmetricEncryptionSubkey,
+                            cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
+                            pbNonce: pbNonce,
+                            pbPlaintextData: pbPlaintext,
+                            cbPlaintextData: (uint)plaintext.Length,
+                            pbEncryptedData: pbEncryptedData,
+                            pbTag: pbAuthTag);
+                    }
+
+                    // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
+                    // And we're done!
+                    bytesWritten += plaintext.Length + checked((int)TAG_SIZE_IN_BYTES);
+                    return true;
+                }
+                finally
+                {
+                    // The buffer contains key material, so delete it.
+                    UnsafeBufferUtil.SecureZeroMemory(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
+                }
+            }
+        }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            throw Error.CryptCommon_GenericError(ex);
         }
     }
 

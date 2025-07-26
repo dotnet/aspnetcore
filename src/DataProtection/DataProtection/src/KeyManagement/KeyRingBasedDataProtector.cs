@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Buffers.Binary;
 using System.Buffers;
+using System.Buffers.Binary;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -13,11 +14,10 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
-using System.Buffers.Text;
-using Microsoft.AspNetCore.DataProtection.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
@@ -33,6 +33,8 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
     private AdditionalAuthenticatedDataTemplate _aadTemplate;
     private readonly IKeyRingProvider _keyRingProvider;
     private readonly ILogger? _logger;
+
+    private static readonly int _magicHeaderKeyIdSize = sizeof(uint) + sizeof(Guid);
 
     public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
     {
@@ -89,6 +91,72 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
         return retVal;
     }
+
+#if NET10_0_OR_GREATER
+    public int GetProtectedSize(ReadOnlySpan<byte> plainText)
+    {
+        // Get the current key ring to access the encryptor
+        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+        var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
+        if (defaultEncryptor is not IOptimizedAuthenticatedEncryptor optimizedAuthenticatedEncryptor)
+        {
+            throw new NotSupportedException("The current default encryptor does not support optimized protection.");
+        }
+        CryptoUtil.Assert(optimizedAuthenticatedEncryptor != null, "optimizedAuthenticatedEncryptor != null");
+
+        // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
+        // See Protect() / TryProtect() for details
+        return _magicHeaderKeyIdSize + optimizedAuthenticatedEncryptor.GetEncryptedSize(plainText.Length);
+    }
+
+    public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
+    {
+        try
+        {
+            // Perform the encryption operation using the current default encryptor.
+            var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+            var defaultKeyId = currentKeyRing.DefaultKeyId;
+            var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
+            if (defaultEncryptor is not IOptimizedAuthenticatedEncryptor optimizedAuthenticatedEncryptor)
+            {
+                throw new NotSupportedException("The current default encryptor does not support optimized protection.");
+            }
+            CryptoUtil.Assert(optimizedAuthenticatedEncryptor != null, "optimizedAuthenticatedEncryptor != null");
+
+            if (_logger.IsDebugLevelEnabled())
+            {
+                _logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
+            }
+
+            // We'll need to apply the default key id to the template if it hasn't already been applied.
+            // If the default key id has been updated since the last call to Protect, also write back the updated template.
+            var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
+
+            var preBufferSize = _magicHeaderKeyIdSize;
+            var postBufferSize = 0;
+            var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - (preBufferSize + postBufferSize));
+            var success = optimizedAuthenticatedEncryptor.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
+
+            // At this point: destination := { 000..000 || encryptorSpecificProtectedPayload },
+            // where 000..000 is a placeholder for our magic header and key id.
+
+            // Write out the magic header and key id
+            BinaryPrimitives.WriteUInt32BigEndian(destination.Slice(0, sizeof(uint)), MAGIC_HEADER_V0);
+            var writeKeyIdResult = defaultKeyId.TryWriteBytes(destination.Slice(sizeof(uint), sizeof(Guid)));
+            Debug.Assert(writeKeyIdResult, "Failed to write Guid to destination.");
+            bytesWritten += _magicHeaderKeyIdSize;
+
+            // At this point, destination := { magicHeader || keyId || encryptorSpecificProtectedPayload }
+            // And we're done!
+            return success;
+        }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            // homogenize all errors to CryptographicException
+            throw Error.Common_EncryptionFailed(ex);
+        }
+    }
+#endif
 
     public byte[] Protect(byte[] plaintext)
     {

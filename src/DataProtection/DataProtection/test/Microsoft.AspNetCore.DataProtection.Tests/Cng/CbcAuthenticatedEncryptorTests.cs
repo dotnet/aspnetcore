@@ -1,10 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.Cng;
+using Microsoft.AspNetCore.Cryptography.SafeHandles;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
+using Microsoft.AspNetCore.DataProtection.Tests.Internal;
 using Microsoft.AspNetCore.InternalTesting;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
@@ -112,5 +116,38 @@ public class CbcAuthenticatedEncryptorTests
 
         string retValAsString = Convert.ToBase64String(retVal);
         Assert.Equal("AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAAAAAAA", retValAsString);
+    }
+
+    [ConditionalTheory]
+    [ConditionalRunTestOnlyOnWindows]
+    [InlineData(128, "SHA256", "")]
+    [InlineData(128, "SHA256", "This is a small text")]
+    [InlineData(128, "SHA256", "This is a very long plaintext message that spans multiple blocks and should test the encryption and size estimation with larger payloads to ensure everything works correctly")]
+    [InlineData(192, "SHA256", "")]
+    [InlineData(192, "SHA256", "This is a small text")]
+    [InlineData(192, "SHA256", "This is a very long plaintext message that spans multiple blocks and should test the encryption and size estimation with larger payloads to ensure everything works correctly")]
+    [InlineData(256, "SHA256", "")]
+    [InlineData(256, "SHA256", "This is a small text")]
+    [InlineData(256, "SHA256", "This is a very long plaintext message that spans multiple blocks and should test the encryption and size estimation with larger payloads to ensure everything works correctly")]
+    [InlineData(128, "SHA512", "")]
+    [InlineData(128, "SHA512", "This is a small text")]
+    [InlineData(128, "SHA512", "This is a very long plaintext message that spans multiple blocks and should test the encryption and size estimation with larger payloads to ensure everything works correctly")]
+    [InlineData(192, "SHA512", "")]
+    [InlineData(192, "SHA512", "This is a small text")]
+    [InlineData(192, "SHA512", "This is a very long plaintext message that spans multiple blocks and should test the encryption and size estimation with larger payloads to ensure everything works correctly")]
+    [InlineData(256, "SHA512", "")]
+    [InlineData(256, "SHA512", "This is a small text")]
+    [InlineData(256, "SHA512", "This is a very long plaintext message that spans multiple blocks and should test the encryption and size estimation with larger payloads to ensure everything works correctly")]
+    public void Roundtrip_TryEncryptDecrypt_CorrectlyEstimatesDataLength(int symmetricKeySizeBits, string hmacAlgorithm, string plainText)
+    {
+        Secret kdk = new Secret(new byte[512 / 8]);
+        IAuthenticatedEncryptor encryptor = new CbcAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmHandle: CachedAlgorithmHandles.AES_CBC,
+            symmetricAlgorithmKeySizeInBytes: (uint)(symmetricKeySizeBits / 8),
+            hmacAlgorithmHandle: BCryptAlgorithmHandle.OpenAlgorithmHandle(hmacAlgorithm, hmac: true));
+        ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes(plainText));
+        ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
+
+        RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
     }
 }
