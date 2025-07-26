@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Theme xmlns="http://wixtoolset.org/schemas/thmutil/2010">
+﻿<Theme xmlns="http://wixtoolset.org/schemas/v4/thmutil">
     <Window Width="485" Height="347" HexStyle="100a0000" FontId="0">#(loc.Caption)</Window>
     <Font Id="0" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
     <Font Id="1" Height="-24" Weight="500" Foreground="000000">Segoe UI</Font>
@@ -7,7 +6,7 @@
     <Font Id="3" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
     <Font Id="4" Height="-12" Weight="500" Foreground="ff0000" Background="FFFFFF" Underline="yes">Segoe UI</Font>
 
-    <Image X="11" Y="11" Width="64" Height="64" ImageFile="logo.png" Visible="yes"/>
+    <Image X="11" Y="11" Width="64" Height="64" ImageFile="logo.png" Visible="yes" />
     <Text X="80" Y="11" Width="-11" Height="40" FontId="1" Visible="yes" DisablePrefix="yes">#(loc.Title)</Text>
     <Text X="80" Y="40" Width="-11" Height="40" FontId="1" Visible="yes" DisablePrefix="yes">#(loc.SubTitle)</Text>
 
@@ -28,7 +27,7 @@
     <Page Name="FilesInUse">
       <Text X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.FilesInUseHeader)</Text>
       <Text X="11" Y="121" Width="-11" Height="34" FontId="3" DisablePrefix="yes">#(loc.FilesInUseLabel)</Text>
-      <Text Name="FilesInUseText"  X="11" Y="150" Width="-11" Height="-86" FontId="3" DisablePrefix="yes" HexStyle="0x0000C000"></Text>
+      <Text Name="FilesInUseText" X="11" Y="150" Width="-11" Height="-86" FontId="3" DisablePrefix="yes" HexStyle="0x0000C000"></Text>
 
       <Button Name="FilesInUseCloseRadioButton" X="11" Y="-60" Width="-11" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseCloseRadioButton)</Button>
       <Button Name="FilesInUseDontCloseRadioButton" X="11" Y="-40" Width="-11" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes" HexStyle="0x000009">#(loc.FilesInUseDontCloseRadioButton)</Button>

@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
-
-<Include>
+﻿<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
   <?define DiscoverabilityKeyRoot = "SOFTWARE\Microsoft\IIS Extensions"?>
 
   <!-- NativeMachine values match the expected values for image file machine constants
@@ -11,6 +9,7 @@
 
   <?if $(var.Platform) = "x64"?>
     <?define IsWin64 = yes ?>
+    <?define Bitness = always64 ?>
     <?define PlatformArchitecture = x64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>
     <?define ProgramFilesFolder32 = ProgramFilesFolder ?>
@@ -20,6 +19,7 @@
     <?define ANCMInstallerVersion = 400 ?>
   <?elseif $(var.Platform) = "x86" ?>
     <?define IsWin64 = no ?>
+    <?define Bitness = always32 ?>
     <?define PlatformArchitecture = x86 ?>
     <?define ProgramFilesFolder = ProgramFilesFolder ?>
     <?define SystemFolder = SystemFolder ?>
@@ -27,6 +27,7 @@
     <?define ANCMInstallerVersion = 400 ?>
   <?elseif $(var.Platform) ~= "arm64" ?>
     <?define IsWin64 = yes ?>
+    <?define Bitness = always64 ?>
     <?define PlatformArchitecture = ARM64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>
     <?define ProgramFilesFolder32 = ProgramFilesFolder ?>
