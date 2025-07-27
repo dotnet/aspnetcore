@@ -444,6 +444,8 @@ internal sealed class OpenApiDocumentService(
                 continue;
             }
 
+            // Execute 'schemaTransformers' ahead of time to apply modifications made by 'schemaTransformers' to the parameter.
+            var schema = await _componentService.GetOrCreateSchemaAsync(document, GetTargetType(description, parameter), scopedServiceProvider, schemaTransformers, parameter, cancellationToken: cancellationToken);
             var openApiParameter = new OpenApiParameter
             {
                 Name = parameter.Name,
@@ -455,7 +457,7 @@ internal sealed class OpenApiDocumentService(
                     _ => ParameterLocation.Query
                 },
                 Required = IsRequired(parameter),
-                Schema = await _componentService.GetOrCreateSchemaAsync(document, GetTargetType(description, parameter), scopedServiceProvider, schemaTransformers, parameter, cancellationToken: cancellationToken),
+                Schema = schema,
                 Description = GetParameterDescriptionFromAttribute(parameter)
             };
 
