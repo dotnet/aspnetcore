@@ -549,14 +549,14 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
 
     private HttpClient? CreateHttpClient()
     {
-        var clientWebSocketOptions = new ClientWebSocketOptions();
-        _httpConnectionOptions.WebSocketConfiguration?.Invoke(clientWebSocketOptions);
         if (_httpConnectionOptions.SkipNegotiation
-          && _httpConnectionOptions.Transports == HttpTransportType.WebSockets
-          && clientWebSocketOptions.HttpVersion < HttpVersion.Version20
+          && _httpConnectionOptions.Transports == HttpTransportType.WebSockets`
           )
         {
-            return null;
+            var clientWebSocket = new System.Net.WebSockets.ClientWebSocket();
+            _httpConnectionOptions.WebSocketConfiguration?.Invoke(clientWebSocket.Options);
+            if (clientWebSocket.Options.HttpVersion < System.Net.HttpVersion.Version20)
+                return null;
         }
 
         var httpClientHandler = new HttpClientHandler();
