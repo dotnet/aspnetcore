@@ -550,7 +550,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
     private HttpClient? CreateHttpClient()
     {
         if (_httpConnectionOptions.SkipNegotiation
-          && _httpConnectionOptions.Transports == HttpTransportType.WebSockets`
+          && _httpConnectionOptions.Transports == HttpTransportType.WebSockets
           )
         {
             var clientWebSocket = new System.Net.WebSockets.ClientWebSocket();
