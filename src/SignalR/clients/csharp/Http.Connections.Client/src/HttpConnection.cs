@@ -547,7 +547,7 @@ public partial class HttpConnection : ConnectionContext, IConnectionInherentKeep
         Log.TransportStarted(_logger, transportType);
     }
 
-    private HttpClient? CreateHttpClient()
+    private HttpClient CreateHttpClient()
     {
         var httpClientHandler = new HttpClientHandler();
         HttpMessageHandler httpMessageHandler = httpClientHandler;
