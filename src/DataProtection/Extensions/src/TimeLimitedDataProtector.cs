@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.DataProtection;
 /// </summary>
 internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 #if NET10_0_OR_GREATER
-    , IOptimizedDataProtector
+    , ISpanDataProtector
 #endif
 {
     private const string MyPurposeString = "Microsoft.AspNetCore.DataProtection.TimeLimitedDataProtector.v1";
@@ -134,19 +134,21 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
     }
 
 #if NET10_0_OR_GREATER
-    public int GetProtectedSize(ReadOnlySpan<byte> plainText)
+    public bool TryGetProtectedSize(ReadOnlySpan<byte> plainText, out int cipherTextLength)
     {
         var dataProtector = GetInnerProtectorWithTimeLimitedPurpose();
-        if (dataProtector is IOptimizedDataProtector optimizedDataProtector)
+        if (dataProtector is ISpanDataProtector optimizedDataProtector)
         {
-            var size = optimizedDataProtector.GetProtectedSize(plainText);
+            var result = optimizedDataProtector.TryGetProtectedSize(plainText, out cipherTextLength);
 
             // prepended the expiration time as a 64-bit UTC tick count takes ExpirationTimeHeaderSize bytes;
             // see Protect(byte[] plaintext, DateTimeOffset expiration) for details
-            return size + ExpirationTimeHeaderSize;
+            cipherTextLength += ExpirationTimeHeaderSize;
+            return result;
         }
 
-        throw new NotSupportedException("The inner protector does not support optimized data protection.");
+        cipherTextLength = default;
+        return false;
     }
 
     public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
@@ -154,7 +156,7 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
     public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, DateTimeOffset expiration, out int bytesWritten)
     {
-        if (_innerProtector is not IOptimizedDataProtector optimizedDataProtector)
+        if (_innerProtector is not ISpanDataProtector optimizedDataProtector)
         {
             throw new NotSupportedException("The inner protector does not support optimized data protection.");
         }

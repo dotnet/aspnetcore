@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Security.Cryptography;
@@ -656,7 +657,8 @@ public class KeyRingBasedDataProtectorTests
             newPurpose: "purpose");
 
         // Act - get estimated size
-        int estimatedSize = protector.GetProtectedSize(plaintext);
+        var protectionSizeResult = protector.TryGetProtectedSize(plaintext, out var estimatedSize);
+        Assert.True(protectionSizeResult, "TryGetProtectedSize should succeed");
 
         // verify simple protect works
         var protectedData = protector.Protect(plaintext);
@@ -716,8 +718,9 @@ public class KeyRingBasedDataProtectorTests
             newPurpose: "purpose");
 
         // Act - get estimated size
-        int estimatedSize = protector.GetProtectedSize(plaintext);
-        
+        var protectionSizeResult = protector.TryGetProtectedSize(plaintext, out var estimatedSize);
+        Assert.True(protectionSizeResult, "TryGetProtectedSize should succeed");
+
         // Act - allocate buffer and try protect
         byte[] destination = new byte[estimatedSize];
         bool success = protector.TryProtect(plaintext, destination, out int bytesWritten);

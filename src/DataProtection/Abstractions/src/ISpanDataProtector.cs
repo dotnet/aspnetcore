@@ -9,20 +9,21 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.DataProtection;
 
-#if NET10_0_OR_GREATER
-
 /// <summary>
 /// An interface that can provide data protection services.
 /// Is an optimized version of <see cref="IDataProtector"/>.
 /// </summary>
-public interface IOptimizedDataProtector : IDataProtector
+public interface ISpanDataProtector : IDataProtector
 {
     /// <summary>
-    /// Returns the size of the encrypted data for a given plaintext length.
+    /// Determines the size of the protected data in order to then use <see cref="TryProtect(ReadOnlySpan{byte}, Span{byte}, out int)"/>."/>.
+    /// <br/> Returns the boolean representing if current implementation of data protector supports <see cref="ISpanDataProtector"/> or not.
+    /// If it does not (returns false), then one needs to fallback to <see cref="IDataProtector"/> and use <see cref="IDataProtector.Protect(byte[])"/> and <see cref="IDataProtector.Unprotect(byte[])"/> methods instead.
     /// </summary>
     /// <param name="plainText">The plain text that will be encrypted later</param>
-    /// <returns>The length of the encrypted data</returns>
-    int GetProtectedSize(ReadOnlySpan<byte> plainText);
+    /// <param name="cipherTextLength">The length of the expected cipher text.</param>
+    /// <returns>true, if <see cref="ISpanDataProtector"/> is supported. False if a fallback to <see cref="IDataProtector"/> is required.</returns>
+    bool TryGetProtectedSize(ReadOnlySpan<byte> plainText, out int cipherTextLength);
 
     /// <summary>
     /// Attempts to encrypt and tamper-proof a piece of data.
@@ -33,5 +34,3 @@ public interface IOptimizedDataProtector : IDataProtector
     /// <returns>true if destination is long enough to receive the encrypted data; otherwise, false.</returns>
     bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten);
 }
-
-#endif

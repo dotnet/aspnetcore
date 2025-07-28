@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
@@ -28,20 +29,23 @@ internal static class RoundtripEncryptionHelpers
     /// </summary>
     public static void AssertTryEncryptTryDecryptParity(IAuthenticatedEncryptor encryptor, ArraySegment<byte> plaintext, ArraySegment<byte> aad)
     {
+        var spanAuthenticatedEncryptor = encryptor as ISpanAuthenticatedEncryptor;
+        Debug.Assert(spanAuthenticatedEncryptor != null, "ISpanDataProtector is not supported by the encryptor");
+
         // assert "allocatey" Encrypt/Decrypt APIs roundtrip correctly
         byte[] ciphertext = encryptor.Encrypt(plaintext, aad);
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
         Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
 
         // assert calculated size is correct
-        var expectedSize = encryptor.GetEncryptedSize(plaintext.Count);
+        var expectedSize = spanAuthenticatedEncryptor.GetEncryptedSize(plaintext.Count);
         Assert.Equal(expectedSize, ciphertext.Length);
 
         // perform TryEncrypt and Decrypt roundtrip - ensures cross operation compatibility
         var cipherTextPooled = ArrayPool<byte>.Shared.Rent(expectedSize);
         try
         {
-            var tryEncryptResult = encryptor.TryEncrypt(plaintext, aad, cipherTextPooled, out var bytesWritten);
+            var tryEncryptResult = spanAuthenticatedEncryptor.TryEncrypt(plaintext, aad, cipherTextPooled, out var bytesWritten);
             Assert.Equal(expectedSize, bytesWritten);
             Assert.True(tryEncryptResult);
 

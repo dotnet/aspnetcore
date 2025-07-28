@@ -9,6 +9,9 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 
+/// <summary>
+/// Provides an authenticated encryption and decryption routine via a span-based API.
+/// </summary>
 public interface ISpanAuthenticatedEncryptor : IAuthenticatedEncryptor
 {
     /// <summary>

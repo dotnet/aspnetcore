@@ -1,4 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IOptimizedAuthenticatedEncryptor
-Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IOptimizedAuthenticatedEncryptor.GetEncryptedSize(int plainTextLength) -> int
-Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IOptimizedAuthenticatedEncryptor.TryEncrypt(System.ReadOnlySpan<byte> plaintext, System.ReadOnlySpan<byte> additionalAuthenticatedData, System.Span<byte> destination, out int bytesWritten) -> bool
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.GetEncryptedSize(int plainTextLength) -> int
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.TryEncrypt(System.ReadOnlySpan<byte> plaintext, System.ReadOnlySpan<byte> additionalAuthenticatedData, System.Span<byte> destination, out int bytesWritten) -> bool

@@ -21,7 +21,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
-internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedDataProtector
+internal sealed unsafe class KeyRingBasedDataProtector : ISpanDataProtector, IPersistedDataProtector
 {
     // This magic header identifies a v0 protected data blob. It's the high 28 bits of the SHA1 hash of
     // "Microsoft.AspNet.DataProtection.KeyManagement.KeyRingBasedDataProtector" [US-ASCII], big-endian.
@@ -92,21 +92,23 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         return retVal;
     }
 
-#if NET10_0_OR_GREATER
-    public int GetProtectedSize(ReadOnlySpan<byte> plainText)
+    public bool TryGetProtectedSize(ReadOnlySpan<byte> plainText, out int cipherTextLength)
     {
+        cipherTextLength = default;
+
         // Get the current key ring to access the encryptor
         var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
         var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
-        if (defaultEncryptor is not IOptimizedAuthenticatedEncryptor optimizedAuthenticatedEncryptor)
+        if (defaultEncryptor is not ISpanAuthenticatedEncryptor optimizedAuthenticatedEncryptor)
         {
-            throw new NotSupportedException("The current default encryptor does not support optimized protection.");
+            return false;
         }
         CryptoUtil.Assert(optimizedAuthenticatedEncryptor != null, "optimizedAuthenticatedEncryptor != null");
 
         // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
         // See Protect() / TryProtect() for details
-        return _magicHeaderKeyIdSize + optimizedAuthenticatedEncryptor.GetEncryptedSize(plainText.Length);
+        cipherTextLength = _magicHeaderKeyIdSize + optimizedAuthenticatedEncryptor.GetEncryptedSize(plainText.Length);
+        return true;
     }
 
     public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
@@ -117,11 +119,11 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
             var defaultKeyId = currentKeyRing.DefaultKeyId;
             var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
-            if (defaultEncryptor is not IOptimizedAuthenticatedEncryptor optimizedAuthenticatedEncryptor)
+            if (defaultEncryptor is not ISpanAuthenticatedEncryptor spanEncryptor)
             {
                 throw new NotSupportedException("The current default encryptor does not support optimized protection.");
             }
-            CryptoUtil.Assert(optimizedAuthenticatedEncryptor != null, "optimizedAuthenticatedEncryptor != null");
+            CryptoUtil.Assert(spanEncryptor != null, "optimizedAuthenticatedEncryptor != null");
 
             if (_logger.IsDebugLevelEnabled())
             {
@@ -135,15 +137,24 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             var preBufferSize = _magicHeaderKeyIdSize;
             var postBufferSize = 0;
             var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - (preBufferSize + postBufferSize));
-            var success = optimizedAuthenticatedEncryptor.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
+            var success = spanEncryptor.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
 
             // At this point: destination := { 000..000 || encryptorSpecificProtectedPayload },
             // where 000..000 is a placeholder for our magic header and key id.
 
             // Write out the magic header and key id
+#if NET10_0_OR_GREATER
             BinaryPrimitives.WriteUInt32BigEndian(destination.Slice(0, sizeof(uint)), MAGIC_HEADER_V0);
             var writeKeyIdResult = defaultKeyId.TryWriteBytes(destination.Slice(sizeof(uint), sizeof(Guid)));
             Debug.Assert(writeKeyIdResult, "Failed to write Guid to destination.");
+#else
+            fixed (byte* pbRetVal = destination)
+            {
+                WriteBigEndianInteger(pbRetVal, MAGIC_HEADER_V0);
+                WriteGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
+            }
+#endif
+
             bytesWritten += _magicHeaderKeyIdSize;
 
             // At this point, destination := { magicHeader || keyId || encryptorSpecificProtectedPayload }
@@ -156,7 +167,6 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             throw Error.Common_EncryptionFailed(ex);
         }
     }
-#endif
 
     public byte[] Protect(byte[] plaintext)
     {
