@@ -123,6 +123,7 @@ function Test-Template {
             Copy-Item -Path "$devRefAssembliesSource/*" -Destination $devRefPackDir -Recurse -Force;
             Write-Verbose "Successfully copied dev reference assemblies to $devRefPackDir";
         }
+    if (-not (Check-DiagnosticsDll -Path $artifactsDiagnosticsDll -Description "3) Artifacts Microsoft.AspNetCore.Diagnostics.dll")) {
         # Try alternative location
         $artifactsDiagnosticsDll2 = "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/Microsoft.AspNetCore.Diagnostics.$TargetFramework.*.nupkg";
         $artifactsNupkg = Get-ChildItem $artifactsDiagnosticsDll2 -ErrorAction SilentlyContinue | Select-Object -First 1;
@@ -441,6 +442,7 @@ function Test-Template {
         } else {
             Write-Warning "Publish binlog not found at $publishBinlogPath";
         }
+        Write-Host "##vso[artifact.upload containerfolder=repo-full;artifactname=repo-full]$PSScriptRoot/../../.."
     }
     finally {
         Pop-Location -StackName TemplateFolder;
