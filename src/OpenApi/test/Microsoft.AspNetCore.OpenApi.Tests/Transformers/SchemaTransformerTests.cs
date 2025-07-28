@@ -947,12 +947,12 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
     {
         var builder = CreateBuilder();
 
-        builder.MapGet("/todo", (Todo todo) => { });
+        builder.MapGet("/todo", (int todo) => { });
 
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            context.ParameterDescription.Name = context.ParameterDescription.Name.ToUpper(System.Globalization.CultureInfo.CurrentCulture);
+            context.ParameterDescription.Name = context.ParameterDescription.Name.ToUpper(CultureInfo.CurrentCulture);
             return Task.CompletedTask;
         });
 
