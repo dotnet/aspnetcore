@@ -95,19 +95,31 @@ function Test-Template {
         Get-ChildItem "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" | ForEach-Object { Write-Verbose "  $($_.Name)" }
     }
 
-    Write-Verbose "Removing existing dev runtimes from local .dotnet...";
+    Write-Verbose "Removing ALL existing ASP.NET Core runtimes from local .dotnet...";
     try {
-        $devRuntimes = Get-ChildItem "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/*-dev" -ErrorAction SilentlyContinue;
-        if ($devRuntimes) {
-            Write-Verbose "Found existing dev runtimes to remove: $($devRuntimes.Name -join ', ')";
-            Remove-Item "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/*-dev" -Recurse -Force -ErrorAction Stop;
-            Write-Verbose "Successfully removed existing dev runtimes";
+        $aspNetCoreRuntimePath = "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App";
+        if (Test-Path $aspNetCoreRuntimePath) {
+            $existingRuntimes = Get-ChildItem $aspNetCoreRuntimePath -ErrorAction SilentlyContinue;
+            if ($existingRuntimes) {
+                Write-Verbose "Found existing ASP.NET Core runtimes to remove: $($existingRuntimes.Name -join ', ')";
+                Remove-Item $aspNetCoreRuntimePath -Recurse -Force -ErrorAction Stop;
+                Write-Verbose "Successfully removed all existing ASP.NET Core runtimes";
+
+                # Recreate the directory
+                New-Item -Path $aspNetCoreRuntimePath -ItemType Directory -Force | Out-Null;
+                Write-Verbose "Recreated ASP.NET Core runtime directory";
+            } else {
+                Write-Verbose "No existing ASP.NET Core runtimes found to remove";
+            }
         } else {
-            Write-Verbose "No existing dev runtimes found to remove";
+            Write-Verbose "ASP.NET Core runtime directory does not exist";
+            # Create the directory
+            New-Item -Path $aspNetCoreRuntimePath -ItemType Directory -Force | Out-Null;
+            Write-Verbose "Created ASP.NET Core runtime directory";
         }
     }
     catch {
-        Write-Warning "Failed to remove existing dev runtimes: $($_.Exception.Message)";
+        Write-Warning "Failed to remove existing ASP.NET Core runtimes: $($_.Exception.Message)";
         # Continue anyway - this might not be critical
     }
 
