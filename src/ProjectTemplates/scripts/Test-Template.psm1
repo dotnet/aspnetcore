@@ -232,69 +232,79 @@ function Test-Template {
     }
 
     # ===== PATCH REFERENCE ASSEMBLIES =====
-    Write-Verbose "=== PATCHING REFERENCE ASSEMBLIES ===";
+    Write-Verbose "=== PATCHING REFERENCE ASSEMBLIES ==="
 
     # Find the reference pack directory
-    $packsDir = "$PSScriptRoot/.dotnet/packs/Microsoft.AspNetCore.App.Ref";
-    if (Test-Path $packsDir) {
-        Write-Verbose "Found reference packs directory: $packsDir";
+    $packsDir = "$PSScriptRoot/.dotnet/packs/Microsoft.AspNetCore.App.Ref"
+    if (Test-Path $packsDir)
+    {
+        Write-Verbose "Found reference packs directory: $packsDir"
 
         # List existing reference pack versions
-        $existingRefPacks = Get-ChildItem $packsDir -ErrorAction SilentlyContinue;
-        if ($existingRefPacks) {
-            Write-Verbose "Existing reference pack versions: $($existingRefPacks.Name -join ', ')";
+        $existingRefPacks = Get-ChildItem $packsDir -ErrorAction SilentlyContinue
+        if ($existingRefPacks)
+        {
+            Write-Verbose "Existing reference pack versions: $($existingRefPacks.Name -join ', ')"
 
             # Check if dev version of reference assemblies exist in the runtime zip
-            $devRefAssembliesSource = "$PSScriptRoot/.runtime/ref/Microsoft.AspNetCore.App";
-            if (Test-Path $devRefAssembliesSource) {
-                Write-Verbose "Found dev reference assemblies in runtime zip at: $devRefAssembliesSource";
+            $devRefAssembliesSource = "$PSScriptRoot/.runtime/ref/Microsoft.AspNetCore.App"
+            if (Test-Path $devRefAssembliesSource)
+            {
+                Write-Verbose "Found dev reference assemblies in runtime zip at: $devRefAssembliesSource"
 
                 # Create dev version reference pack directory
-                $devRefPackDir = "$packsDir/10.0.0-dev";
-                New-Item -Path $devRefPackDir -ItemType Directory -Force | Out-Null;
+                $devRefPackDir = "$packsDir/10.0.0-dev"
+                New-Item -Path $devRefPackDir -ItemType Directory -Force | Out-Null
 
                 # Copy reference assemblies structure
-                Write-Verbose "Copying dev reference assemblies to: $devRefPackDir";
-                Copy-Item -Path "$devRefAssembliesSource/*" -Destination $devRefPackDir -Recurse -Force;
+                Write-Verbose "Copying dev reference assemblies to: $devRefPackDir"
+                Copy-Item -Path "$devRefAssembliesSource/*" -Destination $devRefPackDir -Recurse -Force
 
-                Write-Verbose "Successfully created dev reference pack at $devRefPackDir";
+                Write-Verbose "Successfully created dev reference pack at $devRefPackDir"
 
                 # [dll check] 5) Check reference assembly
-                $devRefDiagnosticsDll = "$devRefPackDir/ref/net10.0/Microsoft.AspNetCore.Diagnostics.dll";
-                Check-DiagnosticsDll -Path $devRefDiagnosticsDll -Description "5) Dev reference Microsoft.AspNetCore.Diagnostics.dll";
+                $devRefDiagnosticsDll = "$devRefPackDir/ref/net10.0/Microsoft.AspNetCore.Diagnostics.dll"
+                Check-DiagnosticsDll -Path $devRefDiagnosticsDll -Description "5) Dev reference Microsoft.AspNetCore.Diagnostics.dll"
 
                 # Upload the packs directory to CI artifacts for analysis
-                if (Test-Path "$PSScriptRoot/.dotnet/packs") {
-                    $packsUploadPath = "$PSScriptRoot/.dotnet/packs";
-                    Write-Verbose "Uploading packs directory to CI artifacts: $packsUploadPath";
-                    Write-Host "##vso[artifact.upload containerfolder=packs-after;artifactname=packs-after]$packsUploadPath";
+                if (Test-Path "$PSScriptRoot/.dotnet/packs")
+                {
+                    $packsUploadPath = "$PSScriptRoot/.dotnet/packs"
+                    Write-Verbose "Uploading packs directory to CI artifacts: $packsUploadPath"
+                    Write-Host "##vso[artifact.upload containerfolder=packs-after;artifactname=packs-after]$packsUploadPath"
                 }
-            } else {
-                Write-Warning "No dev reference assemblies found in runtime zip - reference assemblies not patched!";
+            }
+            else
+            {
+                Write-Warning "No dev reference assemblies found in runtime zip - reference assemblies not patched!"
 
                 # Alternative: try to copy from the latest preview version and replace specific DLLs
-                $latestRefPack = $existingRefPacks | Sort-Object Name -Descending | Select-Object -First 1;
-                if ($latestRefPack) {
-                    Write-Verbose "Attempting to create dev reference pack based on: $($latestRefPack.Name)";
-                    $devRefPackDir = "$packsDir/10.0.0-dev";
+                $latestRefPack = $existingRefPacks | Sort-Object Name -Descending | Select-Object -First 1
+                if ($latestRefPack)
+                {
+                    Write-Verbose "Attempting to create dev reference pack based on: $($latestRefPack.Name)"
+                    $devRefPackDir = "$packsDir/10.0.0-dev"
 
                     # Copy the latest reference pack as base
-                    Copy-Item -Path $latestRefPack.FullName -Destination $devRefPackDir -Recurse -Force;
+                    Copy-Item -Path $latestRefPack.FullName -Destination $devRefPackDir -Recurse -Force
 
                     # Replace specific reference DLLs with runtime DLLs (not ideal but might work)
-                    $runtimeDiagnosticsDll = "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/10.0.0-dev/Microsoft.AspNetCore.Diagnostics.dll";
-                    $refDiagnosticsDll = "$devRefPackDir/ref/net10.0/Microsoft.AspNetCore.Diagnostics.dll";
+                    $runtimeDiagnosticsDll = "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/10.0.0-dev/Microsoft.AspNetCore.Diagnostics.dll"
+                    $refDiagnosticsDll = "$devRefPackDir/ref/net10.0/Microsoft.AspNetCore.Diagnostics.dll"
 
-                    if ((Test-Path $runtimeDiagnosticsDll) -and (Test-Path (Split-Path $refDiagnosticsDll))) {
-                        Copy-Item -Path $runtimeDiagnosticsDll -Destination $refDiagnosticsDll -Force;
-                        Write-Verbose "Replaced reference Microsoft.AspNetCore.Diagnostics.dll with runtime version";
-                        Check-DiagnosticsDll -Path $refDiagnosticsDll -Description "5) Patched reference Microsoft.AspNetCore.Diagnostics.dll";
+                    if ((Test-Path $runtimeDiagnosticsDll) -and (Test-Path (Split-Path $refDiagnosticsDll)))
+                    {
+                        Copy-Item -Path $runtimeDiagnosticsDll -Destination $refDiagnosticsDll -Force
+                        Write-Verbose "Replaced reference Microsoft.AspNetCore.Diagnostics.dll with runtime version"
+                        Check-DiagnosticsDll -Path $refDiagnosticsDll -Description "5) Patched reference Microsoft.AspNetCore.Diagnostics.dll"
                     }
                 }
             }
         }
-    } else {
-        Write-Warning "Reference packs directory not found at $packsDir";
+    }
+    else
+    {
+        Write-Warning "Reference packs directory not found at $packsDir"
     }
 
     Write-Verbose "=== SETTING UP ENVIRONMENT ==="
