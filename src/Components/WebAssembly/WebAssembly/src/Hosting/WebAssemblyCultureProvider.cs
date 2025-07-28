@@ -88,7 +88,7 @@ internal partial class WebAssemblyCultureProvider
                 culturesToLoad.Add(cultureInfo.Name);
             }
 
-            if (uiCultureInfo?.Name != cultureInfo?.Name && uiCultureInfo != null && uiCultureInfo != CultureInfo.InvariantCulture)
+            if (uiCultureInfo != null && uiCultureInfo.Name != cultureInfo?.Name && uiCultureInfo != CultureInfo.InvariantCulture)
             {
                 culturesToLoad.Add(uiCultureInfo.Name);
             }
