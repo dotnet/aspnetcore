@@ -316,11 +316,12 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
 
         var size = GetEncryptedSize(plaintext.Count);
         var ciphertext = new byte[preBufferSize + size + postBufferSize];
+        var destination = ciphertext.AsSpan((int)preBufferSize, size);
 
         if (!TryEncrypt(
             plaintext: plaintext,
             additionalAuthenticatedData: additionalAuthenticatedData,
-            destination: ciphertext,
+            destination: destination,
             out var bytesWritten))
         {
             throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
