@@ -122,6 +122,13 @@ function Test-Template {
     }
 
     Write-Verbose "Patching Microsoft.AspNetCore.App from $builtRuntime";
+
+    # Upload the runtime zip to CI artifacts for analysis
+    if (Test-Path $builtRuntime) {
+        Write-Verbose "Uploading runtime zip to CI artifacts";
+        Write-Host "##vso[artifact.upload containerfolder=runtime-zip;artifactname=runtime-zip]$builtRuntime";
+    }
+
     Remove-Item "$PSScriptRoot/.runtime" -Recurse -ErrorAction Ignore;
     Expand-Archive -Path $builtRuntime -DestinationPath "$PSScriptRoot/.runtime" -Force;
 
@@ -169,6 +176,13 @@ function Test-Template {
         Get-ChildItem "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App" | ForEach-Object { Write-Verbose "  $($_.Name)" }
     }
 
+    # Upload shared directory BEFORE patching to CI artifacts
+    if (Test-Path "$PSScriptRoot/.dotnet/shared") {
+        $beforeSharedPath = "$PSScriptRoot/.dotnet/shared";
+        Write-Verbose "Uploading shared directory BEFORE patching to CI artifacts";
+        Write-Host "##vso[artifact.upload containerfolder=shared-before;artifactname=shared-before]$beforeSharedPath";
+    }
+
     Write-Verbose "Copying $PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App to $PSScriptRoot/.dotnet/shared";
     try {
         Copy-Item -Path "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" -Destination "$PSScriptRoot/.dotnet/shared" -Recurse -Force -ErrorAction Stop;
@@ -182,6 +196,13 @@ function Test-Template {
     Write-Verbose "After patching - local .dotnet ASP.NET Core runtimes:";
     if (Test-Path "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App") {
         Get-ChildItem "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App" | ForEach-Object { Write-Verbose "  $($_.Name)" }
+    }
+
+    # Upload shared directory AFTER patching to CI artifacts
+    if (Test-Path "$PSScriptRoot/.dotnet/shared") {
+        $afterSharedPath = "$PSScriptRoot/.dotnet/shared";
+        Write-Verbose "Uploading shared directory AFTER patching to CI artifacts";
+        Write-Host "##vso[artifact.upload containerfolder=shared-after;artifactname=shared-after]$afterSharedPath";
     }
 
     # Verify critical files were patched correctly
