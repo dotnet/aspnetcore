@@ -4,6 +4,22 @@
 Set-StrictMode -Version 2
 $ErrorActionPreference = 'Stop'
 
+function Check-DiagnosticsDll {
+    param(
+        [string]$Path,
+        [string]$Description
+    )
+
+    if (Test-Path $Path) {
+        $fileInfo = Get-Item $Path;
+        Write-Verbose "[dll check] $Description - found - Size: $($fileInfo.Length) bytes, Modified: $($fileInfo.LastWriteTime)";
+        return $true;
+    } else {
+        Write-Verbose "[dll check] $Description - not found at $Path";
+        return $false;
+    }
+}
+
 function Test-Template {
     [CmdletBinding()]
     param (
@@ -84,8 +100,27 @@ function Test-Template {
     }
 
     Write-Verbose "Patching Microsoft.AspNetCore.App";
+
+    # [dll check] 1) Check Microsoft.AspNetCore.Diagnostics.dll in PSScriptRoot before patching
+    $psScriptDiagnosticsDll = "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/10.0.0-dev/Microsoft.AspNetCore.Diagnostics.dll";
+    Check-DiagnosticsDll -Path $psScriptDiagnosticsDll -Description "1) PSScriptRoot Microsoft.AspNetCore.Diagnostics.dll before patching";
+
     $builtRuntime = Resolve-Path "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/aspnetcore-runtime-*-dev-win-x64.zip" | Where-Object { $_ -match "aspnetcore-runtime-[0-9.]+-dev-win-x64.zip" };
     Write-Verbose "Built runtime package: $builtRuntime";
+
+    # [dll check] 3) Check Microsoft.AspNetCore.Diagnostics.dll in artifacts
+    $artifactsDiagnosticsDll = "$PSScriptRoot/../../../artifacts/bin/Microsoft.AspNetCore.Diagnostics/$Configuration/$TargetFramework/Microsoft.AspNetCore.Diagnostics.dll";
+    if (-not (Check-DiagnosticsDll -Path $artifactsDiagnosticsDll -Description "3) Artifacts Microsoft.AspNetCore.Diagnostics.dll")) {
+        # Try alternative location
+        $artifactsDiagnosticsDll2 = "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/Microsoft.AspNetCore.Diagnostics.$TargetFramework.*.nupkg";
+        $artifactsNupkg = Get-ChildItem $artifactsDiagnosticsDll2 -ErrorAction SilentlyContinue | Select-Object -First 1;
+        if ($artifactsNupkg) {
+            Write-Verbose "[dll check] Found Microsoft.AspNetCore.Diagnostics nupkg: $($artifactsNupkg.FullName)";
+        } else {
+            Write-Verbose "[dll check] No Microsoft.AspNetCore.Diagnostics nupkg found in artifacts";
+        }
+    }
+
     Write-Verbose "Patching Microsoft.AspNetCore.App from $builtRuntime";
     Remove-Item "$PSScriptRoot/.runtime" -Recurse -ErrorAction Ignore;
     Expand-Archive -Path $builtRuntime -DestinationPath "$PSScriptRoot/.runtime" -Force;
@@ -93,6 +128,12 @@ function Test-Template {
     Write-Verbose "Extracted runtime contents:";
     if (Test-Path "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App") {
         Get-ChildItem "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" | ForEach-Object { Write-Verbose "  $($_.Name)" }
+    }
+
+    # [dll check] 2) Check Microsoft.AspNetCore.Diagnostics.dll in unpacked zip contents
+    $unpackedDiagnosticsDll = "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App/10.0.0-dev/Microsoft.AspNetCore.Diagnostics.dll";
+    if (-not (Check-DiagnosticsDll -Path $unpackedDiagnosticsDll -Description "2) Unpacked Microsoft.AspNetCore.Diagnostics.dll")) {
+        Write-Warning "[dll check] Critical: Unpacked Microsoft.AspNetCore.Diagnostics.dll not found!";
     }
 
     Write-Verbose "Removing ALL existing ASP.NET Core runtimes from local .dotnet...";
@@ -145,17 +186,16 @@ function Test-Template {
 
     # Verify critical files were patched correctly
     Write-Verbose "Verifying patched runtime files...";
+
+    # [dll check] 4) Check Microsoft.AspNetCore.Diagnostics.dll after patching (existing check)
     $devRuntimePath = "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/10.0.0-dev";
     if (Test-Path $devRuntimePath) {
         $diagnosticsDll = "$devRuntimePath/Microsoft.AspNetCore.Diagnostics.dll";
-        if (Test-Path $diagnosticsDll) {
-            $fileInfo = Get-Item $diagnosticsDll;
-            Write-Verbose "Microsoft.AspNetCore.Diagnostics.dll found - Size: $($fileInfo.Length) bytes, Modified: $($fileInfo.LastWriteTime)";
-        } else {
-            Write-Warning "Microsoft.AspNetCore.Diagnostics.dll not found in patched runtime!";
+        if (-not (Check-DiagnosticsDll -Path $diagnosticsDll -Description "4) Microsoft.AspNetCore.Diagnostics.dll after patching")) {
+            Write-Warning "[dll check] Critical: Microsoft.AspNetCore.Diagnostics.dll not found in patched runtime!";
         }
     } else {
-        Write-Warning "Dev runtime folder not found at $devRuntimePath";
+        Write-Warning "[dll check] Dev runtime folder not found at $devRuntimePath";
     }
 
     Write-Verbose "=== SETTING UP ENVIRONMENT ==="
