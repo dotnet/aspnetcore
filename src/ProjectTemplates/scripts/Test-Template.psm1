@@ -172,17 +172,18 @@ function Test-Template {
     $tmpDir = "$PSScriptRoot/$templateName";
     Write-Verbose "Template working directory: $tmpDir"
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore;
-    Write-Verbose "Running dotnet pack to build template packages..."
-    Push-Location ..;
-    try {
-        Write-Verbose "Current location for dotnet pack: $(Get-Location)"
-        dotnet pack
-    }
-    finally {
-        Pop-Location;
+
+    # Check if template packages exist (should be built by main CI build process)
+    $PackagePathPattern = "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/$TemplatePackagePath"
+    Write-Verbose "Looking for template packages at: $PackagePathPattern"
+
+    $PackagePath = Get-ChildItem -Path "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/" -Filter $TemplatePackagePath -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $PackagePath) {
+        Write-Error "Template packages not found at $PackagePathPattern. Ensure the main build has completed with -pack option before running template tests."
+        return
     }
 
-    $PackagePath = Resolve-Path "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/$TemplatePackagePath";
+    $PackagePath = $PackagePath.FullName
     Write-Verbose "Template package path: $PackagePath"
 
     $PackageName = (Get-Item $PackagePath).Name;
