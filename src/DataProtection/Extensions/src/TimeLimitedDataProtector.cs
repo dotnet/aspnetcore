@@ -166,7 +166,7 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
         try
         {
             plainTextWithHeader = ArrayPool<byte>.Shared.Rent(plaintext.Length + ExpirationTimeHeaderSize);
-            var plainTextWithHeaderSpan = plainTextWithHeader.AsSpan();
+            var plainTextWithHeaderSpan = plainTextWithHeader.AsSpan(0, plaintext.Length + ExpirationTimeHeaderSize);
 
             // We prepend the expiration time (as a 64-bit UTC tick count) to the unprotected data.
             BitHelpers.WriteUInt64(plainTextWithHeaderSpan, 0, (ulong)expiration.UtcTicks);
