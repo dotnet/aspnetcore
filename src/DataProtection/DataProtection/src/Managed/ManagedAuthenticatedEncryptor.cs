@@ -423,9 +423,9 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         var size = GetEncryptedSize(plainTextSpan.Length);
         var retVal = new byte[size];
 
-        if (!TryEncrypt(plainTextSpan, additionalAuthenticatedData.AsSpan(), retVal, out var bytesWritten))
+        if (!TryEncrypt(plainTextSpan, additionalAuthenticatedData, retVal, out var bytesWritten))
         {
-            throw Error.CryptCommon_PayloadInvalid();
+            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
         }
 
         return retVal;

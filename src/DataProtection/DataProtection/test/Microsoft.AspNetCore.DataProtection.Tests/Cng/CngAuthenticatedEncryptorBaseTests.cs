@@ -96,10 +96,5 @@ public unsafe class CngAuthenticatedEncryptorBaseTests
         }
 
         public abstract byte[] EncryptHook(IntPtr pbPlaintext, uint cbPlaintext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer);
-
-        protected sealed override unsafe byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer)
-        {
-            return EncryptHook((IntPtr)pbPlaintext, cbPlaintext, (IntPtr)pbAdditionalAuthenticatedData, cbAdditionalAuthenticatedData, cbPreBuffer, cbPostBuffer);
-        }
     }
 }

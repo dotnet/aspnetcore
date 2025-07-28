@@ -309,57 +309,24 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
         }
     }
 
-    protected override byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer)
+    public override byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
     {
-        // Allocate a buffer to hold the key modifier, nonce, encrypted data, and tag.
-        // In GCM, the encrypted output will be the same length as the plaintext input.
-        var retVal = new byte[checked(cbPreBuffer + KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + cbPlaintext + TAG_SIZE_IN_BYTES + cbPostBuffer)];
-        fixed (byte* pbRetVal = retVal)
+        plaintext.Validate();
+        additionalAuthenticatedData.Validate();
+
+        var size = GetEncryptedSize(plaintext.Count);
+        var ciphertext = new byte[preBufferSize + size + postBufferSize];
+
+        if (!TryEncrypt(
+            plaintext: plaintext,
+            additionalAuthenticatedData: additionalAuthenticatedData,
+            destination: ciphertext,
+            out var bytesWritten))
         {
-            // Calculate offsets
-            byte* pbKeyModifier = &pbRetVal[cbPreBuffer];
-            byte* pbNonce = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
-            byte* pbEncryptedData = &pbNonce[NONCE_SIZE_IN_BYTES];
-            byte* pbAuthTag = &pbEncryptedData[cbPlaintext];
-
-            // Randomly generate the key modifier and nonce
-            _genRandom.GenRandom(pbKeyModifier, KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES);
-
-            // At this point, retVal := { preBuffer | keyModifier | nonce | _____ | _____ | postBuffer }
-
-            // Use the KDF to generate a new symmetric block cipher key
-            // We'll need a temporary buffer to hold the symmetric encryption subkey
-            byte* pbSymmetricEncryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
-            try
-            {
-                _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
-                    pbLabel: pbAdditionalAuthenticatedData,
-                    cbLabel: cbAdditionalAuthenticatedData,
-                    contextHeader: _contextHeader,
-                    pbContext: pbKeyModifier,
-                    cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
-                    pbDerivedKey: pbSymmetricEncryptionSubkey,
-                    cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
-
-                // Perform the encryption operation
-                DoGcmEncrypt(
-                    pbKey: pbSymmetricEncryptionSubkey,
-                    cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
-                    pbNonce: pbNonce,
-                    pbPlaintextData: pbPlaintext,
-                    cbPlaintextData: cbPlaintext,
-                    pbEncryptedData: pbEncryptedData,
-                    pbTag: pbAuthTag);
-
-                // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
-                // And we're done!
-                return retVal;
-            }
-            finally
-            {
-                // The buffer contains key material, so delete it.
-                UnsafeBufferUtil.SecureZeroMemory(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
-            }
+            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
         }
+
+        CryptoUtil.Assert(bytesWritten == size, "bytesWritten == size");
+        return ciphertext;
     }
 }

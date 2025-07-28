@@ -45,44 +45,8 @@ internal abstract unsafe class CngAuthenticatedEncryptorBase : IOptimizedAuthent
 
     public abstract void Dispose();
 
-    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
-    {
-        return Encrypt(plaintext, additionalAuthenticatedData, 0, 0);
-    }
-
-    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
-    {
-        // This wrapper simply converts ArraySegment<byte> to byte* and calls the impl method.
-
-        // Input validation
-        plaintext.Validate();
-        additionalAuthenticatedData.Validate();
-
-        byte dummy; // used only if plaintext or AAD is empty, since otherwise 'fixed' returns null pointer
-        fixed (byte* pbPlaintextArray = plaintext.Array)
-        {
-            fixed (byte* pbAdditionalAuthenticatedDataArray = additionalAuthenticatedData.Array)
-            {
-                try
-                {
-                    return EncryptImpl(
-                        pbPlaintext: (pbPlaintextArray != null) ? &pbPlaintextArray[plaintext.Offset] : &dummy,
-                        cbPlaintext: (uint)plaintext.Count,
-                        pbAdditionalAuthenticatedData: (pbAdditionalAuthenticatedDataArray != null) ? &pbAdditionalAuthenticatedDataArray[additionalAuthenticatedData.Offset] : &dummy,
-                        cbAdditionalAuthenticatedData: (uint)additionalAuthenticatedData.Count,
-                        cbPreBuffer: preBufferSize,
-                        cbPostBuffer: postBufferSize);
-                }
-                catch (Exception ex) when (ex.RequiresHomogenization())
-                {
-                    // Homogenize to CryptographicException.
-                    throw Error.CryptCommon_GenericError(ex);
-                }
-            }
-        }
-    }
-
-    protected abstract byte[] EncryptImpl(byte* pbPlaintext, uint cbPlaintext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer);
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData) => Encrypt(plaintext, additionalAuthenticatedData, 0, 0);
+    public abstract byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize);
 
     public abstract int GetEncryptedSize(int plainTextLength);
     public abstract bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
