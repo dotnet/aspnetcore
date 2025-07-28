@@ -3,6 +3,8 @@
 
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Net.Http;
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
@@ -32,6 +34,8 @@ public class Image : ComponentBase, IAsyncDisposable
     private bool _isLoading = true;
     private bool _hasError;
     private bool _isDisposed;
+    private string? _imageEndpointUrl;
+    private bool _useImageEndpoint;
 
     /// <summary>
     /// Gets or sets the associated <see cref="ElementReference"/>.
@@ -45,6 +49,11 @@ public class Image : ComponentBase, IAsyncDisposable
     /// Gets the injected <see cref="IJSRuntime"/>.
     /// </summary>
     [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
+
+    /// <summary>
+    /// Gets the injected <see cref="HttpClient"/>.
+    /// </summary>
+    [Inject] protected HttpClient HttpClient { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the source for the image.
@@ -70,6 +79,11 @@ public class Image : ComponentBase, IAsyncDisposable
     /// Gets or sets the caching strategy for the image.
     /// </summary>
     [Parameter] public CacheStrategy CacheStrategy { get; set; } = CacheStrategy.Memory;
+
+    /// <summary>
+    /// Gets or sets whether to use the HTTP endpoint approach for image delivery.
+    /// </summary>
+    [Parameter] public bool UseImageEndpoint { get; set; }
 
     /// <summary>
     /// Event callback invoked when the image has loaded successfully.
@@ -104,6 +118,8 @@ public class Image : ComponentBase, IAsyncDisposable
         // Set default content if not provided
         LoadingContent ??= CreateDefaultLoadingContent();
         ErrorContent ??= CreateDefaultErrorContent();
+
+        _useImageEndpoint = UseImageEndpoint || (!RendererInfo.IsInteractive && Source != null);
     }
 
     /// <inheritdoc />
@@ -141,6 +157,11 @@ public class Image : ComponentBase, IAsyncDisposable
             builder.AddAttribute(8, "alt", Alt);
         }
 
+        if (!string.IsNullOrEmpty(_imageEndpointUrl))
+        {
+            builder.AddAttribute(11, "src", _imageEndpointUrl);
+        }
+
         builder.AddMultipleAttributes(9, AdditionalAttributes);
         builder.AddElementReferenceCapture(10, inputReference => Element = inputReference);
 
@@ -148,12 +169,20 @@ public class Image : ComponentBase, IAsyncDisposable
         builder.CloseElement();
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender && !_isDisposed)
         {
-            await LoadImageIfSourceProvided();
+            if (_useImageEndpoint)
+            {
+                await RegisterWithImageEndpoint();
+                Console.WriteLine($"Image registered with endpoint: {_imageEndpointUrl}");
+            }
+            else
+            {
+                await LoadImageIfSourceProvided();
+            }
         }
     }
 
@@ -288,6 +317,59 @@ public class Image : ComponentBase, IAsyncDisposable
         }
     }
 
+    private async Task RegisterWithImageEndpoint()
+    {
+        if (Source == null)
+        {
+            return;
+        }
+
+        try
+        {
+            SetLoadingState();
+            byte[] imageData;
+            string contentType;
+
+            if (Source is ILoadableImageSource loadable)
+            {
+                imageData = await loadable.GetBytesAsync();
+                contentType = loadable.MimeType ?? "application/octet-stream";
+            }
+            else if (Source is IStreamingImageSource streaming)
+            {
+                using var stream = await streaming.OpenReadStreamAsync();
+                using var memoryStream = new MemoryStream();
+                await stream.CopyToAsync(memoryStream);
+                imageData = memoryStream.ToArray();
+                contentType = streaming.MimeType ?? "application/octet-stream";
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "The provided image source must be either ILoadableImageSource or IStreamingImageSource.");
+            }
+
+            var requestContent = new ImageRegistrationRequest(imageData, contentType);
+
+            using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+            var response = await HttpClient.PostAsJsonAsync<ImageRegistrationRequest>("_blazor/image/register", requestContent, tokenSource.Token);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ImageRegistrationResponse>();
+                _imageEndpointUrl = result?.Url;
+                await SetSuccessState();
+            }
+            else
+            {
+                await SetErrorState($"Failed to register image: {response.StatusCode}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await SetErrorState($"Error registering image: {ex.Message}");
+        }
+    }
+
     private void SetLoadingState()
     {
         _isLoading = true;
@@ -376,7 +458,7 @@ public class Image : ComponentBase, IAsyncDisposable
         {
             _isDisposed = true;
 
-            if (Source != null && RendererInfo.IsInteractive == true)
+            if (Source != null && RendererInfo.IsInteractive == true && string.IsNullOrEmpty(_imageEndpointUrl))
             {
                 try
                 {
@@ -389,6 +471,21 @@ public class Image : ComponentBase, IAsyncDisposable
                     // Client disconnected
                 }
             }
+        }
+    }
+
+    private class ImageRegistrationResponse
+    {
+        public string? Url { get; set; }
+    }
+    private class ImageRegistrationRequest
+    {
+        public byte[]? ImageData { get; set; }
+        public string? ContentType { get; set; }
+        public ImageRegistrationRequest(byte[] imageData, string contentType)
+        {
+            ImageData = imageData;
+            ContentType = contentType;
         }
     }
 }

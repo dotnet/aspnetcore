@@ -26,6 +26,8 @@ Microsoft.AspNetCore.Components.Web.Image.Image.Element.get -> Microsoft.AspNetC
 Microsoft.AspNetCore.Components.Web.Image.Image.Element.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.ErrorContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.Image.Image.ErrorContent.set -> void
+Microsoft.AspNetCore.Components.Web.Image.Image.HttpClient.get -> System.Net.Http.HttpClient!
+Microsoft.AspNetCore.Components.Web.Image.Image.HttpClient.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Image() -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.get -> Microsoft.JSInterop.IJSRuntime!
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.set -> void
@@ -39,6 +41,8 @@ Microsoft.AspNetCore.Components.Web.Image.Image.OnProgress.get -> Microsoft.AspN
 Microsoft.AspNetCore.Components.Web.Image.Image.OnProgress.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.IImageSource?
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.set -> void
+Microsoft.AspNetCore.Components.Web.Image.Image.UseImageEndpoint.get -> bool
+Microsoft.AspNetCore.Components.Web.Image.Image.UseImageEndpoint.set -> void
 Microsoft.AspNetCore.Components.Web.Image.IStreamingImageSource
 Microsoft.AspNetCore.Components.Web.Image.IStreamingImageSource.GetSizeAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<long>
 Microsoft.AspNetCore.Components.Web.Image.IStreamingImageSource.OpenReadStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>

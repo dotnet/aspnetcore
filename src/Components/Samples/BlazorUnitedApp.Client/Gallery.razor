@@ -50,7 +50,8 @@
                             CacheStrategy="CacheStrategy.Memory"
                             OnImageLoaded="@(() => OnImageLoaded(image.Id))"
                             OnImageError="@((error) => OnImageError(image.Id, error))"
-                            style="width: 100%; height: 100%; object-fit: cover;" />
+                            style="width: 100%; height: 100%; object-fit: cover;"
+                            UseImageEndpoint = "true"/>
                     </div>
                     <div class="image-info">
                         <h4>@image.Title</h4>
@@ -82,7 +83,8 @@
                         Source="@GetImageSource(_currentImage.Id)"
                         Alt="@_currentImage.Title"
                         CacheStrategy="CacheStrategy.Memory"
-                        style="max-width: 100%; max-height: 70vh; object-fit: contain;" />
+                        style="max-width: 100%; max-height: 70vh; object-fit: contain;"
+                        UseImageEndpoint = "true"/>
                 </div>
                 <div class="image-details">
                     <h4>Image Details</h4>

@@ -6,6 +6,7 @@ using BlazorUnitedApp.Data;
 using BlazorUnitedApp.Client.Data;
 using BlazorShared;
 using System.Net.Http;
+using Microsoft.AspNetCore.Components.Server;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,6 @@ builder.Services.AddRazorComponents()
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<ServerImageRepository>();
 
-// Register HttpClient and ClientImageRepository for prerendering support
 builder.Services.AddSingleton<HttpClient>(sp =>
 {
     var httpClient = new HttpClient();
@@ -25,6 +25,7 @@ builder.Services.AddSingleton<HttpClient>(sp =>
     return httpClient;
 });
 builder.Services.AddTransient<ClientImageRepository>();
+builder.Services.AddMemoryCache(); //
 
 var app = builder.Build();
 
@@ -35,6 +36,8 @@ if (!app.Environment.IsDevelopment())
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
+
+app.UseImageEndpoint(); //
 
 app.UseHttpsRedirection();
 
