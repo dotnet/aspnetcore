@@ -81,7 +81,7 @@ internal partial class WebAssemblyCultureProvider
         // starting from the current culture and walking up the graph of parents.
         // At the end of the the walk, we'll have a list of culture names that look like
         // [ "fr-FR", "fr" ]
-        while ((cultureInfo != null && cultureInfo != CultureInfo.InvariantCulture) || (uiCultureInfo != null && uiCultureInfo != CultureInfo.InvariantCulture))
+        while (cultureInfo != null || uiCultureInfo != null)
         {
             if (cultureInfo != null && cultureInfo != CultureInfo.InvariantCulture)
             {
@@ -93,8 +93,8 @@ internal partial class WebAssemblyCultureProvider
                 culturesToLoad.Add(uiCultureInfo.Name);
             }
 
-            cultureInfo = (cultureInfo?.Parent == cultureInfo) ? null : cultureInfo?.Parent;
-            uiCultureInfo = (uiCultureInfo?.Parent == uiCultureInfo) ? null : uiCultureInfo?.Parent;
+            cultureInfo = (cultureInfo?.Parent == cultureInfo || cultureInfo == CultureInfo.InvariantCulture) ? null : cultureInfo?.Parent;
+            uiCultureInfo = (uiCultureInfo?.Parent == uiCultureInfo || uiCultureInfo == CultureInfo.InvariantCulture) ? null : uiCultureInfo?.Parent;
         }
 
         return culturesToLoad.ToArray();
