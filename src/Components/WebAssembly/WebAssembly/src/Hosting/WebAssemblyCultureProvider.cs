@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -74,7 +75,7 @@ internal partial class WebAssemblyCultureProvider
 
     internal static string[] GetCultures(CultureInfo? cultureInfo, CultureInfo? uiCultureInfo = null)
     {
-        var culturesToLoad = new List<string>();
+        var culturesToLoad = new HashSet<string>();
 
         // Once WASM is ready, we have to use .NET's assembly loading to load additional assemblies.
         // First calculate all possible cultures that the application might want to load. We do this by
@@ -97,7 +98,7 @@ internal partial class WebAssemblyCultureProvider
             uiCultureInfo = (uiCultureInfo?.Parent == uiCultureInfo || uiCultureInfo == CultureInfo.InvariantCulture) ? null : uiCultureInfo?.Parent;
         }
 
-        return culturesToLoad.ToArray();
+        return culturesToLoad.ToList().ToArray();
     }
 
     private partial class WebAssemblyCultureProviderInterop
