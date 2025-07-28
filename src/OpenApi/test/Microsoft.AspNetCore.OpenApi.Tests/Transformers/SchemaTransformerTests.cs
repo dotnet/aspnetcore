@@ -952,7 +952,7 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         var options = new OpenApiOptions();
         options.AddSchemaTransformer((schema, context, cancellationToken) =>
         {
-            context.ParameterDescription.Name = context.ParameterDescription.Name.ToUpper();
+            context.ParameterDescription.Name = context.ParameterDescription.Name.ToUpper(System.Globalization.CultureInfo.CurrentCulture);
             return Task.CompletedTask;
         });
 
