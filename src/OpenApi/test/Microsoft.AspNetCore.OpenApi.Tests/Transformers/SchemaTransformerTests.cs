@@ -942,6 +942,29 @@ public class SchemaTransformerTests : OpenApiDocumentServiceTestBase
         Assert.Equal([1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3], transformerOrder);
     }
 
+    [Fact]
+    public async Task SchemaTransformer_TransformsParameterNameToUppercase()
+    {
+        var builder = CreateBuilder();
+
+        builder.MapGet("/todo", (Todo todo) => { });
+
+        var options = new OpenApiOptions();
+        options.AddSchemaTransformer((schema, context, cancellationToken) =>
+        {
+            context.ParameterDescription.Name = context.ParameterDescription.Name.ToUpper();
+            return Task.CompletedTask;
+        });
+
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            var path = Assert.Single(document.Paths.Values);
+            var getOperation = path.Operations[HttpMethod.Get];
+            var parameterName = getOperation.Parameters[0].Name;
+            Assert.Equal("TODO", parameterName);
+        });
+    }
+
     private class PolymorphicContainer
     {
         public string Name { get; }
