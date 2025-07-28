@@ -105,12 +105,24 @@ function Test-Template {
     $psScriptDiagnosticsDll = "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/10.0.0-dev/Microsoft.AspNetCore.Diagnostics.dll";
     Check-DiagnosticsDll -Path $psScriptDiagnosticsDll -Description "1) PSScriptRoot Microsoft.AspNetCore.Diagnostics.dll before patching";
 
-    $builtRuntime = Resolve-Path "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/aspnetcore-runtime-*-dev-win-x64.zip" | Where-Object { $_ -match "aspnetcore-runtime-[0-9.]+-dev-win-x64.zip" };
-    Write-Verbose "Built runtime package: $builtRuntime";
+        # Remove all existing subdirectories (old versions)
+        Get-ChildItem $packsDir -Directory | Remove-Item -Recurse -Force -ErrorAction Ignore;
+        Write-Verbose "Removed all existing reference pack versions from: $packsDir";
 
-    # [dll check] 3) Check Microsoft.AspNetCore.Diagnostics.dll in artifacts
-    $artifactsDiagnosticsDll = "$PSScriptRoot/../../../artifacts/bin/Microsoft.AspNetCore.Diagnostics/$Configuration/$TargetFramework/Microsoft.AspNetCore.Diagnostics.dll";
-    if (-not (Check-DiagnosticsDll -Path $artifactsDiagnosticsDll -Description "3) Artifacts Microsoft.AspNetCore.Diagnostics.dll")) {
+        # Check if dev version of reference assemblies exist in the runtime zip
+        $devRefAssembliesSource = "$PSScriptRoot/.runtime/ref/Microsoft.AspNetCore.App";
+        if (Test-Path $devRefAssembliesSource) {
+            Write-Verbose "Found dev reference assemblies in runtime zip at: $devRefAssembliesSource";
+            $devRefPackDir = "$packsDir/10.0.0-dev";
+            # Remove any existing dev reference pack directory first
+            if (Test-Path $devRefPackDir) {
+                Remove-Item -Path $devRefPackDir -Recurse -Force -ErrorAction Ignore;
+            }
+            New-Item -Path $devRefPackDir -ItemType Directory -Force | Out-Null;
+            # Copy the entire structure from the dev ref assemblies source
+            Copy-Item -Path "$devRefAssembliesSource/*" -Destination $devRefPackDir -Recurse -Force;
+            Write-Verbose "Successfully copied dev reference assemblies to $devRefPackDir";
+        }
         # Try alternative location
         $artifactsDiagnosticsDll2 = "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/Microsoft.AspNetCore.Diagnostics.$TargetFramework.*.nupkg";
         $artifactsNupkg = Get-ChildItem $artifactsDiagnosticsDll2 -ErrorAction SilentlyContinue | Select-Object -First 1;
@@ -250,6 +262,13 @@ function Test-Template {
                 # [dll check] 5) Check reference assembly
                 $devRefDiagnosticsDll = "$devRefPackDir/ref/net10.0/Microsoft.AspNetCore.Diagnostics.dll";
                 Check-DiagnosticsDll -Path $devRefDiagnosticsDll -Description "5) Dev reference Microsoft.AspNetCore.Diagnostics.dll";
+
+                # Upload the packs directory to CI artifacts for analysis
+                if (Test-Path "$PSScriptRoot/.dotnet/packs") {
+                    $packsUploadPath = "$PSScriptRoot/.dotnet/packs";
+                    Write-Verbose "Uploading packs directory to CI artifacts: $packsUploadPath";
+                    Write-Host "##vso[artifact.upload containerfolder=packs-after;artifactname=packs-after]$packsUploadPath";
+                }
             } else {
                 Write-Warning "No dev reference assemblies found in runtime zip - reference assemblies not patched!";
 
