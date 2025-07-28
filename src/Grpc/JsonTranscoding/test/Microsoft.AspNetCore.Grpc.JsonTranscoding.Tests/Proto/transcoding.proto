@@ -235,3 +235,8 @@ message HelloReply {
 message NullValueContainer {
   google.protobuf.NullValue null_value = 1;
 }
+
+message FieldNameCaseMessage {
+  int32 a = 1;
+  int32 b = 2  [json_name="A"];
+}
