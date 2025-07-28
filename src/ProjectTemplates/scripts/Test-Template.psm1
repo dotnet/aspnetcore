@@ -338,11 +338,21 @@ function Test-Template {
         }
 
         $publishOutputDir = "./.publish";
+        $publishBinlogPath = "./publish.binlog";
         Write-Verbose "Publishing template to: $publishOutputDir"
         Write-Verbose "About to run dotnet publish - final dotnet version check:"
         dotnet --version | ForEach-Object { Write-Verbose "  $_" }
-        Write-Verbose "Running dotnet publish --configuration $Configuration --output $publishOutputDir";
-        dotnet.exe publish --configuration $Configuration --output $publishOutputDir;
+        Write-Verbose "Running dotnet publish --configuration $Configuration --output $publishOutputDir with binary log";
+        dotnet.exe publish --configuration $Configuration --output $publishOutputDir -bl:$publishBinlogPath;
+
+        # Upload the publish binlog to CI artifacts for analysis
+        if (Test-Path $publishBinlogPath) {
+            $fullBinlogPath = Resolve-Path $publishBinlogPath;
+            Write-Verbose "Uploading publish binlog to CI artifacts: $fullBinlogPath";
+            Write-Host "##vso[artifact.upload containerfolder=publish-binlog;artifactname=publish-binlog]$fullBinlogPath";
+        } else {
+            Write-Warning "Publish binlog not found at $publishBinlogPath";
+        }
     }
     finally {
         Pop-Location -StackName TemplateFolder;
