@@ -89,6 +89,7 @@
     private sealed class InputModel
     {
         [Required]
+        [MaxLength(200, ErrorMessage = "Passkey names must be no longer than 200 characters.")]
         public string Name { get; set; } = "";
     }
 }
