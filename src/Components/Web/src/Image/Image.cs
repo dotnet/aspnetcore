@@ -7,6 +7,9 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.Components.Web.Image;
 
@@ -260,9 +263,9 @@ public class Image : ComponentBase, IAsyncDisposable
                 ArrayPool<byte>.Shared.Return(chunkBuffer);
             }
 
-        await JSRuntime.InvokeVoidAsync(
-                "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
-                transferId, _id);
+            await JSRuntime.InvokeVoidAsync(
+                    "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
+                    transferId, _id);
         }
         catch (Exception ex)
         {
@@ -352,10 +355,15 @@ public class Image : ComponentBase, IAsyncDisposable
             var requestContent = new ImageRegistrationRequest(imageData, contentType);
 
             using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var response = await HttpClient.PostAsJsonAsync<ImageRegistrationRequest>("_blazor/image/register", requestContent, tokenSource.Token);
+            var response = await HttpClient.PostAsJsonAsync("_blazor/image/register",
+                requestContent,
+                ImageJsonSerializerContext.Default.ImageRegistrationRequest,
+                tokenSource.Token);
+
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<ImageRegistrationResponse>();
+                var result = await response.Content.ReadFromJsonAsync<string>(ImageJsonSerializerContext.Default.ImageRegistrationResponse,
+                    tokenSource.Token);
                 _imageEndpointUrl = result?.Url;
                 await SetSuccessState();
             }
@@ -476,16 +484,29 @@ public class Image : ComponentBase, IAsyncDisposable
 
     private class ImageRegistrationResponse
     {
+        [JsonPropertyName("url")]
         public string? Url { get; set; }
     }
+
     private class ImageRegistrationRequest
     {
+        [JsonPropertyName("imageData")]
         public byte[]? ImageData { get; set; }
+
+        [JsonPropertyName("contentType")]
         public string? ContentType { get; set; }
+
         public ImageRegistrationRequest(byte[] imageData, string contentType)
         {
             ImageData = imageData;
             ContentType = contentType;
         }
+
+        public ImageRegistrationRequest() { }
     }
+
+    [JsonSourceGenerationOptions(WriteIndented = false)]
+    [JsonSerializable(typeof(ImageRegistrationRequest))]
+    [JsonSerializable(typeof(ImageRegistrationResponse))]
+    internal partial class ImageJsonSerializerContext : JsonSerializerContext{}
 }
