@@ -65,7 +65,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
-            { "aspnetcore.identity.authentication_scheme", authenticationScheme },
+            { "aspnetcore.authentication.scheme", authenticationScheme },
             { "aspnetcore.identity.sign_in.type", GetSignInType(signInType) },
         };
         AddIsPersistent(ref tags, isPersistent);
@@ -86,7 +86,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
-            { "aspnetcore.identity.authentication_scheme", authenticationScheme },
+            { "aspnetcore.authentication.scheme", authenticationScheme },
         };
         AddIsPersistent(ref tags, isPersistent);
         AddErrorTag(ref tags, exception);
@@ -104,7 +104,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
-            { "aspnetcore.identity.authentication_scheme", authenticationScheme },
+            { "aspnetcore.authentication.scheme", authenticationScheme },
         };
         AddErrorTag(ref tags, exception);
 
@@ -121,7 +121,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
-            { "aspnetcore.identity.authentication_scheme", authenticationScheme }
+            { "aspnetcore.authentication.scheme", authenticationScheme }
         };
         AddErrorTag(ref tags, exception);
 
@@ -138,7 +138,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         var tags = new TagList
         {
             { "aspnetcore.identity.user_type", userType },
-            { "aspnetcore.identity.authentication_scheme", authenticationScheme }
+            { "aspnetcore.authentication.scheme", authenticationScheme }
         };
         AddErrorTag(ref tags, exception);
 
@@ -154,7 +154,7 @@ internal sealed class SignInManagerMetrics : IDisposable
     {
         if (isPersistent != null)
         {
-            tags.Add("aspnetcore.identity.sign_in.is_persistent", isPersistent.Value);
+            tags.Add("aspnetcore.authentication.is_persistent", isPersistent.Value);
         }
     }
 

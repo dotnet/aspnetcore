@@ -71,7 +71,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "password"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "locked_out"),
@@ -395,7 +395,7 @@ public class SignInManagerTest
                 m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "external"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
@@ -404,7 +404,7 @@ public class SignInManagerTest
                 m => MetricsHelpers.AssertContainsTags(m.Tags,
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
                 ]));
         }
@@ -414,7 +414,7 @@ public class SignInManagerTest
                 m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "external"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "requires_two_factor"),
@@ -472,7 +472,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "passkey"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
@@ -481,7 +481,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
             ]));
     }
@@ -800,7 +800,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException"),
             ]));
     }
@@ -858,7 +858,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", isPersistent),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
             ]));
@@ -895,7 +895,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "failure"),
             ]));
         Assert.Empty(signInUserPrincipal.GetMeasurementSnapshot());
@@ -1069,7 +1069,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.TwoFactorRememberMe"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.TwoFactorRememberMe"),
             ]));
     }
 
@@ -1101,7 +1101,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.TwoFactorRememberMe"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.TwoFactorRememberMe"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException"),
             ]));
     }
@@ -1172,7 +1172,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
             ]));
     }
 
@@ -1197,7 +1197,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertContainsTags(m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException"),
             ]));
     }
@@ -1233,7 +1233,7 @@ public class SignInManagerTest
             m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "failure"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "password"),
