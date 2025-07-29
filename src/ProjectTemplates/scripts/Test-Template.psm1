@@ -109,29 +109,38 @@ function Test-Template {
     $psScriptDiagnosticsDll = "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/10.0.0-dev/Microsoft.AspNetCore.Diagnostics.dll";
     Check-DiagnosticsDll -Path $psScriptDiagnosticsDll -Description "1) PSScriptRoot Microsoft.AspNetCore.Diagnostics.dll before patching";
 
-    # Initialize artifactsDiagnosticsDll path
-    $artifactsDiagnosticsDll = "$PSScriptRoot/../../../artifacts/bin/Microsoft.AspNetCore.Diagnostics/$Configuration/$TargetFramework/Microsoft.AspNetCore.Diagnostics.dll"
+    # Find the built runtime zip file
+    $builtRuntimePattern = "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/aspnetcore-runtime-*-dev-win-x64.zip"
+    $builtRuntime = Get-ChildItem $builtRuntimePattern -ErrorAction SilentlyContinue | Select-Object -First 1 | Select-Object -ExpandProperty FullName
+    if (-not $builtRuntime) {
+        Write-Error "Built runtime package not found at pattern: $builtRuntimePattern. Ensure the main build has completed with -pack option."
+        return
+    }
+    Write-Verbose "Built runtime package: $builtRuntime";
 
-        # Remove all existing subdirectories (old versions)
-        if (Test-Path $packsDir) {
-            Get-ChildItem $packsDir -Directory | Remove-Item -Recurse -Force -ErrorAction Ignore
-            Write-Verbose "Removed all existing reference pack versions from: $packsDir"
-        }
+    # [dll check] 3) Check Microsoft.AspNetCore.Diagnostics.dll in artifacts
+    $artifactsDiagnosticsDll = "$PSScriptRoot/../../../artifacts/bin/Microsoft.AspNetCore.Diagnostics/$Configuration/$TargetFramework/Microsoft.AspNetCore.Diagnostics.dll";
 
-        # Check if dev version of reference assemblies exist in the runtime zip
-        $devRefAssembliesSource = "$PSScriptRoot/.runtime/ref/Microsoft.AspNetCore.App"
-        if (Test-Path $devRefAssembliesSource) {
-            Write-Verbose "Found dev reference assemblies in runtime zip at: $devRefAssembliesSource"
-            $devRefPackDir = "$packsDir/10.0.0-dev"
-            # Remove any existing dev reference pack directory first
-            if (Test-Path $devRefPackDir) {
-                Remove-Item -Path $devRefPackDir -Recurse -Force -ErrorAction Ignore
-            }
-            New-Item -Path $devRefPackDir -ItemType Directory -Force | Out-Null
-            # Copy the entire structure from the dev ref assemblies source
-            Copy-Item -Path "$devRefAssembliesSource/*" -Destination $devRefPackDir -Recurse -Force
-            Write-Verbose "Successfully copied dev reference assemblies to $devRefPackDir"
+    # Remove all existing subdirectories (old versions)
+    if (Test-Path $packsDir) {
+        Get-ChildItem $packsDir -Directory | Remove-Item -Recurse -Force -ErrorAction Ignore
+        Write-Verbose "Removed all existing reference pack versions from: $packsDir"
+    }
+
+    # Check if dev version of reference assemblies exist in the runtime zip
+    $devRefAssembliesSource = "$PSScriptRoot/.runtime/ref/Microsoft.AspNetCore.App"
+    if (Test-Path $devRefAssembliesSource) {
+        Write-Verbose "Found dev reference assemblies in runtime zip at: $devRefAssembliesSource"
+        $devRefPackDir = "$packsDir/10.0.0-dev"
+        # Remove any existing dev reference pack directory first
+        if (Test-Path $devRefPackDir) {
+            Remove-Item -Path $devRefPackDir -Recurse -Force -ErrorAction Ignore
         }
+        New-Item -Path $devRefPackDir -ItemType Directory -Force | Out-Null
+        # Copy the entire structure from the dev ref assemblies source
+        Copy-Item -Path "$devRefAssembliesSource/*" -Destination $devRefPackDir -Recurse -Force
+        Write-Verbose "Successfully copied dev reference assemblies to $devRefPackDir"
+    }
     if (-not (Check-DiagnosticsDll -Path $artifactsDiagnosticsDll -Description "3) Artifacts Microsoft.AspNetCore.Diagnostics.dll")) {
         # Try alternative location
         $artifactsDiagnosticsDll2 = "$PSScriptRoot/../../../artifacts/packages/$Configuration/Shipping/Microsoft.AspNetCore.Diagnostics.$TargetFramework.*.nupkg";
