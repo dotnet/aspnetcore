@@ -494,11 +494,22 @@ internal sealed class OpenApiDocumentService(
     }
 
     // Apply [Description] attributes on the parameter to the top-level OpenApiParameter object and not the schema.
-    private static string? GetParameterDescriptionFromAttribute(ApiParameterDescription parameter) =>
-        parameter.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo } &&
-        parameterInfo.GetCustomAttributes().OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute ?
-            descriptionAttribute.Description :
-            null;
+    private static string? GetParameterDescriptionFromAttribute(ApiParameterDescription parameter)
+    {
+        if (parameter.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo } &&
+            parameterInfo.GetCustomAttributes<DescriptionAttribute>().LastOrDefault() is { } parameterDescription)
+        {
+            return parameterDescription.Description;
+        }
+
+        if (parameter.ModelMetadata is Mvc.ModelBinding.Metadata.DefaultModelMetadata { Attributes.PropertyAttributes.Count: > 0 } metadata &&
+            metadata.Attributes.PropertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } propertyDescription)
+        {
+            return propertyDescription.Description;
+        }
+
+        return null;
+    }
 
     private async Task<OpenApiRequestBody?> GetRequestBodyAsync(OpenApiDocument document, ApiDescription description, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
     {

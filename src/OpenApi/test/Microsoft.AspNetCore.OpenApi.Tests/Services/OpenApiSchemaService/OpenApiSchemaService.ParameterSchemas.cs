@@ -509,6 +509,39 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesAsParametersParametersWithDescriptionAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", ([AsParameters] FromQueryModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("The ID of the entity", parameter.Description);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesFromQueryParametersWithDescriptionAttribute()
+    {
+        // Arrange
+        var actionDescriptor = CreateActionDescriptor(nameof(TestFromQueryController.GetWithFromQueryDto), typeof(TestFromQueryController));
+
+        // Assert
+        await VerifyOpenApiDocument(actionDescriptor, document =>
+        {
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            Assert.Equal("The ID of the entity", parameter.Description);
+        });
+    }
+
     [Route("/api/{id}/{date}")]
     private void AcceptsParametersInModel(RouteParamsContainer model) { }
 
@@ -808,5 +841,24 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             writer.WriteStartObject();
             writer.WriteEndObject();
         }
+    }
+
+    [ApiController]
+    [Route("[controller]/[action]")]
+    private class TestFromQueryController : ControllerBase
+    {
+        [HttpGet]
+        public Task<IActionResult> GetWithFromQueryDto([FromQuery] FromQueryModel query)
+        {
+            return Task.FromResult<IActionResult>(Ok());
+        }
+    }
+
+    [Description("A query model.")]
+    private record FromQueryModel
+    {
+        [Description("The ID of the entity")]
+        [FromQuery(Name = "id")]
+        public int Id { get; set; }
     }
 }
