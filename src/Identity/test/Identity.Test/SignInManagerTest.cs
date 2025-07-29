@@ -392,7 +392,7 @@ public class SignInManagerTest
         if (bypass)
         {
             Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
+                m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
