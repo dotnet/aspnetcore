@@ -128,7 +128,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var deleteUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteCounterName);
+        using var deleteUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteDurationName);
 
         var store = new Mock<IUserStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -155,7 +155,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var deleteUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteCounterName);
+        using var deleteUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteDurationName);
 
         var store = new Mock<IUserStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -564,7 +564,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserClaimStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -595,7 +595,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserClaimStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -627,7 +627,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
         using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordCounterName);
 
         var store = new Mock<IUserPasswordStore<PocoUser>>();
@@ -673,7 +673,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var createUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CreateCounterName);
+        using var createUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CreateDurationName);
 
         var store = new Mock<IUserSecurityStampStore<PocoUser>>();
         var manager = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
@@ -700,7 +700,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserSecurityStampStore<PocoUser>>();
         var manager = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
@@ -727,7 +727,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserClaimStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -758,7 +758,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserClaimStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -887,7 +887,7 @@ public class UserManagerTest
     public async Task UsersEmailMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserEmail);
@@ -914,7 +914,7 @@ public class UserManagerTest
     public async Task UsersPhoneNumberMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserPhoneNumber);
@@ -939,8 +939,8 @@ public class UserManagerTest
     public async Task TokenMethodsThrowWithNoTokenProvider()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var generateToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.GenerateTokenCounterName);
-        using var verifyToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.VerifyTokenCounterName);
+        using var generateToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.GenerateTokensCounterName);
+        using var verifyToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.VerifyTokenAttemptsCounterName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         var user = new PocoUser();
@@ -967,8 +967,8 @@ public class UserManagerTest
     public async Task PasswordMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var createUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CreateCounterName);
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var createUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CreateDurationName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
         using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordCounterName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
@@ -1012,8 +1012,8 @@ public class UserManagerTest
     public async Task SecurityStampMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
-        using var generateToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.GenerateTokenCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
+        using var generateToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.GenerateTokensCounterName);
 
         var store = new Mock<IUserStore<PocoUser>>();
         store.Setup(x => x.GetUserIdAsync(It.IsAny<PocoUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(Guid.NewGuid().ToString()));
@@ -1044,7 +1044,7 @@ public class UserManagerTest
     public async Task LoginMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserLogin);
@@ -1070,7 +1070,7 @@ public class UserManagerTest
     public async Task ClaimMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserClaim);
