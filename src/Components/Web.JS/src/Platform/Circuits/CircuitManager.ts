@@ -488,6 +488,14 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return data;
   }
 
+  private getVisibilityChangeFormData(isVisible: boolean): FormData {
+    const data = new FormData();
+    const circuitId = this._circuitId!;
+    data.append('circuitId', circuitId);
+    data.append('isVisible', isVisible.toString());
+    return data;
+  }
+
   public didRenderingFail(): boolean {
     return this._renderingFailed;
   }
@@ -502,7 +510,16 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     }
 
     const data = this.getDisconnectFormData();
-    this._disposed = navigator.sendBeacon('_blazor/disconnect', data);
+      this._disposed = navigator.sendBeacon('_blazor/disconnect', data);
+  }
+
+  public sendVisibilityChangeBeacon(isVisible: boolean) {
+    if (this._disposed) {
+      return;
+    }
+
+    const data = this.getVisibilityChangeFormData(isVisible);
+    navigator.sendBeacon('_blazor/visibility', data);
   }
 
   public dispose(): Promise<void> {

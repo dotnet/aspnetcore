@@ -7,7 +7,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Server;
 
-// We use a middleware so that we can use DI.
+/// <summary>
+/// Handles the beacon message that the client attempts to send when unloading the page (i.e. when the "pagehide" event occurs).
+/// When we receive this beacon, we know we can dispose the circuit and not hold any of its data for later reconnection.
+/// </summary>
+/// <remarks>
+/// We use a middleware so that we can use DI.
+/// </remarks>
 internal sealed partial class CircuitDisconnectMiddleware
 {
     private const string CircuitIdKey = "circuitId";
