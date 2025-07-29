@@ -318,7 +318,6 @@ public class Image : ComponentBase, IAsyncDisposable
         }
     }
 
-    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     private async Task RegisterWithImageEndpoint()
     {
         if (Source == null)
@@ -351,25 +350,18 @@ public class Image : ComponentBase, IAsyncDisposable
                     "The provided image source must be either ILoadableImageSource or IStreamingImageSource.");
             }
 
-            //var requestContent = new ImageRegistrationRequest(imageData, contentType);
-            var requestContent = new
-            {
-                ImageData = imageData,
-                ContentType = contentType
-            };
+            var requestContent = new ImageRegistrationRequest(imageData, contentType);
 
             using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            //var response = await HttpClient.PostAsJsonAsync("_blazor/image/register",
-            //    requestContent,
-            //    ImageJsonSerializerContext.Default.ImageRegistrationRequest,
-            //    tokenSource.Token);
-            var response = await HttpClient.PostAsJsonAsync("_blazor/image/register", requestContent, tokenSource.Token);
+            var response = await HttpClient.PostAsJsonAsync("_blazor/image/register",
+                requestContent,
+                ImageJsonSerializerContext.Default.ImageRegistrationRequest,
+                tokenSource.Token);
 
             if (response.IsSuccessStatusCode)
             {
-                //var result = await response.Content.ReadFromJsonAsync(ImageJsonSerializerContext.Default.ImageRegistrationResponse,
-                //    tokenSource.Token);
-                var result = await response.Content.ReadFromJsonAsync<ImageRegistrationResponse>();
+                var result = await response.Content.ReadFromJsonAsync(ImageJsonSerializerContext.Default.ImageRegistrationResponse,
+                   tokenSource.Token);
                 _imageEndpointUrl = result?.Url;
                 await SetSuccessState();
             }
@@ -490,16 +482,13 @@ public class Image : ComponentBase, IAsyncDisposable
 
     internal class ImageRegistrationResponse
     {
-        [JsonPropertyName("url")]
         public string? Url { get; set; }
     }
 
     internal class ImageRegistrationRequest
     {
-        [JsonPropertyName("imageData")]
         public byte[]? ImageData { get; set; }
 
-        [JsonPropertyName("contentType")]
         public string? ContentType { get; set; }
 
         public ImageRegistrationRequest(byte[] imageData, string contentType)
