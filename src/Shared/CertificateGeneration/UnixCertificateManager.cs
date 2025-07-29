@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 /// </remarks>
 internal sealed partial class UnixCertificateManager : CertificateManager
 {
-	private const UnixFileMode DirectoryPermissions = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+    private const UnixFileMode DirectoryPermissions = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
 
     /// <summary>The name of an environment variable consumed by OpenSSL to locate certificates.</summary>
     private const string OpenSslCertificateDirectoryVariableName = "SSL_CERT_DIR";
@@ -62,18 +62,32 @@ internal sealed partial class UnixCertificateManager : CertificateManager
         // Building the chain will check whether dotnet trusts the cert.  We could, instead,
         // enumerate the Root store and/or look for the file in the OpenSSL directory, but
         // this tests the real-world behavior.
-        using var chain = new X509Chain();
-        // This is just a heuristic for whether or not we should prompt the user to re-run with `--trust`
-        // so we don't need to check revocation (which doesn't really make sense for dev certs anyway)
-        chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-        if (chain.Build(certificate))
+        var chain = new X509Chain();
+        try
         {
-            sawTrustSuccess = true;
+            // This is just a heuristic for whether or not we should prompt the user to re-run with `--trust`
+            // so we don't need to check revocation (which doesn't really make sense for dev certs anyway)
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+            if (chain.Build(certificate))
+            {
+                sawTrustSuccess = true;
+            }
+            else
+            {
+                sawTrustFailure = true;
+                Log.UnixNotTrustedByDotnet();
+            }
         }
-        else
+        finally
         {
-            sawTrustFailure = true;
-            Log.UnixNotTrustedByDotnet();
+            // Disposing the chain does not dispose the elements we potentially built.
+            // Do the full walk manually to dispose.
+            for (var i = 0; i < chain.ChainElements.Count; i++)
+            {
+                chain.ChainElements[i].Certificate.Dispose();
+            }
+
+            chain.Dispose();
         }
 
         // Will become the name of the file on disk and the nickname in the NSS DBs
@@ -94,7 +108,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
                 var certPath = Path.Combine(sslCertDir, certificateNickname + ".pem");
                 if (File.Exists(certPath))
                 {
-                    var candidate = new X509Certificate2(certPath);
+                    using var candidate = new X509Certificate2(certPath);
                     if (AreCertificatesEqual(certificate, candidate))
                     {
                         foundCert = true;
@@ -161,7 +175,7 @@ internal sealed partial class UnixCertificateManager : CertificateManager
             store.Open(OpenFlags.ReadWrite);
             store.Add(certificate);
             store.Close();
-        };
+        }
 
         return certificate;
     }
