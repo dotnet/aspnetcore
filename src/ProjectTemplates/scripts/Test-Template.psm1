@@ -99,6 +99,10 @@ function Test-Template {
         }
     }
 
+
+    # Always set $packsDir before any use
+    $packsDir = "$PSScriptRoot/.dotnet/packs/Microsoft.AspNetCore.App.Ref"
+
     Write-Verbose "Patching Microsoft.AspNetCore.App";
 
     # [dll check] 1) Check Microsoft.AspNetCore.Diagnostics.dll in PSScriptRoot before patching
@@ -106,22 +110,24 @@ function Test-Template {
     Check-DiagnosticsDll -Path $psScriptDiagnosticsDll -Description "1) PSScriptRoot Microsoft.AspNetCore.Diagnostics.dll before patching";
 
         # Remove all existing subdirectories (old versions)
-        Get-ChildItem $packsDir -Directory | Remove-Item -Recurse -Force -ErrorAction Ignore;
-        Write-Verbose "Removed all existing reference pack versions from: $packsDir";
+        if (Test-Path $packsDir) {
+            Get-ChildItem $packsDir -Directory | Remove-Item -Recurse -Force -ErrorAction Ignore
+            Write-Verbose "Removed all existing reference pack versions from: $packsDir"
+        }
 
         # Check if dev version of reference assemblies exist in the runtime zip
-        $devRefAssembliesSource = "$PSScriptRoot/.runtime/ref/Microsoft.AspNetCore.App";
+        $devRefAssembliesSource = "$PSScriptRoot/.runtime/ref/Microsoft.AspNetCore.App"
         if (Test-Path $devRefAssembliesSource) {
-            Write-Verbose "Found dev reference assemblies in runtime zip at: $devRefAssembliesSource";
-            $devRefPackDir = "$packsDir/10.0.0-dev";
+            Write-Verbose "Found dev reference assemblies in runtime zip at: $devRefAssembliesSource"
+            $devRefPackDir = "$packsDir/10.0.0-dev"
             # Remove any existing dev reference pack directory first
             if (Test-Path $devRefPackDir) {
-                Remove-Item -Path $devRefPackDir -Recurse -Force -ErrorAction Ignore;
+                Remove-Item -Path $devRefPackDir -Recurse -Force -ErrorAction Ignore
             }
-            New-Item -Path $devRefPackDir -ItemType Directory -Force | Out-Null;
+            New-Item -Path $devRefPackDir -ItemType Directory -Force | Out-Null
             # Copy the entire structure from the dev ref assemblies source
-            Copy-Item -Path "$devRefAssembliesSource/*" -Destination $devRefPackDir -Recurse -Force;
-            Write-Verbose "Successfully copied dev reference assemblies to $devRefPackDir";
+            Copy-Item -Path "$devRefAssembliesSource/*" -Destination $devRefPackDir -Recurse -Force
+            Write-Verbose "Successfully copied dev reference assemblies to $devRefPackDir"
         }
     if (-not (Check-DiagnosticsDll -Path $artifactsDiagnosticsDll -Description "3) Artifacts Microsoft.AspNetCore.Diagnostics.dll")) {
         # Try alternative location
@@ -236,7 +242,6 @@ function Test-Template {
     Write-Verbose "=== PATCHING REFERENCE ASSEMBLIES ==="
 
     # Find the reference pack directory
-    $packsDir = "$PSScriptRoot/.dotnet/packs/Microsoft.AspNetCore.App.Ref"
     if (Test-Path $packsDir)
     {
         Write-Verbose "Found reference packs directory: $packsDir"
