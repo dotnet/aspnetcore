@@ -17,6 +17,6 @@
   <Target Name="Build" DependsOnTargets="SetBuildDefaultEnvironmentVariables">
     <MakeDir Directories="$(ObjDir);$(BinDir)" />
      <!-- Ignore link.exe ARM64X pure forwarder bug -->
-    <Exec Command="all.cmd $(Prompt) $(ObjDir) $(BinDir) $(Configuration)" IgnoreExitCode="true" />
+    <Exec Command="all.cmd $(Prompt) $(ObjDir) $(BinDir) $(Configuration)" ContinueOnError="true" />
   </Target>
 </Project>
