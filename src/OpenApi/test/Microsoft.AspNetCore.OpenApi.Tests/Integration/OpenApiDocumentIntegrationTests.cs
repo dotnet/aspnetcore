@@ -36,8 +36,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
     [MemberData(nameof(OpenApiDocuments))]
     public async Task VerifyOpenApiDocument(string documentName, OpenApiSpecVersion version)
     {
-        var versionString = version.ToString().ToLowerInvariant();
-        var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>($"{documentName}-{versionString}");
+        var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
         var scopedServiceProvider = fixture.Services.CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
         var json = await document.SerializeAsJsonAsync(version);

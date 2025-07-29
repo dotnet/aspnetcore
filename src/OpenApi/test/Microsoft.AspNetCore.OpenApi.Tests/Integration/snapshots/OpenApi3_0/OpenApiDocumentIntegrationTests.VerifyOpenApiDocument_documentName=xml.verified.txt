@@ -1,7 +1,7 @@
 ﻿{
   "openapi": "3.0.4",
   "info": {
-    "title": "Sample | xml-openapi3_0",
+    "title": "Sample | xml",
     "version": "1.0.0"
   },
   "paths": {
