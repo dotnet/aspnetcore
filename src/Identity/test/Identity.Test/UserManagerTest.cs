@@ -143,7 +143,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(deleteUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -170,7 +170,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(deleteUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "failure"),
@@ -583,7 +583,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "add_claims"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -615,7 +615,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "replace_claim"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -656,7 +656,8 @@ public class UserManagerTest
         store.VerifyAll();
         hasher.VerifyAll();
 
-        Assert.Collection(updateUser.GetMeasurementSnapshot(), m => MetricsHelpers.AssertContainsTags(m.Tags,
+        Assert.Collection(updateUser.GetMeasurementSnapshot(),
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "password_rehash"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -688,7 +689,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(createUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException")
@@ -715,7 +716,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "update"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException")
@@ -746,7 +747,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_claims"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -777,7 +778,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_claims"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -898,12 +899,12 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(() => manager.ConfirmEmailAsync(null, null));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "set_email"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "confirm_email"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
@@ -923,12 +924,12 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetPhoneNumberAsync(null));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "set_phone_number"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "change_phone_number"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
@@ -981,22 +982,22 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(() => manager.HasPasswordAsync(null));
 
         Assert.Collection(createUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "change_password"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "add_password"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_password"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
@@ -1027,7 +1028,7 @@ public class UserManagerTest
                 () => manager.GenerateChangePhoneNumberTokenAsync(new PocoUser(), "111-111-1111"));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "security_stamp"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
@@ -1054,12 +1055,12 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.FindByLoginAsync(null, null));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "add_login"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_login"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
@@ -1080,17 +1081,17 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetClaimsAsync(null));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "add_claims"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "replace_claim"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_claims"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),

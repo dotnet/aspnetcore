@@ -39,8 +39,8 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -68,7 +68,7 @@ public class SignInManagerTest
         manager.Verify();
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
@@ -84,7 +84,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var checkPasswordSignIn = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.CheckPasswordCounterName);
+        using var checkPasswordSignIn = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.CheckPasswordAttemptsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -348,8 +348,8 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         const string loginProvider = "login";
@@ -392,7 +392,7 @@ public class SignInManagerTest
         if (bypass)
         {
             Assert.Collection(authenticate.GetMeasurementSnapshot(),
-                m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
@@ -411,7 +411,7 @@ public class SignInManagerTest
         else
         {
             Assert.Collection(authenticate.GetMeasurementSnapshot(),
-                m => MetricsHelpers.AssertContainsTags(m.Tags,
+                m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
@@ -428,8 +428,8 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var passkey = new UserPasskeyInfo(null, null, default, 0, null, false, false, false, null, null);
@@ -469,7 +469,7 @@ public class SignInManagerTest
         auth.Verify();
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
@@ -778,7 +778,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -814,7 +814,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
 
         var user = new PocoUser { UserName = "Foo" };
         var context = new DefaultHttpContext();
@@ -855,7 +855,7 @@ public class SignInManagerTest
         signInManager.Verify();
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
@@ -868,8 +868,8 @@ public class SignInManagerTest
     public async Task ResignInNoOpsAndLogsErrorIfNotAuthenticated()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
-        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInUserPrincipalCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
+        using var signInUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignInsCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var context = new DefaultHttpContext();
@@ -892,7 +892,7 @@ public class SignInManagerTest
             Times.Never());
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),
@@ -1044,7 +1044,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var rememberTwoFactorClient = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.RememberTwoFactorCounterName);
+        using var rememberTwoFactorClient = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.RememberedTwoFactorCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -1078,7 +1078,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var forgetTwoFactorClient = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.ForgetTwoFactorCounterName);
+        using var forgetTwoFactorClient = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.ForgottenTwoFactorCounterName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -1152,7 +1152,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutUserPrincipalCounterName);
+        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutsCounterName);
 
         var manager = MockHelpers.TestUserManager<PocoUser>(meterFactory: testMeterFactory);
         var context = new DefaultHttpContext();
@@ -1181,7 +1181,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutUserPrincipalCounterName);
+        using var signOutUserPrincipal = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.SignOutsCounterName);
 
         var manager = MockHelpers.TestUserManager<PocoUser>(meterFactory: testMeterFactory);
         var context = new DefaultHttpContext();
@@ -1207,7 +1207,7 @@ public class SignInManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var authenticate = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateCounterName);
+        using var authenticate = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", SignInManagerMetrics.AuthenticateDurationName);
 
         var user = new PocoUser { UserName = "Foo" };
         var manager = SetupUserManager(user, meterFactory: testMeterFactory);
@@ -1230,7 +1230,7 @@ public class SignInManagerTest
         context.Verify();
 
         Assert.Collection(authenticate.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.authentication_scheme", "Identity.Application"),

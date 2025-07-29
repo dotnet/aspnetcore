@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Identity;
 
@@ -10,15 +11,15 @@ internal sealed class SignInManagerMetrics : IDisposable
 {
     public const string MeterName = "Microsoft.AspNetCore.Identity";
 
-    public const string AuthenticateCounterName = "aspnetcore.identity.sign_in.authenticate";
-    public const string RememberTwoFactorCounterName = "aspnetcore.identity.sign_in.remember_two_factor";
-    public const string ForgetTwoFactorCounterName = "aspnetcore.identity.sign_in.forget_two_factor";
-    public const string CheckPasswordCounterName = "aspnetcore.identity.sign_in.check_password";
-    public const string SignInUserPrincipalCounterName = "aspnetcore.identity.sign_in.sign_in";
-    public const string SignOutUserPrincipalCounterName = "aspnetcore.identity.sign_in.sign_out";
+    public const string AuthenticateDurationName = "aspnetcore.identity.sign_in.authenticate.duration";
+    public const string RememberedTwoFactorCounterName = "aspnetcore.identity.sign_in.remembered_two_factor_clients";
+    public const string ForgottenTwoFactorCounterName = "aspnetcore.identity.sign_in.forgotten_two_factor_clients";
+    public const string CheckPasswordAttemptsCounterName = "aspnetcore.identity.sign_in.check_password_attempts";
+    public const string SignInsCounterName = "aspnetcore.identity.sign_in.sign_ins";
+    public const string SignOutsCounterName = "aspnetcore.identity.sign_in.sign_outs";
 
     private readonly Meter _meter;
-    private readonly Counter<long> _authenticateCounter;
+    private readonly Histogram<double> _authenticateDuration;
     private readonly Counter<long> _rememberTwoFactorClientCounter;
     private readonly Counter<long> _forgetTwoFactorCounter;
     private readonly Counter<long> _checkPasswordCounter;
@@ -29,12 +30,12 @@ internal sealed class SignInManagerMetrics : IDisposable
     {
         _meter = meterFactory.Create(MeterName);
 
-        _authenticateCounter = _meter.CreateCounter<long>(AuthenticateCounterName, "{count}", "The number of authenticate attempts. The authenticate counter is incremented by sign in methods such as PasswordSignInAsync and TwoFactorSignInAsync.");
-        _rememberTwoFactorClientCounter = _meter.CreateCounter<long>(RememberTwoFactorCounterName, "{count}", "The number of two factor clients remembered.");
-        _forgetTwoFactorCounter = _meter.CreateCounter<long>(ForgetTwoFactorCounterName, "{count}", "The number of two factor clients forgotten.");
-        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordCounterName, "{check}", "The number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.");
-        _signInUserPrincipalCounter = _meter.CreateCounter<long>(SignInUserPrincipalCounterName, "{sign_in}", "The number of calls to sign in user principals.");
-        _signOutUserPrincipalCounter = _meter.CreateCounter<long>(SignOutUserPrincipalCounterName, "{sign_out}", "The number of calls to sign out user principals.");
+        _authenticateDuration = _meter.CreateHistogram<double>(AuthenticateDurationName, "s", "The number of authenticate attempts. The authenticate counter is incremented by sign in methods such as PasswordSignInAsync and TwoFactorSignInAsync.");
+        _rememberTwoFactorClientCounter = _meter.CreateCounter<long>(RememberedTwoFactorCounterName, "{count}", "The number of two factor clients remembered.");
+        _forgetTwoFactorCounter = _meter.CreateCounter<long>(ForgottenTwoFactorCounterName, "{count}", "The number of two factor clients forgotten.");
+        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordAttemptsCounterName, "{check}", "The number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.");
+        _signInUserPrincipalCounter = _meter.CreateCounter<long>(SignInsCounterName, "{sign_in}", "The number of calls to sign in user principals.");
+        _signOutUserPrincipalCounter = _meter.CreateCounter<long>(SignOutsCounterName, "{sign_out}", "The number of calls to sign out user principals.");
     }
 
     internal void CheckPasswordSignIn(string userType, SignInResult? result, Exception? exception = null)
@@ -54,9 +55,9 @@ internal sealed class SignInManagerMetrics : IDisposable
         _checkPasswordCounter.Add(1, tags);
     }
 
-    internal void AuthenticateSignIn(string userType, string authenticationScheme, SignInResult? result, SignInType signInType, bool? isPersistent, Exception? exception = null)
+    internal void AuthenticateSignIn(string userType, string authenticationScheme, SignInResult? result, SignInType signInType, bool? isPersistent, long startTimestamp, Exception? exception = null)
     {
-        if (!_authenticateCounter.Enabled)
+        if (!_authenticateDuration.Enabled)
         {
             return;
         }
@@ -71,7 +72,8 @@ internal sealed class SignInManagerMetrics : IDisposable
         AddSignInResult(ref tags, result);
         AddErrorTag(ref tags, exception);
 
-        _authenticateCounter.Add(1, tags);
+        var duration = ValueStopwatch.GetElapsedTime(startTimestamp, Stopwatch.GetTimestamp());
+        _authenticateDuration.Record(duration.TotalSeconds, tags);
     }
 
     internal void SignInUserPrincipal(string userType, string authenticationScheme, bool? isPersistent, Exception? exception = null)
