@@ -109,6 +109,9 @@ function Test-Template {
     $psScriptDiagnosticsDll = "$PSScriptRoot/.dotnet/shared/Microsoft.AspNetCore.App/10.0.0-dev/Microsoft.AspNetCore.Diagnostics.dll";
     Check-DiagnosticsDll -Path $psScriptDiagnosticsDll -Description "1) PSScriptRoot Microsoft.AspNetCore.Diagnostics.dll before patching";
 
+    # Initialize artifactsDiagnosticsDll path
+    $artifactsDiagnosticsDll = "$PSScriptRoot/../../../artifacts/bin/Microsoft.AspNetCore.Diagnostics/$Configuration/$TargetFramework/Microsoft.AspNetCore.Diagnostics.dll"
+
         # Remove all existing subdirectories (old versions)
         if (Test-Path $packsDir) {
             Get-ChildItem $packsDir -Directory | Remove-Item -Recurse -Force -ErrorAction Ignore
@@ -379,7 +382,7 @@ function Test-Template {
     New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory | Out-Null;
     Push-Location $tmpDir -StackName TemplateFolder;
     try {
-        $TemplateArguments = , "new" + $TemplateArguments + , "--no-restore";
+        $TemplateArguments = @("new") + @($TemplateArguments) + @("--no-restore");
         Write-Verbose "Running dotnet command with arguments: $TemplateArguments";
         Write-Verbose "Current working directory: $(Get-Location)"
         Write-Verbose "About to run dotnet new - checking dotnet version one more time:"
@@ -390,9 +393,9 @@ function Test-Template {
         Write-Verbose "Template creation completed. Checking created files:"
         Get-ChildItem . -Recurse -File | Select-Object -First 10 | ForEach-Object { Write-Verbose "  $($_.FullName)" }
 
-        $proj = Get-ChildItem $tmpDir -Recurse -File -Filter '*.csproj' -Depth 3;
-        if ($proj.Length -eq 0) {
-            $proj = Get-ChildItem $tmpDir -Recurse -File -Filter '*.fsproj' -Depth 3;
+        $proj = @(Get-ChildItem $tmpDir -Recurse -File -Filter '*.csproj' -Depth 3)
+        if ($proj.Count -eq 0) {
+            $proj = @(Get-ChildItem $tmpDir -Recurse -File -Filter '*.fsproj' -Depth 3)
         }
 
         $importPath = "$PSScriptRoot/../test/Templates.Tests/bin/$Configuration/$TargetFramework/TestTemplates";
