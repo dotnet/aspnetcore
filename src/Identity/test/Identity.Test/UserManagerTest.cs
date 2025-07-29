@@ -628,7 +628,7 @@ public class UserManagerTest
         // Setup
         var testMeterFactory = new TestMeterFactory();
         using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
-        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordCounterName);
+        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordAttemptsCounterName);
 
         var store = new Mock<IUserPasswordStore<PocoUser>>();
         var hasher = new Mock<IPasswordHasher<PocoUser>>();
@@ -864,7 +864,7 @@ public class UserManagerTest
     public async Task CheckPasswordWithNullUserReturnsFalse()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordCounterName);
+        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordAttemptsCounterName);
 
         var manager = MockHelpers.TestUserManager(new EmptyStore(), meterFactory: testMeterFactory);
         Assert.False(await manager.CheckPasswordAsync(null, "whatevs"));
@@ -970,7 +970,7 @@ public class UserManagerTest
         var testMeterFactory = new TestMeterFactory();
         using var createUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CreateDurationName);
         using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
-        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordCounterName);
+        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordAttemptsCounterName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserPassword);

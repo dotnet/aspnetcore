@@ -30,7 +30,7 @@ internal sealed class SignInManagerMetrics : IDisposable
     {
         _meter = meterFactory.Create(MeterName);
 
-        _authenticateDuration = _meter.CreateHistogram<double>(AuthenticateDurationName, "s", "The number of authenticate attempts. The authenticate counter is incremented by sign in methods such as PasswordSignInAsync and TwoFactorSignInAsync.");
+        _authenticateDuration = _meter.CreateHistogram<double>(AuthenticateDurationName, "s", "The duration of authenticate attempts. The authenticate metrics is recorded by sign in methods such as PasswordSignInAsync and TwoFactorSignInAsync.");
         _rememberTwoFactorClientCounter = _meter.CreateCounter<long>(RememberedTwoFactorCounterName, "{client}", "The number of two factor clients remembered.");
         _forgetTwoFactorCounter = _meter.CreateCounter<long>(ForgottenTwoFactorCounterName, "{client}", "The number of two factor clients forgotten.");
         _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordAttemptsCounterName, "{attempts}", "The number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.");
