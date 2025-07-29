@@ -69,7 +69,8 @@ internal sealed class HostingMetrics : IDisposable
             tags.Add("http.response.status_code", GetBoxedStatusCode(statusCode));
             if (route != null)
             {
-                var httpRoute = (route == string.Empty) ? "/" : route;
+                // An empty route ("") is valid and equivalent to "/" hence it's normalized for metrics
+                var httpRoute = route == string.Empty ? "/" : route;
                 tags.Add("http.route", httpRoute);
             }
 
