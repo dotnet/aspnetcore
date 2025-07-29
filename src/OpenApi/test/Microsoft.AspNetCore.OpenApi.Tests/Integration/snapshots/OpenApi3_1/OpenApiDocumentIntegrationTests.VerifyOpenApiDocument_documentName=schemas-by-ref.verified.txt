@@ -4,11 +4,6 @@
     "title": "Sample | schemas-by-ref-openapi3_1",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost/"
-    }
-  ],
   "paths": {
     "/schemas-by-ref/typed-results": {
       "get": {

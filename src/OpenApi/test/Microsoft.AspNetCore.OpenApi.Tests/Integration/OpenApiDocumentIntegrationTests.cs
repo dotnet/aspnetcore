@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.OpenApi;
+using Microsoft.AspNetCore.OpenApi;
+using Microsoft.Extensions.DependencyInjection;
 
 [UsesVerify]
 public class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : IClassFixture<SampleAppFixture>
@@ -35,13 +36,15 @@ public class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : IClassF
     [MemberData(nameof(OpenApiDocuments))]
     public async Task VerifyOpenApiDocument(string documentName, OpenApiSpecVersion version)
     {
-        var versionString = version.ToString();
-        using var client = fixture.CreateClient();
-        var json = await client.GetStringAsync($"/openapi/{documentName}-{versionString}.json");
+        var versionString = version.ToString().ToLowerInvariant();
+        var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>($"{documentName}-{versionString}");
+        var scopedServiceProvider = fixture.Services.CreateScope();
+        var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
+        var json = await document.SerializeAsJsonAsync(version);
         var baseSnapshotsDirectory = SkipOnHelixAttribute.OnHelix()
             ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
             : "snapshots";
-        var outputDirectory = Path.Combine(baseSnapshotsDirectory, versionString);
+        var outputDirectory = Path.Combine(baseSnapshotsDirectory, version.ToString());
         await Verify(json)
             .UseDirectory(outputDirectory)
             .UseParameters(documentName);

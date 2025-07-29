@@ -4,11 +4,6 @@
     "title": "Sample | responses-openapi3_1",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost/"
-    }
-  ],
   "paths": {
     "/responses/200-add-xml": {
       "get": {

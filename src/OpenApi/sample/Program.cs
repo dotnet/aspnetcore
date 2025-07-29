@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json.Serialization;
 using Sample.Transformers;
 
@@ -31,6 +32,15 @@ builder.Services.AddOpenApi("v2", options =>
     options.AddDocumentTransformer((document, context, token) =>
     {
         document.Info.License = new OpenApiLicense { Name = "MIT" };
+        return Task.CompletedTask;
+    });
+});
+builder.Services.AddOpenApi("localized", options =>
+{
+    options.ShouldInclude = _ => true;
+    options.AddDocumentTransformer((document, context, token) =>
+    {
+        document.Info.Description = $"This is a localized OpenAPI document for {CultureInfo.CurrentUICulture.NativeName}.";
         return Task.CompletedTask;
     });
 });

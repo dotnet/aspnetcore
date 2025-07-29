@@ -4,11 +4,6 @@
     "title": "Sample | v1-openapi3_1",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost/"
-    }
-  ],
   "paths": {
     "/v1/array-of-guids": {
       "get": {

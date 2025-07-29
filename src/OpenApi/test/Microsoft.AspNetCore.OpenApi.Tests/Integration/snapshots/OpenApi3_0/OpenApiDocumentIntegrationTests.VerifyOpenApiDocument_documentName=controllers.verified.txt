@@ -4,11 +4,6 @@
     "title": "Sample | controllers-openapi3_0",
     "version": "1.0.0"
   },
-  "servers": [
-    {
-      "url": "http://localhost/"
-    }
-  ],
   "paths": {
     "/getbyidandname/{id}/{name}": {
       "get": {
