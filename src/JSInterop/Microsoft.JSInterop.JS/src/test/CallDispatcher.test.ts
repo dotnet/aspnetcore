@@ -104,7 +104,7 @@ describe("CallDispatcher", () => {
         )).toThrowError("Test error");
     });
 
-    test("NewCall: Constructor function is invoked and returns reference to new object", () => {
+    test("ConstructorCall: Constructor function is invoked and returns reference to new object", () => {
         window["testCtor"] = function () { this.a = 10; };
 
         const result = dispatcher.invokeJSFromDotNet(
@@ -112,13 +112,13 @@ describe("CallDispatcher", () => {
             "[]",
             DotNet.JSCallResultType.JSObjectReference,
             0,
-            DotNet.JSCallType.NewCall
+            DotNet.JSCallType.ConstructorCall
         );
 
         expect(result).toMatch("__jsObjectId");
     });
 
-    test("NewCall: Class constructor is invoked and returns reference to the new instance", () => {
+    test("ConstructorCall: Class constructor is invoked and returns reference to the new instance", () => {
         const TestClass = class {
             a: number;
             constructor() { this.a = 10; }
@@ -130,7 +130,7 @@ describe("CallDispatcher", () => {
             "[]",
             DotNet.JSCallResultType.JSObjectReference,
             objectId,
-            DotNet.JSCallType.NewCall
+            DotNet.JSCallType.ConstructorCall
         );
 
         expect(result).toMatch("__jsObjectId");
@@ -343,7 +343,7 @@ describe("CallDispatcher", () => {
         expect(result).toBe("30");
     });
 
-    test("NewCall + GetValue: Class constructor is invoked and the new instance value is retrieved", () => {
+    test("ConstructorCall + GetValue: Class constructor is invoked and the new instance value is retrieved", () => {
         const TestClass = class {
             a: number;
             constructor() { this.a = 20; }
@@ -355,7 +355,7 @@ describe("CallDispatcher", () => {
             "[]",
             DotNet.JSCallResultType.JSObjectReference,
             objectId,
-            DotNet.JSCallType.NewCall
+            DotNet.JSCallType.ConstructorCall
         );
         const newObjectId = JSON.parse(result ?? "")[jsObjectId];
 
@@ -370,7 +370,7 @@ describe("CallDispatcher", () => {
         expect(result2).toBe("20");
     });
 
-    test("NewCall + FunctionCall: Class constructor is invoked and method is invoked on the new instance", () => {
+    test("ConstructorCall + FunctionCall: Class constructor is invoked and method is invoked on the new instance", () => {
         const TestClass = class {
             f() { return 30; }
         };
@@ -381,7 +381,7 @@ describe("CallDispatcher", () => {
             "[]",
             DotNet.JSCallResultType.JSObjectReference,
             objectId,
-            DotNet.JSCallType.NewCall
+            DotNet.JSCallType.ConstructorCall
         );
         const newObjectId = JSON.parse(result ?? "")[jsObjectId];
 
@@ -394,5 +394,56 @@ describe("CallDispatcher", () => {
         );
 
         expect(result2).toBe("30");
+    });
+
+    test("createJSObjectReference: Handles null values without throwing", () => {
+        const nullRef = DotNet.createJSObjectReference(null);
+        expect(nullRef).toEqual({ [jsObjectId]: -1 });
+    });
+
+    test("createJSObjectReference: Handles undefined values without throwing", () => {
+        const undefinedRef = DotNet.createJSObjectReference(undefined);
+        expect(undefinedRef).toEqual({ [jsObjectId]: -1 });
+    });
+
+    test("disposeJSObjectReference: Safely handles null reference disposal", () => {
+        const nullRef = DotNet.createJSObjectReference(null);
+        expect(() => DotNet.disposeJSObjectReference(nullRef)).not.toThrow();
+    });
+
+    test("createJSObjectReference: Still throws for invalid types", () => {
+        expect(() => DotNet.createJSObjectReference("string")).toThrow();
+        expect(() => DotNet.createJSObjectReference(123)).toThrow();
+        expect(() => DotNet.createJSObjectReference(true)).toThrow();
+    });
+
+    test("GetValue: Returns JSObjectReference with sentinel value for null property", () => {
+        const testObject = { nullProp: null };
+        const objectId = getObjectReferenceId(testObject);
+
+        const result = dispatcher.invokeJSFromDotNet(
+            "nullProp",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
+
+        expect(result).toBe('{"__jsObjectId":-1}');
+    });
+
+    test("GetValue: Returns JSObjectReference with sentinel value for undefined property", () => {
+        const testObject = { undefinedProp: undefined };
+        const objectId = getObjectReferenceId(testObject);
+
+        const result = dispatcher.invokeJSFromDotNet(
+            "undefinedProp",
+            "[]",
+            DotNet.JSCallResultType.JSObjectReference,
+            objectId,
+            DotNet.JSCallType.GetValue
+        );
+
+        expect(result).toBe('{"__jsObjectId":-1}');
     });
 });

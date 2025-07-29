@@ -944,9 +944,9 @@ public class EndpointHtmlRendererTest
         httpContext.Items[nameof(StatusCodePagesOptions)] = null; // simulate missing re-execution route
 
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await renderer.SetNotFoundResponseAsync(httpContext, new NotFoundEventArgs(""))
+            await renderer.SetNotFoundResponseAsync(httpContext, new NotFoundEventArgs())
         );
-        string expectedError = "The NotFoundPage route must be specified or re-execution middleware has to be set to render NotFoundPage when the response has started.";
+        string expectedError = $"The {nameof(Router.NotFoundPage)} route must be specified or re-execution middleware has to be set to render not found content.";
 
         Assert.Equal(expectedError, exception.Message);
     }
@@ -1823,7 +1823,7 @@ public class EndpointHtmlRendererTest
         public async Task SetNotFoundResponseAsync(HttpContext httpContext, NotFoundEventArgs args)
         {
             SetHttpContext(httpContext);
-            await SetNotFoundResponseAsync(httpContext.Request.PathBase, args);
+            await SetNotFoundWhenResponseHasStarted();
         }
     }
 

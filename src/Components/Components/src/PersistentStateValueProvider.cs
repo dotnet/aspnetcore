@@ -9,6 +9,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Internal;
@@ -19,7 +20,21 @@ internal sealed class PersistentStateValueProvider(PersistentComponentState stat
 {
     private static readonly ConcurrentDictionary<(string, string, string), byte[]> _keyCache = new();
     private static readonly ConcurrentDictionary<(Type, string), PropertyGetter> _propertyGetterCache = new();
-    private readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
+    private static readonly ConcurrentDictionary<Type, IPersistentComponentStateSerializer?> _serializerCache = new();
+
+    static PersistentStateValueProvider()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCaches;
+        }
+    }
+
+    private static void ClearCaches()
+    {
+        _propertyGetterCache.Clear();
+        _serializerCache.Clear();
+    }
 
     private readonly Dictionary<ComponentState, PersistingComponentStateSubscription> _subscriptions = [];
 

@@ -20,7 +20,9 @@ public class Startup
         services.AddHttpContextAccessor();
         services.AddScoped<RequestIdService>();
         services.AddScoped<TestResponseGenerator>();
+        #pragma warning disable ASPDEPR006 // Type or member is obsolete
         services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+#pragma warning restore ASPDEPR006 // Type or member is obsolete
     }
 
     public void Configure(IApplicationBuilder app)

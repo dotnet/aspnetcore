@@ -1143,19 +1143,9 @@
     <Project Path="src/SignalR/server/StackExchangeRedis/src/Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
     <Project Path="src/SignalR/server/StackExchangeRedis/test/Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj" />
   </Folder>
-  <Folder Name="/src/SiteExtensions/">
-    <Project Path="src/SiteExtensions/LoggingBranch/LB.csproj" />
-  </Folder>
-  <Folder Name="/src/SiteExtensions/LoggingAggregate/">
-    <Project Path="src/SiteExtensions/LoggingAggregate/src/Microsoft.AspNetCore.AzureAppServices.SiteExtension/Microsoft.AspNetCore.AzureAppServices.SiteExtension.csproj" />
-    <Project Path="src/SiteExtensions/LoggingAggregate/test/Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests/Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests.csproj" />
-  </Folder>
   <Folder Name="/src/SiteExtensions/Microsoft.Web.Xdt.Extensions/">
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/src/Microsoft.Web.Xdt.Extensions.csproj" />
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/tests/Microsoft.Web.Xdt.Extensions.Tests.csproj" />
-  </Folder>
-  <Folder Name="/src/SiteExtensions/Sdk/">
-    <Project Path="src/SiteExtensions/Sdk/HostingStartup/HostingStartup.csproj" />
   </Folder>
   <Folder Name="/src/Testing/">
     <Project Path="src/Analyzers/Microsoft.AspNetCore.Analyzer.Testing/src/Microsoft.AspNetCore.Analyzer.Testing.csproj" />
@@ -1227,6 +1217,7 @@
   <Project Path="src/Caching/perf/MicroBenchmarks/Microsoft.Extensions.Caching.MicroBenchmarks/Microsoft.Extensions.Caching.MicroBenchmarks.csproj" />
   <Project Path="src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter/src/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
   <Project Path="src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/src/Microsoft.AspNetCore.Components.QuickGrid.csproj" />
+  <Project Path="src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/test/Microsoft.AspNetCore.Components.QuickGrid.Tests.csproj" />
   <Project Path="src/Components/WebView/test/E2ETest/Microsoft.AspNetCore.Components.WebViewE2E.Test.csproj" />
   <Project Path="src/DataProtection/samples/KeyManagementSimulator/KeyManagementSimulator.csproj" />
   <Project Path="src/Framework/AspNetCoreAnalyzers/samples/WebAppSample/WebAppSample.csproj" />

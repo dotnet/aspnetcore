@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(IISSubAppSiteCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
 public class RequestPathBaseTests : FixtureLoggedTest
 {
     private readonly IISSubAppSiteFixture _fixture;
@@ -32,7 +31,6 @@ public class RequestPathBaseTests : FixtureLoggedTest
     }
 
     [ConditionalTheory]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
     [RequiresNewHandler]
     [InlineData("/Sub/App/PathAndPathBase", "/Sub/App/PathAndPathBase", "")]
     [InlineData("/SUb/APp/PathAndPAthBase", "/SUb/APp/PathAndPAthBase", "")]
@@ -43,6 +41,7 @@ public class RequestPathBaseTests : FixtureLoggedTest
     [InlineData("/Sub%5CApp/PathAndPathBase/", @"/Sub\App/PathAndPathBase", "/")]
     [InlineData("/Sub/App/PathAndPathBase/Path", "/Sub/App/PathAndPathBase", "/Path")]
     [InlineData("/Sub/App/PathANDPathBase/PATH", "/Sub/App/PathANDPathBase", "/PATH")]
+    [SkipOnCI]
     public async Task RequestPathBase_Split(string url, string expectedPathBase, string expectedPath)
     {
         // The test app trims the test name off of the request path and puts it on the PathBase.
@@ -53,7 +52,6 @@ public class RequestPathBaseTests : FixtureLoggedTest
     }
 
     [ConditionalTheory]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
     [RequiresNewHandler]
     [InlineData("//Sub/App/PathAndPathBase", "//Sub/App/PathAndPathBase", "")]
     [InlineData(@"/\Sub/App/PathAndPathBase/", @"/\Sub/App/PathAndPathBase", "/")]
@@ -73,6 +71,7 @@ public class RequestPathBaseTests : FixtureLoggedTest
     // [InlineData(@"/Sub/call//../App/PathAndPathBase//path1//path2", @"", "/Sub/call/App/PathAndPathBase//path1//path2")]
     [InlineData(@"/Sub/call/.%2e/App/PathAndPathBase//path1//path2", @"/Sub/App/PathAndPathBase", "//path1//path2")]
     [InlineData(@"/Sub/call/.%2E/App/PathAndPathBase//path1//path2", @"/Sub/App/PathAndPathBase", "//path1//path2")]
+    [SkipOnCI]
     public async Task RequestPathBase_WithDoubleSlashes_Split(string url, string expectedPathBase, string expectedPath)
     {
         // The test app trims the test name off of the request path and puts it on the PathBase.

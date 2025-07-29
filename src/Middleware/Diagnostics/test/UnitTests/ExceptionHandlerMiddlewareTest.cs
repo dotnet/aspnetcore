@@ -22,6 +22,7 @@ using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Moq;
 
@@ -33,6 +34,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     public async Task ExceptionIsSetOnProblemDetailsContext()
     {
         // Arrange
+        ExceptionHandlerSuppressDiagnosticsContext suppressContext = null;
         using var host = new HostBuilder()
             .ConfigureServices(services =>
             {
@@ -53,7 +55,14 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
                 .UseTestServer()
                 .Configure(app =>
                 {
-                    app.UseExceptionHandler();
+                    app.UseExceptionHandler(new ExceptionHandlerOptions
+                    {
+                        SuppressDiagnosticsCallback = context =>
+                        {
+                            suppressContext = context;
+                            return true;
+                        }
+                    });
                     app.Run(context =>
                     {
                         throw new Exception("Test exception");
@@ -75,12 +84,16 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         var body = await response.Content.ReadFromJsonAsync<ProblemDetails>();
         var originalExceptionMessage = ((JsonElement)body.Extensions["OriginalExceptionMessage"]).GetString();
         Assert.Equal("Test exception", originalExceptionMessage);
+
+        Assert.IsType<Exception>(suppressContext.Exception);
+        Assert.Equal(ExceptionHandledType.ProblemDetailsService, suppressContext.ExceptionHandledBy);
     }
 
     [Fact]
     public async Task Invoke_ExceptionThrownResultsInClearedRouteValuesAndEndpoint()
     {
         // Arrange
+        var sink = new TestSink();
         var httpContext = CreateHttpContext();
         httpContext.SetEndpoint(new Endpoint((_) => Task.CompletedTask, new EndpointMetadataCollection(), "Test"));
         httpContext.Request.RouteValues["John"] = "Doe";
@@ -92,10 +105,48 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
                 Assert.Null(context.GetEndpoint());
                 return Task.CompletedTask;
             });
-        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor);
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, loggerFactory: new TestLoggerFactory(sink, true));
 
         // Act & Assert
         await middleware.Invoke(httpContext);
+
+        Assert.Collection(sink.Writes, w => Assert.Equal("UnhandledException", w.EventId.Name));
+    }
+
+    [Theory]
+    [InlineData(ExceptionHandledType.ExceptionHandlerDelegate, false)]
+    [InlineData(ExceptionHandledType.ProblemDetailsService, true)]
+    public async Task Invoke_HasExceptionHandler_SuppressDiagnostics_CallbackRun(ExceptionHandledType suppressResult, bool logged)
+    {
+        // Arrange
+        var sink = new TestSink();
+        var httpContext = CreateHttpContext();
+
+        var optionsAccessor = CreateOptionsAccessor(
+            exceptionHandler: context =>
+            {
+                context.Features.Set<IHttpResponseFeature>(new TestHttpResponseFeature());
+                return Task.CompletedTask;
+            },
+            suppressDiagnosticsCallback: c => c.ExceptionHandledBy == suppressResult);
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, loggerFactory: new TestLoggerFactory(sink, true));
+
+        // Act & Assert
+        await middleware.Invoke(httpContext);
+
+        if (logged)
+        {
+            Assert.Collection(sink.Writes, w => Assert.Equal("UnhandledException", w.EventId.Name));
+        }
+        else
+        {
+            Assert.Empty(sink.Writes);
+        }
+    }
+
+    private sealed class TestHttpResponseFeature : HttpResponseFeature
+    {
+        public override bool HasStarted => true;
     }
 
     [Fact]
@@ -126,6 +177,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
     public async Task IExceptionHandlers_CallNextIfNotHandled()
     {
         // Arrange
+        var sink = new TestSink();
         var httpContext = CreateHttpContext();
 
         var optionsAccessor = CreateOptionsAccessor();
@@ -137,7 +189,7 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
             new TestExceptionHandler(true, "3"),
         };
 
-        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers);
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, loggerFactory: new TestLoggerFactory(sink, true));
 
         // Act & Assert
         await middleware.Invoke(httpContext);
@@ -145,6 +197,56 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         Assert.True(httpContext.Items.ContainsKey("1"));
         Assert.True(httpContext.Items.ContainsKey("2"));
         Assert.True(httpContext.Items.ContainsKey("3"));
+
+        // IExceptionHandlers handling an exception suppress diagnostics by default.
+        Assert.Empty(sink.Writes);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task IExceptionHandlers_SuppressDiagnostics_TestLogs(bool? suppressDiagnostics)
+    {
+        // Arrange
+        var sink = new TestSink();
+        var httpContext = CreateHttpContext();
+
+        var metricsTagsFeature = new TestHttpMetricsTagsFeature();
+        httpContext.Features.Set<IHttpMetricsTagsFeature>(metricsTagsFeature);
+
+        Func<ExceptionHandlerSuppressDiagnosticsContext, bool> suppressDiagnosticsCallback = null;
+        if (suppressDiagnostics != null)
+        {
+            suppressDiagnosticsCallback = c => suppressDiagnostics.Value;
+        }
+
+        var optionsAccessor = CreateOptionsAccessor(suppressDiagnosticsCallback: suppressDiagnosticsCallback);
+
+        var exceptionHandlers = new List<IExceptionHandler>
+        {
+            new TestExceptionHandler(true, "1")
+        };
+
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, exceptionHandlers, loggerFactory: new TestLoggerFactory(sink, true));
+
+        // Act & Assert
+        await middleware.Invoke(httpContext);
+
+        Assert.True(httpContext.Items.ContainsKey("1"));
+
+        if (suppressDiagnostics == null || suppressDiagnostics == true)
+        {
+            Assert.Empty(sink.Writes);
+            Assert.Empty(metricsTagsFeature.Tags);
+        }
+        else
+        {
+            Assert.Collection(sink.Writes, w => Assert.Equal("UnhandledException", w.EventId.Name));
+            var errorTag = Assert.Single(metricsTagsFeature.Tags);
+            Assert.Equal("error.type", errorTag.Key);
+            Assert.Equal("System.InvalidOperationException", errorTag.Value);
+        }
     }
 
     [Fact]
@@ -445,6 +547,32 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
             m => AssertRequestException(m, "System.InvalidOperationException", "unhandled"));
     }
 
+    [Fact]
+    public async Task Metrics_ExceptionThrown_ErrorPathHandled_Reported()
+    {
+        // Arrange
+        var httpContext = CreateHttpContext();
+        var optionsAccessor = CreateOptionsAccessor(
+            exceptionHandler: context =>
+            {
+                context.Features.Set<IHttpResponseFeature>(new TestHttpResponseFeature());
+                return Task.CompletedTask;
+            },
+            exceptionHandlingPath: "/error");
+        var meterFactory = new TestMeterFactory();
+        var middleware = CreateMiddleware(_ => throw new InvalidOperationException(), optionsAccessor, meterFactory: meterFactory);
+        var meter = meterFactory.Meters.Single();
+
+        using var diagnosticsRequestExceptionCollector = new MetricCollector<long>(meterFactory, DiagnosticsMetrics.MeterName, "aspnetcore.diagnostics.exceptions");
+
+        // Act
+        await middleware.Invoke(httpContext);
+
+        // Assert
+        Assert.Collection(diagnosticsRequestExceptionCollector.GetMeasurementSnapshot(),
+            m => AssertRequestException(m, "System.InvalidOperationException", "handled", "/error"));
+    }
+
     private static void AssertRequestException(CollectedMeasurement<long> measurement, string exceptionName, string result, string handler = null)
     {
         Assert.Equal(1, measurement.Value);
@@ -490,7 +618,8 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
 
     private IOptions<ExceptionHandlerOptions> CreateOptionsAccessor(
         RequestDelegate exceptionHandler = null,
-        string exceptionHandlingPath = null)
+        string exceptionHandlingPath = null,
+        Func<ExceptionHandlerSuppressDiagnosticsContext, bool> suppressDiagnosticsCallback = null)
     {
         exceptionHandler ??= c => Task.CompletedTask;
         var options = new ExceptionHandlerOptions()
@@ -498,6 +627,10 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
             ExceptionHandler = exceptionHandler,
             ExceptionHandlingPath = exceptionHandlingPath,
         };
+        if (suppressDiagnosticsCallback != null)
+        {
+            options.SuppressDiagnosticsCallback = suppressDiagnosticsCallback;
+        }
         var optionsAccessor = Mock.Of<IOptions<ExceptionHandlerOptions>>(o => o.Value == options);
         return optionsAccessor;
     }
@@ -506,14 +639,15 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         RequestDelegate next,
         IOptions<ExceptionHandlerOptions> options,
         IEnumerable<IExceptionHandler> exceptionHandlers = null,
-        IMeterFactory meterFactory = null)
+        IMeterFactory meterFactory = null,
+        ILoggerFactory loggerFactory = null)
     {
         next ??= c => Task.CompletedTask;
         var listener = new DiagnosticListener("Microsoft.AspNetCore");
 
         var middleware = new ExceptionHandlerMiddlewareImpl(
             next,
-            NullLoggerFactory.Instance,
+            loggerFactory ?? NullLoggerFactory.Instance,
             options,
             listener,
             exceptionHandlers ?? Enumerable.Empty<IExceptionHandler>(),
@@ -528,5 +662,13 @@ public class ExceptionHandlerMiddlewareTest : LoggedTest
         {
             throw new NotImplementedException();
         }
+    }
+
+    private sealed class TestHttpMetricsTagsFeature : IHttpMetricsTagsFeature
+    {
+        public List<KeyValuePair<string, object>> TagsList { get; } = new List<KeyValuePair<string, object>>();
+
+        public ICollection<KeyValuePair<string, object>> Tags => TagsList;
+        public bool MetricsDisabled { get; set; }
     }
 }
