@@ -264,17 +264,52 @@ public class JsonConverterReadTests
     }
 
     [Theory]
-    [InlineData("FOO")]
-    [InlineData("BAR")]
-    [InlineData("NEG")]
-    public void Enum_ReadString(string value)
+    [InlineData("FOO", HelloRequest.Types.DataTypes.Types.NestedEnum.Foo)]
+    [InlineData("BAR", HelloRequest.Types.DataTypes.Types.NestedEnum.Bar)]
+    [InlineData("NEG", HelloRequest.Types.DataTypes.Types.NestedEnum.Neg)]
+    public void Enum_ReadString(string value, HelloRequest.Types.DataTypes.Types.NestedEnum expectedValue)
     {
         var serviceDescriptorRegistry = new DescriptorRegistry();
         serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
 
         var json = @$"{{ ""singleEnum"": ""{value}"" }}";
 
-        AssertReadJson<HelloRequest.Types.DataTypes>(json, descriptorRegistry: serviceDescriptorRegistry);
+        var result = AssertReadJson<HelloRequest.Types.DataTypes>(json, descriptorRegistry: serviceDescriptorRegistry);
+        Assert.Equal(expectedValue, result.SingleEnum);
+    }
+
+    [Theory]
+    [InlineData("UNSPECIFIED", PrefixEnumType.Types.PrefixEnum.Unspecified)]
+    [InlineData("PREFIX_ENUM_UNSPECIFIED", PrefixEnumType.Types.PrefixEnum.Unspecified)]
+    [InlineData("FOO", PrefixEnumType.Types.PrefixEnum.Foo)]
+    [InlineData("PREFIX_ENUM_FOO", PrefixEnumType.Types.PrefixEnum.Foo)]
+    [InlineData("BAR", PrefixEnumType.Types.PrefixEnum.Bar)]
+    public void Enum_RemovePrefix_ReadString(string value, PrefixEnumType.Types.PrefixEnum expectedValue)
+    {
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        var json = @$"{{ ""singleEnum"": ""{value}"" }}";
+
+        var result = AssertReadJson<PrefixEnumType>(json, descriptorRegistry: serviceDescriptorRegistry, serializeOld: false, settings: new GrpcJsonSettings { RemoveEnumPrefix = true });
+        Assert.Equal(expectedValue, result.SingleEnum);
+    }
+
+    [Theory]
+    [InlineData("UNSPECIFIED", CollisionPrefixEnumType.Types.CollisionPrefixEnum.Unspecified)]
+    [InlineData("COLLISION_PREFIX_ENUM_UNSPECIFIED", CollisionPrefixEnumType.Types.CollisionPrefixEnum.Unspecified)]
+    [InlineData("FOO", CollisionPrefixEnumType.Types.CollisionPrefixEnum.Foo)]
+    [InlineData("COLLISION_PREFIX_ENUM_FOO", CollisionPrefixEnumType.Types.CollisionPrefixEnum.CollisionPrefixEnumFoo)] // Match exact rather than fallback.
+    [InlineData("COLLISION_PREFIX_ENUM_COLLISION_PREFIX_ENUM_FOO", CollisionPrefixEnumType.Types.CollisionPrefixEnum.CollisionPrefixEnumFoo)]
+    public void Enum_RemovePrefix_Collision_ReadString(string value, CollisionPrefixEnumType.Types.CollisionPrefixEnum expectedValue)
+    {
+        var serviceDescriptorRegistry = new DescriptorRegistry();
+        serviceDescriptorRegistry.RegisterFileDescriptor(JsonTranscodingGreeter.Descriptor.File);
+
+        var json = @$"{{ ""singleEnum"": ""{value}"" }}";
+
+        var result = AssertReadJson<CollisionPrefixEnumType>(json, descriptorRegistry: serviceDescriptorRegistry, serializeOld: false, settings: new GrpcJsonSettings { RemoveEnumPrefix = true });
+        Assert.Equal(expectedValue, result.SingleEnum);
     }
 
     [Fact]
