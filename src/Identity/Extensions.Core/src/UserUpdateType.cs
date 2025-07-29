@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Identity;
 internal enum UserUpdateType
 {
     Update,
-    UserName,
+    SetUserName,
     AddPassword,
     ChangePassword,
     SecurityStamp,

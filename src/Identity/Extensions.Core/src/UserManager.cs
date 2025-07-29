@@ -717,11 +717,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
 
             await Store.SetUserNameAsync(user, userName, CancellationToken).ConfigureAwait(false);
             await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.UserName).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SetUserName).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.UserName, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SetUserName, ex);
             throw;
         }
     }

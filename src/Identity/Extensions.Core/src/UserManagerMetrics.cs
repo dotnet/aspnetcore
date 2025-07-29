@@ -215,7 +215,7 @@ internal sealed class UserManagerMetrics : IDisposable
         return updateType switch
         {
             UserUpdateType.Update => "update",
-            UserUpdateType.UserName => "user_name",
+            UserUpdateType.SetUserName => "set_user_name",
             UserUpdateType.AddPassword => "add_password",
             UserUpdateType.ChangePassword => "change_password",
             UserUpdateType.SecurityStamp => "security_stamp",
