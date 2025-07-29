@@ -5,6 +5,7 @@ using System.Collections.Frozen;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
+
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting;
@@ -66,10 +67,12 @@ internal sealed class HostingMetrics : IDisposable
 
             // Add information gathered during request.
             tags.Add("http.response.status_code", GetBoxedStatusCode(statusCode));
-            if (!string.IsNullOrEmpty(route))
+            var httpRoute = route;
+            if (string.IsNullOrEmpty(httpRoute))
             {
-                tags.Add("http.route", route);
+                httpRoute = "/";
             }
+            tags.Add("http.route", httpRoute);
 
             // Add before some built in tags so custom tags are prioritized when dealing with duplicates.
             if (customTags != null)
