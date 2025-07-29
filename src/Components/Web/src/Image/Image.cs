@@ -5,11 +5,9 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
-using System.Text.Json.Serialization;
-using System.Text.Json;
-using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.Components.Web.Image;
 
@@ -320,6 +318,7 @@ public class Image : ComponentBase, IAsyncDisposable
         }
     }
 
+    [UnconditionalSuppressMessage("Trimming", "IL2026:Members annotated with 'RequiresUnreferencedCodeAttribute' require dynamic access otherwise can break functionality when trimming application code", Justification = "<Pending>")]
     private async Task RegisterWithImageEndpoint()
     {
         if (Source == null)
@@ -352,18 +351,25 @@ public class Image : ComponentBase, IAsyncDisposable
                     "The provided image source must be either ILoadableImageSource or IStreamingImageSource.");
             }
 
-            var requestContent = new ImageRegistrationRequest(imageData, contentType);
+            //var requestContent = new ImageRegistrationRequest(imageData, contentType);
+            var requestContent = new
+            {
+                ImageData = imageData,
+                ContentType = contentType
+            };
 
             using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var response = await HttpClient.PostAsJsonAsync("_blazor/image/register",
-                requestContent,
-                ImageJsonSerializerContext.Default.ImageRegistrationRequest,
-                tokenSource.Token);
+            //var response = await HttpClient.PostAsJsonAsync("_blazor/image/register",
+            //    requestContent,
+            //    ImageJsonSerializerContext.Default.ImageRegistrationRequest,
+            //    tokenSource.Token);
+            var response = await HttpClient.PostAsJsonAsync("_blazor/image/register", requestContent, tokenSource.Token);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<string>(ImageJsonSerializerContext.Default.ImageRegistrationResponse,
-                    tokenSource.Token);
+                //var result = await response.Content.ReadFromJsonAsync(ImageJsonSerializerContext.Default.ImageRegistrationResponse,
+                //    tokenSource.Token);
+                var result = await response.Content.ReadFromJsonAsync<ImageRegistrationResponse>();
                 _imageEndpointUrl = result?.Url;
                 await SetSuccessState();
             }
@@ -482,13 +488,13 @@ public class Image : ComponentBase, IAsyncDisposable
         }
     }
 
-    private class ImageRegistrationResponse
+    internal class ImageRegistrationResponse
     {
         [JsonPropertyName("url")]
         public string? Url { get; set; }
     }
 
-    private class ImageRegistrationRequest
+    internal class ImageRegistrationRequest
     {
         [JsonPropertyName("imageData")]
         public byte[]? ImageData { get; set; }
@@ -505,8 +511,11 @@ public class Image : ComponentBase, IAsyncDisposable
         public ImageRegistrationRequest() { }
     }
 
-    [JsonSourceGenerationOptions(WriteIndented = false)]
-    [JsonSerializable(typeof(ImageRegistrationRequest))]
-    [JsonSerializable(typeof(ImageRegistrationResponse))]
-    internal partial class ImageJsonSerializerContext : JsonSerializerContext{}
+}
+
+[JsonSourceGenerationOptions(WriteIndented = false)]
+[JsonSerializable(typeof(Image.ImageRegistrationRequest))]
+[JsonSerializable(typeof(Image.ImageRegistrationResponse))]
+internal partial class ImageJsonSerializerContext : JsonSerializerContext
+{
 }
