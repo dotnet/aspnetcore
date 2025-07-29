@@ -33,9 +33,9 @@ internal sealed class UserManagerMetrics : IDisposable
     public UserManagerMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
-        _createDuration = _meter.CreateHistogram<double>(CreateDurationName, "s", "The duration of creating users.");
-        _updateDuration = _meter.CreateHistogram<double>(UpdateDurationName, "s", "The duration of updating users.");
-        _deleteDuration = _meter.CreateHistogram<double>(DeleteDurationName, "s", "The duration of deleting users.");
+        _createDuration = _meter.CreateHistogram<double>(CreateDurationName, "s", "The duration of user creation operations.");
+        _updateDuration = _meter.CreateHistogram<double>(UpdateDurationName, "s", "The duration of user update operations.");
+        _deleteDuration = _meter.CreateHistogram<double>(DeleteDurationName, "s", "The duration of user deletion operations.");
         _checkPasswordAttemptsCounter = _meter.CreateCounter<long>(CheckPasswordAttemptsCounterName, "{attempt}", "The number of check password attempts. Only checks whether the password is valid and not whether the user account is in a state that can log in.");
         _verifyTokenAttemptsCounter = _meter.CreateCounter<long>(VerifyTokenAttemptsCounterName, "{attempt}", "The number of token verification attempts.");
         _generateTokensCounter = _meter.CreateCounter<long>(GenerateTokensCounterName, "{count}", "The number of token generations.");
