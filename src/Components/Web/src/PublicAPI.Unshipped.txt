@@ -52,5 +52,6 @@ override Microsoft.AspNetCore.Components.Forms.InputHidden.TryParseValueFromStri
 override Microsoft.AspNetCore.Components.Web.Image.Image.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Web.Image.Image.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Web.Image.Image.OnInitialized() -> void
+override Microsoft.AspNetCore.Components.Web.Image.Image.OnInitializedAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Web.Image.Image.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool

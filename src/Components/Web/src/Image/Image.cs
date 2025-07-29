@@ -119,8 +119,20 @@ public class Image : ComponentBase, IAsyncDisposable
         // Set default content if not provided
         LoadingContent ??= CreateDefaultLoadingContent();
         ErrorContent ??= CreateDefaultErrorContent();
+    }
+
+    /// <inheritdoc/>
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
 
         _useImageEndpoint = UseImageEndpoint || (!RendererInfo.IsInteractive && Source != null);
+
+        if (_useImageEndpoint)
+        {
+            await RegisterWithImageEndpoint();
+            Console.WriteLine($"Image registered with endpoint: {_imageEndpointUrl}");
+        }
     }
 
     /// <inheritdoc />
@@ -173,17 +185,9 @@ public class Image : ComponentBase, IAsyncDisposable
     /// <inheritdoc/>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_isDisposed)
+        if (firstRender && !_isDisposed && !_useImageEndpoint)
         {
-            if (_useImageEndpoint)
-            {
-                await RegisterWithImageEndpoint();
-                Console.WriteLine($"Image registered with endpoint: {_imageEndpointUrl}");
-            }
-            else
-            {
-                await LoadImageIfSourceProvided();
-            }
+            await LoadImageIfSourceProvided();
         }
     }
 
@@ -327,7 +331,6 @@ public class Image : ComponentBase, IAsyncDisposable
 
         try
         {
-            SetLoadingState();
             byte[] imageData;
             string contentType;
 

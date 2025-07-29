@@ -3,7 +3,8 @@
 @using BlazorShared
 @inject ServerImageRepository ImageRepository
 @inject IJSRuntime JSRuntime
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@* @rendermode InteractiveServer *@
 
 <PageTitle>Image Gallery</PageTitle>
 
@@ -16,12 +17,6 @@
         <div class="source-toggle">
             Currently using: <strong>@(_useStreamingSource ? "Streaming" : "Loading") Image Source</strong>
         </div>
-    </div>
-
-    <div class="gallery-controls">
-        <button class="btn btn-secondary" @onclick="RefreshGallery">
-            <i class="fas fa-sync"></i> Refresh
-        </button>
     </div>
 
     @if (_isLoading)
@@ -52,8 +47,8 @@
                             CacheStrategy="CacheStrategy.Memory"
                             OnImageLoaded="@(() => OnImageLoaded(image.Id))"
                             OnImageError="@((error) => OnImageError(image.Id, error))"
-                            style="width: 100%; height: 100%; object-fit: cover;"
-                            UseImageEndpoint = "true"/>
+                            style="width: 100%; height: 100%; object-fit: cover;"/>
+                            @* UseImageEndpoint = "true"/> *@
                     </div>
                     <div class="image-info">
                         <h4>@image.Title</h4>
@@ -111,7 +106,6 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-danger" @onclick="() => DeleteImage(_currentImage.Id)">Delete Image</button>
                 <button class="btn btn-secondary" @onclick="CloseImageModal">Close</button>
             </div>
         </div>
@@ -187,13 +181,6 @@
         }
     }
 
-    private async Task RefreshGallery()
-    {
-        _isLoading = true;
-        await LoadImagesAsync();
-        _isLoading = false;
-    }
-
     private void OpenImageModal(ImageMetadata image)
     {
         _currentImage = image;
@@ -204,25 +191,6 @@
     {
         _showImageModal = false;
         _currentImage = null;
-    }
-
-    private async Task DeleteImage(int id)
-    {
-        try
-        {
-            var success = await ImageRepository.DeleteImageAsync(id);
-            if (success)
-            {
-                _binaryImageSources.Remove(id);
-                _streamingImageSources.Remove(id);
-                await LoadImagesAsync();
-                CloseImageModal();
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error deleting image: {ex.Message}");
-        }
     }
 
     private void OnImageLoaded(int imageId)
