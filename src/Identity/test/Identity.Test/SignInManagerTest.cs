@@ -73,7 +73,7 @@ public class SignInManagerTest
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "password"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "locked_out"),
             ]));
         Assert.Empty(signInUserPrincipal.GetMeasurementSnapshot());
@@ -397,7 +397,7 @@ public class SignInManagerTest
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                     KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "external"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
                 ]));
             Assert.Collection(signInUserPrincipal.GetMeasurementSnapshot(),
@@ -405,7 +405,7 @@ public class SignInManagerTest
                 [
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                     KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                 ]));
         }
         else
@@ -416,7 +416,7 @@ public class SignInManagerTest
                     KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                     KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "external"),
-                    KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                    KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                     KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "requires_two_factor"),
                 ]));
             Assert.Empty(signInUserPrincipal.GetMeasurementSnapshot());
@@ -474,7 +474,7 @@ public class SignInManagerTest
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "passkey"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
             ]));
         Assert.Collection(signInUserPrincipal.GetMeasurementSnapshot(),
@@ -482,7 +482,7 @@ public class SignInManagerTest
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
             ]));
     }
 
@@ -859,7 +859,7 @@ public class SignInManagerTest
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", isPersistent),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", isPersistent),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "success"),
             ]));
     }
@@ -1234,7 +1234,7 @@ public class SignInManagerTest
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.authentication.scheme", "Identity.Application"),
-                KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.is_persistent", false),
+                KeyValuePair.Create<string, object>("aspnetcore.authentication.is_persistent", false),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.result", "failure"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.sign_in.type", "password"),
             ]));
