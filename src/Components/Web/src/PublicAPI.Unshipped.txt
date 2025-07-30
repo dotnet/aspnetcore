@@ -6,7 +6,6 @@ Microsoft.AspNetCore.Components.Forms.InputHidden.InputHidden() -> void
 Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
 Microsoft.AspNetCore.Components.Web.Image.CacheStrategy.Memory = 1 -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
 Microsoft.AspNetCore.Components.Web.Image.CacheStrategy.None = 0 -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
-Microsoft.AspNetCore.Components.Web.Image.CacheStrategy.Persistent = 2 -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
 Microsoft.AspNetCore.Components.Web.Image.IImageSource
 Microsoft.AspNetCore.Components.Web.Image.IImageSource.CacheKey.get -> string!
 Microsoft.AspNetCore.Components.Web.Image.IImageSource.MimeType.get -> string!

@@ -203,18 +203,44 @@ public class Image : ComponentBase, IAsyncDisposable
         {
             return;
         }
+
         try
         {
             SetLoadingState();
 
-            if (Source is IStreamingImageSource streamingSource)
+            // Check if image is already cached before transferring data
+            string? cacheKey = null;
+            if (Source is ILoadableImageSource loadableSource)
             {
-                await StreamImageInChunks(streamingSource);
+                cacheKey = loadableSource.CacheKey;
             }
-            else if (Source is ILoadableImageSource loadableSource)
+            else if (Source is IStreamingImageSource streamingSource)
             {
-                byte[] imageData = await loadableSource.GetBytesAsync();
-                await SendImageInChunks(imageData, loadableSource.MimeType, loadableSource.CacheKey);
+                cacheKey = streamingSource.CacheKey;
+            }
+
+            if (!string.IsNullOrEmpty(cacheKey))
+            {
+                bool foundInCache = await JSRuntime.InvokeAsync<bool>(
+                    "Blazor._internal.BinaryImageComponent.trySetFromCache",
+                    _id, cacheKey);
+
+                if (foundInCache)
+                {
+                    await SetSuccessState();
+                    return;
+                }
+            }
+
+            // If not in cache, proceed with transfer
+            if (Source is IStreamingImageSource streamingSource2)
+            {
+                await StreamImageInChunks(streamingSource2);
+            }
+            else if (Source is ILoadableImageSource loadableSource2)
+            {
+                byte[] imageData = await loadableSource2.GetBytesAsync();
+                await SendImageInChunks(imageData, loadableSource2.MimeType, loadableSource2.CacheKey);
             }
             else
             {

@@ -198,6 +198,60 @@ export class BinaryImageComponent {
   }
 
   /**
+   * Checks if an image with the given cache key is already cached and sets it as the source.
+   * @param elementId - The ID of the target image element
+   * @param cacheKey - The cache key to look for
+   * @returns True if the image was found in cache and set as source, false otherwise
+   */
+  public static trySetFromCache(elementId: string, cacheKey: string): boolean {
+    if (!cacheKey) {
+      return false;
+    }
+
+    const cachedUrl = this.memoryCache.get(cacheKey);
+    if (!cachedUrl) {
+      return false;
+    }
+
+    const imgElement = document.getElementById(elementId) as HTMLImageElement;
+    if (!imgElement) {
+      console.error(`Element ${elementId} not found`);
+      return false;
+    }
+
+    console.log(`Setting image ${elementId} from cache with key: ${cacheKey}`);
+
+    // Clean up old URL if exists
+    if (this.blobUrls.has(elementId)) {
+      const oldUrl = this.blobUrls.get(elementId);
+      if (oldUrl) {
+        const isCached = Array.from(this.memoryCache.values()).includes(oldUrl);
+        if (!isCached) {
+          URL.revokeObjectURL(oldUrl);
+        }
+      }
+    }
+
+    this.blobUrls.set(elementId, cachedUrl);
+    imgElement.src = cachedUrl;
+
+    // Set up event handlers
+    imgElement.onload = () => {
+      this.loadingImages.delete(elementId);
+      imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
+    };
+
+    imgElement.onerror = (e) => {
+      this.loadingImages.delete(elementId);
+      imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
+        detail: (e as ErrorEvent).message || 'Failed to load cached image',
+      }));
+    };
+
+    return true;
+  }
+
+  /**
    * Checks if an image is currently loading.
    * @param elementId - The ID of the image element
    * @returns True if loading, false otherwise

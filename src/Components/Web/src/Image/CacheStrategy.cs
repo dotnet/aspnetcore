@@ -16,10 +16,5 @@ public enum CacheStrategy
     /// <summary>
     /// Cache in memory.
     /// </summary>
-    Memory,
-
-    /// <summary>
-    /// Cache persistently.
-    /// </summary>
-    Persistent
+    Memory
 }
