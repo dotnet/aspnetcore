@@ -620,6 +620,17 @@ public class CircuitRegistryTest
             base.OnEntryEvicted(key, value, reason, state);
             OnAfterEntryEvicted?.Invoke();
         }
+
+        public void TriggerEviction(object key, object value, EvictionReason reason)
+        {
+            OnEntryEvicted(key, value, reason, null);
+        }
+
+        public async Task SimulateEvictionAndDispose(CircuitHost circuitHost)
+        {
+            // Directly call PauseAndDisposeCircuitHost which is what eviction does
+            await PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: false);
+        }
     }
 
     private class TestCircuitPersistenceProvider : ICircuitPersistenceProvider
@@ -677,5 +688,127 @@ public class CircuitRegistryTest
             factory ?? TestCircuitIdFactory.CreateTestFactory(),
             persistenceManager);
         return (registry, provider);
+    }
+
+    [Fact]
+    public async Task PauseAfterTermination_DoesNotThrow()
+    {
+        var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+        var options = new CircuitOptions();
+
+        var circuitHost = new TestCircuitHostForRaceConditions(
+            circuitIdFactory.CreateCircuitId(),
+            CreateServiceScope(),
+            options);
+
+        var persistenceProvider = new TestCircuitPersistenceProvider();
+        var registry = new TestCircuitRegistry(circuitIdFactory, options, persistenceProvider);
+        registry.Register(circuitHost);
+
+        // First terminate the circuit - it calls circuitHost.DisposeAsync()
+        await registry.TerminateAsync(circuitHost.CircuitId);
+
+        // Then try to pause - it will try to resolve services from the DI scope that is already disposed
+        await registry.PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: true);
+    }
+
+    [Fact]
+    public async Task PauseAfterEviction_DoesNotThrow()
+    {
+        var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+        var options = new CircuitOptions();
+
+        var circuitHost = new TestCircuitHostForRaceConditions(
+            circuitIdFactory.CreateCircuitId(),
+            CreateServiceScope(),
+            options);
+
+        var persistenceProvider = new TestCircuitPersistenceProvider();
+        var registry = new TestCircuitRegistry(circuitIdFactory, options, persistenceProvider);
+        registry.Register(circuitHost);
+
+        // First simulate eviction by calling the same method that eviction calls
+        await registry.SimulateEvictionAndDispose(circuitHost);
+
+        // Then try to pause - it will try to resolve services from the DI scope that is already disposed
+        await registry.PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: true);
+    }
+
+    [Fact]
+    public async Task EvictionAndTermination_DoesNotThrow()
+    {
+        var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+        var options = new CircuitOptions();
+
+        var circuitHost = new TestCircuitHostForRaceConditions(
+            circuitIdFactory.CreateCircuitId(),
+            CreateServiceScope(),
+            options);
+
+        var persistenceProvider = new TestCircuitPersistenceProvider();
+        var registry = new TestCircuitRegistry(circuitIdFactory, options, persistenceProvider);
+        registry.Register(circuitHost);
+
+        // Simulate race condition: eviction and termination happening concurrently
+        await registry.SimulateEvictionAndDispose(circuitHost);
+        await registry.TerminateAsync(circuitHost.CircuitId);
+    }
+
+    private static AsyncServiceScope CreateServiceScope()
+    {
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton(sp => new ComponentStatePersistenceManager(
+            NullLoggerFactory.Instance.CreateLogger<ComponentStatePersistenceManager>(), sp));
+        serviceCollection.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
+        var serviceProvider = serviceCollection.BuildServiceProvider();
+        return serviceProvider.CreateAsyncScope();
+    }
+
+    private class TestCircuitHostForRaceConditions : CircuitHost
+    {
+        public TestCircuitHostForRaceConditions(
+            CircuitId circuitId,
+            AsyncServiceScope scope,
+            CircuitOptions options)
+            : base(
+                circuitId,
+                scope,
+                options,
+                new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString()),
+                CreateRemoteRenderer(),
+                Array.Empty<ComponentDescriptor>(),
+                new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>()),
+                new RemoteNavigationManager(Mock.Of<ILogger<RemoteNavigationManager>>()),
+                Array.Empty<CircuitHandler>(),
+                new CircuitMetrics(new TestMeterFactory()),
+                new CircuitActivitySource(),
+                NullLogger<CircuitHost>.Instance)
+        {
+        }
+
+        private static RemoteRenderer CreateRemoteRenderer()
+        {
+            var clientProxy = new CircuitClientProxy(Mock.Of<ISingleClientProxy>(), Guid.NewGuid().ToString());
+            var jsRuntime = new RemoteJSRuntime(Options.Create(new CircuitOptions()), Options.Create(new HubOptions<ComponentHub>()), Mock.Of<ILogger<RemoteJSRuntime>>());
+            var componentsActivitySource = new ComponentsActivitySource();
+            var serviceProvider = new Mock<IServiceProvider>();
+            serviceProvider
+                .Setup(services => services.GetService(typeof(IJSRuntime)))
+                .Returns(jsRuntime);
+            serviceProvider
+                .Setup(services => services.GetService(typeof(ComponentsActivitySource)))
+                .Returns(componentsActivitySource);
+            var serverComponentDeserializer = Mock.Of<IServerComponentDeserializer>();
+
+            return new RemoteRenderer(
+                serviceProvider.Object,
+                NullLoggerFactory.Instance,
+                new CircuitOptions(),
+                clientProxy,
+                serverComponentDeserializer,
+                NullLogger.Instance,
+                jsRuntime,
+                new CircuitJSComponentInterop(new CircuitOptions()));
+        }
     }
 }
