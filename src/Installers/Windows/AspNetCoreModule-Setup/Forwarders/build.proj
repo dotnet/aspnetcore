@@ -17,6 +17,7 @@
   <Target Name="Build" DependsOnTargets="SetBuildDefaultEnvironmentVariables">
     <MakeDir Directories="$(ObjDir);$(BinDir)" />
      <!-- Ignore link.exe ARM64X pure forwarder bug -->
+     <!-- Revert once https://developercommunity.visualstudio.com/t/LINK-:-error-LNK2001:-unresolved-extern/10932429 is fixed -->
     <Exec Command="all.cmd $(Prompt) $(ObjDir) $(BinDir) $(Configuration)" ContinueOnError="true" IgnoreStandardErrorWarningFormat="true" />
   </Target>
 </Project>
