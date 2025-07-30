@@ -73,32 +73,45 @@ internal partial class WebAssemblyCultureProvider
         await WebAssemblyCultureProviderInterop.LoadSatelliteAssemblies(culturesToLoad);
     }
 
-    internal static string[] GetCultures(CultureInfo? cultureInfo, CultureInfo? uiCultureInfo = null)
+    internal static string[] GetCultures(CultureInfo cultureInfo, CultureInfo? uiCultureInfo = null)
     {
-        var culturesToLoad = new HashSet<string>();
-
         // Once WASM is ready, we have to use .NET's assembly loading to load additional assemblies.
         // First calculate all possible cultures that the application might want to load. We do this by
         // starting from the current culture and walking up the graph of parents.
         // At the end of the the walk, we'll have a list of culture names that look like
         // [ "fr-FR", "fr" ]
-        while (cultureInfo != null || uiCultureInfo != null)
+
+        var culturesToLoad = GetCultureHierarchy(cultureInfo);
+        if (cultureInfo != uiCultureInfo)
         {
-            if (cultureInfo != null && cultureInfo != CultureInfo.InvariantCulture)
+            foreach (var culture in GetCultureHierarchy(uiCultureInfo))
             {
-                culturesToLoad.Add(cultureInfo.Name);
+                if (!culturesToLoad.Contains(culture))
+                {
+                    culturesToLoad = culturesToLoad.Append(culture);
+                }
+                // If the culture is in the list, we can break because we found the common parent.
+                else
+                {
+                    break;
+                }
             }
-
-            if (uiCultureInfo != null && uiCultureInfo.Name != cultureInfo?.Name && uiCultureInfo != CultureInfo.InvariantCulture)
-            {
-                culturesToLoad.Add(uiCultureInfo.Name);
-            }
-
-            cultureInfo = (cultureInfo?.Parent == cultureInfo || cultureInfo == CultureInfo.InvariantCulture) ? null : cultureInfo?.Parent;
-            uiCultureInfo = (uiCultureInfo?.Parent == uiCultureInfo || uiCultureInfo == CultureInfo.InvariantCulture) ? null : uiCultureInfo?.Parent;
         }
 
-        return culturesToLoad.ToList().ToArray();
+        return culturesToLoad.ToArray();
+    }
+
+    private static IEnumerable<string> GetCultureHierarchy(CultureInfo? culture)
+    {
+        while (culture != CultureInfo.InvariantCulture && culture != null)
+        {
+            yield return culture.Name;
+            if (culture == culture.Parent)
+            {
+                break;
+            }
+            culture = culture.Parent;
+        }
     }
 
     private partial class WebAssemblyCultureProviderInterop
