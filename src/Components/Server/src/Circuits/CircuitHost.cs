@@ -687,6 +687,8 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
+    internal bool IsDisposed() =>_disposed;
+
     private void AssertNotDisposed()
     {
 #pragma warning disable CA1513 // Use ObjectDisposedException throw helper

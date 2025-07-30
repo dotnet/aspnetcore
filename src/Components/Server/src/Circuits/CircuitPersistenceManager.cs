@@ -21,6 +21,11 @@ internal partial class CircuitPersistenceManager(
 {
     public async Task PauseCircuitAsync(CircuitHost circuit, bool saveStateToClient = false, CancellationToken cancellation = default)
     {
+        if (circuit.IsDisposed())
+        {
+            return;
+        }
+
         var renderer = circuit.Renderer;
         var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
         var collector = new CircuitPersistenceManagerCollector(circuitOptions, serverComponentSerializer, circuit.Renderer);
