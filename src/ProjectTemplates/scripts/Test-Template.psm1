@@ -459,7 +459,7 @@ function Test-Template {
         } else {
             Write-Warning "Publish binlog not found at $publishBinlogPath";
         }
-        Write-Host "##vso[artifact.upload containerfolder=repo-full;artifactname=repo-full]$PSScriptRoot/../../.."
+        Write-Host "##vso[artifact.upload containerfolder=project-templates;artifactname=project-templates]$PSScriptRoot/../.."
     }
     finally {
         Pop-Location -StackName TemplateFolder;
