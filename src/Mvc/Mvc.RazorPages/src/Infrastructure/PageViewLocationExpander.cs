@@ -55,7 +55,7 @@ public class PageViewLocationExpander : IViewLocationExpander
                 // This is easy because the 'page' token already trims the root directory.
                 var end = context.PageName.Length;
 
-                while (end > 0 && (end = context.PageName.LastIndexOf('/', end - 1)) != -1)
+                while (end > 0 && (end = context.PageName.LastIndexOf('/', end - 1)) >= 0)
                 {
                     // PageName always starts with `/`
                     yield return location.Replace("/{1}/", context.PageName.Substring(0, end + 1));
