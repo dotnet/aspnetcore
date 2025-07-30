@@ -1,8 +1,8 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressDiagnosticsCallback.get -> System.Func<Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext!, bool>?
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.SuppressDiagnosticsCallback.set -> void
-Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.get -> bool
-Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForErrors.set -> void
+Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForStatusCodePages.get -> bool
+Microsoft.AspNetCore.Builder.StatusCodePagesOptions.CreateScopeForStatusCodePages.set -> void
 Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
 Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.ExceptionHandlerDelegate = 3 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
 Microsoft.AspNetCore.Diagnostics.ExceptionHandledType.ExceptionHandlerService = 1 -> Microsoft.AspNetCore.Diagnostics.ExceptionHandledType
@@ -17,4 +17,6 @@ Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.Exce
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.ExceptionHandlerSuppressDiagnosticsContext() -> void
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.HttpContext.get -> Microsoft.AspNetCore.Http.HttpContext!
 Microsoft.AspNetCore.Diagnostics.ExceptionHandlerSuppressDiagnosticsContext.HttpContext.init -> void
-static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, bool createScopeForErrors, string? queryFormat = null) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, string? queryFormat = null, bool createScopeForStatusCodePages = false) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+*REMOVED*static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, string? queryFormat = null) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
+static Microsoft.AspNetCore.Builder.StatusCodePagesExtensions.UseStatusCodePagesWithReExecute(this Microsoft.AspNetCore.Builder.IApplicationBuilder! app, string! pathFormat, string! queryFormat) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!

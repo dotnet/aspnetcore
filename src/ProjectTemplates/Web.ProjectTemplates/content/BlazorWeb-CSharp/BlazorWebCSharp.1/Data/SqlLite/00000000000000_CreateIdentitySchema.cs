@@ -118,16 +118,7 @@ namespace BlazorWebCSharp._1.Migrations
                 {
                     CredentialId = table.Column<byte[]>(type: "BLOB", maxLength: 1024, nullable: false),
                     UserId = table.Column<string>(type: "TEXT", nullable: false),
-                    PublicKey = table.Column<byte[]>(type: "BLOB", maxLength: 1024, nullable: false),
-                    Name = table.Column<string>(type: "TEXT", nullable: true),
-                    CreatedAt = table.Column<DateTimeOffset>(type: "TEXT", nullable: false),
-                    SignCount = table.Column<uint>(type: "INTEGER", nullable: false),
-                    Transports = table.Column<string>(type: "TEXT", nullable: true),
-                    IsUserVerified = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsBackupEligible = table.Column<bool>(type: "INTEGER", nullable: false),
-                    IsBackedUp = table.Column<bool>(type: "INTEGER", nullable: false),
-                    AttestationObject = table.Column<byte[]>(type: "BLOB", nullable: false),
-                    ClientDataJson = table.Column<byte[]>(type: "BLOB", nullable: false)
+                    Data = table.Column<string>(type: "TEXT", nullable: false)
                 },
                 constraints: table =>
                 {

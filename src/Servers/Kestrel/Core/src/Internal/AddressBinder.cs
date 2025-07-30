@@ -142,21 +142,21 @@ internal sealed class AddressBinder
 
         return options;
 
-        bool IsLocalhost(string host, out string? prefix)
+        static bool IsLocalhost(string host, out string? prefix)
         {
             // Check for "localhost"
-            if (string.Equals(parsedAddress.Host, "localhost", StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(host, "localhost", StringComparison.OrdinalIgnoreCase))
             {
                 prefix = null;
                 return true;
             }
 
             // Check for use of .localhost TLD (Top Level Domain)
-            if (host.EndsWith(".localhost", StringComparison.OrdinalIgnoreCase)
-                && !string.Equals(parsedAddress.Host, ".localhost", StringComparison.OrdinalIgnoreCase))
+            const string localhostTld = ".localhost";
+            if (host.Length > localhostTld.Length && host.EndsWith(localhostTld, StringComparison.OrdinalIgnoreCase))
             {
                 // Take all but the .localhost TLD as the prefix
-                prefix = host[..^10]; // 10 is the length of ".localhost"
+                prefix = host[..^localhostTld.Length];
                 return true;
             }
 

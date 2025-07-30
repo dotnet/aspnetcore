@@ -274,7 +274,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         {
             return (BindingSource.FormFile, fromFormAttribute.Name ?? parameter.Name ?? string.Empty, false, parameterType);
         }
-        else if (parameter.ParameterInfo.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute) == a.AttributeType) ||
+        else if (parameter.ParameterInfo.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.AttributeType)) ||
                  parameterType == typeof(HttpContext) ||
                  parameterType == typeof(HttpRequest) ||
                  parameterType == typeof(HttpResponse) ||
@@ -332,10 +332,9 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         var defaultErrorType = errorMetadata?.Type ?? typeof(void);
         var contentTypes = new MediaTypeCollection();
 
-        // If the return type is an IResult or an awaitable IResult, then we should treat it as a void return type
-        // since we can't infer anything without additional metadata.
-        if (typeof(IResult).IsAssignableFrom(responseType) ||
-            producesResponseMetadata.Any(metadata => typeof(IResult).IsAssignableFrom(metadata.Type)))
+        // If the return type is an IResult or wrapped in a Task or ValueTask, then we should treat it as a void return type
+        // since we can't infer anything without additional metadata or requiring unreferenced code.
+        if (IsTaskOrValueTask(responseType) || typeof(IResult).IsAssignableFrom(responseType))
         {
             responseType = typeof(void);
         }
@@ -426,6 +425,23 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             // For more information, check the related bug: https://github.com/dotnet/aspnetcore/issues/60518
             return apiResponseType == metadataType ||
                 metadataType?.IsAssignableFrom(apiResponseType) == true;
+        }
+
+        static bool IsTaskOrValueTask(Type returnType)
+        {
+            // If this method did not need to be trim-safe, we would use CoercedAwaitableInfo.IsTypeAwaitable, but we cannot.
+            if (returnType.IsAssignableFrom(typeof(Task)) || returnType.IsAssignableFrom(typeof(ValueTask)))
+            {
+                return true;
+            }
+
+            if (returnType.FullName is null)
+            {
+                return false;
+            }
+
+            return returnType.FullName.StartsWith("System.Threading.Tasks.Task`1[", StringComparison.Ordinal) ||
+                returnType.FullName.StartsWith("System.Threading.Tasks.ValueTask`1[", StringComparison.Ordinal);
         }
     }
 

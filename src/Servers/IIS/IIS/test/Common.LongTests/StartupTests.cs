@@ -31,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 // Contains all tests related to Startup, requiring starting ANCM/IIS every time.
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
 public class StartupTests : IISFunctionalTestBase
 {
     public StartupTests(PublishedSitesFixture fixture) : base(fixture)
@@ -703,6 +702,7 @@ public class StartupTests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/62802")]
     public async Task SetCurrentDirectoryHandlerSettingWorks()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -1298,7 +1298,7 @@ public class StartupTests : IISFunctionalTestBase
     [ConditionalFact]
     [RequiresNewHandler]
     [RequiresNewShim]
-    [SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
+    [SkipOnHelix("https://github.com/dotnet/aspnetcore/issues/62787", Queues = "Windows.Amd64.VS2022.Pre.Open;" + "Windows.Amd64.VS2022.Pre;")]
     public async Task ServerAddressesIncludesBaseAddress()
     {
         var appName = "\u041C\u043E\u0451\u041F\u0440\u0438\u043B\u043E\u0436\u0435\u043D\u0438\u0435";
