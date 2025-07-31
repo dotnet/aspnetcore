@@ -432,8 +432,22 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
-            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            // Apply comments from the type
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
+                schema.Description = typeComment.Summary;
+                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
+                {
+                    schema.Example = jsonString.Parse();
+                }
+            }
+
+            var isPropertyInlinedSchema = schema.Metadata is null
+                  || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
+                  || string.IsNullOrEmpty(schemaId as string);
+            if (isPropertyInlinedSchema && context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            {
+                // Apply comments from the property
                 if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
@@ -441,14 +455,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     {
                         schema.Example = jsonString.Parse();
                     }
-                }
-            }
-            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
-            {
-                schema.Description = typeComment.Summary;
-                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
-                {
-                    schema.Example = jsonString.Parse();
                 }
             }
             return Task.CompletedTask;

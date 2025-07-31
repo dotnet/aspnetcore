@@ -76,6 +76,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             cache.Add(@"T:ProjectBoard.ProtectedInternalElement", new XmlComment(@"Can find this XML comment.", null, null, null, null, false, null, null, null));
             cache.Add(@"T:ProjectRecord", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
             cache.Add(@"T:User", new XmlComment(null, null, null, null, null, false, null, null, null));
+            cache.Add(@"T:AddressWithSummary", new XmlComment(@"An address.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:AddressNested", new XmlComment(@"An address.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:ProjectBoard.ProtectedInternalElement.Name", new XmlComment(@"The unique identifier for the element.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:ProjectRecord.Name", new XmlComment(@"The name of the project.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:ProjectRecord.Description", new XmlComment(@"The description of the project.", null, null, null, null, false, null, null, null));
@@ -100,6 +102,12 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             cache.Add(@"P:IUser.Name", new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:User.Id", new XmlComment(@"The unique identifier for the user.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:User.Name", new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:Company.BillingAddressClassWithSummary", new XmlComment(@"Billing address.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:Company.BillingAddressClassWithoutSummary", new XmlComment(@"Billing address.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:Company.BillingAddressNested", new XmlComment(@"Billing address.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:Company.VisitingAddressClassWithSummary", new XmlComment(@"Visiting address.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:Company.VisitingAddressClassWithoutSummary", new XmlComment(@"Visiting address.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:Company.VisitingAddressNested", new XmlComment(@"Visiting address.", null, null, null, null, false, null, null, null));
 
             return cache;
         }
@@ -461,8 +469,22 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
-            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            // Apply comments from the type
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
+                schema.Description = typeComment.Summary;
+                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
+                {
+                    schema.Example = jsonString.Parse();
+                }
+            }
+
+            var isPropertyInlinedSchema = schema.Metadata is null
+                  || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
+                  || string.IsNullOrEmpty(schemaId as string);
+            if (isPropertyInlinedSchema && context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            {
+                // Apply comments from the property
                 if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
                     schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
@@ -470,14 +492,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     {
                         schema.Example = jsonString.Parse();
                     }
-                }
-            }
-            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
-            {
-                schema.Description = typeComment.Summary;
-                if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
-                {
-                    schema.Example = jsonString.Parse();
                 }
             }
             return Task.CompletedTask;
@@ -517,12 +531,13 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     file static class GeneratedServiceCollectionExtensions
     {
         [InterceptsLocation]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services)
+        public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
         {
             return services.AddOpenApi("v1", options =>
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
+                configureOptions(options);
             });
         }
 
