@@ -445,10 +445,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
             }
 
-            var isPropertyInlinedSchema = schema.Metadata is null
+            var isInlinedSchema = schema.Metadata is null
                   || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
                   || string.IsNullOrEmpty(schemaId as string);
-            if (isPropertyInlinedSchema && context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            if (isInlinedSchema && context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
                 // Apply comments from the property
                 if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
