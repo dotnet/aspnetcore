@@ -687,7 +687,7 @@ internal partial class CircuitHost : IAsyncDisposable
         }
     }
 
-    internal bool IsDisposed() =>_disposed;
+    internal bool IsDisposed() => _disposed;
 
     private void AssertNotDisposed()
     {
