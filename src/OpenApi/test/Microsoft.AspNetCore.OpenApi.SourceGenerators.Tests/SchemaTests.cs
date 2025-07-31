@@ -425,7 +425,7 @@ public class RootModel
             var modelWithoutSummary = document.Components.Schemas["ModelWithoutSummary"];
             Assert.Null(modelWithoutSummary.Description);
 
-            //Assert.DoesNotContain("ModelInline", document.Components.Schemas.Keys);
+            Assert.DoesNotContain("ModelInline", document.Components.Schemas.Keys);
             Assert.Equal("Comment on property FirstModelInline.", rootModelSchema.Properties["firstModelInline"].Description);
             Assert.Equal("Comment on property SecondModelInline.", rootModelSchema.Properties["secondModelInline"].Description);
         });
