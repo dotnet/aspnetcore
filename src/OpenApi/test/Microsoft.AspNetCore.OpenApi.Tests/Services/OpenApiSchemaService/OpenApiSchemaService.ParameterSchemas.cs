@@ -175,6 +175,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [([DefaultValue("foo")] string? id) => { }, (JsonNode defaultValue) => Assert.Equal("foo", defaultValue.GetValue<string>())],
         [([DefaultValue(null)] TaskStatus? status) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
         [([DefaultValue(TaskStatus.Canceled)] TaskStatus? status) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
+        // F# scenarios where type mismatch causes InvalidCastException and fallback to string is used
+        [([DefaultValue(10)] ulong id) => { }, (JsonNode defaultValue) => Assert.Equal("10", defaultValue.GetValue<string>())],
+        [([DefaultValue(10u)] ulong id) => { }, (JsonNode defaultValue) => Assert.Equal("10", defaultValue.GetValue<string>())],
     ];
 
     [Theory]

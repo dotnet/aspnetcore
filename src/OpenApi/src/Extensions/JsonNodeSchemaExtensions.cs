@@ -183,7 +183,18 @@ internal static class JsonNodeSchemaExtensions
         }
         else
         {
-            schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
+            try
+            {
+                schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
+            }
+            catch (InvalidCastException)
+            {
+                // Fallback to string representation when there's a type mismatch
+                var stringValue = defaultValue is IFormattable formattable 
+                    ? formattable.ToString(null, CultureInfo.InvariantCulture)
+                    : defaultValue.ToString();
+                schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonValue.Create(stringValue);
+            }
         }
     }
 
