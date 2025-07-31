@@ -1,5 +1,6 @@
 ﻿@using BlazorUnitedApp.Client.Data
 @using BlazorShared
+@using Microsoft.AspNetCore.Components.Web.Image
 @inject ClientImageRepository ImageRepository
 @inject IJSRuntime JSRuntime
 
@@ -42,8 +43,6 @@
                             Source="@GetImageSource(image.Id)"
                             Alt="@image.Title"
                             CacheStrategy="CacheStrategy.Memory"
-                            OnImageLoaded="@(() => OnImageLoaded(image.Id))"
-                            OnImageError="@((error) => OnImageError(image.Id, error))"
                             style="width: 100%; height: 100%; object-fit: cover;"/>
                             @* UseImageEndpoint = "true"/> *@
                     </div>
@@ -188,16 +187,6 @@
     {
         _showImageModal = false;
         _currentImage = null;
-    }
-
-    private void OnImageLoaded(int imageId)
-    {
-        Console.WriteLine($"Image loaded: {imageId}");
-    }
-
-    private void OnImageError(int imageId, string error)
-    {
-        Console.WriteLine($"Error loading image {imageId}: {error}");
     }
 
     private string FormatFileSize(long bytes)

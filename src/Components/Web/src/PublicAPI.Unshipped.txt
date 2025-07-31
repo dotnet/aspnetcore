@@ -32,10 +32,6 @@ Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.get -> Microsoft.JSInt
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.LoadingContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.Image.Image.LoadingContent.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.OnImageError.get -> Microsoft.AspNetCore.Components.EventCallback<string!>
-Microsoft.AspNetCore.Components.Web.Image.Image.OnImageError.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.OnImageLoaded.get -> Microsoft.AspNetCore.Components.EventCallback<bool>
-Microsoft.AspNetCore.Components.Web.Image.Image.OnImageLoaded.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.OnProgress.get -> Microsoft.AspNetCore.Components.EventCallback<double>
 Microsoft.AspNetCore.Components.Web.Image.Image.OnProgress.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.IImageSource?

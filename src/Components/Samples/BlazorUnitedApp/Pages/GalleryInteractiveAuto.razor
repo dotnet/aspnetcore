@@ -1,6 +1,7 @@
 ﻿@page "/galleryInteractiveAuto"
 @using BlazorUnitedApp.Data
 @using BlazorShared
+@using Microsoft.AspNetCore.Components.Web.Image
 @inject ServerImageRepository ImageRepository
 @inject IJSRuntime JSRuntime
 @rendermode @(new InteractiveAutoRenderMode(prerender: false))
@@ -50,8 +51,6 @@
                             Source="@GetImageSource(image.Id)"
                             Alt="@image.Title"
                             CacheStrategy="CacheStrategy.Memory"
-                            OnImageLoaded="@(() => OnImageLoaded(image.Id))"
-                            OnImageError="@((error) => OnImageError(image.Id, error))"
                             style="width: 100%; height: 100%; object-fit: cover;" />
                     </div>
                     <div class="image-info">
@@ -220,16 +219,6 @@
         {
             Console.WriteLine($"Error deleting image: {ex.Message}");
         }
-    }
-
-    private void OnImageLoaded(int imageId)
-    {
-        Console.WriteLine($"Image loaded: {imageId}");
-    }
-
-    private void OnImageError(int imageId, string error)
-    {
-        Console.WriteLine($"Error loading image {imageId}: {error}");
     }
 
     private string FormatFileSize(long bytes)

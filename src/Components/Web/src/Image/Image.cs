@@ -87,16 +87,6 @@ public class Image : ComponentBase, IAsyncDisposable
     [Parameter] public bool UseImageEndpoint { get; set; }
 
     /// <summary>
-    /// Event callback invoked when the image has loaded successfully.
-    /// </summary>
-    [Parameter] public EventCallback<bool> OnImageLoaded { get; set; }
-
-    /// <summary>
-    /// Event callback invoked when an error occurs loading the image.
-    /// </summary>
-    [Parameter] public EventCallback<string> OnImageError { get; set; }
-
-    /// <summary>
     /// Gets or sets the attributes for the image.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -227,7 +217,7 @@ public class Image : ComponentBase, IAsyncDisposable
 
                 if (foundInCache)
                 {
-                    await SetSuccessState();
+                    SetSuccessState();
                     return;
                 }
             }
@@ -248,11 +238,11 @@ public class Image : ComponentBase, IAsyncDisposable
                     "The provided image source must be either ILoadableImageSource or IStreamingImageSource.");
             }
 
-            await SetSuccessState();
+            SetSuccessState();
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await SetErrorState(ex.Message);
+            SetErrorState();
         }
     }
 
@@ -392,16 +382,16 @@ public class Image : ComponentBase, IAsyncDisposable
                 var result = await response.Content.ReadFromJsonAsync(ImageJsonSerializerContext.Default.ImageRegistrationResponse,
                    tokenSource.Token);
                 _imageEndpointUrl = result?.Url;
-                await SetSuccessState();
+                SetSuccessState();
             }
             else
             {
-                await SetErrorState($"Failed to register image: {response.StatusCode}");
+                SetErrorState();
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            await SetErrorState($"Error registering image: {ex.Message}");
+            SetErrorState();
         }
     }
 
@@ -412,20 +402,18 @@ public class Image : ComponentBase, IAsyncDisposable
         StateHasChanged();
     }
 
-    private async Task SetSuccessState()
+    private void SetSuccessState()
     {
         _isLoading = false;
         _hasError = false;
         StateHasChanged();
-        await OnImageLoaded.InvokeAsync(true);
     }
 
-    private async Task SetErrorState(string error)
+    private void SetErrorState()
     {
         _isLoading = false;
         _hasError = true;
         StateHasChanged();
-        await OnImageError.InvokeAsync(error);
     }
 
     private static RenderFragment CreateDefaultLoadingContent() => builder =>
