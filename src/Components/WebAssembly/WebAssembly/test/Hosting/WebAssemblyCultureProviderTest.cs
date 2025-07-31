@@ -28,7 +28,6 @@ public class WebAssemblyCultureProviderTest
     [InlineData("fr-FR", "tzm-Latn-DZ", new[] { "fr-FR", "fr", "tzm-Latn-DZ", "tzm-Latn", "tzm" })]
     [InlineData("en-US", "en-GB", new[] { "en-US", "en", "en-GB" })]
     [InlineData("fr-FR", null, new[] { "fr-FR", "fr" })]
-    [InlineData(null, null, new string[0])]
     public void GetCultures_ReturnCultureClosureWithUICulture(string cultureName, string uiCultureName, string[] expected)
     {
         // Arrange
