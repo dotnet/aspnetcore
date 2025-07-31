@@ -126,7 +126,7 @@ internal sealed class CertificateAuthority : IDisposable
 
     internal X509Certificate2 CloneIssuerCert()
     {
-        return new X509Certificate2(_cert.RawData);
+        return X509CertificateLoader.LoadCertificate(_cert.RawData);
     }
 
     internal void Revoke(X509Certificate2 certificate, DateTimeOffset revocationTime)

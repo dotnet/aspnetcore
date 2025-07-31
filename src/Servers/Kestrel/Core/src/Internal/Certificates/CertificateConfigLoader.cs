@@ -71,7 +71,7 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                 throw new InvalidOperationException(CoreStrings.InvalidPemKey);
             }
 
-            return (new X509Certificate2(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password), fullChain);
+            return (X509CertificateLoader.LoadPkcs12FromFile(Path.Combine(HostEnvironment.ContentRootPath, certInfo.Path!), certInfo.Password), fullChain);
         }
         else if (certInfo.IsStoreCert)
         {
@@ -86,7 +86,7 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         // We need to force the key to be persisted.
         // See https://github.com/dotnet/runtime/issues/23749
         var certificateBytes = fullCertificate.Export(X509ContentType.Pkcs12, "");
-        return new X509Certificate2(certificateBytes, "", X509KeyStorageFlags.DefaultKeySet);
+        return X509CertificateLoader.LoadPkcs12(certificateBytes, "", X509KeyStorageFlags.DefaultKeySet);
     }
 
     private static X509Certificate2 LoadCertificateKey(X509Certificate2 certificate, string keyPath, string? password)
@@ -156,7 +156,7 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
     {
         if (X509Certificate2.GetCertContentType(certificatePath) == X509ContentType.Cert)
         {
-            return new X509Certificate2(certificatePath);
+            return X509CertificateLoader.LoadCertificateFromFile(certificatePath);
         }
 
         return null;

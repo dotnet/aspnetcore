@@ -373,7 +373,7 @@ public class HttpsTests : LoggedTest
             {
                 listenOptions.UseHttps(o =>
                 {
-                    o.ServerCertificate = new X509Certificate2(_x509Certificate2);
+                    o.ServerCertificate = _x509Certificate2;
                     o.HandshakeTimeout = TimeSpan.FromMilliseconds(100);
                 });
             }))
