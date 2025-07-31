@@ -1,0 +1,517 @@
+﻿{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "testhost | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/example-class": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExampleClass"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/person": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Person"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/derived-class": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DerivedClass"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/main-class": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MainClass"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/test-interface": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ITestInterface"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/implementing-class": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImplementingClass"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/inherit-only-returns": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InheritOnlyReturns"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/inherit-all-but-remarks": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InheritAllButRemarks"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/generic-class": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenericClassOfstring"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/generic-parent": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenericParent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/params-and-param-refs": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ParamsAndParamRefs"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AggregateException": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "innerExceptions": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/Exception"
+            }
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "targetSite": {
+            "$ref": "#/components/schemas/MethodBase"
+          },
+          "data": {
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "innerException": {
+            "$ref": "#/components/schemas/Exception"
+          },
+          "helpLink": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "source": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hResult": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "stackTrace": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "DerivedClass": {
+        "type": "object",
+        "description": "A summary about this class."
+      },
+      "ExampleClass": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "The `Label` property represents a label\r\nfor this instance."
+          }
+        },
+        "description": "Every class and member should have a one sentence\r\nsummary describing its purpose."
+      },
+      "Exception": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "targetSite": {
+            "$ref": "#/components/schemas/MethodBase"
+          },
+          "message": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/GenericParent/properties/taskOfTupleProp/properties/exception/properties/innerExceptions/items/properties/data"
+          },
+          "innerException": {
+            "$ref": "#/components/schemas/Exception"
+          },
+          "helpLink": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "source": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "hResult": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "stackTrace": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "GenericClassOfstring": {
+        "type": "object",
+        "description": "This is a generic class."
+      },
+      "GenericParent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "null",
+              "integer",
+              "string"
+            ],
+            "description": "This property is a nullable value type.",
+            "format": "int32"
+          },
+          "name": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "This property is a nullable reference type."
+          },
+          "taskOfTupleProp": {
+            "$ref": "#/components/schemas/TaskOfValueTupleOfintAndstring"
+          },
+          "tupleWithGenericProp": {
+            "$ref": "#/components/schemas/ValueTupleOfintAndDictionaryOfintAndstring"
+          },
+          "tupleWithNestedGenericProp": {
+            "$ref": "#/components/schemas/ValueTupleOfintAndDictionaryOfintAndDictionaryOfstringAndint"
+          }
+        },
+        "description": "This class validates the behavior for mapping\r\ngeneric types to open generics for use in\r\ntypeof expressions."
+      },
+      "ImplementingClass": {
+        "type": "object",
+        "description": "This interface would describe all the methods in\r\nits contract."
+      },
+      "InheritAllButRemarks": {
+        "type": "object",
+        "description": "This class shows an example of sharing comments across methods."
+      },
+      "InheritOnlyReturns": {
+        "type": "object",
+        "description": "This class shows hows you can \"inherit\" the doc\r\ncomments from one method in another method."
+      },
+      "ITestInterface": {
+        "type": "object",
+        "description": "This interface would describe all the methods in\r\nits contract."
+      },
+      "MainClass": {
+        "type": "object",
+        "description": "A summary about this class."
+      },
+      "MethodBase": { },
+      "ParamsAndParamRefs": {
+        "type": "object",
+        "description": "This shows examples of typeparamref and typeparam tags"
+      },
+      "Person": {
+        "required": [
+          "firstName",
+          "lastName"
+        ],
+        "type": "object",
+        "properties": {
+          "firstName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "This tag will apply to the primary constructor parameter."
+          },
+          "lastName": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "description": "This tag will apply to the primary constructor parameter."
+          }
+        },
+        "description": "This is an example of a positional record."
+      },
+      "TaskCreationOptions": {
+        "type": "integer"
+      },
+      "TaskOfValueTupleOfintAndstring": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/ValueTupleOfintAndstring"
+          },
+          "id": {
+            "pattern": "^-?(?:0|[1-9]\\d*)$",
+            "type": [
+              "integer",
+              "string"
+            ],
+            "format": "int32"
+          },
+          "exception": {
+            "$ref": "#/components/schemas/AggregateException"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TaskStatus"
+          },
+          "isCanceled": {
+            "type": "boolean"
+          },
+          "isCompleted": {
+            "type": "boolean"
+          },
+          "isCompletedSuccessfully": {
+            "type": "boolean"
+          },
+          "creationOptions": {
+            "$ref": "#/components/schemas/TaskCreationOptions"
+          },
+          "asyncState": { },
+          "isFaulted": {
+            "type": "boolean"
+          }
+        }
+      },
+      "TaskStatus": {
+        "type": "integer"
+      },
+      "ValueTupleOfintAndDictionaryOfintAndDictionaryOfstringAndint": {
+        "type": "object"
+      },
+      "ValueTupleOfintAndDictionaryOfintAndstring": {
+        "type": "object"
+      },
+      "ValueTupleOfintAndstring": {
+        "type": "object"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "testhost"
+    }
+  ]
+}

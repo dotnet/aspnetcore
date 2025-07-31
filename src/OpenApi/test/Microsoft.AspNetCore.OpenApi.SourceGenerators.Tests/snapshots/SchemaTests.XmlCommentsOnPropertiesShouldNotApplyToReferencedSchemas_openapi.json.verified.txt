@@ -1,0 +1,116 @@
+﻿{
+  "openapi": "3.1.1",
+  "info": {
+    "title": "testhost | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/example": {
+      "post": {
+        "tags": [
+          "testhost"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RootModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ModelWithoutSummary": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
+      "ModelWithSummary": {
+        "type": [
+          "null",
+          "object"
+        ],
+        "properties": {
+          "street": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        },
+        "description": "Comment on class ModelWithSummary."
+      },
+      "RootModel": {
+        "type": "object",
+        "properties": {
+          "firstModelWithSummary": {
+            "$ref": "#/components/schemas/ModelWithSummary"
+          },
+          "secondModelWithSummary": {
+            "$ref": "#/components/schemas/ModelWithSummary"
+          },
+          "firstModelWithoutSummary": {
+            "$ref": "#/components/schemas/ModelWithoutSummary"
+          },
+          "secondModelWithoutSummary": {
+            "$ref": "#/components/schemas/ModelWithoutSummary"
+          },
+          "firstModelInline": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "street": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "description": "Comment on property FirstModelInline."
+          },
+          "secondModelInline": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "properties": {
+              "street": {
+                "type": [
+                  "null",
+                  "string"
+                ]
+              }
+            },
+            "description": "Comment on property SecondModelInline."
+          }
+        },
+        "description": "Comment on class RootModel."
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "testhost"
+    }
+  ]
+}
