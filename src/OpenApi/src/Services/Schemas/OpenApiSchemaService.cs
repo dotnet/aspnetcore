@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.OpenApi;
@@ -28,7 +29,8 @@ namespace Microsoft.AspNetCore.OpenApi;
 internal sealed class OpenApiSchemaService(
     [ServiceKey] string documentName,
     IOptions<JsonOptions> jsonOptions,
-    IOptionsMonitor<OpenApiOptions> optionsMonitor)
+    IOptionsMonitor<OpenApiOptions> optionsMonitor,
+    ILogger<OpenApiSchemaService> logger)
 {
     private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
     private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
@@ -105,7 +107,7 @@ internal sealed class OpenApiSchemaService(
                 }
                 if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DefaultValueAttribute>().LastOrDefault() is DefaultValueAttribute defaultValueAttribute)
                 {
-                    schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+                    schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo, logger);
                 }
                 if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is DescriptionAttribute descriptionAttribute)
                 {
@@ -125,7 +127,7 @@ internal sealed class OpenApiSchemaService(
         var schemaAsJsonObject = CreateSchema(key);
         if (parameterDescription is not null)
         {
-            schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
+            schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type), logger);
         }
         // Use _jsonSchemaContext constructed from _jsonSerializerOptions to respect shared config set by end-user,
         // particularly in the case of maxDepth.

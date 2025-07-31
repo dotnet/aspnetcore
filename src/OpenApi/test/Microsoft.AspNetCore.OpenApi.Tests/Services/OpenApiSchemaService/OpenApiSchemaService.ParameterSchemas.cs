@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -175,9 +176,6 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [([DefaultValue("foo")] string? id) => { }, (JsonNode defaultValue) => Assert.Equal("foo", defaultValue.GetValue<string>())],
         [([DefaultValue(null)] TaskStatus? status) => { }, (JsonNode defaultValue) => Assert.True(defaultValue is null)],
         [([DefaultValue(TaskStatus.Canceled)] TaskStatus? status) => { }, (JsonNode defaultValue) => Assert.Equal(6, defaultValue.GetValue<int>())],
-        // F# scenarios where type mismatch causes InvalidCastException and fallback to string is used
-        [([DefaultValue(10)] ulong id) => { }, (JsonNode defaultValue) => Assert.Equal("10", defaultValue.GetValue<string>())],
-        [([DefaultValue(10u)] ulong id) => { }, (JsonNode defaultValue) => Assert.Equal("10", defaultValue.GetValue<string>())],
     ];
 
     [Theory]
@@ -565,6 +563,50 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    public static object[][] RouteParametersWithDefaultValueTypeMismatch =>
+    [
+        // F# scenarios where type mismatch causes InvalidCastException and logging should occur
+        [([DefaultValue(10)] ulong id) => { }, (Action<string[]>)((logMessages) => 
+        {
+            Assert.Single(logMessages);
+            Assert.Contains("Failed to apply default value for parameter due to type mismatch", logMessages[0]);
+            Assert.Contains("Default value type: 'Int32', Parameter type: 'UInt64'", logMessages[0]);
+        })],
+        [([DefaultValue(10u)] ulong id) => { }, (Action<string[]>)((logMessages) => 
+        {
+            Assert.Single(logMessages);
+            Assert.Contains("Failed to apply default value for parameter due to type mismatch", logMessages[0]);
+            Assert.Contains("Default value type: 'UInt32', Parameter type: 'UInt64'", logMessages[0]);
+        })],
+    ];
+
+    [Theory]
+    [MemberData(nameof(RouteParametersWithDefaultValueTypeMismatch))]
+    public async Task GetOpenApiParameters_LogsWarningForDefaultValueTypeMismatch(Delegate requestHandler, Action<string[]> assertLogMessages)
+    {
+        // Arrange
+        var logMessages = new List<string>();
+        var serviceCollection = new ServiceCollection();
+        serviceCollection.AddSingleton<ILoggerProvider>(new TestLoggerProvider(logMessages));
+        serviceCollection.AddLogging();
+        
+        var builder = CreateBuilder(serviceCollection);
+        builder.MapGet("/api/{id}", requestHandler);
+
+        // Act & Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api/{id}"].Operations[HttpMethod.Get];
+            var parameter = Assert.Single(operation.Parameters);
+            
+            // Verify that no default value is set when there's a type mismatch
+            Assert.Null(parameter.Schema.Default);
+            
+            // Verify the warning log was emitted
+            assertLogMessages(logMessages.ToArray());
+        });
+    }
+
     public struct CustomType { }
 
     public class CustomTypeConverter : JsonConverter<CustomType>
@@ -810,6 +852,48 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             writer.WriteStartObject();
             writer.WriteEndObject();
+        }
+    }
+
+    public class TestLoggerProvider : ILoggerProvider
+    {
+        private readonly List<string> _logMessages;
+
+        public TestLoggerProvider(List<string> logMessages)
+        {
+            _logMessages = logMessages;
+        }
+
+        public ILogger CreateLogger(string categoryName)
+        {
+            return new TestLogger(_logMessages);
+        }
+
+        public void Dispose() { }
+    }
+
+    public class TestLogger : ILogger
+    {
+        private readonly List<string> _logMessages;
+
+        public TestLogger(List<string> logMessages)
+        {
+            _logMessages = logMessages;
+        }
+
+        public IDisposable BeginScope<TState>(TState state) => NullScope.Instance;
+
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+        {
+            _logMessages.Add(formatter(state, exception));
+        }
+
+        private class NullScope : IDisposable
+        {
+            public static NullScope Instance { get; } = new();
+            public void Dispose() { }
         }
     }
 }

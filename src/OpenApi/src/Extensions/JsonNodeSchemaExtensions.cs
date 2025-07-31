@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -170,7 +171,8 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="defaultValue">An object representing the <see cref="object"/> associated with the default value.</param>
     /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the target type.</param>
-    internal static void ApplyDefaultValue(this JsonNode schema, object? defaultValue, JsonTypeInfo? jsonTypeInfo)
+    /// <param name="logger">The logger to use for warning messages when default value type mismatches occur.</param>
+    internal static void ApplyDefaultValue(this JsonNode schema, object? defaultValue, JsonTypeInfo? jsonTypeInfo, ILogger? logger = null)
     {
         if (jsonTypeInfo is null)
         {
@@ -187,13 +189,11 @@ internal static class JsonNodeSchemaExtensions
             {
                 schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
             }
-            catch (InvalidCastException)
+            catch (Exception ex) when (ex is InvalidCastException or NotSupportedException or InvalidOperationException)
             {
-                // Fallback to string representation when there's a type mismatch
-                var stringValue = defaultValue is IFormattable formattable 
-                    ? formattable.ToString(null, CultureInfo.InvariantCulture)
-                    : defaultValue.ToString();
-                schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonValue.Create(stringValue);
+                // Log warning when there's a type mismatch that prevents serialization
+                logger?.DefaultValueTypeMismatch(defaultValue.GetType().Name, jsonTypeInfo.Type.Name);
+                // Do not apply the default value when there's a type mismatch
             }
         }
     }
@@ -316,7 +316,8 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     /// <param name="parameterDescription">The <see cref="ApiParameterDescription"/> associated with the <see paramref="schema"/>.</param>
     /// <param name="jsonTypeInfo">The <see cref="JsonTypeInfo"/> associated with the <see paramref="schema"/>.</param>
-    internal static void ApplyParameterInfo(this JsonNode schema, ApiParameterDescription parameterDescription, JsonTypeInfo? jsonTypeInfo)
+    /// <param name="logger">The logger to use for warning messages when default value type mismatches occur.</param>
+    internal static void ApplyParameterInfo(this JsonNode schema, ApiParameterDescription parameterDescription, JsonTypeInfo? jsonTypeInfo, ILogger? logger = null)
     {
         // This is special handling for parameters that are not bound from the body but represented in a complex type.
         // For example:
@@ -344,11 +345,11 @@ internal static class JsonNodeSchemaExtensions
         {
             if (parameterInfo.HasDefaultValue)
             {
-                schema.ApplyDefaultValue(parameterInfo.DefaultValue, jsonTypeInfo);
+                schema.ApplyDefaultValue(parameterInfo.DefaultValue, jsonTypeInfo, logger);
             }
             else if (parameterInfo.GetCustomAttributes<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
             {
-                schema.ApplyDefaultValue(defaultValueAttribute.Value, jsonTypeInfo);
+                schema.ApplyDefaultValue(defaultValueAttribute.Value, jsonTypeInfo, logger);
             }
 
             if (parameterInfo.GetCustomAttributes<ValidationAttribute>() is { } validationAttributes)
