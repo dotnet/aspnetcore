@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 using System.Collections;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Fakes;
@@ -1085,7 +1087,9 @@ public partial class WebHostTests
         public void Configure(IApplicationBuilder app) { }
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     private IWebHost CreateHost(RequestDelegate requestDelegate)
+#pragma warning restore CS0618 // Type or member is obsolete
     {
         var builder = CreateBuilder()
             .UseFakeServer()

@@ -3,6 +3,8 @@
 
 #nullable enable
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
