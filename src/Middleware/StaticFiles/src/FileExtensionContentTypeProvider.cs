@@ -193,6 +193,7 @@ public class FileExtensionContentTypeProvider : IContentTypeProvider
                 { ".mpp", "application/vnd.ms-project" },
                 { ".mpv2", "video/mpeg" },
                 { ".ms", "application/x-troff-ms" },
+                { ".msg", "application/vnd.ms-outlook" },
                 { ".msi", "application/octet-stream" },
                 { ".mso", "application/octet-stream" },
                 { ".mvb", "application/x-msmediaview" },
