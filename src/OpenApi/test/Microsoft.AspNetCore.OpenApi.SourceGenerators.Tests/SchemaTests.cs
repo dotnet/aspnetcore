@@ -319,18 +319,115 @@ public class Company
 
             path = document.Paths["/company"].Operations[HttpMethod.Post];
             var company = path.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("Billing address.", company.Properties["billingAddressClassWithSummary"].Description);
-            Assert.Equal("Billing address.", company.Properties["billingAddressClassWithoutSummary"].Description);
             Assert.Equal("Billing address.", company.Properties["billingAddressNested"].Description);
-            Assert.Equal("Visiting address.", company.Properties["visitingAddressClassWithSummary"].Description);
-            Assert.Equal("Visiting address.", company.Properties["visitingAddressClassWithoutSummary"].Description);
             Assert.Equal("Visiting address.", company.Properties["visitingAddressNested"].Description);
 
             var addressWithSummary = document.Components.Schemas["AddressWithSummary"];
             Assert.Equal("An address.", addressWithSummary.Description);
 
             var addressWithoutSummary = document.Components.Schemas["AddressWithoutSummary"];
-            Assert.Null(addressWithSummary.Description);
+            Assert.Null(addressWithoutSummary.Description);
+        });
+    }
+
+    [Fact]
+    public async Task XmlCommentsOnPropertiesShouldNotApplyToReferencedSchemas()
+    {
+        var source = """
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddOpenApi(options => {
+    var prevCreateSchemaReferenceId = options.CreateSchemaReferenceId;
+    options.CreateSchemaReferenceId = (x) => x.Type == typeof(ModelInline) ? null : prevCreateSchemaReferenceId(x);
+});
+
+var app = builder.Build();
+
+app.MapPost("/example", (RootModel model) => { });
+
+app.Run();
+
+/// <summary>
+/// Comment on class ModelWithSummary.
+/// </summary>
+public class ModelWithSummary
+{
+    public string Street { get; set; }
+}
+
+public class ModelWithoutSummary
+{
+    public string Street { get; set; }
+}
+
+/// <summary>
+/// Comment on class ModelInline.
+/// </summary>
+public class ModelInline
+{
+    public string Street { get; set; }
+}
+
+/// <summary>
+/// Comment on class RootModel.
+/// </summary>
+public class RootModel
+{
+    /// <summary>
+    /// Comment on property FirstModelWithSummary.
+    /// </summary>
+    public ModelWithSummary FirstModelWithSummary { get; set; }
+
+    /// <summary>
+    /// Comment on property SecondModelWithSummary.
+    /// </summary>
+    public ModelWithSummary SecondModelWithSummary { get; set; }
+
+    /// <summary>
+    /// Comment on property FirstModelWithoutSummary.
+    /// </summary>
+    public ModelWithoutSummary FirstModelWithoutSummary { get; set; }
+
+    /// <summary>
+    /// Comment on property SecondModelWithoutSummary.
+    /// </summary>
+    public ModelWithoutSummary SecondModelWithoutSummary { get; set; }
+
+    /// <summary>
+    /// Comment on property FirstModelInline.
+    /// </summary>
+    public ModelInline FirstModelInline { get; set; }
+
+    /// <summary>
+    /// Comment on property SecondModelInline.
+    /// </summary>
+    public ModelInline SecondModelInline { get; set; }
+}
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var path = document.Paths["/example"].Operations[HttpMethod.Post];
+            var exampleOperationBodySchema = path.RequestBody.Content["application/json"].Schema;
+            Assert.Equal("Comment on class RootModel.", exampleOperationBodySchema.Description);
+
+            var rootModelSchema = document.Components.Schemas["RootModel"];
+            Assert.Equal("Comment on class RootModel.", rootModelSchema.Description);
+
+            var modelWithSummary = document.Components.Schemas["ModelWithSummary"];
+            Assert.Equal("Comment on class ModelWithSummary.", modelWithSummary.Description);
+
+            var modelWithoutSummary = document.Components.Schemas["ModelWithoutSummary"];
+            Assert.Null(modelWithoutSummary.Description);
+
+            //Assert.DoesNotContain("ModelInline", document.Components.Schemas.Keys);
+            Assert.Equal("Comment on property FirstModelInline.", rootModelSchema.Properties["firstModelInline"].Description);
+            Assert.Equal("Comment on property SecondModelInline.", rootModelSchema.Properties["secondModelInline"].Description);
         });
     }
 }
