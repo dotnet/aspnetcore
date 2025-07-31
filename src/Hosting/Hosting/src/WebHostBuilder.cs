@@ -160,12 +160,14 @@ public class WebHostBuilder : IWebHostBuilder
 
         AddApplicationServices(applicationServices, hostingServiceProvider);
 
+#pragma warning disable CS0618 // Type or member is obsolete
         var host = new WebHost(
             applicationServices,
             hostingServiceProvider,
             _options,
             _config,
             hostingStartupErrors);
+#pragma warning restore CS0618 // Type or member is obsolete
         try
         {
             host.Initialize();
