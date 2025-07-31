@@ -713,6 +713,28 @@ public class CircuitRegistryTest
     }
 
     [Fact]
+    public async Task MultiplePause_DoesNotThrow()
+    {
+        var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
+        var options = new CircuitOptions();
+
+        var circuitHost = new TestCircuitHostForRaceConditions(
+            circuitIdFactory.CreateCircuitId(),
+            CreateServiceScope(),
+            options);
+
+        var persistenceProvider = new TestCircuitPersistenceProvider();
+        var registry = new TestCircuitRegistry(circuitIdFactory, options, persistenceProvider);
+        registry.Register(circuitHost);
+
+        // First pause should be successful
+        await registry.PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: true);
+
+        // Second pause - it will try to resolve services from the DI scope that is already disposed
+        await registry.PauseAndDisposeCircuitHost(circuitHost, saveStateToClient: true);
+    }
+
+    [Fact]
     public async Task PauseAfterEviction_DoesNotThrow()
     {
         var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
@@ -749,7 +771,7 @@ public class CircuitRegistryTest
         var registry = new TestCircuitRegistry(circuitIdFactory, options, persistenceProvider);
         registry.Register(circuitHost);
 
-        // Simulate race condition: eviction and termination happening concurrently
+        // We never observed any issues with eviction and termination
         await registry.SimulateEvictionAndDispose(circuitHost);
         await registry.TerminateAsync(circuitHost.CircuitId);
     }
