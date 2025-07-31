@@ -30,7 +30,7 @@ internal sealed class OpenApiSchemaService(
     [ServiceKey] string documentName,
     IOptions<JsonOptions> jsonOptions,
     IOptionsMonitor<OpenApiOptions> optionsMonitor,
-    ILogger<OpenApiSchemaService> logger)
+    ILogger<OpenApiSchemaService>? logger = null)
 {
     private readonly ConcurrentDictionary<Type, string?> _schemaIdCache = new();
     private readonly OpenApiJsonSchemaContext _jsonSchemaContext = new(new(jsonOptions.Value.SerializerOptions));
