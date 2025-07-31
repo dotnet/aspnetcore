@@ -8,8 +8,6 @@ interface ChunkedTransfer {
   elementId: string;
   receivedChunks: Uint8Array[];
   chunksReceived: number;
-  totalChunks: number;
-  totalSize: number;
   mimeType: string;
   cacheKey: string;
   cacheStrategy: string;
@@ -28,11 +26,9 @@ export class BinaryImageComponent {
   private static pendingTransfers: Map<string, ChunkedTransfer> = new Map();
 
   /**
-     * Initializes a chunked image transfer.
+     * Initializes a dynamic chunked image transfer.
      * @param elementId - The ID of the target image element
      * @param transferId - A unique ID for this transfer
-     * @param totalChunks - The total number of chunks expected
-     * @param totalSize - The total size of the complete image in bytes
      * @param mimeType - The MIME type of the image
      * @param cacheKey - A unique key for caching
      * @param cacheStrategy - The caching strategy to use
@@ -41,20 +37,16 @@ export class BinaryImageComponent {
   public static initChunkedTransfer(
     elementId: string,
     transferId: string,
-    totalChunks: number,
-    totalSize: number,
     mimeType: string,
     cacheKey: string,
     cacheStrategy: string
   ): boolean {
-    console.log(`Initializing chunked transfer ${transferId} for ${elementId} with ${totalChunks} chunks (${totalSize} bytes)`);
+    console.log(`Initializing dynamic chunked transfer ${transferId} for ${elementId}`);
 
     this.pendingTransfers.set(transferId, {
       elementId: elementId,
-      receivedChunks: new Array(totalChunks),
+      receivedChunks: [],
       chunksReceived: 0,
-      totalChunks: totalChunks,
-      totalSize: totalSize,
       mimeType: mimeType,
       cacheKey: cacheKey,
       cacheStrategy: cacheStrategy,
@@ -70,9 +62,9 @@ export class BinaryImageComponent {
   }
 
   /**
-     * Adds a chunk to an in-progress chunked transfer.
+     * Adds a chunk to an in-progress dynamic chunked transfer.
      * @param transferId - The ID of the transfer
-     * @param chunkIndex - The index of the chunk
+     * @param chunkIndex - The index of the chunk (for ordering, but chunks are appended dynamically)
      * @param chunkData - The binary data for this chunk
      * @returns True if the chunk was successfully added
      */
@@ -87,14 +79,17 @@ export class BinaryImageComponent {
       return false;
     }
 
-    transfer.receivedChunks[chunkIndex] = new Uint8Array(chunkData);
+    // Always append chunks dynamically
+    transfer.receivedChunks.push(new Uint8Array(chunkData));
     transfer.chunksReceived++;
 
-    const progress = transfer.chunksReceived / transfer.totalChunks;
     const imgElement = document.getElementById(transfer.elementId) as HTMLImageElement;
     if (imgElement) {
       imgElement.dispatchEvent(new CustomEvent('blazorImageProgress', {
-        detail: { progress: progress },
+        detail: {
+          chunksReceived: transfer.chunksReceived,
+          isDynamic: true,
+        },
       }));
     }
 
@@ -102,7 +97,7 @@ export class BinaryImageComponent {
   }
 
   /**
-     * Finalizes a chunked transfer by combining all chunks and setting the image.
+     * Finalizes a dynamic chunked transfer by combining all chunks and setting the image.
      * @param transferId - The ID of the transfer to finalize
      * @param elementId - The ID of the target image element
      * @returns True if successfully finalized
@@ -114,17 +109,12 @@ export class BinaryImageComponent {
       return false;
     }
 
-    if (transfer.chunksReceived !== transfer.totalChunks) {
-      console.error(`Not all chunks received for ${transferId}: ${transfer.chunksReceived}/${transfer.totalChunks}`);
-      return false;
-    }
-
     try {
-      // Concatenate all chunks
+      // Calculate total size and concatenate all chunks
+      const totalSize = transfer.receivedChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const completeData = new Uint8Array(totalSize);
       let offset = 0;
-      const completeData = new Uint8Array(transfer.totalSize);
-      for (let i = 0; i < transfer.totalChunks; i++) {
-        const chunk = transfer.receivedChunks[i];
+      for (const chunk of transfer.receivedChunks) {
         completeData.set(chunk, offset);
         offset += chunk.length;
       }
@@ -148,7 +138,7 @@ export class BinaryImageComponent {
           this.memoryCache.set(transfer.cacheKey, url);
         }
 
-        console.log(`Created blob URL from chunked data for ${transfer.cacheKey}: ${url}`);
+        console.log(`Created blob URL from dynamic chunked data for ${transfer.cacheKey}: ${url}`);
       }
 
       // Clean up old URL if exists
@@ -294,13 +284,7 @@ export class BinaryImageComponent {
       URL.revokeObjectURL(url);
     });
 
-    this.blobUrls.forEach(url => {
-      URL.revokeObjectURL(url);
-    });
-
     this.memoryCache.clear();
-    this.blobUrls.clear();
-    this.loadingImages.clear();
     console.log('Image cache cleared');
 
     return true;
@@ -311,6 +295,15 @@ export class BinaryImageComponent {
    * @returns True if successful
    */
   public static clearAll(): boolean {
-    return this.clearCache();
+    this.clearCache();
+
+    this.blobUrls.forEach(url => {
+      URL.revokeObjectURL(url);
+    });
+
+    this.blobUrls.clear();
+    this.loadingImages.clear();
+
+    return true;
   }
 }

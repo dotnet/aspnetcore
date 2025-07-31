@@ -49,7 +49,7 @@ public class Image : ComponentBase, IAsyncDisposable
     /// <summary>
     /// Gets or sets the source for the image.
     /// </summary>
-    [Parameter] public IImageSource? Source { get; set; }
+    [Parameter] public ImageSource? Source { get; set; }
 
     /// <summary>
     /// Gets or sets the alt text for the image.
@@ -80,11 +80,6 @@ public class Image : ComponentBase, IAsyncDisposable
     /// Gets or sets the size of the chunks used when sending image data.
     /// </summary>
     [Parameter] public int ChunkSize { get; set; } = 64 * 1024;
-
-    /// <summary>
-    /// Event callback invoked to report the progress of image loading.
-    /// </summary>
-    [Parameter] public EventCallback<double> OnProgress { get; set; }
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -165,21 +160,11 @@ public class Image : ComponentBase, IAsyncDisposable
             SetLoadingState();
 
             // Check if image is already cached before transferring data
-            string? cacheKey = null;
-            if (Source is ILoadableImageSource loadableSource)
-            {
-                cacheKey = loadableSource.CacheKey;
-            }
-            else if (Source is IStreamingImageSource streamingSource)
-            {
-                cacheKey = streamingSource.CacheKey;
-            }
-
-            if (!string.IsNullOrEmpty(cacheKey))
+            if (!string.IsNullOrEmpty(Source.CacheKey))
             {
                 bool foundInCache = await JSRuntime.InvokeAsync<bool>(
                     "Blazor._internal.BinaryImageComponent.trySetFromCache",
-                    _id, cacheKey);
+                    _id, Source.CacheKey);
 
                 if (foundInCache)
                 {
@@ -188,22 +173,8 @@ public class Image : ComponentBase, IAsyncDisposable
                 }
             }
 
-            // If not in cache, proceed with transfer
-            if (Source is IStreamingImageSource streamingSource2)
-            {
-                await StreamImageInChunks(streamingSource2);
-            }
-            else if (Source is ILoadableImageSource loadableSource2)
-            {
-                byte[] imageData = await loadableSource2.GetBytesAsync();
-                await SendImageInChunks(imageData, loadableSource2.MimeType, loadableSource2.CacheKey);
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    "The provided image source must be either ILoadableImageSource or IStreamingImageSource.");
-            }
-
+            // Stream the image data in chunks
+            await StreamImageInChunks(Source);
             SetSuccessState();
         }
         catch (Exception)
@@ -212,68 +183,21 @@ public class Image : ComponentBase, IAsyncDisposable
         }
     }
 
-    private async Task SendImageInChunks(byte[] imageData, string mimeType, string cacheKey)
+    private async Task StreamImageInChunks(ImageSource source)
     {
         try
         {
-            int totalChunks = (int)Math.Ceiling((double)imageData.Length / ChunkSize);
-            string transferId = $"{_id}-{Guid.NewGuid():N}";
-
-            byte[] chunkBuffer = ArrayPool<byte>.Shared.Rent(ChunkSize);
-
-            await JSRuntime.InvokeVoidAsync(
-                "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
-                _id, transferId, totalChunks, imageData.Length, mimeType, cacheKey,
-                CacheStrategy.ToString().ToLowerInvariant());
-            try
-            {
-                for (int i = 0; i < totalChunks; i++)
-                {
-                    int offset = i * ChunkSize;
-                    int length = Math.Min(ChunkSize, imageData.Length - offset);
-
-                    Array.Copy(imageData, offset, chunkBuffer, 0, length);
-
-                    await JSRuntime.InvokeVoidAsync(
-                        "Blazor._internal.BinaryImageComponent.addChunk",
-                        transferId, i, chunkBuffer.AsMemory(0, length).ToArray());
-
-                    double progress = (i + 1) / (double)totalChunks;
-                    await OnProgress.InvokeAsync(progress);
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(chunkBuffer);
-            }
-
-            await JSRuntime.InvokeVoidAsync(
-                    "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
-                    transferId, _id);
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException($"Failed to send chunked image data: {ex.Message}", ex);
-        }
-    }
-
-    private async Task StreamImageInChunks(IStreamingImageSource source)
-    {
-        try
-        {
-            long totalSize = await source.GetSizeAsync();
-            int totalChunks = (int)Math.Ceiling((double)totalSize / ChunkSize);
             string transferId = $"{_id}-{Guid.NewGuid():N}";
 
             await JSRuntime.InvokeVoidAsync(
                 "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
-                _id, transferId, totalChunks, totalSize, source.MimeType, source.CacheKey,
+                _id, transferId, source.MimeType, source.CacheKey,
                 CacheStrategy.ToString().ToLowerInvariant());
 
             byte[] buffer = ArrayPool<byte>.Shared.Rent(ChunkSize);
             try
             {
-                using Stream stream = await source.OpenReadStreamAsync();
+                using Stream stream = source.Stream;
                 int chunkIndex = 0;
                 int bytesRead;
 
@@ -282,9 +206,6 @@ public class Image : ComponentBase, IAsyncDisposable
                     await JSRuntime.InvokeVoidAsync(
                         "Blazor._internal.BinaryImageComponent.addChunk",
                         transferId, chunkIndex, buffer.AsMemory(0, bytesRead).ToArray());
-
-                    double progress = (chunkIndex + 1) / (double)totalChunks;
-                    await OnProgress.InvokeAsync(progress);
 
                     chunkIndex++;
                 }

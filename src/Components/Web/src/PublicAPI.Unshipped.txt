@@ -6,11 +6,6 @@ Microsoft.AspNetCore.Components.Forms.InputHidden.InputHidden() -> void
 Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
 Microsoft.AspNetCore.Components.Web.Image.CacheStrategy.Memory = 1 -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
 Microsoft.AspNetCore.Components.Web.Image.CacheStrategy.None = 0 -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
-Microsoft.AspNetCore.Components.Web.Image.IImageSource
-Microsoft.AspNetCore.Components.Web.Image.IImageSource.CacheKey.get -> string!
-Microsoft.AspNetCore.Components.Web.Image.IImageSource.MimeType.get -> string!
-Microsoft.AspNetCore.Components.Web.Image.ILoadableImageSource
-Microsoft.AspNetCore.Components.Web.Image.ILoadableImageSource.GetBytesAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<byte[]!>
 Microsoft.AspNetCore.Components.Web.Image.Image
 Microsoft.AspNetCore.Components.Web.Image.Image.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
 Microsoft.AspNetCore.Components.Web.Image.Image.AdditionalAttributes.set -> void
@@ -30,13 +25,16 @@ Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.get -> Microsoft.JSInt
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.LoadingContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.Image.Image.LoadingContent.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.OnProgress.get -> Microsoft.AspNetCore.Components.EventCallback<double>
-Microsoft.AspNetCore.Components.Web.Image.Image.OnProgress.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.IImageSource?
+Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.ImageSource?
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.set -> void
-Microsoft.AspNetCore.Components.Web.Image.IStreamingImageSource
-Microsoft.AspNetCore.Components.Web.Image.IStreamingImageSource.GetSizeAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<long>
-Microsoft.AspNetCore.Components.Web.Image.IStreamingImageSource.OpenReadStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
+Microsoft.AspNetCore.Components.Web.Image.ImageSource
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.CacheKey.get -> string?
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(byte[]! data, string! mimeType) -> void
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(byte[]! data, string! mimeType, string? cacheKey) -> void
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(System.IO.Stream! stream, string! mimeType) -> void
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(System.IO.Stream! stream, string! mimeType, string? cacheKey) -> void
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.MimeType.get -> string!
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.Stream.get -> System.IO.Stream!
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
 override Microsoft.AspNetCore.Components.Forms.InputHidden.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputHidden.TryParseValueFromString(string? value, out string? result, out string? validationErrorMessage) -> bool

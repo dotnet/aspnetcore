@@ -12,9 +12,6 @@
         <div class="host-indicator">
             Running on: <strong>Blazor Interactive WebAssembly</strong>
         </div>
-        <div class="source-toggle">
-            Currently using: <strong>@(_useStreamingSource ? "Streaming" : "Loading") Image Source</strong>
-        </div>
     </div>
 
     @if (_isLoading)
@@ -44,7 +41,6 @@
                             Alt="@image.Title"
                             CacheStrategy="CacheStrategy.Memory"
                             style="width: 100%; height: 100%; object-fit: cover;"/>
-                            @* UseImageEndpoint = "true"/> *@
                     </div>
                     <div class="image-info">
                         <h4>@image.Title</h4>
@@ -110,9 +106,7 @@
 @code {
     private bool _isLoading = true;
     private List<ImageMetadata> _images = new();
-    private Dictionary<int, BinaryImageSource> _binaryImageSources = new();
-    private Dictionary<int, StreamingImageSource> _streamingImageSources = new();
-    private bool _useStreamingSource = false;
+    private Dictionary<int, ImageSource> _imageSources = new();
 
     private bool _showImageModal = false;
     private ImageMetadata? _currentImage;
@@ -136,44 +130,25 @@
     private async Task LoadImagesAsync()
     {
         _images = await ImageRepository.GetAllImagesMetadataAsync();
-        _binaryImageSources.Clear();
-        _streamingImageSources.Clear();
+        _imageSources.Clear();
+
+        // Pre-load all image sources
+        foreach (var image in _images)
+        {
+            var imageBytes = await ImageRepository.GetImageBytesAsync(image.Id) ?? Array.Empty<byte>();
+            var imageSource = new ImageSource(imageBytes, image.MimeType, $"imgkey-{image.Id}");
+            _imageSources[image.Id] = imageSource;
+        }
     }
 
-    private IImageSource GetImageSource(int imageId)
+    private ImageSource GetImageSource(int imageId)
     {
-        var metadata = _images.FirstOrDefault(i => i.Id == imageId);
-        if (metadata == null)
-            return new BinaryImageSource("", new byte[0]);
+        // Now this is purely synchronous
+        if (_imageSources.TryGetValue(imageId, out var existingSource))
+            return existingSource;
 
-        if (_useStreamingSource)
-        {
-            if (_streamingImageSources.TryGetValue(imageId, out var streamingSource))
-                return streamingSource;
-
-            var streamingImageSource = StreamingImageSource.FromRepository(
-                imageId,
-                metadata.MimeType,
-                () => ImageRepository.GetImageBytesAsync(imageId)
-            );
-
-            _streamingImageSources[imageId] = streamingImageSource;
-            return streamingImageSource;
-        }
-        else
-        {
-            if (_binaryImageSources.TryGetValue(imageId, out var binarySource))
-                return binarySource;
-
-            var binaryImageSource = BinaryImageSource.FromRepository(
-                imageId,
-                metadata.MimeType,
-                () => ImageRepository.GetImageBytesAsync(imageId)
-            );
-
-            _binaryImageSources[imageId] = binaryImageSource;
-            return binaryImageSource;
-        }
+        // Fallback for missing images
+        return new ImageSource(new byte[0], "image/png");
     }
 
     private void OpenImageModal(ImageMetadata image)
