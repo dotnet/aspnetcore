@@ -3,9 +3,6 @@
 
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.Net.Http;
-using System.Net.Http.Json;
-using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
@@ -35,8 +32,6 @@ public class Image : ComponentBase, IAsyncDisposable
     private bool _isLoading = true;
     private bool _hasError;
     private bool _isDisposed;
-    private string? _imageEndpointUrl;
-    private bool _useImageEndpoint;
 
     /// <summary>
     /// Gets or sets the associated <see cref="ElementReference"/>.
@@ -50,11 +45,6 @@ public class Image : ComponentBase, IAsyncDisposable
     /// Gets the injected <see cref="IJSRuntime"/>.
     /// </summary>
     [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
-
-    /// <summary>
-    /// Gets the injected <see cref="HttpClient"/>.
-    /// </summary>
-    [Inject] protected HttpClient HttpClient { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the source for the image.
@@ -82,11 +72,6 @@ public class Image : ComponentBase, IAsyncDisposable
     [Parameter] public CacheStrategy CacheStrategy { get; set; } = CacheStrategy.Memory;
 
     /// <summary>
-    /// Gets or sets whether to use the HTTP endpoint approach for image delivery.
-    /// </summary>
-    [Parameter] public bool UseImageEndpoint { get; set; }
-
-    /// <summary>
     /// Gets or sets the attributes for the image.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -109,20 +94,6 @@ public class Image : ComponentBase, IAsyncDisposable
         // Set default content if not provided
         LoadingContent ??= CreateDefaultLoadingContent();
         ErrorContent ??= CreateDefaultErrorContent();
-    }
-
-    /// <inheritdoc/>
-    protected override async Task OnInitializedAsync()
-    {
-        await base.OnInitializedAsync();
-
-        _useImageEndpoint = UseImageEndpoint || (!RendererInfo.IsInteractive && Source != null);
-
-        if (_useImageEndpoint)
-        {
-            await RegisterWithImageEndpoint();
-            Console.WriteLine($"Image registered with endpoint: {_imageEndpointUrl}");
-        }
     }
 
     /// <inheritdoc />
@@ -160,11 +131,6 @@ public class Image : ComponentBase, IAsyncDisposable
             builder.AddAttribute(8, "alt", Alt);
         }
 
-        if (!string.IsNullOrEmpty(_imageEndpointUrl))
-        {
-            builder.AddAttribute(11, "src", _imageEndpointUrl);
-        }
-
         builder.AddMultipleAttributes(9, AdditionalAttributes);
         builder.AddElementReferenceCapture(10, inputReference => Element = inputReference);
 
@@ -175,7 +141,7 @@ public class Image : ComponentBase, IAsyncDisposable
     /// <inheritdoc/>
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && !_isDisposed && !_useImageEndpoint)
+        if (firstRender && !_isDisposed)
         {
             await LoadImageIfSourceProvided();
         }
@@ -338,63 +304,6 @@ public class Image : ComponentBase, IAsyncDisposable
         }
     }
 
-    private async Task RegisterWithImageEndpoint()
-    {
-        if (Source == null)
-        {
-            return;
-        }
-
-        try
-        {
-            byte[] imageData;
-            string contentType;
-
-            if (Source is ILoadableImageSource loadable)
-            {
-                imageData = await loadable.GetBytesAsync();
-                contentType = loadable.MimeType ?? "application/octet-stream";
-            }
-            else if (Source is IStreamingImageSource streaming)
-            {
-                using var stream = await streaming.OpenReadStreamAsync();
-                using var memoryStream = new MemoryStream();
-                await stream.CopyToAsync(memoryStream);
-                imageData = memoryStream.ToArray();
-                contentType = streaming.MimeType ?? "application/octet-stream";
-            }
-            else
-            {
-                throw new InvalidOperationException(
-                    "The provided image source must be either ILoadableImageSource or IStreamingImageSource.");
-            }
-
-            var requestContent = new ImageRegistrationRequest(imageData, contentType);
-
-            using var tokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            var response = await HttpClient.PostAsJsonAsync("_blazor/image/register",
-                requestContent,
-                ImageJsonSerializerContext.Default.ImageRegistrationRequest,
-                tokenSource.Token);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync(ImageJsonSerializerContext.Default.ImageRegistrationResponse,
-                   tokenSource.Token);
-                _imageEndpointUrl = result?.Url;
-                SetSuccessState();
-            }
-            else
-            {
-                SetErrorState();
-            }
-        }
-        catch (Exception)
-        {
-            SetErrorState();
-        }
-    }
-
     private void SetLoadingState()
     {
         _isLoading = true;
@@ -481,7 +390,7 @@ public class Image : ComponentBase, IAsyncDisposable
         {
             _isDisposed = true;
 
-            if (Source != null && RendererInfo.IsInteractive == true && string.IsNullOrEmpty(_imageEndpointUrl))
+            if (Source != null && RendererInfo.IsInteractive == true)
             {
                 try
                 {
@@ -496,32 +405,4 @@ public class Image : ComponentBase, IAsyncDisposable
             }
         }
     }
-
-    internal class ImageRegistrationResponse
-    {
-        public string? Url { get; set; }
-    }
-
-    internal class ImageRegistrationRequest
-    {
-        public byte[]? ImageData { get; set; }
-
-        public string? ContentType { get; set; }
-
-        public ImageRegistrationRequest(byte[] imageData, string contentType)
-        {
-            ImageData = imageData;
-            ContentType = contentType;
-        }
-
-        public ImageRegistrationRequest() { }
-    }
-
-}
-
-[JsonSourceGenerationOptions(WriteIndented = false)]
-[JsonSerializable(typeof(Image.ImageRegistrationRequest))]
-[JsonSerializable(typeof(Image.ImageRegistrationResponse))]
-internal partial class ImageJsonSerializerContext : JsonSerializerContext
-{
 }

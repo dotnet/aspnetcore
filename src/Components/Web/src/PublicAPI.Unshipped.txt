@@ -25,8 +25,6 @@ Microsoft.AspNetCore.Components.Web.Image.Image.Element.get -> Microsoft.AspNetC
 Microsoft.AspNetCore.Components.Web.Image.Image.Element.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.ErrorContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Web.Image.Image.ErrorContent.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.HttpClient.get -> System.Net.Http.HttpClient!
-Microsoft.AspNetCore.Components.Web.Image.Image.HttpClient.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Image() -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.get -> Microsoft.JSInterop.IJSRuntime!
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.set -> void
@@ -36,8 +34,6 @@ Microsoft.AspNetCore.Components.Web.Image.Image.OnProgress.get -> Microsoft.AspN
 Microsoft.AspNetCore.Components.Web.Image.Image.OnProgress.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.IImageSource?
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.UseImageEndpoint.get -> bool
-Microsoft.AspNetCore.Components.Web.Image.Image.UseImageEndpoint.set -> void
 Microsoft.AspNetCore.Components.Web.Image.IStreamingImageSource
 Microsoft.AspNetCore.Components.Web.Image.IStreamingImageSource.GetSizeAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<long>
 Microsoft.AspNetCore.Components.Web.Image.IStreamingImageSource.OpenReadStreamAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.ValueTask<System.IO.Stream!>
@@ -47,6 +43,5 @@ override Microsoft.AspNetCore.Components.Forms.InputHidden.TryParseValueFromStri
 override Microsoft.AspNetCore.Components.Web.Image.Image.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Web.Image.Image.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Web.Image.Image.OnInitialized() -> void
-override Microsoft.AspNetCore.Components.Web.Image.Image.OnInitializedAsync() -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Components.Web.Image.Image.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool

@@ -7,5 +7,3 @@ Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryMa
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryMaxRetained.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryRetentionPeriod.get -> System.TimeSpan
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryRetentionPeriod.set -> void
-Microsoft.AspNetCore.Components.Server.ImageEndpointMiddlewareExtensions
-static Microsoft.AspNetCore.Components.Server.ImageEndpointMiddlewareExtensions.UseImageEndpoint(this Microsoft.AspNetCore.Builder.IApplicationBuilder! builder) -> Microsoft.AspNetCore.Builder.IApplicationBuilder!
