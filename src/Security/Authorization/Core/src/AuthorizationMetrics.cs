@@ -18,31 +18,31 @@ internal sealed class AuthorizationMetrics
     public const string MeterName = "Microsoft.AspNetCore.Authorization";
 
     private readonly Meter _meter;
-    private readonly Counter<long> _authorizedRequestCount;
+    private readonly Counter<long> _authorizedCount;
 
     public AuthorizationMetrics(IMeterFactory meterFactory)
     {
         _meter = meterFactory.Create(MeterName);
 
-        _authorizedRequestCount = _meter.CreateCounter<long>(
+        _authorizedCount = _meter.CreateCounter<long>(
             "aspnetcore.authorization.attempts",
-            unit: "{request}",
-            description: "The total number of requests for which authorization was attempted.");
+            unit: "{attempt}",
+            description: "The total number of authorization attempts.");
     }
 
-    public void AuthorizedRequestCompleted(ClaimsPrincipal user, string? policyName, AuthorizationResult? result, Exception? exception)
+    public void AuthorizeAttemptCompleted(ClaimsPrincipal user, string? policyName, AuthorizationResult? result, Exception? exception)
     {
-        if (_authorizedRequestCount.Enabled)
+        if (_authorizedCount.Enabled)
         {
-            AuthorizedRequestCompletedCore(user, policyName, result, exception);
+            AuthorizeAttemptCore(user, policyName, result, exception);
         }
     }
 
     [MethodImpl(MethodImplOptions.NoInlining)]
-    private void AuthorizedRequestCompletedCore(ClaimsPrincipal user, string? policyName, AuthorizationResult? result, Exception? exception)
+    private void AuthorizeAttemptCore(ClaimsPrincipal user, string? policyName, AuthorizationResult? result, Exception? exception)
     {
         var tags = new TagList([
-            new("user.is_authenticated", user.Identity?.IsAuthenticated ?? false)
+            new("aspnetcore.user.is_authenticated", user.Identity?.IsAuthenticated ?? false)
         ]);
 
         if (policyName is not null)
@@ -61,6 +61,6 @@ internal sealed class AuthorizationMetrics
             tags.Add("error.type", exception.GetType().FullName);
         }
 
-        _authorizedRequestCount.Add(1, tags);
+        _authorizedCount.Add(1, tags);
     }
 }
