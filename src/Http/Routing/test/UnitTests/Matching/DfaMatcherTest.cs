@@ -59,6 +59,67 @@ public class DfaMatcherTest
     }
 
     [Fact]
+    public async Task MatchAsync_SimilarEndpoints_CanDetermine_MostSpecificOne()
+    {
+        // Arrange
+        var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                CreateEndpoint("/test/{name:required}", 0),
+                CreateEndpoint("/test/{id:guid:required}", 0),
+            });
+
+        var matcher = CreateDfaMatcher(dataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.Path = "/test/" + Guid.NewGuid().ToString();
+
+        // Act
+        await matcher.MatchAsync(httpContext);
+
+        // Assert
+        Assert.Same(dataSource.Endpoints[1], httpContext.GetEndpoint());
+    }
+
+    [Fact]
+    public async Task MatchAsync_MultipleEndpointsWithSameRequiredValues_EndpointMatched()
+    {
+        // Arrange
+        var endpoint1 = CreateEndpoint(
+            "{controller}/{action}/{id?}",
+            0,
+            requiredValues: new { controller = "Home", action = "Index", area = (string)null, page = (string)null });
+        var endpoint2 = CreateEndpoint(
+            "{controller}/{action}/{id?}",
+            0,
+            requiredValues: new { controller = "Login", action = "Index", area = (string)null, page = (string)null });
+
+        var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint1,
+                endpoint2
+            });
+
+        var matcher = CreateDfaMatcher(dataSource);
+
+        var httpContext = CreateContext();
+        httpContext.Request.Path = "/Home/Index/123";
+
+        // Act 1
+        await matcher.MatchAsync(httpContext);
+
+        // Assert 1
+        Assert.Same(endpoint1, httpContext.GetEndpoint());
+
+        httpContext.Request.Path = "/Login/Index/123";
+
+        // Act 2
+        await matcher.MatchAsync(httpContext);
+
+        // Assert 2
+        Assert.Same(endpoint2, httpContext.GetEndpoint());
+    }
+
+    [Fact]
     public async Task MatchAsync_ValidRouteConstraint_EndpointMatched()
     {
         // Arrange
