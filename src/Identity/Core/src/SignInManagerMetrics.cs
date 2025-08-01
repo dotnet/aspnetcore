@@ -12,8 +12,8 @@ internal sealed class SignInManagerMetrics : IDisposable
     public const string MeterName = "Microsoft.AspNetCore.Identity";
 
     public const string AuthenticateDurationName = "aspnetcore.identity.sign_in.authenticate.duration";
-    public const string RememberedTwoFactorCounterName = "aspnetcore.identity.sign_in.remembered_two_factor_clients";
-    public const string ForgottenTwoFactorCounterName = "aspnetcore.identity.sign_in.forgotten_two_factor_clients";
+    public const string RememberedTwoFactorCounterName = "aspnetcore.identity.sign_in.two_factor_clients_remembered";
+    public const string ForgottenTwoFactorCounterName = "aspnetcore.identity.sign_in.two_factor_clients_forgotten";
     public const string CheckPasswordAttemptsCounterName = "aspnetcore.identity.sign_in.check_password_attempts";
     public const string SignInsCounterName = "aspnetcore.identity.sign_in.sign_ins";
     public const string SignOutsCounterName = "aspnetcore.identity.sign_in.sign_outs";
@@ -33,7 +33,7 @@ internal sealed class SignInManagerMetrics : IDisposable
         _authenticateDuration = _meter.CreateHistogram<double>(AuthenticateDurationName, "s", "The duration of authenticate attempts. The authenticate metrics is recorded by sign in methods such as PasswordSignInAsync and TwoFactorSignInAsync.");
         _rememberTwoFactorClientCounter = _meter.CreateCounter<long>(RememberedTwoFactorCounterName, "{client}", "The number of two factor clients remembered.");
         _forgetTwoFactorCounter = _meter.CreateCounter<long>(ForgottenTwoFactorCounterName, "{client}", "The number of two factor clients forgotten.");
-        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordAttemptsCounterName, "{attempts}", "The number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.");
+        _checkPasswordCounter = _meter.CreateCounter<long>(CheckPasswordAttemptsCounterName, "{attempt}", "The number of check password attempts. Checks that the account is in a state that can log in and that the password is valid using the UserManager.CheckPasswordAsync method.");
         _signInsCounter = _meter.CreateCounter<long>(SignInsCounterName, "{sign_in}", "The number of calls to sign in user principals.");
         _signOutsCounter = _meter.CreateCounter<long>(SignOutsCounterName, "{sign_out}", "The number of calls to sign out user principals.");
     }
