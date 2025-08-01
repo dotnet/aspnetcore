@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Infrastructure;
@@ -121,6 +123,16 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         _started = true;
 
+        var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
+        var store = !string.IsNullOrEmpty(_persistedState) ?
+            new PrerenderComponentApplicationStore(_persistedState) :
+            new PrerenderComponentApplicationStore();
+
+        manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
+        await manager.RestoreStateAsync(store);
+
+        Console.WriteLine(CultureInfo.CurrentCulture.Name);
+
         cultureProvider ??= WebAssemblyCultureProvider.Instance!;
         cultureProvider.ThrowIfCultureChangeIsUnsupported();
 
@@ -129,13 +141,12 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         // This is the earliest opportunity to fetch satellite assemblies for this selection.
         await cultureProvider.LoadCurrentCultureResourcesAsync();
 
-        var manager = Services.GetRequiredService<ComponentStatePersistenceManager>();
-        var store = !string.IsNullOrEmpty(_persistedState) ?
-            new PrerenderComponentApplicationStore(_persistedState) :
-            new PrerenderComponentApplicationStore();
-
-        manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
-        await manager.RestoreStateAsync(store);
+        if (Services.GetService<CultureStateProvider>() is CultureStateProvider cultureStateProvider)
+        {
+            cultureStateProvider.ApplyStoredCulture();
+        }
+        
+        Console.WriteLine(CultureInfo.CurrentCulture.Name);
 
         var tcs = new TaskCompletionSource();
         using (cancellationToken.Register(() => tcs.TrySetResult()))
