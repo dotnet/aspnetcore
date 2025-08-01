@@ -522,8 +522,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(builder, document =>
         {
             var operation = document.Paths["/api"].Operations[HttpMethod.Get];
-            var parameter = Assert.Single(operation.Parameters);
-            Assert.Equal("The ID of the entity", parameter.Description);
+            Assert.Contains(operation.Parameters, actualMemory => actualMemory.Name == "id" && actualMemory.Description == "The ID of the entity");
         });
     }
 
@@ -537,8 +536,56 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         await VerifyOpenApiDocument(actionDescriptor, document =>
         {
             var operation = document.Paths["/"].Operations[HttpMethod.Get];
-            var parameter = Assert.Single(operation.Parameters);
-            Assert.Equal("The ID of the entity", parameter.Description);
+            Assert.Contains(operation.Parameters, actualMemory => actualMemory.Name == "id" && actualMemory.Description == "The ID of the entity");
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesAsParametersParametersWithDefaultValueAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/api", ([AsParameters] FromQueryModel model) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            Assert.Contains(
+                operation.Parameters,
+                actualMemory =>
+                {
+                    return actualMemory.Name == "limit" &&
+                           actualMemory.Schema != null &&
+                           actualMemory.Schema.Default != null &&
+                           actualMemory.Schema.Default.GetValueKind() == JsonValueKind.Number &&
+                           actualMemory.Schema.Default.GetValue<int>() == 20;
+                });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiParameters_HandlesFromQueryParametersWithDefaultValueAttribute()
+    {
+        // Arrange
+        var actionDescriptor = CreateActionDescriptor(nameof(TestFromQueryController.GetWithFromQueryDto), typeof(TestFromQueryController));
+
+        // Assert
+        await VerifyOpenApiDocument(actionDescriptor, document =>
+        {
+            var operation = document.Paths["/"].Operations[HttpMethod.Get];
+            Assert.Contains(
+                operation.Parameters,
+                actualMemory =>
+                {
+                    return actualMemory.Name == "limit" &&
+                           actualMemory.Schema != null &&
+                           actualMemory.Schema.Default != null &&
+                           actualMemory.Schema.Default.GetValueKind() == JsonValueKind.Number &&
+                           actualMemory.Schema.Default.GetValue<int>() == 20;
+                });
         });
     }
 
@@ -860,5 +907,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [Description("The ID of the entity")]
         [FromQuery(Name = "id")]
         public int Id { get; set; }
+
+        [Description("The maximum number of results")]
+        [FromQuery(Name = "limit")]
+        [DefaultValue(20)]
+        public int Limit { get; set; }
     }
 }
