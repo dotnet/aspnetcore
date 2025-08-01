@@ -10,7 +10,7 @@ internal sealed class DefaultSimpleMemoryPoolFactory : IMemoryPoolFactory<byte>
 {
     public static DefaultSimpleMemoryPoolFactory Instance { get; } = new DefaultSimpleMemoryPoolFactory();
 
-    public MemoryPool<byte> Create()
+    public MemoryPool<byte> Create(MemoryPoolOptions options)
     {
         return MemoryPool<byte>.Shared;
     }

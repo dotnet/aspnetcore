@@ -25,7 +25,7 @@ public class DiagnosticMemoryPoolFactory : IMemoryPoolFactory<byte>
         _pools = new List<DiagnosticMemoryPool>();
     }
 
-    public MemoryPool<byte> Create()
+    public MemoryPool<byte> Create(MemoryPoolOptions options)
     {
         lock (_pools)
         {
