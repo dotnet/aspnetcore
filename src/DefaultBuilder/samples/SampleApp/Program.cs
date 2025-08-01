@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#pragma warning disable CS0618 // Type or member is obsolete
+
 using Microsoft.AspNetCore;
 
 namespace SampleApp;
@@ -73,9 +75,12 @@ public class Program
     }
     private static void DirectWebHost(string[] args)
     {
-        // Using defaults with a Startup class
-        using (var host = WebHost.CreateDefaultBuilder(args)
-            .UseStartup<Startup>()
+        // Using defaults with HostBuilder pattern
+        using (var host = Host.CreateDefaultBuilder(args)
+            .ConfigureWebHostDefaults(webBuilder =>
+            {
+                webBuilder.UseStartup<Startup>();
+            })
             .Build())
         {
             host.Run();
