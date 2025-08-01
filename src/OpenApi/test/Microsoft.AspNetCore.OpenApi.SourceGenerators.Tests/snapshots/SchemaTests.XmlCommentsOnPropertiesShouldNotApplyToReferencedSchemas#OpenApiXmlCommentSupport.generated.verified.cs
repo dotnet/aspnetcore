@@ -70,6 +70,15 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var cache = new Dictionary<string, XmlComment>();
 
+            cache.Add(@"T:ModelWithSummary", new XmlComment(@"Comment on class ModelWithSummary.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:ModelInline", new XmlComment(@"Comment on class ModelInline.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:RootModel", new XmlComment(@"Comment on class RootModel.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:RootModel.FirstModelWithSummary", new XmlComment(@"Comment on property FirstModelWithSummary.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:RootModel.SecondModelWithSummary", new XmlComment(@"Comment on property SecondModelWithSummary.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:RootModel.FirstModelWithoutSummary", new XmlComment(@"Comment on property FirstModelWithoutSummary.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:RootModel.SecondModelWithoutSummary", new XmlComment(@"Comment on property SecondModelWithoutSummary.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:RootModel.FirstModelInline", new XmlComment(@"Comment on property FirstModelInline.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:RootModel.SecondModelInline", new XmlComment(@"Comment on property SecondModelInline.", null, null, null, null, false, null, null, null));
 
             return cache;
         }
@@ -493,40 +502,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     file static class GeneratedServiceCollectionExtensions
     {
         [InterceptsLocation]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services)
-        {
-            return services.AddOpenApi("v1", options =>
-            {
-                options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
-                options.AddOperationTransformer(new XmlCommentOperationTransformer());
-            });
-        }
-        [InterceptsLocation]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName)
-        {
-            return services.AddOpenApi(documentName, options =>
-            {
-                options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
-                options.AddOperationTransformer(new XmlCommentOperationTransformer());
-            });
-        }
-        
-        [InterceptsLocation]
         public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
         {
             return services.AddOpenApi("v1", options =>
-            {
-                options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
-                options.AddOperationTransformer(new XmlCommentOperationTransformer());
-                configureOptions(options);
-            });
-        }
-        [InterceptsLocation]
-        [InterceptsLocation]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, string documentName, Action<OpenApiOptions> configureOptions)
-        {
-            // This overload is not intercepted.
-            return OpenApiServiceCollectionExtensions.AddOpenApi(services, documentName, options =>
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
