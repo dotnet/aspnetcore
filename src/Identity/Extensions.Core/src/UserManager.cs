@@ -2067,7 +2067,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
             return false;
         }
         var lockoutTime = await store.GetLockoutEndDateAsync(user, CancellationToken).ConfigureAwait(false);
-        return lockoutTime >= DateTimeOffset.UtcNow;
+#if NET8_0_OR_GREATER
+        var utcNow = UtcNow();
+#else
+        var utcNow = DateTimeOffset.UtcNow;
+#endif
+        return lockoutTime >= utcNow;
     }
 
     /// <summary>
@@ -2186,7 +2191,12 @@ public class UserManager<TUser> : IDisposable where TUser : class
                 return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.AccessFailed).ConfigureAwait(false);
             }
             Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
-            await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
+#if NET8_0_OR_GREATER
+            var utcNow = UtcNow();
+#else
+            var utcNow = DateTimeOffset.UtcNow;
+#endif
+            await store.SetLockoutEndDateAsync(user, utcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
                 CancellationToken).ConfigureAwait(false);
             await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
             return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.AccessFailed).ConfigureAwait(false);
@@ -2678,6 +2688,14 @@ public class UserManager<TUser> : IDisposable where TUser : class
             _disposed = true;
         }
     }
+
+#if NET8_0_OR_GREATER
+    private DateTimeOffset UtcNow()
+    {
+        var timeProvider = ServiceProvider.GetService<TimeProvider>();
+        return timeProvider?.GetUtcNow() ?? DateTimeOffset.UtcNow;
+    }
+#endif
 
     private IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
     {
