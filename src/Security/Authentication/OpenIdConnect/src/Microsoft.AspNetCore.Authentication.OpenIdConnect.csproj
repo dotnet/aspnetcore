@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication.OAuth" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
   </ItemGroup>
 
