@@ -28,6 +28,7 @@ internal static class ApiDescriptionExtensions
             "HEAD" => HttpMethod.Head,
             "OPTIONS" => HttpMethod.Options,
             "TRACE" => HttpMethod.Trace,
+            "QUERY" => HttpMethod.Query,
             _ => null,
         };
 

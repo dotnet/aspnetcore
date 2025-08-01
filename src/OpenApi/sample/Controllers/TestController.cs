@@ -44,7 +44,7 @@ public class TestController : ControllerBase
     public ActionResult<CurrentWeather> NoHttpMethod()
         => Ok(new CurrentWeather(-100));
 
-    [HttpQuery] // See https://github.com/dotnet/aspnetcore/issues/61089
+    [HttpQuery]
     [Route("/query")]
     public ActionResult<CurrentWeather> HttpQueryMethod()
         => Ok(new CurrentWeather(0));
