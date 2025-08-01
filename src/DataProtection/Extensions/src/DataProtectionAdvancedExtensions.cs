@@ -131,7 +131,7 @@ public static class DataProtectionAdvancedExtensions
         }
 
 #if NET10_0_OR_GREATER
-        public bool TryGetProtectedSize(ReadOnlySpan<byte> plainText, out int cipherTextLength)
+        public int GetProtectedSize(ReadOnlySpan<byte> plainText)
         {
             if (_innerProtector is ISpanDataProtector optimizedDataProtector)
             {

@@ -17,13 +17,10 @@ public interface ISpanDataProtector : IDataProtector
 {
     /// <summary>
     /// Determines the size of the protected data in order to then use <see cref="TryProtect(ReadOnlySpan{byte}, Span{byte}, out int)"/>."/>.
-    /// <br/> Returns the boolean representing if current implementation of data protector supports <see cref="ISpanDataProtector"/> or not.
-    /// If it does not (returns false), then one needs to fallback to <see cref="IDataProtector"/> and use <see cref="IDataProtector.Protect(byte[])"/> and <see cref="IDataProtector.Unprotect(byte[])"/> methods instead.
     /// </summary>
     /// <param name="plainText">The plain text that will be encrypted later</param>
-    /// <param name="cipherTextLength">The length of the expected cipher text.</param>
-    /// <returns>true, if <see cref="ISpanDataProtector"/> is supported. False if a fallback to <see cref="IDataProtector"/> is required.</returns>
-    bool TryGetProtectedSize(ReadOnlySpan<byte> plainText, out int cipherTextLength);
+    /// <returns>The size of the protected data.</returns>
+    int GetProtectedSize(ReadOnlySpan<byte> plainText);
 
     /// <summary>
     /// Attempts to encrypt and tamper-proof a piece of data.
