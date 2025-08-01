@@ -5,6 +5,12 @@ namespace Microsoft.AspNetCore.Identity.Test;
 
 public static class MetricsHelpers
 {
+    public static void AssertHasDurationAndContainsTags(double duration, IReadOnlyDictionary<string, object> tags, List<KeyValuePair<string, object>> expectedTags)
+    {
+        Assert.True(duration > 0, "Duration should be greater than 0.");
+        AssertContainsTags(tags, expectedTags);
+    }
+
     public static void AssertContainsTags(IReadOnlyDictionary<string, object> tags, List<KeyValuePair<string, object>> expectedTags)
     {
         var found = 0;
