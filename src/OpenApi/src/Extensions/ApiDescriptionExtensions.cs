@@ -16,8 +16,8 @@ internal static class ApiDescriptionExtensions
     /// Maps the HTTP method of the ApiDescription to the HttpMethod.
     /// </summary>
     /// <param name="apiDescription">The ApiDescription to resolve an HttpMethod from.</param>
-    /// <returns>The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>.</returns>
-    public static HttpMethod GetHttpMethod(this ApiDescription apiDescription) =>
+    /// <returns>The <see cref="HttpMethod"/> associated with the given <paramref name="apiDescription"/>, if known.</returns>
+    public static HttpMethod? GetHttpMethod(this ApiDescription apiDescription) =>
         apiDescription.HttpMethod?.ToUpperInvariant() switch
         {
             "GET" => HttpMethod.Get,
@@ -28,7 +28,8 @@ internal static class ApiDescriptionExtensions
             "HEAD" => HttpMethod.Head,
             "OPTIONS" => HttpMethod.Options,
             "TRACE" => HttpMethod.Trace,
-            _ => throw new InvalidOperationException($"Unsupported HTTP method: {apiDescription.HttpMethod}"),
+            "QUERY" => HttpMethod.Query,
+            _ => null,
         };
 
     /// <summary>
