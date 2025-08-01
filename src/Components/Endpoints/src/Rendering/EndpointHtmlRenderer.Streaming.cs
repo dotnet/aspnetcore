@@ -98,7 +98,7 @@ internal partial class EndpointHtmlRenderer
         if (_options.JavaScriptInitializers != null &&
             !IsProgressivelyEnhancedNavigation(httpContext.Request))
         {
-            var initializersBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(_options.JavaScriptInitializers));
+            var initializersBase64 = ComponentsBase64Helper.ToBase64(Encoding.UTF8.GetBytes(_options.JavaScriptInitializers));
             writer.Write("<!--Blazor-Web-Initializers:");
             writer.Write(initializersBase64);
             writer.Write("-->");

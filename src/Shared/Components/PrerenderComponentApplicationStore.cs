@@ -30,9 +30,9 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple deserialize of primitive types.")]
     protected void DeserializeState(byte[] existingState)
     {
-        var state = JsonSerializer.Deserialize(
-            existingState,
-            PrerenderComponentApplicationStoreSerializerContext.Default.DictionaryStringByteArray)
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(new ComponentsBase64ByteArrayConverter());
+        var state = JsonSerializer.Deserialize<Dictionary<string, byte[]>>(existingState, options)
             ?? throw new ArgumentException("Could not deserialize state correctly", nameof(existingState));
         ExistingState = state;
     }
@@ -49,8 +49,12 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
     }
 
     [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2026:RequiresUnreferencedCode", Justification = "Simple serialize of primitive types.")]
-    protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state) =>
-        JsonSerializer.SerializeToUtf8Bytes(state);
+    protected virtual byte[] SerializeState(IReadOnlyDictionary<string, byte[]> state)
+    {
+        var options = new JsonSerializerOptions();
+        options.Converters.Add(new ComponentsBase64ByteArrayConverter());
+        return JsonSerializer.SerializeToUtf8Bytes(state, options);
+    }
 
     public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state)
     {
@@ -63,7 +67,7 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
 
         if (state is not null && state.Count > 0)
         {
-            PersistedState = Convert.ToBase64String(SerializeState(state));
+            PersistedState = ComponentsBase64Helper.ToBase64(SerializeState(state));
         }
 
         return Task.CompletedTask;
@@ -71,6 +75,31 @@ internal class PrerenderComponentApplicationStore : IPersistentComponentStateSto
 
     public virtual bool SupportsRenderMode(IComponentRenderMode renderMode) =>
         renderMode is null || renderMode is InteractiveWebAssemblyRenderMode || renderMode is InteractiveAutoRenderMode;
+}
+
+internal sealed class ComponentsBase64ByteArrayConverter : JsonConverter<byte[]>
+{
+    public override byte[] Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        var base64String = reader.GetString();
+        if (string.IsNullOrEmpty(base64String))
+        {
+            return [];
+        }
+        return Convert.FromBase64String(base64String);
+    }
+
+    public override void Write(Utf8JsonWriter writer, byte[] value, JsonSerializerOptions options)
+    {
+        if (value is null || value.Length == 0)
+        {
+            writer.WriteStringValue(string.Empty);
+        }
+        else
+        {
+            writer.WriteStringValue(ComponentsBase64Helper.ToBase64(value));
+        }
+    }
 }
 
 [JsonSerializable(typeof(Dictionary<string, byte[]>), GenerationMode = JsonSourceGenerationMode.Serialization)]

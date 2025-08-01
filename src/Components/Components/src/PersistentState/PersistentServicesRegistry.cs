@@ -229,7 +229,7 @@ internal sealed class PersistentServicesRegistry
 
             var input = Encoding.UTF8.GetBytes(inputString);
             var hash = SHA256.HashData(input);
-            return Convert.ToBase64String(hash);
+            return ComponentsBase64Helper.ToBase64(hash);
         }
 
         internal static IEnumerable<PropertyInfo> GetCandidateBindableProperties(

@@ -113,7 +113,7 @@ internal static class PersistentStateValueProviderKeyResolver
 
             var hashSucceeded = SHA256.TryHashData(keyBuffer, keyHash, out _);
             Debug.Assert(hashSucceeded);
-            return Convert.ToBase64String(keyHash);
+            return ComponentsBase64Helper.ToBase64(keyHash);
         }
         finally
         {

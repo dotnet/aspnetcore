@@ -76,7 +76,7 @@ internal partial class ResourceCollectionUrlEndpoint
     {
         Span<byte> hash = stackalloc byte[32];
         SHA256.HashData(bytes, hash);
-        return $"sha256-{Convert.ToBase64String(hash)}";
+        return $"sha256-{ComponentsBase64Helper.ToBase64(hash)}";
     }
 
     private static byte[] CreateGzipBytes(byte[] bytes)
@@ -123,7 +123,7 @@ internal partial class ResourceCollectionUrlEndpoint
         // Base64 encoding at most increases size by (4 * byteSize / 3 + 2),
         // add an extra byte for the initial dot.
         Span<char> fingerprintSpan = stackalloc char[(incrementalHash.HashLengthInBytes * 4 / 3) + 3];
-        var length = WebUtilities.WebEncoders.Base64UrlEncode(result, fingerprintSpan[1..]);
+        var length = ComponentsBase64Helper.ToBase64Url(result, fingerprintSpan[1..]);
         fingerprintSpan[0] = '.';
         return fingerprintSpan[..(length + 1)].ToString();
     }
@@ -176,7 +176,7 @@ internal partial class ResourceCollectionUrlEndpoint
         {
             Span<byte> data = stackalloc byte[32];
             SHA256.HashData(content, data);
-            return $"\"{Convert.ToBase64String(data)}\"";
+            return $"\"{ComponentsBase64Helper.ToBase64(data)}\"";
         }
 
         public async Task FingerprintedGzipContent(HttpContext context)

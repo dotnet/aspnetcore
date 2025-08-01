@@ -3,7 +3,6 @@
 
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.DataProtection;
-using Microsoft.AspNetCore.WebUtilities;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits;
 
@@ -43,7 +42,7 @@ internal sealed class CircuitIdFactory
             length: IdLength);
 
         var secret = _protector.Protect(buffer);
-        return new CircuitId(Base64UrlTextEncoder.Encode(secret), Base64UrlTextEncoder.Encode(id));
+        return new CircuitId(ComponentsBase64Helper.Base64UrlEncode(secret), ComponentsBase64Helper.Base64UrlEncode(id));
     }
 
     public bool TryParseCircuitId(string? text, out CircuitId circuitId)
@@ -56,7 +55,7 @@ internal sealed class CircuitIdFactory
 
         try
         {
-            var protectedBytes = Base64UrlTextEncoder.Decode(text);
+            var protectedBytes = ComponentsBase64Helper.Base64UrlDecode(text);
             var unprotectedBytes = _protector.Unprotect(protectedBytes);
 
             if (unprotectedBytes.Length != SecretLength)
@@ -74,7 +73,7 @@ internal sealed class CircuitIdFactory
                 destinationIndex: 0,
                 length: IdLength);
 
-            circuitId = new CircuitId(text, Base64UrlTextEncoder.Encode(id));
+            circuitId = new CircuitId(text, ComponentsBase64Helper.Base64UrlEncode(id));
             return true;
         }
         catch (Exception)
