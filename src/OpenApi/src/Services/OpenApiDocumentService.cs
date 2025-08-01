@@ -250,8 +250,13 @@ internal sealed class OpenApiDocumentService(
         foreach (var descriptions in descriptionsByPath)
         {
             Debug.Assert(descriptions.Key != null, "Relative path mapped to OpenApiPath key cannot be null.");
-            paths.Add(descriptions.Key, new OpenApiPathItem { Operations = await GetOperationsAsync(descriptions, document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken) });
+            var operations = await GetOperationsAsync(descriptions, document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
+            if (operations.Count > 0)
+            {
+                paths.Add(descriptions.Key, new OpenApiPathItem { Operations = operations });
+            }
         }
+
         return paths;
     }
 
@@ -280,7 +285,14 @@ internal sealed class OpenApiDocumentService(
             };
 
             _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, operationContext);
-            operations[description.GetHttpMethod()] = operation;
+
+            if (description.GetHttpMethod() is not { } method)
+            {
+                // Skip unsupported HTTP methods
+                continue;
+            }
+
+            operations[method] = operation;
 
             // Use index-based for loop to avoid allocating an enumerator with a foreach.
             for (var i = 0; i < operationTransformers.Length; i++)
