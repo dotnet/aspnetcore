@@ -340,7 +340,7 @@ internal static class JsonNodeSchemaExtensions
                 schema.ApplyDefaultValue(defaultValueAttribute.Value, jsonTypeInfo);
             }
 
-            if (parameterInfo.GetCustomAttributes().OfType<ValidationAttribute>() is { } validationAttributes)
+            if (parameterInfo.GetCustomAttributes<ValidationAttribute>() is { } validationAttributes)
             {
                 schema.ApplyValidationAttributes(validationAttributes);
             }
