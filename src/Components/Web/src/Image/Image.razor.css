@@ -1,0 +1,53 @@
+/* Default container styling */
+.blazor-image-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* Loading state styling */
+.image-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    min-width: 100px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    color: #6c757d;
+    font-size: 14px;
+}
+.image-loading::before {
+    content: "Loading...";
+    padding: 1rem;
+}
+
+/* Error state styling */
+.image-error {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    min-width: 100px;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    color: #721c24;
+    font-size: 14px;
+}
+
+.image-error::before {
+    content: "Failed to load image";
+    padding: 1rem;
+}
+
+/* Hide the img element when loading or in error state */
+.d-none {
+    display: none !important;
+}
+
+/* Ensure the image fits within its container by default */
+.blazor-image-container img {
+    max-width: 100%;
+    height: auto;
+}

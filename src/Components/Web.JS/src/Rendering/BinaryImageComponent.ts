@@ -79,7 +79,6 @@ export class BinaryImageComponent {
       return false;
     }
 
-    // Always append chunks dynamically
     transfer.receivedChunks.push(new Uint8Array(chunkData));
     transfer.chunksReceived++;
 
@@ -110,7 +109,6 @@ export class BinaryImageComponent {
     }
 
     try {
-      // Calculate total size and concatenate all chunks
       const totalSize = transfer.receivedChunks.reduce((sum, chunk) => sum + chunk.length, 0);
       const completeData = new Uint8Array(totalSize);
       let offset = 0;
