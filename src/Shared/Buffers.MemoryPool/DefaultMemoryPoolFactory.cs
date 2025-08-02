@@ -14,15 +14,15 @@ namespace Microsoft.AspNetCore;
 
 internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyncDisposable
 {
-    private readonly IMeterFactory? _meterFactory;
+    private readonly MemoryPoolMetrics? _metrics;
     private readonly ConcurrentDictionary<PinnedBlockMemoryPool, bool> _pools = new();
     private readonly PeriodicTimer _timer;
     private readonly Task _timerTask;
     private readonly ILogger? _logger;
 
-    public DefaultMemoryPoolFactory(IMeterFactory? meterFactory = null, ILogger<DefaultMemoryPoolFactory>? logger = null)
+    public DefaultMemoryPoolFactory(MemoryPoolMetrics? metrics = null, ILogger<DefaultMemoryPoolFactory>? logger = null)
     {
-        _meterFactory = meterFactory;
+        _metrics = metrics;
         _logger = logger;
         _timer = new PeriodicTimer(PinnedBlockMemoryPool.DefaultEvictionDelay);
         _timerTask = Task.Run(async () =>
@@ -44,9 +44,9 @@ internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyn
         });
     }
 
-    public MemoryPool<byte> Create()
+    public MemoryPool<byte> Create(MemoryPoolOptions? options = null)
     {
-        var pool = new PinnedBlockMemoryPool(_meterFactory, _logger);
+        var pool = new PinnedBlockMemoryPool(options?.Owner, _metrics, _logger);
 
         _pools.TryAdd(pool, true);
 

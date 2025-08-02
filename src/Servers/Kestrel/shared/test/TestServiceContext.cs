@@ -87,6 +87,6 @@ internal class TestServiceContext : ServiceContext
             _memoryPoolFactory = memoryPoolFactory;
         }
 
-        public MemoryPool<byte> Create() => _memoryPoolFactory();
+        public MemoryPool<byte> Create(MemoryPoolOptions options = null) => _memoryPoolFactory();
     }
 }
