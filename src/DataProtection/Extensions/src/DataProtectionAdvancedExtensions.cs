@@ -97,6 +97,9 @@ public static class DataProtectionAdvancedExtensions
     }
 
     private sealed class TimeLimitedWrappingProtector : IDataProtector
+#if NET10_0_OR_GREATER
+    , ISpanDataProtector
+#endif
     {
         public DateTimeOffset Expiration;
         private readonly ITimeLimitedDataProtector _innerProtector;
@@ -126,5 +129,28 @@ public static class DataProtectionAdvancedExtensions
 
             return _innerProtector.Unprotect(protectedData, out Expiration);
         }
+
+#if NET10_0_OR_GREATER
+        public int GetProtectedSize(ReadOnlySpan<byte> plainText)
+        {
+            if (_innerProtector is ISpanDataProtector optimizedDataProtector)
+            {
+                return optimizedDataProtector.TryGetProtectedSize(plainText, out cipherTextLength);
+            }
+
+            cipherTextLength = default;
+            return false;
+        }
+
+        public bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten)
+        {
+            if (_innerProtector is ISpanDataProtector optimizedDataProtector)
+            {
+                return optimizedDataProtector.TryProtect(plainText, destination, out bytesWritten);
+            }
+
+            throw new NotSupportedException("The inner protector does not support optimized data protection.");
+        }
+#endif
     }
 }

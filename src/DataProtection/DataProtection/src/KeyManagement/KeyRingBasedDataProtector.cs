@@ -21,18 +21,19 @@ using Microsoft.AspNetCore.DataProtection.Internal;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
-internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedDataProtector
+internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedDataProtector
 {
     // This magic header identifies a v0 protected data blob. It's the high 28 bits of the SHA1 hash of
     // "Microsoft.AspNet.DataProtection.KeyManagement.KeyRingBasedDataProtector" [US-ASCII], big-endian.
     // The last nibble reserved for version information. There's also the nice property that "F0 C9"
     // can never appear in a well-formed UTF8 sequence, so attempts to treat a protected payload as a
     // UTF8-encoded string will fail, and devs can catch the mistake early.
-    private const uint MAGIC_HEADER_V0 = 0x09F0C9F0;
+    protected const uint MAGIC_HEADER_V0 = 0x09F0C9F0;
+    protected static readonly int _magicHeaderKeyIdSize = sizeof(uint) + sizeof(Guid);
 
-    private AdditionalAuthenticatedDataTemplate _aadTemplate;
-    private readonly IKeyRingProvider _keyRingProvider;
-    private readonly ILogger? _logger;
+    protected AdditionalAuthenticatedDataTemplate _aadTemplate;
+    protected readonly IKeyRingProvider _keyRingProvider;
+    protected readonly ILogger? _logger;
 
     public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
     {
@@ -65,6 +66,17 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
     {
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
+        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+        var encryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
+        if (encryptor is ISpanAuthenticatedEncryptor)
+        {
+            return new KeyRingBasedSpanDataProtector(
+                logger: _logger,
+                keyRingProvider: _keyRingProvider,
+                originalPurposes: Purposes,
+                newPurpose: purpose);
+        }
+
         return new KeyRingBasedDataProtector(
             logger: _logger,
             keyRingProvider: _keyRingProvider,
@@ -72,7 +84,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
             newPurpose: purpose);
     }
 
-    private static string JoinPurposesForLog(IEnumerable<string> purposes)
+    protected static string JoinPurposesForLog(IEnumerable<string> purposes)
     {
         return "(" + String.Join(", ", purposes.Select(p => "'" + p + "'")) + ")";
     }
@@ -293,7 +305,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
         }
     }
 
-    private static void WriteGuid(void* ptr, Guid value)
+    protected static void WriteGuid(void* ptr, Guid value)
     {
 #if NETCOREAPP
         var span = new Span<byte>(ptr, sizeof(Guid));
@@ -309,7 +321,7 @@ internal sealed unsafe class KeyRingBasedDataProtector : IDataProtector, IPersis
 #endif
     }
 
-    private static void WriteBigEndianInteger(byte* ptr, uint value)
+    protected static void WriteBigEndianInteger(byte* ptr, uint value)
     {
         ptr[0] = (byte)(value >> 24);
         ptr[1] = (byte)(value >> 16);
