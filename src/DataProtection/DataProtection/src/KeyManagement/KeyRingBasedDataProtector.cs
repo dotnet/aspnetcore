@@ -62,9 +62,20 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
         }
     }
 
-    public virtual IDataProtector CreateProtector(string purpose)
+    public IDataProtector CreateProtector(string purpose)
     {
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
+
+        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+        var encryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
+        if (encryptor is ISpanAuthenticatedEncryptor)
+        {
+            return new KeyRingBasedSpanDataProtector(
+                logger: _logger,
+                keyRingProvider: _keyRingProvider,
+                originalPurposes: Purposes,
+                newPurpose: purpose);
+        }
 
         return new KeyRingBasedDataProtector(
             logger: _logger,

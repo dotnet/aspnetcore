@@ -19,17 +19,6 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
     {
     }
 
-    public override IDataProtector CreateProtector(string purpose)
-    {
-        ArgumentNullThrowHelper.ThrowIfNull(purpose);
-
-        return new KeyRingBasedDataProtector(
-            logger: _logger,
-            keyRingProvider: _keyRingProvider,
-            originalPurposes: Purposes,
-            newPurpose: purpose);
-    }
-
     public int GetProtectedSize(ReadOnlySpan<byte> plainText)
     {
         // Get the current key ring to access the encryptor
