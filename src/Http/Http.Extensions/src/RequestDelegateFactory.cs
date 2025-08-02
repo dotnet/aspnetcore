@@ -1385,7 +1385,9 @@ public static partial class RequestDelegateFactory
         {
             object? defaultBodyValue = null;
 
-            if (allowEmptyRequestBody && bodyType.IsValueType)
+            var isNullableType = bodyType.IsGenericType && bodyType.GetGenericTypeDefinition() == typeof(Nullable<>);
+
+            if (allowEmptyRequestBody && bodyType.IsValueType && !isNullableType) // Nullable types should be left null
             {
                 defaultBodyValue = CreateValueType(bodyType);
             }
