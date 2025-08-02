@@ -517,6 +517,28 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
+                "$ref": "#/components/schemas/JsonPatchDocument"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/json-patch-generic": {
+      "patch": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
                 "$ref": "#/components/schemas/JsonPatchDocumentOfParentObject"
               }
             }
@@ -621,6 +643,7 @@
           }
         }
       },
+      "JsonPatchDocument": { },
       "JsonPatchDocumentOfParentObject": { },
       "LocationContainer": {
         "required": [
