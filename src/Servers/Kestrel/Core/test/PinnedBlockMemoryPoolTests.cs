@@ -229,10 +229,10 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     }
 
     [Fact]
-    public void CurrentMemoryMetricTracksPooledMemory()
+    public void PooledMemoryMetricTracksPooledMemory()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var currentMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", MemoryPoolMetrics.UsedMemoryName);
+        using var currentMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", MemoryPoolMetrics.PooledMemoryName);
 
         var pool = CreateMemoryPool(owner: "test", meterFactory: testMeterFactory);
 
@@ -281,6 +281,18 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
 
         var mem1 = pool.Rent();
         var mem2 = pool.Rent();
+
+        Assert.Collection(totalMemoryMetric.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value);
+                Assert.Equal("test", (string)m.Tags["aspnetcore.memory_pool.owner"]);
+            },
+            m =>
+            {
+                Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value);
+                Assert.Equal("test", (string)m.Tags["aspnetcore.memory_pool.owner"]);
+            });
 
         // Each Rent that allocates a new block should increment total memory by block size
         Assert.Equal(2 * PinnedBlockMemoryPool.BlockSize, totalMemoryMetric.GetMeasurementSnapshot().EvaluateAsCounter());
