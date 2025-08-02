@@ -62,6 +62,9 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     private Action<object?, PinnedBlockMemoryPool>? _onPoolDisposed;
     private object? _onPoolDisposedState;
 
+    // Internal for tests.
+    internal string Owner => _owner;
+
     /// <summary>
     /// This default value passed in to Rent to use the default value for the pool.
     /// </summary>

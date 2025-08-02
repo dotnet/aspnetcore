@@ -24,9 +24,9 @@ internal sealed class PinnedBlockMemoryPoolFactory : IMemoryPoolFactory<byte>, I
         _logger = logger;
     }
 
-    public MemoryPool<byte> Create(MemoryPoolOptions options)
+    public MemoryPool<byte> Create(MemoryPoolOptions? options = null)
     {
-        var pool = new PinnedBlockMemoryPool(options.Owner, _metrics, _logger);
+        var pool = new PinnedBlockMemoryPool(options?.Owner, _metrics, _logger);
 
         _pools.TryAdd(pool, nuint.Zero);
 

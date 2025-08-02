@@ -44,7 +44,7 @@ internal sealed class DefaultMemoryPoolFactory : IMemoryPoolFactory<byte>, IAsyn
         });
     }
 
-    public MemoryPool<byte> Create(MemoryPoolOptions options)
+    public MemoryPool<byte> Create(MemoryPoolOptions? options = null)
     {
         var pool = new PinnedBlockMemoryPool(options?.Owner, _metrics, _logger);
 

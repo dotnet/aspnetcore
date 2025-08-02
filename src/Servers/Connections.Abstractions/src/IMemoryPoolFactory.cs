@@ -15,5 +15,5 @@ public interface IMemoryPoolFactory<T>
     /// </summary>
     /// <param name="options">Options for configuring the memory pool.</param>
     /// <returns>A new memory pool instance.</returns>
-    MemoryPool<T> Create(MemoryPoolOptions options);
+    MemoryPool<T> Create(MemoryPoolOptions? options = null);
 }

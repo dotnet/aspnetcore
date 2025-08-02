@@ -17,17 +17,26 @@ public class PinnedBlockMemoryPoolFactoryTests
     public void CreatePool()
     {
         var factory = CreateMemoryPoolFactory();
-        var pool = factory.Create(new MemoryPoolOptions());
+        var pool = factory.Create();
         Assert.NotNull(pool);
         Assert.IsType<PinnedBlockMemoryPool>(pool);
+    }
+
+    [Fact]
+    public void CreatePoolWithOwner()
+    {
+        var factory = CreateMemoryPoolFactory();
+        var pool = factory.Create(new MemoryPoolOptions { Owner = "test" });
+        Assert.NotNull(pool);
+        Assert.Equal("test", Assert.IsType<PinnedBlockMemoryPool>(pool).Owner);
     }
 
     [Fact]
     public void CreateMultiplePools()
     {
         var factory = CreateMemoryPoolFactory();
-        var pool1 = factory.Create(new MemoryPoolOptions());
-        var pool2 = factory.Create(new MemoryPoolOptions());
+        var pool1 = factory.Create();
+        var pool2 = factory.Create();
 
         Assert.NotNull(pool1);
         Assert.NotNull(pool2);
@@ -38,7 +47,7 @@ public class PinnedBlockMemoryPoolFactoryTests
     public void DisposePoolRemovesFromFactory()
     {
         var factory = CreateMemoryPoolFactory();
-        var pool = factory.Create(new MemoryPoolOptions());
+        var pool = factory.Create();
         Assert.NotNull(pool);
 
         var dict = (ConcurrentDictionary<PinnedBlockMemoryPool, nuint>)(typeof(PinnedBlockMemoryPoolFactory)
@@ -57,8 +66,8 @@ public class PinnedBlockMemoryPoolFactoryTests
         var factory = CreateMemoryPoolFactory(timeProvider);
 
         // Use 2 pools to make sure they all get triggered by the heartbeat
-        var pool = Assert.IsType<PinnedBlockMemoryPool>(factory.Create(new MemoryPoolOptions()));
-        var pool2 = Assert.IsType<PinnedBlockMemoryPool>(factory.Create(new MemoryPoolOptions()));
+        var pool = Assert.IsType<PinnedBlockMemoryPool>(factory.Create());
+        var pool2 = Assert.IsType<PinnedBlockMemoryPool>(factory.Create());
 
         var blocks = new List<IMemoryOwner<byte>>();
         for (var i = 0; i < 10000; i++)
