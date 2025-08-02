@@ -66,6 +66,14 @@ internal static class JsonTypeInfoExtensions
             return simpleName;
         }
 
+        // Use the same JSON Patch schema for all JSON Patch document types (JsonPatchDocument,
+        // JsonPatchDocument<T>, derived types, etc.) as otherwise we'll generate a schema
+        // per unique type which are otherwise identical to each other.
+        if (type.IsJsonPatchDocument())
+        {
+            return "JsonPatchDocument";
+        }
+
         // Although arrays are enumerable types they are not encoded correctly
         // with JsonTypeInfoKind.Enumerable so we handle the Enumerable type
         // case here.
