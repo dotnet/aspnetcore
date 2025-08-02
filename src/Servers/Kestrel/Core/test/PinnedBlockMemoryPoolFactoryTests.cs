@@ -20,6 +20,7 @@ public class PinnedBlockMemoryPoolFactoryTests
         var pool = factory.Create();
         Assert.NotNull(pool);
         Assert.IsType<PinnedBlockMemoryPool>(pool);
+        Assert.Null(Assert.IsType<PinnedBlockMemoryPool>(pool).Owner);
     }
 
     [Fact]

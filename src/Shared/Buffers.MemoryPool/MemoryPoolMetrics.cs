@@ -12,13 +12,13 @@ internal sealed class MemoryPoolMetrics
 {
     public const string MeterName = "Microsoft.AspNetCore.MemoryPool";
 
-    public const string UsedMemoryName = "aspnetcore.memory_pool.used";
+    public const string PooledMemoryName = "aspnetcore.memory_pool.pooled";
     public const string AllocatedMemoryName = "aspnetcore.memory_pool.allocated";
     public const string EvictedMemoryName = "aspnetcore.memory_pool.evicted";
     public const string RentedMemoryName = "aspnetcore.memory_pool.rented";
 
     private readonly Meter _meter;
-    private readonly UpDownCounter<long> _usedMemoryCounter;
+    private readonly UpDownCounter<long> _pooledMemoryCounter;
     private readonly Counter<long> _allocatedMemoryCounter;
     private readonly Counter<long> _evictedMemoryCounter;
     private readonly Counter<long> _rentedMemoryCounter;
@@ -27,41 +27,41 @@ internal sealed class MemoryPoolMetrics
     {
         _meter = meterFactory.Create(MeterName);
 
-        _usedMemoryCounter = _meter.CreateUpDownCounter<long>(
-            UsedMemoryName,
+        _pooledMemoryCounter = _meter.CreateUpDownCounter<long>(
+            PooledMemoryName,
             unit: "By",
-            description: "Number of bytes that are currently used by the pool.");
+            description: "Number of bytes currently held by the memory pool and available for reuse.");
 
         _allocatedMemoryCounter = _meter.CreateCounter<long>(
-           AllocatedMemoryName,
+            AllocatedMemoryName,
             unit: "By",
-            description: "Total number of allocations made by the pool.");
+            description: "Total number of allocations made by the memory pool.");
 
         _evictedMemoryCounter = _meter.CreateCounter<long>(
-           EvictedMemoryName,
+            EvictedMemoryName,
             unit: "By",
-            description: "Total number of bytes that have been evicted from the pool.");
+            description: "Total number of bytes that have been evicted from the memory pool.");
 
         _rentedMemoryCounter = _meter.CreateCounter<long>(
             RentedMemoryName,
             unit: "By",
-            description: "Total number of bytes rented from the pool.");
+            description: "Total number of bytes rented from the memory pool.");
     }
 
-    public void UpdateUsedMemory(int bytes, string? owner)
+    public void UpdatePooledMemory(int bytes, string? owner)
     {
-        if (_usedMemoryCounter.Enabled)
+        if (_pooledMemoryCounter.Enabled)
         {
-            UpdateUsedMemoryCore(bytes, owner);
+            UpdatePooledMemoryCore(bytes, owner);
         }
     }
 
-    private void UpdateUsedMemoryCore(int bytes, string? owner)
+    private void UpdatePooledMemoryCore(int bytes, string? owner)
     {
         var tags = new TagList();
         AddOwner(ref tags, owner);
 
-        _usedMemoryCounter.Add(bytes, tags);
+        _pooledMemoryCounter.Add(bytes, tags);
     }
 
     public void AddAllocatedMemory(int bytes, string? owner)

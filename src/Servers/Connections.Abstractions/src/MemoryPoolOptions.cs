@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Connections;
 /// <summary>
 /// Options for configuring a memory pool.
 /// </summary>
-public sealed class MemoryPoolOptions
+public class MemoryPoolOptions
 {
     /// <summary>
     /// Gets or sets the owner of the memory pool. This is used for logging and diagnostics purposes.

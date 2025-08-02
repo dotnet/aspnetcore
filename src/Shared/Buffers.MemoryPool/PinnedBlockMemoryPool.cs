@@ -63,7 +63,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     private object? _onPoolDisposedState;
 
     // Internal for tests.
-    internal string Owner => _owner;
+    internal string? Owner => _owner;
 
     /// <summary>
     /// This default value passed in to Rent to use the default value for the pool.
@@ -102,7 +102,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
 
         if (_blocks.TryDequeue(out var block))
         {
-            _metrics?.UpdateUsedMemory(-block.Memory.Length, _owner);
+            _metrics?.UpdatePooledMemory(-block.Memory.Length, _owner);
             _metrics?.AddRentedMemory(block.Memory.Length, _owner);
 
             // block successfully taken from the stack - return it
@@ -131,16 +131,16 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
     internal void Return(MemoryPoolBlock block)
     {
 #if BLOCK_LEASE_TRACKING
-            Debug.Assert(block.Pool == this, "Returned block was not leased from this pool");
-            Debug.Assert(block.IsLeased, $"Block being returned to pool twice: {block.Leaser}{Environment.NewLine}");
-            block.IsLeased = false;
+        Debug.Assert(block.Pool == this, "Returned block was not leased from this pool");
+        Debug.Assert(block.IsLeased, $"Block being returned to pool twice: {block.Leaser}{Environment.NewLine}");
+        block.IsLeased = false;
 #endif
 
         Interlocked.Increment(ref _returnCount);
 
         if (!_isDisposed)
         {
-            _metrics?.UpdateUsedMemory(block.Memory.Length, _owner);
+            _metrics?.UpdatePooledMemory(block.Memory.Length, _owner);
 
             _blocks.Enqueue(block);
         }
@@ -214,7 +214,7 @@ internal sealed class PinnedBlockMemoryPool : MemoryPool<byte>, IThreadPoolWorkI
         // Remove from queue and let GC clean the memory up
         while (burstAmount > 0 && _blocks.TryDequeue(out var block))
         {
-            _metrics?.UpdateUsedMemory(-block.Memory.Length, _owner);
+            _metrics?.UpdatePooledMemory(-block.Memory.Length, _owner);
             _metrics?.AddEvictedMemory(block.Memory.Length, _owner);
 
             burstAmount--;
