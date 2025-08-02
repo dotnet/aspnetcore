@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -32,6 +33,7 @@ internal static class JsonTypeInfoExtensions
         [typeof(string)] = "string",
         [typeof(IFormFile)] = "IFormFile",
         [typeof(IFormFileCollection)] = "IFormFileCollection",
+        [typeof(JsonPatchDocument)] = "JsonPatchDocument",
         [typeof(PipeReader)] = "PipeReader",
         [typeof(Stream)] = "Stream"
     };
@@ -64,6 +66,13 @@ internal static class JsonTypeInfoExtensions
         if (_simpleTypeToName.TryGetValue(type, out var simpleName))
         {
             return simpleName;
+        }
+
+        // Use the same JSON Patch schema for all generic JsonPatchDocument<T> types
+        // as otherwise we'll generate a schema per type argument which are otherwise identical.
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(JsonPatchDocument<>))
+        {
+            return _simpleTypeToName[typeof(JsonPatchDocument)];
         }
 
         // Although arrays are enumerable types they are not encoded correctly

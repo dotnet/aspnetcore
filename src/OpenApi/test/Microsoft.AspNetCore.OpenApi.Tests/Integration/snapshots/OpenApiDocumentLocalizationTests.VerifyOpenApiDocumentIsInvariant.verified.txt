@@ -1064,7 +1064,7 @@
           "content": {
             "application/json-patch+json": {
               "schema": {
-                "$ref": "#/components/schemas/JsonPatchDocumentOfParentObject"
+                "$ref": "#/components/schemas/JsonPatchDocument"
               }
             }
           },
@@ -1432,8 +1432,76 @@
           }
         }
       },
-      "JsonPatchDocument": { },
-      "JsonPatchDocumentOfParentObject": { },
+      "JsonPatchDocument": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "oneOf": [
+            {
+              "required": [
+                "op",
+                "path",
+                "value"
+              ],
+              "type": "object",
+              "properties": {
+                "op": {
+                  "enum": [
+                    "add",
+                    "replace",
+                    "test"
+                  ],
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "value": { }
+              },
+              "additionalProperties": false
+            },
+            {
+              "required": [
+                "op",
+                "path",
+                "from"
+              ],
+              "type": "object",
+              "properties": {
+                "op": {
+                  "enum": [
+                    "move",
+                    "copy"
+                  ],
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "from": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "type": "object",
+              "properties": {
+                "op": {
+                  "enum": [
+                    "remove"
+                  ],
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
       "LocationContainer": {
         "required": [
           "location"

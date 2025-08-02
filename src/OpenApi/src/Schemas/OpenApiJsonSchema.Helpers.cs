@@ -298,8 +298,14 @@ internal sealed partial class OpenApiJsonSchema
             case OpenApiSchemaKeywords.AnyOfKeyword:
                 reader.Read();
                 schema.Type = JsonSchemaType.Object;
-                var schemas = ReadList<OpenApiJsonSchema>(ref reader);
-                schema.AnyOf = schemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
+                var anyOfSchemas = ReadList<OpenApiJsonSchema>(ref reader);
+                schema.AnyOf = anyOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
+                break;
+            case OpenApiSchemaKeywords.OneOfKeyword:
+                reader.Read();
+                schema.Type = JsonSchemaType.Object;
+                var oneOfSchemas = ReadList<OpenApiJsonSchema>(ref reader);
+                schema.OneOf = oneOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
                 break;
             case OpenApiSchemaKeywords.DiscriminatorKeyword:
                 reader.Read();
