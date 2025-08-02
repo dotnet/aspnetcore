@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Metadata;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -447,7 +448,10 @@ internal sealed class OpenApiGenerator
                 return (false, ParameterLocation.Query, null);
             }
         }
-        else if (parameter.ParameterType == typeof(IFormFile) || parameter.ParameterType == typeof(IFormFileCollection))
+        else if (parameter.ParameterType == typeof(IFormFile) ||
+                 parameter.ParameterType == typeof(IFormFileCollection) ||
+                 parameter.ParameterType == typeof(JsonPatchDocument) ||
+                 parameter.ParameterType == typeof(JsonPatchDocument<>))
         {
             return (true, null, null);
         }
