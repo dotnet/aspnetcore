@@ -1,24 +1,25 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
-
 namespace Microsoft.AspNetCore.OpenApi;
 
 internal static class TypeExtensions
 {
+    private const string JsonPatchDocumentNamespace = "Microsoft.AspNetCore.JsonPatch.SystemTextJson";
+    private const string JsonPatchDocumentName = "JsonPatchDocument";
+    private const string JsonPatchDocumentNameOfT = "JsonPatchDocument`1";
+
     public static bool IsJsonPatchDocument(this Type type)
     {
-        if (type.IsAssignableTo(typeof(JsonPatchDocument)))
-        {
-            return true;
-        }
-
+        // We cannot depend on the actual runtime type as
+        // Microsoft.AspNetCore.JsonPatch.SystemTextJson is not
+        // AoT compatible so cannot be referenced by Microsoft.AspNetCore.OpenApi.
         var modelType = type;
 
         while (modelType != null && modelType != typeof(object))
         {
-            if (modelType.IsGenericType && modelType.GetGenericTypeDefinition() == typeof(JsonPatchDocument<>))
+            if (modelType.Namespace == JsonPatchDocumentNamespace &&
+                (modelType.Name == JsonPatchDocumentName || modelType.Name.StartsWith(JsonPatchDocumentNameOfT, StringComparison.Ordinal)))
             {
                 return true;
             }
