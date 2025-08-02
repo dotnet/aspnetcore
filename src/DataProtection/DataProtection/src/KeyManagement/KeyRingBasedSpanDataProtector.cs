@@ -24,29 +24,22 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return new KeyRingBasedDataProtector(
-            logger: Logger,
-            keyRingProvider: KeyRingProvider,
+            logger: _logger,
+            keyRingProvider: _keyRingProvider,
             originalPurposes: Purposes,
             newPurpose: purpose);
     }
 
-    public bool TryGetProtectedSize(ReadOnlySpan<byte> plainText, out int cipherTextLength)
+    public int GetProtectedSize(ReadOnlySpan<byte> plainText)
     {
-        cipherTextLength = default;
-
         // Get the current key ring to access the encryptor
-        var currentKeyRing = KeyRingProvider.GetCurrentKeyRing();
-        var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
-        if (defaultEncryptor is not ISpanAuthenticatedEncryptor optimizedAuthenticatedEncryptor)
-        {
-            return false;
-        }
-        CryptoUtil.Assert(optimizedAuthenticatedEncryptor != null, "optimizedAuthenticatedEncryptor != null");
+        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+        var defaultEncryptor = (ISpanAuthenticatedEncryptor)currentKeyRing.DefaultAuthenticatedEncryptor!;
+        CryptoUtil.Assert(defaultEncryptor != null, "DefaultAuthenticatedEncryptor != null");
 
         // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
         // See Protect() / TryProtect() for details
-        cipherTextLength = _magicHeaderKeyIdSize + optimizedAuthenticatedEncryptor.GetEncryptedSize(plainText.Length);
-        return true;
+        return _magicHeaderKeyIdSize + defaultEncryptor.GetEncryptedSize(plainText.Length);
     }
 
     public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
@@ -54,28 +47,24 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
         try
         {
             // Perform the encryption operation using the current default encryptor.
-            var currentKeyRing = KeyRingProvider.GetCurrentKeyRing();
+            var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
             var defaultKeyId = currentKeyRing.DefaultKeyId;
-            var defaultEncryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
-            if (defaultEncryptor is not ISpanAuthenticatedEncryptor spanEncryptor)
-            {
-                throw new NotSupportedException("The current default encryptor does not support optimized protection.");
-            }
-            CryptoUtil.Assert(spanEncryptor != null, "optimizedAuthenticatedEncryptor != null");
+            var defaultEncryptor = (ISpanAuthenticatedEncryptor)currentKeyRing.DefaultAuthenticatedEncryptor!;
+            CryptoUtil.Assert(defaultEncryptor != null, "DefaultAuthenticatedEncryptor != null");
 
-            if (Logger.IsDebugLevelEnabled())
+            if (_logger.IsDebugLevelEnabled())
             {
-                Logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
+                _logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
             }
 
             // We'll need to apply the default key id to the template if it hasn't already been applied.
             // If the default key id has been updated since the last call to Protect, also write back the updated template.
-            var aad = GetAadForKey(defaultKeyId, isProtecting: true);
+            var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
 
             var preBufferSize = _magicHeaderKeyIdSize;
             var postBufferSize = 0;
             var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - (preBufferSize + postBufferSize));
-            var success = spanEncryptor.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
+            var success = defaultEncryptor.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
 
             // At this point: destination := { 000..000 || encryptorSpecificProtectedPayload },
             // where 000..000 is a placeholder for our magic header and key id.
@@ -104,14 +93,5 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             // homogenize all errors to CryptographicException
             throw Error.Common_EncryptionFailed(ex);
         }
-    }
-
-    public int GetProtectedSize(ReadOnlySpan<byte> plainText)
-    {
-        if (!TryGetProtectedSize(plainText, out int cipherTextLength))
-        {
-            throw new NotSupportedException("The current default encryptor does not support optimized protection.");
-        }
-        return cipherTextLength;
     }
 }
