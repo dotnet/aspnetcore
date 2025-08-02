@@ -13,7 +13,6 @@ using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -83,7 +82,7 @@ internal sealed class OpenApiSchemaService(
                     }
                 };
             }
-            else if (type == typeof(JsonPatchDocument) || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(JsonPatchDocument<>)))
+            else if (type.IsJsonPatchDocument())
             {
                 schema = CreateSchemaForJsonPatch();
             }

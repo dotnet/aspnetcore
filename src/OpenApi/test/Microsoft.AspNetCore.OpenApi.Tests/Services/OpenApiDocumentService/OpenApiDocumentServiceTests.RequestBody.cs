@@ -1153,6 +1153,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
         });
     }
 
@@ -1206,6 +1208,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
         });
     }
 
@@ -1227,6 +1231,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/vnd.github.patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
         });
     }
 
@@ -1248,6 +1254,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/vnd.github.patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
         });
     }
 
@@ -1270,6 +1278,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
         });
     }
 
@@ -1323,6 +1333,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
         });
     }
 
@@ -1345,6 +1357,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/vnd.github.patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
         });
     }
 
@@ -1366,6 +1380,8 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/vnd.github.patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
         });
     }
 
@@ -1379,4 +1395,56 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         public string? Second { get; set; }
     }
 #nullable restore
+
+    [Fact]
+    public async Task GetRequestBody_HandlesCustomJsonPatchBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", (CustomJsonPatchDocument patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.False(operation.RequestBody.Required);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+    private class CustomJsonPatchDocument : JsonPatchDocument;
+
+    [Fact]
+    public async Task GetRequestBody_HandlesGenericCustomJsonPatchBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", (CustomJsonPatchDocument<JsonPatchModel> patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.False(operation.RequestBody.Required);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+    private class CustomJsonPatchDocument<T> : JsonPatchDocument<T> where T : class;
 }
