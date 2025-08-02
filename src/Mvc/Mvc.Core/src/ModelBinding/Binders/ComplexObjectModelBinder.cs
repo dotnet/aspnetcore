@@ -364,7 +364,7 @@ public sealed partial class ComplexObjectModelBinder : IModelBinder
             }
 
             var fieldName = property.BinderModelName ?? property.PropertyName!;
-            var modelName = ModelNames.CreatePropertyModelName(bindingContext.ModelName, fieldName);
+            var modelName = ModelNames.CreatePropertyModelNameOptimized(bindingContext.ModelName, fieldName);
             var result = await BindPropertyAsync(bindingContext, property, propertyBinder, fieldName, modelName);
 
             if (result.IsModelSet)
