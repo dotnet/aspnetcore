@@ -8,13 +8,14 @@ using System.Security.Claims;
 
 namespace Microsoft.Extensions.Validation.Tests;
 
-public class RuntimeValidatableParameterInfoResolverTests
+public class RuntimeValidatableInfoResolverTests
 {
     private readonly RuntimeValidatableParameterInfoResolver _resolver = new();
 
     [Fact]
-    public void TryGetValidatableTypeInfo_AlwaysReturnsFalse()
+    public void TryGetValidatableTypeInfo_WithStringType_ReturnsFalse()
     {
+        // String types should not be validatable at the type level
         var result = _resolver.TryGetValidatableTypeInfo(typeof(string), out var validatableInfo);
 
         Assert.False(result);
