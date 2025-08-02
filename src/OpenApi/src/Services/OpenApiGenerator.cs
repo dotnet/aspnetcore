@@ -451,7 +451,7 @@ internal sealed class OpenApiGenerator
         else if (parameter.ParameterType == typeof(IFormFile) ||
                  parameter.ParameterType == typeof(IFormFileCollection) ||
                  parameter.ParameterType == typeof(JsonPatchDocument) ||
-                 parameter.ParameterType == typeof(JsonPatchDocument<>))
+                 (parameter.ParameterType.IsGenericType && parameter.ParameterType.GetGenericTypeDefinition() == typeof(JsonPatchDocument<>)))
         {
             return (true, null, null);
         }
