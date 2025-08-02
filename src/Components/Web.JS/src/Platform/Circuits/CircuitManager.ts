@@ -3,7 +3,7 @@
 
 import { internalFunctions as navigationManagerFunctions } from '../../Services/NavigationManager';
 import { toLogicalRootCommentElement, LogicalElement, toLogicalElement } from '../../Rendering/LogicalElements';
-import { ServerComponentDescriptor, descriptorToMarker } from '../../Services/ComponentDescriptorDiscovery';
+import { ServerComponentDescriptor, descriptorToMarker, discoverServerPersistedState } from '../../Services/ComponentDescriptorDiscovery';
 import { HttpTransportType, HubConnection, HubConnectionBuilder, HubConnectionState, LogLevel } from '@microsoft/signalr';
 import { getAndRemovePendingRootComponentContainer } from '../../Rendering/JSRootComponents';
 import { RootComponentManager } from '../../Services/RootComponentManager';
@@ -41,8 +41,6 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
 
   private _startPromise?: Promise<boolean>;
 
-  private _firstUpdate = true;
-
   private _renderingFailed = false;
 
   private _disposePromise?: Promise<void>;
@@ -56,6 +54,8 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
   private _disconnectingState = new CircuitState<void>('disconnecting');
 
   private _persistedCircuitState?: { components: string, applicationState: string };
+
+  private _isFirstRender = true;
 
   public constructor(
     componentManager: RootComponentManager<ServerComponentDescriptor>,
@@ -84,13 +84,12 @@ export class CircuitManager implements DotNet.DotNetCallDispatcher {
     return this._startPromise;
   }
 
-  public updateRootComponents(operations: string): Promise<void> | undefined {
-    if (this._firstUpdate) {
-      // Only send the application state on the first update.
-      this._firstUpdate = false;
+  public updateRootComponents(operations: string, serverState: string): Promise<void> | undefined {
+    if (this._isFirstRender) {
+      this._isFirstRender = false;
       return this._connection?.send('UpdateRootComponents', operations, this._applicationState);
     } else {
-      return this._connection?.send('UpdateRootComponents', operations, '');
+      return this._connection?.send('UpdateRootComponents', operations, serverState);
     }
   }
 

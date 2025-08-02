@@ -50,6 +50,6 @@ internal sealed class ServerComponentSerializer
 
         var serializedServerComponentBytes = JsonSerializer.SerializeToUtf8Bytes(serverComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
         var protectedBytes = _dataProtector.Protect(serializedServerComponentBytes, dataExpiration);
-        return (serverComponent.Sequence, Convert.ToBase64String(protectedBytes));
+        return (serverComponent.Sequence, ComponentsBase64Helper.ToBase64(protectedBytes));
     }
 }

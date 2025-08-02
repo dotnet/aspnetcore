@@ -412,6 +412,7 @@ public class CircuitPersistenceManagerTest
             .AddSingleton(dataProtectionProvider)
             .AddSingleton<ServerComponentSerializer>()
             .AddSupplyValueFromPersistentComponentStateProvider()
+            .AddFakeLogging()
             .AddSingleton(
                 sp => new ComponentStatePersistenceManager(
                     NullLoggerFactory.Instance.CreateLogger<ComponentStatePersistenceManager>(),
@@ -464,6 +465,7 @@ public class CircuitPersistenceManagerTest
         await circuitHost.UpdateRootComponents(
             CreateBatch(components, deserializer, dataProtectionProvider),
             store,
+            false,
             default);
 
         return circuitHost;
