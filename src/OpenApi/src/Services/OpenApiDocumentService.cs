@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Metadata;
-using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -721,7 +720,7 @@ internal sealed class OpenApiDocumentService(
                 // for stream-based parameter types.
                 supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/octet-stream" }];
             }
-            else if (bodyParameter.Type == typeof(JsonPatchDocument) || (bodyParameter.Type.IsGenericType && bodyParameter.Type.GetGenericTypeDefinition() == typeof(JsonPatchDocument<>)))
+            else if (bodyParameter.Type.IsJsonPatchDocument())
             {
                 // Assume "application/json-patch+json" as the default media type
                 // for JSON Patch documents.
