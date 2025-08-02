@@ -4,11 +4,8 @@
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
-using System.Buffers.Text;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -28,11 +25,13 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
     // The last nibble reserved for version information. There's also the nice property that "F0 C9"
     // can never appear in a well-formed UTF8 sequence, so attempts to treat a protected payload as a
     // UTF8-encoded string will fail, and devs can catch the mistake early.
-    private const uint MAGIC_HEADER_V0 = 0x09F0C9F0;
+    protected const uint MAGIC_HEADER_V0 = 0x09F0C9F0;
 
-    private AdditionalAuthenticatedDataTemplate _aadTemplate;
-    private readonly IKeyRingProvider _keyRingProvider;
-    private readonly ILogger? _logger;
+    protected AdditionalAuthenticatedDataTemplate _aadTemplate;
+    protected readonly IKeyRingProvider _keyRingProvider;
+    protected readonly ILogger? _logger;
+
+    protected static readonly int _magicHeaderKeyIdSize = sizeof(uint) + sizeof(Guid);
 
     public KeyRingBasedDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
     {
@@ -45,6 +44,9 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
     }
 
     internal string[] Purposes { get; }
+
+    protected IKeyRingProvider KeyRingProvider => _keyRingProvider;
+    protected ILogger? Logger => _logger;
 
     private static string[] ConcatPurposes(string[]? originalPurposes, string newPurpose)
     {
@@ -61,55 +63,47 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
         }
     }
 
-    public IDataProtector CreateProtector(string purpose)
+    public virtual IDataProtector CreateProtector(string purpose)
     {
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         return new KeyRingBasedDataProtector(
-            logger: _logger,
-            keyRingProvider: _keyRingProvider,
+            logger: Logger,
+            keyRingProvider: KeyRingProvider,
             originalPurposes: Purposes,
             newPurpose: purpose);
     }
 
-    private static string JoinPurposesForLog(IEnumerable<string> purposes)
+    protected static string JoinPurposesForLog(IEnumerable<string> purposes)
     {
         return "(" + String.Join(", ", purposes.Select(p => "'" + p + "'")) + ")";
     }
 
-    // allows decrypting payloads whose keys have been revoked
-    public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
+    protected byte[] GetAadForKey(Guid keyId, bool isProtecting)
     {
-        // argument & state checking
-        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
-
-        UnprotectStatus status;
-        var retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
-        requiresMigration = (status != UnprotectStatus.Ok);
-        wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
-        return retVal;
+        return _aadTemplate.GetAadForKey(keyId, isProtecting);
     }
 
-    public byte[] Protect(byte[] plaintext)
+    protected byte[] ProtectCore(byte[] plaintext)
     {
         ArgumentNullThrowHelper.ThrowIfNull(plaintext);
 
         try
         {
             // Perform the encryption operation using the current default encryptor.
-            var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
+            var currentKeyRing = KeyRingProvider.GetCurrentKeyRing();
             var defaultKeyId = currentKeyRing.DefaultKeyId;
             var defaultEncryptorInstance = currentKeyRing.DefaultAuthenticatedEncryptor;
             CryptoUtil.Assert(defaultEncryptorInstance != null, "defaultEncryptorInstance != null");
 
-            if (_logger.IsDebugLevelEnabled())
+            if (Logger.IsDebugLevelEnabled())
             {
-                _logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
+                Logger.PerformingProtectOperationToKeyWithPurposes(defaultKeyId, JoinPurposesForLog(Purposes));
             }
 
             // We'll need to apply the default key id to the template if it hasn't already been applied.
             // If the default key id has been updated since the last call to Protect, also write back the updated template.
-            var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
+            var aad = GetAadForKey(defaultKeyId, isProtecting: true);
 
             // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
             var retVal = defaultEncryptorInstance.Encrypt(
@@ -140,54 +134,29 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
         }
     }
 
-    private static Guid ReadGuid(void* ptr)
-    {
-#if NETCOREAPP
-        // Performs appropriate endianness fixups
-        return new Guid(new ReadOnlySpan<byte>(ptr, sizeof(Guid)));
-#elif NETSTANDARD2_0 || NETFRAMEWORK
-        Debug.Assert(BitConverter.IsLittleEndian);
-        return Unsafe.ReadUnaligned<Guid>(ptr);
-#else
-#error Update target frameworks
-#endif
-    }
-
-    private static uint ReadBigEndian32BitInteger(byte* ptr)
-    {
-        return ((uint)ptr[0] << 24)
-            | ((uint)ptr[1] << 16)
-            | ((uint)ptr[2] << 8)
-            | ((uint)ptr[3]);
-    }
-
-    private static bool TryGetVersionFromMagicHeader(uint magicHeader, out int version)
-    {
-        const uint MAGIC_HEADER_VERSION_MASK = 0xFU;
-        if ((magicHeader & ~MAGIC_HEADER_VERSION_MASK) == MAGIC_HEADER_V0)
-        {
-            version = (int)(magicHeader & MAGIC_HEADER_VERSION_MASK);
-            return true;
-        }
-        else
-        {
-            version = default(int);
-            return false;
-        }
-    }
-
-    public byte[] Unprotect(byte[] protectedData)
+    protected byte[] UnprotectCore(byte[] protectedData)
     {
         ArgumentNullThrowHelper.ThrowIfNull(protectedData);
 
         // Argument checking will be done by the callee
-        return DangerousUnprotect(protectedData,
-            ignoreRevocationErrors: false,
-            requiresMigration: out _,
-            wasRevoked: out _);
+        UnprotectStatus status;
+        var retVal = UnprotectCoreInternal(protectedData, allowOperationsOnRevokedKeys: false, status: out status);
+        return retVal;
     }
 
-    private byte[] UnprotectCore(byte[] protectedData, bool allowOperationsOnRevokedKeys, out UnprotectStatus status)
+    protected byte[] DangerousUnprotectCore(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
+    {
+        // argument & state checking
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
+
+        UnprotectStatus status;
+        var retVal = UnprotectCoreInternal(protectedData, ignoreRevocationErrors, status: out status);
+        requiresMigration = (status != UnprotectStatus.Ok);
+        wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
+        return retVal;
+    }
+
+    protected byte[] UnprotectCoreInternal(byte[] protectedData, bool allowOperationsOnRevokedKeys, out UnprotectStatus status)
     {
         Debug.Assert(protectedData != null);
 
@@ -293,7 +262,59 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
         }
     }
 
-    private static void WriteGuid(void* ptr, Guid value)
+    // allows decrypting payloads whose keys have been revoked
+    public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
+    {
+        return DangerousUnprotectCore(protectedData, ignoreRevocationErrors, out requiresMigration, out wasRevoked);
+    }
+
+    public byte[] Protect(byte[] plaintext)
+    {
+        return ProtectCore(plaintext);
+    }
+
+    public byte[] Unprotect(byte[] protectedData)
+    {
+        return UnprotectCore(protectedData);
+    }
+
+    protected static Guid ReadGuid(void* ptr)
+    {
+#if NETCOREAPP
+        // Performs appropriate endianness fixups
+        return new Guid(new ReadOnlySpan<byte>(ptr, sizeof(Guid)));
+#elif NETSTANDARD2_0 || NETFRAMEWORK
+        Debug.Assert(BitConverter.IsLittleEndian);
+        return Unsafe.ReadUnaligned<Guid>(ptr);
+#else
+#error Update target frameworks
+#endif
+    }
+
+    protected static uint ReadBigEndian32BitInteger(byte* ptr)
+    {
+        return ((uint)ptr[0] << 24)
+            | ((uint)ptr[1] << 16)
+            | ((uint)ptr[2] << 8)
+            | ((uint)ptr[3]);
+    }
+
+    protected static bool TryGetVersionFromMagicHeader(uint magicHeader, out int version)
+    {
+        const uint MAGIC_HEADER_VERSION_MASK = 0xFU;
+        if ((magicHeader & ~MAGIC_HEADER_VERSION_MASK) == MAGIC_HEADER_V0)
+        {
+            version = (int)(magicHeader & MAGIC_HEADER_VERSION_MASK);
+            return true;
+        }
+        else
+        {
+            version = default(int);
+            return false;
+        }
+    }
+
+    protected static void WriteGuid(void* ptr, Guid value)
     {
 #if NETCOREAPP
         var span = new Span<byte>(ptr, sizeof(Guid));
@@ -309,12 +330,19 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
 #endif
     }
 
-    private static void WriteBigEndianInteger(byte* ptr, uint value)
+    protected static void WriteBigEndianInteger(byte* ptr, uint value)
     {
         ptr[0] = (byte)(value >> 24);
         ptr[1] = (byte)(value >> 16);
         ptr[2] = (byte)(value >> 8);
         ptr[3] = (byte)(value);
+    }
+
+    protected enum UnprotectStatus
+    {
+        Ok,
+        DefaultEncryptionKeyChanged,
+        DecryptionKeyWasRevoked
     }
 
     internal struct AdditionalAuthenticatedDataTemplate
@@ -411,12 +439,5 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
 
             return targetArr;
         }
-    }
-
-    private enum UnprotectStatus
-    {
-        Ok,
-        DefaultEncryptionKeyChanged,
-        DecryptionKeyWasRevoked
     }
 }
