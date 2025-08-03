@@ -62,31 +62,16 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
-            if (type == typeof(global::TestService))
+            if (type == typeof(global::AccessibilityTestType))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::TestService),
+                    type: typeof(global::AccessibilityTestType),
                     members: [
                         new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::TestService),
-                            propertyType: typeof(int),
-                            name: "Value",
-                            displayName: "Value"
-                        ),
-                    ]
-                );
-                return true;
-            }
-            if (type == typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>))
-            {
-                validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
-                            propertyType: typeof(global::TestService),
-                            name: "this[]",
-                            displayName: "this[]"
+                            containingType: typeof(global::AccessibilityTestType),
+                            propertyType: typeof(string),
+                            name: "PublicProperty",
+                            displayName: "PublicProperty"
                         ),
                     ]
                 );

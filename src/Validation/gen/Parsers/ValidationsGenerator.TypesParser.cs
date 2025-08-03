@@ -65,6 +65,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
+        // Skip types that are not accessible from generated code
+        if (typeSymbol.DeclaredAccessibility is not Accessibility.Public)
+        {
+            return false;
+        }
+
         visitedTypes.Add(typeSymbol);
 
         // Extract validatable types discovered in base types of this type and add them to the top-level list.
@@ -148,6 +154,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             continue;
                         }
 
+                        // Skip properties that are not accessible from generated code
+                        if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
+                        {
+                            continue;
+                        }
+
                         // Check if the property's type is validatable, this resolves
                         // validatable types in the inheritance hierarchy
                         var hasValidatableType = TryExtractValidatableType(
@@ -182,6 +194,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
             // Skip properties that are injected as services
             if (member.IsServiceProperty(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+            {
+                continue;
+            }
+
+            // Skip properties that are not accessible from generated code
+            if (member.DeclaredAccessibility is not Accessibility.Public)
             {
                 continue;
             }
