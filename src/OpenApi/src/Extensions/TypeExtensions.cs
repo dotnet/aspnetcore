@@ -19,7 +19,8 @@ internal static class TypeExtensions
         while (modelType != null && modelType != typeof(object))
         {
             if (modelType.Namespace == JsonPatchDocumentNamespace &&
-                (modelType.Name == JsonPatchDocumentName || modelType.Name.StartsWith(JsonPatchDocumentNameOfT, StringComparison.Ordinal)))
+                (modelType.Name == JsonPatchDocumentName ||
+                 (modelType.IsGenericType && modelType.GenericTypeArguments.Length == 1 && modelType.Name == JsonPatchDocumentNameOfT)))
             {
                 return true;
             }
