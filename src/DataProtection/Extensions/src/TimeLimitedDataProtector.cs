@@ -16,17 +16,14 @@ namespace Microsoft.AspNetCore.DataProtection;
 /// Wraps an existing <see cref="IDataProtector"/> and appends a purpose that allows
 /// protecting data with a finite lifetime.
 /// </summary>
-internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
-#if NET10_0_OR_GREATER
-    , ISpanDataProtector
-#endif
+internal class TimeLimitedDataProtector : ITimeLimitedDataProtector
 {
     private const string MyPurposeString = "Microsoft.AspNetCore.DataProtection.TimeLimitedDataProtector.v1";
 
-    private readonly IDataProtector _innerProtector;
     private IDataProtector? _innerProtectorWithTimeLimitedPurpose; // created on-demand
+    protected readonly IDataProtector _innerProtector;
 
-    private const int ExpirationTimeHeaderSize = 8; // size of the expiration time header in bytes (64-bit UTC tick count)
+    protected const int ExpirationTimeHeaderSize = 8; // size of the expiration time header in bytes (64-bit UTC tick count)
 
     public TimeLimitedDataProtector(IDataProtector innerProtector)
     {
@@ -37,10 +34,16 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
     {
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
-        return new TimeLimitedDataProtector(_innerProtector.CreateProtector(purpose));
+        var protector = _innerProtector.CreateProtector(purpose);
+        if (protector is ISpanDataProtector spanDataProtector)
+        {
+            return new TimeLimitedSpanDataProtector(spanDataProtector);
+        }
+
+        return new TimeLimitedDataProtector(protector);
     }
 
-    private IDataProtector GetInnerProtectorWithTimeLimitedPurpose()
+    protected IDataProtector GetInnerProtectorWithTimeLimitedPurpose()
     {
         // thread-safe lazy init pattern with multi-execution and single publication
         var retVal = Volatile.Read(ref _innerProtectorWithTimeLimitedPurpose);
@@ -132,57 +135,4 @@ internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 
         return Unprotect(protectedData, out _);
     }
-
-#if NET10_0_OR_GREATER
-    public bool TryGetProtectedSize(ReadOnlySpan<byte> plainText, out int cipherTextLength)
-    {
-        var dataProtector = GetInnerProtectorWithTimeLimitedPurpose();
-        if (dataProtector is ISpanDataProtector optimizedDataProtector)
-        {
-            var result = optimizedDataProtector.TryGetProtectedSize(plainText, out cipherTextLength);
-
-            // prepended the expiration time as a 64-bit UTC tick count takes ExpirationTimeHeaderSize bytes;
-            // see Protect(byte[] plaintext, DateTimeOffset expiration) for details
-            cipherTextLength += ExpirationTimeHeaderSize;
-            return result;
-        }
-
-        cipherTextLength = default;
-        return false;
-    }
-
-    public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
-        => TryProtect(plaintext, destination, DateTimeOffset.MaxValue, out bytesWritten);
-
-    public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, DateTimeOffset expiration, out int bytesWritten)
-    {
-        if (_innerProtector is not ISpanDataProtector optimizedDataProtector)
-        {
-            throw new NotSupportedException("The inner protector does not support optimized data protection.");
-        }
-
-        // we need to prepend the expiration time, so we need to allocate a buffer for the plaintext with header
-        byte[]? plainTextWithHeader = null;
-        try
-        {
-            plainTextWithHeader = ArrayPool<byte>.Shared.Rent(plaintext.Length + ExpirationTimeHeaderSize);
-            var plainTextWithHeaderSpan = plainTextWithHeader.AsSpan(0, plaintext.Length + ExpirationTimeHeaderSize);
-
-            // We prepend the expiration time (as a 64-bit UTC tick count) to the unprotected data.
-            BitHelpers.WriteUInt64(plainTextWithHeaderSpan, 0, (ulong)expiration.UtcTicks);
-
-            // and copy the plaintext into the buffer
-            plaintext.CopyTo(plainTextWithHeaderSpan.Slice(ExpirationTimeHeaderSize));
-
-            return optimizedDataProtector.TryProtect(plainTextWithHeaderSpan, destination, out bytesWritten);
-        }
-        finally
-        {
-            if (plainTextWithHeader is not null)
-            {
-                ArrayPool<byte>.Shared.Return(plainTextWithHeader);
-            }
-        }
-    }
-#endif
 }
