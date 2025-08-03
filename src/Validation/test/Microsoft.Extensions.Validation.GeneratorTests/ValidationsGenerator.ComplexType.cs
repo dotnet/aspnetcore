@@ -44,13 +44,13 @@ public class ComplexTypeWithJsonIgnore
     public string IgnoredProperty { get; set; } = null!;
 
     [JsonIgnore]
-    public CircularReferenceType CircularReference { get; set; } = new CircularReferenceType();
+    public CircularReferenceType? CircularReference { get; set; }
 }
 
 public class CircularReferenceType
 {
     [JsonIgnore]
-    public ComplexTypeWithJsonIgnore Parent { get; set; } = new ComplexTypeWithJsonIgnore();
+    public ComplexTypeWithJsonIgnore? Parent { get; set; }
     
     public string Name { get; set; } = "test";
 }
