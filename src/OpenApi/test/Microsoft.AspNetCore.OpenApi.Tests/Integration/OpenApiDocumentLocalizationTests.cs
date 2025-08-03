@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.InternalTesting;
 public sealed class OpenApiDocumentLocalizationTests(LocalizedSampleAppFixture fixture) : IClassFixture<LocalizedSampleAppFixture>
 {
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/63073")]
     public async Task VerifyOpenApiDocumentIsInvariant()
     {
         using var client = fixture.CreateClient();
