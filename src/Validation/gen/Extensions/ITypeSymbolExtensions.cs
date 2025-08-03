@@ -164,16 +164,4 @@ internal static class ITypeSymbolExtensions
             attr.AttributeClass is not null &&
             SymbolEqualityComparer.Default.Equals(attr.AttributeClass, jsonIgnoreAttributeSymbol));
     }
-
-    /// <summary>
-    /// Checks if the parameter is marked with [JsonIgnore] attribute.
-    /// </summary>
-    /// <param name="parameter">The parameter to check.</param>
-    /// <param name="jsonIgnoreAttributeSymbol">The symbol representing the [JsonIgnore] attribute.</param>
-    internal static bool IsJsonIgnoredParameter(this IParameterSymbol parameter, INamedTypeSymbol jsonIgnoreAttributeSymbol)
-    {
-        return parameter.GetAttributes().Any(attr =>
-            attr.AttributeClass is not null &&
-            SymbolEqualityComparer.Default.Equals(attr.AttributeClass, jsonIgnoreAttributeSymbol));
-    }
 }

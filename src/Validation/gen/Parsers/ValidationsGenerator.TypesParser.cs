@@ -150,8 +150,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             continue;
                         }
 
-                        // Skip parameters that have JsonIgnore attribute
-                        if (parameter.IsJsonIgnoredParameter(jsonIgnoreAttributeSymbol))
+                        // Skip properties that have JsonIgnore attribute
+                        if (correspondingProperty.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
                         {
                             continue;
                         }
