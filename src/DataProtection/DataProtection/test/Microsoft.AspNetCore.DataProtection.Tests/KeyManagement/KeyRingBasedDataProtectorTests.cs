@@ -650,15 +650,15 @@ public class KeyRingBasedDataProtectorTests
         var mockKeyRingProvider = new Mock<IKeyRingProvider>();
         mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
 
-        var protector = new KeyRingBasedDataProtector(
+        var protector = new KeyRingBasedSpanDataProtector(
             keyRingProvider: mockKeyRingProvider.Object,
             logger: GetLogger(),
             originalPurposes: null,
             newPurpose: "purpose");
 
         // Act - get estimated size
-        var protectionSizeResult = protector.TryGetProtectedSize(plaintext, out var estimatedSize);
-        Assert.True(protectionSizeResult, "TryGetProtectedSize should succeed");
+        var estimatedSize = protector.GetProtectedSize(plaintext);
+        Assert.True(estimatedSize != 0);
 
         // verify simple protect works
         var protectedData = protector.Protect(plaintext);
@@ -711,15 +711,15 @@ public class KeyRingBasedDataProtectorTests
         var mockKeyRingProvider = new Mock<IKeyRingProvider>();
         mockKeyRingProvider.Setup(o => o.GetCurrentKeyRing()).Returns(keyRing);
 
-        var protector = new KeyRingBasedDataProtector(
+        var protector = new KeyRingBasedSpanDataProtector(
             keyRingProvider: mockKeyRingProvider.Object,
             logger: GetLogger(),
             originalPurposes: null,
             newPurpose: "purpose");
 
         // Act - get estimated size
-        var protectionSizeResult = protector.TryGetProtectedSize(plaintext, out var estimatedSize);
-        Assert.True(protectionSizeResult, "TryGetProtectedSize should succeed");
+        var estimatedSize = protector.GetProtectedSize(plaintext);
+        Assert.True(estimatedSize != 0);
 
         // Act - allocate buffer and try protect
         byte[] destination = new byte[estimatedSize];

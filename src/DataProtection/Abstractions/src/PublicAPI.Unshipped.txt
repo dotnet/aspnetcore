@@ -1,4 +1,4 @@
 #nullable enable
 Microsoft.AspNetCore.DataProtection.ISpanDataProtector
-Microsoft.AspNetCore.DataProtection.ISpanDataProtector.GetProtectedSize(System.ReadOnlySpan<byte> plainText, out int cipherTextLength) -> int
+Microsoft.AspNetCore.DataProtection.ISpanDataProtector.GetProtectedSize(System.ReadOnlySpan<byte> plainText) -> int
 Microsoft.AspNetCore.DataProtection.ISpanDataProtector.TryProtect(System.ReadOnlySpan<byte> plainText, System.Span<byte> destination, out int bytesWritten) -> bool
