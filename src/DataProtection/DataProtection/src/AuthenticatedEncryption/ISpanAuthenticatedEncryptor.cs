@@ -22,6 +22,13 @@ public interface ISpanAuthenticatedEncryptor : IAuthenticatedEncryptor
     int GetEncryptedSize(int plainTextLength);
 
     /// <summary>
+    /// Returns the size of the decrypted data for a given ciphertext length.
+    /// </summary>
+    /// <param name="cipherTextLength">Length of the cipher text that will be decrypted later</param>
+    /// <returns>The length of the decrypted data</returns>
+    int GetDecryptedSize(int cipherTextLength);
+
+    /// <summary>
     /// Attempts to encrypt and tamper-proof a piece of data.
     /// </summary>
     /// <param name="plaintext">The input to encrypt.</param>
@@ -34,4 +41,6 @@ public interface ISpanAuthenticatedEncryptor : IAuthenticatedEncryptor
     /// <param name="bytesWritten">When this method returns, the total number of bytes written into destination</param>
     /// <returns>true if destination is long enough to receive the encrypted data; otherwise, false.</returns>
     bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
+
+    bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
 }

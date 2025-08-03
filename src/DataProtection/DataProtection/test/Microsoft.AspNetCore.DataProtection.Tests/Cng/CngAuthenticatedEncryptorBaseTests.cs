@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Moq;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng.Internal;
@@ -82,19 +83,46 @@ public unsafe class CngAuthenticatedEncryptorBaseTests
         Assert.Equal(new byte[] { 0x20, 0x21, 0x22 }, retVal);
     }
 
-    internal abstract class MockableEncryptor : CngAuthenticatedEncryptorBase
+    internal abstract class MockableEncryptor : IOptimizedAuthenticatedEncryptor, ISpanAuthenticatedEncryptor, IDisposable
     {
-        public override void Dispose()
-        {
-        }
-
         public abstract byte[] DecryptHook(IntPtr pbCiphertext, uint cbCiphertext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData);
+        public abstract byte[] EncryptHook(IntPtr pbPlaintext, uint cbPlaintext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer);
 
-        protected sealed override unsafe byte[] DecryptImpl(byte* pbCiphertext, uint cbCiphertext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData)
+        public int GetEncryptedSize(int plainTextLength)
         {
-            return DecryptHook((IntPtr)pbCiphertext, cbCiphertext, (IntPtr)pbAdditionalAuthenticatedData, cbAdditionalAuthenticatedData);
+            throw new NotImplementedException();
         }
 
-        public abstract byte[] EncryptHook(IntPtr pbPlaintext, uint cbPlaintext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer);
+        public int GetDecryptedSize(int cipherTextLength)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
+        {
+            throw new NotImplementedException();
+        }
+
+        public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Dispose() { }
     }
 }

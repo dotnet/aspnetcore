@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
-using Microsoft.AspNetCore.DataProtection.Cng.Internal;
 using Microsoft.AspNetCore.DataProtection.SP800_108;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng;
 // going to the IV. This means that we'll only hit the 2^-32 probability limit after 2^96 encryption
 // operations, which will realistically never happen. (At the absurd rate of one encryption operation
 // per nanosecond, it would still take 180 times the age of the universe to hit 2^96 operations.)
-internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
+internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthenticatedEncryptor, ISpanAuthenticatedEncryptor, IDisposable
 {
     // Having a key modifier ensures with overwhelming probability that no two encryption operations
     // will ever derive the same (encryption subkey, MAC subkey) pair. This limits an attacker's
@@ -51,71 +50,22 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
         _contextHeader = CreateContextHeader();
     }
 
-    private byte[] CreateContextHeader()
+    public int GetDecryptedSize(int cipherTextLength)
     {
-        var retVal = new byte[checked(
-            1 /* KDF alg */
-            + 1 /* chaining mode */
-            + sizeof(uint) /* sym alg key size */
-            + sizeof(uint) /* GCM nonce size */
-            + sizeof(uint) /* sym alg block size */
-            + sizeof(uint) /* GCM tag size */
-            + TAG_SIZE_IN_BYTES /* tag of GCM-encrypted empty string */)];
-
-        fixed (byte* pbRetVal = retVal)
-        {
-            byte* ptr = pbRetVal;
-
-            // First is the two-byte header
-            *(ptr++) = 0; // 0x00 = SP800-108 CTR KDF w/ HMACSHA512 PRF
-            *(ptr++) = 1; // 0x01 = GCM encryption + authentication
-
-            // Next is information about the symmetric algorithm (key size, nonce size, block size, tag size)
-            BitHelpers.WriteTo(ref ptr, _symmetricAlgorithmSubkeyLengthInBytes);
-            BitHelpers.WriteTo(ref ptr, NONCE_SIZE_IN_BYTES);
-            BitHelpers.WriteTo(ref ptr, TAG_SIZE_IN_BYTES); // block size = tag size
-            BitHelpers.WriteTo(ref ptr, TAG_SIZE_IN_BYTES);
-
-            // See the design document for an explanation of the following code.
-            var tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
-            fixed (byte* pbTempKeys = tempKeys)
-            {
-                byte dummy;
-
-                // Derive temporary key for encryption.
-                using (var provider = SP800_108_CTR_HMACSHA512Util.CreateEmptyProvider())
-                {
-                    provider.DeriveKey(
-                        pbLabel: &dummy,
-                        cbLabel: 0,
-                        pbContext: &dummy,
-                        cbContext: 0,
-                        pbDerivedKey: pbTempKeys,
-                        cbDerivedKey: (uint)tempKeys.Length);
-                }
-
-                // Encrypt a zero-length input string with an all-zero nonce and copy the tag to the return buffer.
-                byte* pbNonce = stackalloc byte[(int)NONCE_SIZE_IN_BYTES];
-                UnsafeBufferUtil.SecureZeroMemory(pbNonce, NONCE_SIZE_IN_BYTES);
-                DoGcmEncrypt(
-                    pbKey: pbTempKeys,
-                    cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
-                    pbNonce: pbNonce,
-                    pbPlaintextData: &dummy,
-                    cbPlaintextData: 0,
-                    pbEncryptedData: &dummy,
-                    pbTag: ptr);
-            }
-
-            ptr += TAG_SIZE_IN_BYTES;
-            CryptoUtil.Assert(ptr - pbRetVal == retVal.Length, "ptr - pbRetVal == retVal.Length");
-        }
-
-        // retVal := { version || chainingMode || symAlgKeySize || nonceSize || symAlgBlockSize || symAlgTagSize || TAG-of-E("") }.
-        return retVal;
+        throw new NotImplementedException();
     }
 
-    protected override byte[] DecryptImpl(byte* pbCiphertext, uint cbCiphertext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData)
+    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        throw new NotImplementedException();
+    }
+
+    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
+    {
+        throw new NotImplementedException();
+    }
+
+    protected byte[] DecryptImpl(byte* pbCiphertext, uint cbCiphertext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData)
     {
         // Argument checking: input must at the absolute minimum contain a key modifier, nonce, and tag
         if (cbCiphertext < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
@@ -192,14 +142,6 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
         }
     }
 
-    public override void Dispose()
-    {
-        _sp800_108_ctr_hmac_provider.Dispose();
-
-        // We don't want to dispose of the underlying algorithm instances because they
-        // might be reused.
-    }
-
     // 'pbNonce' must point to a 96-bit buffer.
     // 'pbTag' must point to a 128-bit buffer.
     // 'pbEncryptedData' must point to a buffer the same length as 'pbPlaintextData'.
@@ -231,14 +173,14 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
         }
     }
 
-    public override int GetEncryptedSize(int plainTextLength)
+    public int GetEncryptedSize(int plainTextLength)
     {
         // A buffer to hold the key modifier, nonce, encrypted data, and tag.
         // In GCM, the encrypted output will be the same length as the plaintext input.
         return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES));
     }
 
-    public override bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
     {
         bytesWritten = 0;
 
@@ -309,7 +251,10 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
         }
     }
 
-    public override byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
+        => Encrypt(plaintext, additionalAuthenticatedData, 0, 0);
+
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
     {
         plaintext.Validate();
         additionalAuthenticatedData.Validate();
@@ -329,5 +274,77 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : CngAuthenticatedEncr
 
         CryptoUtil.Assert(bytesWritten == size, "bytesWritten == size");
         return ciphertext;
+    }
+
+    private byte[] CreateContextHeader()
+    {
+        var retVal = new byte[checked(
+            1 /* KDF alg */
+            + 1 /* chaining mode */
+            + sizeof(uint) /* sym alg key size */
+            + sizeof(uint) /* GCM nonce size */
+            + sizeof(uint) /* sym alg block size */
+            + sizeof(uint) /* GCM tag size */
+            + TAG_SIZE_IN_BYTES /* tag of GCM-encrypted empty string */)];
+
+        fixed (byte* pbRetVal = retVal)
+        {
+            byte* ptr = pbRetVal;
+
+            // First is the two-byte header
+            *(ptr++) = 0; // 0x00 = SP800-108 CTR KDF w/ HMACSHA512 PRF
+            *(ptr++) = 1; // 0x01 = GCM encryption + authentication
+
+            // Next is information about the symmetric algorithm (key size, nonce size, block size, tag size)
+            BitHelpers.WriteTo(ref ptr, _symmetricAlgorithmSubkeyLengthInBytes);
+            BitHelpers.WriteTo(ref ptr, NONCE_SIZE_IN_BYTES);
+            BitHelpers.WriteTo(ref ptr, TAG_SIZE_IN_BYTES); // block size = tag size
+            BitHelpers.WriteTo(ref ptr, TAG_SIZE_IN_BYTES);
+
+            // See the design document for an explanation of the following code.
+            var tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+            fixed (byte* pbTempKeys = tempKeys)
+            {
+                byte dummy;
+
+                // Derive temporary key for encryption.
+                using (var provider = SP800_108_CTR_HMACSHA512Util.CreateEmptyProvider())
+                {
+                    provider.DeriveKey(
+                        pbLabel: &dummy,
+                        cbLabel: 0,
+                        pbContext: &dummy,
+                        cbContext: 0,
+                        pbDerivedKey: pbTempKeys,
+                        cbDerivedKey: (uint)tempKeys.Length);
+                }
+
+                // Encrypt a zero-length input string with an all-zero nonce and copy the tag to the return buffer.
+                byte* pbNonce = stackalloc byte[(int)NONCE_SIZE_IN_BYTES];
+                UnsafeBufferUtil.SecureZeroMemory(pbNonce, NONCE_SIZE_IN_BYTES);
+                DoGcmEncrypt(
+                    pbKey: pbTempKeys,
+                    cbKey: _symmetricAlgorithmSubkeyLengthInBytes,
+                    pbNonce: pbNonce,
+                    pbPlaintextData: &dummy,
+                    cbPlaintextData: 0,
+                    pbEncryptedData: &dummy,
+                    pbTag: ptr);
+            }
+
+            ptr += TAG_SIZE_IN_BYTES;
+            CryptoUtil.Assert(ptr - pbRetVal == retVal.Length, "ptr - pbRetVal == retVal.Length");
+        }
+
+        // retVal := { version || chainingMode || symAlgKeySize || nonceSize || symAlgBlockSize || symAlgTagSize || TAG-of-E("") }.
+        return retVal;
+    }
+
+    public void Dispose()
+    {
+        _sp800_108_ctr_hmac_provider.Dispose();
+
+        // We don't want to dispose of the underlying algorithm instances because they
+        // might be reused.
     }
 }

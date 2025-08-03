@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
-using Microsoft.AspNetCore.DataProtection.Cng.Internal;
 using Microsoft.AspNetCore.DataProtection.SP800_108;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
@@ -15,7 +14,7 @@ namespace Microsoft.AspNetCore.DataProtection.Cng;
 // An encryptor which does Encrypt(CBC) + HMAC using the Windows CNG (BCrypt*) APIs.
 // The payloads produced by this encryptor should be compatible with the payloads
 // produced by the managed Encrypt(CBC) + HMAC encryptor.
-internal sealed unsafe class CbcAuthenticatedEncryptor : CngAuthenticatedEncryptorBase
+internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticatedEncryptor, ISpanAuthenticatedEncryptor, IDisposable
 {
     // Even when IVs are chosen randomly, CBC is susceptible to IV collisions within a single
     // key. For a 64-bit block cipher (like 3DES), we'd expect a collision after 2^32 block
