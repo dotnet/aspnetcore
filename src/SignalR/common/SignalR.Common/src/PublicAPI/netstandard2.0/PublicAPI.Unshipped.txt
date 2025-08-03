@@ -1,1 +1,2 @@
 #nullable enable
+Microsoft.AspNetCore.SignalR.Protocol.CancelInvocationMessage.InvocationId.get -> string!
