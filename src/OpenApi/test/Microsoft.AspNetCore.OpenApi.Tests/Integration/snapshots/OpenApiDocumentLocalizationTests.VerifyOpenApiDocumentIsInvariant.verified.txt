@@ -1485,6 +1485,10 @@
               "additionalProperties": false
             },
             {
+              "required": [
+                "op",
+                "path"
+              ],
               "type": "object",
               "properties": {
                 "op": {

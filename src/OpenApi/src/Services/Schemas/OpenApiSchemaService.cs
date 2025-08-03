@@ -170,6 +170,7 @@ internal sealed class OpenApiSchemaService(
         {
             [OpenApiSchemaKeywords.TypeKeyword] = "object",
             [OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false,
+            [OpenApiSchemaKeywords.RequiredKeyword] = JsonArray(["op", "path"]),
             [OpenApiSchemaKeywords.PropertiesKeyword] = new JsonObject
             {
                 ["op"] = new JsonObject()
