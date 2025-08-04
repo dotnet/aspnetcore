@@ -135,7 +135,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             new PrerenderComponentApplicationStore();
 
         manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
-        await manager.RestoreStateAsync(store);
+        await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
 
         var tcs = new TaskCompletionSource();
         using (cancellationToken.Register(() => tcs.TrySetResult()))
