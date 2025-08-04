@@ -56,89 +56,19 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         _contextHeader = CreateContextHeader();
     }
 
-    private byte[] CreateContextHeader()
+    public int GetDecryptedSize(int cipherTextLength)
     {
-        var retVal = new byte[checked(
-            1 /* KDF alg */
-            + 1 /* chaining mode */
-            + sizeof(uint) /* sym alg key size */
-            + sizeof(uint) /* sym alg block size */
-            + sizeof(uint) /* hmac alg key size */
-            + sizeof(uint) /* hmac alg digest size */
-            + _symmetricAlgorithmBlockSizeInBytes /* ciphertext of encrypted empty string */
-            + _hmacAlgorithmDigestLengthInBytes /* digest of HMACed empty string */)];
+        throw new NotImplementedException();
+    }
 
-        fixed (byte* pbRetVal = retVal)
-        {
-            byte* ptr = pbRetVal;
+    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        throw new NotImplementedException();
+    }
 
-            // First is the two-byte header
-            *(ptr++) = 0; // 0x00 = SP800-108 CTR KDF w/ HMACSHA512 PRF
-            *(ptr++) = 0; // 0x00 = CBC encryption + HMAC authentication
-
-            // Next is information about the symmetric algorithm (key size followed by block size)
-            BitHelpers.WriteTo(ref ptr, _symmetricAlgorithmSubkeyLengthInBytes);
-            BitHelpers.WriteTo(ref ptr, _symmetricAlgorithmBlockSizeInBytes);
-
-            // Next is information about the HMAC algorithm (key size followed by digest size)
-            BitHelpers.WriteTo(ref ptr, _hmacAlgorithmSubkeyLengthInBytes);
-            BitHelpers.WriteTo(ref ptr, _hmacAlgorithmDigestLengthInBytes);
-
-            // See the design document for an explanation of the following code.
-            var tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes];
-            fixed (byte* pbTempKeys = tempKeys)
-            {
-                byte dummy;
-
-                // Derive temporary keys for encryption + HMAC.
-                using (var provider = SP800_108_CTR_HMACSHA512Util.CreateEmptyProvider())
-                {
-                    provider.DeriveKey(
-                        pbLabel: &dummy,
-                        cbLabel: 0,
-                        pbContext: &dummy,
-                        cbContext: 0,
-                        pbDerivedKey: pbTempKeys,
-                        cbDerivedKey: (uint)tempKeys.Length);
-                }
-
-                // At this point, tempKeys := { K_E || K_H }.
-                byte* pbSymmetricEncryptionSubkey = pbTempKeys;
-                byte* pbHmacSubkey = &pbTempKeys[_symmetricAlgorithmSubkeyLengthInBytes];
-
-                // Encrypt a zero-length input string with an all-zero IV and copy the ciphertext to the return buffer.
-                using (var symmetricKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
-                {
-                    fixed (byte* pbIV = new byte[_symmetricAlgorithmBlockSizeInBytes] /* will be zero-initialized */)
-                    {
-                        DoCbcEncrypt(
-                            symmetricKeyHandle: symmetricKeyHandle,
-                            pbIV: pbIV,
-                            pbInput: &dummy,
-                            cbInput: 0,
-                            pbOutput: ptr,
-                            cbOutput: _symmetricAlgorithmBlockSizeInBytes);
-                    }
-                }
-                ptr += _symmetricAlgorithmBlockSizeInBytes;
-
-                // MAC a zero-length input string and copy the digest to the return buffer.
-                using (var hashHandle = _hmacAlgorithmHandle.CreateHmac(pbHmacSubkey, _hmacAlgorithmSubkeyLengthInBytes))
-                {
-                    hashHandle.HashData(
-                        pbInput: &dummy,
-                        cbInput: 0,
-                        pbHashDigest: ptr,
-                        cbHashDigest: _hmacAlgorithmDigestLengthInBytes);
-                }
-
-                ptr += _hmacAlgorithmDigestLengthInBytes;
-                CryptoUtil.Assert(ptr - pbRetVal == retVal.Length, "ptr - pbRetVal == retVal.Length");
-            }
-        }
-
-        // retVal := { version || chainingMode || symAlgKeySize || symAlgBlockSize || hmacAlgKeySize || hmacAlgDigestSize || E("") || MAC("") }.
-        return retVal;
+    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
+    {
+        throw new NotImplementedException();
     }
 
     protected override byte[] DecryptImpl(byte* pbCiphertext, uint cbCiphertext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData)
@@ -200,14 +130,6 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
             // Buffer contains sensitive key material; delete.
             UnsafeBufferUtil.SecureZeroMemory(pbTempSubkeys, cbTempSubkeys);
         }
-    }
-
-    public override void Dispose()
-    {
-        _sp800_108_ctr_hmac_provider.Dispose();
-
-        // We don't want to dispose of the underlying algorithm instances because they
-        // might be reused.
     }
 
     // 'pbIV' must be a pointer to a buffer equal in length to the symmetric algorithm block size.
@@ -299,13 +221,13 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         CryptoUtil.Assert(dwEncryptedBytes == cbOutput, "dwEncryptedBytes == cbOutput");
     }
 
-    public override int GetEncryptedSize(int plainTextLength)
+    public int GetEncryptedSize(int plainTextLength)
     {
         uint paddedCiphertextLength = GetCbcEncryptedOutputSizeWithPadding((uint)plainTextLength);
         return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + paddedCiphertextLength + _hmacAlgorithmDigestLengthInBytes));
     }
 
-    public override bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
     {
         bytesWritten = 0;
 
@@ -404,7 +326,10 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         }
     }
 
-    public override byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
+        => Encrypt(plaintext, additionalAuthenticatedData, 0, 0);
+
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
     {
         plaintext.Validate();
         additionalAuthenticatedData.Validate();
@@ -489,5 +414,98 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         byte* pbActualDigest = stackalloc byte[checked((int)_hmacAlgorithmDigestLengthInBytes)];
         hashHandle.HashData(pbInput, cbInput, pbActualDigest, _hmacAlgorithmDigestLengthInBytes);
         return CryptoUtil.TimeConstantBuffersAreEqual(pbExpectedDigest, pbActualDigest, _hmacAlgorithmDigestLengthInBytes);
+    }
+
+    private byte[] CreateContextHeader()
+    {
+        var retVal = new byte[checked(
+            1 /* KDF alg */
+            + 1 /* chaining mode */
+            + sizeof(uint) /* sym alg key size */
+            + sizeof(uint) /* sym alg block size */
+            + sizeof(uint) /* hmac alg key size */
+            + sizeof(uint) /* hmac alg digest size */
+            + _symmetricAlgorithmBlockSizeInBytes /* ciphertext of encrypted empty string */
+            + _hmacAlgorithmDigestLengthInBytes /* digest of HMACed empty string */)];
+
+        fixed (byte* pbRetVal = retVal)
+        {
+            byte* ptr = pbRetVal;
+
+            // First is the two-byte header
+            *(ptr++) = 0; // 0x00 = SP800-108 CTR KDF w/ HMACSHA512 PRF
+            *(ptr++) = 0; // 0x00 = CBC encryption + HMAC authentication
+
+            // Next is information about the symmetric algorithm (key size followed by block size)
+            BitHelpers.WriteTo(ref ptr, _symmetricAlgorithmSubkeyLengthInBytes);
+            BitHelpers.WriteTo(ref ptr, _symmetricAlgorithmBlockSizeInBytes);
+
+            // Next is information about the HMAC algorithm (key size followed by digest size)
+            BitHelpers.WriteTo(ref ptr, _hmacAlgorithmSubkeyLengthInBytes);
+            BitHelpers.WriteTo(ref ptr, _hmacAlgorithmDigestLengthInBytes);
+
+            // See the design document for an explanation of the following code.
+            var tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes];
+            fixed (byte* pbTempKeys = tempKeys)
+            {
+                byte dummy;
+
+                // Derive temporary keys for encryption + HMAC.
+                using (var provider = SP800_108_CTR_HMACSHA512Util.CreateEmptyProvider())
+                {
+                    provider.DeriveKey(
+                        pbLabel: &dummy,
+                        cbLabel: 0,
+                        pbContext: &dummy,
+                        cbContext: 0,
+                        pbDerivedKey: pbTempKeys,
+                        cbDerivedKey: (uint)tempKeys.Length);
+                }
+
+                // At this point, tempKeys := { K_E || K_H }.
+                byte* pbSymmetricEncryptionSubkey = pbTempKeys;
+                byte* pbHmacSubkey = &pbTempKeys[_symmetricAlgorithmSubkeyLengthInBytes];
+
+                // Encrypt a zero-length input string with an all-zero IV and copy the ciphertext to the return buffer.
+                using (var symmetricKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
+                {
+                    fixed (byte* pbIV = new byte[_symmetricAlgorithmBlockSizeInBytes] /* will be zero-initialized */)
+                    {
+                        DoCbcEncrypt(
+                            symmetricKeyHandle: symmetricKeyHandle,
+                            pbIV: pbIV,
+                            pbInput: &dummy,
+                            cbInput: 0,
+                            pbOutput: ptr,
+                            cbOutput: _symmetricAlgorithmBlockSizeInBytes);
+                    }
+                }
+                ptr += _symmetricAlgorithmBlockSizeInBytes;
+
+                // MAC a zero-length input string and copy the digest to the return buffer.
+                using (var hashHandle = _hmacAlgorithmHandle.CreateHmac(pbHmacSubkey, _hmacAlgorithmSubkeyLengthInBytes))
+                {
+                    hashHandle.HashData(
+                        pbInput: &dummy,
+                        cbInput: 0,
+                        pbHashDigest: ptr,
+                        cbHashDigest: _hmacAlgorithmDigestLengthInBytes);
+                }
+
+                ptr += _hmacAlgorithmDigestLengthInBytes;
+                CryptoUtil.Assert(ptr - pbRetVal == retVal.Length, "ptr - pbRetVal == retVal.Length");
+            }
+        }
+
+        // retVal := { version || chainingMode || symAlgKeySize || symAlgBlockSize || hmacAlgKeySize || hmacAlgDigestSize || E("") || MAC("") }.
+        return retVal;
+    }
+
+    public void Dispose()
+    {
+        _sp800_108_ctr_hmac_provider.Dispose();
+
+        // We don't want to dispose of the underlying algorithm instances because they
+        // might be reused.
     }
 }
