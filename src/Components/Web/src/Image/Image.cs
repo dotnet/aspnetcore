@@ -3,14 +3,30 @@
 
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Image;
 
+/* This is equivalent to a .razor file containing:
+ *
+ * <div class="blazor-image-container" style="@ContainerStyle">
+ *     @if (_isLoading && LoadingContent != null)
+ *     {
+ *         @LoadingContent
+ *     }
+ *     else if (_hasError && ErrorContent != null)
+ *     {
+ *         @ErrorContent
+ *     }
+ *     <img id="@Id" class="@(_isLoading || _hasError ? "d-none" : GetCssClass())"
+ *          alt="@Alt" @ref="Element" @attributes="AdditionalAttributes" />
+ * </div>
+ */
 /// <summary>
 /// A component that efficiently renders images from non-HTTP sources like byte arrays.
 /// </summary>
-public partial class Image : ComponentBase, IAsyncDisposable
+public class Image : ComponentBase, IAsyncDisposable
 {
     private readonly string _id = $"image-{Guid.NewGuid():N}";
     private bool _isLoading = true;
@@ -69,6 +85,52 @@ public partial class Image : ComponentBase, IAsyncDisposable
     protected override void OnInitialized()
     {
         base.OnInitialized();
+
+        // Set default content if not provided
+        LoadingContent ??= CreateDefaultLoadingContent();
+        ErrorContent ??= CreateDefaultErrorContent();
+    }
+
+    /// <inheritdoc />
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "blazor-image-container");
+
+        string containerStyle = GetContainerStyle();
+        if (!string.IsNullOrEmpty(containerStyle))
+        {
+            builder.AddAttribute(2, "style", containerStyle);
+        }
+
+        if (_isLoading && LoadingContent != null)
+        {
+            builder.AddContent(3, LoadingContent);
+        }
+        else if (_hasError && ErrorContent != null)
+        {
+            builder.AddContent(4, ErrorContent);
+        }
+
+        builder.OpenElement(5, "img");
+        builder.AddAttribute(6, "id", _id);
+
+        var cssClass = _isLoading || _hasError ? "d-none" : GetCssClass();
+        if (!string.IsNullOrEmpty(cssClass))
+        {
+            builder.AddAttribute(7, "class", cssClass);
+        }
+
+        if (!string.IsNullOrEmpty(Alt))
+        {
+            builder.AddAttribute(8, "alt", Alt);
+        }
+
+        builder.AddMultipleAttributes(9, AdditionalAttributes);
+        builder.AddElementReferenceCapture(10, inputReference => Element = inputReference);
+
+        builder.CloseElement();
+        builder.CloseElement();
     }
 
     /// <inheritdoc/>
@@ -128,7 +190,7 @@ public partial class Image : ComponentBase, IAsyncDisposable
             string transferId = $"{_id}-{Guid.NewGuid():N}";
 
             await JSRuntime.InvokeVoidAsync(
-                "Blazor._internal.BinaryImageComponent.initChunkedTransfer///",
+                "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
                 _id, transferId, source.MimeType, source.CacheKey,
                 CacheStrategy.ToString().ToLowerInvariant());
 
@@ -183,6 +245,64 @@ public partial class Image : ComponentBase, IAsyncDisposable
         _hasError = true;
         StateHasChanged();
     }
+
+    private static RenderFragment CreateDefaultLoadingContent() => builder =>
+    {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "blazor-image-loading");
+        builder.AddAttribute(2, "style", "display: flex; justify-content: center; align-items: center; padding: 20px;");
+
+        builder.OpenElement(3, "div");
+        builder.AddAttribute(4, "class", "loading-spinner");
+        builder.AddAttribute(5, "style", @"
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: blazor-image-spin 1s linear infinite;
+            margin: 0 auto;
+        ");
+        builder.CloseElement();
+
+        builder.OpenElement(6, "style");
+        builder.AddContent(7, @"
+            @keyframes blazor-image-spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        ");
+        builder.CloseElement();
+
+        builder.CloseElement();
+    };
+
+    private static RenderFragment CreateDefaultErrorContent() => builder =>
+    {
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "blazor-image-error");
+        builder.AddAttribute(2, "style", "display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column; text-align: center;");
+
+        builder.OpenElement(3, "span");
+        builder.AddAttribute(4, "class", "error-icon");
+        builder.AddAttribute(5, "style", "font-size: 24px; margin-bottom: 8px;");
+        builder.AddContent(6, "⚠️");
+        builder.CloseElement();
+
+        builder.OpenElement(7, "span");
+        builder.AddAttribute(8, "class", "error-message");
+        builder.AddAttribute(9, "style", "color: #dc3545; font-size: 14px;");
+        builder.AddContent(10, "Failed to load image");
+        builder.CloseElement();
+
+        builder.CloseElement();
+    };
+
+    private string GetContainerStyle() => AdditionalAttributes?.TryGetValue("style", out var style) == true
+        ? style?.ToString() ?? string.Empty : string.Empty;
+
+    private string GetCssClass() => AdditionalAttributes?.TryGetValue("class", out var cssClass) == true
+        ? cssClass?.ToString() ?? string.Empty : string.Empty;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
