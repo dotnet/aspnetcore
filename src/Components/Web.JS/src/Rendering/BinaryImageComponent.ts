@@ -8,6 +8,8 @@ interface ChunkedTransfer {
   elementId: string;
   receivedChunks: Uint8Array[];
   chunksReceived: number;
+  bytesReceived: number;
+  totalBytes: number | null;
   mimeType: string;
   cacheKey: string;
   cacheStrategy: string;
@@ -32,6 +34,7 @@ export class BinaryImageComponent {
      * @param mimeType - The MIME type of the image
      * @param cacheKey - A unique key for caching
      * @param cacheStrategy - The caching strategy to use
+     * @param totalBytes - The total number of bytes (null if unknown)
      * @returns True if initialization was successful
      */
   public static initChunkedTransfer(
@@ -39,14 +42,17 @@ export class BinaryImageComponent {
     transferId: string,
     mimeType: string,
     cacheKey: string,
-    cacheStrategy: string
+    cacheStrategy: string,
+    totalBytes: number | null = null
   ): boolean {
-    console.log(`Initializing dynamic chunked transfer ${transferId} for ${elementId}`);
+    console.log(`Initializing dynamic chunked transfer ${transferId} for ${elementId}${totalBytes ? ` (${totalBytes} bytes)` : ''}`);
 
     this.pendingTransfers.set(transferId, {
       elementId: elementId,
       receivedChunks: [],
       chunksReceived: 0,
+      bytesReceived: 0,
+      totalBytes: totalBytes,
       mimeType: mimeType,
       cacheKey: cacheKey,
       cacheStrategy: cacheStrategy,
@@ -56,6 +62,12 @@ export class BinaryImageComponent {
     if (imgElement) {
       this.loadingImages.add(elementId);
       imgElement.dispatchEvent(new CustomEvent('blazorImageLoading'));
+    }
+
+    // Initialize progress CSS variables
+    const containerElement = document.getElementById(`${elementId}-container`);
+    if (containerElement && totalBytes !== null) {
+      containerElement.style.setProperty('--blazor-image-progress', '0');
     }
 
     return true;
@@ -79,15 +91,28 @@ export class BinaryImageComponent {
       return false;
     }
 
-    // Always append chunks dynamically
-    transfer.receivedChunks.push(new Uint8Array(chunkData));
+    const chunk = new Uint8Array(chunkData);
+    transfer.receivedChunks.push(chunk);
     transfer.chunksReceived++;
+    transfer.bytesReceived += chunk.length;
+
+    if (transfer.totalBytes !== null && transfer.totalBytes > 0) {
+      const progress = Math.min(1, transfer.bytesReceived / transfer.totalBytes);
+
+      const containerElement = document.getElementById(`${transfer.elementId}-container`);
+      if (containerElement) {
+        containerElement.style.setProperty('--blazor-image-progress', progress.toString());
+      }
+    }
 
     const imgElement = document.getElementById(transfer.elementId) as HTMLImageElement;
     if (imgElement) {
       imgElement.dispatchEvent(new CustomEvent('blazorImageProgress', {
         detail: {
           chunksReceived: transfer.chunksReceived,
+          bytesReceived: transfer.bytesReceived,
+          totalBytes: transfer.totalBytes,
+          percentage: transfer.totalBytes ? Math.round((transfer.bytesReceived / transfer.totalBytes) * 100) : null,
           isDynamic: true,
         },
       }));
@@ -110,8 +135,7 @@ export class BinaryImageComponent {
     }
 
     try {
-      // Calculate total size and concatenate all chunks
-      const totalSize = transfer.receivedChunks.reduce((sum, chunk) => sum + chunk.length, 0);
+      const totalSize = transfer.totalBytes || transfer.receivedChunks.reduce((sum, chunk) => sum + chunk.length, 0);
       const completeData = new Uint8Array(totalSize);
       let offset = 0;
       for (const chunk of transfer.receivedChunks) {
@@ -158,11 +182,23 @@ export class BinaryImageComponent {
       // Set up event handlers
       imgElement.onload = () => {
         this.loadingImages.delete(elementId);
+
+        const containerElement = document.getElementById(`${elementId}-container`);
+        if (containerElement) {
+          containerElement.style.removeProperty('--blazor-image-progress');
+        }
+
         imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
       };
 
       imgElement.onerror = (e) => {
         this.loadingImages.delete(elementId);
+
+        const containerElement = document.getElementById(`${elementId}-container`);
+        if (containerElement) {
+          containerElement.style.removeProperty('--blazor-image-progress');
+        }
+
         imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
           detail: (e as ErrorEvent).message || 'Failed to load image',
         }));
@@ -178,6 +214,12 @@ export class BinaryImageComponent {
       const imgElement = document.getElementById(elementId) as HTMLImageElement;
       if (imgElement) {
         this.loadingImages.delete(elementId);
+
+        const containerElement = document.getElementById(`${elementId}-container`);
+        if (containerElement) {
+          containerElement.style.removeProperty('--blazor-image-progress');
+        }
+
         imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
           detail: (error as Error).message || 'Failed to process chunked image',
         }));

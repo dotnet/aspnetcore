@@ -11,6 +11,7 @@ public class ImageSource
     private readonly Stream _stream;
     private readonly string _mimeType;
     private readonly string? _cacheKey;
+    private long? _length;
 
     /// <summary>
     /// Gets the MIME type of the image.
@@ -28,6 +29,15 @@ public class ImageSource
     public Stream Stream => _stream;
 
     /// <summary>
+    /// Gets or sets the length of the image data in bytes. May be null if the length cannot be determined.
+    /// </summary>
+    public long? Length
+    {
+        get => _length;
+        set => _length = value;
+    }
+
+    /// <summary>
     /// Initializes a new instance of <see cref="ImageSource"/> with byte array data.
     /// </summary>
     /// <param name="data">The image data as a byte array.</param>
@@ -38,6 +48,15 @@ public class ImageSource
         _stream = new MemoryStream(data) ?? throw new ArgumentNullException(nameof(data));
         _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
         _cacheKey = cacheKey;
+
+        try
+        {
+            _length = _stream.Length;
+        }
+        catch
+        {
+            _length = null;
+        }
     }
 
     /// <summary>
@@ -51,6 +70,15 @@ public class ImageSource
         _stream = stream ?? throw new ArgumentNullException(nameof(stream));
         _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
         _cacheKey = cacheKey;
+
+        try
+        {
+            _length = _stream.Length;
+        }
+        catch
+        {
+            _length = null;
+        }
     }
 
     /// <summary>
