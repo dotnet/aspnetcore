@@ -37,7 +37,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
         JsonSerializerOptions.Converters.Add(new ElementReferenceJsonConverter(ElementReferenceContext));
     }
 
-    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(KeyValuePair<,>))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicConstructors, typeof(KeyValuePair<,>))]
     public JsonSerializerOptions ReadJsonSerializerOptions() => JsonSerializerOptions;
 
     [JSExport]
