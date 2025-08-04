@@ -107,7 +107,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
             Severity = DiagnosticSeverity.Warning,
             Locations = new[]
             {
-                new DiagnosticResultLocation("Test0.cs", 6, 50)
+                new DiagnosticResultLocation("Test0.cs", 7, 53)
             }
         };
 
@@ -139,7 +139,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
             Severity = DiagnosticSeverity.Warning,
             Locations = new[]
             {
-                new DiagnosticResultLocation("Test0.cs", 6, 54)
+                new DiagnosticResultLocation("Test0.cs", 7, 57)
             }
         };
 
@@ -166,7 +166,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
             Severity = DiagnosticSeverity.Warning,
             Locations = new[]
             {
-                new DiagnosticResultLocation("Test0.cs", 6, 80)
+                new DiagnosticResultLocation("Test0.cs", 7, 77)
             }
         };
 
@@ -197,7 +197,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
             Severity = DiagnosticSeverity.Warning,
             Locations = new[]
             {
-                new DiagnosticResultLocation("Test0.cs", 11, 50)
+                new DiagnosticResultLocation("Test0.cs", 11, 53)
             }
         };
 
