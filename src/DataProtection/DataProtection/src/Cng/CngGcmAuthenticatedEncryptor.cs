@@ -52,94 +52,122 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
 
     public int GetDecryptedSize(int cipherTextLength)
     {
-        throw new NotImplementedException();
-    }
-
-    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
-    {
-        throw new NotImplementedException();
-    }
-
-    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
-    {
-        throw new NotImplementedException();
-    }
-
-    protected byte[] DecryptImpl(byte* pbCiphertext, uint cbCiphertext, byte* pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData)
-    {
         // Argument checking: input must at the absolute minimum contain a key modifier, nonce, and tag
-        if (cbCiphertext < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
+        if (cipherTextLength < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
         {
             throw Error.CryptCommon_PayloadInvalid();
         }
 
-        // Assumption: pbCipherText := { keyModifier || nonce || encryptedData || authenticationTag }
+        return checked(cipherTextLength - (int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES));
+    }
 
-        var cbPlaintext = checked(cbCiphertext - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES));
+    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        bytesWritten = 0;
 
-        var retVal = new byte[cbPlaintext];
-        fixed (byte* pbRetVal = retVal)
+        try
         {
-            // Calculate offsets
-            byte* pbKeyModifier = pbCiphertext;
-            byte* pbNonce = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
-            byte* pbEncryptedData = &pbNonce[NONCE_SIZE_IN_BYTES];
-            byte* pbAuthTag = &pbEncryptedData[cbPlaintext];
-
-            // Use the KDF to recreate the symmetric block cipher key
-            // We'll need a temporary buffer to hold the symmetric encryption subkey
-            byte* pbSymmetricDecryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
-            try
+            var plaintextLength = GetDecryptedSize(cipherText.Length);
+            
+            // Check if destination is large enough
+            if (destination.Length < plaintextLength)
             {
-                _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
-                    pbLabel: pbAdditionalAuthenticatedData,
-                    cbLabel: cbAdditionalAuthenticatedData,
-                    contextHeader: _contextHeader,
-                    pbContext: pbKeyModifier,
-                    cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
-                    pbDerivedKey: pbSymmetricDecryptionSubkey,
-                    cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
+                return false;
+            }
 
-                // Perform the decryption operation
-                using (var decryptionSubkeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricDecryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
+            // Assumption: cipherText := { keyModifier || nonce || encryptedData || authenticationTag }
+            fixed (byte* pbCiphertext = cipherText)
+            fixed (byte* pbAdditionalAuthenticatedData = additionalAuthenticatedData)
+            fixed (byte* pbDestination = destination)
+            {
+                // Calculate offsets
+                byte* pbKeyModifier = pbCiphertext;
+                byte* pbNonce = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
+                byte* pbEncryptedData = &pbNonce[NONCE_SIZE_IN_BYTES];
+                byte* pbAuthTag = &pbEncryptedData[plaintextLength];
+
+                // Use the KDF to recreate the symmetric block cipher key
+                // We'll need a temporary buffer to hold the symmetric encryption subkey
+                byte* pbSymmetricDecryptionSubkey = stackalloc byte[checked((int)_symmetricAlgorithmSubkeyLengthInBytes)];
+                try
                 {
-                    byte dummy;
-                    byte* pbPlaintext = (pbRetVal != null) ? pbRetVal : &dummy; // CLR doesn't like pinning empty buffers
+                    _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
+                        pbLabel: pbAdditionalAuthenticatedData,
+                        cbLabel: (uint)additionalAuthenticatedData.Length,
+                        contextHeader: _contextHeader,
+                        pbContext: pbKeyModifier,
+                        cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
+                        pbDerivedKey: pbSymmetricDecryptionSubkey,
+                        cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
 
-                    BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO authInfo;
-                    BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO.Init(out authInfo);
-                    authInfo.pbNonce = pbNonce;
-                    authInfo.cbNonce = NONCE_SIZE_IN_BYTES;
-                    authInfo.pbTag = pbAuthTag;
-                    authInfo.cbTag = TAG_SIZE_IN_BYTES;
+                    // Perform the decryption operation
+                    using (var decryptionSubkeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricDecryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
+                    {
+                        byte dummy;
+                        byte* pbPlaintext = (plaintextLength > 0) ? pbDestination : &dummy; // CLR doesn't like pinning empty buffers
 
-                    // The call to BCryptDecrypt will also validate the authentication tag
-                    uint cbDecryptedBytesWritten;
-                    var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
-                        hKey: decryptionSubkeyHandle,
-                        pbInput: pbEncryptedData,
-                        cbInput: cbPlaintext,
-                        pPaddingInfo: &authInfo,
-                        pbIV: null, // IV not used; nonce provided in pPaddingInfo
-                        cbIV: 0,
-                        pbOutput: pbPlaintext,
-                        cbOutput: cbPlaintext,
-                        pcbResult: out cbDecryptedBytesWritten,
-                        dwFlags: 0);
-                    UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
-                    CryptoUtil.Assert(cbDecryptedBytesWritten == cbPlaintext, "cbDecryptedBytesWritten == cbPlaintext");
+                        BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO authInfo;
+                        BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO.Init(out authInfo);
+                        authInfo.pbNonce = pbNonce;
+                        authInfo.cbNonce = NONCE_SIZE_IN_BYTES;
+                        authInfo.pbTag = pbAuthTag;
+                        authInfo.cbTag = TAG_SIZE_IN_BYTES;
 
-                    // At this point, retVal := { decryptedPayload }
-                    // And we're done!
-                    return retVal;
+                        // The call to BCryptDecrypt will also validate the authentication tag
+                        uint cbDecryptedBytesWritten;
+                        var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
+                            hKey: decryptionSubkeyHandle,
+                            pbInput: pbEncryptedData,
+                            cbInput: (uint)plaintextLength,
+                            pPaddingInfo: &authInfo,
+                            pbIV: null, // IV not used; nonce provided in pPaddingInfo
+                            cbIV: 0,
+                            pbOutput: pbPlaintext,
+                            cbOutput: (uint)plaintextLength,
+                            pcbResult: out cbDecryptedBytesWritten,
+                            dwFlags: 0);
+                        UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
+                        CryptoUtil.Assert(cbDecryptedBytesWritten == plaintextLength, "cbDecryptedBytesWritten == plaintextLength");
+
+                        // At this point, retVal := { decryptedPayload }
+                        // And we're done!
+                        bytesWritten = (int)cbDecryptedBytesWritten;
+                        return true;
+                    }
+                }
+                finally
+                {
+                    // The buffer contains key material, so delete it.
+                    UnsafeBufferUtil.SecureZeroMemory(pbSymmetricDecryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
                 }
             }
-            finally
-            {
-                // The buffer contains key material, so delete it.
-                UnsafeBufferUtil.SecureZeroMemory(pbSymmetricDecryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes);
-            }
         }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            throw Error.CryptCommon_GenericError(ex);
+        }
+    }
+
+    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
+    {
+        ciphertext.Validate();
+        additionalAuthenticatedData.Validate();
+
+        var size = GetDecryptedSize(ciphertext.Count);
+        var plaintext = new byte[size];
+        var destination = plaintext.AsSpan();
+
+        if (!TryDecrypt(
+            cipherText: ciphertext,
+            additionalAuthenticatedData: additionalAuthenticatedData,
+            destination: destination,
+            out var bytesWritten))
+        {
+            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
+        }
+
+        CryptoUtil.Assert(bytesWritten == size, "bytesWritten == size");
+        return plaintext;
     }
 
     // 'pbNonce' must point to a 96-bit buffer.

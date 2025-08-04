@@ -37,20 +37,36 @@ internal static class RoundtripEncryptionHelpers
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
         Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
 
-        // assert calculated size is correct
-        var expectedSize = spanAuthenticatedEncryptor.GetEncryptedSize(plaintext.Count);
-        Assert.Equal(expectedSize, ciphertext.Length);
+        // assert calculated sizes are correct
+        var expectedEncryptedSize = spanAuthenticatedEncryptor.GetEncryptedSize(plaintext.Count);
+        Assert.Equal(expectedEncryptedSize, ciphertext.Length);
+        var expectedDecryptedSize = spanAuthenticatedEncryptor.GetDecryptedSize(ciphertext.Length);
+        Assert.Equal(expectedDecryptedSize, decipheredtext.Length);
 
         // perform TryEncrypt and Decrypt roundtrip - ensures cross operation compatibility
-        var cipherTextPooled = ArrayPool<byte>.Shared.Rent(expectedSize);
+        var cipherTextPooled = ArrayPool<byte>.Shared.Rent(expectedEncryptedSize);
         try
         {
             var tryEncryptResult = spanAuthenticatedEncryptor.TryEncrypt(plaintext, aad, cipherTextPooled, out var bytesWritten);
-            Assert.Equal(expectedSize, bytesWritten);
+            Assert.Equal(expectedEncryptedSize, bytesWritten);
             Assert.True(tryEncryptResult);
 
-            var decipheredTryEncrypt = encryptor.Decrypt(new ArraySegment<byte>(cipherTextPooled, 0, expectedSize), aad);
+            var decipheredTryEncrypt = spanAuthenticatedEncryptor.Decrypt(new ArraySegment<byte>(cipherTextPooled, 0, expectedEncryptedSize), aad);
             Assert.Equal(plaintext.AsSpan(), decipheredTryEncrypt.AsSpan());
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(cipherTextPooled);
+        }
+
+        // perform Encrypt and TryDecrypt roundtrip - ensures cross operation compatibility
+        var plainTextPooled = ArrayPool<byte>.Shared.Rent(expectedDecryptedSize);
+        try
+        {
+            var encrypted = spanAuthenticatedEncryptor.Encrypt(plaintext, aad);
+            var decipheredTryDecrypt = spanAuthenticatedEncryptor.TryDecrypt(encrypted, aad, plainTextPooled, out var bytesWritten);
+            Assert.Equal(plaintext.AsSpan(), plainTextPooled.AsSpan());
+            Assert.True(decipheredTryDecrypt);
         }
         finally
         {
