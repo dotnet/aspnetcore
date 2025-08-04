@@ -28,7 +28,7 @@ internal static class ApiDescriptionExtensions
             "HEAD" => HttpMethod.Head,
             "OPTIONS" => HttpMethod.Options,
             "TRACE" => HttpMethod.Trace,
-            "QUERY" => HttpMethod.Query,
+            "QUERY" => null, // OpenAPI as of 3.1 does not yet support HTTP QUERY
             _ => null,
         };
 

@@ -36,10 +36,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
     [MemberData(nameof(OpenApiDocuments))]
     public async Task VerifyOpenApiDocument(string documentName, OpenApiSpecVersion version)
     {
-        var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
-        var scopedServiceProvider = fixture.Services.CreateScope();
-        var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
-        var json = await document.SerializeAsJsonAsync(version);
+        var json = await GetOpenApiDocument(documentName, version);
         var baseSnapshotsDirectory = SkipOnHelixAttribute.OnHelix()
             ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
             : "snapshots";
@@ -47,5 +44,33 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         await Verify(json)
             .UseDirectory(outputDirectory)
             .UseParameters(documentName);
+    }
+
+    [Theory]
+    [MemberData(nameof(OpenApiDocuments))]
+    public async Task OpenApiDocumentIsValid(string documentName, OpenApiSpecVersion version)
+    {
+        var json = await GetOpenApiDocument(documentName, version);
+
+        var actual = OpenApiDocument.Parse(json, format: "json");
+
+        Assert.NotNull(actual);
+        Assert.NotNull(actual.Document);
+        Assert.NotNull(actual.Diagnostic);
+        Assert.NotNull(actual.Diagnostic.Errors);
+        Assert.Empty(actual.Diagnostic.Errors);
+
+        var ruleSet = ValidationRuleSet.GetDefaultRuleSet();
+
+        var errors = actual.Document.Validate(ruleSet);
+        Assert.Empty(errors);
+    }
+
+    private async Task<string> GetOpenApiDocument(string documentName, OpenApiSpecVersion version)
+    {
+        var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
+        var scopedServiceProvider = fixture.Services.CreateScope();
+        var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
+        return await document.SerializeAsJsonAsync(version);
     }
 }
