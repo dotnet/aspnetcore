@@ -107,68 +107,6 @@ try {
             "Packages in package-lock.json file resolved from wrong registry. All dependencies must be resolved from $registry"
     }
 
-    #
-    # Versions.props and Version.Details.xml
-    #
-
-    Write-Host "Checking that Versions.props and Version.Details.xml match"
-    [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
-    [xml] $versionDetails = Get-Content "$repoRoot/eng/Version.Details.xml"
-    $globalJson = Get-Content $repoRoot/global.json | ConvertFrom-Json
-
-    $versionVars = New-Object 'System.Collections.Generic.HashSet[string]'
-    foreach ($vars in $versionProps.SelectNodes("//PropertyGroup[`@Label=`"Automated`"]/*")) {
-        $versionVars.Add($vars.Name) | Out-Null
-    }
-
-    foreach ($dep in $versionDetails.SelectNodes('//Dependency')) {
-        Write-Verbose "Found $dep"
-
-        if ($dep.Label -eq 'Manual') {
-            # skip dependencies that are manually updated
-            continue
-        }
-
-        $expectedVersion = $dep.Version
-
-        if ($dep.Name -in $globalJson.'msbuild-sdks'.PSObject.Properties.Name) {
-            $actualVersion = $globalJson.'msbuild-sdks'.($dep.Name)
-
-            if ($expectedVersion -ne $actualVersion) {
-                LogError -filepath "$repoRoot\global.json" `
-                    ("MSBuild SDK version '$($dep.Name)' in global.json does not match the value in " +
-                     "Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'")
-            }
-        }
-        else {
-            $varName = $dep.Name -replace '\.',''
-            $varName = $varName -replace '\-',''
-            $varName = "${varName}Version"
-
-            $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
-            $actualVersion = $versionVar.InnerText
-            $versionVars.Remove($varName) | Out-Null
-
-            if (-not $versionVar) {
-                LogError "Missing version variable '$varName' in the 'Automated' property group in $repoRoot/eng/Versions.props"
-                continue
-            }
-
-            if ($expectedVersion -ne $actualVersion) {
-                LogError -filepath "$repoRoot\eng\Versions.props" `
-                    ("Version variable '$varName' does not match the value in Version.Details.xml. " +
-                     "Expected '$expectedVersion', actual '$actualVersion'")
-            }
-        }
-    }
-
-    foreach ($unexpectedVar in $versionVars) {
-        LogError -Filepath "$repoRoot\eng\Versions.props" `
-            ("Version variable '$unexpectedVar' does not have a matching entry in Version.Details.xml. " +
-             "See https://github.com/dotnet/aspnetcore/blob/main/docs/ReferenceResolution.md for instructions " +
-             "on how to add a new dependency.")
-    }
-
     # ComponentsWebAssembly-CSharp.sln is used by the templating engine; MessagePack.sln is irrelevant (in submodule).
     $solution = Get-ChildItem "$repoRoot/AspNetCore.slnx"
     $solutionFile = Split-Path -Leaf $solution

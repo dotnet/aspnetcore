@@ -720,6 +720,12 @@ internal sealed class OpenApiDocumentService(
                 // for stream-based parameter types.
                 supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/octet-stream" }];
             }
+            else if (bodyParameter.Type.IsJsonPatchDocument())
+            {
+                // Assume "application/json-patch+json" as the default media type
+                // for JSON Patch documents.
+                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/json-patch+json" }];
+            }
             else
             {
                 // Assume "application/json" as the default media type

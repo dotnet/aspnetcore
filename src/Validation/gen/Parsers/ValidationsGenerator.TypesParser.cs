@@ -120,6 +120,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
         var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
+        var jsonIgnoreAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonIgnoreAttribute);
 
         // Special handling for record types to extract properties from
         // the primary constructor.
@@ -154,8 +156,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             continue;
                         }
 
+
                         // Skip properties that are not accessible from generated code
                         if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
+                        {
+                            continue;
+                        }
+
+                        // Skip properties that have JsonIgnore attribute
+                        if (correspondingProperty.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
                         {
                             continue;
                         }
@@ -198,8 +207,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 continue;
             }
 
+
             // Skip properties that are not accessible from generated code
             if (member.DeclaredAccessibility is not Accessibility.Public)
+            {
+                continue;
+            }
+
+            // Skip properties that have JsonIgnore attribute
+            if (member.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
             {
                 continue;
             }
