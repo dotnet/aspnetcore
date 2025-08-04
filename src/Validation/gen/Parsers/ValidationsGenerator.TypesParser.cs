@@ -156,7 +156,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                             continue;
                         }
 
-
                         // Skip properties that are not accessible from generated code
                         if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
                         {
@@ -206,7 +205,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             {
                 continue;
             }
-
 
             // Skip properties that are not accessible from generated code
             if (member.DeclaredAccessibility is not Accessibility.Public)
