@@ -54,7 +54,7 @@
     private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = default!;
+    private InputModel Input { get; set; }
 
     [SupplyParameterFromQuery]
     private string? RemoteError { get; set; }

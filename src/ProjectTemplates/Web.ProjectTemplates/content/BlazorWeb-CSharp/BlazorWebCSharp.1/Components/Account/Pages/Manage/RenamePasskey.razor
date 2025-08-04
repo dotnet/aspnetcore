@@ -41,7 +41,7 @@
     public string? Id { get; set; }
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = default!;
+    private InputModel Input { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

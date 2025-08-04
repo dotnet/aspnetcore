@@ -46,7 +46,7 @@
     private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = default!;
+    private InputModel Input { get; set; }
 
     protected override async Task OnInitializedAsync()
     {

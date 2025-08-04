@@ -65,7 +65,7 @@ else
     private string? CredentialId { get; set; }
 
     [SupplyParameterFromForm(FormName = "add-passkey")]
-    private PasskeyInputModel Input { get; set; } = default!;
+    private PasskeyInputModel Input { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
