@@ -72,155 +72,62 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         _contextHeader = CreateContextHeader();
     }
 
-    private byte[] CreateContextHeader()
+#if NET10_0_OR_GREATER
+    public int GetDecryptedSize(int cipherTextLength)
     {
-        var EMPTY_ARRAY = Array.Empty<byte>();
-        var EMPTY_ARRAY_SEGMENT = new ArraySegment<byte>(EMPTY_ARRAY);
-
-        var retVal = new byte[checked(
-            1 /* KDF alg */
-            + 1 /* chaining mode */
-            + sizeof(uint) /* sym alg key size */
-            + sizeof(uint) /* sym alg block size */
-            + sizeof(uint) /* hmac alg key size */
-            + sizeof(uint) /* hmac alg digest size */
-            + _symmetricAlgorithmBlockSizeInBytes /* ciphertext of encrypted empty string */
-            + _validationAlgorithmDigestLengthInBytes /* digest of HMACed empty string */)];
-
-        var idx = 0;
-
-        // First is the two-byte header
-        retVal[idx++] = 0; // 0x00 = SP800-108 CTR KDF w/ HMACSHA512 PRF
-        retVal[idx++] = 0; // 0x00 = CBC encryption + HMAC authentication
-
-        // Next is information about the symmetric algorithm (key size followed by block size)
-        BitHelpers.WriteTo(retVal, ref idx, _symmetricAlgorithmSubkeyLengthInBytes);
-        BitHelpers.WriteTo(retVal, ref idx, _symmetricAlgorithmBlockSizeInBytes);
-
-        // Next is information about the keyed hash algorithm (key size followed by digest size)
-        BitHelpers.WriteTo(retVal, ref idx, _validationAlgorithmSubkeyLengthInBytes);
-        BitHelpers.WriteTo(retVal, ref idx, _validationAlgorithmDigestLengthInBytes);
-
-        // See the design document for an explanation of the following code.
-        var tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes + _validationAlgorithmSubkeyLengthInBytes];
-        ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
-            kdk: EMPTY_ARRAY,
-            label: EMPTY_ARRAY_SEGMENT,
-            contextHeader: EMPTY_ARRAY_SEGMENT,
-            contextData: EMPTY_ARRAY_SEGMENT,
-            operationSubkey: tempKeys.AsSpan(0, _symmetricAlgorithmSubkeyLengthInBytes),
-            validationSubkey: tempKeys.AsSpan(_symmetricAlgorithmSubkeyLengthInBytes, _validationAlgorithmSubkeyLengthInBytes));
-
-        // At this point, tempKeys := { K_E || K_H }.
-
-        // Encrypt a zero-length input string with an all-zero IV and copy the ciphertext to the return buffer.
-        using (var symmetricAlg = CreateSymmetricAlgorithm())
-        {
-            using (var cryptoTransform = symmetricAlg.CreateEncryptor(
-                rgbKey: new ArraySegment<byte>(tempKeys, 0, _symmetricAlgorithmSubkeyLengthInBytes).AsStandaloneArray(),
-                rgbIV: new byte[_symmetricAlgorithmBlockSizeInBytes]))
-            {
-                var ciphertext = cryptoTransform.TransformFinalBlock(EMPTY_ARRAY, 0, 0);
-                CryptoUtil.Assert(ciphertext != null && ciphertext.Length == _symmetricAlgorithmBlockSizeInBytes, "ciphertext != null && ciphertext.Length == _symmetricAlgorithmBlockSizeInBytes");
-                Buffer.BlockCopy(ciphertext, 0, retVal, idx, ciphertext.Length);
-            }
-        }
-
-        idx += _symmetricAlgorithmBlockSizeInBytes;
-
-        // MAC a zero-length input string and copy the digest to the return buffer.
-        using (var hashAlg = CreateValidationAlgorithm(new ArraySegment<byte>(tempKeys, _symmetricAlgorithmSubkeyLengthInBytes, _validationAlgorithmSubkeyLengthInBytes).AsStandaloneArray()))
-        {
-            var digest = hashAlg.ComputeHash(EMPTY_ARRAY);
-            CryptoUtil.Assert(digest != null && digest.Length == _validationAlgorithmDigestLengthInBytes, "digest != null && digest.Length == _validationAlgorithmDigestLengthInBytes");
-            Buffer.BlockCopy(digest, 0, retVal, idx, digest.Length);
-        }
-
-        idx += _validationAlgorithmDigestLengthInBytes;
-        CryptoUtil.Assert(idx == retVal.Length, "idx == retVal.Length");
-
-        // retVal := { version || chainingMode || symAlgKeySize || symAlgBlockSize || macAlgKeySize || macAlgDigestSize || E("") || MAC("") }.
-        return retVal;
-    }
-
-    private SymmetricAlgorithm CreateSymmetricAlgorithm()
-    {
-        var retVal = _symmetricAlgorithmFactory();
-        CryptoUtil.Assert(retVal != null, "retVal != null");
-
-        retVal.Mode = CipherMode.CBC;
-        retVal.Padding = PaddingMode.PKCS7;
-
-        return retVal;
-    }
-
-    private KeyedHashAlgorithm CreateValidationAlgorithm(byte[]? key = null)
-    {
-        var retVal = _validationAlgorithmFactory();
-        CryptoUtil.Assert(retVal != null, "retVal != null");
-
-        if (key is not null)
-        {
-            retVal.Key = key;
-        }
-        return retVal;
-    }
-
-    public byte[] Decrypt(ArraySegment<byte> protectedPayload, ArraySegment<byte> additionalAuthenticatedData)
-    {
-        // Assumption: protectedPayload := { keyModifier | IV | encryptedData | MAC(IV | encryptedPayload) }
-        protectedPayload.Validate();
-        additionalAuthenticatedData.Validate();
-
         // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
-        if (protectedPayload.Count < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
+        if (cipherTextLength < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
         {
             throw Error.CryptCommon_PayloadInvalid();
         }
 
+        // For CBC mode with padding, the decrypted size is at most the encrypted data size
+        // We return an over-estimation since we can't know the exact padding without decrypting
+        return checked(cipherTextLength - (KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes));
+    }
+
+    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        bytesWritten = 0;
+
         try
         {
-            // Step 1: Extract the key modifier and IV from the payload.
-            int keyModifierOffset; // position in protectedPayload.Array where key modifier begins
-            int ivOffset; // position in protectedPayload.Array where key modifier ends / IV begins
-            int ciphertextOffset; // position in protectedPayload.Array where IV ends / ciphertext begins
-            int macOffset; // position in protectedPayload.Array where ciphertext ends / MAC begins
-            int eofOffset; // position in protectedPayload.Array where MAC ends
-
-            checked
+            // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
+            if (cipherText.Length < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
             {
-                keyModifierOffset = protectedPayload.Offset;
-                ivOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
-                ciphertextOffset = ivOffset + _symmetricAlgorithmBlockSizeInBytes;
+                throw Error.CryptCommon_PayloadInvalid();
             }
 
-            ReadOnlySpan<byte> keyModifier = protectedPayload.Array!.AsSpan(keyModifierOffset, ivOffset - keyModifierOffset);
+            // Calculate the maximum possible plaintext size and check destination buffer
+            var estimatedDecryptedSize = GetDecryptedSize(cipherText.Length);
+            if (destination.Length < estimatedDecryptedSize)
+            {
+                return false;
+            }
 
-            // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
-#if NET10_0_OR_GREATER
+            // Calculate offsets in the cipherText
+            var keyModifierOffset = 0;
+            var ivOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
+            var ciphertextOffset = ivOffset + _symmetricAlgorithmBlockSizeInBytes;
+            var macOffset = cipherText.Length - _validationAlgorithmDigestLengthInBytes;
+
+            // Extract spans for each component
+            var keyModifier = cipherText.Slice(keyModifierOffset, KEY_MODIFIER_SIZE_IN_BYTES);
+
+            // Decrypt the KDK and use it to restore the original encryption and MAC keys
             Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
                 ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
                 : new byte[_keyDerivationKey.Length];
-#else
-            var decryptedKdk = new byte[_keyDerivationKey.Length];
-#endif
 
             byte[]? validationSubkeyArray = null;
             var validationSubkey = _validationAlgorithmSubkeyLengthInBytes <= 128
                 ? stackalloc byte[128].Slice(0, _validationAlgorithmSubkeyLengthInBytes)
                 : (validationSubkeyArray = new byte[_validationAlgorithmSubkeyLengthInBytes]);
 
-#if NET10_0_OR_GREATER
-            Span<byte> decryptionSubkey =
-                _symmetricAlgorithmSubkeyLengthInBytes <= 128
+            Span<byte> decryptionSubkey = _symmetricAlgorithmSubkeyLengthInBytes <= 128
                 ? stackalloc byte[128].Slice(0, _symmetricAlgorithmSubkeyLengthInBytes)
-                : new byte[_symmetricAlgorithmBlockSizeInBytes];
-#else
-            byte[] decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
-#endif
+                : new byte[_symmetricAlgorithmSubkeyLengthInBytes];
 
-            // calling "fixed" is basically pinning the array, meaning the GC won't move it around. (Also for safety concerns)
-            // note: it is safe to call `fixed` on null - it is just a no-op
             fixed (byte* decryptedKdkUnsafe = decryptedKdk)
             fixed (byte* __unused__2 = decryptionSubkey)
             fixed (byte* __unused__3 = validationSubkeyArray)
@@ -236,57 +143,35 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                         operationSubkey: decryptionSubkey,
                         validationSubkey: validationSubkey);
 
-                    // Step 3: Calculate the correct MAC for this payload.
-                    // correctHash := MAC(IV || ciphertext)
-                    checked
+                    // Validate the MAC provided as part of the payload
+                    var ivAndCiphertextSpan = cipherText.Slice(ivOffset, macOffset - ivOffset);
+                    var providedMac = cipherText.Slice(macOffset, _validationAlgorithmDigestLengthInBytes);
+
+                    if (!ValidateMac(ivAndCiphertextSpan, providedMac, validationSubkey, validationSubkeyArray))
                     {
-                        eofOffset = protectedPayload.Offset + protectedPayload.Count;
-                        macOffset = eofOffset - _validationAlgorithmDigestLengthInBytes;
+                        throw Error.CryptCommon_PayloadInvalid();
                     }
 
-                    // Step 4: Validate the MAC provided as part of the payload.
-                    CalculateAndValidateMac(protectedPayload.Array!, ivOffset, macOffset, eofOffset, validationSubkey, validationSubkeyArray);
+                    // If the integrity check succeeded, decrypt the payload directly into destination
+                    var ciphertextSpan = cipherText.Slice(ciphertextOffset, macOffset - ciphertextOffset);
+                    var iv = cipherText.Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
 
-                    // Step 5: Decipher the ciphertext and return it to the caller.
-#if NET10_0_OR_GREATER
+
                     using var symmetricAlgorithm = CreateSymmetricAlgorithm();
-                    symmetricAlgorithm.SetKey(decryptionSubkey); // setKey is a single-shot usage of symmetricAlgorithm. Not allocatey
+                    symmetricAlgorithm.SetKey(decryptionSubkey);
 
-                    // note: here protectedPayload.Array is taken without an offset (can't use AsSpan() on ArraySegment)
-                    var ciphertext = protectedPayload.Array.AsSpan(ciphertextOffset, macOffset - ciphertextOffset);
-                    var iv = protectedPayload.Array.AsSpan(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
-
-                    // symmetricAlgorithm is created with CBC mode (see CreateSymmetricAlgorithm())
-                    return symmetricAlgorithm.DecryptCbc(ciphertext, iv);
-#else
-                    var iv = protectedPayload.Array!.AsSpan(ivOffset, _symmetricAlgorithmBlockSizeInBytes).ToArray();
-
-                    using (var symmetricAlgorithm = CreateSymmetricAlgorithm())
-                    using (var cryptoTransform = symmetricAlgorithm.CreateDecryptor(decryptionSubkey, iv))
-                    {
-                        var outputStream = new MemoryStream();
-                        using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
-                        {
-                            cryptoStream.Write(protectedPayload.Array!, ciphertextOffset, macOffset - ciphertextOffset);
-                            cryptoStream.FlushFinalBlock();
-
-                            // At this point, outputStream := { plaintext }, and we're done!
-                            return outputStream.ToArray();
-                        }
-                    }
-#endif
+                    // Decrypt directly into destination
+                    var actualDecryptedBytes = symmetricAlgorithm.DecryptCbc(ciphertextSpan, iv, destination);
+                    bytesWritten = actualDecryptedBytes;
+                    return true;
                 }
                 finally
                 {
                     // delete since these contain secret material
                     validationSubkey.Clear();
 
-#if NET10_0_OR_GREATER
                     decryptedKdk.Clear();
                     decryptionSubkey.Clear();
-#else
-                    Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
-#endif
                 }
             }
         }
@@ -297,7 +182,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
     }
 
-#if NET10_0_OR_GREATER
     public int GetEncryptedSize(int plainTextLength)
     {
         var symmetricAlgorithm = CreateSymmetricAlgorithm();
@@ -511,11 +395,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 #endif
     }
 
-    private void CalculateAndValidateMac(
-        byte[] payloadArray,
-        int ivOffset, int macOffset, int eofOffset, // offsets to slice the payload array
-        ReadOnlySpan<byte> validationSubkey,
-        byte[]? validationSubkeyArray)
+#if NET10_0_OR_GREATER
+    private bool ValidateMac(ReadOnlySpan<byte> dataToValidate, ReadOnlySpan<byte> providedMac, ReadOnlySpan<byte> validationSubkey, byte[]? validationSubkeyArray)
     {
         using var validationAlgorithm = CreateValidationAlgorithm();
         var hashSize = validationAlgorithm.GetDigestSizeInBytes();
@@ -527,32 +408,51 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
         try
         {
-#if NET10_0_OR_GREATER
-            var hashSource = payloadArray!.AsSpan(ivOffset, macOffset - ivOffset);
-
             int bytesWritten;
             if (validationAlgorithm is HMACSHA256)
             {
-                bytesWritten = HMACSHA256.HashData(key: validationSubkey, source: hashSource, destination: correctHash);
+                bytesWritten = HMACSHA256.HashData(key: validationSubkey, source: dataToValidate, destination: correctHash);
             }
             else if (validationAlgorithm is HMACSHA512)
             {
-                bytesWritten = HMACSHA512.HashData(key: validationSubkey, source: hashSource, destination: correctHash);
+                bytesWritten = HMACSHA512.HashData(key: validationSubkey, source: dataToValidate, destination: correctHash);
             }
             else
             {
                 // if validationSubkey is stackalloc'ed, there is no way we avoid an alloc here
                 validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
-                var success = validationAlgorithm.TryComputeHash(hashSource, correctHash, out bytesWritten);
+                var success = validationAlgorithm.TryComputeHash(dataToValidate, correctHash, out bytesWritten);
                 Debug.Assert(success);
             }
-
             Debug.Assert(bytesWritten == hashSize);
+
+            return CryptoUtil.TimeConstantBuffersAreEqual(correctHash, providedMac);
+        }
+        finally
+        {
+            correctHash.Clear();
+        }
+    }
 #else
+    private void CalculateAndValidateMac(
+    byte[] payloadArray,
+    int ivOffset, int macOffset, int eofOffset, // offsets to slice the payload array
+    ReadOnlySpan<byte> validationSubkey,
+    byte[]? validationSubkeyArray)
+    {
+        using var validationAlgorithm = CreateValidationAlgorithm();
+        var hashSize = validationAlgorithm.GetDigestSizeInBytes();
+
+        byte[]? correctHashArray = null;
+        Span<byte> correctHash = hashSize <= 128
+            ? stackalloc byte[128].Slice(0, hashSize)
+            : (correctHashArray = new byte[hashSize]);
+
+        try
+        {
             // if validationSubkey is stackalloc'ed, there is no way we avoid an alloc here
             validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
             correctHashArray = validationAlgorithm.ComputeHash(payloadArray, macOffset, eofOffset - macOffset);
-#endif
 
             // Step 4: Validate the MAC provided as part of the payload.
             var payloadMacSpan = payloadArray!.AsSpan(macOffset, eofOffset - macOffset);
@@ -565,6 +465,220 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         {
             correctHash.Clear();
         }
+    }
+#endif
+
+    public byte[] Decrypt(ArraySegment<byte> protectedPayload, ArraySegment<byte> additionalAuthenticatedData)
+    {
+        // Assumption: protectedPayload := { keyModifier | IV | encryptedData | MAC(IV | encryptedPayload) }
+        protectedPayload.Validate();
+        additionalAuthenticatedData.Validate();
+
+#if NET10_0_OR_GREATER
+        var size = GetDecryptedSize(protectedPayload.Count);
+        var plaintext = new byte[size];
+        var destination = plaintext.AsSpan();
+
+        if (!TryDecrypt(
+            cipherText: protectedPayload,
+            additionalAuthenticatedData: additionalAuthenticatedData,
+            destination: destination,
+            out var bytesWritten))
+        {
+            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
+        }
+
+        CryptoUtil.Assert(bytesWritten == size, "bytesWritten == size");
+        return plaintext;
+#else
+        // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
+        if (protectedPayload.Count < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
+        {
+            throw Error.CryptCommon_PayloadInvalid();
+        }
+
+        try
+        {
+            // Step 1: Extract the key modifier and IV from the payload.
+            int keyModifierOffset; // position in protectedPayload.Array where key modifier begins
+            int ivOffset; // position in protectedPayload.Array where key modifier ends / IV begins
+            int ciphertextOffset; // position in protectedPayload.Array where IV ends / ciphertext begins
+            int macOffset; // position in protectedPayload.Array where ciphertext ends / MAC begins
+            int eofOffset; // position in protectedPayload.Array where MAC ends
+
+            checked
+            {
+                keyModifierOffset = protectedPayload.Offset;
+                ivOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
+                ciphertextOffset = ivOffset + _symmetricAlgorithmBlockSizeInBytes;
+            }
+
+            ReadOnlySpan<byte> keyModifier = protectedPayload.Array!.AsSpan(keyModifierOffset, ivOffset - keyModifierOffset);
+
+            // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
+            var decryptedKdk = new byte[_keyDerivationKey.Length];
+
+            byte[]? validationSubkeyArray = null;
+            var validationSubkey = _validationAlgorithmSubkeyLengthInBytes <= 128
+                ? stackalloc byte[128].Slice(0, _validationAlgorithmSubkeyLengthInBytes)
+                : (validationSubkeyArray = new byte[_validationAlgorithmSubkeyLengthInBytes]);
+
+            byte[] decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
+
+            // calling "fixed" is basically pinning the array, meaning the GC won't move it around. (Also for safety concerns)
+            // note: it is safe to call `fixed` on null - it is just a no-op
+            fixed (byte* decryptedKdkUnsafe = decryptedKdk)
+            fixed (byte* __unused__2 = decryptionSubkey)
+            fixed (byte* __unused__3 = validationSubkeyArray)
+            {
+                try
+                {
+                    _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
+                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
+                        kdk: decryptedKdk,
+                        label: additionalAuthenticatedData,
+                        contextHeader: _contextHeader,
+                        contextData: keyModifier,
+                        operationSubkey: decryptionSubkey,
+                        validationSubkey: validationSubkey);
+
+                    // Step 3: Calculate the correct MAC for this payload.
+                    // correctHash := MAC(IV || ciphertext)
+                    checked
+                    {
+                        eofOffset = protectedPayload.Offset + protectedPayload.Count;
+                        macOffset = eofOffset - _validationAlgorithmDigestLengthInBytes;
+                    }
+
+                    // Step 4: Validate the MAC provided as part of the payload.
+                    CalculateAndValidateMac(protectedPayload.Array!, ivOffset, macOffset, eofOffset, validationSubkey, validationSubkeyArray);
+
+                    // Step 5: Decipher the ciphertext and return it to the caller.
+                    var iv = protectedPayload.Array!.AsSpan(ivOffset, _symmetricAlgorithmBlockSizeInBytes).ToArray();
+
+                    using (var symmetricAlgorithm = CreateSymmetricAlgorithm())
+                    using (var cryptoTransform = symmetricAlgorithm.CreateDecryptor(decryptionSubkey, iv))
+                    {
+                        var outputStream = new MemoryStream();
+                        using (var cryptoStream = new CryptoStream(outputStream, cryptoTransform, CryptoStreamMode.Write))
+                        {
+                            cryptoStream.Write(protectedPayload.Array!, ciphertextOffset, macOffset - ciphertextOffset);
+                            cryptoStream.FlushFinalBlock();
+
+                            // At this point, outputStream := { plaintext }, and we're done!
+                            return outputStream.ToArray();
+                        }
+                    }
+                }
+                finally
+                {
+                    // delete since these contain secret material
+                    validationSubkey.Clear();
+
+                    Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
+                }
+            }
+        }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            // Homogenize all exceptions to CryptographicException.
+            throw Error.CryptCommon_GenericError(ex);
+        }
+#endif
+    }
+
+    private byte[] CreateContextHeader()
+    {
+        var EMPTY_ARRAY = Array.Empty<byte>();
+        var EMPTY_ARRAY_SEGMENT = new ArraySegment<byte>(EMPTY_ARRAY);
+
+        var retVal = new byte[checked(
+            1 /* KDF alg */
+            + 1 /* chaining mode */
+            + sizeof(uint) /* sym alg key size */
+            + sizeof(uint) /* sym alg block size */
+            + sizeof(uint) /* hmac alg key size */
+            + sizeof(uint) /* hmac alg digest size */
+            + _symmetricAlgorithmBlockSizeInBytes /* ciphertext of encrypted empty string */
+            + _validationAlgorithmDigestLengthInBytes /* digest of HMACed empty string */)];
+
+        var idx = 0;
+
+        // First is the two-byte header
+        retVal[idx++] = 0; // 0x00 = SP800-108 CTR KDF w/ HMACSHA512 PRF
+        retVal[idx++] = 0; // 0x00 = CBC encryption + HMAC authentication
+
+        // Next is information about the symmetric algorithm (key size followed by block size)
+        BitHelpers.WriteTo(retVal, ref idx, _symmetricAlgorithmSubkeyLengthInBytes);
+        BitHelpers.WriteTo(retVal, ref idx, _symmetricAlgorithmBlockSizeInBytes);
+
+        // Next is information about the keyed hash algorithm (key size followed by digest size)
+        BitHelpers.WriteTo(retVal, ref idx, _validationAlgorithmSubkeyLengthInBytes);
+        BitHelpers.WriteTo(retVal, ref idx, _validationAlgorithmDigestLengthInBytes);
+
+        // See the design document for an explanation of the following code.
+        var tempKeys = new byte[_symmetricAlgorithmSubkeyLengthInBytes + _validationAlgorithmSubkeyLengthInBytes];
+        ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
+            kdk: EMPTY_ARRAY,
+            label: EMPTY_ARRAY_SEGMENT,
+            contextHeader: EMPTY_ARRAY_SEGMENT,
+            contextData: EMPTY_ARRAY_SEGMENT,
+            operationSubkey: tempKeys.AsSpan(0, _symmetricAlgorithmSubkeyLengthInBytes),
+            validationSubkey: tempKeys.AsSpan(_symmetricAlgorithmSubkeyLengthInBytes, _validationAlgorithmSubkeyLengthInBytes));
+
+        // At this point, tempKeys := { K_E || K_H }.
+
+        // Encrypt a zero-length input string with an all-zero IV and copy the ciphertext to the return buffer.
+        using (var symmetricAlg = CreateSymmetricAlgorithm())
+        {
+            using (var cryptoTransform = symmetricAlg.CreateEncryptor(
+                rgbKey: new ArraySegment<byte>(tempKeys, 0, _symmetricAlgorithmSubkeyLengthInBytes).AsStandaloneArray(),
+                rgbIV: new byte[_symmetricAlgorithmBlockSizeInBytes]))
+            {
+                var ciphertext = cryptoTransform.TransformFinalBlock(EMPTY_ARRAY, 0, 0);
+                CryptoUtil.Assert(ciphertext != null && ciphertext.Length == _symmetricAlgorithmBlockSizeInBytes, "ciphertext != null && ciphertext.Length == _symmetricAlgorithmBlockSizeInBytes");
+                Buffer.BlockCopy(ciphertext, 0, retVal, idx, ciphertext.Length);
+            }
+        }
+
+        idx += _symmetricAlgorithmBlockSizeInBytes;
+
+        // MAC a zero-length input string and copy the digest to the return buffer.
+        using (var hashAlg = CreateValidationAlgorithm(new ArraySegment<byte>(tempKeys, _symmetricAlgorithmSubkeyLengthInBytes, _validationAlgorithmSubkeyLengthInBytes).AsStandaloneArray()))
+        {
+            var digest = hashAlg.ComputeHash(EMPTY_ARRAY);
+            CryptoUtil.Assert(digest != null && digest.Length == _validationAlgorithmDigestLengthInBytes, "digest != null && digest.Length == _validationAlgorithmDigestLengthInBytes");
+            Buffer.BlockCopy(digest, 0, retVal, idx, digest.Length);
+        }
+
+        idx += _validationAlgorithmDigestLengthInBytes;
+        CryptoUtil.Assert(idx == retVal.Length, "idx == retVal.Length");
+
+        // retVal := { version || chainingMode || symAlgKeySize || symAlgBlockSize || macAlgKeySize || macAlgDigestSize || E("") || MAC("") }.
+        return retVal;
+    }
+
+    private SymmetricAlgorithm CreateSymmetricAlgorithm()
+    {
+        var retVal = _symmetricAlgorithmFactory();
+        CryptoUtil.Assert(retVal != null, "retVal != null");
+
+        retVal.Mode = CipherMode.CBC;
+        retVal.Padding = PaddingMode.PKCS7;
+
+        return retVal;
+    }
+
+    private KeyedHashAlgorithm CreateValidationAlgorithm(byte[]? key = null)
+    {
+        var retVal = _validationAlgorithmFactory();
+        CryptoUtil.Assert(retVal != null, "retVal != null");
+
+        if (key is not null)
+        {
+            retVal.Key = key;
+        }
+        return retVal;
     }
 
     public void Dispose()
