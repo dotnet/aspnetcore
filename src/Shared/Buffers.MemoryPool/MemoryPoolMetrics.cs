@@ -30,17 +30,17 @@ internal sealed class MemoryPoolMetrics
         _pooledMemoryCounter = _meter.CreateUpDownCounter<long>(
             PooledMemoryName,
             unit: "By",
-            description: "Number of bytes currently held by the memory pool and available for reuse.");
+            description: "Number of bytes currently pooled and available for reuse.");
 
         _allocatedMemoryCounter = _meter.CreateCounter<long>(
             AllocatedMemoryName,
             unit: "By",
-            description: "Total number of allocations made by the memory pool.");
+            description: "Total number of bytes allocated by the memory pool. Allocation occurs when a memory rental request exceeds the available pooled memory.");
 
         _evictedMemoryCounter = _meter.CreateCounter<long>(
             EvictedMemoryName,
             unit: "By",
-            description: "Total number of bytes that have been evicted from the memory pool.");
+            description: "Total number of bytes evicted from the memory pool. Eviction occurs when idle pooled memory is reclaimed.");
 
         _rentedMemoryCounter = _meter.CreateCounter<long>(
             RentedMemoryName,
