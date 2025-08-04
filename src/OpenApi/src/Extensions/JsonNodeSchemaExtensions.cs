@@ -329,6 +329,11 @@ internal static class JsonNodeSchemaExtensions
             var attributes = validations.OfType<ValidationAttribute>();
             schema.ApplyValidationAttributes(attributes);
         }
+        if (parameterDescription.ModelMetadata is Mvc.ModelBinding.Metadata.DefaultModelMetadata { Attributes.PropertyAttributes.Count: > 0 } metadata &&
+            metadata.Attributes.PropertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } metadataDefaultValueAttribute)
+        {
+            schema.ApplyDefaultValue(metadataDefaultValueAttribute.Value, jsonTypeInfo);
+        }
         if (parameterDescription.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo })
         {
             if (parameterInfo.HasDefaultValue)

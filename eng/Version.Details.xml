@@ -390,37 +390,37 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>6a953e76162f3f079405f80e28664fa51b136740</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="9.8.0-preview.1.25374.2">
+    <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="9.8.0-preview.1.25401.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>3f10dd4d52002f1d83435f7ca791b77fea1718e6</Sha>
+      <Sha>c6529a0a68989cc881e4add4872c344917bc1ca9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.8.0-preview.1.25374.2">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Testing" Version="9.8.0-preview.1.25401.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>3f10dd4d52002f1d83435f7ca791b77fea1718e6</Sha>
+      <Sha>c6529a0a68989cc881e4add4872c344917bc1ca9</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.8.0-preview.1.25374.2">
+    <Dependency Name="Microsoft.Extensions.TimeProvider.Testing" Version="9.8.0-preview.1.25401.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
-      <Sha>3f10dd4d52002f1d83435f7ca791b77fea1718e6</Sha>
+      <Sha>c6529a0a68989cc881e4add4872c344917bc1ca9</Sha>
     </Dependency>
-    <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.25364.1">
+    <Dependency Name="optimization.windows_nt-x64.MIBC.Runtime" Version="1.0.0-prerelease.25374.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>c79fe70760b7052d414b125a5916c014c8724d61</Sha>
+      <Sha>19381a50e687f98b824327a282f973f4de52f26b</Sha>
     </Dependency>
-    <Dependency Name="optimization.windows_nt-x86.MIBC.Runtime" Version="1.0.0-prerelease.25364.1">
+    <Dependency Name="optimization.windows_nt-x86.MIBC.Runtime" Version="1.0.0-prerelease.25374.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>c79fe70760b7052d414b125a5916c014c8724d61</Sha>
+      <Sha>19381a50e687f98b824327a282f973f4de52f26b</Sha>
     </Dependency>
-    <Dependency Name="optimization.linux-x64.MIBC.Runtime" Version="1.0.0-prerelease.25364.1">
+    <Dependency Name="optimization.linux-x64.MIBC.Runtime" Version="1.0.0-prerelease.25374.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>c79fe70760b7052d414b125a5916c014c8724d61</Sha>
+      <Sha>19381a50e687f98b824327a282f973f4de52f26b</Sha>
     </Dependency>
-    <Dependency Name="optimization.windows_nt-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25364.1">
+    <Dependency Name="optimization.windows_nt-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25374.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>c79fe70760b7052d414b125a5916c014c8724d61</Sha>
+      <Sha>19381a50e687f98b824327a282f973f4de52f26b</Sha>
     </Dependency>
-    <Dependency Name="optimization.linux-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25364.1">
+    <Dependency Name="optimization.linux-arm64.MIBC.Runtime" Version="1.0.0-prerelease.25374.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-optimization</Uri>
-      <Sha>c79fe70760b7052d414b125a5916c014c8724d61</Sha>
+      <Sha>19381a50e687f98b824327a282f973f4de52f26b</Sha>
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
     <!-- These versions are manually updated -->

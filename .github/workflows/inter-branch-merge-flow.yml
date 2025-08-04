@@ -10,4 +10,4 @@ permissions:
 
 jobs:
   Merge:
-    uses: dotnet/arcade/.github/workflows/backport-base.yml@e2fed65f9c524d12c64876194ae4ce177b935bb3 # 2024-06-24
+    uses: dotnet/arcade/.github/workflows/backport-base.yml@40693ae2ee51e447f6ca96d07bc1ba779dcb9b9c # 2024-06-24
