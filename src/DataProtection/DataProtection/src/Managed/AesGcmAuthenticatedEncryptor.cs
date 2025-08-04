@@ -64,73 +64,80 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
     }
 
-    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
+    public int GetDecryptedSize(int cipherTextLength)
     {
-        ciphertext.Validate();
-        additionalAuthenticatedData.Validate();
-
         // Argument checking: input must at the absolute minimum contain a key modifier, nonce, and tag
-        if (ciphertext.Count < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
+        if (cipherTextLength < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
         {
             throw Error.CryptCommon_PayloadInvalid();
         }
 
-        // Assumption: pbCipherText := { keyModifier || nonce || encryptedData || authenticationTag }
-        var plaintextBytes = ciphertext.Count - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES);
-        var plaintext = new byte[plaintextBytes];
+        return cipherTextLength - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES);
+    }
+
+    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        bytesWritten = 0;
 
         try
         {
-            // Step 1: Extract the key modifier from the payload.
-
-            int keyModifierOffset; // position in ciphertext.Array where key modifier begins
-            int nonceOffset; // position in ciphertext.Array where key modifier ends / nonce begins
-            int encryptedDataOffset; // position in ciphertext.Array where nonce ends / encryptedData begins
-            int tagOffset; // position in ciphertext.Array where encrypted data ends
-
-            checked
+            var plaintextBytes = GetDecryptedSize(cipherText.Length);
+            if (destination.Length < plaintextBytes)
             {
-                keyModifierOffset = ciphertext.Offset;
-                nonceOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
-                encryptedDataOffset = nonceOffset + NONCE_SIZE_IN_BYTES;
-                tagOffset = encryptedDataOffset + plaintextBytes;
+                return false;
             }
 
-            var keyModifier = new ArraySegment<byte>(ciphertext.Array!, keyModifierOffset, KEY_MODIFIER_SIZE_IN_BYTES);
+            // Calculate offsets in the cipherText
+            var keyModifierOffset = 0;
+            var nonceOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
+            var encryptedDataOffset = nonceOffset + NONCE_SIZE_IN_BYTES;
+            var tagOffset = encryptedDataOffset + plaintextBytes;
 
-            // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
-            // We pin all unencrypted keys to limit their exposure via GC relocation.
+            // Extract spans for each component
+            var keyModifier = cipherText.Slice(keyModifierOffset, KEY_MODIFIER_SIZE_IN_BYTES);
+            var nonce = cipherText.Slice(nonceOffset, NONCE_SIZE_IN_BYTES);
+            var encrypted = cipherText.Slice(encryptedDataOffset, plaintextBytes);
+            var tag = cipherText.Slice(tagOffset, TAG_SIZE_IN_BYTES);
 
-            var decryptedKdk = new byte[_keyDerivationKey.Length];
-            var derivedKey = new byte[_derivedkeySizeInBytes];
+            // Get the plaintext destination
+            var plaintext = destination.Slice(0, plaintextBytes);
 
-            fixed (byte* __unused__1 = decryptedKdk)
-            fixed (byte* __unused__2 = derivedKey)
+            // Decrypt the KDK and use it to restore the original encryption key
+            // We pin all unencrypted keys to limit their exposure via GC relocation
+            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
+                ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
+                : new byte[_keyDerivationKey.Length];
+            
+            Span<byte> derivedKey = _derivedkeySizeInBytes <= 256
+                ? stackalloc byte[256].Slice(0, _derivedkeySizeInBytes)
+                : new byte[_derivedkeySizeInBytes];
+
+            fixed (byte* decryptedKdkUnsafe = decryptedKdk)
+            fixed (byte* derivedKeyUnsafe = derivedKey)
             {
                 try
                 {
-                    _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
+                    _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
                     ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                         kdk: decryptedKdk,
                         label: additionalAuthenticatedData,
                         contextHeader: _contextHeader,
                         contextData: keyModifier,
                         operationSubkey: derivedKey,
-                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */ );
+                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */);
 
-                    // Perform the decryption operation
-                    var nonce = new Span<byte>(ciphertext.Array, nonceOffset, NONCE_SIZE_IN_BYTES);
-                    var tag = new Span<byte>(ciphertext.Array, tagOffset, TAG_SIZE_IN_BYTES);
-                    var encrypted = new Span<byte>(ciphertext.Array, encryptedDataOffset, plaintextBytes);
+                    // Perform the decryption operation directly into destination
                     using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
                     aes.Decrypt(nonce, encrypted, tag, plaintext);
-                    return plaintext;
+
+                    bytesWritten = plaintextBytes;
+                    return true;
                 }
                 finally
                 {
                     // delete since these contain secret material
-                    Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
-                    Array.Clear(derivedKey, 0, derivedKey.Length);
+                    decryptedKdk.Clear();
+                    derivedKey.Clear();
                 }
             }
         }
@@ -139,6 +146,28 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
             // Homogenize all exceptions to CryptographicException.
             throw Error.CryptCommon_GenericError(ex);
         }
+    }
+
+    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
+    {
+        ciphertext.Validate();
+        additionalAuthenticatedData.Validate();
+
+        var size = GetDecryptedSize(ciphertext.Count);
+        var plaintext = new byte[size];
+        var destination = plaintext.AsSpan();
+
+        if (!TryDecrypt(
+            cipherText: ciphertext,
+            additionalAuthenticatedData: additionalAuthenticatedData,
+            destination: destination,
+            out var bytesWritten))
+        {
+            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
+        }
+
+        CryptoUtil.Assert(bytesWritten == size, "bytesWritten == size");
+        return plaintext;
     }
 
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
