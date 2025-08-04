@@ -1,0 +1,5 @@
+<linker>
+  <assembly fullname="System.Runtime">
+    <type fullname="System.Collections.Generic.KeyValuePair`2" preserve="all" />
+  </assembly>
+</linker>
