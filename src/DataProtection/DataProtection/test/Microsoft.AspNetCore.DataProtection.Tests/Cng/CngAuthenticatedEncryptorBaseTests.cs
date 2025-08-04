@@ -83,46 +83,63 @@ public unsafe class CngAuthenticatedEncryptorBaseTests
         Assert.Equal(new byte[] { 0x20, 0x21, 0x22 }, retVal);
     }
 
-    internal abstract class MockableEncryptor : IOptimizedAuthenticatedEncryptor, ISpanAuthenticatedEncryptor, IDisposable
+    internal abstract unsafe class MockableEncryptor : IOptimizedAuthenticatedEncryptor, ISpanAuthenticatedEncryptor, IDisposable
     {
         public abstract byte[] DecryptHook(IntPtr pbCiphertext, uint cbCiphertext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData);
         public abstract byte[] EncryptHook(IntPtr pbPlaintext, uint cbPlaintext, IntPtr pbAdditionalAuthenticatedData, uint cbAdditionalAuthenticatedData, uint cbPreBuffer, uint cbPostBuffer);
 
-        public int GetEncryptedSize(int plainTextLength)
-        {
-            throw new NotImplementedException();
-        }
-
-        public int GetDecryptedSize(int cipherTextLength)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
-        {
-            throw new NotImplementedException();
-        }
+        public int GetEncryptedSize(int plainTextLength) => 1000;
+        public int GetDecryptedSize(int cipherTextLength) => 1000;
 
         public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
         {
-            throw new NotImplementedException();
-        }
+            fixed (byte* pbCiphertext = ciphertext.Array)
+            fixed (byte* pbAAD = additionalAuthenticatedData.Array)
+            {
+                IntPtr ptrCiphertext = (IntPtr)(pbCiphertext + ciphertext.Offset);
+                IntPtr ptrAAD = (IntPtr)(pbAAD + additionalAuthenticatedData.Offset);
 
-        public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
-        {
-            throw new NotImplementedException();
+                return DecryptHook(ptrCiphertext, (uint)ciphertext.Count, ptrAAD, (uint)additionalAuthenticatedData.Count);
+            }
         }
 
         public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
         {
-            throw new NotImplementedException();
+            fixed (byte* pbPlaintext = plaintext.Array)
+            fixed (byte* pbAAD = additionalAuthenticatedData.Array)
+            {
+                IntPtr ptrPlaintext = (IntPtr)(pbPlaintext + plaintext.Offset);
+                IntPtr ptrAAD = (IntPtr)(pbAAD + additionalAuthenticatedData.Offset);
+
+                return EncryptHook(ptrPlaintext, (uint)plaintext.Count, ptrAAD, (uint)additionalAuthenticatedData.Count, preBufferSize, postBufferSize);
+            }
+        }
+
+        public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
+            => Encrypt(plaintext, additionalAuthenticatedData, 0, 0);
+
+        public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+        {
+            var encrypted = Encrypt(ToArraySegment(plaintext), ToArraySegment(additionalAuthenticatedData));
+            encrypted.CopyTo(destination);
+            bytesWritten = encrypted.Length;
+            return true;
+        }
+
+        public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+        {
+            var encrypted = Decrypt(ToArraySegment(cipherText), ToArraySegment(additionalAuthenticatedData));
+            encrypted.CopyTo(destination);
+            bytesWritten = encrypted.Length;
+            return true;
         }
 
         public void Dispose() { }
+
+        ArraySegment<byte> ToArraySegment(ReadOnlySpan<byte> span)
+        {
+            var array = span.ToArray();
+            return new ArraySegment<byte>(array);
+        }
     }
 }

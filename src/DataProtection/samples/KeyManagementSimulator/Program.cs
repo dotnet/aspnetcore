@@ -282,7 +282,15 @@ sealed class MockAuthenticatedEncryptor : ISpanAuthenticatedEncryptor
     public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> _additionalAuthenticatedData) => ciphertext.ToArray();
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> _additionalAuthenticatedData) => plaintext.ToArray();
 
+    public int GetDecryptedSize(int cipherTextLength) => cipherTextLength;
     public int GetEncryptedSize(int plainTextLength) => plainTextLength;
+
+    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    {
+        var result = cipherText.TryCopyTo(destination);
+        bytesWritten = destination.Length;
+        return result;
+    }
 
     public bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
     {
