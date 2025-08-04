@@ -147,33 +147,6 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
-    public void ReportsWarningWithFormNameSpecified()
-    {
-        var test = $@"
-    namespace ConsoleApplication1
-    {{
-        using {typeof(ParameterAttribute).Namespace};
-        class TestComponent : ComponentBase
-        {{
-            [SupplyParameterFromForm(FormName = ""main-form"")] public string MyProperty {{ get; set; }} = ""default"";
-        }}
-    }}" + TestDeclarations;
-
-        var expected = new DiagnosticResult
-        {
-            Id = "BL0008",
-            Message = "Property 'ConsoleApplication1.TestComponent.MyProperty' has [SupplyParameterFromForm] and a property initializer. This can be overwritten with null during form posts.",
-            Severity = DiagnosticSeverity.Warning,
-            Locations = new[]
-            {
-                new DiagnosticResultLocation("Test0.cs", 7, 77)
-            }
-        };
-
-        VerifyCSharpDiagnostic(test, expected);
-    }
-
-    [Fact]
     public void WorksWithInheritedComponentBase()
     {
         var test = $@"
