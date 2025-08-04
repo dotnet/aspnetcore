@@ -13,16 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection.Tests.Internal;
 internal static class RoundtripEncryptionHelpers
 {
     /// <summary>
-    /// <see cref="IAuthenticatedEncryptor.TryEncrypt"/> and <see cref="IAuthenticatedEncryptor.TryDecrypt"/> APIs should do the same steps
-    /// as <see cref="IAuthenticatedEncryptor.Encrypt"/> and <see cref="IAuthenticatedEncryptor.Decrypt"/> APIs.
-    /// <br/>
-    /// Method ensures that the two APIs are equivalent in terms of their behavior by performing a roundtrip encrypt-decrypt test.
-    /// </summary>
-    public static void AssertTryEncryptTryDecryptParity(IAuthenticatedEncryptor encryptor, ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> aad)
-        => AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
-
-    /// <summary>
-    /// <see cref="IAuthenticatedEncryptor.TryEncrypt"/> and <see cref="IAuthenticatedEncryptor.TryDecrypt"/> APIs should do the same steps
+    /// <see cref="ISpanAuthenticatedEncryptor.TryEncrypt"/> and <see cref="ISpanAuthenticatedEncryptor.TryDecrypt"/> APIs should do the same steps
     /// as <see cref="IAuthenticatedEncryptor.Encrypt"/> and <see cref="IAuthenticatedEncryptor.Decrypt"/> APIs.
     /// <br/>
     /// Method ensures that the two APIs are equivalent in terms of their behavior by performing a roundtrip encrypt-decrypt test.
@@ -41,7 +32,10 @@ internal static class RoundtripEncryptionHelpers
         var expectedEncryptedSize = spanAuthenticatedEncryptor.GetEncryptedSize(plaintext.Count);
         Assert.Equal(expectedEncryptedSize, ciphertext.Length);
         var expectedDecryptedSize = spanAuthenticatedEncryptor.GetDecryptedSize(ciphertext.Length);
-        Assert.Equal(expectedDecryptedSize, decipheredtext.Length);
+
+        // note: for decryption we cant know for sure how many bytes will be written.
+        // so we cant assert equality, but we can check if expected decrypted size is greater or equal than original deciphered text
+        Assert.True(expectedDecryptedSize >= decipheredtext.Length);
 
         // perform TryEncrypt and Decrypt roundtrip - ensures cross operation compatibility
         var cipherTextPooled = ArrayPool<byte>.Shared.Rent(expectedEncryptedSize);
@@ -65,12 +59,15 @@ internal static class RoundtripEncryptionHelpers
         {
             var encrypted = spanAuthenticatedEncryptor.Encrypt(plaintext, aad);
             var decipheredTryDecrypt = spanAuthenticatedEncryptor.TryDecrypt(encrypted, aad, plainTextPooled, out var bytesWritten);
-            Assert.Equal(plaintext.AsSpan(), plainTextPooled.AsSpan());
+            Assert.Equal(plaintext.AsSpan(), plainTextPooled.AsSpan(0, bytesWritten));
             Assert.True(decipheredTryDecrypt);
+
+            // now we should know that bytesWritten is STRICTLY equal to the deciphered text
+            Assert.Equal(decipheredtext.Length, bytesWritten);
         }
         finally
         {
-            ArrayPool<byte>.Shared.Return(cipherTextPooled);
+            ArrayPool<byte>.Shared.Return(plainTextPooled);
         }
     }
 }
