@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
@@ -163,5 +164,37 @@ internal static class ITypeSymbolExtensions
         return property.GetAttributes().Any(attr =>
             attr.AttributeClass is not null &&
             SymbolEqualityComparer.Default.Equals(attr.AttributeClass, jsonIgnoreAttributeSymbol));
+    }
+
+    internal static bool IsSkippedValidationProperty(this IPropertySymbol property, INamedTypeSymbol skipValidationAttributeSymbol)
+    {
+        return SymbolOrItsTypeHasAttribute(property, property.Type, skipValidationAttributeSymbol);
+    }
+
+    internal static bool IsSkippedValidationParameter(this IParameterSymbol parameter, INamedTypeSymbol skipValidationAttributeSymbol)
+    {
+        return SymbolOrItsTypeHasAttribute(parameter, parameter.Type, skipValidationAttributeSymbol);
+    }
+
+    private static bool SymbolOrItsTypeHasAttribute(ISymbol symbol, ITypeSymbol? typeSymbol, INamedTypeSymbol attributeSymbol)
+    {
+        if (symbol.HasAttribute(attributeSymbol))
+        {
+            return true;
+        }
+
+        while (typeSymbol is not null)
+        {
+            if (typeSymbol.GetAttributes().Any(attr =>
+                attr.AttributeClass is not null &&
+                SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attributeSymbol)))
+            {
+                return true;
+            }
+
+            typeSymbol = typeSymbol.BaseType;
+        }
+
+        return false;
     }
 }
