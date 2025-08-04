@@ -29,6 +29,9 @@ internal sealed class ComponentSymbols
             return false;
         }
 
+        var supplyParameterFromFormAttribute = compilation.GetTypeByMetadataName(ComponentsApi.SupplyParameterFromFormAttribute.MetadataName);
+        var componentBaseType = compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName);
+
         var icomponentType = compilation.GetTypeByMetadataName(ComponentsApi.IComponent.MetadataName);
         if (icomponentType == null)
         {
@@ -50,6 +53,8 @@ internal sealed class ComponentSymbols
         symbols = new ComponentSymbols(
             parameterAttribute,
             cascadingParameterAttribute,
+            supplyParameterFromFormAttribute,
+            componentBaseType,
             parameterCaptureUnmatchedValuesRuntimeType,
             icomponentType);
         return true;
@@ -58,11 +63,15 @@ internal sealed class ComponentSymbols
     private ComponentSymbols(
         INamedTypeSymbol parameterAttribute,
         INamedTypeSymbol cascadingParameterAttribute,
+        INamedTypeSymbol supplyParameterFromFormAttribute,
+        INamedTypeSymbol componentBaseType,
         INamedTypeSymbol parameterCaptureUnmatchedValuesRuntimeType,
         INamedTypeSymbol icomponentType)
     {
         ParameterAttribute = parameterAttribute;
         CascadingParameterAttribute = cascadingParameterAttribute;
+        SupplyParameterFromFormAttribute = supplyParameterFromFormAttribute;
+        ComponentBaseType = componentBaseType;
         ParameterCaptureUnmatchedValuesRuntimeType = parameterCaptureUnmatchedValuesRuntimeType;
         IComponentType = icomponentType;
     }
@@ -73,6 +82,10 @@ internal sealed class ComponentSymbols
     public INamedTypeSymbol ParameterCaptureUnmatchedValuesRuntimeType { get; }
 
     public INamedTypeSymbol CascadingParameterAttribute { get; }
+
+    public INamedTypeSymbol SupplyParameterFromFormAttribute { get; }
+
+    public INamedTypeSymbol ComponentBaseType { get; }
 
     public INamedTypeSymbol IComponentType { get; }
 }
