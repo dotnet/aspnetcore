@@ -8,6 +8,153 @@ namespace Microsoft.Extensions.Validation.GeneratorTests;
 public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 {
     [Fact]
+    public async Task CanValidateComplexTypesWithJsonIgnore()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+using System.Text.Json.Serialization;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/complex-type-with-json-ignore", (ComplexTypeWithJsonIgnore complexType) => Results.Ok("Passed"!));
+app.MapPost("/record-type-with-json-ignore", (RecordTypeWithJsonIgnore recordType) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class ComplexTypeWithJsonIgnore
+{
+    [Range(10, 100)]
+    public int ValidatedProperty { get; set; } = 10;
+
+    [JsonIgnore]
+    [Required] // This should be ignored because of [JsonIgnore]
+    public string IgnoredProperty { get; set; } = null!;
+
+    [JsonIgnore]
+    public CircularReferenceType? CircularReference { get; set; }
+}
+
+public class CircularReferenceType
+{
+    [JsonIgnore]
+    public ComplexTypeWithJsonIgnore? Parent { get; set; }
+    
+    public string Name { get; set; } = "test";
+}
+
+public record RecordTypeWithJsonIgnore
+{
+    [Range(10, 100)]
+    public int ValidatedProperty { get; set; } = 10;
+
+    [JsonIgnore]
+    [Required] // This should be ignored because of [JsonIgnore]
+    public string IgnoredProperty { get; set; } = null!;
+
+    [JsonIgnore]
+    public CircularReferenceRecord? CircularReference { get; set; }
+}
+
+public record CircularReferenceRecord
+{
+    [JsonIgnore]
+    public RecordTypeWithJsonIgnore? Parent { get; set; }
+    
+    public string Name { get; set; } = "test";
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/complex-type-with-json-ignore", async (endpoint, serviceProvider) =>
+        {
+            await ValidInputWithJsonIgnoreProducesNoWarnings(endpoint);
+            await InvalidValidatedPropertyProducesError(endpoint);
+
+            async Task ValidInputWithJsonIgnoreProducesNoWarnings(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "ValidatedProperty": 50
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+                await endpoint.RequestDelegate(context);
+
+                Assert.Equal(200, context.Response.StatusCode);
+            }
+
+            async Task InvalidValidatedPropertyProducesError(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "ValidatedProperty": 5
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("ValidatedProperty", kvp.Key);
+                    Assert.Equal("The field ValidatedProperty must be between 10 and 100.", kvp.Value.Single());
+                });
+            }
+        });
+        
+        await VerifyEndpoint(compilation, "/record-type-with-json-ignore", async (endpoint, serviceProvider) =>
+        {
+            await ValidInputWithJsonIgnoreProducesNoWarningsForRecord(endpoint);
+            await InvalidValidatedPropertyProducesErrorForRecord(endpoint);
+
+            async Task ValidInputWithJsonIgnoreProducesNoWarningsForRecord(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "ValidatedProperty": 50
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+                await endpoint.RequestDelegate(context);
+
+                Assert.Equal(200, context.Response.StatusCode);
+            }
+
+            async Task InvalidValidatedPropertyProducesErrorForRecord(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "ValidatedProperty": 5
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("ValidatedProperty", kvp.Key);
+                    Assert.Equal("The field ValidatedProperty must be between 10 and 100.", kvp.Value.Single());
+                });
+            }
+        });
+    }
+    [Fact]
     public async Task CanValidateComplexTypes()
     {
         // Arrange
