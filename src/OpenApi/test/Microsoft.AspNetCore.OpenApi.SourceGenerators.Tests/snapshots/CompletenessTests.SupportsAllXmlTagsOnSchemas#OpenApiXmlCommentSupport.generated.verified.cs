@@ -567,11 +567,11 @@ T", null, null, false, null, null, null));
                 // Apply comments from the property
                 if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
-                    var isInlinedSchema = schema.Metadata is null
+                    if(schema.Metadata is null
                         || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
-                        || string.IsNullOrEmpty(schemaId as string);
-                    if(isInlinedSchema)
+                        || string.IsNullOrEmpty(schemaId as string))
                     {
+                        // Inlined schema
                         schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
@@ -580,6 +580,7 @@ T", null, null, false, null, null, null));
                     }
                     else
                     {
+                        // Schema Reference
                         schema.Metadata["x-ref-description"] = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
