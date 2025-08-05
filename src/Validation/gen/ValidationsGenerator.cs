@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.Extensions.Validation;
@@ -33,23 +35,49 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             predicate: FindAddValidation,
             transform: TransformAddValidation
         );
+
         // Extract types that have been marked with [ValidatableType].
         // This handles both the framework attribute and the auto-generated attribute.
-        var validatableTypesWithAttribute = context.SyntaxProvider.CreateSyntaxProvider(
-            predicate: ShouldTransformSymbolWithValidatableTypeAttribute,
-            transform: TransformValidatableTypeWithValidatableTypeAttribute
-        ).Where(types => types.Length > 0);
+        var validatableTypesWithAttribute = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "Microsoft.Extensions.Validation.ValidatableTypeAttribute",
+            predicate: ShouldTransformSymbolWithAttribute,
+            transform: TransformValidatableTypeWithAttribute
+        );
+
+        // Extract types that have been marked with the embedded [ValidatableType].
+        var generatedValidatableTypesWithAttribute = context.SyntaxProvider.CreateSyntaxProvider(
+            predicate: ShouldTransformSymbolWithEmbeddedValidatableTypeAttribute,
+            transform: (context, cancellation) => context
+        ).Combine(generatorSettings)
+            .Select((combined, cancellation) =>
+            {
+                var (syntaxContext, settings) = combined;
+                if (!settings.ShouldGenerateAttribute || string.IsNullOrEmpty(settings.RootNamespace))
+                {
+                    return [];
+                }
+
+                return TransformValidatableTypeWithEmbeddedValidatableTypeAttribute(syntaxContext, settings, cancellation);
+            })
+            .Where(t => t.Length > 0);
+
+        var allValidatableTypes = generatedValidatableTypesWithAttribute.Collect()
+            .Combine(validatableTypesWithAttribute.Collect())
+            .SelectMany((pair, cancellation) => pair.Left.Concat(pair.Right).ToImmutableArray());
+
         // Extract all minimal API endpoints in the application.
         var endpoints = context.SyntaxProvider
             .CreateSyntaxProvider(
                 predicate: FindEndpoints,
                 transform: TransformEndpoints)
             .Where(endpoint => endpoint is not null);
+
         // Extract validatable types from all endpoints.
         var validatableTypesFromEndpoints = endpoints
             .Select(ExtractValidatableEndpoint);
+
         // Join all validatable types encountered in the type graph.
-        var validatableTypes = validatableTypesWithAttribute
+        var validatableTypes = allValidatableTypes
             .Concat(validatableTypesFromEndpoints)
             .Distinct(ValidatableTypeComparer.Instance)
             .Collect();
@@ -99,5 +127,5 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         context.AddSource("ValidatableTypeAttribute.g.cs", validatableTypeAttributeSource);
     }
 
-    private readonly record struct GeneratorSettings(string? RootNamespace, bool ShouldGenerateAttribute);
+    internal readonly record struct GeneratorSettings(string? RootNamespace, bool ShouldGenerateAttribute);
 }

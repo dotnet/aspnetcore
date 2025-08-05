@@ -25,12 +25,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
         if (TryExtractValidatableType((ITypeSymbol)context.TargetSymbol, wellKnownTypes, ref validatableTypes, ref visitedTypes))
         {
-            return [..validatableTypes];
+            return [.. validatableTypes];
         }
         return [];
     }
 
-    internal static bool ShouldTransformSymbolWithValidatableTypeAttribute(SyntaxNode syntaxNode, CancellationToken _)
+    internal static bool ShouldTransformSymbolWithEmbeddedValidatableTypeAttribute(SyntaxNode syntaxNode, CancellationToken _)
     {
         // Only process class and record declarations
         if (syntaxNode is not (ClassDeclarationSyntax or RecordDeclarationSyntax))
@@ -54,7 +54,10 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         return false;
     }
 
-    internal ImmutableArray<ValidatableType> TransformValidatableTypeWithValidatableTypeAttribute(GeneratorSyntaxContext context, CancellationToken cancellationToken)
+    internal ImmutableArray<ValidatableType> TransformValidatableTypeWithEmbeddedValidatableTypeAttribute(
+        GeneratorSyntaxContext context,
+        GeneratorSettings settings,
+        CancellationToken cancellationToken)
     {
         if (context.Node is not (ClassDeclarationSyntax or RecordDeclarationSyntax))
         {
@@ -67,8 +70,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return [];
         }
 
-        // Check if the type has a ValidatableTypeAttribute (framework or auto-generated)
-        if (!HasValidatableTypeAttribute(typeSymbol))
+        var validatableTypeAttributeName = $"{settings.RootNamespace}.ValidatableTypeAttribute";
+        // Check if the type has a ValidatableTypeAttribute (auto-generated)
+        if (!HasValidatableTypeAttribute(typeSymbol, validatableTypeAttributeName))
         {
             return [];
         }
@@ -79,7 +83,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         if (TryExtractValidatableType(typeSymbol, wellKnownTypes, ref validatableTypes, ref visitedTypes))
         {
-            return [..validatableTypes];
+            return [.. validatableTypes];
         }
         return [];
     }
@@ -92,7 +96,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                name.EndsWith(".ValidatableTypeAttribute", StringComparison.Ordinal);
     }
 
-    private static bool HasValidatableTypeAttribute(ITypeSymbol typeSymbol)
+    private static bool HasValidatableTypeAttribute(ITypeSymbol typeSymbol, string validatableTypeAttributeName)
     {
         foreach (var attr in typeSymbol.GetAttributes())
         {
@@ -103,16 +107,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             }
 
             var name = attributeClass.Name;
-            var fullName = attributeClass.ToDisplayString();
-
-            // Check for framework attribute
-            if (fullName == "Microsoft.Extensions.Validation.ValidatableTypeAttribute")
+            var namespaceName = attributeClass.ContainingNamespace.ToDisplayString();
+            var fullName = $"{namespaceName}.{name}";
+            if (!string.Equals(fullName, validatableTypeAttributeName, StringComparison.Ordinal))
             {
-                return true;
+                continue;
             }
 
             // Check for auto-generated attribute (any namespace)
-            if (name == "ValidatableTypeAttribute")
+            if (name == validatableTypeAttributeName)
             {
                 // Additional check: ensure it's marked with [Embedded] to confirm it's auto-generated
                 foreach (var embeddedAttr in attributeClass.GetAttributes())
