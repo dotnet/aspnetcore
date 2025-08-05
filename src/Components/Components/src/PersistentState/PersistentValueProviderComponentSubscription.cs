@@ -231,6 +231,14 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         var propertyInfo = GetPropertyInfo(type, propertyName);
         if (propertyInfo == null)
         {
+            // Check if the property exists but is not public to provide a better error message
+            var nonPublicProperty = type.GetProperty(propertyName, ComponentProperties.BindablePropertyFlags);
+            if (nonPublicProperty != null)
+            {
+                throw new InvalidOperationException(
+                    $"The property '{propertyName}' on component type '{type.FullName}' cannot be used with {nameof(PersistentStateAttribute)} because it is not public. Properties with {nameof(PersistentStateAttribute)} must have a public getter.");
+            }
+            
             throw new InvalidOperationException($"Property {propertyName} not found on type {type.FullName}");
         }
 
@@ -238,23 +246,13 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
         if (propertyInfo.GetMethod == null || !propertyInfo.GetMethod.IsPublic)
         {
             throw new InvalidOperationException(
-                $"The property '{propertyName}' on component type '{type.FullName}' cannot be used with PersistentState because it is not public. Properties with PersistentState must be public.");
+                $"The property '{propertyName}' on component type '{type.FullName}' cannot be used with {nameof(PersistentStateAttribute)} because it is not public. Properties with {nameof(PersistentStateAttribute)} must have a public getter.");
         }
 
         return new PropertyGetter(type, propertyInfo);
 
         static PropertyInfo? GetPropertyInfo([DynamicallyAccessedMembers(LinkerFlags.Component)] Type type, string propertyName)
-        {
-            // First try to find the property with public access only (for performance in the common case)
-            var publicProperty = type.GetProperty(propertyName);
-            if (publicProperty != null)
-            {
-                return publicProperty;
-            }
-
-            // If not found as public, try with all flags to see if it exists as private/protected
-            return type.GetProperty(propertyName, ComponentProperties.BindablePropertyFlags);
-        }
+            => type.GetProperty(propertyName);
     }
 
     private static partial class Log
