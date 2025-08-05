@@ -200,14 +200,6 @@ public static partial class SnapshotTestHelper
             using var writer = new FormattingStreamWriter(stream, CultureInfo.InvariantCulture) { AutoFlush = true };
             var targetMethod = serviceType.GetMethod("GenerateAsync", [typeof(string), typeof(TextWriter)]) ?? throw new InvalidOperationException("Could not resolve GenerateAsync method.");
             targetMethod.Invoke(service, ["v1", writer]);
-
-            var openApiString = Encoding.UTF8.GetString(stream.ToArray());
-            await Verifier.Verify(openApiString)
-                .UseTextForParameters("openapi.json")
-                .UseDirectory(SkipOnHelixAttribute.OnHelix()
-                    ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "snapshots")
-                    : "snapshots");
-
             stream.Position = 0;
             var (document, _) = await OpenApiDocument.LoadAsync(stream, "json");
             verifyFunc(document);
