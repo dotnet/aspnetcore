@@ -41,7 +41,7 @@
 <?endif?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs/dependency" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
-    <Package Name="!(loc.AspNetCoreIISExpressModuleProductNameV2)" Manufacturer="!(loc.Manufacturer)" Version="$(var.ANCMMsiVersion)" Language="!(loc.Language)" Codepage="$(var.Codepage)" UpgradeCode="$(var.ANCMUpgradeCode)" InstallerVersion="$(var.ANCMInstallerVersion)" ProductCode="$(var.ProductCode)">
+    <Package Name="!(loc.AspNetCoreIISExpressModuleProductNameV2)" Manufacturer="!(loc.Manufacturer)" Version="$(var.ANCMMsiVersion)" Language="!(loc.Language)" Codepage="$(var.Codepage)" UpgradeCode="$(var.ANCMUpgradeCode)" InstallerVersion="$(var.ANCMInstallerVersion)" ProductCode="$(var.ProductCode)" Scope="perMachine">
         <SummaryInformation Description="!(loc.AspNetCoreIISExpressModuleProductNameV2)" Manufacturer="!(loc.Manufacturer)" />
 
         <Media Id="1" Cabinet="aspnetcoremodule.cab" EmbedCab="yes" CompressionLevel="high" />
@@ -61,8 +61,6 @@
 
         <!-- Require the user be an admin to install -->
         <Launch Condition="Privileged" Message="!(loc.AdminRequired)" />
-
-        <Property Id="ALLUSERS" Value="1" />
 
         <Property Id="IISEXPRESS_INSTALL" Secure="yes">
             <RegistrySearch Id="IISExpressInstallRegSearch" Root="HKLM" Key="SOFTWARE\Microsoft\IISExpress" Name="Version" Type="raw" Bitness="$(var.Bitness)" />
