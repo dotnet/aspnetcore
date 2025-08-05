@@ -229,24 +229,10 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
     {
         var (type, propertyName) = key;
         var propertyInfo = GetPropertyInfo(type, propertyName);
-        if (propertyInfo == null)
-        {
-            // Check if the property exists but is not public to provide a better error message
-            var nonPublicProperty = type.GetProperty(propertyName, ComponentProperties.BindablePropertyFlags);
-            if (nonPublicProperty != null)
-            {
-                throw new InvalidOperationException(
-                    $"The property '{propertyName}' on component type '{type.FullName}' cannot be used with {nameof(PersistentStateAttribute)} because it is not public. Properties with {nameof(PersistentStateAttribute)} must have a public getter.");
-            }
-            
-            throw new InvalidOperationException($"Property {propertyName} not found on type {type.FullName}");
-        }
-
-        // Check if the property is public
-        if (propertyInfo.GetMethod == null || !propertyInfo.GetMethod.IsPublic)
+        if (propertyInfo == null || propertyInfo.GetMethod == null || !propertyInfo.GetMethod.IsPublic)
         {
             throw new InvalidOperationException(
-                $"The property '{propertyName}' on component type '{type.FullName}' cannot be used with {nameof(PersistentStateAttribute)} because it is not public. Properties with {nameof(PersistentStateAttribute)} must have a public getter.");
+                $"A public property '{propertyName}' on component type '{type.FullName}' with a public getter wasn't found.");
         }
 
         return new PropertyGetter(type, propertyInfo);

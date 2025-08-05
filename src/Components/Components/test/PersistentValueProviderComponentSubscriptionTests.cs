@@ -660,10 +660,9 @@ public class PersistentValueProviderComponentSubscriptionTests
             new PersistentValueProviderComponentSubscription(
                 state, componentState, cascadingParameterInfo, serviceProvider, logger));
 
-        // Should throw a clear error about non-public properties, not "Property not found"
-        Assert.Contains("not public", exception.Message);
-        Assert.Contains("PersistentState", exception.Message);
-        Assert.DoesNotContain("not found", exception.Message);
+        // Should throw a clear error about needing a public property with public getter
+        Assert.Contains("A public property", exception.Message);
+        Assert.Contains("with a public getter wasn't found", exception.Message);
     }
 
     [Fact]
@@ -684,9 +683,9 @@ public class PersistentValueProviderComponentSubscriptionTests
             new PersistentValueProviderComponentSubscription(
                 state, componentState, cascadingParameterInfo, serviceProvider, logger));
 
-        // Should throw a clear error about non-public getter
-        Assert.Contains("not public", exception.Message);
-        Assert.Contains("PersistentState", exception.Message);
+        // Should throw a clear error about needing a public property with public getter
+        Assert.Contains("A public property", exception.Message);
+        Assert.Contains("with a public getter wasn't found", exception.Message);
     }
 
     [Fact]
