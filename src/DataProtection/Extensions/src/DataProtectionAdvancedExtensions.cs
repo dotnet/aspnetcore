@@ -127,23 +127,4 @@ public static class DataProtectionAdvancedExtensions
             return _innerProtector.Unprotect(protectedData, out Expiration);
         }
     }
-
-    private class TimeLimitedWrappingSpanProtector : TimeLimitedWrappingProtector, ISpanDataProtector
-    {
-        public TimeLimitedWrappingSpanProtector(ITimeLimitedDataProtector innerProtector) : base(innerProtector)
-        {
-        }
-
-        public int GetProtectedSize(ReadOnlySpan<byte> plainText)
-        {
-            var inner = (ISpanDataProtector)_innerProtector;
-            return inner.GetProtectedSize(plainText);
-        }
-
-        public bool TryProtect(ReadOnlySpan<byte> plainText, Span<byte> destination, out int bytesWritten)
-        {
-            var inner = (ISpanDataProtector)_innerProtector;
-            return inner.TryProtect(plainText, destination, out bytesWritten);
-        }
-    }
 }

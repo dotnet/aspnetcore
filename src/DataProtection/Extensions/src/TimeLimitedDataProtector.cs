@@ -35,11 +35,6 @@ internal class TimeLimitedDataProtector : ITimeLimitedDataProtector
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
         var protector = _innerProtector.CreateProtector(purpose);
-        if (protector is ISpanDataProtector spanDataProtector)
-        {
-            return new TimeLimitedSpanDataProtector(spanDataProtector);
-        }
-
         return new TimeLimitedDataProtector(protector);
     }
 

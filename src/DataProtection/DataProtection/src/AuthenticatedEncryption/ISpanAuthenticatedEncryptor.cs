@@ -24,8 +24,8 @@ public interface ISpanAuthenticatedEncryptor : IAuthenticatedEncryptor
     /// <summary>
     /// Returns the size of the decrypted data for a given ciphertext length.
     /// </summary>
-    /// <param name="cipherTextLength">Length of the cipher text that will be decrypted later</param>
-    /// <returns>The length of the decrypted data</returns>
+    /// <param name="cipherTextLength">Length of the cipher text that will be decrypted later.</param>
+    /// <returns>The length of the decrypted data.</returns>
     int GetDecryptedSize(int cipherTextLength);
 
     /// <summary>
@@ -42,5 +42,16 @@ public interface ISpanAuthenticatedEncryptor : IAuthenticatedEncryptor
     /// <returns>true if destination is long enough to receive the encrypted data; otherwise, false.</returns>
     bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
 
+    /// <summary>
+    /// Attempts to validate the authentication tag of and decrypt a blob of encrypted data.
+    /// </summary>
+    /// <param name="cipherText">The encrypted data to decrypt.</param>
+    /// <param name="additionalAuthenticatedData">
+    /// A piece of data which was included in the authentication tag during encryption.
+    /// This input may be zero bytes in length. The same AAD must be specified in the corresponding encryption call.
+    /// </param>
+    /// <param name="destination">The decrypted output.</param>
+    /// <param name="bytesWritten">When this method returns, the total number of bytes written into destination</param>
+    /// <returns>true if decryption was successful; otherwise, false.</returns>
     bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
 }

@@ -431,7 +431,6 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         byte* pbDummyIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
         byte* pbDummyInput = stackalloc byte[checked((int)cbInput)];
 
-
         var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
             hKey: tempKeyHandle,
             pbInput: pbDummyInput,
