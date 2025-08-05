@@ -39,6 +39,10 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
             app.Run();
             """;
 
-        await Verify(source, out var compilation);
+        await Verify(source, out var compilation, globalOptions: new Dictionary<string, string>
+        {
+            ["build_property.RootNamespace"] = "TestApp",
+            ["build_property.GenerateBuiltinValidatableTypeAttribute"] = "true"
+        });
     }
 }
