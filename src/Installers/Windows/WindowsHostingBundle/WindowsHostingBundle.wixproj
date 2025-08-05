@@ -18,10 +18,6 @@
 
   <ItemGroup>
     <Content Include="thm.xml" />
-    <Compile Include="ANCM.wxs" />
-    <Compile Include="Bundle.wxs" />
-    <Compile Include="DotNetCore.wxs" />
-    <Compile Include="SharedFramework.wxs" />
     <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle\upgradePolicies.wxs" />
   </ItemGroup>
 

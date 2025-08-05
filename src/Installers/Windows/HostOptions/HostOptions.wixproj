@@ -18,10 +18,6 @@
     <NamespaceGuid>$(HostingBundleNamespaceGuid)</NamespaceGuid>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="Product.wxs" />
-  </ItemGroup>
-
   <Import Project="Sdk.targets" Sdk="Microsoft.WixToolset.Sdk" />
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 

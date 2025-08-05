@@ -19,7 +19,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ancm_iis_expressv2.wxs" />
     <Compile Include="$(IIS-Setup)iisca\wix5\iisca.wxs">
       <Link>iisca.wxs</Link>
     </Compile>

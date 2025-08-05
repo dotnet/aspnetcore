@@ -16,7 +16,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="aspnetcoremodulev2.wxs" />
     <Compile Include="$(IIS-Setup)iisca\wix5\iisca.wxs">
       <Link>iisca.wxs</Link>
     </Compile>
