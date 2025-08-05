@@ -220,7 +220,7 @@ public class BindingAddress
                 }
                 else
                 {
-                    throw new FormatException($"Invalid port: '{portString}'");
+                    throw new FormatException($"Invalid port: '{portString}, only numbers are allowed'");
                 }
             }
 
