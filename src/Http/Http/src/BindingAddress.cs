@@ -217,7 +217,9 @@ public class BindingAddress
                     hasSpecifiedPort = true;
                     host = address.Substring(schemeDelimiterEnd, portDelimiterStart - schemeDelimiterEnd);
                     port = portNumber;
-                }else{
+                }
+                else
+                {
                     throw new FormatException($"Invalid port: '{portString}'");
                 }
             }
