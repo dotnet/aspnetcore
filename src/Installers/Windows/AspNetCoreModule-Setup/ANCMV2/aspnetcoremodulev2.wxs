@@ -31,7 +31,8 @@
 <?endif?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs/dependency" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
-    <Package Name="!(loc.AspNetCoreModuleProductNameV2)" Manufacturer="!(loc.Manufacturer)" Version="$(var.ANCMMsiVersion)" Language="!(loc.Language)" Codepage="$(var.Codepage)" UpgradeCode="$(var.ANCMUpgradeCode)" InstallerVersion="$(var.ANCMInstallerVersion)" ProductCode="$(var.ProductCode)"><SummaryInformation Description="!(loc.AspNetCoreModuleProductNameV2)" Manufacturer="!(loc.Manufacturer)" />
+    <Package Name="!(loc.AspNetCoreModuleProductNameV2)" Manufacturer="!(loc.Manufacturer)" Version="$(var.ANCMMsiVersion)" Language="!(loc.Language)" Codepage="$(var.Codepage)" UpgradeCode="$(var.ANCMUpgradeCode)" InstallerVersion="$(var.ANCMInstallerVersion)" ProductCode="$(var.ProductCode)">
+        <SummaryInformation Description="!(loc.AspNetCoreModuleProductNameV2)" Manufacturer="!(loc.Manufacturer)" />
 
         <Media Id="1" Cabinet="aspnetcoremodule.cab" EmbedCab="yes" CompressionLevel="high" />
 
