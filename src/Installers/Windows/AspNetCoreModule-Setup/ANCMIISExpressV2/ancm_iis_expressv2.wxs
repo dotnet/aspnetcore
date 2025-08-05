@@ -197,7 +197,7 @@
 
         <!-- WOW64 Support -->
         <?if $(InstallerPlatform) != "x86" ?>
-        <Directory Id="$(var.ProgramFilesFolder32)">
+        <Directory Id="ProgramFilesFolder">
           <Directory Id="INSTALLDIR32" Name="IIS Express">
             <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="$(var.ProductName)">
               <Directory Id="VersionDir32" Name="$(var.ProductVersionString)">
