@@ -307,7 +307,7 @@ internal partial class CircuitRegistry
         return Task.CompletedTask;
     }
 
-    internal async Task PauseAndDisposeCircuitHost(CircuitHost circuitHost, bool saveStateToClient)
+    private async Task PauseAndDisposeCircuitHost(CircuitHost circuitHost, bool saveStateToClient)
     {
         await _circuitPersistenceManager.PauseCircuitAsync(circuitHost, saveStateToClient);
         circuitHost.UnhandledException -= CircuitHost_UnhandledException;
