@@ -289,16 +289,15 @@
             <?endif?>
         </Package>
 
-    <Fragment><Feature Id="FT_DepProvider_$(var.ProductNameShort)" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" InstallDefault="local" Level="1" Title="RefCounting" TypicalDefault="install" AllowAbsent="no">
+    <Fragment>
+        <Feature Id="FT_DepProvider_$(var.ProductNameShort)" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" InstallDefault="local" Level="1" Title="RefCounting" TypicalDefault="install" AllowAbsent="no">
             <ComponentRef Id="C_DepProvider_$(var.ProductNameShort)" />
         </Feature>
 
-
-
-            <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32">
-                <Provides Key="$(var.ANCMDepProviderKey)" dep:Check="yes" />
-            </Component>
-        </Fragment>
+        <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32">
+            <Provides Key="$(var.ANCMDepProviderKey)" dep:Check="yes" />
+        </Component>
+    </Fragment>
 
     <Fragment>
         <Binary Id="IISCustomActionDll" SourceFile="$(var.aspnetcoreCA.TargetPath)" />
