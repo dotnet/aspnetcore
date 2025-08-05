@@ -172,60 +172,10 @@
           }
         }
       }
-    },
-    "/company": {
-      "post": {
-        "tags": [
-          "testhost"
-        ],
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/Company"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK"
-          }
-        }
-      }
     }
   },
   "components": {
     "schemas": {
-      "AddressWithoutSummary": {
-        "type": [
-          "null",
-          "object"
-        ],
-        "properties": {
-          "street": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        }
-      },
-      "AddressWithSummary": {
-        "type": [
-          "null",
-          "object"
-        ],
-        "properties": {
-          "street": {
-            "type": [
-              "null",
-              "string"
-            ]
-          }
-        },
-        "description": "An address."
-      },
       "BoardItem": {
         "type": "object",
         "properties": {
@@ -237,57 +187,6 @@
           }
         },
         "description": "An item on the board."
-      },
-      "Company": {
-        "type": "object",
-        "properties": {
-          "billingAddressClassWithSummary": {
-            "description": "Billing address.",
-            "$ref": "#/components/schemas/AddressWithSummary"
-          },
-          "billingAddressClassWithoutSummary": {
-            "description": "Billing address.",
-            "$ref": "#/components/schemas/AddressWithoutSummary"
-          },
-          "billingAddressNested": {
-            "type": [
-              "null",
-              "object"
-            ],
-            "properties": {
-              "street": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              }
-            },
-            "description": "Billing address."
-          },
-          "visitingAddressClassWithSummary": {
-            "description": "Visiting address.",
-            "$ref": "#/components/schemas/AddressWithSummary"
-          },
-          "visitingAddressClassWithoutSummary": {
-            "description": "Visiting address.",
-            "$ref": "#/components/schemas/AddressWithoutSummary"
-          },
-          "visitingAddressNested": {
-            "type": [
-              "null",
-              "object"
-            ],
-            "properties": {
-              "street": {
-                "type": [
-                  "null",
-                  "string"
-                ]
-              }
-            },
-            "description": "Visiting address."
-          }
-        }
       },
       "Project": {
         "required": [

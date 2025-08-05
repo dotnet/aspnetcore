@@ -76,8 +76,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             cache.Add(@"T:ProjectBoard.ProtectedInternalElement", new XmlComment(@"Can find this XML comment.", null, null, null, null, false, null, null, null));
             cache.Add(@"T:ProjectRecord", new XmlComment(@"The project that contains Todo items.", null, null, null, null, false, null, [new XmlParameterComment(@"Name", @"The name of the project.", null, false), new XmlParameterComment(@"Description", @"The description of the project.", null, false)], null));
             cache.Add(@"T:User", new XmlComment(null, null, null, null, null, false, null, null, null));
-            cache.Add(@"T:AddressWithSummary", new XmlComment(@"An address.", null, null, null, null, false, null, null, null));
-            cache.Add(@"T:AddressNested", new XmlComment(@"An address.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:ProjectBoard.ProtectedInternalElement.Name", new XmlComment(@"The unique identifier for the element.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:ProjectRecord.Name", new XmlComment(@"The name of the project.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:ProjectRecord.Description", new XmlComment(@"The description of the project.", null, null, null, null, false, null, null, null));
@@ -102,12 +100,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             cache.Add(@"P:IUser.Name", new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:User.Id", new XmlComment(@"The unique identifier for the user.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:User.Name", new XmlComment(@"The user's display name.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:Company.BillingAddressClassWithSummary", new XmlComment(@"Billing address.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:Company.BillingAddressClassWithoutSummary", new XmlComment(@"Billing address.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:Company.BillingAddressNested", new XmlComment(@"Billing address.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:Company.VisitingAddressClassWithSummary", new XmlComment(@"Visiting address.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:Company.VisitingAddressClassWithoutSummary", new XmlComment(@"Visiting address.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:Company.VisitingAddressNested", new XmlComment(@"Visiting address.", null, null, null, null, false, null, null, null));
 
             return cache;
         }
@@ -542,13 +534,12 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     file static class GeneratedServiceCollectionExtensions
     {
         [InterceptsLocation]
-        public static IServiceCollection AddOpenApi(this IServiceCollection services, Action<OpenApiOptions> configureOptions)
+        public static IServiceCollection AddOpenApi(this IServiceCollection services)
         {
             return services.AddOpenApi("v1", options =>
             {
                 options.AddSchemaTransformer(new XmlCommentSchemaTransformer());
                 options.AddOperationTransformer(new XmlCommentOperationTransformer());
-                configureOptions(options);
             });
         }
 

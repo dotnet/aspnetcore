@@ -61,6 +61,9 @@
       "RootModel": {
         "type": "object",
         "properties": {
+          "noPropertyComment": {
+            "$ref": "#/components/schemas/ModelWithSummary"
+          },
           "firstModelWithSummary": {
             "description": "Comment on property FirstModelWithSummary.",
             "$ref": "#/components/schemas/ModelWithSummary"

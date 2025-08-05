@@ -19,10 +19,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder();
 
-builder.Services.AddOpenApi(options => {
-    var prevCreateSchemaReferenceId = options.CreateSchemaReferenceId;
-    options.CreateSchemaReferenceId = (x) => x.Type == typeof(AddressNested) ? null : prevCreateSchemaReferenceId(x);
-});
+builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -34,7 +31,6 @@ app.MapPost("/project-record", (ProjectRecord project) => { });
 app.MapPost("/todo-with-description", (TodoWithDescription todo) => { });
 app.MapPost("/type-with-examples", (TypeWithExamples typeWithExamples) => { });
 app.MapPost("/user", (User user) => { });
-app.MapPost("/company", (Company company) => { });
 
 app.Run();
 
@@ -180,59 +176,6 @@ internal class User : IUser
     public string Name { get; set; }
 }
 
-/// <summary>
-/// An address.
-/// </summary>
-public class AddressWithSummary
-{
-    public string Street { get; set; }
-}
-
-public class AddressWithoutSummary
-{
-    public string Street { get; set; }
-}
-
-/// <summary>
-/// An address.
-/// </summary>
-public class AddressNested
-{
-    public string Street { get; set; }
-}
-
-public class Company
-{
-    /// <summary>
-    /// Billing address.
-    /// </summary>
-    public AddressWithSummary BillingAddressClassWithSummary { get; set; }
-
-    /// <summary>
-    /// Billing address.
-    /// </summary>
-    public AddressWithoutSummary BillingAddressClassWithoutSummary { get; set; }
-
-    /// <summary>
-    /// Billing address.
-    /// </summary>
-    public AddressNested BillingAddressNested { get; set; }
-
-    /// <summary>
-    /// Visiting address.
-    /// </summary>
-    public AddressWithSummary VisitingAddressClassWithSummary { get; set; }
-
-    /// <summary>
-    /// Visiting address.
-    /// </summary>
-    public AddressWithoutSummary VisitingAddressClassWithoutSummary { get; set; }
-
-    /// <summary>
-    /// Visiting address.
-    /// </summary>
-    public AddressNested VisitingAddressNested { get; set; }
-}
 """;
         var generator = new XmlCommentGenerator();
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
@@ -316,22 +259,11 @@ public class Company
             var user = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("The unique identifier for the user.", user.Properties["id"].Description);
             Assert.Equal("The user's display name.", user.Properties["name"].Description);
-
-            path = document.Paths["/company"].Operations[HttpMethod.Post];
-            var company = path.RequestBody.Content["application/json"].Schema;
-            Assert.Equal("Billing address.", company.Properties["billingAddressNested"].Description);
-            Assert.Equal("Visiting address.", company.Properties["visitingAddressNested"].Description);
-
-            var addressWithSummary = document.Components.Schemas["AddressWithSummary"];
-            Assert.Equal("An address.", addressWithSummary.Description);
-
-            var addressWithoutSummary = document.Components.Schemas["AddressWithoutSummary"];
-            Assert.Null(addressWithoutSummary.Description);
         });
     }
 
     [Fact]
-    public async Task XmlCommentsOnPropertiesShouldNotApplyToReferencedSchemas()
+    public async Task XmlCommentsOnPropertiesShouldApplyToSchemaReferences()
     {
         var source = """
 using System;
@@ -377,6 +309,8 @@ public class ModelInline
 /// </summary>
 public class RootModel
 {
+    public ModelWithSummary NoPropertyComment { get; set; }
+
     /// <summary>
     /// Comment on property FirstModelWithSummary.
     /// </summary>
@@ -426,7 +360,28 @@ public class RootModel
             Assert.Null(modelWithoutSummary.Description);
 
             Assert.DoesNotContain("ModelInline", document.Components.Schemas.Keys);
+
+            // Check RootModel properties
+            var noPropertyCommentReference = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["noPropertyComment"]);
+            Assert.Null(noPropertyCommentReference.Reference.Description);
+
+            Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["firstModelWithSummary"]);
+            Assert.Equal("Comment on property FirstModelWithSummary.", rootModelSchema.Properties["firstModelWithSummary"].Description);
+
+            Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["firstModelWithoutSummary"]);
+            Assert.Equal("Comment on property FirstModelWithoutSummary.", rootModelSchema.Properties["firstModelWithoutSummary"].Description);
+
+            Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["firstModelInline"]);
             Assert.Equal("Comment on property FirstModelInline.", rootModelSchema.Properties["firstModelInline"].Description);
+
+            // Verify that comments on the same type override each other
+            Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["secondModelWithSummary"]);
+            Assert.Equal("Comment on property FirstModelWithSummary.", rootModelSchema.Properties["firstModelWithSummary"].Description);
+
+            Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["secondModelWithoutSummary"]);
+            Assert.Equal("Comment on property FirstModelWithoutSummary.", rootModelSchema.Properties["firstModelWithoutSummary"].Description);
+
+            Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["secondModelInline"]);
             Assert.Equal("Comment on property SecondModelInline.", rootModelSchema.Properties["secondModelInline"].Description);
         });
     }
