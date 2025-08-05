@@ -31,7 +31,12 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     // One of the tests here makes use of the streaming rendering page, which uses global state
     // so we can't run at the same time as other such tests
     public override Task InitializeAsync()
-        => InitializeAsync(BrowserFixture.StreamingContext);
+    {
+        var initTask =  InitializeAsync(BrowserFixture.StreamingContext);
+        var testId = Guid.NewGuid().ToString("N")[..8];
+        ((IJavaScriptExecutor)Browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
+        return initTask;
+    }
 
     [Fact]
     public void CanNavigateToAnotherPageWhilePreservingCommonDOMElements()
@@ -731,10 +736,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Theory]
-    [InlineData(false, false, false)] // https://github.com/dotnet/aspnetcore/issues/60875
+    [InlineData(false, false, false)]
     [InlineData(false, true, false)]
     [InlineData(true, true, false)]
-    [InlineData(true, false, false)] // https://github.com/dotnet/aspnetcore/issues/60875
+    [InlineData(true, false, false)]
     // [InlineData(false, false, true)] programmatic navigation doesn't work without enhanced navigation
     [InlineData(false, true, true)]
     [InlineData(true, true, true)]

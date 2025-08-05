@@ -29,8 +29,11 @@ public static class EnhancedNavigationTestUtil
 
             // Set the suppression flag - this will prevent enhanced navigation from being attached on the next navigation
             // and trigger detachment of currently attached enhanced navigation via the periodic check
-            var testId = Guid.NewGuid().ToString("N")[..8];
-            ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
+            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
+            if (testId == null)
+            {
+                throw new InvalidOperationException("Test ID not found in sessionStorage. Ensure that the test ID is set in InitializeAsync before calling this method.");
+            }
             ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('suppress-enhanced-navigation-{testId}', 'true')");
 
             var suppressEnhancedNavigation = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('suppress-enhanced-navigation-{testId}');");
