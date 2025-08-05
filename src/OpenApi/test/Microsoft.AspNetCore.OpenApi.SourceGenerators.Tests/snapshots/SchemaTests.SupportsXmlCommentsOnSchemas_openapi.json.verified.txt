@@ -242,9 +242,11 @@
         "type": "object",
         "properties": {
           "billingAddressClassWithSummary": {
+            "description": "Billing address.",
             "$ref": "#/components/schemas/AddressWithSummary"
           },
           "billingAddressClassWithoutSummary": {
+            "description": "Billing address.",
             "$ref": "#/components/schemas/AddressWithoutSummary"
           },
           "billingAddressNested": {
@@ -263,9 +265,11 @@
             "description": "Billing address."
           },
           "visitingAddressClassWithSummary": {
+            "description": "Visiting address.",
             "$ref": "#/components/schemas/AddressWithSummary"
           },
           "visitingAddressClassWithoutSummary": {
+            "description": "Visiting address.",
             "$ref": "#/components/schemas/AddressWithoutSummary"
           },
           "visitingAddressNested": {

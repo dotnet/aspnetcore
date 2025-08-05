@@ -62,15 +62,19 @@
         "type": "object",
         "properties": {
           "firstModelWithSummary": {
+            "description": "Comment on property FirstModelWithSummary.",
             "$ref": "#/components/schemas/ModelWithSummary"
           },
           "secondModelWithSummary": {
+            "description": "Comment on property SecondModelWithSummary.",
             "$ref": "#/components/schemas/ModelWithSummary"
           },
           "firstModelWithoutSummary": {
+            "description": "Comment on property FirstModelWithoutSummary.",
             "$ref": "#/components/schemas/ModelWithoutSummary"
           },
           "secondModelWithoutSummary": {
+            "description": "Comment on property SecondModelWithoutSummary.",
             "$ref": "#/components/schemas/ModelWithoutSummary"
           },
           "firstModelInline": {

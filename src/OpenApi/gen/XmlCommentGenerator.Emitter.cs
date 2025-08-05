@@ -459,18 +459,29 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
             }
 
-            var isInlinedSchema = schema.Metadata is null
-                  || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
-                  || string.IsNullOrEmpty(schemaId as string);
-            if (isInlinedSchema && context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
             {
                 // Apply comments from the property
                 if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
-                    schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
-                    if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                    var isInlinedSchema = schema.Metadata is null
+                        || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
+                        || string.IsNullOrEmpty(schemaId as string);
+                    if(isInlinedSchema)
                     {
-                        schema.Example = jsonString.Parse();
+                        schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Example = jsonString.Parse();
+                        }
+                    }
+                    else
+                    {
+                        schema.Metadata["x-ref-description"] = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Metadata["x-ref-example"] = jsonString.Parse();
+                        }
                     }
                 }
             }

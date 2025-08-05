@@ -391,12 +391,15 @@
             "description": "This property is a nullable reference type."
           },
           "taskOfTupleProp": {
+            "description": "This property is a generic type containing a tuple.",
             "$ref": "#/components/schemas/TaskOfValueTupleOfintAndstring"
           },
           "tupleWithGenericProp": {
+            "description": "This property is a tuple with a generic type inside.",
             "$ref": "#/components/schemas/ValueTupleOfintAndDictionaryOfintAndstring"
           },
           "tupleWithNestedGenericProp": {
+            "description": "This property is a tuple with a nested generic type inside.",
             "$ref": "#/components/schemas/ValueTupleOfintAndDictionaryOfintAndDictionaryOfstringAndint"
           }
         },
