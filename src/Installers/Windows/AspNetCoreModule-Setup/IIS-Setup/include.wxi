@@ -7,7 +7,7 @@
   <?define NativeMachine_x64=34404?>
   <?define NativeMachine_arm64=43620?>
 
-  <?if $(Platform) = "x64"?>
+  <?if $(InstallerPlatform) = "x64"?>
     <?define IsWin64 = yes ?>
     <?define Bitness = always64 ?>
     <?define PlatformArchitecture = x64 ?>
@@ -17,7 +17,7 @@
     <?define SysWow64Folder = SystemFolder ?>
     <?define PlatformValue = x64 ?>
     <?define ANCMInstallerVersion = 400 ?>
-  <?elseif $(Platform) = "x86" ?>
+  <?elseif $(InstallerPlatform) = "x86" ?>
     <?define IsWin64 = no ?>
     <?define Bitness = always32 ?>
     <?define PlatformArchitecture = x86 ?>
@@ -25,7 +25,7 @@
     <?define SystemFolder = SystemFolder ?>
     <?define PlatformValue = Intel ?>
     <?define ANCMInstallerVersion = 400 ?>
-  <?elseif $(Platform) ~= "arm64" ?>
+  <?elseif $(InstallerPlatform) ~= "arm64" ?>
     <?define IsWin64 = yes ?>
     <?define Bitness = always64 ?>
     <?define PlatformArchitecture = ARM64 ?>

@@ -29,15 +29,15 @@
 <?define AspNetCoreTraceProviderValue = "65536" ?>
 <?define AspNetCoreModuleName = "AspNetCoreModuleV2" ?>
 
-<?if $(var.Platform) = "x86" ?>
+<?if $(InstallerPlatform) = "x86" ?>
     <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
 <?else?>
     <?define SchemaGuid = "ab582af2-d6c0-43f7-8412-76a19c65d7f2" ?>
     <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\$(var.Platform)\$(var.Configuration)\aspnetcorev2.dll" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\$(var.Platform)\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\$(InstallerPlatform)\$(var.Configuration)\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\$(InstallerPlatform)\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
 <?endif?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs/dependency" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
@@ -92,21 +92,21 @@
         </Property>
 
         <Launch Condition="Installed Or IISEXPRESS_INSTALL_PATH" Message="!(loc.AspNetCoreModuleIISExpressPrereq)" />
-        <?if $(var.Platform) != "x86" ?>
+        <?if $(InstallerPlatform) != "x86" ?>
           <Launch Condition="Installed Or IISEXPRESS_INSTALL_PATH32" Message="!(loc.AspNetCoreModuleIISExpressPrereq)" />
         <?endif?>
 
         <!-- prevent install of 32 bit product on 64 bit machine -->
-        <?if "x86" = "$(var.Platform)" ?>
+        <?if "x86" = "$(InstallerPlatform)" ?>
         <Launch Condition="Installed Or NOT VersionNT64" Message="!(loc.LaunchCondition_64BIT)" />
         <?endif?>
 
         <!-- also prevent install of 64-bit product on 32-bit machine -->
-        <?if $(var.Platform) != "x86"?>
+        <?if $(InstallerPlatform) != "x86"?>
         <Launch Condition="(Installed And NOT PATCH) Or VersionNT64" Message="!(loc.LaunchCondition_32BIT)" />
         <?endif?>
 
-        <?if $(var.Platform) != "x86" ?>
+        <?if $(InstallerPlatform) != "x86" ?>
             <Property Id="IISEXPRESS_INSTALL_PATH32" Secure="yes">
                 <DirectorySearch Id="ProgramFilesSearch32" Path="[ProgramFilesFolder]">
                    <DirectorySearch Id="IISExpressInstallPathSearch32" Path="IIS Express" AssignToProperty="yes">
@@ -141,7 +141,7 @@
         <Directory Id="INSTALLLOCATION" ShortName="ANCM" Name="$(var.ProductName)">
           <Directory Id="VersionDir" Name="$(var.ProductVersionString)">
             <Component Id="AspNetCoreModule" Guid="84ed6ce6-c8a3-4fa8-a872-c98a1d15dd4f" Bitness="$(var.Bitness)">
-                <?if $(var.Platform) = "arm64" ?>
+                <?if $(InstallerPlatform) = "arm64" ?>
                 <File Id="AspNetCoreModuleDll" Name="aspnetcorev2.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll" DiskId="1" Vital="yes" />
                 <?else?>
                 <File Id="AspNetCoreModuleDll" Name="aspnetcorev2.dll" Source="$(var.AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" />
@@ -153,14 +153,14 @@
             </Component>
             <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)">
               <Component Id="AspNetCoreModuleHandler" Guid="559EF726-B25C-480F-AFA4-32D0BA8B2376" Bitness="$(var.Bitness)">
-                    <?if $(var.Platform) = "arm64" ?>
+                    <?if $(InstallerPlatform) = "arm64" ?>
                     <File Id="AspNetCoreModuleHandlerDll" Name="aspnetcorev2_outofprocess.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes" />
                     <?else?>
                     <File Id="AspNetCoreModuleHandlerDll" Name="aspnetcorev2_outofprocess.dll" Source="$(var.AspNetCoreV2HandlerProgramFilesTargetPath)" DiskId="1" Vital="yes">
                     </File>
                     <?endif?>
               </Component>
-              <?if $(var.Platform) = "arm64" ?>
+              <?if $(InstallerPlatform) = "arm64" ?>
                 <Component Id="AspNetCoreModuleHandler.x64" Guid="0b192457-9c6a-4703-ba6a-0c5a58b7c9cb" Bitness="$(var.Bitness)">
                     <File Id="AspNetCoreModuleHandlerDll.x64" Name="aspnetcorev2_outofprocess_x64.dll" Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\x64\$(var.Configuration)\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes" />
                 </Component>
@@ -169,7 +169,7 @@
                 </Component>
               <?endif?>
             </Directory>
-            <?if $(var.Platform) = "arm64" ?>
+            <?if $(InstallerPlatform) = "arm64" ?>
             <Component Id="AspNetCoreModuleV2.x64" Guid="1962b1b0-6345-4b37-97b3-a8f2c9e82bee" Bitness="$(var.Bitness)">
                 <File Id="AspNetCoreModuleV2Dll.x64" Name="aspnetcorev2_x64.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(var.Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes" />
                 <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
@@ -196,7 +196,7 @@
         </Directory>
 
         <!-- WOW64 Support -->
-        <?if $(var.Platform) != "x86" ?>
+        <?if $(InstallerPlatform) != "x86" ?>
         <Directory Id="$(var.ProgramFilesFolder32)">
           <Directory Id="INSTALLDIR32" Name="IIS Express">
             <Directory Id="INSTALLLOCATION32" ShortName="ANCM" Name="$(var.ProductName)">
@@ -234,14 +234,14 @@
         <Feature Id="AspNetCoreModuleFeature" Title="!(loc.AspNetCoreModuleProductTitle)" Description="!(loc.AspNetCoreModuleProductDescription)" Level="1">
             <ComponentRef Id="AspNetCoreModule" />
             <ComponentRef Id="AspNetCoreModuleHandler" />
-            <?if $(var.Platform) = "arm64" ?>
+            <?if $(InstallerPlatform) = "arm64" ?>
             <ComponentRef Id="AspNetCoreModuleV2.x64" />
             <ComponentRef Id="AspNetCoreModuleHandler.x64" />
             <ComponentRef Id="AspNetCoreModuleV2.arm64" />
             <ComponentRef Id="AspNetCoreModuleHandler.arm64" />
             <?endif?>
             <ComponentRef Id="AspNetCoreSchema" />
-            <?if $(var.Platform) != "x86" ?>
+            <?if $(InstallerPlatform) != "x86" ?>
                 <ComponentRef Id="AspNetCoreModule.wow" />
                 <ComponentRef Id="AspNetCoreModuleHandler.wow" />
                 <ComponentRef Id="AspNetCoreSchema.wow" />
@@ -334,7 +334,7 @@
         <CustomAction Id="CA_REMOVE_CONFIGSECTION_PROPERTY_TMP" Property="CA_REMOVE_CONFIGSECTION_TMP" Value="[IISEXPRESS_APPHOST_CONFIG_TMP]" />
         <CustomAction Id="CA_REMOVE_CONFIGSECTION_TMP" DllEntry="RemoveConfigSection" Execute="deferred" Return="check" Impersonate="no" BinaryRef="IISCustomActionDll" />
 
-        <?if $(var.Platform) != "x86" ?>
+        <?if $(InstallerPlatform) != "x86" ?>
             <CustomAction Id="CA_UNLOCK_HANDLER32_PROPERTY" Property="CA_UNLOCK_HANDLER32" Value="&quot;[IISEXPRESS_INSTALL_PATH32]appcmd.exe&quot; unlock config /section:system.webserver/handlers /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG32]&quot;" />
             <CustomAction Id="CA_UNLOCK_HANDLER32" DllEntry="WixQuietExec" Execute="deferred" Return="ignore" Impersonate="no" BinaryRef="Wix4UtilCA_X86" />
             <CustomAction Id="CA_UNLOCK_HANDLER_TMP32_PROPERTY" Property="CA_UNLOCK_HANDLER_TMP32" Value="&quot;[IISEXPRESS_INSTALL_PATH]appcmd.exe&quot; unlock config /section:system.webserver/handlers /apphostconfig:&quot;[IISEXPRESS_APPHOST_CONFIG_TMP32]&quot;" />
@@ -451,7 +451,7 @@
             <Custom Action="CA_REMOVE_MODULE_TMP_PROPERTY" Before="CA_REMOVE_MODULE_TMP" Condition="(REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE)" />
             <Custom Action="CA_REMOVE_MODULE_TMP" Before="RemoveFiles" Condition="(REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE)" />
 
-            <?if $(var.Platform) != "x86" ?>
+            <?if $(InstallerPlatform) != "x86" ?>
                 <Custom Action="CA_UNLOCK_HANDLER32_PROPERTY" After="InstallFiles" Condition="(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)" />
                 <Custom Action="CA_UNLOCK_HANDLER32" After="CA_UNLOCK_HANDLER32_PROPERTY" Condition="(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)" />
                 <Custom Action="CA_UNINSTALL_MODULE32_PROPERTY" After="CA_UNLOCK_HANDLER32" Condition="(NOT REMOVE AND IISEXPRESS_INSTALL_PATH32)" />

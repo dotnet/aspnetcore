@@ -22,12 +22,12 @@
 <?define PlatformValue = "x86" ?>
 <?endif?>
 
-<?if $(var.Platform) = "x86" ?>
+<?if $(InstallerPlatform) = "x86" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
 <?else?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\$(var.Platform)\$(var.Configuration)\aspnetcorev2.dll" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\$(var.Platform)\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\$(InstallerPlatform)\$(var.Configuration)\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\$(InstallerPlatform)\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
 <?endif?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs/dependency" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
@@ -62,12 +62,12 @@
         <Launch Condition="Privileged" Message="!(loc.AdminRequired)" />
 
         <!-- prevent install of 32 bit product on 64 bit machine -->
-        <?if $(var.Platform) = "x86" ?>
+        <?if $(InstallerPlatform) = "x86" ?>
         <Launch Condition="Installed Or NOT VersionNT64" Message="!(loc.LaunchCondition_64BIT)" />
         <?endif?>
 
         <!-- also prevent install of 64-bit product on 32-bit machine -->
-        <?if $(var.Platform) != "x86"?>
+        <?if $(InstallerPlatform) != "x86"?>
         <Launch Condition="(Installed And NOT PATCH) Or VersionNT64" Message="!(loc.LaunchCondition_32BIT)" />
         <?endif?>
 
@@ -91,13 +91,13 @@
             <ComponentRef Id="AspNetCoreSchemaV2" />
             <ComponentRef Id="AspNetCoreModuleV2" />
             <ComponentRef Id="AspNetCoreModuleHandler" />
-            <?if $(var.Platform) = "arm64"?>
+            <?if $(InstallerPlatform) = "arm64"?>
             <ComponentRef Id="AspNetCoreModuleV2.x64" />
             <ComponentRef Id="AspNetCoreModuleHandler.x64" />
             <ComponentRef Id="AspNetCoreModuleV2.arm64" />
             <ComponentRef Id="AspNetCoreModuleHandler.arm64" />
             <?endif?>
-            <?if $(var.Platform) != "x86" ?>
+            <?if $(InstallerPlatform) != "x86" ?>
             <ComponentRef Id="C_DiscoverabilityKeyWow" />
             <ComponentRef Id="AspNetCoreModuleV2.wow" />
             <ComponentRef Id="AspNetCoreModuleHandler.wow" />
@@ -134,7 +134,7 @@
             </Row>
         </CustomTable>
 
-        <!-- <?if $(var.Platform) = "x86" OR $(var.Platform) = "x64" ?> -->
+        <!-- <?if $(InstallerPlatform) = "x86" OR $(InstallerPlatform) = "x64" ?> -->
         <CustomTable Id="IISTraceArea">
           <Row>
             <Data Column="ProviderName" Value="WWW Server" />
@@ -197,7 +197,7 @@
                    <Directory Id="INSTALLLOCATION" ShortName="ANCM" Name="Asp.Net Core Module">
                        <Directory Id="VersionDir" Name="$(var.ProductVersionString)">
                            <Component Id="AspNetCoreModuleV2" Guid="3a692941-59be-43cf-98a8-6ed01b12a519" Bitness="$(var.Bitness)">
-                             <?if $(var.Platform) = "arm64" ?>
+                             <?if $(InstallerPlatform) = "arm64" ?>
                              <File Id="AspNetCoreModuleV2Dll" Name="aspnetcorev2.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll" DiskId="1" Vital="yes" />
                              <?else?>
                              <File Id="AspNetCoreModuleV2Dll" Name="aspnetcorev2.dll" Source="$(var.AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" />
@@ -210,13 +210,13 @@
                            </Component>
                            <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)">
                              <Component Id="AspNetCoreModuleHandler" Guid="4b62060a-deb8-4de3-9557-9c0be21dc844" Bitness="$(var.Bitness)">
-                               <?if $(var.Platform) = "arm64" ?>
+                               <?if $(InstallerPlatform) = "arm64" ?>
                                <File Id="AspNetCoreModuleHandlerDll" Name="aspnetcorev2_outofprocess.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes" />
                                <?else?>
                                <File Id="AspNetCoreModuleHandlerDll" Name="aspnetcorev2_outofprocess.dll" Source="$(var.AspNetCoreV2HandlerProgramFilesTargetPath)" DiskId="1" Vital="yes" />
                                <?endif?>
                              </Component>
-                             <?if $(var.Platform) = "arm64" ?>
+                             <?if $(InstallerPlatform) = "arm64" ?>
                              <Component Id="AspNetCoreModuleHandler.x64" Guid="d9b0b5c9-8bbe-46f2-97d5-ba23d1a1ffed" Bitness="$(var.Bitness)">
                                     <File Id="AspNetCoreModuleHandlerDll.x64" Name="aspnetcorev2_outofprocess_x64.dll" Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\x64\$(var.Configuration)\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes">
                                     </File>
@@ -227,7 +227,7 @@
                              </Component>
                              <?endif?>
                            </Directory>
-                           <?if $(var.Platform) = "arm64" ?>
+                           <?if $(InstallerPlatform) = "arm64" ?>
                            <Component Id="AspNetCoreModuleV2.x64" Guid="325cf239-162d-4de8-97e7-642e6c66181c" Bitness="$(var.Bitness)">
                                 <File Id="AspNetCoreModuleV2Dll.x64" Name="aspnetcorev2_x64.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(var.Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes">
                                 </File>
@@ -253,7 +253,7 @@
            </StandardDirectory>
 
            <!-- WOW64 Support -->
-           <?if $(var.Platform) != "x86" ?>
+           <?if $(InstallerPlatform) != "x86" ?>
            <Component Id="C_DiscoverabilityKeyWow" Guid="2eeb90e8-28d0-4543-9c2f-843b03bd6d05" Directory="TARGETDIR" Bitness="always32">
                <RegistryKey Root="HKLM" Key="$(var.DiscoverabilityKeyRoot)">
                     <RegistryKey Key="$(var.ProductShortName)">
