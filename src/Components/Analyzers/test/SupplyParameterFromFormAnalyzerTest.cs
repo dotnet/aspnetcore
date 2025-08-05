@@ -147,6 +147,70 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
     }
 
     [Fact]
+    public void IgnoresSupplyParameterFromFormWithNullInitializer()
+    {
+        var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class TestComponent : ComponentBase
+        {{
+            [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = null;
+        }}
+    }}" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void IgnoresSupplyParameterFromFormWithNullForgivingInitializer()
+    {
+        var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class TestComponent : ComponentBase
+        {{
+            [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = null!;
+        }}
+    }}" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void IgnoresSupplyParameterFromFormWithDefaultInitializer()
+    {
+        var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class TestComponent : ComponentBase
+        {{
+            [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = default;
+        }}
+    }}" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void IgnoresSupplyParameterFromFormWithDefaultForgivingInitializer()
+    {
+        var test = $@"
+    namespace ConsoleApplication1
+    {{
+        using {typeof(ParameterAttribute).Namespace};
+        class TestComponent : ComponentBase
+        {{
+            [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = default!;
+        }}
+    }}" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
     public void WorksWithInheritedComponentBase()
     {
         var test = $@"

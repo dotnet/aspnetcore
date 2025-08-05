@@ -45,6 +45,12 @@ public sealed class SupplyParameterFromFormAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
+                // Ignore initializers that set to default values (null, default, etc.)
+                if (IsDefaultValueInitializer(propertyDeclaration.Initializer.Value))
+                {
+                    return;
+                }
+
                 var propertySymbol = context.SemanticModel.GetDeclaredSymbol(propertyDeclaration);
                 if (propertySymbol == null)
                 {
@@ -74,5 +80,22 @@ public sealed class SupplyParameterFromFormAnalyzer : DiagnosticAnalyzer
                 }
             }, SyntaxKind.PropertyDeclaration);
         });
+    }
+
+    private static bool IsDefaultValueInitializer(ExpressionSyntax expression)
+    {
+        return expression switch
+        {
+            // null
+            LiteralExpressionSyntax { Token.ValueText: "null" } => true,
+            // null!
+            PostfixUnaryExpressionSyntax { Operand: LiteralExpressionSyntax { Token.ValueText: "null" }, OperatorToken.ValueText: "!" } => true,
+            // default
+            LiteralExpressionSyntax literal when literal.Token.IsKind(SyntaxKind.DefaultKeyword) => true,
+            // default!
+            PostfixUnaryExpressionSyntax { Operand: LiteralExpressionSyntax literal, OperatorToken.ValueText: "!" } 
+                when literal.Token.IsKind(SyntaxKind.DefaultKeyword) => true,
+            _ => false
+        };
     }
 }
