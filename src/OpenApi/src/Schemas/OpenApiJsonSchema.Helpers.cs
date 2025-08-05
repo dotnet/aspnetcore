@@ -260,10 +260,20 @@ internal sealed partial class OpenApiJsonSchema
                 var minimum = reader.GetDecimal();
                 schema.Minimum = minimum.ToString(CultureInfo.InvariantCulture);
                 break;
+            case OpenApiSchemaKeywords.ExclusiveMinimum:
+                reader.Read();
+                var exclusiveMinimum = reader.GetDecimal();
+                schema.ExclusiveMinimum = exclusiveMinimum.ToString(CultureInfo.InvariantCulture);
+                break;
             case OpenApiSchemaKeywords.MaximumKeyword:
                 reader.Read();
                 var maximum = reader.GetDecimal();
                 schema.Maximum = maximum.ToString(CultureInfo.InvariantCulture);
+                break;
+            case OpenApiSchemaKeywords.ExclusiveMaximum:
+                reader.Read();
+                var exclusiveMaximum = reader.GetDecimal();
+                schema.ExclusiveMaximum = exclusiveMaximum.ToString(CultureInfo.InvariantCulture);
                 break;
             case OpenApiSchemaKeywords.PatternKeyword:
                 reader.Read();
@@ -288,8 +298,14 @@ internal sealed partial class OpenApiJsonSchema
             case OpenApiSchemaKeywords.AnyOfKeyword:
                 reader.Read();
                 schema.Type = JsonSchemaType.Object;
-                var schemas = ReadList<OpenApiJsonSchema>(ref reader);
-                schema.AnyOf = schemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
+                var anyOfSchemas = ReadList<OpenApiJsonSchema>(ref reader);
+                schema.AnyOf = anyOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
+                break;
+            case OpenApiSchemaKeywords.OneOfKeyword:
+                reader.Read();
+                schema.Type = JsonSchemaType.Object;
+                var oneOfSchemas = ReadList<OpenApiJsonSchema>(ref reader);
+                schema.OneOf = oneOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
                 break;
             case OpenApiSchemaKeywords.DiscriminatorKeyword:
                 reader.Read();

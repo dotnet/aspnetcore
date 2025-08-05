@@ -401,7 +401,14 @@ public static partial class RequestDelegateFactory
                 InferAntiforgeryMetadata(factoryContext);
             }
 
-            PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext.EndpointBuilder);
+            // If this endpoint expects a JSON request body, we assume its an API endpoint not intended for browser navigation.
+            // When present, authentication handlers should prefer returning status codes over browser redirects.
+            if (factoryContext.JsonRequestBodyParameter is not null)
+            {
+                factoryContext.EndpointBuilder.Metadata.Add(ApiEndpointMetadata.Instance);
+            }
+
+            PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext);
 
             // Add metadata provided by the delegate return type and parameter types next, this will be more specific than inferred metadata from above
             EndpointMetadataPopulator.PopulateMetadata(methodInfo, factoryContext.EndpointBuilder, factoryContext.Parameters);
@@ -1023,37 +1030,40 @@ public static partial class RequestDelegateFactory
         return Expression.Block(localVariables, checkParamAndCallMethod);
     }
 
-    private static void PopulateBuiltInResponseTypeMetadata(Type returnType, EndpointBuilder builder)
+    private static void PopulateBuiltInResponseTypeMetadata(Type returnType, RequestDelegateFactoryContext factoryContext)
     {
         if (returnType.IsByRefLike)
         {
             throw GetUnsupportedReturnTypeException(returnType);
         }
 
-        var isAwaitable = false;
         if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
         {
             returnType = coercedAwaitableInfo.AwaitableInfo.ResultType;
-            isAwaitable = true;
         }
 
         // Skip void returns and IResults. IResults might implement IEndpointMetadataProvider but otherwise we don't know what it might do.
-        if (!isAwaitable && (returnType == typeof(void) || typeof(IResult).IsAssignableFrom(returnType)))
+        if (returnType == typeof(void) || typeof(IResult).IsAssignableFrom(returnType))
         {
             return;
         }
+
+        var builder = factoryContext.EndpointBuilder;
 
         if (returnType == typeof(string))
         {
             builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(type: typeof(string), statusCode: 200, PlaintextContentType));
         }
-        else if (returnType == typeof(void))
-        {
-            builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(returnType, statusCode: 200, PlaintextContentType));
-        }
         else
         {
             builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(returnType, statusCode: 200, DefaultAcceptsAndProducesContentType));
+
+            if (factoryContext.JsonRequestBodyParameter is null)
+            {
+                // Since this endpoint responds with JSON, we assume its an API endpoint not intended for browser navigation,
+                // but we don't want to bother adding this metadata twice if we've already inferred it based on the expected JSON request body.
+                builder.Metadata.Add(ApiEndpointMetadata.Instance);
+            }
         }
     }
 
