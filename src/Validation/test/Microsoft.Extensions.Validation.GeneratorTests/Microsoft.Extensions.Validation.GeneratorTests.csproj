@@ -28,6 +28,8 @@
 
   <ItemGroup>
     <HelixContent Include="$(MSBuildProjectDirectory)\snapshots\**" />
+    <Compile Remove="snapshots\**\*" />
   </ItemGroup>
+
 
 </Project>
