@@ -70,15 +70,15 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         {
             var cache = new Dictionary<string, XmlComment>();
 
-            cache.Add(@"T:ModelWithSummary", new XmlComment(@"Comment on class ModelWithSummary.", null, null, null, null, false, null, null, null));
-            cache.Add(@"T:ModelInline", new XmlComment(@"Comment on class ModelInline.", null, null, null, null, false, null, null, null));
-            cache.Add(@"T:RootModel", new XmlComment(@"Comment on class RootModel.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:RootModel.FirstModelWithSummary", new XmlComment(@"Comment on property FirstModelWithSummary.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:RootModel.SecondModelWithSummary", new XmlComment(@"Comment on property SecondModelWithSummary.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:RootModel.FirstModelWithoutSummary", new XmlComment(@"Comment on property FirstModelWithoutSummary.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:RootModel.SecondModelWithoutSummary", new XmlComment(@"Comment on property SecondModelWithoutSummary.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:RootModel.FirstModelInline", new XmlComment(@"Comment on property FirstModelInline.", null, null, null, null, false, null, null, null));
-            cache.Add(@"P:RootModel.SecondModelInline", new XmlComment(@"Comment on property SecondModelInline.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:ModelWithSummary", new XmlComment(@"Comment on class ModelWithSummary.", null, null, null, null, false, [@"{ ""street"": ""ModelWithSummaryClass"" }"], null, null));
+            cache.Add(@"T:ModelInline", new XmlComment(@"Comment on class ModelInline.", null, null, null, null, false, [@"{ ""street"": ""ModelInlineClass"" }"], null, null));
+            cache.Add(@"T:RootModel", new XmlComment(@"Comment on class RootModel.", null, null, null, null, false, [@"{ }"], null, null));
+            cache.Add(@"P:RootModel.ModelWithSummary1", new XmlComment(@"Comment on property ModelWithSummary1.", null, null, null, null, false, [@"{ ""street"": ""ModelWithSummary1Prop"" }"], null, null));
+            cache.Add(@"P:RootModel.ModelWithSummary2", new XmlComment(@"Comment on property ModelWithSummary2.", null, null, null, null, false, [@"{ ""street"": ""ModelWithSummary2Prop"" }"], null, null));
+            cache.Add(@"P:RootModel.ModelWithoutSummary1", new XmlComment(@"Comment on property ModelWithoutSummary1.", null, null, null, null, false, [@"{ ""street"": ""ModelWithoutSummary1Prop"" }"], null, null));
+            cache.Add(@"P:RootModel.ModelWithoutSummary2", new XmlComment(@"Comment on property ModelWithoutSummary2.", null, null, null, null, false, [@"{ ""street"": ""ModelWithoutSummary2Prop"" }"], null, null));
+            cache.Add(@"P:RootModel.ModelInline1", new XmlComment(@"Comment on property ModelInline1.", null, null, null, null, false, [@"{ ""street"": ""ModelInline1Prop"" }"], null, null));
+            cache.Add(@"P:RootModel.ModelInline2", new XmlComment(@"Comment on property ModelInline2.", null, null, null, null, false, [@"{ ""street"": ""ModelInline2Prop"" }"], null, null));
 
             return cache;
         }

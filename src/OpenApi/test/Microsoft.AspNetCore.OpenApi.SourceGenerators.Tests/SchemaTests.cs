@@ -286,6 +286,9 @@ app.Run();
 /// <summary>
 /// Comment on class ModelWithSummary.
 /// </summary>
+/// <example>
+/// { "street": "ModelWithSummaryClass" }
+/// </example>
 public class ModelWithSummary
 {
     public string Street { get; set; }
@@ -299,6 +302,9 @@ public class ModelWithoutSummary
 /// <summary>
 /// Comment on class ModelInline.
 /// </summary>
+/// <example>
+/// { "street": "ModelInlineClass" }
+/// </example>
 public class ModelInline
 {
     public string Street { get; set; }
@@ -307,39 +313,60 @@ public class ModelInline
 /// <summary>
 /// Comment on class RootModel.
 /// </summary>
+/// <example>
+/// { }
+/// </example>
 public class RootModel
 {
     public ModelWithSummary NoPropertyComment { get; set; }
 
     /// <summary>
-    /// Comment on property FirstModelWithSummary.
+    /// Comment on property ModelWithSummary1.
     /// </summary>
-    public ModelWithSummary FirstModelWithSummary { get; set; }
+    /// <example>
+    /// { "street": "ModelWithSummary1Prop" }
+    /// </example>
+    public ModelWithSummary ModelWithSummary1 { get; set; }
 
     /// <summary>
-    /// Comment on property SecondModelWithSummary.
+    /// Comment on property ModelWithSummary2.
     /// </summary>
-    public ModelWithSummary SecondModelWithSummary { get; set; }
+    /// <example>
+    /// { "street": "ModelWithSummary2Prop" }
+    /// </example>
+    public ModelWithSummary ModelWithSummary2 { get; set; }
 
     /// <summary>
-    /// Comment on property FirstModelWithoutSummary.
+    /// Comment on property ModelWithoutSummary1.
     /// </summary>
-    public ModelWithoutSummary FirstModelWithoutSummary { get; set; }
+    /// <example>
+    /// { "street": "ModelWithoutSummary1Prop" }
+    /// </example>
+    public ModelWithoutSummary ModelWithoutSummary1 { get; set; }
 
     /// <summary>
-    /// Comment on property SecondModelWithoutSummary.
+    /// Comment on property ModelWithoutSummary2.
     /// </summary>
-    public ModelWithoutSummary SecondModelWithoutSummary { get; set; }
+    /// <example>
+    /// { "street": "ModelWithoutSummary2Prop" }
+    /// </example>
+    public ModelWithoutSummary ModelWithoutSummary2 { get; set; }
 
     /// <summary>
-    /// Comment on property FirstModelInline.
+    /// Comment on property ModelInline1.
     /// </summary>
-    public ModelInline FirstModelInline { get; set; }
+    /// <example>
+    /// { "street": "ModelInline1Prop" }
+    /// </example>
+    public ModelInline ModelInline1 { get; set; }
 
     /// <summary>
-    /// Comment on property SecondModelInline.
+    /// Comment on property ModelInline2.
     /// </summary>
-    public ModelInline SecondModelInline { get; set; }
+    /// <example>
+    /// { "street": "ModelInline2Prop" }
+    /// </example>
+    public ModelInline ModelInline2 { get; set; }
 }
 """;
         var generator = new XmlCommentGenerator();
@@ -355,6 +382,7 @@ public class RootModel
 
             var modelWithSummary = document.Components.Schemas["ModelWithSummary"];
             Assert.Equal("Comment on class ModelWithSummary.", modelWithSummary.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummaryClass" }"""), modelWithSummary.Example));
 
             var modelWithoutSummary = document.Components.Schemas["ModelWithoutSummary"];
             Assert.Null(modelWithoutSummary.Description);
@@ -362,27 +390,32 @@ public class RootModel
             Assert.DoesNotContain("ModelInline", document.Components.Schemas.Keys);
 
             // Check RootModel properties
-            var noPropertyCommentReference = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["noPropertyComment"]);
-            Assert.Null(noPropertyCommentReference.Reference.Description);
+            var noPropertyCommentProp = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["noPropertyComment"]);
+            Assert.Null(noPropertyCommentProp.Reference.Description);
 
-            Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["firstModelWithSummary"]);
-            Assert.Equal("Comment on property FirstModelWithSummary.", rootModelSchema.Properties["firstModelWithSummary"].Description);
+            var modelWithSummary1Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithSummary1"]);
+            Assert.Equal("Comment on property ModelWithSummary1.", modelWithSummary1Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummary1Prop" }"""), modelWithSummary1Prop.Examples[0]));
 
-            Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["firstModelWithoutSummary"]);
-            Assert.Equal("Comment on property FirstModelWithoutSummary.", rootModelSchema.Properties["firstModelWithoutSummary"].Description);
+            var modelWithSummary2Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithSummary2"]);
+            Assert.Equal("Comment on property ModelWithSummary2.", modelWithSummary2Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithSummary2Prop" }"""), modelWithSummary2Prop.Examples[0]));
 
-            Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["firstModelInline"]);
-            Assert.Equal("Comment on property FirstModelInline.", rootModelSchema.Properties["firstModelInline"].Description);
+            var modelWithoutSummary1Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithoutSummary1"]);
+            Assert.Equal("Comment on property ModelWithoutSummary1.", modelWithoutSummary1Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithoutSummary1Prop" }"""), modelWithoutSummary1Prop.Examples[0]));
 
-            // Verify that comments on the same type override each other
-            Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["secondModelWithSummary"]);
-            Assert.Equal("Comment on property FirstModelWithSummary.", rootModelSchema.Properties["firstModelWithSummary"].Description);
+            var modelWithoutSummary2Prop = Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["modelWithoutSummary2"]);
+            Assert.Equal("Comment on property ModelWithoutSummary2.", modelWithoutSummary2Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelWithoutSummary2Prop" }"""), modelWithoutSummary2Prop.Examples[0]));
 
-            Assert.IsType<OpenApiSchemaReference>(rootModelSchema.Properties["secondModelWithoutSummary"]);
-            Assert.Equal("Comment on property FirstModelWithoutSummary.", rootModelSchema.Properties["firstModelWithoutSummary"].Description);
+            var modelInline1Prop = Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["modelInline1"]);
+            Assert.Equal("Comment on property ModelInline1.", modelInline1Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline1Prop" }"""), modelInline1Prop.Example));
 
-            Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["secondModelInline"]);
-            Assert.Equal("Comment on property SecondModelInline.", rootModelSchema.Properties["secondModelInline"].Description);
+            var modelInline2Prop = Assert.IsType<OpenApiSchema>(rootModelSchema.Properties["modelInline2"]);
+            Assert.Equal("Comment on property ModelInline2.", modelInline2Prop.Description);
+            Assert.True(JsonNode.DeepEquals(JsonNode.Parse("""{ "street": "ModelInline2Prop" }"""), modelInline2Prop.Example));
         });
     }
 }
