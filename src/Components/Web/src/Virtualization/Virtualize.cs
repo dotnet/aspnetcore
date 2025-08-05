@@ -284,7 +284,7 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
         builder.OpenElement(7, SpacerElement);
-        builder.AddAttribute(8, "aria-hidden", "true"); 
+        builder.AddAttribute(8, "aria-hidden", "true");
         builder.AddAttribute(9, "style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
         builder.AddElementReferenceCapture(10, elementReference => _spacerAfter = elementReference);
 
