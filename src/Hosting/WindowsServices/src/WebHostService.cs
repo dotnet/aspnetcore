@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 using System.ComponentModel;
 using System.ServiceProcess;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +12,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices;
 ///     Provides an implementation of a Windows service that hosts ASP.NET Core.
 /// </summary>
 [DesignerCategory("Code")]
+[Obsolete("Use UseWindowsService and AddHostedService instead.")]
 public class WebHostService : ServiceBase
 {
     private readonly IWebHost _host;

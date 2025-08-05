@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -18,6 +16,7 @@ namespace Microsoft.AspNetCore.TestHost;
 /// </summary>
 public class TestServer : IServer
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     private readonly IWebHost? _hostInstance;
     private bool _disposed;
     private ApplicationWrapper? _application;
@@ -119,6 +118,7 @@ public class TestServer : IServer
                 ?? throw new InvalidOperationException("The TestServer constructor was not called with a IWebHostBuilder so IWebHost is not available.");
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Gets the service provider associated with the test server.

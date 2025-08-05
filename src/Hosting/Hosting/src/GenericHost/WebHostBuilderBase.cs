@@ -1,14 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 internal abstract class WebHostBuilderBase : IWebHostBuilder, ISupportsUseDefaultServiceProvider
 {
     private protected readonly IHostBuilder _builder;
@@ -107,3 +106,4 @@ internal abstract class WebHostBuilderBase : IWebHostBuilder, ISupportsUseDefaul
         return this;
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

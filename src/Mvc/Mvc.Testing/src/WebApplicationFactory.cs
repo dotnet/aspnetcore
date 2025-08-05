@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
@@ -25,6 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing;
 /// </summary>
 /// <typeparam name="TEntryPoint">A type in the entry point assembly of the application.
 /// Typically the Startup or Program classes can be used.</typeparam>
+#pragma warning disable CS0618 // Type or member is obsolete
 public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDisposable where TEntryPoint : class
 {
     private bool _disposed;
@@ -880,3 +879,4 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         }
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

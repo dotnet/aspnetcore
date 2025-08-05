@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -15,6 +13,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Contains extension methods for configuring the <see cref="IWebHostBuilder" />.
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 public static class HostingAbstractionsWebHostBuilderExtensions
 {
     /// <summary>
@@ -178,3 +177,4 @@ public static class HostingAbstractionsWebHostBuilderExtensions
         return host;
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

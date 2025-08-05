@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -21,6 +19,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Hosting;
 
+[Obsolete("WebHost is obsolete. Use Host.CreateDefaultBuilder or WebApplication.CreateBuilder instead.")]
 internal sealed partial class WebHost : IWebHost, IAsyncDisposable
 {
     private const string DeprecatedServerUrlsKey = "server.urls";

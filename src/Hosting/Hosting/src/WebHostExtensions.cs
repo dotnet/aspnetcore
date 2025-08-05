@@ -3,8 +3,6 @@
 
 #nullable enable
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,6 +12,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Contains extensions for managing the lifecycle of an <see cref="IWebHost"/>.
 /// </summary>
+[Obsolete("WebHostExtensions is obsolete. Use Host.CreateDefaultBuilder or WebApplication.CreateBuilder instead.")]
 public static class WebHostExtensions
 {
     /// <summary>
