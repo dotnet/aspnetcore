@@ -95,39 +95,40 @@ public class Image : ComponentBase, IAsyncDisposable
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", "blazor-image-container");
+        builder.AddAttribute(1, "id", $"{_id}-container");
+        builder.AddAttribute(2, "class", "blazor-image-container");
 
         string containerStyle = GetContainerStyle();
         if (!string.IsNullOrEmpty(containerStyle))
         {
-            builder.AddAttribute(2, "style", containerStyle);
+            builder.AddAttribute(3, "style", containerStyle);
         }
 
         if (_isLoading && LoadingContent != null)
         {
-            builder.AddContent(3, LoadingContent);
+            builder.AddContent(4, LoadingContent);
         }
         else if (_hasError && ErrorContent != null)
         {
-            builder.AddContent(4, ErrorContent);
+            builder.AddContent(5, ErrorContent);
         }
 
-        builder.OpenElement(5, "img");
-        builder.AddAttribute(6, "id", _id);
+        builder.OpenElement(6, "img");
+        builder.AddAttribute(7, "id", _id);
 
         var cssClass = _isLoading || _hasError ? "d-none" : GetCssClass();
         if (!string.IsNullOrEmpty(cssClass))
         {
-            builder.AddAttribute(7, "class", cssClass);
+            builder.AddAttribute(8, "class", cssClass);
         }
 
         if (!string.IsNullOrEmpty(Alt))
         {
-            builder.AddAttribute(8, "alt", Alt);
+            builder.AddAttribute(9, "alt", Alt);
         }
 
-        builder.AddMultipleAttributes(9, AdditionalAttributes);
-        builder.AddElementReferenceCapture(10, inputReference => Element = inputReference);
+        builder.AddMultipleAttributes(10, AdditionalAttributes);
+        builder.AddElementReferenceCapture(11, inputReference => Element = inputReference);
 
         builder.CloseElement();
         builder.CloseElement();
@@ -192,7 +193,7 @@ public class Image : ComponentBase, IAsyncDisposable
             await JSRuntime.InvokeVoidAsync(
                 "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
                 _id, transferId, source.MimeType, source.CacheKey,
-                CacheStrategy.ToString().ToLowerInvariant());
+                CacheStrategy.ToString().ToLowerInvariant(), source.Length);
 
             byte[] buffer = ArrayPool<byte>.Shared.Rent(ChunkSize);
             try
@@ -250,32 +251,46 @@ public class Image : ComponentBase, IAsyncDisposable
     {
         builder.OpenElement(0, "div");
         builder.AddAttribute(1, "class", "blazor-image-loading");
-        builder.AddAttribute(2, "style", "display: flex; justify-content: center; align-items: center; padding: 20px;");
+        builder.AddAttribute(2, "style", "display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column;");
 
-        builder.OpenElement(3, "div");
-        builder.AddAttribute(4, "class", "loading-spinner");
-        builder.AddAttribute(5, "style", @"
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: blazor-image-spin 1s linear infinite;
-            margin: 0 auto;
-        ");
+        builder.OpenElement(3, "svg");
+        builder.AddAttribute(4, "class", "blazor-image-progress");
+        builder.AddAttribute(5, "viewBox", "0 0 100 100");
+        builder.AddAttribute(6, "style", "width: 40px; height: 40px; margin-bottom: 8px;");
+
+        builder.OpenElement(7, "circle");
+        builder.AddAttribute(8, "cx", "50");
+        builder.AddAttribute(9, "cy", "50");
+        builder.AddAttribute(10, "r", "40");
+        builder.AddAttribute(11, "style", "fill: none; stroke: #f3f3f3; stroke-width: 8;");
         builder.CloseElement();
 
-        builder.OpenElement(6, "style");
-        builder.AddContent(7, @"
-            @keyframes blazor-image-spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
+        builder.OpenElement(12, "circle");
+        builder.AddAttribute(13, "cx", "50");
+        builder.AddAttribute(14, "cy", "50");
+        builder.AddAttribute(15, "r", "40");
+        builder.AddAttribute(16, "style", "fill: none; stroke: #3498db; stroke-width: 8; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50px 50px; transition: stroke-dasharray 0.3s ease-in-out;");
+        builder.CloseElement();
+
+        builder.CloseElement();
+
+        builder.OpenElement(20, "style");
+        builder.AddContent(21, @"
+            .blazor-image-progress circle:last-child {
+                stroke-dasharray: calc(3.141 * var(--blazor-image-progress, 0) * 100% * 0.8), 500%;
             }
         ");
         builder.CloseElement();
 
         builder.CloseElement();
     };
+
+    // private static RenderFragment CreateDefaultLoadingContent() => builder =>
+    // {
+    //     builder.OpenElement(0, "div");
+    //     builder.AddAttribute(1, "class", "blazor-image-loading");
+    //     builder.CloseElement();
+    // };
 
     private static RenderFragment CreateDefaultErrorContent() => builder =>
     {

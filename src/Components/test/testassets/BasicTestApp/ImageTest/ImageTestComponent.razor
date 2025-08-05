@@ -1,0 +1,252 @@
+﻿@using System.IO
+@using Microsoft.AspNetCore.Components.Web.Image
+
+@implements IAsyncDisposable
+
+<h3>Image Component Tests</h3>
+
+<div>
+    <h4>Test Controls</h4>
+    <button id="load-png-cached" @onclick="LoadPngWithCache">Load PNG (Cached)</button>
+    <button id="load-png-no-cache" @onclick="LoadPngNoCache">Load PNG (No Cache)</button>
+    <button id="load-jpg-cached" @onclick="LoadJpgWithCache">Load JPG (Cached)</button>
+    <button id="load-jpg-stream" @onclick="LoadJpgFromStream">Load JPG (Stream)</button>
+    <button id="load-error" @onclick="LoadErrorImage">Load Error Image</button>
+    <button id="load-large-chunked" @onclick="LoadLargeImageChunked">Load Large Image (Small Chunks)</button>
+    <button id="clear-all-images" @onclick="ClearAllImages">Clear All Images</button>
+    <button id="reload-cached-image" @onclick="ReloadCachedImage">Reload Cached Image</button>
+
+    <div id="test-status">
+        Status: <span id="current-status">@_currentStatus</span>
+    </div>
+</div>
+
+<div>
+    <h4>Basic Image Loading</h4>
+    <div id="basic-image-container" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+        <Image @ref="_basicImageRef"
+               Source="@_basicImageSource"
+               Alt="Basic test image"
+               id="basic-image"
+               class="test-image" />
+    </div>
+</div>
+
+<div>
+    <h4>Image with Custom Loading Content</h4>
+    <div id="loading-image-container" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+        <Image @ref="_loadingImageRef"
+               Source="@_loadingImageSource"
+               Alt="Loading test image"
+               id="loading-image"
+               class="test-image">
+               <LoadingContent>
+                   <div id="custom-loading">
+                   </div>
+               </LoadingContent>
+        </Image>
+    </div>
+</div>
+
+<div>
+    <h4>Image with Custom Error Content</h4>
+    <div id="error-image-container" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+        <Image @ref="_errorImageRef"
+               Source="@_errorImageSource"
+               Alt="Error test image"
+               id="error-image"
+               class="test-image">
+               <ErrorContent>
+                    <div id="custom-error">
+                    </div>
+               </ErrorContent>
+        </Image>
+    </div>
+</div>
+
+<div>
+    <h4>Chunked Image Loading</h4>
+    <div id="chunked-image-container" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+        <Image @ref="_chunkedImageRef"
+               Source="@_chunkedImageSource"
+               Alt="Chunked test image"
+               id="chunked-image"
+               class="test-image"
+               ChunkSize="@_chunkSize" />
+    </div>
+</div>
+
+<div>
+    <h4>Cache Test Images</h4>
+    <div id="cache-test-container" style="border: 1px solid #ccc; padding: 10px; margin: 10px 0;">
+        <Image @ref="_cacheImageRef1"
+               Source="@_cacheImageSource"
+               Alt="Cache test image 1"
+               id="cache-image-1"
+               class="test-image"
+               CacheStrategy="CacheStrategy.Memory"/>
+        <br />
+        <Image @ref="_cacheImageRef2"
+               Source="@_cacheImageSource2"
+               Alt="Cache test image 2"
+               id="cache-image-2"
+               CacheStrategy="CacheStrategy.Memory"/>
+    </div>
+</div>
+
+@code {
+    private Image _basicImageRef;
+    private Image _loadingImageRef;
+    private Image _errorImageRef;
+    private Image _chunkedImageRef;
+    private Image _cacheImageRef1;
+    private Image _cacheImageRef2;
+
+    private ImageSource _basicImageSource;
+    private ImageSource _loadingImageSource;
+    private ImageSource _errorImageSource;
+    private ImageSource _chunkedImageSource;
+    private ImageSource _cacheImageSource;
+    private ImageSource _cacheImageSource2;
+
+    private string _currentStatus = "Ready";
+    private int _chunkSize = 1024; // Small chunks for testing
+
+    // Test image data - 1x1 gray PNG and JPG byte arrays
+    private static readonly byte[] TestPngData = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
+
+    private static readonly byte[] TestJpgData = Convert.FromBase64String("/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAAP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AN//Z");
+
+    // Large test image for chunking tests (just repeated pattern)
+    private static readonly byte[] LargeTestImageData = CreateLargeTestImage();
+
+    private static byte[] CreateLargeTestImage()
+    {
+        var largeImage = new List<byte>(TestPngData);
+        // Duplicate the PNG data multiple times to create a larger image for chunking tests
+        for (int i = 0; i < 100; i++)
+        {
+            largeImage.AddRange(TestPngData);
+        }
+        return largeImage.ToArray();
+    }
+
+    protected override void OnInitialized()
+    {
+        _currentStatus = "Component initialized";
+    }
+
+    private async Task LoadPngWithCache()
+    {
+        _currentStatus = "Loading PNG with cache...";
+        _basicImageSource = new ImageSource(TestPngData, "image/png", "test-png-cached");
+        StateHasChanged();
+        await Task.Delay(10); // Allow render
+        _currentStatus = "PNG with cache loaded";
+        StateHasChanged();
+    }
+
+    private async Task LoadPngNoCache()
+    {
+        _currentStatus = "Loading PNG without cache...";
+        _basicImageSource = new ImageSource(TestPngData, "image/png");
+        StateHasChanged();
+        await Task.Delay(10);
+        _currentStatus = "PNG without cache loaded";
+        StateHasChanged();
+    }
+
+    private async Task LoadJpgWithCache()
+    {
+        _currentStatus = "Loading JPG with cache...";
+        _loadingImageSource = new ImageSource(TestJpgData, "image/jpeg", "test-jpg-cached");
+        StateHasChanged();
+        await Task.Delay(10);
+        _currentStatus = "JPG with cache loaded";
+        StateHasChanged();
+    }
+
+    private async Task LoadJpgFromStream()
+    {
+        _currentStatus = "Loading JPG from stream...";
+        var stream = new MemoryStream(TestJpgData);
+        _loadingImageSource = new ImageSource(stream, "image/jpeg", "test-jpg-stream");
+        StateHasChanged();
+        await Task.Delay(10);
+        _currentStatus = "JPG from stream loaded";
+        StateHasChanged();
+    }
+
+    private async Task LoadErrorImage()
+    {
+        _currentStatus = "Loading error image...";
+        // Create an invalid image source to trigger error
+        var invalidData = new byte[] { 0x00, 0x01, 0x02, 0x03 };
+        _errorImageSource = new ImageSource(invalidData, "image/png", "error-image");
+        StateHasChanged();
+        await Task.Delay(10);
+        _currentStatus = "Error image loaded (should show error)";
+        StateHasChanged();
+    }
+
+    private async Task LoadLargeImageChunked()
+    {
+        _currentStatus = "Loading large image with small chunks...";
+        _chunkedImageSource = new ImageSource(LargeTestImageData, "image/png", "large-chunked-image");
+        StateHasChanged();
+        await Task.Delay(10);
+        _currentStatus = "Large chunked image loaded";
+        StateHasChanged();
+    }
+
+    private async Task ClearAllImages()
+    {
+        _currentStatus = "Clearing all images...";
+        _basicImageSource = null;
+        _loadingImageSource = null;
+        _errorImageSource = null;
+        _chunkedImageSource = null;
+        _cacheImageSource = null;
+        _cacheImageSource2 = null;
+        StateHasChanged();
+        await Task.Delay(10);
+        _currentStatus = "All images cleared";
+        StateHasChanged();
+    }
+
+    private async Task ReloadCachedImage()
+    {
+        _currentStatus = "Testing cache behavior...";
+
+        // Load first cached image
+        _cacheImageSource = new ImageSource(TestPngData, "image/png", "cache-test-key");
+        StateHasChanged();
+        await Task.Delay(100);
+
+        // Load second image with same cache key - should load from cache
+        _cacheImageSource2 = new ImageSource(TestJpgData, "image/jpeg", "cache-test-key");
+        StateHasChanged();
+        await Task.Delay(10);
+
+        _currentStatus = "Cache test completed";
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _currentStatus = "Disposing component...";
+
+        if (_basicImageRef != null)
+            await _basicImageRef.DisposeAsync();
+        if (_loadingImageRef != null)
+            await _loadingImageRef.DisposeAsync();
+        if (_errorImageRef != null)
+            await _errorImageRef.DisposeAsync();
+        if (_chunkedImageRef != null)
+            await _chunkedImageRef.DisposeAsync();
+        if (_cacheImageRef1 != null)
+            await _cacheImageRef1.DisposeAsync();
+        if (_cacheImageRef2 != null)
+            await _cacheImageRef2.DisposeAsync();
+    }
+}

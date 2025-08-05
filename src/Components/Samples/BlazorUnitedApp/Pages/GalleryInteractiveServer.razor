@@ -43,7 +43,13 @@
                             Source="@GetImageSource(image.Id)"
                             Alt="@image.Title"
                             CacheStrategy="CacheStrategy.Memory"
-                            style="width: 100%; height: 100%; object-fit: cover;"/>
+                            style="width: 100%; height: 100%; object-fit: cover;">
+                                <LoadingContent>
+                                    <div class="simple-progress">
+                                        <div class="progress-bar"></div>
+                                    </div>
+                                </LoadingContent>
+                        </Image>
                     </div>
                     <div class="image-info">
                         <h4>@image.Title</h4>
@@ -183,6 +189,93 @@
 }
 
 <style>
+    @* /* Custom loading animation using only CSS and the --blazor-image-progress variable */
+    .blazor-image-loading {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .blazor-image-loading::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: calc(var(--blazor-image-progress, 0) * 100%);
+        height: 4px;
+        background: linear-gradient(90deg, #00f5ff, #ff00ff);
+        transition: width 0.3s ease;
+        box-shadow: 0 0 10px rgba(0, 245, 255, 0.8);
+    }
+
+    .blazor-image-loading::after {
+        content: 'Loading ' calc(var(--blazor-image-progress, 0) * 100) '%';
+        font-size: 14px;
+        font-weight: bold;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        margin-top: 10px;
+    }
+
+    /* Animated pulse effect that gets faster as progress increases */
+    @@keyframes loadingPulse {
+        0%, 100% {
+            transform: scale(1);
+            opacity: 0.7;
+        }
+        50% {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+    }
+
+    .blazor-image-loading {
+        animation: loadingPulse calc(2s - var(--blazor-image-progress, 0) * 1.5s) ease-in-out infinite;
+    }
+
+    /* Circular progress ring */
+    .blazor-image-loading {
+        background-image:
+            radial-gradient(
+                circle at center,
+                transparent 30px,
+                rgba(255,255,255,0.1) 32px,
+                rgba(255,255,255,0.1) 38px,
+                transparent 40px
+            ),
+            conic-gradient(
+                from 0deg,
+                #00f5ff 0deg,
+                #ff00ff calc(var(--blazor-image-progress, 0) * 360deg),
+                transparent calc(var(--blazor-image-progress, 0) * 360deg),
+                transparent 360deg
+            );
+        background-size: 80px 80px, 80px 80px;
+        background-position: center, center;
+        background-repeat: no-repeat;
+    } *@
+
+    .simple-progress {
+        width: 100%;
+        height: 4px;
+        background: #f0f0f0;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #0056b3);
+        width: calc(var(--blazor-image-progress, 0) * 100%);
+        transition: width 0.2s ease-out;
+    }
+
     .gallery-container {
         max-width: 1200px;
         margin: 0 auto;

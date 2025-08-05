@@ -113,7 +113,6 @@ export class BinaryImageComponent {
           bytesReceived: transfer.bytesReceived,
           totalBytes: transfer.totalBytes,
           percentage: transfer.totalBytes ? Math.round((transfer.bytesReceived / transfer.totalBytes) * 100) : null,
-          isDynamic: true,
         },
       }));
     }
