@@ -481,7 +481,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         || string.IsNullOrEmpty(schemaId as string))
                     {
                         // Inlined schema
-                        schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                        schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary!;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
                             schema.Example = jsonString.Parse();
@@ -490,10 +490,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     else
                     {
                         // Schema Reference
-                        schema.Metadata["x-ref-description"] = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                        schema.Metadata["x-ref-description"] = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary!;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
-                            schema.Metadata["x-ref-example"] = jsonString.Parse();
+                            schema.Metadata["x-ref-example"] = jsonString.Parse()!;
                         }
                     }
                 }
