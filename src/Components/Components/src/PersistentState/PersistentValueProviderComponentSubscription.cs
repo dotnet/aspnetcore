@@ -229,10 +229,12 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
     {
         var (type, propertyName) = key;
         var propertyInfo = GetPropertyInfo(type, propertyName);
-        if (propertyInfo == null)
+        if (propertyInfo == null || propertyInfo.GetMethod == null || !propertyInfo.GetMethod.IsPublic)
         {
-            throw new InvalidOperationException($"Property {propertyName} not found on type {type.FullName}");
+            throw new InvalidOperationException(
+                $"A public property '{propertyName}' on component type '{type.FullName}' with a public getter wasn't found.");
         }
+
         return new PropertyGetter(type, propertyInfo);
 
         static PropertyInfo? GetPropertyInfo([DynamicallyAccessedMembers(LinkerFlags.Component)] Type type, string propertyName)
