@@ -96,7 +96,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
         using {typeof(ParameterAttribute).Namespace};
         class TestComponent : ComponentBase
         {{
-            [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = ""default"";
+            [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
     }}" + TestDeclarations;
 
@@ -223,7 +223,7 @@ public class SupplyParameterFromFormAnalyzerTest : DiagnosticVerifier
 
         class TestComponent : BaseComponent
         {{
-            [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = ""default"";
+            [SupplyParameterFromForm] public string MyProperty {{ get; set; }} = ""initial-value"";
         }}
     }}" + TestDeclarations;
 
