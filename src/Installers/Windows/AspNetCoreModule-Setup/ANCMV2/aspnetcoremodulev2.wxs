@@ -118,23 +118,23 @@
         </UI>
 
         <!-- Standard IIS Custom Actions -->
-        <CustomTable Id="IISGlobalModule">
+        <CustomTableRef Id="IISGlobalModule">
             <Row>
                 <Data Column="Name" Value="AspNetCoreModuleV2" />
                 <Data Column="File_" Value="AspNetCoreModuleV2Dll" />
             </Row>
-        </CustomTable>
+        </CustomTableRef>
 
-        <CustomTable Id="IISConfigSections">
+        <CustomTableRef Id="IISConfigSections">
             <Row>
                 <Data Column="Name" Value="system.webServer/aspNetCore" />
                 <Data Column="File_" Value="AspNetCoreSchemaV2File" />
                 <Data Column="OverrideModeDefault" Value="Allow" />
             </Row>
-        </CustomTable>
+        </CustomTableRef>
 
         <!-- <?if $(InstallerPlatform) = "x86" OR $(InstallerPlatform) = "x64" ?> -->
-        <CustomTable Id="IISTraceArea">
+        <CustomTableRef Id="IISTraceArea">
           <Row>
             <Data Column="ProviderName" Value="WWW Server" />
             <Data Column="ProviderGuid" Value="{3a2a4e84-4c21-4981-ae10-3fda0d9b0f83}" />
@@ -143,7 +143,7 @@
             <Data Column="BinaryName_" Value="AncmMofFile" />
             <Data Column="Component_" Value="AspNetCoreModuleV2" />
           </Row>
-        </CustomTable>
+        </CustomTableRef>
         <!-- <?endif ?> -->
 
         <!--   All this magic just to set the handlers section OverrideModeDefault=allow -->
