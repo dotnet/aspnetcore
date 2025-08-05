@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.BiDi.Communication;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
@@ -21,12 +22,20 @@ public static class EnhancedNavigationTestUtil
             if (!skipNavigation)
             {
                 // Normally we need to navigate here first otherwise the browser isn't on the correct origin to access
-                // localStorage. But some tests are already in the right place and need to avoid extra navigation.
+                // sessionStorage. But some tests are already in the right place and need to avoid extra navigation.
                 fixture.Navigate($"{fixture.ServerPathBase}/");
                 browser.Equal("Hello", () => browser.Exists(By.TagName("h1")).Text);
             }
 
-            ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+            // Set the suppression flag - this will prevent enhanced navigation from being attached on the next navigation
+            // and trigger detachment of currently attached enhanced navigation via the periodic check
+            var testId = Guid.NewGuid().ToString("N")[..8];
+            ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
+            ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('suppress-enhanced-navigation-{testId}', 'true')");
+
+            var suppressEnhancedNavigation = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('suppress-enhanced-navigation-{testId}');");
+            Assert.True(suppressEnhancedNavigation is not null && (string)suppressEnhancedNavigation == "true",
+                "Expected 'suppress-enhanced-navigation' to be set in sessionStorage.");
         }
     }
 
