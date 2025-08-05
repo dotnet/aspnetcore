@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
@@ -136,7 +137,7 @@ internal static class ITypeSymbolExtensions
         return parameter.GetAttributes().Any(attr =>
             attr.AttributeClass is not null &&
             (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
-             SymbolEqualityComparer.Default.Equals(attr.AttributeClass, fromKeyedServiceAttributeSymbol)));
+             attr.AttributeClass.InheritsFrom(fromKeyedServiceAttributeSymbol)));
     }
 
     /// <summary>

@@ -110,6 +110,11 @@ public class CustomFromBodyAttribute : Attribute, IFromBodyMetadata
     public bool AllowEmpty { get; set; }
 }
 
+public class CustomFromKeyedServicesAttribute : FromKeyedServicesAttribute
+{
+    public CustomFromKeyedServicesAttribute(object key) : base(key) { }
+}
+
 public enum TodoStatus
 {
     Trap, // A trap for Enum.TryParse<T>!
