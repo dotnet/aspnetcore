@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
@@ -41,9 +40,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Check if the type has any attribute that could be ValidatableTypeAttribute
         var typeDeclaration = (TypeDeclarationSyntax)syntaxNode;
-        return typeDeclaration.AttributeLists
-            .SelectMany(al => al.Attributes)
-            .Any(IsValidatableTypeAttribute);
+        foreach (var attributeList in typeDeclaration.AttributeLists)
+        {
+            foreach (var attribute in attributeList.Attributes)
+            {
+                if (IsValidatableTypeAttribute(attribute))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     internal ImmutableArray<ValidatableType> TransformValidatableTypeWithValidatableTypeAttribute(GeneratorSyntaxContext context, CancellationToken cancellationToken)
@@ -86,12 +94,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
     private static bool HasValidatableTypeAttribute(ITypeSymbol typeSymbol)
     {
-        return typeSymbol.GetAttributes().Any(attr =>
+        foreach (var attr in typeSymbol.GetAttributes())
         {
             var attributeClass = attr.AttributeClass;
-            if (attributeClass == null)
+            if (attributeClass is null)
             {
-                return false;
+                continue;
             }
 
             var name = attributeClass.Name;
@@ -107,11 +115,16 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             if (name == "ValidatableTypeAttribute")
             {
                 // Additional check: ensure it's marked with [Embedded] to confirm it's auto-generated
-                return attributeClass.GetAttributes().Any(embeddedAttr =>
-                    embeddedAttr.AttributeClass?.ToDisplayString() == "Microsoft.CodeAnalysis.EmbeddedAttribute");
+                foreach (var embeddedAttr in attributeClass.GetAttributes())
+                {
+                    if (embeddedAttr.AttributeClass?.ToDisplayString() == "Microsoft.CodeAnalysis.EmbeddedAttribute")
+                    {
+                        return true;
+                    }
+                }
             }
+        }
 
-            return false;
-        });
+        return false;
     }
 }
