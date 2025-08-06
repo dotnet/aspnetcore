@@ -58,7 +58,7 @@ function Test-Template {
 
     # Use custom hive for template installation to avoid conflicts with concurrent template tests
     Write-Verbose "Installing package from $PackagePath using custom hive $CustomHivePath";
-    dotnet new install $PackagePath --debug:custom-hive $CustomHivePath;
+    dotnet new install $PackagePath --debug:disable-sdk-templates --debug:custom-hive $CustomHivePath;
 
 
     Write-Verbose "Creating directory $tmpDir"
