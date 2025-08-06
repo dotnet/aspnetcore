@@ -4780,6 +4780,47 @@ public class RendererTest
     }
 
     [Fact]
+    public void ErrorBoundaryHandlesMultipleExceptionsFromSameComponent()
+    {
+        // This test reproduces the issue where a component throws exceptions in both 
+        // parameter setting (lifecycle) and during rendering. The fix ensures that
+        // the ErrorBoundary can properly handle this scenario without empty content.
+        
+        // Arrange
+        var renderer = new TestRenderer();
+        var parameterException = new InvalidOperationException("Error during parameter setting");
+        var renderException = new InvalidOperationException("Error during render");
+        
+        var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+        {
+            builder.OpenComponent<MultiExceptionErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(MultiExceptionErrorBoundary.ChildContent), (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<ErrorThrowingComponent>(0);
+                builder.AddComponentParameter(1, nameof(ErrorThrowingComponent.ThrowDuringParameterSettingSync), parameterException);
+                builder.AddComponentParameter(2, nameof(ErrorThrowingComponent.ThrowDuringRender), renderException);
+                builder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }));
+
+        // Act
+        renderer.RenderRootComponent(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Single();
+        var errorBoundary = batch.GetComponentFrames<MultiExceptionErrorBoundary>().Single().Component as MultiExceptionErrorBoundary;
+        
+        // The error boundary should have received at least one exception and be able to render properly
+        Assert.NotNull(errorBoundary.LastReceivedException);
+        Assert.True(errorBoundary.ExceptionCount > 0);
+        
+        // The component should be disposed since it failed
+        var failedComponentId = batch.GetComponentFrames<ErrorThrowingComponent>().Single().ComponentId;
+        Assert.Contains(failedComponentId, batch.DisposedComponentIDs);
+    }
+
+    [Fact]
     public async Task CanRemoveRootComponents()
     {
         // Arrange
@@ -6043,6 +6084,33 @@ public class RendererTest
             {
                 await ThrowDuringEventAsync;
             }
+        }
+    }
+
+    private class MultiExceptionErrorBoundary : AutoRenderComponent, IErrorBoundary
+    {
+        public Exception LastReceivedException { get; private set; }
+        public int ExceptionCount { get; private set; }
+
+        [Parameter] public RenderFragment ChildContent { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (LastReceivedException is not null)
+            {
+                builder.AddContent(0, $"Error: {LastReceivedException.Message}");
+            }
+            else
+            {
+                ChildContent(builder);
+            }
+        }
+
+        public void HandleException(Exception error)
+        {
+            LastReceivedException = error;
+            ExceptionCount++;
+            TriggerRender();
         }
     }
 
