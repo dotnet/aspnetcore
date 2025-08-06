@@ -14,56 +14,31 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        // Get the MSBuild properties for controlling attribute generation
-        var generatorSettings = context.AnalyzerConfigOptionsProvider
-            .Select((configOptions, _) =>
-            {
-                configOptions.GlobalOptions.TryGetValue("build_property.RootNamespace", out var rootNamespace);
-                configOptions.GlobalOptions.TryGetValue("build_property.GenerateBuiltinValidatableTypeAttribute", out var generateAttribute);
-
-                var shouldGenerate = !string.IsNullOrEmpty(rootNamespace) &&
-                                   string.Equals(generateAttribute, "true", StringComparison.OrdinalIgnoreCase);
-
-                return new GeneratorSettings(rootNamespace, shouldGenerate);
-            });
-
-        // Emit the ValidatableTypeAttribute conditionally
-        context.RegisterSourceOutput(generatorSettings, EmitValidatableTypeAttribute);
-
         // Find the builder.Services.AddValidation() call in the application.
         var addValidation = context.SyntaxProvider.CreateSyntaxProvider(
             predicate: FindAddValidation,
             transform: TransformAddValidation
         );
 
-        // Extract types that have been marked with [ValidatableType].
-        // This handles both the framework attribute and the auto-generated attribute.
-        var validatableTypesWithAttribute = context.SyntaxProvider.ForAttributeWithMetadataName(
+        // Extract types that have been marked with framework [ValidatableType].
+        var frameworkValidatableTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
             "Microsoft.Extensions.Validation.ValidatableTypeAttribute",
             predicate: ShouldTransformSymbolWithAttribute,
             transform: TransformValidatableTypeWithAttribute
         );
 
-        // Extract types that have been marked with the embedded [ValidatableType].
-        var generatedValidatableTypesWithAttribute = context.SyntaxProvider.CreateSyntaxProvider(
-            predicate: ShouldTransformSymbolWithEmbeddedValidatableTypeAttribute,
-            transform: (context, cancellation) => context
-        ).Combine(generatorSettings)
-            .Select((combined, cancellation) =>
-            {
-                var (syntaxContext, settings) = combined;
-                if (!settings.ShouldGenerateAttribute || string.IsNullOrEmpty(settings.RootNamespace))
-                {
-                    return [];
-                }
+        // Extract types that have been marked with generated [ValidatableType].
+        var generatedValidatableTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
+            "Microsoft.Extensions.Validation.Generated.ValidatableTypeAttribute",
+            predicate: ShouldTransformSymbolWithAttribute,
+            transform: TransformValidatableTypeWithAttribute
+        );
 
-                return TransformValidatableTypeWithEmbeddedValidatableTypeAttribute(syntaxContext, settings, cancellation);
-            })
-            .Where(t => t.Length > 0);
-
-        var allValidatableTypes = generatedValidatableTypesWithAttribute.Collect()
-            .Combine(validatableTypesWithAttribute.Collect())
-            .SelectMany((pair, cancellation) => pair.Left.Concat(pair.Right).ToImmutableArray());
+        // Combine both sources of validatable types
+        var validatableTypesWithAttribute = frameworkValidatableTypes
+            .Collect()
+            .Combine(generatedValidatableTypes.Collect())
+            .SelectMany((pair, _) => pair.Left.Concat(pair.Right).ToImmutableArray());
 
         // Extract all minimal API endpoints in the application.
         var endpoints = context.SyntaxProvider
@@ -77,7 +52,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             .Select(ExtractValidatableEndpoint);
 
         // Join all validatable types encountered in the type graph.
-        var validatableTypes = allValidatableTypes
+        var validatableTypes = validatableTypesWithAttribute
             .Concat(validatableTypesFromEndpoints)
             .Distinct(ValidatableTypeComparer.Instance)
             .Collect();
@@ -89,43 +64,4 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         // ValidatableTypeInfo for all validatable types.
         context.RegisterSourceOutput(emitInputs, Emit);
     }
-
-    private static void EmitValidatableTypeAttribute(SourceProductionContext context, GeneratorSettings settings)
-    {
-        // Only emit if the build property is set to true and root namespace is provided
-        if (!settings.ShouldGenerateAttribute)
-        {
-            return;
-        }
-
-        // First, emit the EmbeddedAttribute if it doesn't exist
-        var embeddedAttributeSource = """
-            // <auto-generated/>
-            namespace Microsoft.CodeAnalysis
-            {
-                [global::System.AttributeUsage(global::System.AttributeTargets.All, AllowMultiple = true, Inherited = false)]
-                internal sealed class EmbeddedAttribute : global::System.Attribute
-                {
-                }
-            }
-            """;
-
-        context.AddSource("EmbeddedAttribute.g.cs", embeddedAttributeSource);
-
-        // Generate the ValidatableTypeAttribute in the project's root namespace
-        var validatableTypeAttributeSource = $$"""
-            // <auto-generated/>
-            namespace {{settings.RootNamespace}};
-
-            [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
-            [global::System.AttributeUsage(global::System.AttributeTargets.Class)]
-            internal sealed class ValidatableTypeAttribute : global::System.Attribute
-            {
-            }
-            """;
-
-        context.AddSource("ValidatableTypeAttribute.g.cs", validatableTypeAttributeSource);
-    }
-
-    internal readonly record struct GeneratorSettings(string? RootNamespace, bool ShouldGenerateAttribute);
 }
