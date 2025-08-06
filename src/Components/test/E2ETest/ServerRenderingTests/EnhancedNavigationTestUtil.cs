@@ -18,6 +18,14 @@ public static class EnhancedNavigationTestUtil
         {
             var browser = fixture.Browser;
 
+            // Set the suppression flag - this will prevent enhanced navigation from being attached on the next navigation
+            // and trigger detachment of currently attached enhanced navigation via the periodic check
+            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
+            if (testId == null)
+            {
+                throw new InvalidOperationException("Test ID not found in sessionStorage. Ensure that suppression is enabled by passing `supportEnhancedNavigationSuppression: true` to InitializeAsync.");
+            }
+
             if (!skipNavigation)
             {
                 // Normally we need to navigate here first otherwise the browser isn't on the correct origin to access
@@ -26,13 +34,6 @@ public static class EnhancedNavigationTestUtil
                 browser.Equal("Hello", () => browser.Exists(By.TagName("h1")).Text);
             }
 
-            // Set the suppression flag - this will prevent enhanced navigation from being attached on the next navigation
-            // and trigger detachment of currently attached enhanced navigation via the periodic check
-            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
-            if (testId == null)
-            {
-                throw new InvalidOperationException("Test ID not found in sessionStorage. Ensure that suppression is enabled by passing `supportEnhancedNavigationSuppression: true` to InitializeAsync.");
-            }
             ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('suppress-enhanced-navigation-{testId}', 'true')");
 
             var suppressEnhancedNavigation = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('suppress-enhanced-navigation-{testId}');");
