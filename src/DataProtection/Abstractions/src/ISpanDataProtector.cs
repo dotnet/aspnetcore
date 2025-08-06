@@ -18,9 +18,9 @@ public interface ISpanDataProtector : IDataProtector
     /// <summary>
     /// Determines the size of the protected data in order to then use <see cref="TryProtect(ReadOnlySpan{byte}, Span{byte}, out int)"/>."/>.
     /// </summary>
-    /// <param name="plainText">The plain text that will be encrypted later</param>
+    /// <param name="plainTextLength">The plain text length which will be encrypted later.</param>
     /// <returns>The size of the protected data.</returns>
-    int GetProtectedSize(ReadOnlySpan<byte> plainText);
+    int GetProtectedSize(int plainTextLength);
 
     /// <summary>
     /// Returns the size of the decrypted data for a given ciphertext length.
@@ -42,12 +42,8 @@ public interface ISpanDataProtector : IDataProtector
     /// Attempts to validate the authentication tag of and decrypt a blob of encrypted data.
     /// </summary>
     /// <param name="cipherText">The encrypted data to decrypt.</param>
-    /// <param name="additionalAuthenticatedData">
-    /// A piece of data which was included in the authentication tag during encryption.
-    /// This input may be zero bytes in length. The same AAD must be specified in the corresponding encryption call.
-    /// </param>
     /// <param name="destination">The decrypted output.</param>
     /// <param name="bytesWritten">When this method returns, the total number of bytes written into destination</param>
     /// <returns>true if decryption was successful; otherwise, false.</returns>
-    bool TryUnprotect(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten);
+    bool TryUnprotect(ReadOnlySpan<byte> cipherText, Span<byte> destination, out int bytesWritten);
 }

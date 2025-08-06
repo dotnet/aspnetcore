@@ -89,19 +89,6 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
         return "(" + String.Join(", ", purposes.Select(p => "'" + p + "'")) + ")";
     }
 
-    // allows decrypting payloads whose keys have been revoked
-    public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
-    {
-        // argument & state checking
-        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
-
-        UnprotectStatus status;
-        var retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
-        requiresMigration = (status != UnprotectStatus.Ok);
-        wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
-        return retVal;
-    }
-
     public byte[] Protect(byte[] plaintext)
     {
         ArgumentNullThrowHelper.ThrowIfNull(plaintext);
@@ -152,7 +139,7 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
         }
     }
 
-    private static Guid ReadGuid(void* ptr)
+    protected static Guid ReadGuid(void* ptr)
     {
 #if NETCOREAPP
         // Performs appropriate endianness fixups
@@ -165,15 +152,7 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
 #endif
     }
 
-    private static uint ReadBigEndian32BitInteger(byte* ptr)
-    {
-        return ((uint)ptr[0] << 24)
-            | ((uint)ptr[1] << 16)
-            | ((uint)ptr[2] << 8)
-            | ((uint)ptr[3]);
-    }
-
-    private static bool TryGetVersionFromMagicHeader(uint magicHeader, out int version)
+    protected static bool TryGetVersionFromMagicHeader(uint magicHeader, out int version)
     {
         const uint MAGIC_HEADER_VERSION_MASK = 0xFU;
         if ((magicHeader & ~MAGIC_HEADER_VERSION_MASK) == MAGIC_HEADER_V0)
@@ -199,14 +178,26 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
             wasRevoked: out _);
     }
 
+    // allows decrypting payloads whose keys have been revoked
+    public byte[] DangerousUnprotect(byte[] protectedData, bool ignoreRevocationErrors, out bool requiresMigration, out bool wasRevoked)
+    {
+        // argument & state checking
+        ArgumentNullThrowHelper.ThrowIfNull(protectedData);
+
+        UnprotectStatus status;
+        var retVal = UnprotectCore(protectedData, ignoreRevocationErrors, status: out status);
+        requiresMigration = (status != UnprotectStatus.Ok);
+        wasRevoked = (status == UnprotectStatus.DecryptionKeyWasRevoked);
+        return retVal;
+    }
+
     private byte[] UnprotectCore(byte[] protectedData, bool allowOperationsOnRevokedKeys, out UnprotectStatus status)
     {
         Debug.Assert(protectedData != null);
 
         try
         {
-            // argument & state checking
-            if (protectedData.Length < sizeof(uint) /* magic header */ + sizeof(Guid) /* key id */)
+            if (protectedData.Length < _magicHeaderKeyIdSize)
             {
                 // payload must contain at least the magic header and key id
                 throw Error.ProtectionProvider_BadMagicHeader();
@@ -215,17 +206,15 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
             // Need to check that protectedData := { magicHeader || keyId || encryptorSpecificProtectedPayload }
 
             // Parse the payload version number and key id.
-            uint magicHeaderFromPayload;
+            var magicHeaderFromPayload = BinaryPrimitives.ReadUInt32BigEndian(protectedData.AsSpan(0, sizeof(uint)));
             Guid keyIdFromPayload;
             fixed (byte* pbInput = protectedData)
             {
-                magicHeaderFromPayload = ReadBigEndian32BitInteger(pbInput);
                 keyIdFromPayload = ReadGuid(&pbInput[sizeof(uint)]);
             }
 
             // Are the magic header and version information correct?
-            int payloadVersion;
-            if (!TryGetVersionFromMagicHeader(magicHeaderFromPayload, out payloadVersion))
+            if (!TryGetVersionFromMagicHeader(magicHeaderFromPayload, out var payloadVersion))
             {
                 throw Error.ProtectionProvider_BadMagicHeader();
             }

@@ -70,4 +70,61 @@ internal static class RoundtripEncryptionHelpers
             ArrayPool<byte>.Shared.Return(plainTextPooled);
         }
     }
+
+    /// <summary>
+    /// <see cref="ISpanDataProtector.TryProtect"/> and <see cref="ISpanDataProtector.TryUnprotect"/> APIs should do the same steps
+    /// as <see cref="IDataProtector.Protect"/> and <see cref="IDataProtector.Unprotect"/> APIs.
+    /// <br/>
+    /// Method ensures that the two APIs are equivalent in terms of their behavior by performing a roundtrip protect-unprotect test.
+    /// </summary>
+    public static void AssertTryProtectTryUnprotectParity(ISpanDataProtector protector, ReadOnlySpan<byte> plaintext)
+    {
+        // assert "allocatey" Protect/Unprotect APIs roundtrip correctly
+        byte[] protectedData = protector.Protect(plaintext.ToArray());
+        byte[] unprotectedData = protector.Unprotect(protectedData);
+        Assert.Equal(plaintext, unprotectedData.AsSpan());
+
+        // assert calculated sizes are correct
+        var expectedProtectedSize = protector.GetProtectedSize(plaintext.Length);
+        Assert.Equal(expectedProtectedSize, protectedData.Length);
+        var expectedUnprotectedSize = protector.GetUnprotectedSize(protectedData.Length);
+
+        // note: for unprotection we can't know exactly how many bytes will be written since it's the original plaintext
+        Assert.True(expectedUnprotectedSize >= unprotectedData.Length);
+
+        // perform TryProtect and Unprotect roundtrip - ensures cross operation compatibility
+        var protectedPooled = ArrayPool<byte>.Shared.Rent(expectedProtectedSize);
+        try
+        {
+            var tryProtectResult = protector.TryProtect(plaintext, protectedPooled, out var bytesWritten);
+            Assert.Equal(expectedProtectedSize, bytesWritten);
+            Assert.True(tryProtectResult);
+
+            var unprotectedTryProtect = protector.Unprotect(protectedPooled.AsSpan(0, expectedProtectedSize).ToArray());
+            Assert.Equal(plaintext, unprotectedTryProtect.AsSpan());
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(protectedPooled);
+        }
+
+        // perform Protect and TryUnprotect roundtrip - ensures cross operation compatibility
+        // Note: This test is limited because we can't easily access the correct AAD from outside the protector
+        // But we can test basic functionality with empty AAD and expect it to fail gracefully
+        var unprotectedPooled = ArrayPool<byte>.Shared.Rent(expectedUnprotectedSize);
+        try
+        {
+            var protectedByProtect = protector.Protect(plaintext.ToArray());
+            var unprotectedTryUnprotect = protector.TryUnprotect(protectedByProtect, unprotectedPooled, out var bytesWritten);
+            Assert.Equal(plaintext, unprotectedPooled.AsSpan(0, bytesWritten));
+            Assert.True(unprotectedTryUnprotect);
+
+            // now we should know that bytesWritten is STRICTLY equal to the deciphered text
+            Assert.Equal(unprotectedData.Length, bytesWritten);
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(unprotectedPooled);
+        }
+    }
 }
