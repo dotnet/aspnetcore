@@ -203,7 +203,7 @@ public class BindingAddress
         var port = 0;
 
         var hasSpecifiedPort = false;
-        if (!isUnixPipe)
+        if (!isUnixPipe && !isNamedPipe)
         {
             var portDelimiterStart = address.LastIndexOf(':', pathDelimiterStart - 1, pathDelimiterStart - schemeDelimiterEnd);
             if (portDelimiterStart >= 0)
