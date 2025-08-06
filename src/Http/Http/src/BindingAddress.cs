@@ -12,6 +12,7 @@ public class BindingAddress
 {
     private const string UnixPipeHostPrefix = "unix:/";
     private const string NamedPipeHostPrefix = "pipe:/";
+    private const string IPv6LoopBackPrefix = "[::1]";
 
     private BindingAddress(string host, string pathBase, int port, string scheme)
     {
@@ -163,6 +164,7 @@ public class BindingAddress
 
         var isUnixPipe = address.IndexOf(UnixPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
         var isNamedPipe = address.IndexOf(NamedPipeHostPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
+        var isIPv6LoopBack = address.IndexOf(IPv6LoopBackPrefix, schemeDelimiterEnd, StringComparison.Ordinal) == schemeDelimiterEnd;
 
         int pathDelimiterStart;
         int pathDelimiterEnd;
@@ -206,7 +208,7 @@ public class BindingAddress
         if (!isUnixPipe && !isNamedPipe)
         {
             var portDelimiterStart = address.LastIndexOf(':', pathDelimiterStart - 1, pathDelimiterStart - schemeDelimiterEnd);
-            if (portDelimiterStart >= 0)
+            if (portDelimiterStart >= 0 && !isIPv6LoopBack)
             {
                 var portDelimiterEnd = portDelimiterStart + ":".Length;
 
