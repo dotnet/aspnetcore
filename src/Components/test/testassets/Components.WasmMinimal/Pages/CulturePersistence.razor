@@ -32,7 +32,10 @@ else
 @code {
     protected override void OnAfterRender(bool firstRender)
     {
-        StateHasChanged();
+        if (firstRender)
+        {
+            StateHasChanged();
+        }
         base.OnAfterRender(firstRender);
     }
 }
