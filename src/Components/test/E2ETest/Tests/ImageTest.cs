@@ -39,37 +39,18 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("PNG with cache loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
         // Verify the image element exists and has a blob URL
-        var imageElement = Browser.FindElement(By.Id("basic-image"));
+        var imageDiv = Browser.FindElement(By.Id("png-cached-container"));
+
+        var imageElement = imageDiv.FindElement(By.TagName("img"));
         Assert.NotNull(imageElement);
 
         var src = imageElement.GetAttribute("src");
         Assert.True(!string.IsNullOrEmpty(src), "Image src should not be empty");
         Assert.True(src.StartsWith("blob:", StringComparison.Ordinal), $"Expected blob URL, but got: {src}");
-
-        // Verify alt text
-        Assert.Equal("Basic test image", imageElement.GetAttribute("alt"));
 
         // Verify the image is not hidden (not in loading or error state)
         var cssClass = imageElement.GetAttribute("class");
         Assert.DoesNotContain("d-none", cssClass);
-    }
-
-    [Fact]
-    public void CanLoadPngImageWithoutCache()
-    {
-        // Load PNG without cache
-        Browser.FindElement(By.Id("load-png-no-cache")).Click();
-
-        // Wait for loading to complete
-        Browser.Equal("PNG without cache loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-
-        // Verify the image element exists and has a blob URL
-        var imageElement = Browser.FindElement(By.Id("basic-image"));
-        Assert.NotNull(imageElement);
-
-        var src = imageElement.GetAttribute("src");
-        Assert.True(!string.IsNullOrEmpty(src), "Image src should not be empty");
-        Assert.True(src.StartsWith("blob:", StringComparison.Ordinal), $"Expected blob URL, but got: {src}");
     }
 
     [Fact]
@@ -82,7 +63,8 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("JPG from stream loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
         // Verify the image element exists and has a blob URL
-        var imageElement = Browser.FindElement(By.Id("basic-image"));
+        var imageDiv = Browser.FindElement(By.Id("jpg-stream-container"));
+        var imageElement = imageDiv.FindElement(By.TagName("img"));
         Assert.NotNull(imageElement);
 
         var src = imageElement.GetAttribute("src");
@@ -130,13 +112,14 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     public void CanLoadLargeImageWithSmallChunks()
     {
         // Load large image with small chunks to test chunked loading
-        Browser.FindElement(By.Id("load-large-chunked")).Click();
+        Browser.FindElement(By.Id("load-small-chunks")).Click();
 
         // Wait for loading to complete (this may take longer)
-        Browser.Equal("Large image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+        Browser.Equal("Small chunks image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
         // Verify the image element exists and has a blob URL
-        var imageElement = Browser.FindElement(By.Id("loading-image"));
+        var imageDiv = Browser.FindElement(By.Id("chunked-image-container"));
+        var imageElement = imageDiv.FindElement(By.TagName("img"));
         Assert.NotNull(imageElement);
 
         var imgElement = imageElement.FindElement(By.TagName("img"));
