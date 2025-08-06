@@ -506,12 +506,10 @@
 
     <Fragment>
         <Feature Id="FT_DepProvider_$(var.ProductNameShort)" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" InstallDefault="local" Level="1" Title="RefCounting" TypicalDefault="install" AllowAbsent="no">
-            <ComponentRef Id="C_DepProvider_$(var.ProductNameShort)" />
+            <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32" Guid="*">
+                <Provides Key="$(var.ANCMDepProviderKey)" dep:Check="yes" />
+            </Component>
         </Feature>
-
-        <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32" Guid="*">
-            <Provides Key="$(var.ANCMDepProviderKey)" dep:Check="yes" />
-        </Component>
     </Fragment>
 
     <Fragment>
