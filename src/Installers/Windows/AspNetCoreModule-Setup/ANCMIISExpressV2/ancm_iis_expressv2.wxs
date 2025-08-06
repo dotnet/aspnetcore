@@ -31,13 +31,13 @@
 
 <?if $(InstallerPlatform) = "x86" ?>
     <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
 <?else?>
     <?define SchemaGuid = "ab582af2-d6c0-43f7-8412-76a19c65d7f2" ?>
     <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
-    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\$(InstallerPlatform)\$(var.Configuration)\aspnetcorev2.dll" ?>
-    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\$(InstallerPlatform)\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(ArtifactsDir)\bin\AspNetCoreModuleShim\$(InstallerPlatform)\$(var.Configuration)\aspnetcorev2.dll" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(ArtifactsDir)\bin\OutOfProcessRequestHandler\$(InstallerPlatform)\$(var.Configuration)\aspnetcorev2_outofprocess.dll" ?>
 <?endif?>
 
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:dep="http://wixtoolset.org/schemas/v4/wxs/dependency" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
@@ -141,7 +141,7 @@
           <Directory Id="VersionDir" Name="$(var.ProductVersionString)">
             <Component Id="AspNetCoreModule" Guid="84ed6ce6-c8a3-4fa8-a872-c98a1d15dd4f" Bitness="$(var.Bitness)">
                 <?if $(InstallerPlatform) = "arm64" ?>
-                <File Id="AspNetCoreModuleDll" Name="aspnetcorev2.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll" DiskId="1" Vital="yes" />
+                <File Id="AspNetCoreModuleDll" Name="aspnetcorev2.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll" DiskId="1" Vital="yes" />
                 <?else?>
                 <File Id="AspNetCoreModuleDll" Name="aspnetcorev2.dll" Source="$(var.AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" />
                 <?endif?>
@@ -153,7 +153,7 @@
             <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)">
               <Component Id="AspNetCoreModuleHandler" Guid="559EF726-B25C-480F-AFA4-32D0BA8B2376" Bitness="$(var.Bitness)">
                     <?if $(InstallerPlatform) = "arm64" ?>
-                    <File Id="AspNetCoreModuleHandlerDll" Name="aspnetcorev2_outofprocess.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes" />
+                    <File Id="AspNetCoreModuleHandlerDll" Name="aspnetcorev2_outofprocess.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes" />
                     <?else?>
                     <File Id="AspNetCoreModuleHandlerDll" Name="aspnetcorev2_outofprocess.dll" Source="$(var.AspNetCoreV2HandlerProgramFilesTargetPath)" DiskId="1" Vital="yes">
                     </File>
@@ -161,7 +161,7 @@
               </Component>
               <?if $(InstallerPlatform) = "arm64" ?>
                 <Component Id="AspNetCoreModuleHandler.x64" Guid="0b192457-9c6a-4703-ba6a-0c5a58b7c9cb" Bitness="$(var.Bitness)">
-                    <File Id="AspNetCoreModuleHandlerDll.x64" Name="aspnetcorev2_outofprocess_x64.dll" Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\x64\$(var.Configuration)\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes" />
+                    <File Id="AspNetCoreModuleHandlerDll.x64" Name="aspnetcorev2_outofprocess_x64.dll" Source="$(ArtifactsDir)\bin\OutOfProcessRequestHandler\x64\$(var.Configuration)\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes" />
                 </Component>
                 <Component Id="AspNetCoreModuleHandler.arm64" Guid="21cc9da0-ab0a-4717-90df-dbaaa3f68510" Bitness="$(var.Bitness)">
                     <File Id="AspNetCoreModuleHandlerDll.arm64" Name="aspnetcorev2_outofprocess_arm64.dll" Source="$(var.AspNetCoreV2HandlerProgramFilesTargetPath)" DiskId="1" Vital="yes" />
@@ -170,7 +170,7 @@
             </Directory>
             <?if $(InstallerPlatform) = "arm64" ?>
             <Component Id="AspNetCoreModuleV2.x64" Guid="1962b1b0-6345-4b37-97b3-a8f2c9e82bee" Bitness="$(var.Bitness)">
-                <File Id="AspNetCoreModuleV2Dll.x64" Name="aspnetcorev2_x64.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(var.Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes" />
+                <File Id="AspNetCoreModuleV2Dll.x64" Name="aspnetcorev2_x64.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(var.Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes" />
                 <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
                     <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.x64]" />
                     <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
@@ -202,7 +202,7 @@
               <Directory Id="VersionDir32" Name="$(var.ProductVersionString)">
                 <!-- Originally created with same component GUID as IIS installer. Must remain the same so upgrade doesn't remove this file -->
                 <Component Id="AspNetCoreModule.wow" Guid="45ba5011-a619-4d06-8a8d-155b1f9732b3" Bitness="always32">
-                  <File Id="AspNetCoreModuleDll.wow" Name="aspnetcorev2.dll" Source="$(var.ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes">
+                  <File Id="AspNetCoreModuleDll.wow" Name="aspnetcorev2.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleShim\Win32\$(var.Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes">
                   </File>
                   <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
                     <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll.wow]" />
@@ -211,7 +211,7 @@
                 </Component>
                 <Directory Id="HandlerVersionDir32" Name="$(var.ANCMFolderVersion)">
                   <Component Id="AspNetCoreModuleHandler.wow" Guid="0A8EDB50-7D85-4825-8010-D27EFAF061B6" Bitness="always32">
-                    <File Id="AspNetCoreModuleHandlerDll.wow" Name="aspnetcorev2_outofprocess.dll" Source="$(var.ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes">
+                    <File Id="AspNetCoreModuleHandlerDll.wow" Name="aspnetcorev2_outofprocess.dll" Source="$(ArtifactsDir)\bin\OutOfProcessRequestHandler\Win32\$(var.Configuration)\aspnetcorev2_outofprocess.dll" DiskId="1" Vital="yes">
                     </File>
                   </Component>
                 </Directory>
