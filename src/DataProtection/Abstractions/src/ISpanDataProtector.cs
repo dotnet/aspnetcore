@@ -24,6 +24,7 @@ public interface ISpanDataProtector : IDataProtector
 
     /// <summary>
     /// Returns the size of the decrypted data for a given ciphertext length.
+    /// Size can be an over-estimation, the specific size will be written in <i>bytesWritten</i> parameter of the <see cref="TryUnprotect"/>
     /// </summary>
     /// <param name="cipherTextLength">Length of the cipher text that will be decrypted later.</param>
     /// <returns>The length of the decrypted data.</returns>

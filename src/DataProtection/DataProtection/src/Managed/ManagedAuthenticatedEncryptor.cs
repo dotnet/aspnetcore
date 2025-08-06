@@ -309,7 +309,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
         if (!TryEncrypt(plainTextSpan, additionalAuthenticatedData, retVal, out var bytesWritten))
         {
-            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
+            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array."));
         }
 
         return retVal;
@@ -474,6 +474,32 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         protectedPayload.Validate();
         additionalAuthenticatedData.Validate();
 
+#if NET10_0_OR_GREATER
+        var size = GetDecryptedSize(protectedPayload.Count);
+        var rentedArray = ArrayPool<byte>.Shared.Rent(size);
+        try
+        {
+            var destination = rentedArray.AsSpan(0, size);
+
+            if (!TryDecrypt(
+                cipherText: protectedPayload,
+                additionalAuthenticatedData: additionalAuthenticatedData,
+                destination: destination,
+                out var bytesWritten))
+            {
+                throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
+            }
+
+            // we don't know the exact size of the decrypted data beforehand,
+            // so we firstly use rented array and then allocate with the exact size
+            var result = destination.Slice(0, bytesWritten).ToArray();
+            return result;
+        }
+        finally
+        {
+            ArrayPool<byte>.Shared.Return(rentedArray);
+        }
+#else
         // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
         if (protectedPayload.Count < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
         {
@@ -499,28 +525,14 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             ReadOnlySpan<byte> keyModifier = protectedPayload.Array!.AsSpan(keyModifierOffset, ivOffset - keyModifierOffset);
 
             // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
-#if NET10_0_OR_GREATER
-            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
-                ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
-                : new byte[_keyDerivationKey.Length];
-#else
             var decryptedKdk = new byte[_keyDerivationKey.Length];
-#endif
 
             byte[]? validationSubkeyArray = null;
             var validationSubkey = _validationAlgorithmSubkeyLengthInBytes <= 128
                 ? stackalloc byte[128].Slice(0, _validationAlgorithmSubkeyLengthInBytes)
                 : (validationSubkeyArray = new byte[_validationAlgorithmSubkeyLengthInBytes]);
 
-#if NET10_0_OR_GREATER
-            Span<byte> decryptionSubkey =
-                _symmetricAlgorithmSubkeyLengthInBytes <= 128
-                ? stackalloc byte[128].Slice(0, _symmetricAlgorithmSubkeyLengthInBytes)
-                : new byte[_symmetricAlgorithmBlockSizeInBytes];
-#else
             byte[] decryptionSubkey = new byte[_symmetricAlgorithmSubkeyLengthInBytes];
-#endif
-
             // calling "fixed" is basically pinning the array, meaning the GC won't move it around. (Also for safety concerns)
             // note: it is safe to call `fixed` on null - it is just a no-op
             fixed (byte* decryptedKdkUnsafe = decryptedKdk)
@@ -547,29 +559,9 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     }
 
                     // Step 4: Validate the MAC provided as part of the payload.
-#if NET10_0_OR_GREATER
-                    var ivAndCiphertextSpan = protectedPayload.Slice(ivOffset, macOffset - ivOffset);
-                    var providedMac = protectedPayload.Slice(macOffset, _validationAlgorithmDigestLengthInBytes);
-                    if (!ValidateMac(ivAndCiphertextSpan, providedMac, validationSubkey, validationSubkeyArray))
-                    {
-                        throw Error.CryptCommon_PayloadInvalid();
-                    }
-#else
                     CalculateAndValidateMac(protectedPayload.Array!, ivOffset, macOffset, eofOffset, validationSubkey, validationSubkeyArray);
-#endif
 
                     // Step 5: Decipher the ciphertext and return it to the caller.
-#if NET10_0_OR_GREATER
-                    using var symmetricAlgorithm = CreateSymmetricAlgorithm();
-                    symmetricAlgorithm.SetKey(decryptionSubkey); // setKey is a single-shot usage of symmetricAlgorithm. Not allocatey
-
-                    // note: here protectedPayload.Array is taken without an offset (can't use AsSpan() on ArraySegment)
-                    var ciphertext = protectedPayload.Array.AsSpan(ciphertextOffset, macOffset - ciphertextOffset);
-                    var iv = protectedPayload.Array.AsSpan(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
-
-                    // symmetricAlgorithm is created with CBC mode (see CreateSymmetricAlgorithm())
-                    return symmetricAlgorithm.DecryptCbc(ciphertext, iv);
-#else
                     var iv = protectedPayload.Array!.AsSpan(ivOffset, _symmetricAlgorithmBlockSizeInBytes).ToArray();
 
                     using (var symmetricAlgorithm = CreateSymmetricAlgorithm())
@@ -585,19 +577,12 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                             return outputStream.ToArray();
                         }
                     }
-#endif
                 }
                 finally
                 {
                     // delete since these contain secret material
                     validationSubkey.Clear();
-
-#if NET10_0_OR_GREATER
-                    decryptedKdk.Clear();
-                    decryptionSubkey.Clear();
-#else
                     Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
-#endif
                 }
             }
         }
@@ -606,6 +591,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             // Homogenize all exceptions to CryptographicException.
             throw Error.CryptCommon_GenericError(ex);
         }
+#endif
     }
 
     private byte[] CreateContextHeader()

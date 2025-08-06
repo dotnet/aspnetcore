@@ -96,10 +96,10 @@ public static class DataProtectionAdvancedExtensions
         return retVal;
     }
 
-    private class TimeLimitedWrappingProtector : IDataProtector
+    private sealed class TimeLimitedWrappingProtector : IDataProtector
     {
         public DateTimeOffset Expiration;
-        protected readonly ITimeLimitedDataProtector _innerProtector;
+        private readonly ITimeLimitedDataProtector _innerProtector;
 
         public TimeLimitedWrappingProtector(ITimeLimitedDataProtector innerProtector)
         {

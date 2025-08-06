@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
@@ -70,97 +71,88 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
     public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
     {
         bytesWritten = 0;
+        var cbEncryptedData = GetDecryptedSize(cipherText.Length);
 
-        try
+        // Assumption: cipherText := { keyModifier | IV | encryptedData | MAC(IV | encryptedPayload) }
+        fixed (byte* pbCiphertext = cipherText)
+        fixed (byte* pbAdditionalAuthenticatedData = additionalAuthenticatedData)
+        fixed (byte* pbDestination = destination)
         {
-            var cbEncryptedData = GetDecryptedSize(cipherText.Length);
+            // Calculate offsets
+            byte* pbKeyModifier = pbCiphertext;
+            byte* pbIV = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
+            byte* pbEncryptedData = &pbIV[_symmetricAlgorithmBlockSizeInBytes];
+            byte* pbActualHmac = &pbEncryptedData[cbEncryptedData];
 
-            // Assumption: cipherText := { keyModifier | IV | encryptedData | MAC(IV | encryptedPayload) }
-            fixed (byte* pbCiphertext = cipherText)
-            fixed (byte* pbAdditionalAuthenticatedData = additionalAuthenticatedData)
-            fixed (byte* pbDestination = destination)
+            // Use the KDF to recreate the symmetric encryption and HMAC subkeys
+            // We'll need a temporary buffer to hold them
+            var cbTempSubkeys = checked(_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes);
+            byte* pbTempSubkeys = stackalloc byte[checked((int)cbTempSubkeys)];
+            try
             {
+                _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
+                    pbLabel: pbAdditionalAuthenticatedData,
+                    cbLabel: (uint)additionalAuthenticatedData.Length,
+                    contextHeader: _contextHeader,
+                    pbContext: pbKeyModifier,
+                    cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
+                    pbDerivedKey: pbTempSubkeys,
+                    cbDerivedKey: cbTempSubkeys);
+
                 // Calculate offsets
-                byte* pbKeyModifier = pbCiphertext;
-                byte* pbIV = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
-                byte* pbEncryptedData = &pbIV[_symmetricAlgorithmBlockSizeInBytes];
-                byte* pbActualHmac = &pbEncryptedData[cbEncryptedData];
+                byte* pbSymmetricEncryptionSubkey = pbTempSubkeys;
+                byte* pbHmacSubkey = &pbTempSubkeys[_symmetricAlgorithmSubkeyLengthInBytes];
 
-                // Use the KDF to recreate the symmetric encryption and HMAC subkeys
-                // We'll need a temporary buffer to hold them
-                var cbTempSubkeys = checked(_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes);
-                byte* pbTempSubkeys = stackalloc byte[checked((int)cbTempSubkeys)];
-                try
+                // First, perform an explicit integrity check over (iv | encryptedPayload) to ensure the
+                // data hasn't been tampered with. The integrity check is also implicitly performed over
+                // keyModifier since that value was provided to the KDF earlier.
+                using (var hashHandle = _hmacAlgorithmHandle.CreateHmac(pbHmacSubkey, _hmacAlgorithmSubkeyLengthInBytes))
                 {
-                    _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
-                        pbLabel: pbAdditionalAuthenticatedData,
-                        cbLabel: (uint)additionalAuthenticatedData.Length,
-                        contextHeader: _contextHeader,
-                        pbContext: pbKeyModifier,
-                        cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
-                        pbDerivedKey: pbTempSubkeys,
-                        cbDerivedKey: cbTempSubkeys);
-
-                    // Calculate offsets
-                    byte* pbSymmetricEncryptionSubkey = pbTempSubkeys;
-                    byte* pbHmacSubkey = &pbTempSubkeys[_symmetricAlgorithmSubkeyLengthInBytes];
-
-                    // First, perform an explicit integrity check over (iv | encryptedPayload) to ensure the
-                    // data hasn't been tampered with. The integrity check is also implicitly performed over
-                    // keyModifier since that value was provided to the KDF earlier.
-                    using (var hashHandle = _hmacAlgorithmHandle.CreateHmac(pbHmacSubkey, _hmacAlgorithmSubkeyLengthInBytes))
+                    if (!ValidateHash(hashHandle, pbIV, _symmetricAlgorithmBlockSizeInBytes + (uint)cbEncryptedData, pbActualHmac))
                     {
-                        if (!ValidateHash(hashHandle, pbIV, _symmetricAlgorithmBlockSizeInBytes + (uint)cbEncryptedData, pbActualHmac))
-                        {
-                            throw Error.CryptCommon_PayloadInvalid();
-                        }
-                    }
-
-                    // If the integrity check succeeded, decrypt the payload.
-                    using (var decryptionSubkeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
-                    {
-                        // BCryptDecrypt mutates the provided IV; we need to clone it to prevent mutation of the original value
-                        byte* pbClonedIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
-                        UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV, byteCount: _symmetricAlgorithmBlockSizeInBytes);
-
-                        // Perform the decryption directly into destination
-                        uint dwActualDecryptedByteCount;
-                        byte dummy;
-                        var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
-                            hKey: decryptionSubkeyHandle,
-                            pbInput: pbEncryptedData,
-                            cbInput: (uint)cbEncryptedData,
-                            pPaddingInfo: null,
-                            pbIV: pbClonedIV,
-                            cbIV: _symmetricAlgorithmBlockSizeInBytes,
-                            pbOutput: (destination.Length > 0) ? pbDestination : &dummy,
-                            cbOutput: (uint)destination.Length,
-                            pcbResult: out dwActualDecryptedByteCount,
-                            dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
-
-                        // Check for buffer too small before throwing other exceptions
-                        // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
-                        if (ntstatus == unchecked((int)0xC0000023)) // STATUS_BUFFER_TOO_SMALL
-                        {
-                            return false;
-                        }
-                        UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
-
-                        bytesWritten = checked((int)dwActualDecryptedByteCount);
-                        return true;
+                        throw Error.CryptCommon_PayloadInvalid();
                     }
                 }
-                finally
+
+                // If the integrity check succeeded, decrypt the payload.
+                using (var decryptionSubkeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
                 {
-                    // Buffer contains sensitive key material; delete.
-                    UnsafeBufferUtil.SecureZeroMemory(pbTempSubkeys, cbTempSubkeys);
+                    // BCryptDecrypt mutates the provided IV; we need to clone it to prevent mutation of the original value
+                    byte* pbClonedIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
+                    UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV, byteCount: _symmetricAlgorithmBlockSizeInBytes);
+
+                    // Perform the decryption directly into destination
+                    uint dwActualDecryptedByteCount;
+                    byte dummy;
+                    var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
+                        hKey: decryptionSubkeyHandle,
+                        pbInput: pbEncryptedData,
+                        cbInput: (uint)cbEncryptedData,
+                        pPaddingInfo: null,
+                        pbIV: pbClonedIV,
+                        cbIV: _symmetricAlgorithmBlockSizeInBytes,
+                        pbOutput: (destination.Length > 0) ? pbDestination : &dummy,
+                        cbOutput: (uint)destination.Length,
+                        pcbResult: out dwActualDecryptedByteCount,
+                        dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
+
+                    // Check for buffer too small before throwing other exceptions
+                    // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
+                    if (ntstatus == unchecked((int)0xC0000023)) // STATUS_BUFFER_TOO_SMALL
+                    {
+                        return false;
+                    }
+                    UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
+
+                    bytesWritten = checked((int)dwActualDecryptedByteCount);
+                    return true;
                 }
             }
-        }
-        catch (Exception ex) when (ex.RequiresHomogenization())
-        {
-            // Homogenize all exceptions to CryptographicException.
-            throw Error.CryptCommon_GenericError(ex);
+            finally
+            {
+                // Buffer contains sensitive key material; delete.
+                UnsafeBufferUtil.SecureZeroMemory(pbTempSubkeys, cbTempSubkeys);
+            }
         }
     }
 
@@ -170,91 +162,28 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         additionalAuthenticatedData.Validate();
 
         var size = GetDecryptedSize(ciphertext.Count);
-        var plaintext = new byte[size];
-        var destination = plaintext.AsSpan();
-
-        if (!TryDecrypt(
-            cipherText: ciphertext,
-            additionalAuthenticatedData: additionalAuthenticatedData,
-            destination: destination,
-            out var bytesWritten))
+        var rentedArray = ArrayPool<byte>.Shared.Rent(size);
+        try
         {
-            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
+            var destination = rentedArray.AsSpan(0, size);
+
+            if (!TryDecrypt(
+                cipherText: ciphertext,
+                additionalAuthenticatedData: additionalAuthenticatedData,
+                destination: destination,
+                out var bytesWritten))
+            {
+                throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
+            }
+
+            // in CBC we dont know the exact size of the decrypted data beforehand,
+            // so we firstly use rented array and then allocate with the exact size
+            var result = destination.Slice(0, bytesWritten).ToArray();
+            return result;
         }
-
-        // Resize array if needed (due to padding)
-        if (bytesWritten < size)
+        finally
         {
-            var resized = new byte[bytesWritten];
-            Array.Copy(plaintext, resized, bytesWritten);
-            return resized;
-        }
-
-        return plaintext;
-    }
-
-    // 'pbIV' must be a pointer to a buffer equal in length to the symmetric algorithm block size.
-    private byte[] DoCbcDecrypt(BCryptKeyHandle symmetricKeyHandle, byte* pbIV, byte* pbInput, uint cbInput)
-    {
-        // BCryptDecrypt mutates the provided IV; we need to clone it to prevent mutation of the original value
-        byte* pbClonedIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
-        UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV, byteCount: _symmetricAlgorithmBlockSizeInBytes);
-
-        // First, figure out how large an output buffer we require.
-        // Ideally we'd be able to transform the last block ourselves and strip
-        // off the padding before creating the return value array, but we don't
-        // know the actual padding scheme being used under the covers (we can't
-        // assume PKCS#7). So unfortunately we're stuck with the temporary buffer.
-        // (Querying the output size won't mutate the IV.)
-
-        uint dwEstimatedDecryptedByteCount;
-        var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
-            hKey: symmetricKeyHandle,
-            pbInput: pbInput,
-            cbInput: cbInput,
-            pPaddingInfo: null,
-            pbIV: pbClonedIV,
-            cbIV: _symmetricAlgorithmBlockSizeInBytes,
-            pbOutput: null,
-            cbOutput: 0,
-            pcbResult: out dwEstimatedDecryptedByteCount,
-            dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
-        UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
-
-        var decryptedPayload = new byte[dwEstimatedDecryptedByteCount];
-        uint dwActualDecryptedByteCount;
-        fixed (byte* pbDecryptedPayload = decryptedPayload)
-        {
-            byte dummy;
-
-            // Perform the actual decryption.
-            ntstatus = UnsafeNativeMethods.BCryptDecrypt(
-                hKey: symmetricKeyHandle,
-                pbInput: pbInput,
-                cbInput: cbInput,
-                pPaddingInfo: null,
-                pbIV: pbClonedIV,
-                cbIV: _symmetricAlgorithmBlockSizeInBytes,
-                pbOutput: (pbDecryptedPayload != null) ? pbDecryptedPayload : &dummy, // CLR won't pin zero-length arrays
-                cbOutput: dwEstimatedDecryptedByteCount,
-                pcbResult: out dwActualDecryptedByteCount,
-                dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
-            UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
-        }
-
-        // Decryption finished!
-        CryptoUtil.Assert(dwActualDecryptedByteCount <= dwEstimatedDecryptedByteCount, "dwActualDecryptedByteCount <= dwEstimatedDecryptedByteCount");
-        if (dwActualDecryptedByteCount == dwEstimatedDecryptedByteCount)
-        {
-            // payload takes up the entire buffer
-            return decryptedPayload;
-        }
-        else
-        {
-            // payload takes up only a partial buffer
-            var resizedDecryptedPayload = new byte[dwActualDecryptedByteCount];
-            Buffer.BlockCopy(decryptedPayload, 0, resizedDecryptedPayload, 0, resizedDecryptedPayload.Length);
-            return resizedDecryptedPayload;
+            ArrayPool<byte>.Shared.Return(rentedArray);
         }
     }
 
@@ -293,98 +222,90 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
     {
         bytesWritten = 0;
 
+        // This buffer will be used to hold the symmetric encryption and HMAC subkeys
+        // used in the generation of this payload.
+        var cbTempSubkeys = checked(_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes);
+        byte* pbTempSubkeys = stackalloc byte[checked((int)cbTempSubkeys)];
+
         try
         {
-            // This buffer will be used to hold the symmetric encryption and HMAC subkeys
-            // used in the generation of this payload.
-            var cbTempSubkeys = checked(_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes);
-            byte* pbTempSubkeys = stackalloc byte[checked((int)cbTempSubkeys)];
+            // Randomly generate the key modifier and IV.
+            var cbKeyModifierAndIV = checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes);
+            byte* pbKeyModifierAndIV = stackalloc byte[checked((int)cbKeyModifierAndIV)];
+            _genRandom.GenRandom(pbKeyModifierAndIV, cbKeyModifierAndIV);
 
-            try
+            // Calculate offsets
+            byte* pbKeyModifier = pbKeyModifierAndIV;
+            byte* pbIV = &pbKeyModifierAndIV[KEY_MODIFIER_SIZE_IN_BYTES];
+
+            // Use the KDF to generate a new symmetric encryption and HMAC subkey
+            fixed (byte* pbAdditionalAuthenticatedData = additionalAuthenticatedData)
             {
-                // Randomly generate the key modifier and IV.
-                var cbKeyModifierAndIV = checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes);
-                byte* pbKeyModifierAndIV = stackalloc byte[checked((int)cbKeyModifierAndIV)];
-                _genRandom.GenRandom(pbKeyModifierAndIV, cbKeyModifierAndIV);
+                _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
+                    pbLabel: pbAdditionalAuthenticatedData,
+                    cbLabel: (uint)additionalAuthenticatedData.Length,
+                    contextHeader: _contextHeader,
+                    pbContext: pbKeyModifier,
+                    cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
+                    pbDerivedKey: pbTempSubkeys,
+                    cbDerivedKey: cbTempSubkeys);
+            }
 
-                // Calculate offsets
-                byte* pbKeyModifier = pbKeyModifierAndIV;
-                byte* pbIV = &pbKeyModifierAndIV[KEY_MODIFIER_SIZE_IN_BYTES];
+            // Calculate offsets
+            byte* pbSymmetricEncryptionSubkey = pbTempSubkeys;
+            byte* pbHmacSubkey = &pbTempSubkeys[_symmetricAlgorithmSubkeyLengthInBytes];
 
-                // Use the KDF to generate a new symmetric encryption and HMAC subkey
-                fixed (byte* pbAdditionalAuthenticatedData = additionalAuthenticatedData)
+            using (var symmetricKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
+            {
+                // Get the padded output size
+                byte dummy;
+                fixed (byte* pbPlaintextArray = plaintext)
                 {
-                    _sp800_108_ctr_hmac_provider.DeriveKeyWithContextHeader(
-                        pbLabel: pbAdditionalAuthenticatedData,
-                        cbLabel: (uint)additionalAuthenticatedData.Length,
-                        contextHeader: _contextHeader,
-                        pbContext: pbKeyModifier,
-                        cbContext: KEY_MODIFIER_SIZE_IN_BYTES,
-                        pbDerivedKey: pbTempSubkeys,
-                        cbDerivedKey: cbTempSubkeys);
-                }
+                    var pbPlaintext = (pbPlaintextArray != null) ? pbPlaintextArray : &dummy;
+                    var cbOutputCiphertext = GetCbcEncryptedOutputSizeWithPadding(symmetricKeyHandle, pbPlaintext, (uint)plaintext.Length);
 
-                // Calculate offsets
-                byte* pbSymmetricEncryptionSubkey = pbTempSubkeys;
-                byte* pbHmacSubkey = &pbTempSubkeys[_symmetricAlgorithmSubkeyLengthInBytes];
-
-                using (var symmetricKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
-                {
-                    // Get the padded output size
-                    byte dummy;
-                    fixed (byte* pbPlaintextArray = plaintext)
+                    fixed (byte* pbDestination = destination)
                     {
-                        var pbPlaintext = (pbPlaintextArray != null) ? pbPlaintextArray : &dummy;
-                        var cbOutputCiphertext = GetCbcEncryptedOutputSizeWithPadding(symmetricKeyHandle, pbPlaintext, (uint)plaintext.Length);
+                        // Calculate offsets in destination
+                        byte* pbOutputKeyModifier = pbDestination;
+                        byte* pbOutputIV = &pbOutputKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
+                        byte* pbOutputCiphertext = &pbOutputIV[_symmetricAlgorithmBlockSizeInBytes];
+                        byte* pbOutputHmac = &pbOutputCiphertext[cbOutputCiphertext];
 
-                        fixed (byte* pbDestination = destination)
+                        // Copy key modifier and IV to destination
+                        Unsafe.CopyBlock(pbOutputKeyModifier, pbKeyModifierAndIV, cbKeyModifierAndIV);
+                        bytesWritten += checked((int)cbKeyModifierAndIV);
+
+                        // Perform CBC encryption directly into destination
+                        DoCbcEncrypt(
+                            symmetricKeyHandle: symmetricKeyHandle,
+                            pbIV: pbIV,
+                            pbInput: pbPlaintext,
+                            cbInput: (uint)plaintext.Length,
+                            pbOutput: pbOutputCiphertext,
+                            cbOutput: cbOutputCiphertext);
+                        bytesWritten += checked((int)cbOutputCiphertext);
+
+                        // Compute the HMAC over the IV and the ciphertext
+                        using (var hashHandle = _hmacAlgorithmHandle.CreateHmac(pbHmacSubkey, _hmacAlgorithmSubkeyLengthInBytes))
                         {
-                            // Calculate offsets in destination
-                            byte* pbOutputKeyModifier = pbDestination;
-                            byte* pbOutputIV = &pbOutputKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
-                            byte* pbOutputCiphertext = &pbOutputIV[_symmetricAlgorithmBlockSizeInBytes];
-                            byte* pbOutputHmac = &pbOutputCiphertext[cbOutputCiphertext];
-
-                            // Copy key modifier and IV to destination
-                            Unsafe.CopyBlock(pbOutputKeyModifier, pbKeyModifierAndIV, cbKeyModifierAndIV);
-                            bytesWritten += checked((int)cbKeyModifierAndIV);
-
-                            // Perform CBC encryption directly into destination
-                            DoCbcEncrypt(
-                                symmetricKeyHandle: symmetricKeyHandle,
-                                pbIV: pbIV,
-                                pbInput: pbPlaintext,
-                                cbInput: (uint)plaintext.Length,
-                                pbOutput: pbOutputCiphertext,
-                                cbOutput: cbOutputCiphertext);
-                            bytesWritten += checked((int)cbOutputCiphertext);
-
-                            // Compute the HMAC over the IV and the ciphertext
-                            using (var hashHandle = _hmacAlgorithmHandle.CreateHmac(pbHmacSubkey, _hmacAlgorithmSubkeyLengthInBytes))
-                            {
-                                hashHandle.HashData(
-                                    pbInput: pbOutputIV,
-                                    cbInput: checked(_symmetricAlgorithmBlockSizeInBytes + cbOutputCiphertext),
-                                    pbHashDigest: pbOutputHmac,
-                                    cbHashDigest: _hmacAlgorithmDigestLengthInBytes);
-                            }
-                            bytesWritten += checked((int)_hmacAlgorithmDigestLengthInBytes);
-
-                            return true;
+                            hashHandle.HashData(
+                                pbInput: pbOutputIV,
+                                cbInput: checked(_symmetricAlgorithmBlockSizeInBytes + cbOutputCiphertext),
+                                pbHashDigest: pbOutputHmac,
+                                cbHashDigest: _hmacAlgorithmDigestLengthInBytes);
                         }
+                        bytesWritten += checked((int)_hmacAlgorithmDigestLengthInBytes);
+
+                        return true;
                     }
                 }
             }
-            finally
-            {
-                // Buffer contains sensitive material; delete it.
-                UnsafeBufferUtil.SecureZeroMemory(pbTempSubkeys, cbTempSubkeys);
-            }
         }
-        catch (Exception ex) when (ex.RequiresHomogenization())
+        finally
         {
-            // Homogenize all exceptions to CryptographicException.
-            throw Error.CryptCommon_GenericError(ex);
+            // Buffer contains sensitive material; delete it.
+            UnsafeBufferUtil.SecureZeroMemory(pbTempSubkeys, cbTempSubkeys);
         }
     }
 

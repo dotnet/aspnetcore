@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Threading;
 using Microsoft.AspNetCore.DataProtection.Extensions;
@@ -16,14 +14,13 @@ namespace Microsoft.AspNetCore.DataProtection;
 /// Wraps an existing <see cref="IDataProtector"/> and appends a purpose that allows
 /// protecting data with a finite lifetime.
 /// </summary>
-internal class TimeLimitedDataProtector : ITimeLimitedDataProtector
+internal sealed class TimeLimitedDataProtector : ITimeLimitedDataProtector
 {
     private const string MyPurposeString = "Microsoft.AspNetCore.DataProtection.TimeLimitedDataProtector.v1";
+    private const int ExpirationTimeHeaderSize = 8; // size of the expiration time header in bytes (64-bit UTC tick count)
 
+    private readonly IDataProtector _innerProtector;
     private IDataProtector? _innerProtectorWithTimeLimitedPurpose; // created on-demand
-    protected readonly IDataProtector _innerProtector;
-
-    protected const int ExpirationTimeHeaderSize = 8; // size of the expiration time header in bytes (64-bit UTC tick count)
 
     public TimeLimitedDataProtector(IDataProtector innerProtector)
     {
@@ -34,11 +31,10 @@ internal class TimeLimitedDataProtector : ITimeLimitedDataProtector
     {
         ArgumentNullThrowHelper.ThrowIfNull(purpose);
 
-        var protector = _innerProtector.CreateProtector(purpose);
-        return new TimeLimitedDataProtector(protector);
+        return new TimeLimitedDataProtector(_innerProtector.CreateProtector(purpose));
     }
 
-    protected IDataProtector GetInnerProtectorWithTimeLimitedPurpose()
+    private IDataProtector GetInnerProtectorWithTimeLimitedPurpose()
     {
         // thread-safe lazy init pattern with multi-execution and single publication
         var retVal = Volatile.Read(ref _innerProtectorWithTimeLimitedPurpose);

@@ -177,7 +177,6 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             // so all that's left is to invoke the decryption routine directly.
             var spanEncryptor = (ISpanAuthenticatedEncryptor)requestedEncryptor;
             return spanEncryptor.TryDecrypt(actualCiphertext, aad, destination, out bytesWritten);
-
         }
         catch (Exception ex) when (ex.RequiresHomogenization())
         {
