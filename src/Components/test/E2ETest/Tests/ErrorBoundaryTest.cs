@@ -158,6 +158,20 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
         AssertGlobalErrorState(false);
     }
 
+    [Fact]
+    public void CanHandleTwoErrorsInSameComponent()
+    {
+        var container = Browser.Exists(By.Id("two-errors-test"));
+        
+        // Trigger the component with two errors
+        container.FindElement(By.Id("show-two-errors-component")).Click();
+        
+        // Should show error content, not be blank
+        Browser.Exists(By.ClassName("two-errors-error-content"));
+        
+        AssertGlobalErrorState(false);
+    }
+
     void AssertGlobalErrorState(bool hasGlobalError)
     {
         var globalErrorUi = Browser.Exists(By.Id("blazor-error-ui"));

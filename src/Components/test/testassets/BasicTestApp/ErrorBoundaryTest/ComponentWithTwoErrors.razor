@@ -1,0 +1,11 @@
+@{
+    throw new Exception("error2");
+}
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        throw new Exception("error");
+    }
+}

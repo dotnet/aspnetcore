@@ -100,6 +100,24 @@
 </div>
 
 <hr />
+<h2>Two different errors in same component</h2>
+<p>This tests the case where a component throws in both OnInitializedAsync and during rendering.</p>
+<div id="two-errors-test">
+    @if (showTwoErrorsComponent)
+    {
+        <ErrorBoundary>
+            <ChildContent>
+                <ComponentWithTwoErrors />
+            </ChildContent>
+            <ErrorContent>
+                <div class="two-errors-error-content" style="background: red">@context</div>
+            </ErrorContent>
+        </ErrorBoundary>
+    }
+    <button id="show-two-errors-component" @onclick="@(() => showTwoErrorsComponent = true)">Show component with two errors</button>
+</div>
+
+<hr />
 <h2>Dispatch exception to renderer</h2>
 <p>Use DispatchExceptionAsync to see if exceptions are correctly dispatched to the renderer.</p>
 <div id="exception-dispatch-async">
@@ -122,6 +140,7 @@
     private bool disposalTestRemoveErrorBoundary;
     private bool disposalTestBeginDelayedError;
     private bool multipleChildrenBeginDelayedError;
+    private bool showTwoErrorsComponent;
 
     void EventHandlerErrorSync()
         => throw new InvalidTimeZoneException("Synchronous error from event handler");
