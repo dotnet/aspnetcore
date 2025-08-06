@@ -33,9 +33,15 @@ function Test-Template {
     Write-Verbose "Copying $PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App to $PSScriptRoot/.dotnet/shared";
     Copy-Item -Path "$PSScriptRoot/.runtime/shared/Microsoft.AspNetCore.App" -Destination "$PSScriptRoot/.dotnet/shared" -Recurse -Force;
 
+    # Use process-scoped environment variables to avoid conflicts with concurrent tests
     $env:DOTNET_ROOT = "$PSScriptRoot/.dotnet";
     $env:DOTNET_ROOT_X86 = "$PSScriptRoot/.dotnet";
     $env:Path = "$PSScriptRoot/.dotnet;$env:Path";
+    
+    # Use a unique custom hive for template isolation to avoid conflicts with concurrent template tests
+    $CustomHivePath = "$PSScriptRoot/.templatehive-$templateName";
+    Remove-Item -Path $CustomHivePath -Recurse -ErrorAction Ignore;
+    
     $tmpDir = "$PSScriptRoot/$templateName";
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore;
     Push-Location ..;
@@ -50,30 +56,16 @@ function Test-Template {
 
     $PackageName = (Get-Item $PackagePath).Name;
 
-    if (-not (Test-Path "$($env:USERPROFILE)/.templateengine/packages/$PackageName")) {
-        Write-Verbose "Installing package from $PackagePath";
-        dotnet new install $PackagePath;
-    }
-    else {
-        Write-Verbose "Uninstalling package from $PackagePath";
-        if (-not ($PackageName -match $PackagePattern)) {
-            Write-Error "$PackageName did not match $PackagePattern";
-        }
-        $PackageId = $Matches["PackageId"];
-        $PackageVersion = $Matches["Version"];
-        Write-Verbose "Uninstalling existing package $PackageId.$PackageVersion";
-        dotnet new uninstall "$PackageId.$PackageVersion";
-
-        Write-Verbose "Installing package from $PackagePath";
-        dotnet new install $PackagePath;
-    }
+    # Use custom hive for template installation to avoid conflicts with concurrent template tests
+    Write-Verbose "Installing package from $PackagePath using custom hive $CustomHivePath";
+    dotnet new install $PackagePath --debug:custom-hive $CustomHivePath;
 
 
     Write-Verbose "Creating directory $tmpDir"
     New-Item -ErrorAction Ignore -Path $tmpDir -ItemType Directory | Out-Null;
     Push-Location $tmpDir -StackName TemplateFolder;
     try {
-        $TemplateArguments = , "new" + $TemplateArguments + , "--no-restore";
+        $TemplateArguments = , "new" + $TemplateArguments + , "--no-restore" + , "--debug:custom-hive" + , $CustomHivePath + , "--debug:disable-sdk-templates";
         Write-Verbose "Running dotnet command with arguments: $TemplateArguments";
         dotnet @TemplateArguments;
 
@@ -124,6 +116,10 @@ function Test-Template {
     }
     finally {
         Pop-Location -StackName TemplateFolder;
+        
+        # Clean up custom hive to avoid conflicts with future runs
+        Write-Verbose "Cleaning up custom hive $CustomHivePath";
+        Remove-Item -Path $CustomHivePath -Recurse -ErrorAction Ignore;
     }
 }
 
