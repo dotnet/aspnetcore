@@ -152,4 +152,16 @@ internal static class ITypeSymbolExtensions
             (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
              SymbolEqualityComparer.Default.Equals(attr.AttributeClass, fromKeyedServiceAttributeSymbol)));
     }
+
+    /// <summary>
+    /// Checks if the property is marked with [JsonIgnore] attribute.
+    /// </summary>
+    /// <param name="property">The property to check.</param>
+    /// <param name="jsonIgnoreAttributeSymbol">The symbol representing the [JsonIgnore] attribute.</param>
+    internal static bool IsJsonIgnoredProperty(this IPropertySymbol property, INamedTypeSymbol jsonIgnoreAttributeSymbol)
+    {
+        return property.GetAttributes().Any(attr =>
+            attr.AttributeClass is not null &&
+            SymbolEqualityComparer.Default.Equals(attr.AttributeClass, jsonIgnoreAttributeSymbol));
+    }
 }
