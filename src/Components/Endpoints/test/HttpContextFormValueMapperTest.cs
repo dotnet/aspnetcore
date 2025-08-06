@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Components.Forms.Mapping;
 
 namespace Microsoft.AspNetCore.Components.Endpoints;
 
@@ -57,6 +58,47 @@ public class HttpContextFormValueMapperTest
 
         var canMap = mapper.CanMap(typeof(MyModel), "", null);
         Assert.True(canMap);
+    }
+
+    [Fact]
+    public void Map_SetsNullResult_WhenCanMapReturnsFalse()
+    {
+        // This test verifies the fix for GitHub issue #61341
+        // The Map method should return early when CanMap returns false
+        var formData = new HttpContextFormDataProvider();
+        // Don't set any form data so CanMap will return false due to no incoming handler name
+        
+        var mapper = new HttpContextFormValueMapper(formData, Options.Create<RazorComponentsServiceOptions>(new()));
+        var context = new FormValueMappingContext("", null, typeof(MyModel), "Model");
+
+        // Act
+        mapper.Map(context);
+
+        // Assert
+        Assert.Null(context.Result);
+    }
+
+    [Fact]
+    public void Map_DoesNotDeserializeWhenCanMapReturnsFalse()
+    {
+        // This test demonstrates the original bug and verifies the fix
+        // Before the fix, Map would call deserializer even when CanMap returned false
+        var formData = new HttpContextFormDataProvider();
+        // Set form data but no incoming handler name, so CanMap returns false
+        formData.SetFormData("", new Dictionary<string, StringValues>
+        {
+            ["Name"] = "Test"
+        }, new FormFileCollection());
+        
+        var mapper = new HttpContextFormValueMapper(formData, Options.Create<RazorComponentsServiceOptions>(new()));
+        var context = new FormValueMappingContext("mismatched-scope", null, typeof(MyModel), "Model");
+
+        // Act
+        mapper.Map(context);
+
+        // Assert - The result should be null because CanMap returns false
+        // Before the fix, this might have been a MyModel instance due to deserializer running
+        Assert.Null(context.Result);
     }
 }
 
