@@ -1,5 +1,4 @@
 #pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
-#nullable disable
 
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
@@ -23,7 +22,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
@@ -45,9 +43,6 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
         .WithFeatures([new KeyValuePair<string, string>("InterceptorsNamespaces", "Microsoft.Extensions.Validation.Generated")]);
 
     internal static Task Verify(string source, out Compilation compilation)
-        => Verify(source, out compilation, globalOptions: null);
-
-    internal static Task Verify(string source, out Compilation compilation, Dictionary<string, string> globalOptions)
     {
         var references = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.IsDynamic && !string.IsNullOrWhiteSpace(assembly.Location))
@@ -82,21 +77,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
             references,
             new CSharpCompilationOptions(OutputKind.ConsoleApplication));
         var generator = new ValidationsGenerator();
-
-        // Create the driver with optional global options
-        CSharpGeneratorDriver driver;
-        if (globalOptions != null)
-        {
-            var analyzerConfig = new InMemoryAnalyzerConfigOptionsProvider(globalOptions);
-            driver = CSharpGeneratorDriver.Create(
-                generators: [generator.AsSourceGenerator()],
-                parseOptions: ParseOptions,
-                optionsProvider: analyzerConfig);
-        }
-        else
-        {
-            driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
-        }
+        var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
@@ -621,36 +602,5 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
         }
 
         public bool CanHaveBody { get; }
-    }
-
-    internal sealed class InMemoryAnalyzerConfigOptionsProvider : AnalyzerConfigOptionsProvider
-    {
-        private readonly InMemoryAnalyzerConfigOptions _globalOptions;
-
-        public InMemoryAnalyzerConfigOptionsProvider(Dictionary<string, string> globalOptions)
-        {
-            _globalOptions = new InMemoryAnalyzerConfigOptions(globalOptions);
-        }
-
-        public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
-
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _globalOptions;
-
-        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _globalOptions;
-    }
-
-    internal sealed class InMemoryAnalyzerConfigOptions : AnalyzerConfigOptions
-    {
-        private readonly Dictionary<string, string> _options;
-
-        public InMemoryAnalyzerConfigOptions(Dictionary<string, string> options)
-        {
-            _options = options;
-        }
-
-        public override bool TryGetValue(string key, out string value)
-        {
-            return _options.TryGetValue(key, out value!);
-        }
     }
 }
