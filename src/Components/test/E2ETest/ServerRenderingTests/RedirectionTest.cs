@@ -25,7 +25,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
 
     public override async Task InitializeAsync()
     {
-        await base.InitializeAsync(supportEnhancedNavigationSuppression: true);
+        await base.InitializeAsync();
         Navigate($"{ServerPathBase}/redirect");
 
         _originalH1Element = Browser.Exists(By.TagName("h1"));
@@ -179,6 +179,7 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Browser.Exists(By.LinkText("Streaming enhanced GET with external redirection")).Click();
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
+    
 
     [Theory]
     [InlineData(true)]
