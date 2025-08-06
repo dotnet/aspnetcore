@@ -794,6 +794,59 @@ public class ScriptTagHelperTest
         Assert.Equal(importMap.ToJson(), output.Content.GetContent());
     }
 
+    [Fact]
+    public void ScriptTagHelper_PreservesExplicitImportMapContent_WhenNoImportMapDefinition()
+    {
+        // Arrange - this simulates the user's scenario where they provide explicit importmap content
+        // without using asp-importmap attribute
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                new TagHelperAttribute("type", "importmap"),
+            });
+        
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var helper = GetHelper();
+        helper.Type = "importmap";
+        // No endpoint with ImportMapDefinition and no asp-importmap attribute
+        // This should NOT suppress the output, allowing user content to render
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName); // Tag should not be suppressed
+        Assert.Equal("importmap", output.Attributes["type"].Value);
+        // The output should not be suppressed, allowing user's explicit content to render
+        Assert.False(output.IsContentModified); // Content should remain as user provided
+    }
+
+    [Fact]
+    public void ScriptTagHelper_SuppressesOutput_WhenAspImportMapAttributeUsedButNoDefinition()
+    {
+        // Arrange - this simulates using asp-importmap attribute but having no ImportMapDefinition
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                new TagHelperAttribute("type", "importmap"),
+                new TagHelperAttribute("asp-importmap", null), // asp-importmap used but no value
+            });
+        
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+
+        var helper = GetHelper();
+        helper.Type = "importmap";
+        // No endpoint with ImportMapDefinition but asp-importmap attribute is present
+        // This should suppress the output since it was intended to be auto-generated
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert - output should be suppressed when asp-importmap is used but no definition found
+        Assert.Null(output.TagName); // Tag should be suppressed
+    }
+
     private Endpoint CreateEndpoint(ImportMapDefinition importMap = null)
     {
         return new Endpoint(
