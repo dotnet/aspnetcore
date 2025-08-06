@@ -59,7 +59,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 options.SerializeAllClaims = serializeAllClaims;
             });
 
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_EnforceServerCultureOnClient") == "true")
+        if (Configuration.GetValue<bool>("EnforceServerCultureOnClient"))
         {
             razorComponentsBuilder.EnforceServerCultureOnClient();
         }

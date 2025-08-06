@@ -1205,27 +1205,19 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     [Fact]
     public void CanPersistCultureFromServer()
     {
-        Environment.SetEnvironmentVariable("ASPNETCORE_EnforceServerCultureOnClient", "true");
+        _serverFixture.AdditionalArguments.Add("EnforceServerCultureOnClient=true");
+        
+        Navigate($"{ServerPathBase}/Culture/SetCulture?culture=fr-FR&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/persist-culture-state")}");
+        Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
 
-        try
-        {
-            Navigate($"{ServerPathBase}/Culture/SetCulture?culture=fr-FR&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/persist-culture-state")}");
-            Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
+        Browser.Equal("Prerender", () => Browser.FindElement(By.Id("prerender")).Text);
+        Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
+        Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
 
-            Browser.Equal("Prerender", () => Browser.FindElement(By.Id("prerender")).Text);
-            Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
-            Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
+        Browser.Exists(By.Id("start-blazor")).Click();
 
-            Browser.Exists(By.Id("start-blazor")).Click();
-
-            Browser.Equal("Interactive", () => Browser.FindElement(By.Id("interactive")).Text);
-            Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
-            Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
-        }
-        finally
-        {
-            Environment.SetEnvironmentVariable("ASPNETCORE_EnforceServerCultureOnClient", null);
-        }
+        Browser.Equal("Interactive", () => Browser.FindElement(By.Id("interactive")).Text);
+        Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
     }
 
     [Fact]
