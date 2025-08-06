@@ -82,6 +82,10 @@ internal sealed class OpenApiSchemaService(
                     }
                 };
             }
+            else if (type.IsJsonPatchDocument())
+            {
+                schema = CreateSchemaForJsonPatch();
+            }
             // STJ uses `true` in place of an empty object to represent a schema that matches
             // anything (like the `object` type) or types with user-defined converters. We override
             // this default behavior here to match the format expected in OpenAPI v3.
@@ -116,6 +120,96 @@ internal sealed class OpenApiSchemaService(
             return schema;
         }
     };
+
+    private static JsonObject CreateSchemaForJsonPatch()
+    {
+        var addReplaceTest = new JsonObject()
+        {
+            [OpenApiSchemaKeywords.TypeKeyword] = "object",
+            [OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false,
+            [OpenApiSchemaKeywords.RequiredKeyword] = JsonArray(["op", "path", "value"]),
+            [OpenApiSchemaKeywords.PropertiesKeyword] = new JsonObject
+            {
+                ["op"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                    [OpenApiSchemaKeywords.EnumKeyword] = JsonArray(["add", "replace", "test"]),
+                },
+                ["path"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string"
+                },
+                ["value"] = new JsonObject()
+            }
+        };
+
+        var moveCopy = new JsonObject()
+        {
+            [OpenApiSchemaKeywords.TypeKeyword] = "object",
+            [OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false,
+            [OpenApiSchemaKeywords.RequiredKeyword] = JsonArray(["op", "path", "from"]),
+            [OpenApiSchemaKeywords.PropertiesKeyword] = new JsonObject
+            {
+                ["op"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                    [OpenApiSchemaKeywords.EnumKeyword] = JsonArray(["move", "copy"]),
+                },
+                ["path"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string"
+                },
+                ["from"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string"
+                },
+            }
+        };
+
+        var remove = new JsonObject()
+        {
+            [OpenApiSchemaKeywords.TypeKeyword] = "object",
+            [OpenApiSchemaKeywords.AdditionalPropertiesKeyword] = false,
+            [OpenApiSchemaKeywords.RequiredKeyword] = JsonArray(["op", "path"]),
+            [OpenApiSchemaKeywords.PropertiesKeyword] = new JsonObject
+            {
+                ["op"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string",
+                    [OpenApiSchemaKeywords.EnumKeyword] = JsonArray(["remove"])
+                },
+                ["path"] = new JsonObject()
+                {
+                    [OpenApiSchemaKeywords.TypeKeyword] = "string"
+                },
+            }
+        };
+
+        return new JsonObject
+        {
+            [OpenApiConstants.SchemaId] = "JsonPatchDocument",
+            [OpenApiSchemaKeywords.TypeKeyword] = "array",
+            [OpenApiSchemaKeywords.ItemsKeyword] = new JsonObject
+            {
+                [OpenApiSchemaKeywords.OneOfKeyword] = JsonArray([addReplaceTest, moveCopy, remove])
+            },
+        };
+
+        // Using JsonArray inline causes the compile to pick the generic Add<T>() overload
+        // which then generates native AoT warnings without adding a cost. To Avoid that use
+        // this helper method that uses JsonNode to pick the native AoT compatible overload instead.
+        static JsonArray JsonArray(ReadOnlySpan<JsonNode> values)
+        {
+            var array = new JsonArray();
+
+            foreach (var value in values)
+            {
+                array.Add(value);
+            }
+
+            return array;
+        }
+    }
 
     internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(OpenApiDocument? document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
@@ -320,9 +414,10 @@ internal sealed class OpenApiSchemaService(
             }
         }
 
-        if (schema.Items is not null)
+        // If the schema is an array but uses AnyOf or OneOf then ElementType is null
+        if (schema.Items is not null && jsonTypeInfo.ElementType is not null)
         {
-            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType!);
+            var elementTypeInfo = _jsonSerializerOptions.GetTypeInfo(jsonTypeInfo.ElementType);
             await InnerApplySchemaTransformersAsync(schema.Items, elementTypeInfo, null, context, transformer, cancellationToken);
         }
 

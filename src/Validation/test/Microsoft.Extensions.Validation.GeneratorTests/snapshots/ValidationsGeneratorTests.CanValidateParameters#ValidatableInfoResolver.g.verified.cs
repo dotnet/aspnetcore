@@ -84,27 +84,9 @@ namespace Microsoft.Extensions.Validation.Generated
                     members: [
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
-                            propertyType: typeof(global::System.Collections.Generic.ICollection<global::TestService>),
-                            name: "System.Collections.Generic.IDictionary<TKey,TValue>.Values",
-                            displayName: "System.Collections.Generic.IDictionary<TKey,TValue>.Values"
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
-                            propertyType: typeof(global::System.Collections.Generic.IEnumerable<global::TestService>),
-                            name: "System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.Values",
-                            displayName: "System.Collections.Generic.IReadOnlyDictionary<TKey,TValue>.Values"
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
                             propertyType: typeof(global::TestService),
                             name: "this[]",
                             displayName: "this[]"
-                        ),
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::System.Collections.Generic.Dictionary<string, global::TestService>),
-                            propertyType: typeof(global::System.Collections.ICollection),
-                            name: "System.Collections.IDictionary.Values",
-                            displayName: "System.Collections.IDictionary.Values"
                         ),
                     ]
                 );

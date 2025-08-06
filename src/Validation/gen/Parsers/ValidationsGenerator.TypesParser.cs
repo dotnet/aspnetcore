@@ -65,6 +65,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             return false;
         }
 
+        // Skip types that are not accessible from generated code
+        if (typeSymbol.DeclaredAccessibility is not Accessibility.Public)
+        {
+            return false;
+        }
+
         visitedTypes.Add(typeSymbol);
 
         // Extract validatable types discovered in base types of this type and add them to the top-level list.
@@ -114,6 +120,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
         var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
+        var jsonIgnoreAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonIgnoreAttribute);
 
         // Special handling for record types to extract properties from
         // the primary constructor.
@@ -144,6 +152,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
                         // Skip parameters that are injected as services
                         if (parameter.IsServiceParameter(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+                        {
+                            continue;
+                        }
+
+                        // Skip properties that are not accessible from generated code
+                        if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
+                        {
+                            continue;
+                        }
+
+                        // Skip properties that have JsonIgnore attribute
+                        if (correspondingProperty.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
                         {
                             continue;
                         }
@@ -182,6 +202,18 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
             // Skip properties that are injected as services
             if (member.IsServiceProperty(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+            {
+                continue;
+            }
+
+            // Skip properties that are not accessible from generated code
+            if (member.DeclaredAccessibility is not Accessibility.Public)
+            {
+                continue;
+            }
+
+            // Skip properties that have JsonIgnore attribute
+            if (member.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
             {
                 continue;
             }
