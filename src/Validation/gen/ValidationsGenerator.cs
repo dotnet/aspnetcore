@@ -29,7 +29,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         // Extract types that have been marked with generated [ValidatableType].
         var generatedValidatableTypes = context.SyntaxProvider.ForAttributeWithMetadataName(
-            "Microsoft.Extensions.Validation.Generated.ValidatableTypeAttribute",
+            "Microsoft.Extensions.Validation.Embedded.ValidatableTypeAttribute",
             predicate: ShouldTransformSymbolWithAttribute,
             transform: TransformValidatableTypeWithAttribute
         );

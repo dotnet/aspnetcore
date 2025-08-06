@@ -17,7 +17,7 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
             using Microsoft.AspNetCore.Builder;
             using Microsoft.Extensions.DependencyInjection;
             using System.ComponentModel.DataAnnotations;
-            using Microsoft.Extensions.Validation.Generated;
+            using Microsoft.Extensions.Validation.Embedded;
 
             var builder = WebApplication.CreateBuilder();
             builder.Services.AddValidation();
@@ -49,7 +49,7 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
                 }
             }
 
-            namespace Microsoft.Extensions.Validation.Generated;
+            namespace Microsoft.Extensions.Validation.Embedded;
 
             [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
             [global::System.AttributeUsage(global::System.AttributeTargets.Class)]
@@ -72,7 +72,7 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
             using Microsoft.Extensions.DependencyInjection;
             using System.ComponentModel.DataAnnotations;
             using Microsoft.Extensions.Validation;
-            using Microsoft.Extensions.Validation.Generated;
+            using Microsoft.Extensions.Validation.Embedded;
 
             var builder = WebApplication.CreateBuilder();
             builder.Services.AddValidation();
@@ -117,7 +117,7 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
                 }
             }
 
-            namespace Microsoft.Extensions.Validation.Generated;
+            namespace Microsoft.Extensions.Validation.Embedded;
 
             [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
             [global::System.AttributeUsage(global::System.AttributeTargets.Class)]
