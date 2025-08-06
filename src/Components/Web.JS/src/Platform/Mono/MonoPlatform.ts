@@ -170,7 +170,11 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
+<<<<<<< HEAD
     const customSrc = startOptions.loadBootResource(resourceType, 'dotnet.js', src, '', 'js-module-dotnet');
+=======
+    const customSrc = startOptions.loadBootResource(resourceType, 'dotnet.js', `_framework/dotnet.js?v=${Date.now()}`, '', 'js-module-dotnet');
+>>>>>>> 69bee3a6fc (Add cache busting query string to dotnet.js import statements)
     if (typeof (customSrc) === 'string') {
       src = customSrc;
     } else if (customSrc) {
@@ -179,8 +183,13 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
     }
   }
 
+<<<<<<< HEAD
   const absoluteSrc = (new URL(src, document.baseURI)).toString();
   return await import(/* webpackIgnore: true */ absoluteSrc);
+=======
+  // @ts-ignore: This dynamic import is handled at runtime and does not need a type declaration.
+  return await import(/* webpackIgnore: true */ `./dotnet.js?v=${Date.now()}`);
+>>>>>>> 69bee3a6fc (Add cache busting query string to dotnet.js import statements)
 }
 
 function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfigLoadedCallback?: (loadedConfig: MonoConfig) => void): DotnetModuleConfig {
