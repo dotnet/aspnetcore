@@ -468,7 +468,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 // Apply comments from the property
                 if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
-                    if(schema.Metadata is null
+                    if (schema.Metadata is null
                         || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
                         || string.IsNullOrEmpty(schemaId as string))
                     {
