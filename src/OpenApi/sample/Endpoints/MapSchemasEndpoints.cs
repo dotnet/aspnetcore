@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.ComponentModel;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
 public static class SchemasEndpointsExtensions
 {
@@ -36,6 +37,8 @@ public static class SchemasEndpointsExtensions
         schemas.MapPost("/location", (LocationContainer location) => { });
         schemas.MapPost("/parent", (ParentObject parent) => Results.Ok(parent));
         schemas.MapPost("/child", (ChildObject child) => Results.Ok(child));
+        schemas.MapPatch("/json-patch", (JsonPatchDocument patchDoc) => Results.NoContent());
+        schemas.MapPatch("/json-patch-generic", (JsonPatchDocument<ParentObject> patchDoc) => Results.NoContent());
 
         return endpointRouteBuilder;
     }
