@@ -623,4 +623,89 @@ public class PersistentValueProviderComponentSubscriptionTests
         public Task<IDictionary<string, byte[]>> GetPersistedStateAsync() => Task.FromResult(state);
         public Task PersistStateAsync(IReadOnlyDictionary<string, byte[]> state) => throw new NotImplementedException();
     }
+
+    private class ComponentWithPrivateProperty : IComponent
+    {
+        [PersistentState]
+        private string PrivateValue { get; set; } = "initial";
+
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    private class ComponentWithPrivateGetter : IComponent
+    {
+        [PersistentState]
+        public string PropertyWithPrivateGetter { private get; set; } = "initial";
+
+        public void Attach(RenderHandle renderHandle) => throw new NotImplementedException();
+        public Task SetParametersAsync(ParameterView parameters) => throw new NotImplementedException();
+    }
+
+    [Fact]
+    public void Constructor_ThrowsClearException_ForPrivateProperty()
+    {
+        // Arrange
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
+        var renderer = new TestRenderer();
+        var component = new ComponentWithPrivateProperty();
+        var componentState = CreateComponentState(renderer, component, null, null);
+        var cascadingParameterInfo = CreateCascadingParameterInfo("PrivateValue", typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            new PersistentValueProviderComponentSubscription(
+                state, componentState, cascadingParameterInfo, serviceProvider, logger));
+
+        // Should throw a clear error about needing a public property with public getter
+        Assert.Contains("A public property", exception.Message);
+        Assert.Contains("with a public getter wasn't found", exception.Message);
+    }
+
+    [Fact]
+    public void Constructor_ThrowsClearException_ForPrivateGetter()
+    {
+        // Arrange
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
+        var renderer = new TestRenderer();
+        var component = new ComponentWithPrivateGetter();
+        var componentState = CreateComponentState(renderer, component, null, null);
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(ComponentWithPrivateGetter.PropertyWithPrivateGetter), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+            new PersistentValueProviderComponentSubscription(
+                state, componentState, cascadingParameterInfo, serviceProvider, logger));
+
+        // Should throw a clear error about needing a public property with public getter
+        Assert.Contains("A public property", exception.Message);
+        Assert.Contains("with a public getter wasn't found", exception.Message);
+    }
+
+    [Fact]
+    public void Constructor_WorksCorrectly_ForPublicProperty()
+    {
+        // Arrange
+        var state = new PersistentComponentState(new Dictionary<string, byte[]>(), [], []);
+        state.InitializeExistingState(new Dictionary<string, byte[]>(), RestoreContext.InitialValue);
+        var renderer = new TestRenderer();
+        var component = new TestComponent { State = "test-value" };
+        var componentState = CreateComponentState(renderer, component, null, null);
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        // Act & Assert - Should not throw
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
+
+        Assert.NotNull(subscription);
+        subscription.Dispose();
+    }
 }

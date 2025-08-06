@@ -532,4 +532,95 @@ public class TestService
             }
         });
     }
+
+    [Fact]
+    public async Task SkipsClassesWithNonAccessibleTypes()
+    {
+        // Arrange
+        var source = """
+using System;
+using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddValidation();
+
+var app = builder.Build();
+
+app.MapPost("/accessibility-test", (AccessibilityTestType accessibilityTest) => Results.Ok("Passed"!));
+
+app.Run();
+
+public class AccessibilityTestType
+{
+    [Required]
+    public string PublicProperty { get; set; } = "";
+
+    [Required]
+    private string PrivateProperty { get; set; } = "";
+
+    [Required]
+    protected string ProtectedProperty { get; set; } = "";
+
+    [Required]
+    private PrivateNestedType PrivateNestedProperty { get; set; } = new();
+
+    [Required]
+    protected ProtectedNestedType ProtectedNestedProperty { get; set; } = new();
+
+    [Required]
+    internal InternalNestedType InternalNestedProperty { get; set; } = new();
+
+    private class PrivateNestedType
+    {
+        [Required]
+        public string RequiredProperty { get; set; } = "";
+    }
+
+    protected class ProtectedNestedType
+    {
+        [Required]
+        public string RequiredProperty { get; set; } = "";
+    }
+
+    internal class InternalNestedType
+    {
+        [Required]
+        public string RequiredProperty { get; set; } = "";
+    }
+}
+""";
+        await Verify(source, out var compilation);
+        await VerifyEndpoint(compilation, "/accessibility-test", async (endpoint, serviceProvider) =>
+        {
+            await ValidPublicPropertyStillValidated(endpoint);
+
+            async Task ValidPublicPropertyStillValidated(Endpoint endpoint)
+            {
+                var payload = """
+                {
+                    "PublicProperty": ""
+                }
+                """;
+                var context = CreateHttpContextWithPayload(payload, serviceProvider);
+
+                await endpoint.RequestDelegate(context);
+
+                var problemDetails = await AssertBadRequest(context);
+                Assert.Collection(problemDetails.Errors, kvp =>
+                {
+                    Assert.Equal("PublicProperty", kvp.Key);
+                    Assert.Equal("The PublicProperty field is required.", kvp.Value.Single());
+                });
+            }
+        });
+    }
 }
