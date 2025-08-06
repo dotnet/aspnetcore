@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
@@ -131,22 +130,18 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
         await manager.RestoreStateAsync(store);
 
-        Console.WriteLine(CultureInfo.CurrentCulture.Name);
-
         cultureProvider ??= WebAssemblyCultureProvider.Instance!;
         cultureProvider.ThrowIfCultureChangeIsUnsupported();
-
-        // Application developers might have configured the culture based on some ambient state
-        // such as local storage, url etc as part of their Program.Main(Async).
-        // This is the earliest opportunity to fetch satellite assemblies for this selection.
-        await cultureProvider.LoadCurrentCultureResourcesAsync();
 
         if (Services.GetService<CultureStateProvider>() is CultureStateProvider cultureStateProvider)
         {
             cultureStateProvider.ApplyStoredCulture();
         }
-        
-        Console.WriteLine(CultureInfo.CurrentCulture.Name);
+
+        // Application developers might have configured the culture based on some ambient state
+        // such as local storage, url etc as part of their Program.Main(Async).
+        // This is the earliest opportunity to fetch satellite assemblies for this selection.
+        await cultureProvider.LoadCurrentCultureResourcesAsync();
 
         var tcs = new TaskCompletionSource();
         using (cancellationToken.Register(() => tcs.TrySetResult()))

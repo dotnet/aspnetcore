@@ -77,9 +77,6 @@ public static class RazorComponentsServiceCollectionExtensions
 
         services.TryAddScoped<ResourceCollectionProvider>();
         RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<ResourceCollectionProvider>(services, RenderMode.InteractiveWebAssembly);
-        
-        services.TryAddScoped<CultureStateProvider>();
-        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<CultureStateProvider>(services, RenderMode.InteractiveAuto);
 
         ComponentsMetricsServiceCollectionExtensions.AddComponentsMetrics(services);
         ComponentsMetricsServiceCollectionExtensions.AddComponentsTracing(services);

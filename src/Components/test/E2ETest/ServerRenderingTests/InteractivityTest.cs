@@ -1203,6 +1203,49 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
     }
 
     [Fact]
+    public void CanPersistCultureFromServer()
+    {
+        Environment.SetEnvironmentVariable("ASPNETCORE_EnforceServerCultureOnClient", "true");
+
+        try
+        {
+            Navigate($"{ServerPathBase}/Culture/SetCulture?culture=fr-FR&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/persist-culture-state")}");
+            Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
+
+            Browser.Equal("Prerender", () => Browser.FindElement(By.Id("prerender")).Text);
+            Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
+            Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
+
+            Browser.Exists(By.Id("start-blazor")).Click();
+
+            Browser.Equal("Interactive", () => Browser.FindElement(By.Id("interactive")).Text);
+            Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
+            Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("ASPNETCORE_EnforceServerCultureOnClient", null);
+        }
+    }
+
+    [Fact]
+    public void DoesNotPersistCultureFromServerAsDefault()
+    {
+        Navigate($"{ServerPathBase}/Culture/SetCulture?culture=fr-FR&redirectUri={Uri.EscapeDataString($"{ServerPathBase}/persist-culture-state")}");
+        Browser.Exists(By.ClassName("return-from-culture-setter")).Click();
+
+        Browser.Equal("Prerender", () => Browser.FindElement(By.Id("prerender")).Text);
+        Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
+        Browser.Equal("fr-FR", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
+
+        Browser.Exists(By.Id("start-blazor")).Click();
+
+        Browser.Equal("Interactive", () => Browser.FindElement(By.Id("interactive")).Text);
+        Browser.NotEqual("fr-FR", () => Browser.FindElement(By.Id("culture-set")).Text);
+        Browser.NotEqual("fr-FR", () => Browser.FindElement(By.Id("culture-ui-set")).Text);
+    }
+
+    [Fact]
     public void NavigationManagerCanRefreshSSRPageWhenServerInteractivityEnabled()
     {
         Navigate($"{ServerPathBase}/forms/form-that-calls-navigation-manager-refresh");
