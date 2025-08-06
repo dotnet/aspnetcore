@@ -4,8 +4,9 @@
 
 @code
 {
-    protected override void OnInitialized()
+    protected override async Task OnInitializedAsync()
     {
+        await Task.Yield(); // Make it actually async
         throw new Exception("error");
     }
 }
