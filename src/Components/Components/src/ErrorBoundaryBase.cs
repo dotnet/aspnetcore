@@ -31,12 +31,7 @@ public abstract class ErrorBoundaryBase : ComponentBase, IErrorBoundary
     /// <summary>
     /// Gets the current exception, or null if there is no exception.
     /// </summary>
-    protected Exception? CurrentException { get; private set; }
-
-    /// <summary>
-    /// Gets a value indicating whether the error boundary is currently in an error state.
-    /// </summary>
-    internal bool IsInErrorState => CurrentException is not null;
+    protected internal Exception? CurrentException { get; private set; }
 
     /// <summary>
     /// Resets the error boundary to a non-errored state. If the error boundary is not
