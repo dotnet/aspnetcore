@@ -31,7 +31,7 @@ public static class EnhancedNavigationTestUtil
             var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
             if (testId == null)
             {
-                throw new InvalidOperationException("Test ID not found in sessionStorage. Ensure that the test ID is set in InitializeAsync before calling this method.");
+                throw new InvalidOperationException("Test ID not found in sessionStorage. Ensure that suppression is enabled by passing `supportEnhancedNavigationSuppression: true` to InitializeAsync.");
             }
             ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('suppress-enhanced-navigation-{testId}', 'true')");
 
