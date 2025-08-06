@@ -180,7 +180,6 @@ public class RedirectionTest : ServerTestBase<BasicTestAppServerSiteFixture<Razo
         Browser.Contains("microsoft.com", () => Browser.Url);
     }
 
-
     [Theory]
     [InlineData(true)]
     [InlineData(false)]
