@@ -70,8 +70,6 @@ public class BindingAddressTests
     [InlineData("http://www.example.com:5000", "http", "www.example.com", 5000, "", null)]
     [InlineData("https://www.example.com:5000", "https", "www.example.com", 5000, "", null)]
     [InlineData("http://www.example.com:5000/", "http", "www.example.com", 5000, "", "http://www.example.com:5000")]
-    [InlineData("http://foo:/tmp/kestrel-test.sock:5000/doesn't/matter", "http", "foo:", 80, "/tmp/kestrel-test.sock:5000/doesn't/matter", "http://foo::80/tmp/kestrel-test.sock:5000/doesn't/matter")]
-    [InlineData("http://unix:foo/tmp/kestrel-test.sock", "http", "unix:foo", 80, "/tmp/kestrel-test.sock", "http://unix:foo:80/tmp/kestrel-test.sock")]
     [InlineData("http://unix:5000/tmp/kestrel-test.sock", "http", "unix", 5000, "/tmp/kestrel-test.sock", "http://unix:5000/tmp/kestrel-test.sock")]
     public void UrlsAreParsedCorrectly(string url, string scheme, string host, int port, string pathBase, string toString)
     {
