@@ -25,7 +25,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     }
 
     public override Task InitializeAsync()
-        => InitializeAsync(BrowserFixture.StreamingContext, supportEnhancedNavigationSuppression: true);
+        => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Fact]
     public void NavigationManagerCanRefreshSSRPageWhenInteractivityNotPresent()
