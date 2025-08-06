@@ -156,7 +156,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     var ciphertextSpan = cipherText.Slice(ciphertextOffset, macOffset - ciphertextOffset);
                     var iv = cipherText.Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
 
-
                     using var symmetricAlgorithm = CreateSymmetricAlgorithm();
                     symmetricAlgorithm.SetKey(decryptionSubkey);
 
