@@ -509,7 +509,7 @@
             <ComponentRef Id="C_DepProvider_$(var.ProductNameShort)" />
         </Feature>
 
-        <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32">
+        <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32" Guid="*">
             <Provides Key="$(var.ANCMDepProviderKey)" dep:Check="yes" />
         </Component>
     </Fragment>
