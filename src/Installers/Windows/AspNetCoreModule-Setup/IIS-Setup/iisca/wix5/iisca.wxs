@@ -23,7 +23,7 @@
         <!-- Define a table to hold Handler registration parameters -->
         <CustomTable Id="IISGlobalHandler">
             <Column Id="Name" Type="string" PrimaryKey="yes" />
-            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Width="72" />
+            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
             <Column Id="Path" Type="string" Nullable="no" />
             <Column Id="Verb" Type="string" Nullable="no" />
             <Column Id="Type" Type="string" Nullable="yes" />
@@ -38,7 +38,7 @@
         <!-- Define a table to hold Module registration parameters -->
         <CustomTable Id="IISGlobalModule">
             <Column Id="Name" Type="string" PrimaryKey="yes" />
-            <Column Id="File_" Type="string" KeyTable="File" KeyColumn="1" Category="identifier" Width="72" />
+            <Column Id="File_" Type="string" KeyTable="File" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
             <Column Id="PreCondition" Type="string" Nullable="yes" />
             <Column Id="TypeName" Type="string" Nullable="yes" />
         </CustomTable>
@@ -48,13 +48,13 @@
             <Column Id="ProviderGuid" Type="string" Nullable="yes" />
             <Column Id="AreaName" Type="string" />
             <Column Id="AreaValue" Type="string" Nullable="yes" />
-            <Column Id="BinaryName_" Type="string" KeyTable="Binary" KeyColumn="1" Category="identifier" Nullable="yes" Width="72" />
-            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Width="72" />
+            <Column Id="BinaryName_" Type="string" KeyTable="Binary" KeyColumn="1" Category="identifier" Modularize="Column" Nullable="yes" Width="72" />
+            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
         </CustomTable>
         <!-- Define a table to hold Section Schema registration parameters -->
         <CustomTable Id="IISConfigSections">
             <Column Id="Name" Type="string" PrimaryKey="yes" />
-            <Column Id="File_" Type="string" KeyTable="File" KeyColumn="1" Category="identifier" Width="72" />
+            <Column Id="File_" Type="string" KeyTable="File" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
             <Column Id="OverrideModeDefault" Type="string" />
             <Column Id="AllowDefinition" Type="string" Nullable="yes" />
             <Column Id="Type" Type="string" Nullable="yes" />
@@ -64,21 +64,21 @@
         <CustomTable Id="IISConfigSectionDefaults">
             <Column Id="Name" Type="string" PrimaryKey="yes" />
             <Column Id="SectionName" Type="string" Nullable="no" />
-            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Width="72" />
-            <Column Id="BinaryName_" Type="string" KeyTable="Binary" KeyColumn="1" Category="identifier" Width="72" />
+            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
+            <Column Id="BinaryName_" Type="string" KeyTable="Binary" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
         </CustomTable>
         <!-- Define a table to hold Section additions registration parameters -->
         <CustomTable Id="IISConfigSectionAdditions">
             <Column Id="Name" Type="string" PrimaryKey="yes" />
             <Column Id="SectionName" Type="string" Nullable="no" />
-            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Width="72" />
-            <Column Id="BinaryName_" Type="string" KeyTable="Binary" KeyColumn="1" Category="identifier" Width="72" />
+            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
+            <Column Id="BinaryName_" Type="string" KeyTable="Binary" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
         </CustomTable>
         <!-- Define a table to hold UI Module registration parameters -->
         <CustomTable Id="IISUIModule">
             <Column Id="Name" Type="string" PrimaryKey="yes" />
-            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Width="72" />
-            <Column Id="AssemblyInfoComponent_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Width="72" Nullable="yes" />
+            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
+            <Column Id="AssemblyInfoComponent_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" Nullable="yes" />
             <Column Id="TypeName" Type="string" />
             <Column Id="RegisterInModulesSection" Type="string" Nullable="yes" />
             <Column Id="PrependToList" Type="string" Nullable="yes" />
@@ -86,7 +86,7 @@
         <!-- Define a table to hold CGI Restriction registration parameters -->
         <CustomTable Id="IISCgiRestriction">
             <Column Id="Name" Type="string" PrimaryKey="yes" />
-            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Width="72" />
+            <Column Id="Component_" Type="string" KeyTable="Component" KeyColumn="1" Category="identifier" Modularize="Column" Width="72" />
             <Column Id="Path" Type="string" Nullable="no" />
             <Column Id="Allowed" Type="string" Nullable="no" />
             <Column Id="GroupId" Type="string" Nullable="no" />
