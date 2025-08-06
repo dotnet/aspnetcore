@@ -41,26 +41,12 @@ internal class CultureStateProvider
     {
         if (!string.IsNullOrEmpty(CurrentCultureName))
         {
-            try
-            {
-                CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(CurrentCultureName);
-            }
-            catch (CultureNotFoundException ex)
-            {
-                Console.WriteLine($"CultureStateProvider: Warning - Could not apply culture '{CurrentCultureName}': {ex.Message}");
-            }
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(CurrentCultureName);
         }
         
         if (!string.IsNullOrEmpty(CurrentUICultureName))
         {
-            try
-            {
-                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(CurrentUICultureName);
-            }
-            catch (CultureNotFoundException ex)
-            {
-                Console.WriteLine($"CultureStateProvider: Warning - Could not apply UI culture '{CurrentUICultureName}': {ex.Message}");
-            }
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(CurrentUICultureName);
         }
     }
 }
