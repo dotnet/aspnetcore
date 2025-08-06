@@ -13,6 +13,7 @@ using System.Text;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
@@ -1465,6 +1466,44 @@ public class FormDataMapperTests
     }
 
     [Fact]
+    public void CanDeserialize_SimpleRecursiveModel_WithOnlyNameProperty()
+    {
+        // This reproduces the issue from GitHub #61341
+        // A model with a recursive property that has no form data provided
+        var data = new Dictionary<string, StringValues>()
+        {
+            ["Name"] = "Test Name"
+            // Note: No data for Parent property
+        };
+
+        var reader = CreateFormDataReader(data, CultureInfo.InvariantCulture);
+        var options = new FormDataMapperOptions();
+
+        // Act
+        var result = FormDataMapper.Map<MyModel>(reader, options);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal("Test Name", result.Name);
+        Assert.Null(result.Parent);
+    }
+
+    [Fact]
+    public void ComplexTypeConverterFactory_CanConvert_RecursiveType()
+    {
+        // Test if ComplexTypeConverterFactory can convert recursive types
+        // This tests the exact scenario from GitHub issue #61341
+        var options = new FormDataMapperOptions();
+        var factory = new ComplexTypeConverterFactory(options, new NullLoggerFactory());
+
+        // Act
+        var canConvert = factory.CanConvert(typeof(MyModel), options);
+
+        // Assert
+        Assert.True(canConvert, "ComplexTypeConverterFactory should be able to convert recursive types");
+    }
+
+    [Fact]
     public void CanDeserialize_ComplexRecursiveCollectionTypes_RecursiveTree()
     {
         // Arrange
@@ -2448,6 +2487,12 @@ internal class RecursiveDictionaryTree
 }
 
 internal record ClassRecordType(string Key, int Value);
+
+internal class MyModel
+{
+    public string Name { get; set; }
+    public MyModel Parent { get; set; }
+}
 
 internal record struct StructRecordType(string Key, int Value);
 

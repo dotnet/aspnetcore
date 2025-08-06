@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
 namespace Microsoft.AspNetCore.Components.Forms.PostHandling;
 
@@ -58,6 +59,26 @@ public class SupplyParameterFromFormTest
         Assert.Equal(formMappingScope, supplier.ValueSupplier);
     }
 
+    [Fact]
+    public async Task FindCascadingParameters_HandlesRecursiveModelTypes()
+    {
+        // This test reproduces GitHub issue #61341
+        // Arrange
+        var renderer = CreateRendererWithFormValueModelBinder();
+        var formComponent = new RecursiveFormParametersComponent();
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(formComponent);
+        await renderer.RenderRootComponentAsync(componentId);
+        var formComponentState = renderer.GetComponentState(formComponent);
+
+        var result = CascadingParameterState.FindCascadingParameters(formComponentState, out _);
+
+        // Assert
+        var supplier = Assert.Single(result);
+        Assert.IsType<SupplyParameterFromFormValueProvider>(supplier.ValueSupplier);
+    }
+
     static TestRenderer CreateRendererWithFormValueModelBinder()
     {
         var services = new ServiceCollection();
@@ -78,6 +99,17 @@ public class SupplyParameterFromFormTest
         [SupplyParameterFromForm(FormName = "handler-name")] public string FormParameter { get; set; }
     }
 
+    class RecursiveFormParametersComponent : TestComponentBase
+    {
+        [SupplyParameterFromForm] public MyModel FormParameter { get; set; }
+    }
+
+    class MyModel
+    {
+        public string Name { get; set; }
+        public MyModel Parent { get; set; }
+    }
+
     class TestFormModelValueBinder(string IncomingScopeQualifiedFormName = "") : IFormValueMapper
     {
         public void Map(FormValueMappingContext context) { }
@@ -91,6 +123,40 @@ public class SupplyParameterFromFormTest
             else
             {
                 return IncomingScopeQualifiedFormName == $"[{mappingScopeName}]{formName ?? string.Empty}";
+            }
+        }
+    }
+
+    class TestFormValueMapperWithRealBinding : IFormValueMapper
+    {
+        public void Map(FormValueMappingContext context) 
+        {
+            // Create a minimal FormDataMapperOptions to test type resolution
+            var options = new FormDataMapperOptions();
+            try
+            {
+                var converter = options.ResolveConverter(context.ValueType);
+                if (converter != null)
+                {
+                    context.SetResult(Activator.CreateInstance(context.ValueType));
+                }
+            }
+            catch
+            {
+                // If there's an exception resolving the converter, don't set result
+            }
+        }
+
+        public bool CanMap(Type valueType, string mappingScopeName, string formName)
+        {
+            try
+            {
+                var options = new FormDataMapperOptions();
+                return options.CanConvert(valueType);
+            }
+            catch
+            {
+                return false;
             }
         }
     }

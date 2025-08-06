@@ -42,4 +42,26 @@ public class HttpContextFormValueMapperTest
         var canMap = mapper.CanMap(typeof(string), scopeName, formNameOrNull);
         Assert.Equal(expectedResult, canMap);
     }
+
+    [Fact]
+    public void CanMap_SimpleRecursiveModel_ReturnsTrue()
+    {
+        // Test that CanMap works correctly for recursive types (GitHub issue #61341)
+        var formData = new HttpContextFormDataProvider();
+        formData.SetFormData("test-form", new Dictionary<string, StringValues>
+        {
+            ["Name"] = "Test Name"
+        }, new FormFileCollection());
+
+        var mapper = new HttpContextFormValueMapper(formData, Options.Create<RazorComponentsServiceOptions>(new()));
+
+        var canMap = mapper.CanMap(typeof(MyModel), "", null);
+        Assert.True(canMap);
+    }
+}
+
+internal class MyModel
+{
+    public string Name { get; set; }
+    public MyModel Parent { get; set; }
 }
