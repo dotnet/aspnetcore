@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Components.Web.Image;
  *     {
  *         @ErrorContent
  *     }
- *     <img id="@Id" class="@(_isLoading || _hasError ? "d-none" : GetCssClass())"
- *          alt="@Alt" @ref="Element" @attributes="AdditionalAttributes" />
+ *     <img class="@(_isLoading || _hasError ? "d-none" : GetCssClass())"
+ *         @ref="Element" @attributes="AdditionalAttributes" />
  * </div>
  */
 /// <summary>
@@ -39,7 +39,7 @@ public class Image : ComponentBase, IAsyncDisposable
     /// May be <see langword="null"/> if accessed before the component is rendered.
     /// </para>
     /// </summary>
-    [DisallowNull] public ElementReference? Element { get; protected set; }
+    [DisallowNull] public ElementReference? Element { get; protected set; } // pass to js int to give js html
 
     /// <summary>
     /// Gets the injected <see cref="IJSRuntime"/>.
@@ -50,11 +50,6 @@ public class Image : ComponentBase, IAsyncDisposable
     /// Gets or sets the source for the image.
     /// </summary>
     [Parameter] public ImageSource? Source { get; set; }
-
-    /// <summary>
-    /// Gets or sets the alt text for the image.
-    /// </summary>
-    [Parameter] public string? Alt { get; set; }
 
     /// <summary>
     /// Gets or sets the content to display while the image is loading.
@@ -122,11 +117,6 @@ public class Image : ComponentBase, IAsyncDisposable
             builder.AddAttribute(8, "class", cssClass);
         }
 
-        if (!string.IsNullOrEmpty(Alt))
-        {
-            builder.AddAttribute(9, "alt", Alt);
-        }
-
         builder.AddMultipleAttributes(10, AdditionalAttributes);
         builder.AddElementReferenceCapture(11, inputReference => Element = inputReference);
 
@@ -140,7 +130,7 @@ public class Image : ComponentBase, IAsyncDisposable
         if (firstRender && !_isDisposed)
         {
             await LoadImageIfSourceProvided();
-        }
+        } // jsobject ref to self,
     }
 
     /// <inheritdoc />
@@ -165,7 +155,7 @@ public class Image : ComponentBase, IAsyncDisposable
             {
                 bool foundInCache = await JSRuntime.InvokeAsync<bool>(
                     "Blazor._internal.BinaryImageComponent.trySetFromCache",
-                    _id, Source.CacheKey);
+                    Element, Source.CacheKey);
 
                 if (foundInCache)
                 {
@@ -192,7 +182,7 @@ public class Image : ComponentBase, IAsyncDisposable
 
             await JSRuntime.InvokeVoidAsync(
                 "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
-                _id, transferId, source.MimeType, source.CacheKey,
+                Element, transferId, source.MimeType, source.CacheKey,
                 CacheStrategy.ToString().ToLowerInvariant(), source.Length);
 
             byte[] buffer = ArrayPool<byte>.Shared.Rent(ChunkSize);
@@ -213,7 +203,7 @@ public class Image : ComponentBase, IAsyncDisposable
 
                 await JSRuntime.InvokeVoidAsync(
                     "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
-                    transferId, _id);
+                    transferId);
             }
             finally
             {
@@ -285,13 +275,6 @@ public class Image : ComponentBase, IAsyncDisposable
         builder.CloseElement();
     };
 
-    // private static RenderFragment CreateDefaultLoadingContent() => builder =>
-    // {
-    //     builder.OpenElement(0, "div");
-    //     builder.AddAttribute(1, "class", "blazor-image-loading");
-    //     builder.CloseElement();
-    // };
-
     private static RenderFragment CreateDefaultErrorContent() => builder =>
     {
         builder.OpenElement(0, "div");
@@ -332,7 +315,7 @@ public class Image : ComponentBase, IAsyncDisposable
                 {
                     await JSRuntime.InvokeVoidAsync(
                         "Blazor._internal.BinaryImageComponent.revokeImageUrl",
-                        _id);
+                        Element);
                 }
                 catch (JSDisconnectedException)
                 {

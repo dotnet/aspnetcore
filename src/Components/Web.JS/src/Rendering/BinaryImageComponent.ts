@@ -5,7 +5,7 @@
  * Represents a pending chunked image transfer.
  */
 interface ChunkedTransfer {
-  elementId: string;
+  imgElement: HTMLImageElement;
   receivedChunks: Uint8Array[];
   chunksReceived: number;
   bytesReceived: number;
@@ -29,7 +29,7 @@ export class BinaryImageComponent {
 
   /**
      * Initializes a dynamic chunked image transfer.
-     * @param elementId - The ID of the target image element
+     * @param imgElement - The HTMLImageElement reference
      * @param transferId - A unique ID for this transfer
      * @param mimeType - The MIME type of the image
      * @param cacheKey - A unique key for caching
@@ -38,17 +38,17 @@ export class BinaryImageComponent {
      * @returns True if initialization was successful
      */
   public static initChunkedTransfer(
-    elementId: string,
+    imgElement: HTMLImageElement,
     transferId: string,
     mimeType: string,
     cacheKey: string,
     cacheStrategy: string,
     totalBytes: number | null = null
   ): boolean {
-    console.log(`Initializing dynamic chunked transfer ${transferId} for ${elementId}${totalBytes ? ` (${totalBytes} bytes)` : ''}`);
+    console.log(`Initializing dynamic chunked transfer ${transferId} for element${totalBytes ? ` (${totalBytes} bytes)` : ''}`);
 
     this.pendingTransfers.set(transferId, {
-      elementId: elementId,
+      imgElement: imgElement,
       receivedChunks: [],
       chunksReceived: 0,
       bytesReceived: 0,
@@ -58,14 +58,13 @@ export class BinaryImageComponent {
       cacheStrategy: cacheStrategy,
     });
 
-    const imgElement = document.getElementById(elementId) as HTMLImageElement;
     if (imgElement) {
-      this.loadingImages.add(elementId);
+      this.loadingImages.add(imgElement.id);
       imgElement.dispatchEvent(new CustomEvent('blazorImageLoading'));
     }
 
     // Initialize progress CSS variables
-    const containerElement = document.getElementById(`${elementId}-container`);
+    const containerElement = imgElement.parentElement;
     if (containerElement && totalBytes !== null) {
       containerElement.style.setProperty('--blazor-image-progress', '0');
     }
@@ -99,15 +98,14 @@ export class BinaryImageComponent {
     if (transfer.totalBytes !== null && transfer.totalBytes > 0) {
       const progress = Math.min(1, transfer.bytesReceived / transfer.totalBytes);
 
-      const containerElement = document.getElementById(`${transfer.elementId}-container`);
+      const containerElement = transfer.imgElement.parentElement;
       if (containerElement) {
         containerElement.style.setProperty('--blazor-image-progress', progress.toString());
       }
     }
 
-    const imgElement = document.getElementById(transfer.elementId) as HTMLImageElement;
-    if (imgElement) {
-      imgElement.dispatchEvent(new CustomEvent('blazorImageProgress', {
+    if (transfer.imgElement) {
+      transfer.imgElement.dispatchEvent(new CustomEvent('blazorImageProgress', {
         detail: {
           chunksReceived: transfer.chunksReceived,
           bytesReceived: transfer.bytesReceived,
@@ -123,10 +121,9 @@ export class BinaryImageComponent {
   /**
      * Finalizes a dynamic chunked transfer by combining all chunks and setting the image.
      * @param transferId - The ID of the transfer to finalize
-     * @param elementId - The ID of the target image element
      * @returns True if successfully finalized
      */
-  public static finalizeChunkedTransfer(transferId: string, elementId: string): boolean {
+  public static finalizeChunkedTransfer(transferId: string): boolean {
     const transfer = this.pendingTransfers.get(transferId);
     if (!transfer) {
       console.error(`Transfer ${transferId} not found`);
@@ -142,9 +139,8 @@ export class BinaryImageComponent {
         offset += chunk.length;
       }
 
-      const imgElement = document.getElementById(elementId) as HTMLImageElement;
-      if (!imgElement) {
-        console.error(`Element ${elementId} not found`);
+      if (!transfer.imgElement) {
+        console.error(`Element not found in transfer ${transferId}`);
         return false;
       }
 
@@ -165,6 +161,7 @@ export class BinaryImageComponent {
       }
 
       // Clean up old URL if exists
+      const elementId = transfer.imgElement.id;
       if (this.blobUrls.has(elementId)) {
         const oldUrl = this.blobUrls.get(elementId);
         if (oldUrl) {
@@ -176,29 +173,29 @@ export class BinaryImageComponent {
       }
 
       this.blobUrls.set(elementId, url);
-      imgElement.src = url;
+      transfer.imgElement.src = url;
 
       // Set up event handlers
-      imgElement.onload = () => {
+      transfer.imgElement.onload = () => {
         this.loadingImages.delete(elementId);
 
-        const containerElement = document.getElementById(`${elementId}-container`);
+        const containerElement = transfer.imgElement.parentElement;
         if (containerElement) {
           containerElement.style.removeProperty('--blazor-image-progress');
         }
 
-        imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
+        transfer.imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
       };
 
-      imgElement.onerror = (e) => {
+      transfer.imgElement.onerror = (e) => {
         this.loadingImages.delete(elementId);
 
-        const containerElement = document.getElementById(`${elementId}-container`);
+        const containerElement = transfer.imgElement.parentElement;
         if (containerElement) {
           containerElement.style.removeProperty('--blazor-image-progress');
         }
 
-        imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
+        transfer.imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
           detail: (e as ErrorEvent).message || 'Failed to load image',
         }));
       };
@@ -210,16 +207,16 @@ export class BinaryImageComponent {
       console.error(`Error finalizing chunked transfer: ${error}`);
       this.pendingTransfers.delete(transferId);
 
-      const imgElement = document.getElementById(elementId) as HTMLImageElement;
-      if (imgElement) {
+      if (transfer.imgElement) {
+        const elementId = transfer.imgElement.id;
         this.loadingImages.delete(elementId);
 
-        const containerElement = document.getElementById(`${elementId}-container`);
+        const containerElement = transfer.imgElement.parentElement;
         if (containerElement) {
           containerElement.style.removeProperty('--blazor-image-progress');
         }
 
-        imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
+        transfer.imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
           detail: (error as Error).message || 'Failed to process chunked image',
         }));
       }
@@ -230,11 +227,11 @@ export class BinaryImageComponent {
 
   /**
    * Checks if an image with the given cache key is already cached and sets it as the source.
-   * @param elementId - The ID of the target image element
+   * @param imgElement - The HTMLImageElement reference
    * @param cacheKey - The cache key to look for
    * @returns True if the image was found in cache and set as source, false otherwise
    */
-  public static trySetFromCache(elementId: string, cacheKey: string): boolean {
+  public static trySetFromCache(imgElement: HTMLImageElement, cacheKey: string): boolean {
     if (!cacheKey) {
       return false;
     }
@@ -244,15 +241,15 @@ export class BinaryImageComponent {
       return false;
     }
 
-    const imgElement = document.getElementById(elementId) as HTMLImageElement;
     if (!imgElement) {
-      console.error(`Element ${elementId} not found`);
+      console.error('Element not provided');
       return false;
     }
 
-    console.log(`Setting image ${elementId} from cache with key: ${cacheKey}`);
+    console.log(`Setting image from cache with key: ${cacheKey}`);
 
     // Clean up old URL if exists
+    const elementId = imgElement.id;
     if (this.blobUrls.has(elementId)) {
       const oldUrl = this.blobUrls.get(elementId);
       if (oldUrl) {
@@ -284,19 +281,24 @@ export class BinaryImageComponent {
 
   /**
    * Checks if an image is currently loading.
-   * @param elementId - The ID of the image element
+   * @param imgElement - The HTMLImageElement reference
    * @returns True if loading, false otherwise
    */
-  public static isLoading(elementId: string): boolean {
-    return this.loadingImages.has(elementId);
+  public static isLoading(imgElement: HTMLImageElement): boolean {
+    return imgElement ? this.loadingImages.has(imgElement.id) : false;
   }
 
   /**
    * Revokes a specific blob URL.
-   * @param elementId - The ID of the image element
+   * @param imgElement - The HTMLImageElement reference
    * @returns True if revoked, false if not found
    */
-  public static revokeImageUrl(elementId: string): boolean {
+  public static revokeImageUrl(imgElement: HTMLImageElement): boolean {
+    if (!imgElement) {
+      return false;
+    }
+
+    const elementId = imgElement.id;
     if (this.blobUrls.has(elementId)) {
       const url = this.blobUrls.get(elementId);
 

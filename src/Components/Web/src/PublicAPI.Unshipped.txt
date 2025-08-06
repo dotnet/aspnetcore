@@ -9,8 +9,6 @@ Microsoft.AspNetCore.Components.Web.Image.CacheStrategy.None = 0 -> Microsoft.As
 Microsoft.AspNetCore.Components.Web.Image.Image
 Microsoft.AspNetCore.Components.Web.Image.Image.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
 Microsoft.AspNetCore.Components.Web.Image.Image.AdditionalAttributes.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.Alt.get -> string?
-Microsoft.AspNetCore.Components.Web.Image.Image.Alt.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.CacheStrategy.get -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
 Microsoft.AspNetCore.Components.Web.Image.Image.CacheStrategy.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.ChunkSize.get -> int
