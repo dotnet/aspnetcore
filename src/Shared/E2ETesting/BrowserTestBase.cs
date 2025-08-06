@@ -63,7 +63,14 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
     {
         InitializeBrowser(isolationContext);
         InitializeAsyncCore();
+        GrantTestId();
         return Task.CompletedTask;
+    }
+
+    private void GrantTestId()
+    {
+        var testId = Guid.NewGuid().ToString("N")[..8];
+        ((IJavaScriptExecutor)Browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
     }
 
     protected virtual void InitializeAsyncCore()

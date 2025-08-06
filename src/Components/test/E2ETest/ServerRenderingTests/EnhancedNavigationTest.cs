@@ -31,12 +31,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     // One of the tests here makes use of the streaming rendering page, which uses global state
     // so we can't run at the same time as other such tests
     public override Task InitializeAsync()
-    {
-        var initTask =  InitializeAsync(BrowserFixture.StreamingContext);
-        var testId = Guid.NewGuid().ToString("N")[..8];
-        ((IJavaScriptExecutor)Browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
-        return initTask;
-    }
+        => InitializeAsync(BrowserFixture.StreamingContext);
 
     [Fact]
     public void CanNavigateToAnotherPageWhilePreservingCommonDOMElements()
