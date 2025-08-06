@@ -470,7 +470,7 @@ public class ShadowCopyTests(PublishedSitesFixture fixture) : IISFunctionalTestB
         return process.ExitCode;
     }
 
-    public static void RemoveAllPermissions(DirectoryInfo directoryInfo)
+    internal static void RemoveAllPermissions(DirectoryInfo directoryInfo)
     {
         var directorySecurity = directoryInfo.GetAccessControl();
 
@@ -486,7 +486,7 @@ public class ShadowCopyTests(PublishedSitesFixture fixture) : IISFunctionalTestB
         directoryInfo.SetAccessControl(emptyPermissions);
     }
 
-    public static void RemoveWritePermissions(DirectoryInfo directoryInfo)
+    internal static void RemoveWritePermissions(DirectoryInfo directoryInfo)
     {
         var directorySecurity = directoryInfo.GetAccessControl();
         // Deny Write access for Everyone
@@ -524,7 +524,10 @@ public class ShadowCopyTests(PublishedSitesFixture fixture) : IISFunctionalTestB
 
         public void RestoreAllPermissions()
         {
-            if (_hasPermissions) return;
+            if (_hasPermissions)
+            {
+                return;
+            }
 
             RestoreAllPermissionsInner();
 
