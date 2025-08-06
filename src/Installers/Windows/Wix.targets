@@ -82,6 +82,16 @@
     </PropertyGroup>
   </Target>
 
+  <Target Name="_GenerateANCMGuids" Condition="'$(ANCMDepProviderKey)' != ''" BeforeTargets="CoreCompile">
+    <GenerateGuid NamespaceGuid="$(ANCMNamespaceGuid)" Values="$(ANCMDepProviderKey)">
+      <Output TaskParameter="Guid" PropertyName="DepProviderGuid" />
+    </GenerateGuid>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);DepProviderGuid=$(DepProviderGuid)</DefineConstants>
+    </PropertyGroup>    
+  </Target>
+
   <Target Name="_CheckPackageFileNameIsSet" BeforeTargets="PrepareForBuild">
     <Error Text="Missing required property: PackageFileName" Condition="'$(PackageFileName)' == ''" />
   </Target>

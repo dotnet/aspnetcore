@@ -8,10 +8,8 @@
 <?define ProductCode = "*" ?>
 <?if $(var.IsWin64)=no ?>
   <?define ANCMUpgradeCode = "d7168f76-9dd0-407d-bf22-0b450139e6a7" ?>
-  <?define ANCMDepProviderKey = "IIS_AspNetCore_Module_V2,x86" ?>
 <?else?>
   <?define ANCMUpgradeCode = "8d50fde7-0b84-4900-b60d-bd952979ba0b" ?>
-  <?define ANCMDepProviderKey = "IIS_AspNetCore_Module_V2,x64" ?>
 <?endif?>
 <?define ProductShortName="IIS AspNetCore Module V2" ?>
 <?define ProductNameShort="IIS_ANCM_V2" ?>
@@ -293,8 +291,8 @@
             <ComponentRef Id="C_DepProvider_$(var.ProductNameShort)" />
         </Feature>
 
-        <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32">
-            <Provides Key="$(var.ANCMDepProviderKey)" dep:Check="yes" />
+        <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32" Guid="$(DepProviderGuid)">
+            <Provides Key="$(ANCMDepProviderKey)" dep:Check="yes" />
         </Component>
     </Fragment>
 

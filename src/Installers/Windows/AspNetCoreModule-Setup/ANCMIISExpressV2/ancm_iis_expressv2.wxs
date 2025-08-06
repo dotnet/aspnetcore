@@ -8,10 +8,8 @@
 <?define ProductCode = "*" ?>
 <?if $(var.IsWin64)=no ?>
   <?define ANCMUpgradeCode = "de400ae0-3cd7-4a35-a234-b5a41b90893c" ?>
-  <?define ANCMDepProviderKey = "IISExpress_AspNetCore_Module_V2,x86" ?>
 <?else?>
   <?define ANCMUpgradeCode = "da062c0f-12c2-4703-8ed7-0cad342a53a1" ?>
-  <?define ANCMDepProviderKey = "IISExpress_AspNetCore_Module_V2,x64" ?>
 <?endif?>
 
 <?define ProductShortName="IIS Express AspNetCore Module V2" ?>
@@ -506,8 +504,8 @@
 
     <Fragment>
         <Feature Id="FT_DepProvider_$(var.ProductNameShort)" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" InstallDefault="local" Level="1" Title="RefCounting" TypicalDefault="install" AllowAbsent="no">
-            <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32" Guid="*">
-                <Provides Key="$(var.ANCMDepProviderKey)" dep:Check="yes" />
+            <Component Id="C_DepProvider_$(var.ProductNameShort)" Directory="TARGETDIR" Bitness="always32" Guid="$(DepProviderGuid)">
+                <Provides Key="$(ANCMDepProviderKey)" dep:Check="yes" />
             </Component>
         </Feature>
     </Fragment>

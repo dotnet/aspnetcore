@@ -18,6 +18,12 @@
     <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <ANCMDepProviderKey Condition="'$(Platform)' == 'x86'">IISExpress_AspNetCore_Module_V2,x86</ANCMDepProviderKey>
+    <ANCMDepProviderKey Condition="'$(Platform)' != 'x86'">IISExpress_AspNetCore_Module_V2,x64</ANCMDepProviderKey>
+    <DefineConstants>$(DefineConstants);ANCMDepProviderKey=$(ANCMDepProviderKey)</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="$(IIS-Setup)iisca\wix5\iisca.wxs">
       <Link>iisca.wxs</Link>
