@@ -197,6 +197,7 @@ app.MapGet("/", TestAction);
                 ["decimal", "decimal.Zero", decimal.Zero, true],
                 ["long", "long.MaxValue", long.MaxValue, true],
                 ["long", "long.MinValue", long.MinValue, true],
+                ["long", "(long)3.14", (long)3, true],
                 ["short", "short.MaxValue", short.MaxValue, true],
                 ["short", "short.MinValue", short.MinValue, true],
                 ["ulong", "ulong.MaxValue", ulong.MaxValue, true],
@@ -206,6 +207,7 @@ app.MapGet("/", TestAction);
                 ["TodoStatus", "TodoStatus.Done", TodoStatus.Done, true],
                 ["TodoStatus", "TodoStatus.InProgress", TodoStatus.InProgress, true],
                 ["TodoStatus", "TodoStatus.NotDone", TodoStatus.NotDone, true],
+                ["TodoStatus", "(TodoStatus)1", TodoStatus.Done, true],
                 ["MyEnum", "MyEnum.ValueA", MyEnum.ValueA, true],
                 ["MyEnum", "MyEnum.ValueB", MyEnum.ValueB, true],
                 // Test nullable enum values

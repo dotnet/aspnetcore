@@ -2001,14 +2001,7 @@ public static partial class RequestDelegateFactory
         }
         else if (!targetType.IsAssignableFrom(defaultValue.GetType()))
         {
-            try
-            {
-                converted = Convert.ChangeType(defaultValue, targetType, CultureInfo.InvariantCulture);
-            }
-            catch
-            {
-                converted = targetType.IsValueType ? Activator.CreateInstance(targetType) : null;
-            }
+            converted = Convert.ChangeType(defaultValue, targetType, CultureInfo.InvariantCulture);
         }
 
         var constant = Expression.Constant(converted, targetType);

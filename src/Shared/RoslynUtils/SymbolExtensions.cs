@@ -250,9 +250,9 @@ internal static class SymbolExtensions
         return typeSymbol.TypeKind == TypeKind.Enum;
     }
 
-    private static bool IsNullableEnumType(ITypeSymbol typeSymbol, out ITypeSymbol underlyingEnumType)
+    private static bool IsNullableEnumType(ITypeSymbol typeSymbol, [NotNullWhen(true)] out ITypeSymbol? underlyingEnumType)
     {
-        underlyingEnumType = null!;
+        underlyingEnumType = null;
         if (typeSymbol.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T &&
             typeSymbol is INamedTypeSymbol namedType)
         {
