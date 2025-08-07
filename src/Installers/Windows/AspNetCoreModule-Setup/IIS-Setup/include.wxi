@@ -13,7 +13,6 @@
     <?define PlatformArchitecture = x64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>
     <?define ProgramFilesFolder32 = ProgramFilesFolder ?>
-    <?define SneakyFolderName = ProgramFilesFolder ?>
     <?define SystemFolder = System64Folder ?>
     <?define SysWow64Folder = SystemFolder ?>
     <?define PlatformValue = x64 ?>
@@ -32,7 +31,6 @@
     <?define PlatformArchitecture = ARM64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>
     <?define ProgramFilesFolder32 = ProgramFilesFolder ?>
-    <?define SneakyFolderName = ProgramFilesFolder ?>
     <?define SystemFolder = System64Folder ?>
     <?define SysWow64Folder = SystemFolder ?>
     <?define PlatformValue = "arm64" ?>
