@@ -87,16 +87,17 @@ public class IdentityPasskeyOptions
     /// This option only applies when creating a new passkey, and is not enforced on the server.
     /// </para>
     /// <para>
-    /// Possible values are "discouraged", "preferred", or "required".
+    /// Possible values are "discouraged", "preferred", "required", or <see langword="null"/>.
+    /// If set to <see langword="null"/>, the effective value is "discouraged".
     /// </para>
     /// <para>
-    /// If left <see langword="null"/>, the browser defaults to "preferred".
+    /// The default value is "preferred".
     /// </para>
     /// <para>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#enumdef-residentkeyrequirement"/>.
     /// </para>
     /// </remarks>
-    public string? ResidentKeyRequirement { get; set; }
+    public string? ResidentKeyRequirement { get; set; } = "preferred";
 
     /// <summary>
     /// Gets or sets the attestation conveyance preference.
