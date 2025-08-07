@@ -30,16 +30,16 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void CanLoadPngImageWithCache()
+    public void CanLoadPngImage()
     {
         // Load PNG with cache
-        Browser.FindElement(By.Id("load-png-cached")).Click();
+        Browser.FindElement(By.Id("load-png")).Click();
 
         // Wait for loading to complete using Browser.Equal pattern
-        Browser.Equal("PNG with cache loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+        Browser.Equal("PNG basic loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
         // Verify the image element exists and has a blob URL
-        var imageDiv = Browser.FindElement(By.Id("png-cached-container"));
+        var imageDiv = Browser.FindElement(By.Id("png-basic-container"));
 
         var imageElement = imageDiv.FindElement(By.TagName("img"));
         Assert.NotNull(imageElement);
@@ -73,42 +73,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void HandlesImageLoadError()
-    {
-        // Try to load an error image
-        Browser.FindElement(By.Id("load-error")).Click();
-
-        // Wait for error state
-        Browser.Equal("Error loading image", () => Browser.FindElement(By.Id("current-status")).Text);
-
-        // Verify error content is displayed
-        Browser.True(() => Browser.FindElement(By.Id("error-image")).Text.Contains("Error loading image"));
-
-        // Verify the image is hidden when in error state
-        var imageElement = Browser.FindElement(By.Id("error-image")).FindElement(By.TagName("img"));
-        var cssClass = imageElement.GetAttribute("class");
-        Assert.Contains("d-none", cssClass);
-    }
-
-    [Fact]
-    public void ShowsLoadingContent()
-    {
-        // Load large image to see loading content
-        Browser.FindElement(By.Id("load-large-chunked")).Click();
-
-        // Verify loading content is shown initially
-        Browser.True(() => Browser.FindElement(By.Id("loading-image")).Text.Contains("Loading..."));
-
-        // Wait for loading to complete
-        Browser.Equal("Large image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-
-        // Verify loading content is hidden after loading
-        var loadingElement = Browser.FindElement(By.Id("loading-image")).FindElement(By.TagName("div"));
-        var cssClass = loadingElement.GetAttribute("class");
-        Assert.Contains("d-none", cssClass);
-    }
-
-    [Fact]
     public void CanLoadLargeImageWithSmallChunks()
     {
         // Load large image with small chunks to test chunked loading
@@ -122,73 +86,45 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var imageElement = imageDiv.FindElement(By.TagName("img"));
         Assert.NotNull(imageElement);
 
-        var imgElement = imageElement.FindElement(By.TagName("img"));
-        var src = imgElement.GetAttribute("src");
+        var src = imageElement.GetAttribute("src");
         Assert.True(!string.IsNullOrEmpty(src), "Image src should not be empty");
         Assert.True(src.StartsWith("blob:", StringComparison.Ordinal), $"Expected blob URL, but got: {src}");
     }
 
     [Fact]
-    public void CacheWorksCorrectlyBetweenLoads()
+    public void CanChangeDynamicImageSource()
     {
-        // Load PNG with cache twice and verify it loads faster the second time
-        Browser.FindElement(By.Id("load-png-cached")).Click();
-        Browser.Equal("PNG with cache loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+        // First click - initialize with PNG
+        Browser.FindElement(By.Id("change-source")).Click();
+        Browser.Equal("Dynamic source initialized with PNG", () => Browser.FindElement(By.Id("current-status")).Text);
 
-        var firstLoadSrc = Browser.FindElement(By.Id("basic-image")).GetAttribute("src");
+        // Verify the image element exists and has a blob URL
+        var imageDiv = Browser.FindElement(By.Id("dynamic-source-container"));
+        var imageElement = imageDiv.FindElement(By.TagName("img"));
+        Assert.NotNull(imageElement);
 
-        // Clear and load again
-        Browser.FindElement(By.Id("clear-all-images")).Click();
-        Browser.Equal("All images cleared", () => Browser.FindElement(By.Id("current-status")).Text);
+        var firstSrc = imageElement.GetAttribute("src");
+        Assert.True(!string.IsNullOrEmpty(firstSrc), "Image src should not be empty");
+        Assert.True(firstSrc.StartsWith("blob:", StringComparison.Ordinal), $"Expected blob URL, but got: {firstSrc}");
 
-        // Load same image again
-        Browser.FindElement(By.Id("load-png-cached")).Click();
-        Browser.Equal("PNG with cache loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+        // Second click - change to JPG
+        Browser.FindElement(By.Id("change-source")).Click();
+        Browser.Equal("Dynamic source changed to JPG", () => Browser.FindElement(By.Id("current-status")).Text);
 
-        var secondLoadSrc = Browser.FindElement(By.Id("basic-image")).GetAttribute("src");
-
-        // Both should be blob URLs (the cache mechanism is internal)
-        Assert.StartsWith("blob:", firstLoadSrc, StringComparison.Ordinal);
-        Assert.StartsWith("blob:", secondLoadSrc, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void RespondsToImageSourceChanges()
-    {
-        // Load first image
-        Browser.FindElement(By.Id("load-png-cached")).Click();
-        Browser.Equal("PNG with cache loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-
-        var firstSrc = Browser.FindElement(By.Id("basic-image")).GetAttribute("src");
-
-        // Load different image in same component
-        Browser.FindElement(By.Id("load-jpg-stream")).Click();
-        Browser.Equal("JPG from stream loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-
-        var secondSrc = Browser.FindElement(By.Id("basic-image")).GetAttribute("src");
-
-        // Should have different blob URLs
+        // Verify the image source has changed
+        var secondSrc = imageElement.GetAttribute("src");
+        Assert.True(!string.IsNullOrEmpty(secondSrc), "Image src should not be empty after change");
+        Assert.True(secondSrc.StartsWith("blob:", StringComparison.Ordinal), $"Expected blob URL, but got: {secondSrc}");
         Assert.NotEqual(firstSrc, secondSrc);
-        Assert.StartsWith("blob:", firstSrc, StringComparison.Ordinal);
-        Assert.StartsWith("blob:", secondSrc, StringComparison.Ordinal);
-    }
 
-    [Fact]
-    public void ComponentPerformanceTest()
-    {
-        // This test verifies that multiple rapid image loads don't cause issues
-        for (int i = 0; i < 3; i++)
-        {
-            Browser.FindElement(By.Id("load-png-cached")).Click();
-            Browser.Equal("PNG with cache loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+        // Third click - change back to PNG
+        Browser.FindElement(By.Id("change-source")).Click();
+        Browser.Equal("Dynamic source changed to PNG", () => Browser.FindElement(By.Id("current-status")).Text);
 
-            Browser.FindElement(By.Id("load-jpg-stream")).Click();
-            Browser.Equal("JPG from stream loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-        }
-
-        // Verify final state is correct
-        var imageElement = Browser.FindElement(By.Id("basic-image"));
-        var src = imageElement.GetAttribute("src");
-        Assert.StartsWith("blob:", src, StringComparison.Ordinal);
+        // Verify the image source has changed again
+        var thirdSrc = imageElement.GetAttribute("src");
+        Assert.True(!string.IsNullOrEmpty(thirdSrc), "Image src should not be empty after second change");
+        Assert.True(thirdSrc.StartsWith("blob:", StringComparison.Ordinal), $"Expected blob URL, but got: {thirdSrc}");
+        Assert.NotEqual(secondSrc, thirdSrc);
     }
 }

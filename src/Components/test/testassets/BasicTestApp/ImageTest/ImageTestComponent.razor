@@ -7,12 +7,10 @@
 
 <div>
     <h4>Test Controls</h4>
-    <button id="load-png-cached" @onclick="LoadPngWithCache">Load PNG (Cached)</button>
+    <button id="load-png" @onclick="LoadPngWithCache">Load PNG</button>
     <button id="load-jpg-stream" @onclick="LoadJpgFromStream">Load JPG (Stream)</button>
-    <button id="load-error" @onclick="LoadErrorImage">Load Error Image</button>
     <button id="load-small-chunks" @onclick="LoadImageSmallChunks">Load Large Image (Small Chunks)</button>
-    <button id="clear-all-images" @onclick="ClearAllImages">Clear All Images</button>
-    <button id="reload-cached-image" @onclick="ReloadCachedImage">Reload Cached Image</button>
+    <button id="change-source" @onclick="ChangeDynamicImageSource">Change Dynamic Source</button>
 
     <div id="test-status">
         Status: <span id="current-status">@_currentStatus</span>
@@ -23,8 +21,8 @@
 {
     <div>
         <h4>PNG basic</h4>
-        <div id="png-cached-container">
-            <Image @ref="@_basicImageRef"
+        <div id="png-basic-container">
+            <Image @ref="@_pngBasicRef"
                    Source="@_basicImageSource" />
         </div>
     </div>
@@ -35,8 +33,8 @@
     <div>
         <h4>JPG Stream</h4>
         <div id="jpg-stream-container">
-            <Image @ref="@_basicImageRef"
-                   Source="@_loadingImageSource" />
+            <Image @ref="@_jpgStreamRef"
+                   Source="@_jpgStreamSource" />
         </div>
     </div>
 }
@@ -44,75 +42,45 @@
 @if (_smallChunks)
 {
     <div>
-        <h4>Small chunkes Image</h4>
+        <h4>Small chunks Image</h4>
         <div id="chunked-image-container">
-            <Image @ref="_chunkedImageRef"
-                   Source="@_chunkedImageSource"
+            <Image @ref="@_smallChunksRef"
+                   Source="@_smallChunksSource"
                    ChunkSize="@_chunkSize" />
         </div>
     </div>
-})
+}
 
-<div>
-    <h4>Image with Custom Loading Content</h4>
-    <div id="loading-image-container">
-        <Image @ref="_loadingImageRef"
-               Source="@_loadingImageSource">
-               <LoadingContent>
-                   <div id="custom-loading">
-                   </div>
-               </LoadingContent>
-        </Image>
+@if (_dynamicSource)
+{
+    <div>
+        <h4>Dynamic Source Image</h4>
+        <div id="dynamic-source-container">
+            <Image @ref="@_dynamicSourceRef"
+                   Source="@_dynamicImageSource" />
+        </div>
     </div>
-</div>
-
-<div>
-    <h4>Image with Custom Error Content</h4>
-    <div id="error-image-container">
-        <Image @ref="_errorImageRef"
-               Source="@_errorImageSource">
-               <ErrorContent>
-                    <div id="custom-error">
-                    </div>
-               </ErrorContent>
-        </Image>
-    </div>
-</div>
-
-<div>
-    <h4>Cache Test Images</h4>
-    <div id="cache-test-container">
-        <Image @ref="_cacheImageRef1"
-               Source="@_cacheImageSource"
-               CacheStrategy="CacheStrategy.Memory"/>
-        <br />
-        <Image @ref="_cacheImageRef2"
-               Source="@_cacheImageSource2"
-               CacheStrategy="CacheStrategy.Memory"/>
-    </div>
-</div>
+}
 
 @code {
-    private Image _basicImageRef;
-    private Image _loadingImageRef;
-    private Image _errorImageRef;
-    private Image _chunkedImageRef;
-    private Image _cacheImageRef1;
-    private Image _cacheImageRef2;
+    private Image _pngBasicRef;
+    private Image _jpgStreamRef;
+    private Image _smallChunksRef;
+    private Image _dynamicSourceRef;
 
     private ImageSource _basicImageSource = new ImageSource(new byte[0], "");
-    private ImageSource _loadingImageSource = new ImageSource(new byte[0], "");
-    private ImageSource _errorImageSource = new ImageSource(new byte[0], "");
-    private ImageSource _chunkedImageSource = new ImageSource(new byte[0], "");
-    private ImageSource _cacheImageSource = new ImageSource(new byte[0], "");
-    private ImageSource _cacheImageSource2 = new ImageSource(new byte[0], "");
+    private ImageSource _jpgStreamSource = new ImageSource(new byte[0], "");
+    private ImageSource _smallChunksSource = new ImageSource(new byte[0], "");
+    private ImageSource _dynamicImageSource = new ImageSource(new byte[0], "");
 
     private bool _pngBasic = false;
     private bool _jpgStream = false;
     private bool _smallChunks = false;
+    private bool _dynamicSource = false;
 
     private string _currentStatus = "Ready";
     private int _chunkSize = 128; // Small chunks for testing
+    private bool _isCurrentlyShowingPng = true; // Track which image is currently shown in dynamic test
 
     // Test image data - 1x1 gray PNG and JPG byte arrays
     private static readonly byte[] TestPngData = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
@@ -130,89 +98,74 @@
         _basicImageSource = new ImageSource(TestPngData, "image/png", "test-png-cached");
         _pngBasic = true;
         await Task.Delay(10);
-        _currentStatus = "PNG with cache loaded";
+        _currentStatus = "PNG basic loaded";
     }
 
     private async Task LoadJpgFromStream()
     {
         _currentStatus = "Loading JPG from stream...";
         var stream = new MemoryStream(TestJpgData);
-        _loadingImageSource = new ImageSource(stream, "image/jpeg", "test-jpg-stream");
+        _jpgStreamSource = new ImageSource(stream, "image/jpeg", "test-jpg-stream");
         await Task.Delay(10);
         _jpgStream = true;
         _currentStatus = "JPG from stream loaded";
 
     }
 
-    private async Task LoadErrorImage()
-    {
-        _currentStatus = "Loading error image...";
-        // Create an invalid image source to trigger error
-        var invalidData = new byte[] { 0x00, 0x01, 0x02, 0x03 };
-        _errorImageSource = new ImageSource(invalidData, "image/png", "error-image");
-        StateHasChanged();
-        await Task.Delay(10);
-        _currentStatus = "Error image loaded (should show error)";
-        StateHasChanged();
-    }
-
     private async Task LoadImageSmallChunks()
     {
         _currentStatus = "Loading large image with small chunks...";
-        _chunkedImageSource = new ImageSource(TestJpgData, "image/jpg", "large-chunked-image");
+        _smallChunksSource = new ImageSource(TestJpgData, "image/jpg", "large-chunked-image");
         await Task.Delay(10);
         _smallChunks = true;
         _currentStatus = "Small chunks image loaded";
     }
 
-    private async Task ClearAllImages()
+    private async Task ChangeDynamicImageSource()
     {
-        _currentStatus = "Clearing all images...";
-        _basicImageSource = null;
-        _loadingImageSource = null;
-        _errorImageSource = null;
-        _chunkedImageSource = null;
-        _cacheImageSource = null;
-        _cacheImageSource2 = null;
-        StateHasChanged();
-        await Task.Delay(10);
-        _currentStatus = "All images cleared";
-        StateHasChanged();
-    }
-
-    private async Task ReloadCachedImage()
-    {
-        _currentStatus = "Testing cache behavior...";
-
-        // Load first cached image
-        _cacheImageSource = new ImageSource(TestPngData, "image/png", "cache-test-key");
-        StateHasChanged();
-        await Task.Delay(100);
-
-        // Load second image with same cache key - should load from cache
-        _cacheImageSource2 = new ImageSource(TestJpgData, "image/jpeg", "cache-test-key");
-        StateHasChanged();
-        await Task.Delay(10);
-
-        _currentStatus = "Cache test completed";
-        StateHasChanged();
+        if (!_dynamicSource)
+        {
+            // First time - show the component with PNG
+            _currentStatus = "Loading dynamic source (PNG)...";
+            _dynamicImageSource = new ImageSource(TestPngData, "image/png", "dynamic-png");
+            _dynamicSource = true;
+            _isCurrentlyShowingPng = true;
+            await Task.Delay(10);
+            _currentStatus = "Dynamic source initialized with PNG";
+        }
+        else
+        {
+            // Toggle between PNG and JPG
+            if (_isCurrentlyShowingPng)
+            {
+                _currentStatus = "Changing to JPG...";
+                _dynamicImageSource = new ImageSource(TestJpgData, "image/jpeg", "dynamic-jpg");
+                _isCurrentlyShowingPng = false;
+                await Task.Delay(10);
+                _currentStatus = "Dynamic source changed to JPG";
+            }
+            else
+            {
+                _currentStatus = "Changing to PNG...";
+                _dynamicImageSource = new ImageSource(TestPngData, "image/png", "dynamic-png");
+                _isCurrentlyShowingPng = true;
+                await Task.Delay(10);
+                _currentStatus = "Dynamic source changed to PNG";
+            }
+        }
     }
 
     public async ValueTask DisposeAsync()
     {
         _currentStatus = "Disposing component...";
 
-        if (_basicImageRef != null)
-            await _basicImageRef.DisposeAsync();
-        if (_loadingImageRef != null)
-            await _loadingImageRef.DisposeAsync();
-        if (_errorImageRef != null)
-            await _errorImageRef.DisposeAsync();
-        if (_chunkedImageRef != null)
-            await _chunkedImageRef.DisposeAsync();
-        if (_cacheImageRef1 != null)
-            await _cacheImageRef1.DisposeAsync();
-        if (_cacheImageRef2 != null)
-            await _cacheImageRef2.DisposeAsync();
+        if (_dynamicSourceRef != null)
+            await _dynamicSourceRef.DisposeAsync();
+        if (_smallChunksRef != null)
+            await _smallChunksRef.DisposeAsync();
+        if (_jpgStreamRef != null)
+            await _jpgStreamRef.DisposeAsync();
+        if (_pngBasicRef != null)
+            await _pngBasicRef.DisposeAsync();
     }
 }

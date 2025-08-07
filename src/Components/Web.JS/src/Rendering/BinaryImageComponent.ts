@@ -19,11 +19,11 @@ interface ChunkedTransfer {
  * Provides functionality for rendering binary image data in Blazor components.
  */
 export class BinaryImageComponent {
-  private static blobUrls: Map<string, string> = new Map();
+  private static blobUrls: Map<HTMLImageElement, string> = new Map();
 
   private static memoryCache: Map<string, string> = new Map();
 
-  private static loadingImages: Set<string> = new Set();
+  private static loadingImages: Set<HTMLImageElement> = new Set();
 
   private static pendingTransfers: Map<string, ChunkedTransfer> = new Map();
 
@@ -59,7 +59,7 @@ export class BinaryImageComponent {
     });
 
     if (imgElement) {
-      this.loadingImages.add(imgElement.id);
+      this.loadingImages.add(imgElement);
       imgElement.dispatchEvent(new CustomEvent('blazorImageLoading'));
     }
 
@@ -75,13 +75,11 @@ export class BinaryImageComponent {
   /**
      * Adds a chunk to an in-progress dynamic chunked transfer.
      * @param transferId - The ID of the transfer
-     * @param chunkIndex - The index of the chunk (for ordering, but chunks are appended dynamically)
      * @param chunkData - The binary data for this chunk
      * @returns True if the chunk was successfully added
      */
   public static addChunk(
     transferId: string,
-    chunkIndex: number,
     chunkData: Uint8Array
   ): boolean {
     const transfer = this.pendingTransfers.get(transferId);
@@ -161,9 +159,8 @@ export class BinaryImageComponent {
       }
 
       // Clean up old URL if exists
-      const elementId = transfer.imgElement.id;
-      if (this.blobUrls.has(elementId)) {
-        const oldUrl = this.blobUrls.get(elementId);
+      if (this.blobUrls.has(transfer.imgElement)) {
+        const oldUrl = this.blobUrls.get(transfer.imgElement);
         if (oldUrl) {
           const isCached = Array.from(this.memoryCache.values()).includes(oldUrl);
           if (!isCached) {
@@ -172,12 +169,12 @@ export class BinaryImageComponent {
         }
       }
 
-      this.blobUrls.set(elementId, url);
+      this.blobUrls.set(transfer.imgElement, url);
       transfer.imgElement.src = url;
 
       // Set up event handlers
       transfer.imgElement.onload = () => {
-        this.loadingImages.delete(elementId);
+        this.loadingImages.delete(transfer.imgElement);
 
         const containerElement = transfer.imgElement.parentElement;
         if (containerElement) {
@@ -188,7 +185,7 @@ export class BinaryImageComponent {
       };
 
       transfer.imgElement.onerror = (e) => {
-        this.loadingImages.delete(elementId);
+        this.loadingImages.delete(transfer.imgElement);
 
         const containerElement = transfer.imgElement.parentElement;
         if (containerElement) {
@@ -208,8 +205,7 @@ export class BinaryImageComponent {
       this.pendingTransfers.delete(transferId);
 
       if (transfer.imgElement) {
-        const elementId = transfer.imgElement.id;
-        this.loadingImages.delete(elementId);
+        this.loadingImages.delete(transfer.imgElement);
 
         const containerElement = transfer.imgElement.parentElement;
         if (containerElement) {
@@ -249,9 +245,8 @@ export class BinaryImageComponent {
     console.log(`Setting image from cache with key: ${cacheKey}`);
 
     // Clean up old URL if exists
-    const elementId = imgElement.id;
-    if (this.blobUrls.has(elementId)) {
-      const oldUrl = this.blobUrls.get(elementId);
+    if (this.blobUrls.has(imgElement)) {
+      const oldUrl = this.blobUrls.get(imgElement);
       if (oldUrl) {
         const isCached = Array.from(this.memoryCache.values()).includes(oldUrl);
         if (!isCached) {
@@ -260,17 +255,17 @@ export class BinaryImageComponent {
       }
     }
 
-    this.blobUrls.set(elementId, cachedUrl);
+    this.blobUrls.set(imgElement, cachedUrl);
     imgElement.src = cachedUrl;
 
     // Set up event handlers
     imgElement.onload = () => {
-      this.loadingImages.delete(elementId);
+      this.loadingImages.delete(imgElement);
       imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
     };
 
     imgElement.onerror = (e) => {
-      this.loadingImages.delete(elementId);
+      this.loadingImages.delete(imgElement);
       imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
         detail: (e as ErrorEvent).message || 'Failed to load cached image',
       }));
@@ -285,7 +280,7 @@ export class BinaryImageComponent {
    * @returns True if loading, false otherwise
    */
   public static isLoading(imgElement: HTMLImageElement): boolean {
-    return imgElement ? this.loadingImages.has(imgElement.id) : false;
+    return imgElement ? this.loadingImages.has(imgElement) : false;
   }
 
   /**
@@ -298,20 +293,19 @@ export class BinaryImageComponent {
       return false;
     }
 
-    const elementId = imgElement.id;
-    if (this.blobUrls.has(elementId)) {
-      const url = this.blobUrls.get(elementId);
+    if (this.blobUrls.has(imgElement)) {
+      const url = this.blobUrls.get(imgElement);
 
       if (url) {
         const isCached = Array.from(this.memoryCache.values()).includes(url);
         if (!isCached) {
           URL.revokeObjectURL(url);
-          console.log(`Revoked blob URL for ${elementId}`);
+          console.log('Revoked blob URL for element');
         }
       }
 
-      this.blobUrls.delete(elementId);
-      this.loadingImages.delete(elementId);
+      this.blobUrls.delete(imgElement);
+      this.loadingImages.delete(imgElement);
       return true;
     }
     return false;

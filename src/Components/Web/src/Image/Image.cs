@@ -29,7 +29,7 @@ public class Image : ComponentBase, IAsyncDisposable
     /// May be <see langword="null"/> if accessed before the component is rendered.
     /// </para>
     /// </summary>
-    [DisallowNull] public ElementReference? Element { get; protected set; } // pass to js int to give js html
+    [DisallowNull] public ElementReference? Element { get; protected set; }
 
     /// <summary>
     /// Gets the injected <see cref="IJSRuntime"/>.
@@ -55,12 +55,6 @@ public class Image : ComponentBase, IAsyncDisposable
     /// Gets or sets the size of the chunks used when sending image data.
     /// </summary>
     [Parameter] public int ChunkSize { get; set; } = 64 * 1024;
-
-    /// <inheritdoc />
-    protected override void OnInitialized()
-    {
-        base.OnInitialized();
-    }
 
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -91,13 +85,37 @@ public class Image : ComponentBase, IAsyncDisposable
         if (firstRender && !_isDisposed)
         {
             await LoadImageIfSourceProvided();
-        } // jsobject ref to self,
+        }
     }
 
     /// <inheritdoc />
-    public override async Task SetParametersAsync(ParameterView parameters)
+    public override async Task SetParametersAsync(ParameterView parameters) // OnParametersAsync
     {
+        var previousSource = Source;
+
         await base.SetParametersAsync(parameters);
+
+        if (!ReferenceEquals(previousSource, Source))
+        {
+            if (Source != null && !_isDisposed)
+            {
+                // Clean up old blob URL if exists
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync(
+                        "Blazor._internal.BinaryImageComponent.revokeImageUrl",
+                        Element);
+                }
+                catch (JSDisconnectedException)
+                {
+                }
+                catch (JSException)
+                {
+                }
+
+                await LoadImageIfSourceProvided();
+            }
+        }
     }
 
     private async Task LoadImageIfSourceProvided()
@@ -150,19 +168,16 @@ public class Image : ComponentBase, IAsyncDisposable
             try
             {
                 using Stream stream = source.Stream;
-                int chunkIndex = 0;
                 int bytesRead;
 
                 while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, ChunkSize))) > 0)
                 {
                     await JSRuntime.InvokeVoidAsync(
                         "Blazor._internal.BinaryImageComponent.addChunk",
-                        transferId, chunkIndex, buffer.AsMemory(0, bytesRead).ToArray());
-
-                    chunkIndex++;
+                        transferId, buffer.AsMemory(0, bytesRead).ToArray());
 
                     // Add delay for testing
-                    await Task.Delay(444);
+                    // await Task.Delay(444);
                 }
 
                 await JSRuntime.InvokeVoidAsync(
