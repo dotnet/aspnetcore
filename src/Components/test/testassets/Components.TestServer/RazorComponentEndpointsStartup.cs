@@ -100,15 +100,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
-            app.UseRequestLocalization(options =>
-            {
-                options.AddSupportedCultures("en-US", "fr-FR");
-                options.AddSupportedUICultures("en-US", "fr-FR");
-                options.RequestCultureProviders.Clear();
-                options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
-                options.SetDefaultCulture("en-US");
-            });
-
             app.Map("/reexecution", reexecutionApp =>
             {
                 app.Map("/trigger-404", app =>
@@ -133,6 +124,15 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
     {
         WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
+
+        app.UseRequestLocalization(options =>
+        {
+            options.AddSupportedCultures("en-US", "fr-FR");
+            options.AddSupportedUICultures("en-US", "fr-FR");
+            options.RequestCultureProviders.Clear();
+            options.RequestCultureProviders.Add(new CookieRequestCultureProvider());
+            options.SetDefaultCulture("en-US");
+        });
 
         if (!env.IsDevelopment())
         {
