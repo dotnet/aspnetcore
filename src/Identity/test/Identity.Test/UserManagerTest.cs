@@ -1030,7 +1030,7 @@ public class UserManagerTest
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
             m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "security_stamp"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "update_security_stamp"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
         Assert.Collection(generateToken.GetMeasurementSnapshot(),
