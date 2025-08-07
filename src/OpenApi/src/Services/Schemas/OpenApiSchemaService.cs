@@ -101,6 +101,10 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
+            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is DescriptionAttribute typeDescriptionAttribute)
+            {
+                schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
+            }
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
                 var isInlinedSchema = schema["x-schema-id"] is null;
@@ -128,7 +132,7 @@ internal sealed class OpenApiSchemaService(
                 }
             }
 
-                return schema;
+            return schema;
         }
     };
 

@@ -50,9 +50,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Null(reference.Reference.Description);
                 });
 
-            var childSchema = document.Components.Schemas["DescribedChildDto"];
-            // TODO: Handle descriptions on classes
-            // Assert.Equal("Class: DescribedChildDto", "DescribedChildDto");
+            var referencedSchema = document.Components.Schemas["DescribedChildDto"];
+            Assert.Equal("Class: DescribedChildDto", referencedSchema.Description);
         });
 
     }
@@ -118,8 +117,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("inlinedNoDescription", property.Key);
                     var inlinedSchema = Assert.IsType<OpenApiSchema>(property.Value);
-                    // TODO: Handle descriptions on classes
-                    // Assert.Equal("Class: DescribedInlinedDto", inlinedSchema.Description);
+                    Assert.Equal("Class: DescribedInlinedDto", inlinedSchema.Description);
                 });
         });
     }
