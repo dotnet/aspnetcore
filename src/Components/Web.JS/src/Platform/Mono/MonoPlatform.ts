@@ -170,7 +170,7 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
   // Allow overriding the URI from which the dotnet.*.js file is loaded
   if (startOptions.loadBootResource) {
     const resourceType: WebAssemblyBootResourceType = 'dotnetjs';
-    const customSrc = startOptions.loadBootResource(resourceType, 'dotnet.js', `${src}?v=${Date.now()}`, '', 'js-module-dotnet');
+    const customSrc = startOptions.loadBootResource(resourceType, 'dotnet.js', src, '', 'js-module-dotnet');
     if (typeof (customSrc) === 'string') {
       src = customSrc;
     } else if (customSrc) {
@@ -179,7 +179,11 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
     }
   }
 
-  const absoluteSrc = (new URL(`${src}?v=${Date.now()}`, document.baseURI)).toString();
+  const absoluteUrl = new URL(src, document.baseURI);
+  if (!absoluteUrl.searchParams.has('v')) {
+    absoluteUrl.searchParams.set('v', '8.0.19');
+  }
+  const absoluteSrc = absoluteUrl.toString();
   return await import(/* webpackIgnore: true */ absoluteSrc);
 }
 
