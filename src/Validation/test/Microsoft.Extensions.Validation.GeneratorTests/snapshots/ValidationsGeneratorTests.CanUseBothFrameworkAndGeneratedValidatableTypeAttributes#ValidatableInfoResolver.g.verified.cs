@@ -62,22 +62,43 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
-            if (type == typeof(global::Customer))
+            if (type == typeof(global::MyApp.Customer))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::Customer),
+                    type: typeof(global::MyApp.Customer),
                     members: [
                         new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::Customer),
+                            containingType: typeof(global::MyApp.Customer),
                             propertyType: typeof(string),
                             name: "Name",
                             displayName: "Name"
                         ),
                         new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::Customer),
+                            containingType: typeof(global::MyApp.Customer),
                             propertyType: typeof(string),
                             name: "Email",
                             displayName: "Email"
+                        ),
+                    ]
+                );
+                return true;
+            }
+            if (type == typeof(global::MyApp.Product))
+            {
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::MyApp.Product),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::MyApp.Product),
+                            propertyType: typeof(string),
+                            name: "ProductName",
+                            displayName: "ProductName"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::MyApp.Product),
+                            propertyType: typeof(decimal),
+                            name: "Price",
+                            displayName: "Price"
                         ),
                     ]
                 );

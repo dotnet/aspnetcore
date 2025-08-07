@@ -20,12 +20,13 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
             }
         }
 
-        namespace Microsoft.Extensions.Validation.Embedded;
-
-        [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
-        [global::System.AttributeUsage(global::System.AttributeTargets.Class)]
-        internal sealed class ValidatableTypeAttribute : global::System.Attribute
+        namespace Microsoft.Extensions.Validation.Embedded
         {
+            [global::Microsoft.CodeAnalysis.EmbeddedAttribute]
+            [global::System.AttributeUsage(global::System.AttributeTargets.Class)]
+            internal sealed class ValidatableTypeAttribute : global::System.Attribute
+            {
+            }
         }
         """;
 
@@ -33,28 +34,36 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
     public async Task CanDiscoverGeneratedValidatableTypeAttribute()
     {
         var source = """
-            using Microsoft.AspNetCore.Builder;
-            using Microsoft.Extensions.DependencyInjection;
-            using System.ComponentModel.DataAnnotations;
-            using Microsoft.Extensions.Validation.Embedded;
 
-            var builder = WebApplication.CreateBuilder();
-            builder.Services.AddValidation();
-            var app = builder.Build();
-
-            [ValidatableType]
-            public class Customer
+            namespace MyApp
             {
-                [Required]
-                public string Name { get; set; } = "";
+                using Microsoft.AspNetCore.Builder;
+                using Microsoft.Extensions.DependencyInjection;
+                using System.ComponentModel.DataAnnotations;
+                using Microsoft.Extensions.Validation.Embedded;
 
-                [EmailAddress]
-                public string Email { get; set; } = "";
+                public class Program
+                {
+                    public static void Main(string[] args)
+                    {
+                        var builder = WebApplication.CreateBuilder(args);
+                        builder.Services.AddValidation();
+                        var app = builder.Build();
+                        app.MapPost("/customers", (Customer customer) => "OK");
+                        app.Run();
+                    }
+                }
+
+                [ValidatableType]
+                public class Customer
+                {
+                    [Required]
+                    public string Name { get; set; } = "";
+
+                    [EmailAddress]
+                    public string Email { get; set; } = "";
+                }
             }
-
-            app.MapPost("/customers", (Customer customer) => "OK");
-
-            app.Run();
             """;
 
         // Combine the generated attribute with the user's source
@@ -67,42 +76,47 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
     public async Task CanUseBothFrameworkAndGeneratedValidatableTypeAttributes()
     {
         var source = """
-            using Microsoft.AspNetCore.Builder;
-            using Microsoft.Extensions.DependencyInjection;
-            using System.ComponentModel.DataAnnotations;
-            using Microsoft.Extensions.Validation;
-            using Microsoft.Extensions.Validation.Embedded;
-
-            var builder = WebApplication.CreateBuilder();
-            builder.Services.AddValidation();
-            var app = builder.Build();
-
-            // Using framework attribute
-            [Microsoft.Extensions.Validation.ValidatableType]
-            public class Customer
+            namespace MyApp
             {
-                [Required]
-                public string Name { get; set; } = "";
+                using Microsoft.AspNetCore.Builder;
+                using Microsoft.Extensions.DependencyInjection;
+                using System.ComponentModel.DataAnnotations;
+                using Microsoft.Extensions.Validation.Embedded;
+            
+                public class Program
+                {
+                    public static void Main(string[] args)
+                    {
+                        var builder = WebApplication.CreateBuilder(args);
+                        builder.Services.AddValidation();
+                        var app = builder.Build();
+                        app.MapPost("/customers", (Customer customer) => "OK");
+                        app.Run();
+                    }
+                }
 
-                [EmailAddress]
-                public string Email { get; set; } = "";
+                // Using framework attribute
+                [Microsoft.Extensions.Validation.ValidatableType]
+                public class Customer
+                {
+                    [Required]
+                    public string Name { get; set; } = "";
+            
+                    [EmailAddress]
+                    public string Email { get; set; } = "";
+                }
+            
+                // Using generated attribute
+                [ValidatableType]
+                public class Product
+                {
+                    [Required]
+                    public string ProductName { get; set; } = "";
+            
+                    [Range(0, double.MaxValue)]
+                    public decimal Price { get; set; }
+                }
             }
-
-            // Using generated attribute
-            [ValidatableType]
-            public class Product
-            {
-                [Required]
-                public string ProductName { get; set; } = "";
-
-                [Range(0, double.MaxValue)]
-                public decimal Price { get; set; }
-            }
-
-            app.MapPost("/customers", (Customer customer) => "OK");
-            app.MapPost("/products", (Product product) => "OK");
-
-            app.Run();
             """;
 
         // Combine the generated attribute with the user's source
