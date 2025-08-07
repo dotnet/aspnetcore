@@ -76,6 +76,8 @@
     <PropertyGroup>
       <_runtimeHostConfigurationOptionsString>@(_switchesAsItems->'&lt;RuntimeHostConfigurationOption Include=&quot;%(Identity)&quot; Value=&quot;%(Value)&quot; Trim=&quot;true&quot; /&gt;', '%0a    ')</_runtimeHostConfigurationOptionsString>
       <_additionalPropertiesString>@(_propertiesAsItems->'&lt;%(Identity)&gt;%(Value)&lt;/%(Identity)&gt;', '%0a    ')</_additionalPropertiesString>
+
+      <_restoreStaticGraphLogLocation>$(ArtifactsLogDir)/trimmingTests/$(MSBuildProjectName)/%(TestConsoleApps.Filename)-restore.binlog</_restoreStaticGraphLogLocation>
     </PropertyGroup>
 
     <MakeDir Directories="$(_projectDir)" />
@@ -90,6 +92,7 @@
                                                  .Replace('{AdditionalProperties}', '$(_additionalPropertiesString)')
                                                  .Replace('{RuntimeHostConfigurationOptions}', '$(_runtimeHostConfigurationOptionsString)')
                                                  .Replace('{AdditionalProjectReferences}', '$(_additionalProjectReferencesString)')
+                                                 .Replace('{RestoreStaticGraphLogLocation}', '$(_restoreStaticGraphLogLocation)')
                                                  )"
                       Overwrite="true" />
     <Copy SourceFiles="$(_projectSourceFile);
