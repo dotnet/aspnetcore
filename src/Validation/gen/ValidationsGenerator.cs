@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
@@ -49,27 +50,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             .Select(ExtractValidatableEndpoint);
 
         // Join all validatable types encountered in the type graph.
-        var allValidatableTypesProviders = validatableTypesWithAttribute
-            .Collect()
-            .Combine(validatableTypesFromEndpoints.Collect())
-            .SelectMany(static (tuple, _) =>
-            {
-                var results = ImmutableArray.CreateBuilder<ValidatableType>();
-
-                // Add from attribute-based sources
-                foreach (var array in tuple.Left)
-                {
-                    results.AddRange(array);
-                }
-
-                // Add from endpoint sources
-                foreach (var array in tuple.Right)
-                {
-                    results.AddRange(array);
-                }
-
-                return results.DrainToImmutable();
-            });
+        var allValidatableTypesProviders = validatableTypesFromEndpoints
+            .Concat(validatableTypesWithAttribute);
 
         var validatableTypes = allValidatableTypesProviders
             .Distinct(ValidatableTypeComparer.Instance)
