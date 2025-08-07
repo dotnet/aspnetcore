@@ -124,6 +124,35 @@
           }
         }
       }
+    },
+    "/query": {
+      "query": {
+        "tags": [
+          "Test"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentWeather"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
