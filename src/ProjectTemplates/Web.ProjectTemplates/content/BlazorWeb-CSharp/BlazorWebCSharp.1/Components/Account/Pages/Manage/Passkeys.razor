@@ -48,10 +48,15 @@ else
 
 <form @formname="add-passkey" @onsubmit="AddPasskey" method="post">
     <AntiforgeryToken />
-    @if (currentPasskeys is not { Count: >= MaxPasskeyCount })
+    @if (currentPasskeys is { Count: >= MaxPasskeyCount })
+    {
+        <p class="text-danger">You have reached the maximum number of allowed passkeys. Please delete one before adding a new one.</p>
+    }
+    else
     {
         <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
     }
+
 </form>
 
 @code {
