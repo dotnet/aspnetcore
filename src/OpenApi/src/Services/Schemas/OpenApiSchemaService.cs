@@ -101,8 +101,7 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
-            var isInlinedSchema = schema["x-schema-id"] is null;
-            if (isInlinedSchema && context.PropertyInfo is { AttributeProvider: { } attributeProvider })
+            if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
                 if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
                 {
