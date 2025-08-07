@@ -997,11 +997,11 @@ public class UserManager<TUser> : IDisposable where TUser : class
             ArgumentNullThrowHelper.ThrowIfNull(user);
 
             await UpdateSecurityStampInternal(user).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.SecurityStamp, startTimeStamp).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.UpdateSecurityStamp, startTimeStamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.SecurityStamp, startTimeStamp, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.UpdateSecurityStamp, startTimeStamp, ex);
             throw;
         }
     }
@@ -2217,17 +2217,17 @@ public class UserManager<TUser> : IDisposable where TUser : class
             var count = await store.IncrementAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
             if (count < Options.Lockout.MaxFailedAccessAttempts)
             {
-                return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.AccessFailed, startTimestamp).ConfigureAwait(false);
+                return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
             }
             Logger.LogDebug(LoggerEventIds.UserLockedOut, "User is locked out.");
             await store.SetLockoutEndDateAsync(user, DateTimeOffset.UtcNow.Add(Options.Lockout.DefaultLockoutTimeSpan),
                 CancellationToken).ConfigureAwait(false);
             await store.ResetAccessFailedCountAsync(user, CancellationToken).ConfigureAwait(false);
-            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.AccessFailed, startTimestamp).ConfigureAwait(false);
+            return await UpdateUserAndRecordMetricAsync(user, UserUpdateType.IncrementAccessFailed, startTimestamp).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.AccessFailed, startTimestamp, ex);
+            _metrics?.UpdateUser(typeof(TUser).FullName!, result: null, UserUpdateType.IncrementAccessFailed, startTimestamp, ex);
             throw;
         }
     }
