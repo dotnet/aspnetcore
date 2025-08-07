@@ -172,6 +172,10 @@ public sealed class WebAssemblyHost : IAsyncDisposable
                 var (rootComponents, renderer, initializationTcs) = state;
                 try
                 {
+                    if (Services.GetService<CultureStateProvider>() is CultureStateProvider cultureStateProvider)
+                    {
+                        cultureStateProvider.ApplyStoredCulture();
+                    }
                     // Here, we add each root component but don't await the returned tasks so that the
                     // components can be processed in parallel.
                     var count = rootComponents.Count;

@@ -10,18 +10,10 @@ internal class CultureStateProvider
     protected string? _currentUICultureName;
 
     [PersistentState]
-    public string? CurrentCultureName
-    {
-        get => _currentCultureName;
-        set => _currentCultureName = value;
-    }
+    public string? CurrentCultureName { get; set; }
 
     [PersistentState]
-    public string? CurrentUICultureName
-    {
-        get => _currentUICultureName;
-        set => _currentUICultureName = value;
-    }
+    public string? CurrentUICultureName { get; set; }
 
     /// <summary>
     /// Captures the current thread culture for persistence.
@@ -42,11 +34,13 @@ internal class CultureStateProvider
         if (!string.IsNullOrEmpty(CurrentCultureName))
         {
             CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(CurrentCultureName);
+            CultureInfo.DefaultThreadCurrentCulture = CultureInfo.GetCultureInfo(CurrentCultureName);
         }
-        
+
         if (!string.IsNullOrEmpty(CurrentUICultureName))
         {
             CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(CurrentUICultureName);
+            CultureInfo.DefaultThreadCurrentUICulture = CultureInfo.GetCultureInfo(CurrentUICultureName);
         }
     }
 }
