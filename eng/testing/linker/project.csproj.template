@@ -15,8 +15,6 @@
     <InterceptorsPreviewNamespaces>$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated;Microsoft.Extensions.Validation.Generated</InterceptorsPreviewNamespaces>
     <!-- Ensure individual warnings are shown when publishing -->
     <TrimmerSingleWarn>false</TrimmerSingleWarn>
-    <RestoreStaticGraphEnableBinaryLogger>true</RestoreStaticGraphEnableBinaryLogger>
-    <RestoreStaticGraphBinaryLoggerParameters>{RestoreStaticGraphLogLocation}</RestoreStaticGraphBinaryLoggerParameters>
     {AdditionalProperties}
   </PropertyGroup>
 
