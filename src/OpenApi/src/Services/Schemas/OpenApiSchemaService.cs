@@ -58,15 +58,15 @@ internal sealed class OpenApiSchemaService(
         TransformSchemaNode = (context, schema) =>
         {
             var type = context.TypeInfo.Type;
-            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, and PipeReader
+            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader, and FileContentResult
             // that appear as properties within complex types.
-            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader))
+            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader) || type == typeof(FileContentResult))
             {
                 schema = new JsonObject
                 {
                     [OpenApiSchemaKeywords.TypeKeyword] = "string",
                     [OpenApiSchemaKeywords.FormatKeyword] = "binary",
-                    [OpenApiConstants.SchemaId] = "IFormFile"
+                    [OpenApiConstants.SchemaId] = type == typeof(FileContentResult) ? "FileContentResult" : "IFormFile"
                 };
             }
             else if (type == typeof(IFormFileCollection))
