@@ -10,7 +10,7 @@ namespace Microsoft.Extensions.Validation;
 /// When applied to a property, validation is skipped for that property.
 /// When applied to a parameter, validation is skipped for that parameter.
 /// When applied to a type, validation is skipped for all properties and parameters of that type.
-/// This includes skipping validation of nested propeties for complex types.
+/// This includes skipping validation of nested propeeties for complex types.
 /// </summary>
 [Experimental("ASP0029", UrlFormat = "https://aka.ms/aspnet/analyzer/{0}")]
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]

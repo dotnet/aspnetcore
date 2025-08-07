@@ -6,7 +6,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
-using System.Net.Http;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
@@ -16,10 +15,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -27,10 +23,8 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
-using Xunit;
 
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 

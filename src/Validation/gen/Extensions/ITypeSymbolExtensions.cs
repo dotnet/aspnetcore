@@ -168,21 +168,16 @@ internal static class ITypeSymbolExtensions
 
     internal static bool IsSkippedValidationProperty(this IPropertySymbol property, INamedTypeSymbol skipValidationAttributeSymbol)
     {
-        return SymbolOrItsTypeHasAttribute(property, property.Type, skipValidationAttributeSymbol);
+        return property.HasAttribute(skipValidationAttributeSymbol) || property.Type.HasAttribute(skipValidationAttributeSymbol);
     }
 
     internal static bool IsSkippedValidationParameter(this IParameterSymbol parameter, INamedTypeSymbol skipValidationAttributeSymbol)
     {
-        return SymbolOrItsTypeHasAttribute(parameter, parameter.Type, skipValidationAttributeSymbol);
+        return parameter.HasAttribute(skipValidationAttributeSymbol) || parameter.Type.HasAttribute(skipValidationAttributeSymbol);
     }
 
-    private static bool SymbolOrItsTypeHasAttribute(ISymbol symbol, ITypeSymbol? typeSymbol, INamedTypeSymbol attributeSymbol)
+    internal static bool HasAttribute(this ITypeSymbol? typeSymbol, INamedTypeSymbol attributeSymbol)
     {
-        if (symbol.HasAttribute(attributeSymbol))
-        {
-            return true;
-        }
-
         while (typeSymbol is not null)
         {
             if (typeSymbol.GetAttributes().Any(attr =>
