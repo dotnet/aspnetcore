@@ -703,6 +703,12 @@ public partial class RequestDelegateFactoryTests : LoggedTest
 
         await requestDelegate(httpContext);
 
+        var parameterBindingMetadata = factoryResult.EndpointMetadata
+            .FirstOrDefault(e => e is ParameterBindingMetadata metadata &&
+                metadata.Name == "formValues") as ParameterBindingMetadata;
+
+        Assert.NotNull(parameterBindingMetadata);
+        Assert.Equal(typeof(string[]), parameterBindingMetadata.ParameterInfo.ParameterType);
         Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["form"]!);
     }
 
