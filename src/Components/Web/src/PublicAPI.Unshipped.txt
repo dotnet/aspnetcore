@@ -16,13 +16,9 @@ Microsoft.AspNetCore.Components.Web.Image.Image.ChunkSize.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Web.Image.Image.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Web.Image.Image.Element.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.ErrorContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
-Microsoft.AspNetCore.Components.Web.Image.Image.ErrorContent.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Image() -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.get -> Microsoft.JSInterop.IJSRuntime!
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.LoadingContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
-Microsoft.AspNetCore.Components.Web.Image.Image.LoadingContent.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.ImageSource?
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.set -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource

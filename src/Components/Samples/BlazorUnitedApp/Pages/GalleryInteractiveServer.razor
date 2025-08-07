@@ -41,9 +41,9 @@
                     <div class="image-wrapper" @onclick="() => OpenImageModal(image)">
                         <Image
                             Source="@GetImageSource(image.Id)"
-                            Alt="@image.Title"
                             CacheStrategy="CacheStrategy.Memory"
-                            style="width: 100%; height: 100%; object-fit: cover;">
+                            style="width: 100%; height: 100%; object-fit: cover;"
+                            alt="@image.Title">
                         </Image>
                     </div>
                     <div class="image-info">
@@ -184,6 +184,77 @@
 }
 
 <style>
+    /* Position container relatively to allow absolute positioning of loading/error indicators */
+    .image-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Loading state using ::before for spinner */
+    img.blazor-image[data-state="loading"] {
+        min-height: 50px;
+        opacity: 0; /* Hide the image to prevent broken icon */
+    }
+
+    /* Container for loading image gets a progress indicator */
+    *:has(> img.blazor-image[data-state="loading"]) {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Simple progress bar background */
+    *:has(> img.blazor-image[data-state="loading"])::before {
+        content: "";
+        position: absolute;
+        width: 60px;
+        height: 4px;
+        background-color: #e9ecef;
+        border-radius: 2px;
+        z-index: 10;
+    }
+
+    /* Progress bar fill using the --blazor-image-progress variable */
+    *:has(> img.blazor-image[data-state="loading"])::after {
+        content: "";
+        position: absolute;
+        width: calc(60px * var(--blazor-image-progress, 0));
+        height: 4px;
+        background-color: #3498db;
+        border-radius: 2px;
+        z-index: 11;
+        transition: width 0.15s ease-out;
+        transform-origin: left center;
+    }
+
+    /* Error state styling */
+    img.blazor-image[data-state="error"] {
+        min-height: 50px;
+        opacity: 0; /* Hide the image to prevent broken icon */
+    }
+
+    /* Any container with an error image */
+    *:has(> img.blazor-image[data-state="error"])::before {
+        content: "⚠️";
+        position: absolute;
+        font-size: 24px;
+        z-index: 10;
+    }
+
+    *:has(> img.blazor-image[data-state="error"])::after {
+        content: "Failed to load image";
+        position: absolute;
+        top: 40px;
+        font-size: 14px;
+        color: #dc3545;
+        z-index: 10;
+    }
+
+    /*The rest of gallary styling*/
+
     .gallery-container {
         max-width: 1200px;
         margin: 0 auto;

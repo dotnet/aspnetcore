@@ -10,25 +10,15 @@ namespace Microsoft.AspNetCore.Components.Web.Image;
 
 /* This is equivalent to a .razor file containing:
  *
- * <div class="blazor-image-container" style="@ContainerStyle">
- *     @if (_isLoading && LoadingContent != null)
- *     {
- *         @LoadingContent
- *     }
- *     else if (_hasError && ErrorContent != null)
- *     {
- *         @ErrorContent
- *     }
- *     <img class="@(_isLoading || _hasError ? "d-none" : GetCssClass())"
- *         @ref="Element" @attributes="AdditionalAttributes" />
- * </div>
+ * <img class="blazor-image @GetCssClass()"
+ *      data-state="@(_isLoading ? "loading" : _hasError ? "error" : null)"
+ *      @ref="Element" @attributes="AdditionalAttributes" />
  */
 /// <summary>
 /// A component that efficiently renders images from non-HTTP sources like byte arrays.
 /// </summary>
 public class Image : ComponentBase, IAsyncDisposable
 {
-    private readonly string _id = $"image-{Guid.NewGuid():N}";
     private bool _isLoading = true;
     private bool _hasError;
     private bool _isDisposed;
@@ -52,16 +42,6 @@ public class Image : ComponentBase, IAsyncDisposable
     [Parameter] public ImageSource? Source { get; set; }
 
     /// <summary>
-    /// Gets or sets the content to display while the image is loading.
-    /// </summary>
-    [Parameter] public RenderFragment? LoadingContent { get; set; }
-
-    /// <summary>
-    /// Gets or sets the content to display when an error occurs loading the image.
-    /// </summary>
-    [Parameter] public RenderFragment? ErrorContent { get; set; }
-
-    /// <summary>
     /// Gets or sets the caching strategy for the image.
     /// </summary>
     [Parameter] public CacheStrategy CacheStrategy { get; set; } = CacheStrategy.Memory;
@@ -80,47 +60,28 @@ public class Image : ComponentBase, IAsyncDisposable
     protected override void OnInitialized()
     {
         base.OnInitialized();
-
-        // Set default content if not provided
-        LoadingContent ??= CreateDefaultLoadingContent();
-        ErrorContent ??= CreateDefaultErrorContent();
     }
 
     /// <inheritdoc />
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "id", $"{_id}-container");
-        builder.AddAttribute(2, "class", "blazor-image-container");
+        builder.OpenElement(0, "img");
 
-        string containerStyle = GetContainerStyle();
-        if (!string.IsNullOrEmpty(containerStyle))
+        if (_isLoading)
         {
-            builder.AddAttribute(3, "style", containerStyle);
+            builder.AddAttribute(1, "data-state", "loading");
+        }
+        else if (_hasError)
+        {
+            builder.AddAttribute(1, "data-state", "error");
         }
 
-        if (_isLoading && LoadingContent != null)
-        {
-            builder.AddContent(4, LoadingContent);
-        }
-        else if (_hasError && ErrorContent != null)
-        {
-            builder.AddContent(5, ErrorContent);
-        }
+        var cssClass = GetCssClass();
+        builder.AddAttribute(3, "class", $"blazor-image {cssClass}".Trim());
 
-        builder.OpenElement(6, "img");
-        builder.AddAttribute(7, "id", _id);
+        builder.AddMultipleAttributes(4, AdditionalAttributes);
+        builder.AddElementReferenceCapture(5, elementReference => Element = elementReference);
 
-        var cssClass = _isLoading || _hasError ? "d-none" : GetCssClass();
-        if (!string.IsNullOrEmpty(cssClass))
-        {
-            builder.AddAttribute(8, "class", cssClass);
-        }
-
-        builder.AddMultipleAttributes(10, AdditionalAttributes);
-        builder.AddElementReferenceCapture(11, inputReference => Element = inputReference);
-
-        builder.CloseElement();
         builder.CloseElement();
     }
 
@@ -178,7 +139,7 @@ public class Image : ComponentBase, IAsyncDisposable
     {
         try
         {
-            string transferId = $"{_id}-{Guid.NewGuid():N}";
+            string transferId = $"transfer-{Guid.NewGuid():N}";
 
             await JSRuntime.InvokeVoidAsync(
                 "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
@@ -199,6 +160,9 @@ public class Image : ComponentBase, IAsyncDisposable
                         transferId, chunkIndex, buffer.AsMemory(0, bytesRead).ToArray());
 
                     chunkIndex++;
+
+                    // Add delay for testing
+                    await Task.Delay(444);
                 }
 
                 await JSRuntime.InvokeVoidAsync(
@@ -236,68 +200,6 @@ public class Image : ComponentBase, IAsyncDisposable
         _hasError = true;
         StateHasChanged();
     }
-
-    private static RenderFragment CreateDefaultLoadingContent() => builder =>
-    {
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", "blazor-image-loading");
-        builder.AddAttribute(2, "style", "display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column;");
-
-        builder.OpenElement(3, "svg");
-        builder.AddAttribute(4, "class", "blazor-image-progress");
-        builder.AddAttribute(5, "viewBox", "0 0 100 100");
-        builder.AddAttribute(6, "style", "width: 40px; height: 40px; margin-bottom: 8px;");
-
-        builder.OpenElement(7, "circle");
-        builder.AddAttribute(8, "cx", "50");
-        builder.AddAttribute(9, "cy", "50");
-        builder.AddAttribute(10, "r", "40");
-        builder.AddAttribute(11, "style", "fill: none; stroke: #f3f3f3; stroke-width: 8;");
-        builder.CloseElement();
-
-        builder.OpenElement(12, "circle");
-        builder.AddAttribute(13, "cx", "50");
-        builder.AddAttribute(14, "cy", "50");
-        builder.AddAttribute(15, "r", "40");
-        builder.AddAttribute(16, "style", "fill: none; stroke: #3498db; stroke-width: 8; stroke-linecap: round; transform: rotate(-90deg); transform-origin: 50px 50px; transition: stroke-dasharray 0.3s ease-in-out;");
-        builder.CloseElement();
-
-        builder.CloseElement();
-
-        builder.OpenElement(20, "style");
-        builder.AddContent(21, @"
-            .blazor-image-progress circle:last-child {
-                stroke-dasharray: calc(3.141 * var(--blazor-image-progress, 0) * 100% * 0.8), 500%;
-            }
-        ");
-        builder.CloseElement();
-
-        builder.CloseElement();
-    };
-
-    private static RenderFragment CreateDefaultErrorContent() => builder =>
-    {
-        builder.OpenElement(0, "div");
-        builder.AddAttribute(1, "class", "blazor-image-error");
-        builder.AddAttribute(2, "style", "display: flex; justify-content: center; align-items: center; padding: 20px; flex-direction: column; text-align: center;");
-
-        builder.OpenElement(3, "span");
-        builder.AddAttribute(4, "class", "error-icon");
-        builder.AddAttribute(5, "style", "font-size: 24px; margin-bottom: 8px;");
-        builder.AddContent(6, "⚠️");
-        builder.CloseElement();
-
-        builder.OpenElement(7, "span");
-        builder.AddAttribute(8, "class", "error-message");
-        builder.AddAttribute(9, "style", "color: #dc3545; font-size: 14px;");
-        builder.AddContent(10, "Failed to load image");
-        builder.CloseElement();
-
-        builder.CloseElement();
-    };
-
-    private string GetContainerStyle() => AdditionalAttributes?.TryGetValue("style", out var style) == true
-        ? style?.ToString() ?? string.Empty : string.Empty;
 
     private string GetCssClass() => AdditionalAttributes?.TryGetValue("class", out var cssClass) == true
         ? cssClass?.ToString() ?? string.Empty : string.Empty;
