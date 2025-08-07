@@ -460,23 +460,41 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
-            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
-            {
-                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
-                {
-                    schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
-                    if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
-                    {
-                        schema.Example = jsonString.Parse();
-                    }
-                }
-            }
+            // Apply comments from the type
             if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
                 {
                     schema.Example = jsonString.Parse();
+                }
+            }
+
+            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            {
+                // Apply comments from the property
+                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
+                {
+                    if (schema.Metadata is null
+                        || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
+                        || string.IsNullOrEmpty(schemaId as string))
+                    {
+                        // Inlined schema
+                        schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary!;
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Example = jsonString.Parse();
+                        }
+                    }
+                    else
+                    {
+                        // Schema Reference
+                        schema.Metadata["x-ref-description"] = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary!;
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Metadata["x-ref-example"] = jsonString.Parse()!;
+                        }
+                    }
                 }
             }
             return Task.CompletedTask;

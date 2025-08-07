@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
+
 namespace Microsoft.AspNetCore.OpenApi;
 
 internal static class OpenApiDocumentExtensions
@@ -21,6 +23,19 @@ internal static class OpenApiDocumentExtensions
         document.Workspace ??= new();
         var location = document.BaseUri + "/components/schemas/" + schemaId;
         document.Workspace.RegisterComponentForDocument(document, schema, location);
-        return new OpenApiSchemaReference(schemaId, document);
+
+        object? description = null;
+        object? example = null;
+        if (schema is OpenApiSchema actualSchema)
+        {
+            actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefDescriptionAnnotation, out description);
+            actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefExampleAnnotation, out example);
+        }
+
+        return new OpenApiSchemaReference(schemaId, document)
+        {
+            Description = description as string,
+            Examples = example is JsonNode exampleJson ? [exampleJson] : null,
+        };
     }
 }
