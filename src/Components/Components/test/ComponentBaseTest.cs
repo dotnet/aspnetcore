@@ -1091,6 +1091,658 @@ public class ComponentBaseTest
         Assert.Equal(0, component.StateHasChangedCallCount); // No render due to exception
     }
 
+    // ErrorBoundary tests for ComponentBase lifecycle methods  
+    // Each test corresponds to a StateHasChanged tracking test but wrapped in an ErrorBoundary
+    // The component unconditionally throws in BuildRenderTree to validate error boundary behavior
+
+    [Fact]
+    public async Task ErrorBoundary_OnInitializedAsync_SucceedsSynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var errorBoundary = new TestErrorBoundaryComponent();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnInitAsyncLogic = _ => Task.CompletedTask
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert - ErrorBoundary should have caught the BuildRenderTree exception and rendered error content
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundaryComponent = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundaryComponent.ReceivedException);
+        Assert.Contains("BuildRenderTree error", errorBoundaryComponent.ReceivedException.Message);
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnInitializedAsync_SucceedsAsynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var errorBoundary = new TestErrorBoundaryComponent();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert - ErrorBoundary should have caught the BuildRenderTree exception and rendered error content
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundaryComponent = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundaryComponent.ReceivedException);
+        Assert.Contains("BuildRenderTree error", errorBoundaryComponent.ReceivedException.Message);
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnInitializedAsync_ReturnsCancelledTaskSynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnInitAsyncLogic = _ =>
+            {
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                return Task.FromCanceled(cts.Token);
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert - ErrorBoundary should have caught the BuildRenderTree exception and rendered error content
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundaryComponent = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundaryComponent.ReceivedException);
+        Assert.Contains("BuildRenderTree error", errorBoundaryComponent.ReceivedException.Message);
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnInitializedAsync_ReturnsCancelledTaskAsynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                await Task.FromCanceled(cts.Token);
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert - ErrorBoundary should have caught the BuildRenderTree exception and rendered error content  
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundaryComponent = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundaryComponent.ReceivedException);
+        Assert.Contains("BuildRenderTree error", errorBoundaryComponent.ReceivedException.Message);
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnInitializedAsync_ThrowsExceptionSynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnInitAsyncLogic = _ => Task.FromException(expected)
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnInitializedAsync_ThrowsExceptionAsynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected;
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnInitializedAsync_ThrowsExceptionSynchronouslyUsingAsyncAwait_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+#pragma warning disable CS1998 // This async method lacks 'await' operators and will run synchronously
+            OnInitAsyncLogic = async _ =>
+            {
+                throw expected; // Throws synchronously in async method
+            }
+#pragma warning restore CS1998 // This async method lacks 'await' operators and will run synchronously
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnInitializedAsync_ThrowsExceptionAsynchronouslyUsingAsyncAwait_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected; // Throws asynchronously in async method
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnInitializedAsync_ReturnsTaskFromExceptionSynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnInitAsyncLogic = _ =>
+            {
+                return Task.FromException(expected); // Returns faulted task synchronously
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnParametersSetAsync_SucceedsSynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnParametersSetAsyncLogic = _ => Task.CompletedTask
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert - ErrorBoundary should have caught the BuildRenderTree exception and rendered error content
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundaryComponent = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundaryComponent.ReceivedException);
+        Assert.Contains("BuildRenderTree error", errorBoundaryComponent.ReceivedException.Message);
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnParametersSetAsync_SucceedsAsynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert - ErrorBoundary should have caught the BuildRenderTree exception and rendered error content
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundaryComponent = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundaryComponent.ReceivedException);
+        Assert.Contains("BuildRenderTree error", errorBoundaryComponent.ReceivedException.Message);
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnParametersSetAsync_ReturnsCancelledTaskSynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnParametersSetAsyncLogic = _ =>
+            {
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                return Task.FromCanceled(cts.Token);
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert - ErrorBoundary should have caught the BuildRenderTree exception and rendered error content
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundaryComponent = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundaryComponent.ReceivedException);
+        Assert.Contains("BuildRenderTree error", errorBoundaryComponent.ReceivedException.Message);
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnParametersSetAsync_ReturnsCancelledTaskAsynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                await Task.FromCanceled(cts.Token);
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert - ErrorBoundary should have caught the BuildRenderTree exception and rendered error content
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundaryComponent = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundaryComponent.ReceivedException);
+        Assert.Contains("BuildRenderTree error", errorBoundaryComponent.ReceivedException.Message);
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnParametersSetAsync_ThrowsExceptionSynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnParametersSetAsyncLogic = _ => Task.FromException(expected)
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnParametersSetAsync_ThrowsExceptionAsynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected;
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnParametersSetAsync_ThrowsExceptionSynchronouslyUsingAsyncAwait_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+#pragma warning disable CS1998 // This async method lacks 'await' operators and will run synchronously
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                throw expected; // Throws synchronously in async method
+            }
+#pragma warning restore CS1998 // This async method lacks 'await' operators and will run synchronously
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnParametersSetAsync_ThrowsExceptionAsynchronouslyUsingAsyncAwait_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected; // Throws asynchronously in async method
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
+    [Fact]
+    public async Task ErrorBoundary_OnParametersSetAsync_ReturnsTaskFromExceptionSynchronously_RendersErrorContent()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponentWithBuildRenderTreeError
+        {
+            OnParametersSetAsyncLogic = _ =>
+            {
+                return Task.FromException(expected); // Returns faulted task synchronously
+            }
+        };
+
+        // Create root component that wraps the test component in an error boundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundaryComponent>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.CloseComponent();
+            }));
+            builder.CloseComponent();
+        };
+
+        // Act & Assert
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+    }
+
     private class TestComponent : ComponentBase
     {
         public bool RunsBaseOnInit { get; set; } = true;
@@ -1121,12 +1773,21 @@ public class ComponentBaseTest
 
         public int StateHasChangedCallCount { get; private set; }
 
+        public RenderFragment ChildContent { get; set; }
+
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             StateHasChangedCallCount++;
-            builder.OpenElement(0, "p");
-            builder.AddContent(1, Counter);
-            builder.CloseElement();
+            if (ChildContent != null)
+            {
+                builder.AddContent(0, ChildContent);
+            }
+            else
+            {
+                builder.OpenElement(0, "p");
+                builder.AddContent(1, Counter);
+                builder.CloseElement();
+            }
         }
 
         protected override void OnInitialized()
@@ -1199,6 +1860,90 @@ public class ComponentBaseTest
             {
                 await OnAfterRenderAsyncLogic(this, firstRender);
             }
+        }
+    }
+
+    private class TestComponentWithBuildRenderTreeError : ComponentBase
+    {
+        public Action<TestComponentWithBuildRenderTreeError> OnInitLogic { get; set; }
+
+        public Func<TestComponentWithBuildRenderTreeError, Task> OnInitAsyncLogic { get; set; }
+
+        public Action<TestComponentWithBuildRenderTreeError> OnParametersSetLogic { get; set; }
+
+        public Func<TestComponentWithBuildRenderTreeError, Task> OnParametersSetAsyncLogic { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            // This component unconditionally throws in BuildRenderTree to test ErrorBoundary behavior
+            throw new InvalidOperationException("BuildRenderTree error - component always fails to render");
+        }
+
+        protected override void OnInitialized()
+        {
+            base.OnInitialized();
+            OnInitLogic?.Invoke(this);
+        }
+
+        protected override async Task OnInitializedAsync()
+        {
+            await base.OnInitializedAsync();
+
+            if (OnInitAsyncLogic != null)
+            {
+                await OnInitAsyncLogic.Invoke(this);
+            }
+        }
+
+        protected override void OnParametersSet()
+        {
+            base.OnParametersSet();
+            OnParametersSetLogic?.Invoke(this);
+        }
+
+        protected override async Task OnParametersSetAsync()
+        {
+            await base.OnParametersSetAsync();
+
+            if (OnParametersSetAsyncLogic != null)
+            {
+                await OnParametersSetAsyncLogic(this);
+            }
+        }
+    }
+
+    private class TestErrorBoundaryComponent : ComponentBase, IErrorBoundary
+    {
+        public Exception ReceivedException { get; private set; }
+
+        [Parameter] public RenderFragment ChildContent { get; set; }
+
+        [Parameter] public RenderFragment<Exception> ErrorContent { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (ReceivedException is null)
+            {
+                builder.AddContent(0, ChildContent);
+            }
+            else if (ErrorContent is not null)
+            {
+                builder.AddContent(1, ErrorContent(ReceivedException));
+            }
+            else
+            {
+                // Default error content
+                builder.OpenElement(2, "div");
+                builder.AddAttribute(3, "class", "error-boundary");
+                builder.AddContent(4, "An error has occurred");
+                builder.CloseElement();
+            }
+        }
+
+        public void HandleException(Exception exception)
+        {
+            ReceivedException = exception;
+            StateHasChanged();
         }
     }
 }
