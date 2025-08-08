@@ -129,8 +129,20 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
 
         private void ValidateSchemaReference(OpenApiSchemaReference reference)
         {
-            if (reference.RecursiveTarget is not null)
+            try
             {
+                if (reference.RecursiveTarget is not null)
+                {
+                    return;
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                // Thrown if a circular reference is detected
+                context.Enter($"{PathString[2..]}/{OpenApiSchemaKeywords.RefKeyword}");
+                context.CreateError(ruleName, ex.Message);
+                context.Exit();
+
                 return;
             }
 
