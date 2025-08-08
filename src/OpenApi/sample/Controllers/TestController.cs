@@ -60,10 +60,10 @@ public class TestController : ControllerBase
 
     public class RouteParamsContainer
     {
-        [FromRoute]
+        [FromRoute(Name = "id")]
         public int Id { get; set; }
 
-        [FromRoute]
+        [FromRoute(Name = "name")]
         [MinLength(5)]
         [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "MinLengthAttribute works without reflection on string properties.")]
         public string? Name { get; set; }
