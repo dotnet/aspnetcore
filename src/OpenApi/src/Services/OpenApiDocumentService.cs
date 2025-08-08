@@ -286,7 +286,7 @@ internal sealed class OpenApiDocumentService(
             {
                 DocumentName = documentName,
                 Description = description,
-                AllDescriptions = [.. allDescriptions],
+                AllDescriptions = allDescriptions,
                 ApplicationServices = scopedServiceProvider,
                 Document = document,
                 SchemaTransformers = schemaTransformers
