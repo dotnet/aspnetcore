@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Hosting;
 
 // We use this type to capture calls to the IWebHostBuilder so the we can properly order calls to
 // to GenericHostWebHostBuilder.
+#pragma warning disable CS0618 // Type or member is obsolete
 internal sealed class HostingStartupWebHostBuilder : IWebHostBuilder, ISupportsStartup, ISupportsUseDefaultServiceProvider
 {
     private readonly GenericWebHostBuilder _builder;
@@ -90,3 +91,4 @@ internal sealed class HostingStartupWebHostBuilder : IWebHostBuilder, ISupportsS
         return _builder.UseStartup(startupFactory);
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

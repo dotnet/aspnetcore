@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// A builder for <see cref="IWebHost"/>.
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 public interface IWebHostBuilder
 {
     /// <summary>
@@ -59,3 +60,4 @@ public interface IWebHostBuilder
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
     IWebHostBuilder UseSetting(string key, string? value);
 }
+#pragma warning restore CS0618 // Type or member is obsolete

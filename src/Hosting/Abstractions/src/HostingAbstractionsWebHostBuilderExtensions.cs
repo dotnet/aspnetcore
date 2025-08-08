@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Contains extension methods for configuring the <see cref="IWebHostBuilder" />.
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 public static class HostingAbstractionsWebHostBuilderExtensions
 {
     /// <summary>
@@ -176,3 +177,4 @@ public static class HostingAbstractionsWebHostBuilderExtensions
         return host;
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

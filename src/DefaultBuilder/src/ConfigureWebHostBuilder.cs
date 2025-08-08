@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Builder;
 /// A non-buildable <see cref="IWebHostBuilder"/> for <see cref="WebApplicationBuilder"/>.
 /// Use <see cref="WebApplicationBuilder.Build"/> to build the <see cref="WebApplicationBuilder"/>.
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
 {
     private readonly IWebHostEnvironment _environment;
@@ -183,3 +184,4 @@ public sealed class ConfigureWebHostBuilder : IWebHostBuilder, ISupportsStartup
         throw new NotSupportedException("UseStartup() is not supported by WebApplicationBuilder.WebHost. Use the WebApplication returned by WebApplicationBuilder.Build() instead.");
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

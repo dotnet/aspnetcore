@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.TestHost;
 /// <summary>
 /// Contains extensions for configuring the <see cref="IWebHostBuilder" /> instance.
 /// </summary>
+#pragma warning disable CS0618 // Type or member is obsolete
 public static class WebHostBuilderExtensions
 {
     /// <summary>
@@ -208,3 +209,4 @@ public static class WebHostBuilderExtensions
             };
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

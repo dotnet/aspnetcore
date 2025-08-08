@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 internal abstract class WebHostBuilderBase : IWebHostBuilder, ISupportsUseDefaultServiceProvider
 {
     private protected readonly IHostBuilder _builder;
@@ -105,3 +106,4 @@ internal abstract class WebHostBuilderBase : IWebHostBuilder, ISupportsUseDefaul
         return this;
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

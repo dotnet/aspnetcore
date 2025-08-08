@@ -22,7 +22,9 @@ public class WebHostServiceTests
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
         var host = new WebHostBuilder().UseServer(new FakeServer()).Configure(x => { }).Build();
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
         var webHostService = new WebHostService(host);
+#pragma warning restore CS0618 // Type or member is obsolete
         var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
         applicationLifetime.StopApplication();
@@ -38,7 +40,9 @@ public class WebHostServiceTests
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
         var host = new WebHostBuilder().UseServer(new FakeServer()).Configure(x => { }).Build();
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
         var webHostService = new WebHostService(host);
+#pragma warning restore CS0618 // Type or member is obsolete
         var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
         webHostService.Start();

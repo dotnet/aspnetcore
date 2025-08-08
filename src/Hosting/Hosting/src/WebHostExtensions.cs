@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Contains extensions for managing the lifecycle of an <see cref="IWebHost"/>.
 /// </summary>
+[Obsolete("WebHostExtensions is obsolete. Use Host.CreateDefaultBuilder or WebApplication.CreateBuilder instead.")]
 public static class WebHostExtensions
 {
     /// <summary>
