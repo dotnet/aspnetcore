@@ -80,7 +80,7 @@
             @foreach (var col in _columns)  
             {
                 var hasCustomPlaceholder = col.PlaceholderTemplate is not null;
-                var placeholderClass = hasCustomPlaceholder ? "grid-cell-placeholder" : "grid-cell-placeholder default";
+                var placeholderClass = hasCustomPlaceholder ? "grid-cell-placeholder--custom" : "grid-cell-placeholder";
                 <td class="@($"{placeholderClass} {ColumnClass(col)}".Trim())" @key="@col">@{ col.RenderPlaceholderContent(__builder, placeholderContext); }</td>
             }
         </tr>

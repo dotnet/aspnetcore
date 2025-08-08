@@ -132,12 +132,12 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         Browser.True(() => GetPlaceholderCount() > 0);
 
         Assert.Equal("\"…\"", Browser.ExecuteJavaScript<string>(@"
-        const p = document.querySelector('td.grid-cell-placeholder.default');
+        const p = document.querySelector('td.grid-cell-placeholder');
         return p ? getComputedStyle(p, '::after').content : null;"));
         Assert.Equal("none", Browser.ExecuteJavaScript<string>(@"
-        const p = document.querySelector('td.grid-cell-placeholder:not(.default)');
+        const p = document.querySelector('td.grid-cell-placeholder--custom');
         return p ? getComputedStyle(p, '::after').content : null;"));
-        Browser.Equal("LOADING DATA", () => Browser.Exists(By.CssSelector(".grid-cell-placeholder .async-placeholder")).Text);
+        Browser.Equal("LOADING DATA", () => Browser.Exists(By.CssSelector(".grid-cell-placeholder--custom .async-placeholder")).Text);
 
         int GetItemCount() => Browser.FindElements(By.CssSelector("#async-container tbody td.async-id:not(.grid-cell-placeholder)")).Count;
         int GetPlaceholderCount() => Browser.FindElements(By.CssSelector("#async-container tbody .async-id.grid-cell-placeholder")).Count;
