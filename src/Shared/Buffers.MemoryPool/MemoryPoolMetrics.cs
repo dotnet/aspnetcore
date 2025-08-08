@@ -40,7 +40,7 @@ internal sealed class MemoryPoolMetrics
         _evictedMemoryCounter = _meter.CreateCounter<long>(
             EvictedMemoryName,
             unit: "By",
-            description: "Total number of bytes evicted from the memory pool. Eviction occurs when idle pooled memory is reclaimed.");
+            description: "Total number of bytes evicted from the memory pool. Eviction occurs when idle pooled memory is reclaimed. Evicted memory is available for garbage collection.");
 
         _rentedMemoryCounter = _meter.CreateCounter<long>(
             RentedMemoryName,
