@@ -31,7 +31,7 @@ public abstract class ErrorBoundaryBase : ComponentBase, IErrorBoundary
     /// <summary>
     /// Gets the current exception, or null if there is no exception.
     /// </summary>
-    protected internal Exception? CurrentException { get; private set; }
+    protected Exception? CurrentException { get; private set; }
 
     /// <summary>
     /// Resets the error boundary to a non-errored state. If the error boundary is not

@@ -1169,12 +1169,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // Don't just trust the error boundary to dispose its subtree - force it to do so by
                 // making it render an empty fragment. Ensures that failed components don't continue to
                 // operate, which would be a whole new kind of edge case to support forever.
-                // However, if the error boundary already has an exception, don't queue an empty render
-                // as it would override the error content that should be displayed.
-                if (errorBoundary is not ErrorBoundaryBase { CurrentException: { } })
-                {
-                    AddToRenderQueue(candidate.ComponentId, builder => { });
-                }
+                AddToRenderQueue(candidate.ComponentId, builder => { });
 
                 try
                 {

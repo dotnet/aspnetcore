@@ -463,6 +463,192 @@ public class ComponentBaseTest
         Assert.Same(expected, actual);
     }
 
+    [Fact]
+    public async Task OnInitializedAsync_ThrowsExceptionSynchronouslyUsingAsyncAwait()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.CompletedTask; // Make compiler happy about async
+                throw expected; // Throws synchronously in async method
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Same(expected, actual);
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ThrowsExceptionAsynchronouslyUsingAsyncAwait()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected; // Throws asynchronously in async method
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Same(expected, actual);
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ReturnsCancelledTaskSynchronously()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = _ =>
+            {
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                return Task.FromCanceled(cts.Token); // Returns cancelled task synchronously
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert - should not throw and should have completed rendering
+        Assert.NotEmpty(renderer.Batches);
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ReturnsCancelledTaskAsynchronously()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                await Task.FromCanceled(cts.Token); // Returns cancelled task asynchronously
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert - should not throw and should have completed rendering
+        Assert.NotEmpty(renderer.Batches);
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ThrowsExceptionSynchronouslyUsingAsyncAwait()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.CompletedTask; // Make compiler happy about async
+                throw expected; // Throws synchronously in async method
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Same(expected, actual);
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ThrowsExceptionAsynchronouslyUsingAsyncAwait()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected; // Throws asynchronously in async method
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Same(expected, actual);
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ReturnsCancelledTaskSynchronously()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = _ =>
+            {
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                return Task.FromCanceled(cts.Token); // Returns cancelled task synchronously
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert - should not throw and should have completed rendering
+        Assert.NotEmpty(renderer.Batches);
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ReturnsCancelledTaskAsynchronously()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                await Task.FromCanceled(cts.Token); // Returns cancelled task asynchronously
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert - should not throw and should have completed rendering
+        Assert.NotEmpty(renderer.Batches);
+    }
+
     private class TestComponent : ComponentBase
     {
         public bool RunsBaseOnInit { get; set; } = true;
