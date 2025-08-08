@@ -66,7 +66,7 @@ internal sealed class OpenApiSchemaService(
                 {
                     [OpenApiSchemaKeywords.TypeKeyword] = "string",
                     [OpenApiSchemaKeywords.FormatKeyword] = "binary",
-                    [OpenApiConstants.SchemaId] = type == typeof(FileContentResult) ? "FileContentResult" : "IFormFile"
+                    [OpenApiConstants.SchemaId] = GetBinarySchemaId(type)
                 };
             }
             else if (type == typeof(IFormFileCollection))
