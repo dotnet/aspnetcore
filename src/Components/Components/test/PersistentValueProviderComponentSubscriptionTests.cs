@@ -830,4 +830,45 @@ public class PersistentValueProviderComponentSubscriptionTests
 
         subscription2.Dispose();
     }
+
+    [Fact]
+    public void RestoreProperty_WithSkipNotifications_StillSetsIgnoreComponentPropertyValue()
+    {
+        // This test verifies that the fix works even when skipNotifications is true,
+        // which is the scenario that was broken before our fix
+        
+        // Arrange
+        var initialState = new Dictionary<string, byte[]>();
+        var state = new PersistentComponentState(initialState, [], []);
+        var renderer = new TestRenderer();
+        var component = new TestComponent { State = "component-value" };
+        var componentState = CreateComponentState(renderer, component, null, null);
+
+        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, nameof(TestComponent.State));
+        initialState[key] = JsonSerializer.SerializeToUtf8Bytes("persisted-value", JsonSerializerOptions.Web);
+        state.InitializeExistingState(initialState, RestoreContext.LastSnapshot);
+
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
+
+        // Mark the subscription as having pending initial value to trigger skipNotifications = true
+        var pendingField = typeof(PersistentValueProviderComponentSubscription)
+            .GetField("_hasPendingInitialValue", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        pendingField.SetValue(subscription, true);
+
+        // Act - Call RestoreProperty which should skipNotifications but still set _ignoreComponentPropertyValue
+        var restoreMethod = typeof(PersistentValueProviderComponentSubscription)
+            .GetMethod("RestoreProperty", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        restoreMethod.Invoke(subscription, null);
+
+        // Assert - Even with skipNotifications = true, the next GetOrComputeLastValue should return the restored value
+        var result = subscription.GetOrComputeLastValue();
+        Assert.Equal("persisted-value", result);
+
+        subscription.Dispose();
+    }
 }
