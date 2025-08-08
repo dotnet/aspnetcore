@@ -350,11 +350,6 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata[OpenApiConstants.RefDescriptionAnnotation] = reader.GetString() ?? string.Empty;
                 break;
-            case OpenApiConstants.RefExampleAnnotation:
-                reader.Read();
-                schema.Metadata ??= new Dictionary<string, object>();
-                schema.Metadata[OpenApiConstants.RefExampleAnnotation] = reader.GetString() ?? string.Empty;
-                break;
 
             default:
                 reader.Skip();
