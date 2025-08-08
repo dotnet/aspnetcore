@@ -471,11 +471,12 @@ public class ComponentBaseTest
         var renderer = new TestRenderer();
         var component = new TestComponent
         {
+#pragma warning disable CS1998 // This async method lacks 'await' operators and will run synchronously
             OnInitAsyncLogic = async _ =>
             {
-                await Task.CompletedTask; // Make compiler happy about async
                 throw expected; // Throws synchronously in async method
             }
+#pragma warning restore CS1998 // This async method lacks 'await' operators and will run synchronously
         };
 
         // Act & Assert
@@ -564,11 +565,12 @@ public class ComponentBaseTest
         var renderer = new TestRenderer();
         var component = new TestComponent
         {
+#pragma warning disable CS1998 // This async method lacks 'await' operators and will run synchronously
             OnParametersSetAsyncLogic = async _ =>
             {
-                await Task.CompletedTask; // Make compiler happy about async
                 throw expected; // Throws synchronously in async method
             }
+#pragma warning restore CS1998 // This async method lacks 'await' operators and will run synchronously
         };
 
         // Act & Assert
