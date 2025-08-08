@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 
 namespace Microsoft.AspNetCore.Components.Test;
@@ -695,6 +696,401 @@ public class ComponentBaseTest
         Assert.NotEmpty(renderer.Batches);
     }
 
+    // StateHasChanged tracking tests
+    [Fact]
+    public async Task OnInitializedAsync_SucceedsSynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = _ => Task.CompletedTask
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.Equal(1, component.StateHasChangedCallCount); // One render
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_SucceedsAsynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.Equal(2, component.StateHasChangedCallCount); // Initial render + async rerender
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ReturnsCancelledTaskSynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = _ =>
+            {
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                return Task.FromCanceled(cts.Token);
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.Equal(1, component.StateHasChangedCallCount); // One render
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ReturnsCancelledTaskAsynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                await Task.FromCanceled(cts.Token);
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.Equal(2, component.StateHasChangedCallCount); // Initial render + async rerender
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ThrowsExceptionSynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = _ => Task.FromException(expected)
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(0, component.StateHasChangedCallCount); // No render due to exception
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ThrowsExceptionAsynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected;
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(1, component.StateHasChangedCallCount); // Initial render before async exception
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ThrowsExceptionSynchronouslyUsingAsyncAwait_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+#pragma warning disable CS1998 // This async method lacks 'await' operators and will run synchronously
+            OnInitAsyncLogic = async _ =>
+            {
+                throw expected; // Throws synchronously in async method
+            }
+#pragma warning restore CS1998 // This async method lacks 'await' operators and will run synchronously
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(0, component.StateHasChangedCallCount); // No render due to synchronous exception
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ThrowsExceptionAsynchronouslyUsingAsyncAwait_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected; // Throws asynchronously in async method
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(1, component.StateHasChangedCallCount); // Initial render before async exception
+    }
+
+    [Fact]
+    public async Task OnInitializedAsync_ReturnsTaskFromExceptionSynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = _ =>
+            {
+                return Task.FromException(expected); // Returns faulted task synchronously
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(0, component.StateHasChangedCallCount); // No render due to exception
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_SucceedsSynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = _ => Task.CompletedTask
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.Equal(1, component.StateHasChangedCallCount); // One render
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_SucceedsAsynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.Equal(2, component.StateHasChangedCallCount); // Initial render + async rerender
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ReturnsCancelledTaskSynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = _ =>
+            {
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                return Task.FromCanceled(cts.Token);
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.Equal(1, component.StateHasChangedCallCount); // One render
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ReturnsCancelledTaskAsynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                var cts = new CancellationTokenSource();
+                cts.Cancel();
+                await Task.FromCanceled(cts.Token);
+            }
+        };
+
+        // Act
+        var componentId = renderer.AssignRootComponentId(component);
+        await renderer.RenderRootComponentAsync(componentId);
+
+        // Assert
+        Assert.Equal(2, component.StateHasChangedCallCount); // Initial render + async rerender
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ThrowsExceptionSynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = _ => Task.FromException(expected)
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(0, component.StateHasChangedCallCount); // No render due to exception
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ThrowsExceptionAsynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected;
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(1, component.StateHasChangedCallCount); // Initial render before async exception
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ThrowsExceptionSynchronouslyUsingAsyncAwait_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+#pragma warning disable CS1998 // This async method lacks 'await' operators and will run synchronously
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                throw expected; // Throws synchronously in async method
+            }
+#pragma warning restore CS1998 // This async method lacks 'await' operators and will run synchronously
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(0, component.StateHasChangedCallCount); // No render due to synchronous exception
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ThrowsExceptionAsynchronouslyUsingAsyncAwait_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = async _ =>
+            {
+                await Task.Yield(); // Force async execution
+                throw expected; // Throws asynchronously in async method
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(1, component.StateHasChangedCallCount); // Initial render before async exception
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ReturnsTaskFromExceptionSynchronously_TracksStateHasChanged()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = _ =>
+            {
+                return Task.FromException(expected); // Returns faulted task synchronously
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Equal(0, component.StateHasChangedCallCount); // No render due to exception
+    }
+
     private class TestComponent : ComponentBase
     {
         public bool RunsBaseOnInit { get; set; } = true;
@@ -723,8 +1119,11 @@ public class ComponentBaseTest
 
         public int Counter { get; set; }
 
+        public int StateHasChangedCallCount { get; private set; }
+
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
+            StateHasChangedCallCount++;
             builder.OpenElement(0, "p");
             builder.AddContent(1, Counter);
             builder.CloseElement();
