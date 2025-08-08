@@ -84,6 +84,11 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             cache.Add(@"P:MixedParametersClass.IsActive", new XmlComment(@"Whether the user is active.", null, null, null, null, false, [@"true"], null, null));
             cache.Add(@"P:BindingSourceParametersClass.QueryParam", new XmlComment(@"Query parameter from URL.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:BindingSourceParametersClass.HeaderParam", new XmlComment(@"Header value from request.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:XmlDocPriorityParametersClass.SummaryOnlyProperty", new XmlComment(@"Property with only summary documentation.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:XmlDocPriorityParametersClass.SummaryAndReturnsProperty", new XmlComment(@"Property with summary documentation that should be overridden.", null, null, @"Returns-based description that should take precedence over summary.", null, false, null, null, null));
+            cache.Add(@"P:XmlDocPriorityParametersClass.AllThreeProperty", new XmlComment(@"Property with all three types of documentation.", null, null, @"Returns-based description that should be overridden by value.", @"Value-based description that should take highest precedence.", false, null, null, null));
+            cache.Add(@"P:XmlDocPriorityParametersClass.ReturnsOnlyProperty", new XmlComment(null, null, null, @"Returns-only description.", null, false, null, null, null));
+            cache.Add(@"P:XmlDocPriorityParametersClass.ValueOnlyProperty", new XmlComment(null, null, null, null, @"Value-only description.", false, null, null, null));
             cache.Add(@"M:RouteHandlerExtensionMethods.Get", new XmlComment(@"A summary of the action.", @"A description of the action.", null, @"Returns the greeting.", null, false, null, null, null));
             cache.Add(@"M:RouteHandlerExtensionMethods.Get2(System.String)", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", null, false)], [new XmlResponseComment(@"200", @"Returns the greeting.", @"")]));
             cache.Add(@"M:RouteHandlerExtensionMethods.Get3(System.String)", new XmlComment(null, null, null, @"Returns the greeting.", null, false, null, [new XmlParameterComment(@"name", @"The name of the person.", @"Testy McTester", false)], null));
@@ -109,6 +114,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             cache.Add(@"M:RouteHandlerExtensionMethods.Post18(FirstParameters,SecondParameters)", new XmlComment(@"A summary of Post18.", null, null, null, null, false, null, null, null));
             cache.Add(@"M:RouteHandlerExtensionMethods.Post19(System.String,MixedParametersClass)", new XmlComment(@"Tests mixed regular and AsParameters with examples.", null, null, null, null, false, null, [new XmlParameterComment(@"regularParam", @"A regular parameter with documentation.", null, false), new XmlParameterComment(@"mixedParams", @"Mixed parameter class with various types.", null, false)], null));
             cache.Add(@"M:RouteHandlerExtensionMethods.Get20(BindingSourceParametersClass)", new XmlComment(@"Tests AsParameters with different binding sources.", null, null, null, null, false, null, [new XmlParameterComment(@"bindingParams", @"Parameters from different sources.", null, false)], null));
+            cache.Add(@"M:RouteHandlerExtensionMethods.Get21(XmlDocPriorityParametersClass)", new XmlComment(@"Tests XML documentation priority order (value &gt; returns &gt; summary).", null, null, null, null, false, null, [new XmlParameterComment(@"priorityParams", @"Parameters demonstrating XML doc priority.", null, false)], null));
 
             return cache;
         }
@@ -476,17 +482,18 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         {
                             if (operation.RequestBody is not null)
                             {
-                                operation.RequestBody.Description = propertyComment.Summary ?? propertyComment.Description;
+                                operation.RequestBody.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                                 if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                                 {
                                     var content = operation.RequestBody.Content?.Values;
+                                    var parsedExample = jsonString.Parse();
                                     if (content is null)
                                     {
                                         continue;
                                     }
                                     foreach (var mediaType in content)
                                     {
-                                        mediaType.Example = jsonString.Parse();
+                                        mediaType.Example = parsedExample;
                                     }
                                 }
                             }
@@ -495,7 +502,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         var targetOperationParameter = UnwrapOpenApiParameter(parameter);
                         if (targetOperationParameter is not null)
                         {
-                            targetOperationParameter.Description = propertyComment.Summary ?? propertyComment.Description;
+                            targetOperationParameter.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                             if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                             {
                                 targetOperationParameter.Example = jsonString.Parse();

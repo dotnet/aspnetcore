@@ -48,6 +48,7 @@ app.MapGet("/17", RouteHandlerExtensionMethods.Get17);
 app.MapPost("/18", RouteHandlerExtensionMethods.Post18);
 app.MapPost("/19", RouteHandlerExtensionMethods.Post19);
 app.MapGet("/20", RouteHandlerExtensionMethods.Get20);
+app.MapGet("/21", RouteHandlerExtensionMethods.Get21);
 
 app.Run();
 
@@ -239,6 +240,15 @@ public static class RouteHandlerExtensionMethods
     {
         return TypedResults.Ok($"Query: {bindingParams.QueryParam}, Header: {bindingParams.HeaderParam}");
     }
+
+    /// <summary>
+    /// Tests XML documentation priority order (value > returns > summary).
+    /// </summary>
+    /// <param name="priorityParams">Parameters demonstrating XML doc priority.</param>
+    public static IResult Get21([AsParameters] XmlDocPriorityParametersClass priorityParams)
+    {
+        return TypedResults.Ok($"Processed parameters");
+    }
 }
 
 public class FirstParameters
@@ -333,6 +343,33 @@ public class BindingSourceParametersClass
     /// </summary>
     [FromHeader]
     public string? HeaderParam { get; set; }
+}
+
+public class XmlDocPriorityParametersClass
+{
+    /// <summary>
+    /// Property with only summary documentation.
+    /// </summary>
+    public string? SummaryOnlyProperty { get; set; }
+
+    /// <summary>
+    /// Property with summary documentation that should be overridden.
+    /// </summary>
+    /// <returns>Returns-based description that should take precedence over summary.</returns>
+    public string? SummaryAndReturnsProperty { get; set; }
+
+    /// <summary>
+    /// Property with all three types of documentation.
+    /// </summary>
+    /// <returns>Returns-based description that should be overridden by value.</returns>
+    /// <value>Value-based description that should take highest precedence.</value>
+    public string? AllThreeProperty { get; set; }
+
+    /// <returns>Returns-only description.</returns>
+    public string? ReturnsOnlyProperty { get; set; }
+
+    /// <value>Value-only description.</value>
+    public string? ValueOnlyProperty { get; set; }
 }
 """;
         var generator = new XmlCommentGenerator();
@@ -433,6 +470,24 @@ public class BindingSourceParametersClass
             Assert.Equal("Tests AsParameters with different binding sources.", path20.Summary);
             Assert.Equal("Query parameter from URL.", path20.Parameters[0].Description);
             Assert.Equal("Header value from request.", path20.Parameters[1].Description);
+
+            // Test XML documentation priority order: value > returns > summary
+            var path22 = document.Paths["/21"].Operations[HttpMethod.Get];
+            // Find parameters by name for clearer assertions
+            var summaryOnlyParam = path22.Parameters.First(p => p.Name == "SummaryOnlyProperty");
+            Assert.Equal("Property with only summary documentation.", summaryOnlyParam.Description);
+
+            var summaryAndReturnsParam = path22.Parameters.First(p => p.Name == "SummaryAndReturnsProperty");
+            Assert.Equal("Returns-based description that should take precedence over summary.", summaryAndReturnsParam.Description);
+
+            var allThreeParam = path22.Parameters.First(p => p.Name == "AllThreeProperty");
+            Assert.Equal("Value-based description that should take highest precedence.", allThreeParam.Description);
+
+            var returnsOnlyParam = path22.Parameters.First(p => p.Name == "ReturnsOnlyProperty");
+            Assert.Equal("Returns-only description.", returnsOnlyParam.Description);
+
+            var valueOnlyParam = path22.Parameters.First(p => p.Name == "ValueOnlyProperty");
+            Assert.Equal("Value-only description.", valueOnlyParam.Description);
         });
     }
 }
