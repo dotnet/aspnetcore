@@ -13,6 +13,7 @@ using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -120,6 +121,28 @@ internal sealed class OpenApiSchemaService(
             return schema;
         }
     };
+
+    private static string GetBinarySchemaId(Type type)
+    {
+        if (type == typeof(IFormFile))
+        {
+            return "IFormFile";
+        }
+        else if (type == typeof(Stream))
+        {
+            return "Stream";
+        }
+        else if (type == typeof(PipeReader))
+        {
+            return "PipeReader";
+        }
+        else if (type == typeof(FileContentResult))
+        {
+            return "FileContentResult";
+        }
+
+        return type.Name;
+    }
 
     private static JsonObject CreateSchemaForJsonPatch()
     {
