@@ -129,29 +129,36 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
 
         private void ValidateSchemaReference(OpenApiSchemaReference reference)
         {
+            if (reference.RecursiveTarget is not null)
+            {
+                return;
+            }
+
             var id = reference.Reference.ReferenceV3;
 
             if (id is { Length: > 0 } && !IsValidSchemaReference(id, document))
             {
                 var isValid = false;
 
-                // Sometimes ReferenceV3 is not a JSON valid JSON pointer, but the $ref
+                // Sometimes ReferenceV3 is not a valid JSON pointer, but the $ref
                 // associated with it still points to a valid location in the document.
                 // In these cases, we need to find it manually to verify that fact before
                 // generating a warning that the schema reference is indeed invalid.
                 var parent = Find(PathString, document);
                 var @ref = parent[OpenApiSchemaKeywords.RefKeyword];
+                var path = PathString[2..]; // Trim off the leading "#/" as the context is already at the root
 
                 if (@ref is not null && @ref.GetValueKind() is System.Text.Json.JsonValueKind.String &&
                     @ref.GetValue<string>() is { Length: > 0 } refId)
                 {
                     id = refId;
+                    path += $"/{OpenApiSchemaKeywords.RefKeyword}";
                     isValid = IsValidSchemaReference(id, document);
                 }
 
                 if (!isValid)
                 {
-                    context.Enter(PathString[2..]); // Trim off the leading "#/" as the context is already at the root
+                    context.Enter(path);
                     context.CreateWarning(ruleName, $"The schema reference '{id}' does not point to an existing schema.");
                     context.Exit();
                 }
