@@ -6071,32 +6071,30 @@ public class RendererTest
         }
     }
 
-    private class MultipleExceptionsErrorBoundary : AutoRenderComponent, IErrorBoundary
+    private class MultipleExceptionsErrorBoundary : ErrorBoundaryBase
     {
-        [Parameter] public RenderFragment ChildContent { get; set; }
         [Parameter] public Action<Exception> ExceptionHandler { get; set; }
 
-        public Exception LastException { get; private set; }
+        public Exception LastException => CurrentException;
         public int ExceptionCount { get; private set; }
+
+        protected override Task OnErrorAsync(Exception exception)
+        {
+            ExceptionCount++;
+            ExceptionHandler?.Invoke(exception);
+            return Task.CompletedTask;
+        }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            if (LastException is not null)
+            if (CurrentException is not null)
             {
-                builder.AddContent(0, $"Error: {LastException.Message}");
+                builder.AddContent(0, $"Error: {CurrentException.Message}");
             }
             else
             {
                 ChildContent?.Invoke(builder);
             }
-        }
-
-        public void HandleException(Exception error)
-        {
-            LastException = error;
-            ExceptionCount++;
-            ExceptionHandler?.Invoke(error);
-            TriggerRender();
         }
     }
 
