@@ -468,17 +468,18 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         {
                             if (operation.RequestBody is not null)
                             {
-                                operation.RequestBody.Description = propertyComment.Summary ?? propertyComment.Description;
+                                operation.RequestBody.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                                 if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                                 {
                                     var content = operation.RequestBody.Content?.Values;
+                                    var parsedExample = jsonString.Parse();
                                     if (content is null)
                                     {
                                         continue;
                                     }
                                     foreach (var mediaType in content)
                                     {
-                                        mediaType.Example = jsonString.Parse();
+                                        mediaType.Example = parsedExample;
                                     }
                                 }
                             }
@@ -487,7 +488,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         var targetOperationParameter = UnwrapOpenApiParameter(parameter);
                         if (targetOperationParameter is not null)
                         {
-                            targetOperationParameter.Description = propertyComment.Summary ?? propertyComment.Description;
+                            targetOperationParameter.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
                             if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                             {
                                 targetOperationParameter.Example = jsonString.Parse();
