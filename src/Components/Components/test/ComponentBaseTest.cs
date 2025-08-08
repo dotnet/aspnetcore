@@ -1265,10 +1265,6 @@ public class ComponentBaseTest
         // Arrange
         var expected = new TimeZoneNotFoundException();
         var renderer = new TestRenderer();
-        var component = new TestComponentWithBuildRenderTreeError
-        {
-            OnInitAsyncLogic = _ => Task.FromException(expected)
-        };
 
         // Create root component that wraps the test component in an error boundary
         var rootComponent = new TestComponent();
@@ -1277,15 +1273,26 @@ public class ComponentBaseTest
             builder.OpenComponent<TestErrorBoundaryComponent>(0);
             builder.AddComponentParameter(1, nameof(TestErrorBoundaryComponent.ChildContent), (RenderFragment)(childBuilder =>
             {
-                childBuilder.OpenComponent<TestComponentWithBuildRenderTreeError>(0);
+                childBuilder.OpenComponent<TestComponent>(0);
+                childBuilder.AddComponentParameter(1, nameof(TestComponent.OnInitAsyncLogic), (Func<TestComponent, Task>)(_ => Task.FromException(expected)));
                 childBuilder.CloseComponent();
             }));
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundaryComponent = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundaryComponent.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundaryComponent.ReceivedException);
+        Assert.Same(expected, errorBoundaryComponent.ReceivedException);
     }
 
     [Fact]
@@ -1316,9 +1323,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundary = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundary.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundary.ReceivedException);
+        Assert.Same(expected, errorBoundary.ReceivedException);
+
     }
 
     [Fact]
@@ -1350,9 +1368,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundary = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundary.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundary.ReceivedException);
+        Assert.Same(expected, errorBoundary.ReceivedException);
+
     }
 
     [Fact]
@@ -1383,9 +1412,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundary = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundary.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundary.ReceivedException);
+        Assert.Same(expected, errorBoundary.ReceivedException);
+
     }
 
     [Fact]
@@ -1415,9 +1455,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundary = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundary.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundary.ReceivedException);
+        Assert.Same(expected, errorBoundary.ReceivedException);
+
     }
 
     [Fact]
@@ -1606,9 +1657,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundary = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundary.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundary.ReceivedException);
+        Assert.Same(expected, errorBoundary.ReceivedException);
+
     }
 
     [Fact]
@@ -1639,9 +1701,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundary = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundary.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundary.ReceivedException);
+        Assert.Same(expected, errorBoundary.ReceivedException);
+
     }
 
     [Fact]
@@ -1673,9 +1746,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundary = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundary.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundary.ReceivedException);
+        Assert.Same(expected, errorBoundary.ReceivedException);
+
     }
 
     [Fact]
@@ -1706,9 +1790,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundary = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundary.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundary.ReceivedException);
+        Assert.Same(expected, errorBoundary.ReceivedException);
+
     }
 
     [Fact]
@@ -1738,9 +1833,20 @@ public class ComponentBaseTest
             builder.CloseComponent();
         };
 
-        // Act & Assert
+        // Act
         var rootComponentId = renderer.AssignRootComponentId(rootComponent);
-        await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(rootComponentId));
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        var batch = renderer.Batches.Last();
+        var errorBoundaryFrames = batch.GetComponentFrames<TestErrorBoundaryComponent>();
+        Assert.NotEmpty(errorBoundaryFrames);
+        
+        var errorBoundary = (TestErrorBoundaryComponent)errorBoundaryFrames.First().Component;
+        Assert.NotNull(errorBoundary.ReceivedException);
+        Assert.IsType<TimeZoneNotFoundException>(errorBoundary.ReceivedException);
+        Assert.Same(expected, errorBoundary.ReceivedException);
+
     }
 
     private class TestComponent : ComponentBase

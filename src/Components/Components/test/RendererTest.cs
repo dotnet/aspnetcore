@@ -4796,6 +4796,8 @@ public class RendererTest
             builder.AddComponentParameter(1, nameof(MultipleExceptionsErrorBoundary.ChildContent), (RenderFragment)(builder =>
             {
                 builder.OpenComponent<ComponentWithMultipleExceptions>(0);
+                builder.AddComponentParameter(1, nameof(ComponentWithMultipleExceptions.SetParametersAction), (Func<Task>)(() => throw new Exception("error1")));
+                builder.AddComponentParameter(2, nameof(ComponentWithMultipleExceptions.BuildRenderTreeAction), (Action<RenderTreeBuilder>)(_ => throw new Exception("error2")));
                 builder.CloseComponent();
             }));
             builder.AddComponentParameter(2, nameof(MultipleExceptionsErrorBoundary.ExceptionHandler), (Action<Exception>)(ex => exceptionsInErrorBoundary.Add(ex)));
@@ -6043,18 +6045,29 @@ public class RendererTest
         }
     }
 
-    private class ComponentWithMultipleExceptions : AutoRenderComponent
+    private class ComponentWithMultipleExceptions : ComponentBase
     {
+        [Parameter] public Func<Task> SetParametersAction { get; set; }
+        [Parameter] public Action<RenderTreeBuilder> BuildRenderTreeAction { get; set; }
+
         public override Task SetParametersAsync(ParameterView parameters)
         {
-            // This matches the problem statement exactly - throw in SetParametersAsync
-            throw new Exception("error1");
+            parameters.SetParameterProperties(this);
+            
+            if (SetParametersAction != null)
+            {
+                return SetParametersAction();
+            }
+            
+            return base.SetParametersAsync(parameters);
         }
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            // This matches the problem statement exactly - throw in render block
-            throw new Exception("error2");
+            if (BuildRenderTreeAction != null)
+            {
+                BuildRenderTreeAction(builder);
+            }
         }
     }
 
