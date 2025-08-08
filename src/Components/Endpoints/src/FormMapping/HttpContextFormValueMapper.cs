@@ -82,6 +82,7 @@ internal sealed class HttpContextFormValueMapper : IFormValueMapper
         if (!CanMap(context.ValueType, context.AcceptMappingScopeName, context.AcceptFormName))
         {
             context.SetResult(null);
+            return;
         }
 
         var deserializer = _cache.GetOrAdd(context.ValueType, CreateDeserializer);
