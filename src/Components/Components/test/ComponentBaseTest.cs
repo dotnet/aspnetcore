@@ -511,6 +511,28 @@ public class ComponentBaseTest
     }
 
     [Fact]
+    public async Task OnInitializedAsync_ReturnsTaskFromExceptionSynchronously()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnInitAsyncLogic = _ =>
+            {
+                return Task.FromException(expected); // Returns faulted task synchronously
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Same(expected, actual);
+    }
+
+    [Fact]
     public async Task OnInitializedAsync_ReturnsCancelledTaskSynchronously()
     {
         // Arrange
@@ -593,6 +615,28 @@ public class ComponentBaseTest
             {
                 await Task.Yield(); // Force async execution
                 throw expected; // Throws asynchronously in async method
+            }
+        };
+
+        // Act & Assert
+        var componentId = renderer.AssignRootComponentId(component);
+        var actual = await Assert.ThrowsAsync<TimeZoneNotFoundException>(() => renderer.RenderRootComponentAsync(componentId));
+
+        // Assert
+        Assert.Same(expected, actual);
+    }
+
+    [Fact]
+    public async Task OnParametersSetAsync_ReturnsTaskFromExceptionSynchronously()
+    {
+        // Arrange
+        var expected = new TimeZoneNotFoundException();
+        var renderer = new TestRenderer();
+        var component = new TestComponent
+        {
+            OnParametersSetAsyncLogic = _ =>
+            {
+                return Task.FromException(expected); // Returns faulted task synchronously
             }
         };
 
