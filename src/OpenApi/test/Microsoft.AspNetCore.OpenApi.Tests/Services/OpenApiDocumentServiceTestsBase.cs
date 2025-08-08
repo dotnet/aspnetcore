@@ -20,6 +20,8 @@ using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Moq;
@@ -88,7 +90,8 @@ public abstract class OpenApiDocumentServiceTestBase
         // Set strict number handling by default to make integer type checks more straightforward
         jsonOptions.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
 
-        var schemaService = new OpenApiSchemaService("Test", Options.Create(jsonOptions), openApiOptions.Object);
+        var logger = builder.ServiceProvider.GetService<ILogger<OpenApiSchemaService>>() ?? NullLogger<OpenApiSchemaService>.Instance;
+        var schemaService = new OpenApiSchemaService("Test", Options.Create(jsonOptions), openApiOptions.Object, logger);
         ((TestServiceProvider)builder.ServiceProvider).TestSchemaService = schemaService;
         var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, openApiOptions.Object, builder.ServiceProvider, new OpenApiTestServer());
         ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
@@ -134,7 +137,8 @@ public abstract class OpenApiDocumentServiceTestBase
         defaultJsonOptions.SerializerOptions.NumberHandling = System.Text.Json.Serialization.JsonNumberHandling.Strict;
         var jsonOptions = builder.ServiceProvider.GetService<IOptions<Microsoft.AspNetCore.Http.Json.JsonOptions>>() ?? Options.Create(defaultJsonOptions);
 
-        var schemaService = new OpenApiSchemaService("Test", jsonOptions, options.Object);
+        var logger = builder.ServiceProvider.GetService<ILogger<OpenApiSchemaService>>() ?? NullLogger<OpenApiSchemaService>.Instance;
+        var schemaService = new OpenApiSchemaService("Test", jsonOptions, options.Object, logger);
         ((TestServiceProvider)builder.ServiceProvider).TestSchemaService = schemaService;
         var documentService = new OpenApiDocumentService("Test", apiDescriptionGroupCollectionProvider, hostEnvironment, options.Object, builder.ServiceProvider, new OpenApiTestServer());
         ((TestServiceProvider)builder.ServiceProvider).TestDocumentService = documentService;
