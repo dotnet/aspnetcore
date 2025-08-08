@@ -68,6 +68,8 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         Assert.Empty(errors);
     }
 
+    // The test below can be removed when https://github.com/microsoft/OpenAPI.NET/issues/2453 is implemented
+
     [Theory] // See https://github.com/dotnet/aspnetcore/issues/63090
     [MemberData(nameof(OpenApiDocuments))]
     public async Task OpenApiDocumentReferencesAreValid(string documentName, OpenApiSpecVersion version)
@@ -79,139 +81,21 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         var document = result.Document;
         var documentNode = JsonNode.Parse(json);
 
-        var actual = new List<string>();
-
-        // TODO What other parts of the document should also be validated for references to be comprehensive?
-        // Likely also needs to be recursive to validate all references in schemas, parameters, etc.
-        if (document.Components is { Schemas.Count: > 0 } components)
+        var ruleName = "OpenApiDocumentReferencesAreValid";
+        var rule = new ValidationRule<OpenApiDocument>(ruleName, (context, item) =>
         {
-            foreach (var schema in components.Schemas)
-            {
-                if (schema.Value.Properties is { Count: > 0 } properties)
-                {
-                    foreach (var property in properties)
-                    {
-                        if (property.Value is not OpenApiSchemaReference reference)
-                        {
-                            continue;
-                        }
+            var visitor = new OpenApiSchemaReferenceVisitor(ruleName, context, documentNode);
 
-                        var id = reference.Reference.ReferenceV3;
+            var walker = new OpenApiWalker(visitor);
+            walker.Walk(item);
+        });
 
-                        if (!IsValidSchemaReference(id, documentNode))
-                        {
-                            actual.Add($"Reference '{id}' on property '{property.Key}' of schema '{schema.Key}' is invalid.");
-                        }
-                    }
-                }
+        var ruleSet = new ValidationRuleSet();
+        ruleSet.Add(typeof(OpenApiDocument), rule);
 
-                if (schema.Value.AllOf is { Count: > 0 } allOf)
-                {
-                    foreach (var child in allOf)
-                    {
-                        if (child is not OpenApiSchemaReference reference)
-                        {
-                            continue;
-                        }
+        var errors = document.Validate(ruleSet);
 
-                        var id = reference.Reference.ReferenceV3;
-
-                        if (!IsValidSchemaReference(id, documentNode))
-                        {
-                            actual.Add($"Reference '{id}' for AllOf of schema '{schema.Key}' is invalid.");
-                        }
-                    }
-                }
-
-                if (schema.Value.AnyOf is { Count: > 0 } anyOf)
-                {
-                    foreach (var child in anyOf)
-                    {
-                        if (child is not OpenApiSchemaReference reference)
-                        {
-                            continue;
-                        }
-
-                        var id = reference.Reference.ReferenceV3;
-
-                        if (!IsValidSchemaReference(id, documentNode))
-                        {
-                            actual.Add($"Reference '{id}' for AnyOf of schema '{schema.Key}' is invalid.");
-                        }
-                    }
-                }
-
-                if (schema.Value.OneOf is { Count: > 0 } oneOf)
-                {
-                    foreach (var child in oneOf)
-                    {
-                        if (child is not OpenApiSchemaReference reference)
-                        {
-                            continue;
-                        }
-
-                        var id = reference.Reference.ReferenceV3;
-
-                        if (!IsValidSchemaReference(id, documentNode))
-                        {
-                            actual.Add($"Reference '{id}' for OneOf of schema '{schema.Key}' is invalid.");
-                        }
-                    }
-                }
-
-                if (schema.Value.Discriminator is { Mapping.Count: > 0 } discriminator)
-                {
-                    foreach (var child in discriminator.Mapping)
-                    {
-                        if (child.Value is not OpenApiSchemaReference reference)
-                        {
-                            continue;
-                        }
-
-                        var id = reference.Reference.ReferenceV3;
-
-                        if (!IsValidSchemaReference(id, documentNode))
-                        {
-                            actual.Add($"Reference '{id}' for Discriminator '{child.Key}' of schema '{schema.Key}' is invalid.");
-                        }
-                    }
-                }
-            }
-        }
-
-        foreach (var path in document.Paths)
-        {
-            foreach (var operation in path.Value.Operations)
-            {
-                if (operation.Value.Parameters is not { Count: > 0 } parameters)
-                {
-                    continue;
-                }
-
-                foreach (var parameter in parameters)
-                {
-                    if (parameter.Schema is not OpenApiSchemaReference reference)
-                    {
-                        continue;
-                    }
-
-                    var id = reference.Reference.ReferenceV3;
-
-                    if (!IsValidSchemaReference(id, documentNode))
-                    {
-                        actual.Add($"Reference '{id}' on parameter '{parameter.Name}' of path '{path.Key}' of operation '{operation.Key}' is invalid.");
-                    }
-                }
-            }
-        }
-
-        Assert.Empty(actual);
-
-        static bool IsValidSchemaReference(string id, JsonNode baseNode)
-        {
-            var pointer = new JsonPointer(id.Replace("#/", "/"));
-            return pointer.Find(baseNode) is not null;
-        }
+        Assert.Empty(errors);
     }
 
     private async Task<string> GetOpenApiDocument(string documentName, OpenApiSpecVersion version)
@@ -220,5 +104,67 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         var scopedServiceProvider = fixture.Services.CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
         return await document.SerializeAsJsonAsync(version);
+    }
+
+    private sealed class OpenApiSchemaReferenceVisitor(
+        string ruleName,
+        IValidationContext context,
+        JsonNode document) : OpenApiVisitorBase
+    {
+        public override void Visit(IOpenApiReferenceHolder referenceHolder)
+        {
+            if (referenceHolder is OpenApiSchemaReference { Reference.IsLocal: true } reference)
+            {
+                ValidateSchemaReference(reference);
+            }
+        }
+
+        public override void Visit(IOpenApiSchema schema)
+        {
+            if (schema is OpenApiSchemaReference { Reference.IsLocal: true } reference)
+            {
+                ValidateSchemaReference(reference);
+            }
+        }
+
+        private void ValidateSchemaReference(OpenApiSchemaReference reference)
+        {
+            var id = reference.Reference.ReferenceV3;
+
+            if (id is { Length: > 0 } && !IsValidSchemaReference(id, document))
+            {
+                var isValid = false;
+
+                // Sometimes ReferenceV3 is not a JSON valid JSON pointer, but the $ref
+                // associated with it still points to a valid location in the document.
+                // In these cases, we need to find it manually to verify that fact before
+                // generating a warning that the schema reference is indeed invalid.
+                var parent = Find(PathString, document);
+                var @ref = parent[OpenApiSchemaKeywords.RefKeyword];
+
+                if (@ref is not null && @ref.GetValueKind() is System.Text.Json.JsonValueKind.String &&
+                    @ref.GetValue<string>() is { Length: > 0 } refId)
+                {
+                    id = refId;
+                    isValid = IsValidSchemaReference(id, document);
+                }
+
+                if (!isValid)
+                {
+                    context.Enter(PathString[2..]); // Trim off the leading "#/" as the context is already at the root
+                    context.CreateWarning(ruleName, $"The schema reference '{id}' does not point to an existing schema.");
+                    context.Exit();
+                }
+            }
+
+            static bool IsValidSchemaReference(string id, JsonNode baseNode)
+                => Find(id, baseNode) is not null;
+
+            static JsonNode Find(string id, JsonNode baseNode)
+            {
+                var pointer = new JsonPointer(id.Replace("#/", "/"));
+                return pointer.Find(baseNode);
+            }
+        }
     }
 }
