@@ -1,4 +1,5 @@
 #nullable enable
+abstract Microsoft.Extensions.Validation.ValidatableTypeInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
 Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions
 Microsoft.Extensions.Validation.IValidatableInfo
 Microsoft.Extensions.Validation.IValidatableInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!

@@ -11,7 +11,7 @@ namespace BasicTestApp.ValidationModels;
 public class Person : IValidatableObject
 {
     [Required]
-    public bool IsACat { get; set; }
+    public virtual bool IsACat { get; set; }
 
     [Range(0, int.MaxValue, ErrorMessage = "Under-zeros should not be filling out forms")]
     public int AgeInYears { get; set; }
