@@ -708,4 +708,126 @@ public class PersistentValueProviderComponentSubscriptionTests
         Assert.NotNull(subscription);
         subscription.Dispose();
     }
+
+    [Fact]
+    public void RestoreProperty_SetsIgnoreComponentPropertyValueUnconditionally_WhenRestoringFromState()
+    {
+        // Arrange
+        var initialState = new Dictionary<string, byte[]>();
+        var state = new PersistentComponentState(initialState, [], []);
+        var renderer = new TestRenderer();
+        var component = new TestComponent { State = "initial-value" };
+        var componentState = CreateComponentState(renderer, component, null, null);
+
+        // Pre-populate the state with serialized data
+        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, nameof(TestComponent.State));
+        initialState[key] = JsonSerializer.SerializeToUtf8Bytes("persisted-value", JsonSerializerOptions.Web);
+        state.InitializeExistingState(initialState, RestoreContext.LastSnapshot);
+
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
+
+        // Initialize the subscription so it has a _lastValue set
+        subscription.GetOrComputeLastValue();
+
+        // Act - Call RestoreProperty to simulate restoration after component re-creation
+        var restoreMethod = typeof(PersistentValueProviderComponentSubscription)
+            .GetMethod("RestoreProperty", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        restoreMethod.Invoke(subscription, null);
+
+        // Assert - The ignoreComponentPropertyValue flag should cause the restored value to be returned
+        var result = subscription.GetOrComputeLastValue();
+        Assert.Equal("persisted-value", result);
+
+        subscription.Dispose();
+    }
+
+    [Fact]
+    public void GetOrComputeLastValue_ReturnsRestoredValue_AfterComponentRecreation()
+    {
+        // Arrange
+        var initialState = new Dictionary<string, byte[]>();
+        var state = new PersistentComponentState(initialState, [], []);
+        var renderer = new TestRenderer();
+        var component = new TestComponent { State = "component-property-value" };
+        var componentState = CreateComponentState(renderer, component, null, null);
+
+        // Pre-populate the state with serialized data
+        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, nameof(TestComponent.State));
+        initialState[key] = JsonSerializer.SerializeToUtf8Bytes("restored-value", JsonSerializerOptions.Web);
+        state.InitializeExistingState(initialState, RestoreContext.LastSnapshot);
+
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        var subscription = new PersistentValueProviderComponentSubscription(
+            state, componentState, cascadingParameterInfo, serviceProvider, logger);
+
+        // Act - First call initializes and restores from persistent state
+        var firstResult = subscription.GetOrComputeLastValue();
+
+        // Assert - Should return the restored value, not the component's property value
+        Assert.Equal("restored-value", firstResult);
+
+        // Simulate component property being updated after restoration
+        component.State = "updated-component-value";
+
+        // Second call should return the updated component value since the flag was reset
+        var secondResult = subscription.GetOrComputeLastValue();
+        Assert.Equal("updated-component-value", secondResult);
+
+        subscription.Dispose();
+    }
+
+    [Fact]
+    public void RestoreProperty_WorksCorrectly_ForComponentsWithoutKey()
+    {
+        // Arrange - This test simulates components being added/removed without @key
+        var initialState = new Dictionary<string, byte[]>();
+        var state = new PersistentComponentState(initialState, [], []);
+        var renderer = new TestRenderer();
+
+        // First component instance
+        var component1 = new TestComponent { State = "initial-value-1" };
+        var componentState1 = CreateComponentState(renderer, component1, null, null);
+
+        var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState1, nameof(TestComponent.State));
+        initialState[key] = JsonSerializer.SerializeToUtf8Bytes("persisted-value-from-previous-session", JsonSerializerOptions.Web);
+        state.InitializeExistingState(initialState, RestoreContext.LastSnapshot);
+
+        var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
+        var serviceProvider = new ServiceCollection().BuildServiceProvider();
+        var logger = NullLogger.Instance;
+
+        var subscription1 = new PersistentValueProviderComponentSubscription(
+            state, componentState1, cascadingParameterInfo, serviceProvider, logger);
+
+        // Act - Simulate component being destroyed and recreated (like during navigation)
+        var result1 = subscription1.GetOrComputeLastValue();
+        subscription1.Dispose();
+
+        // Simulate a new component instance being created (like after navigation back)
+        var component2 = new TestComponent { State = "initial-value-2" };
+        var componentState2 = CreateComponentState(renderer, component2, null, null);
+
+        // Re-populate state for the new component instance
+        initialState[key] = JsonSerializer.SerializeToUtf8Bytes("persisted-value-from-previous-session", JsonSerializerOptions.Web);
+        state.InitializeExistingState(initialState, RestoreContext.LastSnapshot);
+
+        var subscription2 = new PersistentValueProviderComponentSubscription(
+            state, componentState2, cascadingParameterInfo, serviceProvider, logger);
+
+        var result2 = subscription2.GetOrComputeLastValue();
+
+        // Assert - Both instances should restore the persisted value correctly
+        Assert.Equal("persisted-value-from-previous-session", result1);
+        Assert.Equal("persisted-value-from-previous-session", result2);
+
+        subscription2.Dispose();
+    }
 }
