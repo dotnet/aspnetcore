@@ -69,15 +69,16 @@ public class IdentityPasskeyOptions
     /// </para>
     /// <para>
     /// Possible values are "required", "preferred", and "discouraged".
+    /// If set to <see langword="null"/>, the effective value is "preferred".
     /// </para>
     /// <para>
-    /// If left <see langword="null"/>, the browser defaults to "preferred".
+    /// The default value is "required".
     /// </para>
     /// <para>
     /// See <see href="https://www.w3.org/TR/webauthn-3/#enumdef-userverificationrequirement"/>.
     /// </para>
     /// </remarks>
-    public string? UserVerificationRequirement { get; set; }
+    public string? UserVerificationRequirement { get; set; } = "required";
 
     /// <summary>
     /// Gets or sets the extent to which the server desires to create a client-side discoverable credential.
