@@ -28,6 +28,14 @@ internal sealed class RuntimeValidatableParameterInfoResolver : IValidatableInfo
             throw new InvalidOperationException($"Encountered a parameter of type '{parameterInfo.ParameterType}' without a name. Parameters must have a name.");
         }
 
+        // Skip method parameter if it or its type are annotated with SkipValidationAttribute.
+        if (parameterInfo.GetCustomAttribute<SkipValidationAttribute>() != null ||
+            parameterInfo.ParameterType.GetCustomAttribute<SkipValidationAttribute>() != null)
+        {
+            validatableInfo = null;
+            return false;
+        }
+
         var validationAttributes = parameterInfo
             .GetCustomAttributes<ValidationAttribute>()
             .ToArray();
