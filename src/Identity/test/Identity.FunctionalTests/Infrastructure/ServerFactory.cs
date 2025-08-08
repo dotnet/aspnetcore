@@ -91,7 +91,9 @@ public class ServerFactory<TStartup, TContext> : WebApplicationFactory<TStartup>
             new Dictionary<UIFramework, string>()
             {
                 [UIFramework.Bootstrap5] = "Microsoft.AspNetCore.Identity.UI.Views.V5",
+#pragma warning disable CS0618 // Type or member is obsolete
                 [UIFramework.Bootstrap4] = "Microsoft.AspNetCore.Identity.UI.Views.V4",
+#pragma warning restore CS0618 // Type or member is obsolete
             };
 
         var mvcBuilder = services
@@ -104,7 +106,9 @@ public class ServerFactory<TStartup, TContext> : WebApplicationFactory<TStartup>
                     ra => ra,
                     CompiledRazorAssemblyApplicationPartFactory.GetDefaultApplicationParts);
 
+#pragma warning disable CS0618 // Type or member is obsolete
                 var selectedFrameworkAssembly = _assemblyMap[framework == "V4" ? UIFramework.Bootstrap4 : UIFramework.Bootstrap5];
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 foreach (var kvp in relatedParts)
                 {
