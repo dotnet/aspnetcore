@@ -551,6 +551,25 @@
           }
         }
       }
+    },
+    "/schemas-by-ref/custom-iresult": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomIResultImplementor"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -628,6 +647,17 @@
             "items": {
               "$ref": "#/components/schemas/ContainerType/properties/seq1/items"
             }
+          }
+        }
+      },
+      "CustomIResultImplementor": {
+        "required": [
+          "content"
+        ],
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
           }
         }
       },
