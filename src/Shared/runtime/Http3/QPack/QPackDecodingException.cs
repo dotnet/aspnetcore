@@ -21,9 +21,7 @@ namespace System.Net.Http.QPack
         {
         }
 
-#if NET
         [Obsolete(Obsoletions.LegacyFormatterImplMessage, DiagnosticId = Obsoletions.LegacyFormatterImplDiagId, UrlFormat = Obsoletions.SharedUrlFormat)]
-#endif
         private QPackDecodingException(SerializationInfo info, StreamingContext context) : base(info, context)
         {
         }
