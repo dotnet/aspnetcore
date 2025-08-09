@@ -803,7 +803,7 @@ public static partial class RequestDelegateFactory
         }
         else if (parameter.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType)))
         {
-            if (parameterCustomAttributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is not null)
+            if (parameterCustomAttributes.FirstOrDefault(a => typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.GetType())) is not null)
             {
                 throw new NotSupportedException(
                     $"The {nameof(FromKeyedServicesAttribute)} is not supported on parameters that are also annotated with {nameof(IFromServiceMetadata)}.");
@@ -811,7 +811,7 @@ public static partial class RequestDelegateFactory
             factoryContext.TrackedParameters.Add(parameter.Name, RequestDelegateFactoryConstants.ServiceAttribute);
             return BindParameterFromService(parameter, factoryContext);
         }
-        else if (parameterCustomAttributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } keyedServicesAttribute)
+        else if (parameterCustomAttributes.FirstOrDefault(a => typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.GetType())) is FromKeyedServicesAttribute keyedServicesAttribute)
         {
             if (factoryContext.ServiceProviderIsService is not IServiceProviderIsKeyedService)
             {
