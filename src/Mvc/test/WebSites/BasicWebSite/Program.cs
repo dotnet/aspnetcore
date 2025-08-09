@@ -9,21 +9,19 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        using var host = CreateHostBuilder(args).Build();
+        using var host = CreateWebHostBuilder(args).Build();
         host.Run();
     }
 
-    // This method now returns IHostBuilder and uses the new pattern with HostBuilder and ConfigureWebHost
-    public static IHostBuilder CreateHostBuilder(string[] args) =>
-        new HostBuilder()
-            .ConfigureWebHost(webHostBuilder =>
-            {
-                webHostBuilder
-                    .UseContentRoot(Directory.GetCurrentDirectory())
-                    .UseStartup<StartupWithoutEndpointRouting>()
-                    .UseKestrel()
-                    .UseIISIntegration();
-            });
+    // Using WebHostBuilder to keep some test coverage in WebApplicationFactory tests
+    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
+        new WebHostBuilder()
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
+            .UseContentRoot(Directory.GetCurrentDirectory())
+            .UseStartup<StartupWithoutEndpointRouting>()
+            .UseKestrel()
+            .UseIISIntegration();
 }
 
 public class TestService
