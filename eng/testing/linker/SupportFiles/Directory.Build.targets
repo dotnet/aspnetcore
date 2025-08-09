@@ -1,17 +1,7 @@
 <Project>
-
-  <PropertyGroup>
-    <!-- Used to silence the warning caused by the workaround for https://github.com/dotnet/runtime/issues/81382 -->
-    <SuppressGenerateILCompilerExplicitPackageReferenceWarning>true</SuppressGenerateILCompilerExplicitPackageReferenceWarning>
-  </PropertyGroup>
-
-  <!-- needed to reference a specific version of NetCoreApp. Workaround https://github.com/dotnet/runtime/issues/81382 -->
   <ItemGroup>
     <FrameworkReference Update="Microsoft.NETCore.App"
                         RuntimeFrameworkVersion="$(MicrosoftNETCoreAppRefVersion)" />
-
-    <PackageReference Include="Microsoft.DotNet.ILCompiler"
-                      Version="$(MicrosoftNETCoreAppRefVersion)" />
 
     <!-- Workaround when there is no vNext SDK available; copy known packs info from 9.0. -->
     <KnownAppHostPack Include="@(KnownAppHostPack->WithMetadataValue('TargetFramework', 'net9.0'))"
@@ -64,6 +54,13 @@
       <AppHostRuntimeIdentifiers Condition=" '$(DotNetBuildSourceOnly)' == 'true' ">$(TargetRuntimeIdentifier)</AppHostRuntimeIdentifiers>
     </KnownRuntimePack>
 
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler">
+      <ILCompilerPackVersion>$(MicrosoftNETCoreAppRefVersion)</ILCompilerPackVersion>
+    </KnownILCompilerPack>
+
+    <KnownILLinkPack Update="Microsoft.NET.ILLink.Tasks">
+      <ILLinkPackVersion>$(MicrosoftNETCoreAppRefVersion)</ILLinkPackVersion>
+    </KnownILLinkPack>
   </ItemGroup>
 
   <!--
