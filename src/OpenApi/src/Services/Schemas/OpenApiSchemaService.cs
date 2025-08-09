@@ -108,17 +108,17 @@ internal sealed class OpenApiSchemaService(
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
                 var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
+                if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
+                {
+                    schema.ApplyValidationAttributes(validationAttributes);
+                }
+                if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
+                {
+                    schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
+                }
                 var isInlinedSchema = schema[OpenApiConstants.SchemaId] is null;
                 if (isInlinedSchema)
                 {
-                    if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
-                    {
-                        schema.ApplyValidationAttributes(validationAttributes);
-                    }
-                    if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
-                    {
-                        schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
-                    }
                     if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
                     {
                         schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
