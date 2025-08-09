@@ -247,16 +247,25 @@ public class ScriptTagHelper : UrlResolutionTagHelper
             var importMap = ImportMap ?? ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ImportMapDefinition>();
             if (importMap == null)
             {
-                // No importmap found, nothing to do.
-                output.SuppressOutput();
+                // No importmap found. Only suppress output if this was intended to be
+                // an automatically generated importmap (i.e., when asp-importmap was used).
+                // If the user provided explicit content without asp-importmap, let it render as-is.
+                if (ImportMap != null || context.AllAttributes.ContainsName(ImportMapAttributeName))
+                {
+                    output.SuppressOutput();
+                    return;
+                }
+                // Let the tag render as-is by continuing with normal processing
+                // Don't return here, let normal attribute copying happen
+            }
+            else
+            {
+                output.TagName = "script";
+                output.TagMode = TagMode.StartTagAndEndTag;
+                output.Attributes.SetAttribute("type", "importmap");
+                output.Content.SetHtmlContent(importMap.ToString());
                 return;
             }
-
-            output.TagName = "script";
-            output.TagMode = TagMode.StartTagAndEndTag;
-            output.Attributes.SetAttribute("type", "importmap");
-            output.Content.SetHtmlContent(importMap.ToString());
-            return;
         }
 
         // Pass through attribute that is also a well-known HTML attribute.
