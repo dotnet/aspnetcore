@@ -726,7 +726,12 @@ export class HubConnection {
             {
                 let nextPing = this._nextKeepAlive - new Date().getTime();
                 if (nextPing < 0) {
-                    nextPing = 0;
+                    if (this._connectionState === HubConnectionState.Connected) {
+                        this._sendMessage(this._cachedPingMessage).catch((e) => {
+                            this._logger.log(LogLevel.Warning, "Error sending keep-alive message"  + e);
+                        });
+                        return;
+                    }
                 }
 
                 // The timer needs to be set from a networking callback to avoid Chrome timer throttling from causing timers to run once a minute
