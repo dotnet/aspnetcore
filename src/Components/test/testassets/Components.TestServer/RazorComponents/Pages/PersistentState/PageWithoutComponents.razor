@@ -8,6 +8,10 @@
 
 <a id="page-with-components-link-and-declarative-state" href=@($"persistent-state/page-with-declarative-state-components?render-mode={RenderMode}&streaming-id={StreamingId}&server-state=other")>Go to page with declarative state components</a>
 
+<a id="page-with-conditional-components-link" href=@($"persistent-state/page-with-conditional-components?render-mode={RenderMode}&streaming-id={StreamingId}&server-state=restored&show-conditional=true")>Go to page with conditional components</a>
+
+<a id="page-with-conditional-components-show" href=@($"persistent-state/page-with-conditional-components?render-mode={RenderMode}&streaming-id={StreamingId}&server-state=restored&show-conditional=true")>Go to page with conditional components (show conditional)</a>
+
 @code {
     [SupplyParameterFromQuery(Name = "render-mode")] public string RenderMode { get; set; }
 
