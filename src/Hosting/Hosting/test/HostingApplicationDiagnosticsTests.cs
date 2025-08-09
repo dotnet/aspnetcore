@@ -352,6 +352,71 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             });
     }
 
+    private sealed class EmptyRouteDiagnosticsMetadata : IRouteDiagnosticsMetadata
+    {
+        public string Route { get; } = "";
+    }
+
+    [Fact]
+    public void Metrics_Route_RouteTagIsRootWhenEmpty()
+    {
+        // Arrange
+        var hostingEventSource = new HostingEventSource(Guid.NewGuid().ToString());
+
+        var testMeterFactory = new TestMeterFactory();
+        using var activeRequestsCollector = new MetricCollector<long>(testMeterFactory, HostingMetrics.MeterName, "http.server.active_requests");
+        using var requestDurationCollector = new MetricCollector<double>(testMeterFactory, HostingMetrics.MeterName, "http.server.request.duration");
+
+        // Act
+        var hostingApplication = CreateApplication(out var features, eventSource: hostingEventSource, meterFactory: testMeterFactory, configure: c =>
+        {
+            c.Request.Protocol = "1.1";
+            c.Request.Scheme = "http";
+            c.Request.Method = "POST";
+            c.Request.Host = new HostString("localhost");
+            c.Request.Path = "";
+            c.Request.ContentType = "text/plain";
+            c.Request.ContentLength = 1024;
+        });
+        var context = hostingApplication.CreateContext(features);
+
+        Assert.Collection(activeRequestsCollector.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.Equal(1, m.Value);
+                Assert.Equal("http", m.Tags["url.scheme"]);
+                Assert.Equal("POST", m.Tags["http.request.method"]);
+            });
+
+        context.HttpContext.SetEndpoint(new Endpoint(
+            c => Task.CompletedTask,
+            new EndpointMetadataCollection(new EmptyRouteDiagnosticsMetadata()),
+            "Test empty endpoint"));
+
+        hostingApplication.DisposeContext(context, null);
+
+        // Assert
+        Assert.Collection(activeRequestsCollector.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.Equal(1, m.Value);
+                Assert.Equal("http", m.Tags["url.scheme"]);
+                Assert.Equal("POST", m.Tags["http.request.method"]);
+            },
+            m =>
+            {
+                Assert.Equal(-1, m.Value);
+                Assert.Equal("http", m.Tags["url.scheme"]);
+                Assert.Equal("POST", m.Tags["http.request.method"]);
+            });
+        Assert.Collection(requestDurationCollector.GetMeasurementSnapshot(),
+            m =>
+            {
+                Assert.True(m.Value > 0);
+                Assert.Equal("/", m.Tags["http.route"]);
+            });
+    }
+
     [Fact]
     public void Metrics_DisableHttpMetricsWithMetadata_NoMetrics()
     {
