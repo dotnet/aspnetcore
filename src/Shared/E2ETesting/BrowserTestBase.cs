@@ -53,17 +53,26 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
     {
         return Task.CompletedTask;
     }
-
     public virtual Task InitializeAsync()
     {
         return InitializeAsync("");
     }
 
-    public virtual Task InitializeAsync(string isolationContext)
+    public virtual Task InitializeAsync(string isolationContext, bool supportEnhancedNavigationSuppression = false)
     {
         InitializeBrowser(isolationContext);
         InitializeAsyncCore();
+        if (supportEnhancedNavigationSuppression)
+        {
+            GrantTestId();
+        }
         return Task.CompletedTask;
+    }
+
+    protected void GrantTestId()
+    {
+        var testId = Guid.NewGuid().ToString("N")[..8];
+        ((IJavaScriptExecutor)Browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
     }
 
     protected virtual void InitializeAsyncCore()

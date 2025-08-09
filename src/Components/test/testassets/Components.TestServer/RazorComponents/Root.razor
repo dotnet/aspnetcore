@@ -14,7 +14,8 @@
 
     <script src="@Assets["_framework/blazor.web.js"]" autostart="false"></script>
     <script>
-        const suppressEnhancedNavigation = sessionStorage.getItem('suppress-enhanced-navigation') === 'true';
+        const testId = sessionStorage.getItem('test-id');
+        const suppressEnhancedNavigation = testId ? sessionStorage.getItem(`suppress-enhanced-navigation-${testId}`) === 'true' : false;
 
         let pwr = Promise.withResolvers();
         let reconnectPromise = pwr.promise;
@@ -40,7 +41,6 @@
             };
         }
 
-        sessionStorage.removeItem('suppress-enhanced-navigation');
         function callBlazorStart() {
             Blazor.start({
                 ssr: {
