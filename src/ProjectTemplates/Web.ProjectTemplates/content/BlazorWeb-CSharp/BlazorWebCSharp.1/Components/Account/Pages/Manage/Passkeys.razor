@@ -48,10 +48,20 @@ else
 
 <form @formname="add-passkey" @onsubmit="AddPasskey" method="post">
     <AntiforgeryToken />
-    <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
+    @if (currentPasskeys is { Count: >= MaxPasskeyCount })
+    {
+        <p class="text-danger">You have reached the maximum number of allowed passkeys. Please delete one before adding a new one.</p>
+    }
+    else
+    {
+        <PasskeySubmit Operation="PasskeyOperation.Create" Name="Input" class="btn btn-primary">Add a new passkey</PasskeySubmit>
+    }
+
 </form>
 
 @code {
+    private const int MaxPasskeyCount = 100;
+
     private ApplicationUser? user;
     private IList<UserPasskeyInfo>? currentPasskeys;
 
@@ -97,6 +107,12 @@ else
         if (string.IsNullOrEmpty(Input.CredentialJson))
         {
             RedirectManager.RedirectToCurrentPageWithStatus("Error: The browser did not provide a passkey.", HttpContext);
+            return;
+        }
+
+        if (currentPasskeys!.Count >= MaxPasskeyCount)
+        {
+            RedirectManager.RedirectToCurrentPageWithStatus($"Error: You have reached the maximum number of allowed passkeys.", HttpContext);
             return;
         }
 
