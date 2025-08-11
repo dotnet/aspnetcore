@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     && metadata.ContainerType is { } containerType
                     && metadata.PropertyName is { } propertyName)
                 {
-                    var propertyDocId = DocumentationCommentIdHelper.CreateDocumentationId(containerType, propertyName!);
+                    var propertyDocId = DocumentationCommentIdHelper.CreateDocumentationId(containerType, propertyName);
                     if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyDocId), out var propertyComment))
                     {
                         var parameter = operation.Parameters?.SingleOrDefault(p => p.Name == metadata.Name);
@@ -486,11 +486,11 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                 if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                                 {
                                     var content = operation.RequestBody.Content?.Values;
-                                    var parsedExample = jsonString.Parse();
                                     if (content is null)
                                     {
                                         continue;
                                     }
+                                    var parsedExample = jsonString.Parse();
                                     foreach (var mediaType in content)
                                     {
                                         mediaType.Example = parsedExample;
