@@ -91,31 +91,31 @@ public class Image : ComponentBase, IAsyncDisposable
     /// <inheritdoc />
     public override async Task SetParametersAsync(ParameterView parameters) // OnParametersAsync
     {
-        var previousSource = Source;
+        // var previousSource = Source;
 
         await base.SetParametersAsync(parameters);
 
-        if (!ReferenceEquals(previousSource, Source))
-        {
-            if (Source != null && !_isDisposed)
-            {
-                // Clean up old blob URL if exists
-                try
-                {
-                    await JSRuntime.InvokeVoidAsync(
-                        "Blazor._internal.BinaryImageComponent.revokeImageUrl",
-                        Element);
-                }
-                catch (JSDisconnectedException)
-                {
-                }
-                catch (JSException)
-                {
-                }
+        // if (!ReferenceEquals(previousSource, Source))
+        // {
+        //     if (Source != null && !_isDisposed)
+        //     {
+        //         // Clean up old blob URL if exists
+        //         try
+        //         {
+        //             await JSRuntime.InvokeVoidAsync(
+        //                 "Blazor._internal.BinaryImageComponent.revokeImageUrl",
+        //                 Element);
+        //         }
+        //         catch (JSDisconnectedException)
+        //         {
+        //         }
+        //         catch (JSException)
+        //         {
+        //         }
 
-                await LoadImageIfSourceProvided();
-            }
-        }
+        //         await LoadImageIfSourceProvided();
+        //     }
+        // }
     }
 
     private async Task LoadImageIfSourceProvided()
@@ -167,7 +167,12 @@ public class Image : ComponentBase, IAsyncDisposable
             byte[] buffer = ArrayPool<byte>.Shared.Rent(ChunkSize);
             try
             {
-                using Stream stream = source.Stream;
+                var stream = source.Stream;
+                if (stream.CanSeek)
+                {
+                    stream.Position = 0; // Ensure we read from start if reused.
+                }
+
                 int bytesRead;
 
                 while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, ChunkSize))) > 0)

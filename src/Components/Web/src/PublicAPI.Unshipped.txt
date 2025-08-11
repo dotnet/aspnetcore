@@ -23,10 +23,8 @@ Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCo
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.set -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.CacheKey.get -> string?
-Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(byte[]! data, string! mimeType) -> void
-Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(byte[]! data, string! mimeType, string? cacheKey) -> void
-Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(System.IO.Stream! stream, string! mimeType) -> void
-Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(System.IO.Stream! stream, string! mimeType, string? cacheKey) -> void
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(byte[]! data, string! mimeType, string! cacheKey) -> void
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.Length.get -> long?
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.Length.set -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.MimeType.get -> string!
@@ -36,6 +34,5 @@ override Microsoft.AspNetCore.Components.Forms.InputHidden.BuildRenderTree(Micro
 override Microsoft.AspNetCore.Components.Forms.InputHidden.TryParseValueFromString(string? value, out string? result, out string? validationErrorMessage) -> bool
 override Microsoft.AspNetCore.Components.Web.Image.Image.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Web.Image.Image.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
-override Microsoft.AspNetCore.Components.Web.Image.Image.OnInitialized() -> void
 override Microsoft.AspNetCore.Components.Web.Image.Image.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool

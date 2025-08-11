@@ -43,7 +43,7 @@ public class ImageSource
     /// <param name="data">The image data as a byte array.</param>
     /// <param name="mimeType">The MIME type of the image.</param>
     /// <param name="cacheKey">Optional cache key for memory caching. If not provided, no caching will be used.</param>
-    public ImageSource(byte[] data, string mimeType, string? cacheKey)
+    public ImageSource(byte[] data, string mimeType, string cacheKey)
     {
         _stream = new MemoryStream(data) ?? throw new ArgumentNullException(nameof(data));
         _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
@@ -65,7 +65,7 @@ public class ImageSource
     /// <param name="stream">The stream containing the image data.</param>
     /// <param name="mimeType">The MIME type of the image.</param>
     /// <param name="cacheKey">Optional cache key for memory caching. If not provided, no caching will be used.</param>
-    public ImageSource(Stream stream, string mimeType, string? cacheKey)
+    public ImageSource(Stream stream, string mimeType, string cacheKey)
     {
         _stream = stream ?? throw new ArgumentNullException(nameof(stream));
         _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
@@ -79,23 +79,5 @@ public class ImageSource
         {
             _length = null;
         }
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="ImageSource"/> with byte array data.
-    /// </summary>
-    /// <param name="data">The image data as a byte array.</param>
-    /// <param name="mimeType">The MIME type of the image.</param>
-    public ImageSource(byte[] data, string mimeType) : this(data, mimeType, null)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="ImageSource"/> with a stream.
-    /// </summary>
-    /// <param name="stream">The stream containing the image data.</param>
-    /// <param name="mimeType">The MIME type of the image.</param>
-    public ImageSource(Stream stream, string mimeType) : this(stream, mimeType, null)
-    {
     }
 }
