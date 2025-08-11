@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.OpenApi;
     using Microsoft.AspNetCore.Mvc.Controllers;
+    using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OpenApi;
 
@@ -160,6 +161,30 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
                 sb.Append(')');
             }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates a documentation comment ID for a property given its container type and property name.
+        /// Example: P:Namespace.ContainingType.PropertyName
+        /// </summary>
+        public static string CreateDocumentationId(Type containerType, string propertyName)
+        {
+            if (containerType == null)
+            {
+                throw new ArgumentNullException(nameof(containerType));
+            }
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                throw new ArgumentException("Property name cannot be null or empty.", nameof(propertyName));
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("P:");
+            sb.Append(GetTypeDocId(containerType, includeGenericArguments: false, omitGenericArity: false));
+            sb.Append('.');
+            sb.Append(propertyName);
 
             return sb.ToString();
         }
@@ -424,6 +449,50 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         if (responseComment is not null)
                         {
                             response.Value.Description = responseComment.Description;
+                        }
+                    }
+                }
+            }
+            foreach (var parameterDescription in context.Description.ParameterDescriptions)
+            {
+                var metadata = parameterDescription.ModelMetadata;
+                if (metadata.MetadataKind == ModelMetadataKind.Property
+                    && metadata.ContainerType is { } containerType
+                    && metadata.PropertyName is { } propertyName)
+                {
+                    var propertyDocId = DocumentationCommentIdHelper.CreateDocumentationId(containerType, propertyName);
+                    if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyDocId), out var propertyComment))
+                    {
+                        var parameter = operation.Parameters?.SingleOrDefault(p => p.Name == metadata.Name);
+                        if (parameter is null)
+                        {
+                            if (operation.RequestBody is not null)
+                            {
+                                operation.RequestBody.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                                if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                                {
+                                    var content = operation.RequestBody.Content?.Values;
+                                    if (content is null)
+                                    {
+                                        continue;
+                                    }
+                                    var parsedExample = jsonString.Parse();
+                                    foreach (var mediaType in content)
+                                    {
+                                        mediaType.Example = parsedExample;
+                                    }
+                                }
+                            }
+                            continue;
+                        }
+                        var targetOperationParameter = UnwrapOpenApiParameter(parameter);
+                        if (targetOperationParameter is not null)
+                        {
+                            targetOperationParameter.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                            if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                            {
+                                targetOperationParameter.Example = jsonString.Parse();
+                            }
                         }
                     }
                 }
