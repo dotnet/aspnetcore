@@ -120,6 +120,12 @@ namespace Microsoft.Extensions.Validation.Generated
                         ),
                         new GeneratedValidatablePropertyInfo(
                             containingType: typeof(global::ComplexType),
+                            propertyType: typeof(global::System.Collections.Generic.List<global::NestedType>),
+                            name: "ListOfNestedTypes",
+                            displayName: "ListOfNestedTypes"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexType),
                             propertyType: typeof(global::NonSkippedSubType),
                             name: "NonSkippedSubTypeProperty",
                             displayName: "NonSkippedSubTypeProperty"

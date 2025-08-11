@@ -49,6 +49,11 @@ public class ComplexType
     public NestedType ObjectProperty { get; set; } = new NestedType();
 
     [SkipValidation]
+    public List<NestedType> SkippedListOfNestedTypes { get; set; } = [];
+
+    public List<NestedType> ListOfNestedTypes { get; set; } = [];
+
+    [SkipValidation]
     public NonSkippedBaseType SkippedBaseTypeProperty { get; set; } = new NonSkippedBaseType();
 
     public NonSkippedSubType NonSkippedSubTypeProperty { get; set; } = new NonSkippedSubType();
@@ -100,13 +105,32 @@ public class SubTypeOfSkippedBase : SkippedBaseType
         {
             Assert.True(validationOptions.TryGetValidatableTypeInfo(type, out var validatableTypeInfo));
 
-            await InvalidNestedIntegerWithRangeProducesError(validatableTypeInfo);
-            await InvalidSkippedNestedIntegerWithRangeDoesNotProduceProduceError(validatableTypeInfo);
-            await InvalidSkippedIntegerWithRangeDoesNotProduceError(validatableTypeInfo);
-            await InvalidSubTypeNestedIntegersWithRangeProduceErrors(validatableTypeInfo);
-            await InvalidAlwaysSkippedTypeDoesNotProduceError(validatableTypeInfo);
+            await InvalidSkippedInteger_DoesNotProduceError(validatableTypeInfo);
+            await InvalidNestedInteger_ProducesError(validatableTypeInfo);
+            await InvalidSkippedNestedInteger_DoesNotProduceError(validatableTypeInfo);
+            await InvalidList_ProducesError(validatableTypeInfo);
+            await InvalidSkippedList_DoesNotProduceError(validatableTypeInfo);
+            await InvalidSubTypeNestedIntegers_ProduceErrors(validatableTypeInfo);
+            await InvalidAlwaysSkippedType_DoesNotProduceError(validatableTypeInfo);
 
-            async Task InvalidNestedIntegerWithRangeProducesError(IValidatableInfo validatableInfo)
+            async Task InvalidSkippedInteger_DoesNotProduceError(IValidatableInfo validatableInfo)
+            {
+                var instance = Activator.CreateInstance(type);
+                var intProperty = type.GetProperty("IntegerWithRange");
+                intProperty?.SetValue(instance, 5); // Set invalid value
+
+                var context = new ValidateContext
+                {
+                    ValidationOptions = validationOptions,
+                    ValidationContext = new ValidationContext(instance)
+                };
+
+                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+
+                Assert.Null(context.ValidationErrors);
+            }
+
+            async Task InvalidNestedInteger_ProducesError(IValidatableInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("ObjectProperty").GetValue(instance);
@@ -128,7 +152,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 });
             }
 
-            async Task InvalidSkippedNestedIntegerWithRangeDoesNotProduceProduceError(IValidatableInfo validatableInfo)
+            async Task InvalidSkippedNestedInteger_DoesNotProduceError(IValidatableInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("SkippedObjectProperty").GetValue(instance);
@@ -146,24 +170,59 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                 Assert.Null(context.ValidationErrors);
             }
 
-            async Task InvalidSkippedIntegerWithRangeDoesNotProduceError(IValidatableInfo validatableInfo)
+            async Task InvalidList_ProducesError(IValidatableInfo validatableInfo)
             {
-                var instance = Activator.CreateInstance(type);
-                var intProperty = type.GetProperty("IntegerWithRange");
-                intProperty?.SetValue(instance, 5); // Set invalid value
+                var rootInstance = Activator.CreateInstance(type);
+                var listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(type.Assembly.GetType("NestedType")!));
 
+                // Create invalid item
+                var nestedTypeInstance = Activator.CreateInstance(type.Assembly.GetType("NestedType")!);
+                nestedTypeInstance.GetType().GetProperty("IntegerWithRange")?.SetValue(nestedTypeInstance, 5);
+
+                // Add to list
+                listInstance.GetType().GetMethod("Add")?.Invoke(listInstance, [nestedTypeInstance]);
+
+                type.GetProperty("ListOfNestedTypes")?.SetValue(rootInstance, listInstance);
                 var context = new ValidateContext
                 {
                     ValidationOptions = validationOptions,
-                    ValidationContext = new ValidationContext(instance)
+                    ValidationContext = new ValidationContext(rootInstance)
                 };
 
-                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+                await validatableTypeInfo.ValidateAsync(rootInstance, context, CancellationToken.None);
+
+                Assert.Collection(context.ValidationErrors, kvp =>
+                {
+                    Assert.Equal("ListOfNestedTypes[0].IntegerWithRange", kvp.Key);
+                    Assert.Equal("The field IntegerWithRange must be between 10 and 100.", kvp.Value.Single());
+                });
+            }
+
+            async Task InvalidSkippedList_DoesNotProduceError(IValidatableInfo validatableInfo)
+            {
+                var rootInstance = Activator.CreateInstance(type);
+                var listInstance = Activator.CreateInstance(typeof(List<>).MakeGenericType(type.Assembly.GetType("NestedType")!));
+
+                // Create invalid item
+                var nestedTypeInstance = Activator.CreateInstance(type.Assembly.GetType("NestedType")!);
+                nestedTypeInstance.GetType().GetProperty("IntegerWithRange")?.SetValue(nestedTypeInstance, 5);
+
+                // Add to list
+                listInstance.GetType().GetMethod("Add")?.Invoke(listInstance, [nestedTypeInstance]);
+
+                type.GetProperty("SkippedListOfNestedTypes")?.SetValue(rootInstance, listInstance);
+                var context = new ValidateContext
+                {
+                    ValidationOptions = validationOptions,
+                    ValidationContext = new ValidationContext(rootInstance)
+                };
+
+                await validatableTypeInfo.ValidateAsync(rootInstance, context, CancellationToken.None);
 
                 Assert.Null(context.ValidationErrors);
             }
 
-            async Task InvalidSubTypeNestedIntegersWithRangeProduceErrors(IValidatableInfo validatableInfo)
+            async Task InvalidSubTypeNestedIntegers_ProduceErrors(IValidatableInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("NonSkippedSubTypeProperty").GetValue(instance);
@@ -194,7 +253,7 @@ public class SubTypeOfSkippedBase : SkippedBaseType
                     });
             }
 
-            async Task InvalidAlwaysSkippedTypeDoesNotProduceError(IValidatableInfo validatableInfo)
+            async Task InvalidAlwaysSkippedType_DoesNotProduceError(IValidatableInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 var objectPropertyInstance = type.GetProperty("AlwaysSkippedProperty").GetValue(instance);

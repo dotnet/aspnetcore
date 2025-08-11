@@ -175,21 +175,4 @@ internal static class ITypeSymbolExtensions
     {
         return parameter.HasAttribute(skipValidationAttributeSymbol) || parameter.Type.HasAttribute(skipValidationAttributeSymbol);
     }
-
-    internal static bool HasAttribute(this ITypeSymbol? typeSymbol, INamedTypeSymbol attributeSymbol)
-    {
-        while (typeSymbol is not null)
-        {
-            if (typeSymbol.GetAttributes().Any(attr =>
-                attr.AttributeClass is not null &&
-                SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attributeSymbol)))
-            {
-                return true;
-            }
-
-            typeSymbol = typeSymbol.BaseType;
-        }
-
-        return false;
-    }
 }
