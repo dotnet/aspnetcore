@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Web.Image;
 /// <summary>
 /// A component that efficiently renders images from non-HTTP sources like byte arrays.
 /// </summary>
-public class Image : IComponent, IAsyncDisposable
+public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 {
     private RenderHandle _renderHandle;
     private bool _isLoading = true;
@@ -20,6 +20,7 @@ public class Image : IComponent, IAsyncDisposable
     private int _loadVersion;
     private bool _initialized;
     private bool _hasPendingRender;
+    private bool _firstRender = true;
 
     /// <summary>
     /// Gets or sets the associated <see cref="ElementReference"/>.
@@ -77,10 +78,21 @@ public class Image : IComponent, IAsyncDisposable
         }
 
         // Handle parameter changes
-        if (previousSource?.CacheKey != Source?.CacheKey && Source != null && !_isDisposed)
+        if (!_firstRender && previousSource?.CacheKey != Source?.CacheKey && Source != null && !_isDisposed)
         {
             var version = ++_loadVersion;
 
+            await LoadImageIfSourceProvided(version, Source);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task OnAfterRenderAsync()
+    {
+        if (_firstRender && Source != null && !_isDisposed)
+        {
+            _firstRender = false;
+            var version = ++_loadVersion;
             await LoadImageIfSourceProvided(version, Source);
         }
     }
@@ -134,12 +146,15 @@ public class Image : IComponent, IAsyncDisposable
         {
             SetLoadingState();
 
-            // Check cache first
-            if (!string.IsNullOrEmpty(source.CacheKey))
+            if (CacheStrategy == CacheStrategy.Memory)
             {
+                Console.WriteLine($"Loading image from memory cache: {source.CacheKey}");
+
                 bool foundInCache = await JSRuntime.InvokeAsync<bool>(
                     "Blazor._internal.BinaryImageComponent.trySetFromCache",
                     Element, source.CacheKey);
+
+                Console.WriteLine($"Image found in cache: {foundInCache}");
 
                 if (foundInCache)
                 {

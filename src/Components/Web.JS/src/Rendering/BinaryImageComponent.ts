@@ -19,27 +19,45 @@ interface ChunkedTransfer {
  * Provides functionality for rendering binary image data in Blazor components.
  */
 export class BinaryImageComponent {
-  private static blobUrls: Map<HTMLImageElement, string> = new Map();
+  private static readonly CACHE_NAME = 'blazor-image-cache';
 
-  private static memoryCache: Map<string, string> = new Map();
+  private static readonly CACHE_PREFIX = 'https://blazor-images/';
+
+  private static blobUrls: WeakMap<HTMLImageElement, string> = new WeakMap();
 
   private static loadingImages: Set<HTMLImageElement> = new Set();
 
   private static pendingTransfers: Map<string, ChunkedTransfer> = new Map();
 
-  // Track the active transfer id for each element so stale transfers can be ignored / cleaned.
+  // Track the active transfer id for each element, to remove stale transfers
   private static elementActiveTransfer: WeakMap<HTMLImageElement, string> = new WeakMap();
 
   /**
-     * Initializes a dynamic chunked image transfer.
-     * @param imgElement - The HTMLImageElement reference
-     * @param transferId - A unique ID for this transfer
-     * @param mimeType - The MIME type of the image
-     * @param cacheKey - A unique key for caching
-     * @param cacheStrategy - The caching strategy to use
-     * @param totalBytes - The total number of bytes (null if unknown)
-     * @returns True if initialization was successful
-     */
+   * Opens or creates the cache storage
+   */
+  private static async getCache(): Promise<Cache | null> {
+    try {
+      if (!('caches' in window)) {
+        console.warn('Cache API not supported in this browser');
+        return null;
+      }
+      return await caches.open(this.CACHE_NAME);
+    } catch (error) {
+      console.error('Failed to open cache:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Creates a cache URL from a cache key
+   */
+  private static getCacheUrl(cacheKey: string): string {
+    return `${this.CACHE_PREFIX}${encodeURIComponent(cacheKey)}`;
+  }
+
+  /**
+   * Initializes a dynamic chunked image transfer.
+   */
   public static initChunkedTransfer(
     imgElement: HTMLImageElement,
     transferId: string,
@@ -48,7 +66,7 @@ export class BinaryImageComponent {
     cacheStrategy: string,
     totalBytes: number | null = null
   ): boolean {
-    // Cancel any previous transfer for this element (remove partial chunks & progress state)
+    // Cancel any previous transfer for this element
     const previousId = this.elementActiveTransfer.get(imgElement);
     if (previousId && this.pendingTransfers.has(previousId)) {
       this.pendingTransfers.delete(previousId);
@@ -60,7 +78,7 @@ export class BinaryImageComponent {
 
     this.elementActiveTransfer.set(imgElement, transferId);
 
-    console.log(`Initializing dynamic chunked transfer ${transferId} for element${totalBytes ? ` (${totalBytes} bytes)` : ''}`);
+    console.log(`Initializing chunked transfer ${transferId}${totalBytes ? ` (${totalBytes} bytes)` : ''}`);
 
     this.pendingTransfers.set(transferId, {
       imgElement: imgElement,
@@ -88,11 +106,8 @@ export class BinaryImageComponent {
   }
 
   /**
-     * Adds a chunk to an in-progress dynamic chunked transfer.
-     * @param transferId - The ID of the transfer
-     * @param chunkData - The binary data for this chunk
-     * @returns True if the chunk was successfully added
-     */
+   * Adds a chunk to an in-progress dynamic chunked transfer.
+   */
   public static addChunk(
     transferId: string,
     chunkData: Uint8Array
@@ -103,9 +118,8 @@ export class BinaryImageComponent {
       return false;
     }
 
-    // Ignore stale transfer (newer one started for this element)
+    // Ignore stale transfer
     if (this.elementActiveTransfer.get(transfer.imgElement) !== transferId) {
-      // Clean stale record
       this.pendingTransfers.delete(transferId);
       return false;
     }
@@ -139,11 +153,9 @@ export class BinaryImageComponent {
   }
 
   /**
-     * Finalizes a dynamic chunked transfer by combining all chunks and setting the image.
-     * @param transferId - The ID of the transfer to finalize
-     * @returns True if successfully finalized
-     */
-  public static finalizeChunkedTransfer(transferId: string): boolean {
+   * Finalizes a dynamic chunked transfer by combining all chunks and setting the image.
+   */
+  public static async finalizeChunkedTransfer(transferId: string): Promise<boolean> {
     const transfer = this.pendingTransfers.get(transferId);
     if (!transfer) {
       console.error(`Transfer ${transferId} not found`);
@@ -157,6 +169,7 @@ export class BinaryImageComponent {
     }
 
     try {
+      // Combine all chunks into complete data
       const totalSize = transfer.totalBytes || transfer.receivedChunks.reduce((sum, chunk) => sum + chunk.length, 0);
       const completeData = new Uint8Array(totalSize);
       let offset = 0;
@@ -170,31 +183,21 @@ export class BinaryImageComponent {
         return false;
       }
 
-      let url: string | null = null;
+      // Create blob from data
+      const blob = new Blob([completeData], { type: transfer.mimeType });
+
+      // Cache the blob if requested
       if (transfer.cacheKey && transfer.cacheStrategy === 'memory') {
-        url = this.memoryCache.get(transfer.cacheKey) || null;
+        await this.cacheBlob(transfer.cacheKey, blob, transfer.mimeType);
       }
 
-      if (!url) {
-        const blob = new Blob([completeData], { type: transfer.mimeType });
-        url = URL.createObjectURL(blob);
-
-        if (transfer.cacheKey && transfer.cacheStrategy === 'memory') {
-          this.memoryCache.set(transfer.cacheKey, url);
-        }
-
-        console.log(`Created blob URL from dynamic chunked data for ${transfer.cacheKey}: ${url}`);
-      }
+      // Create object URL for display
+      const url = URL.createObjectURL(blob);
 
       // Clean up old URL if exists
-      if (this.blobUrls.has(transfer.imgElement)) {
-        const oldUrl = this.blobUrls.get(transfer.imgElement);
-        if (oldUrl) {
-          const isCached = Array.from(this.memoryCache.values()).includes(oldUrl);
-          if (!isCached) {
-            URL.revokeObjectURL(oldUrl);
-          }
-        }
+      const oldUrl = this.blobUrls.get(transfer.imgElement);
+      if (oldUrl) {
+        URL.revokeObjectURL(oldUrl);
       }
 
       this.blobUrls.set(transfer.imgElement, url);
@@ -227,6 +230,7 @@ export class BinaryImageComponent {
 
       this.pendingTransfers.delete(transferId);
 
+      console.log(`Finalized transfer ${transferId} for cache key: ${transfer.cacheKey}`);
       return true;
     } catch (error) {
       console.error(`Error finalizing chunked transfer: ${error}`);
@@ -250,97 +254,157 @@ export class BinaryImageComponent {
   }
 
   /**
-   * Checks if an image with the given cache key is already cached and sets it as the source.
-   * @param imgElement - The HTMLImageElement reference
-   * @param cacheKey - The cache key to look for
-   * @returns True if the image was found in cache and set as source, false otherwise
+   * Caches a blob using the Cache API
    */
-  public static trySetFromCache(imgElement: HTMLImageElement, cacheKey: string): boolean {
-    if (!cacheKey) {
+  private static async cacheBlob(cacheKey: string, blob: Blob, mimeType: string): Promise<void> {
+    try {
+      const cache = await this.getCache();
+      if (!cache) {
+        return;
+      }
+
+      const cacheUrl = this.getCacheUrl(cacheKey);
+      const response = new Response(blob, {
+        headers: {
+          'Content-Type': mimeType,
+          'Content-Length': blob.size.toString(),
+          'Cache-Control': 'private, max-age=604800', // 7 days
+        },
+      });
+
+      await cache.put(cacheUrl, response);
+      console.log(`Cached blob for key: ${cacheKey}`);
+    } catch (error) {
+      console.error(`Failed to cache blob for key ${cacheKey}:`, error);
+    }
+  }
+
+  /**
+   * Tries to set image from cache
+   */
+  public static async trySetFromCache(imgElement: HTMLImageElement, cacheKey: string): Promise<boolean> {
+    if (!cacheKey || !imgElement) {
+      console.warn('Invalid cache key or image element');
+      console.warn(`Cache key: ${cacheKey}, Image element: ${imgElement}`);
       return false;
     }
 
-    const cachedUrl = this.memoryCache.get(cacheKey);
-    if (!cachedUrl) {
-      return false;
-    }
+    try {
+      const cache = await this.getCache();
+      if (!cache) {
+        console.warn('Cache not available');
+        return false;
+      }
 
-    if (!imgElement) {
-      console.error('Element not provided');
-      return false;
-    }
+      const cacheUrl = this.getCacheUrl(cacheKey);
+      const cachedResponse = await cache.match(cacheUrl);
 
-    console.log(`Setting image from cache with key: ${cacheKey}`);
+      if (!cachedResponse) {
+        console.log(`Cache miss for key: ${cacheKey}`);
+        return false;
+      }
 
-    // Clean up old URL if exists
-    if (this.blobUrls.has(imgElement)) {
+      console.log(`Cache hit for key: ${cacheKey}`);
+
+      // Get blob from cached response
+      const blob = await cachedResponse.blob();
+
+      // Create object URL for display
+      const url = URL.createObjectURL(blob);
+
+      // Clean up old URL if exists
       const oldUrl = this.blobUrls.get(imgElement);
       if (oldUrl) {
-        const isCached = Array.from(this.memoryCache.values()).includes(oldUrl);
-        if (!isCached) {
-          URL.revokeObjectURL(oldUrl);
-        }
+        URL.revokeObjectURL(oldUrl);
       }
+
+      this.blobUrls.set(imgElement, url);
+      imgElement.src = url;
+
+      // Set up event handlers
+      imgElement.onload = () => {
+        this.loadingImages.delete(imgElement);
+        imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
+      };
+
+      imgElement.onerror = (e) => {
+        this.loadingImages.delete(imgElement);
+        imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
+          detail: (e as ErrorEvent).message || 'Failed to load cached image',
+        }));
+      };
+
+      return true;
+    } catch (error) {
+      console.error(`Error loading from cache for key ${cacheKey}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Revokes the blob URL for an image element
+   */
+  public static revokeImageUrl(imgElement: HTMLImageElement): boolean {
+    if (!imgElement) {
+      return false;
     }
 
-    this.blobUrls.set(imgElement, cachedUrl);
-    imgElement.src = cachedUrl;
+    const url = this.blobUrls.get(imgElement);
+    if (url) {
+      URL.revokeObjectURL(url);
+      this.blobUrls.delete(imgElement);
+      console.log('Revoked blob URL for element');
+    }
 
-    // Set up event handlers
-    imgElement.onload = () => {
-      this.loadingImages.delete(imgElement);
-      imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
-    };
-
-    imgElement.onerror = (e) => {
-      this.loadingImages.delete(imgElement);
-      imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
-        detail: (e as ErrorEvent).message || 'Failed to load cached image',
-      }));
-    };
-
+    this.loadingImages.delete(imgElement);
     return true;
   }
 
   /**
-   * Checks if an image is currently loading.
-   * @param imgElement - The HTMLImageElement reference
-   * @returns True if loading, false otherwise
+   * Checks if an image is currently loading
    */
   public static isLoading(imgElement: HTMLImageElement): boolean {
     return imgElement ? this.loadingImages.has(imgElement) : false;
   }
 
   /**
-   * Clears all blob URLs and cache.
-   * @returns True if successful
+   * Clears the cache
    */
-  public static clearCache(): boolean {
-    // Revoke all blob URLs
-    this.memoryCache.forEach(url => {
-      URL.revokeObjectURL(url);
-    });
+  public static async clearCache(): Promise<boolean> {
+    try {
+      const cache = await this.getCache();
+      if (!cache) {
+        return false;
+      }
 
-    this.memoryCache.clear();
-    console.log('Image cache cleared');
+      // Get all cached requests
+      const requests = await cache.keys();
 
-    return true;
+      // Delete all cached entries
+      await Promise.all(requests.map(request => cache.delete(request)));
+
+      console.log(`Cleared ${requests.length} cached images`);
+      return true;
+    } catch (error) {
+      console.error('Failed to clear cache:', error);
+      return false;
+    }
   }
 
   /**
-   * Cleans up everything.
-   * @returns True if successful
+   * Cleans up everything
    */
-  public static clearAll(): boolean {
-    this.clearCache();
+  public static async clearAll(): Promise<boolean> {
+    // Clear cache
+    await this.clearCache();
 
-    this.blobUrls.forEach(url => {
-      URL.revokeObjectURL(url);
-    });
+    // Clear pending transfers
+    this.pendingTransfers.clear();
 
-    this.blobUrls.clear();
+    // Clear loading state
     this.loadingImages.clear();
 
+    console.log('Cleared all image component state');
     return true;
   }
 }

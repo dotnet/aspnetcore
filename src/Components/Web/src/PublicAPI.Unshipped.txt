@@ -20,6 +20,7 @@ Microsoft.AspNetCore.Components.Web.Image.Image.Element.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Image() -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.get -> Microsoft.JSInterop.IJSRuntime!
 Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.set -> void
+Microsoft.AspNetCore.Components.Web.Image.Image.OnAfterRenderAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.Image.Image.Render() -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.ImageSource?
