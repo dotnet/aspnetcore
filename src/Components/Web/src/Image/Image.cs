@@ -97,7 +97,7 @@ public class Image : ComponentBase, IAsyncDisposable
 
         await base.SetParametersAsync(parameters);
 
-        if (!ReferenceEquals(previousSource, Source))
+        if (previousSource?.CacheKey != Source?.CacheKey)
         {
             if (Source != null && !_isDisposed)
             {
