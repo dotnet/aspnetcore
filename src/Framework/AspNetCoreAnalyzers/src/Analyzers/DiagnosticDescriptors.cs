@@ -248,4 +248,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Info,
         isEnabledByDefault: true,
         helpLinkUri: AnalyzersLink);
+
+    internal static readonly DiagnosticDescriptor UseCreateHostBuilderInsteadOfCreateWebHostBuilder = new(
+        "ASP0029",
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_UseCreateHostBuilderInsteadOfCreateWebHostBuilder_Title)),
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_UseCreateHostBuilderInsteadOfCreateWebHostBuilder_Message)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        helpLinkUri: AnalyzersLink);
 }
