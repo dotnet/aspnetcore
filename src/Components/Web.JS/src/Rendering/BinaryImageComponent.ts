@@ -312,34 +312,6 @@ export class BinaryImageComponent {
   }
 
   /**
-   * Revokes a specific blob URL.
-   * @param imgElement - The HTMLImageElement reference
-   * @returns True if revoked, false if not found
-   */
-  public static revokeImageUrl(imgElement: HTMLImageElement): boolean {
-    if (!imgElement) {
-      return false;
-    }
-
-    if (this.blobUrls.has(imgElement)) {
-      const url = this.blobUrls.get(imgElement);
-
-      if (url) {
-        const isCached = Array.from(this.memoryCache.values()).includes(url);
-        if (!isCached) {
-          URL.revokeObjectURL(url);
-          console.log('Revoked blob URL for element');
-        }
-      }
-
-      this.blobUrls.delete(imgElement);
-      this.loadingImages.delete(imgElement);
-      return true;
-    }
-    return false;
-  }
-
-  /**
    * Clears all blob URLs and cache.
    * @returns True if successful
    */

@@ -8,28 +8,21 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Image;
 
-/* This is equivalent to a .razor file containing:
- *
- * <img class="blazor-image @GetCssClass()"
- *      data-state="@(_isLoading ? "loading" : _hasError ? "error" : null)"
- *      @ref="Element" @attributes="AdditionalAttributes" />
- */
 /// <summary>
 /// A component that efficiently renders images from non-HTTP sources like byte arrays.
 /// </summary>
-public class Image : ComponentBase, IAsyncDisposable
+public class Image : IComponent, IAsyncDisposable
 {
+    private RenderHandle _renderHandle;
     private bool _isLoading = true;
     private bool _hasError;
     private bool _isDisposed;
-    // Version counter to guard against stale concurrent loads.
     private int _loadVersion;
+    private bool _initialized;
+    private bool _hasPendingRender;
 
     /// <summary>
     /// Gets or sets the associated <see cref="ElementReference"/>.
-    /// <para>
-    /// May be <see langword="null"/> if accessed before the component is rendered.
-    /// </para>
     /// </summary>
     [DisallowNull] public ElementReference? Element { get; protected set; }
 
@@ -59,7 +52,56 @@ public class Image : ComponentBase, IAsyncDisposable
     [Parameter] public int ChunkSize { get; set; } = 64 * 1024;
 
     /// <inheritdoc />
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    public void Attach(RenderHandle renderHandle)
+    {
+        if (_renderHandle.IsInitialized)
+        {
+            throw new InvalidOperationException("Component is already attached to a render handle.");
+        }
+        _renderHandle = renderHandle;
+    }
+
+    /// <inheritdoc />
+    public async Task SetParametersAsync(ParameterView parameters)
+    {
+        var previousSource = Source;
+
+        // Set component parameters
+        parameters.SetParameterProperties(this);
+
+        // Initialize on first parameters set
+        if (!_initialized)
+        {
+            Render();
+            _initialized = true;
+        }
+
+        // Handle parameter changes
+        if (previousSource?.CacheKey != Source?.CacheKey && Source != null && !_isDisposed)
+        {
+            var version = ++_loadVersion;
+
+            await LoadImageIfSourceProvided(version, Source);
+        }
+    }
+
+    /// <summary>
+    /// Queues a render of the component.
+    /// </summary>
+    protected void Render()
+    {
+        if (!_hasPendingRender && _renderHandle.IsInitialized)
+        {
+            _hasPendingRender = true;
+            _renderHandle.Render(BuildRenderTree);
+            _hasPendingRender = false;
+        }
+    }
+
+    /// <summary>
+    /// Builds the render tree for the component.
+    /// </summary>
+    protected virtual void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "img");
 
@@ -73,51 +115,14 @@ public class Image : ComponentBase, IAsyncDisposable
         }
 
         var cssClass = GetCssClass();
-        builder.AddAttribute(3, "class", $"blazor-image {cssClass}".Trim());
+        builder.AddAttribute(2, "class", $"blazor-image {cssClass}".Trim());
 
-        builder.AddMultipleAttributes(4, AdditionalAttributes);
-        builder.AddElementReferenceCapture(5, elementReference => Element = elementReference);
+        builder.AddMultipleAttributes(3, AdditionalAttributes);
+        builder.AddElementReferenceCapture(4, elementReference => Element = elementReference);
 
         builder.CloseElement();
     }
 
-    /// <inheritdoc/>
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && !_isDisposed)
-        {
-            await LoadImageIfSourceProvided(_loadVersion, Source);
-        }
-    }
-
-    /// <inheritdoc />
-    public override async Task SetParametersAsync(ParameterView parameters) // OnParametersAsync
-    {
-        var previousSource = Source;
-
-        await base.SetParametersAsync(parameters);
-
-        if (previousSource?.CacheKey != Source?.CacheKey)
-        {
-            if (Source != null && !_isDisposed)
-            {
-                var version = ++_loadVersion;
-
-                try
-                {
-                    await JSRuntime.InvokeVoidAsync(
-                        "Blazor._internal.BinaryImageComponent.revokeImageUrl",
-                        Element);
-                }
-                catch (JSDisconnectedException) { }
-                catch (JSException) { }
-
-                await LoadImageIfSourceProvided(version, Source);
-            }
-        }
-    }
-
-    // Guarded load: only the invocation whose version matches _loadVersion at completion updates state.
     private async Task LoadImageIfSourceProvided(int version, ImageSource? source)
     {
         if (source == null)
@@ -218,21 +223,21 @@ public class Image : ComponentBase, IAsyncDisposable
     {
         _isLoading = true;
         _hasError = false;
-        StateHasChanged();
+        Render();
     }
 
     private void SetSuccessState()
     {
         _isLoading = false;
         _hasError = false;
-        StateHasChanged();
+        Render();
     }
 
     private void SetErrorState()
     {
         _isLoading = false;
         _hasError = true;
-        StateHasChanged();
+        Render();
     }
 
     private string GetCssClass() => AdditionalAttributes?.TryGetValue("class", out var cssClass) == true
@@ -245,7 +250,7 @@ public class Image : ComponentBase, IAsyncDisposable
         {
             _isDisposed = true;
 
-            if (Source != null && RendererInfo.IsInteractive == true)
+            if (Source != null && _renderHandle.RendererInfo.IsInteractive == true)
             {
                 try
                 {
