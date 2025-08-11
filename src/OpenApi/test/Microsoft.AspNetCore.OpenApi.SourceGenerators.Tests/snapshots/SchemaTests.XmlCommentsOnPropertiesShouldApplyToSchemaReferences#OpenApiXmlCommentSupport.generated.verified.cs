@@ -443,11 +443,20 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyDocId), out var propertyComment))
                     {
                         var parameter = operation.Parameters?.SingleOrDefault(p => p.Name == metadata.Name);
+                        var description = propertyComment.Summary;
+                        if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                        {
+                            description = $"{description}\n{propertyComment.Value}";
+                        }
+                        else if (string.IsNullOrEmpty(description))
+                        {
+                            description = propertyComment.Value;
+                        }
                         if (parameter is null)
                         {
                             if (operation.RequestBody is not null)
                             {
-                                operation.RequestBody.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                                operation.RequestBody.Description = description;
                                 if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                                 {
                                     var content = operation.RequestBody.Content?.Values;
@@ -467,7 +476,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         var targetOperationParameter = UnwrapOpenApiParameter(parameter);
                         if (targetOperationParameter is not null)
                         {
-                            targetOperationParameter.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                            targetOperationParameter.Description = description;
                             if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                             {
                                 targetOperationParameter.Example = jsonString.Parse();
@@ -524,12 +533,21 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 // Apply comments from the property
                 if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
+                    var description = propertyComment.Summary;
+                    if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                    {
+                        description = $"{description}\n{propertyComment.Value}";
+                    }
+                    else if (string.IsNullOrEmpty(description))
+                    {
+                        description = propertyComment.Value;
+                    }
                     if (schema.Metadata is null
                         || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
                         || string.IsNullOrEmpty(schemaId as string))
                     {
                         // Inlined schema
-                        schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary!;
+                        schema.Description = description;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
                             schema.Example = jsonString.Parse();
@@ -538,7 +556,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     else
                     {
                         // Schema Reference
-                        schema.Metadata["x-ref-description"] = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary!;
+                        if (!string.IsNullOrEmpty(description))
+                        {
+                            schema.Metadata["x-ref-description"] = description;
+                        }
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
                             schema.Metadata["x-ref-example"] = jsonString.Parse()!;

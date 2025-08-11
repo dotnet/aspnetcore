@@ -148,6 +148,7 @@ generic types to open generics for use in
 typeof expressions.", null, null, null, null, false, null, null, null));
             cache.Add(@"T:ParamsAndParamRefs", new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
             cache.Add(@"T:DisposableType", new XmlComment(@"A class that implements the IDisposable interface.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:XmlPropertyTestClass", new XmlComment(@"This class tests different XML comment scenarios for properties.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:ExampleClass.Label", new XmlComment(null, null, @"    The string? ExampleClass.Label is a `string`
     that you use for a label.
     Note that there isn't a way to provide a ""cref"" to
@@ -160,6 +161,11 @@ for this instance.", false, null, null, null));
             cache.Add(@"P:GenericParent.TaskOfTupleProp", new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:GenericParent.TupleWithGenericProp", new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:GenericParent.TupleWithNestedGenericProp", new XmlComment(@"This property is a tuple with a nested generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.SummaryOnly", new XmlComment(@"A property with only summary tag.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.ValueOnly", new XmlComment(null, null, null, null, @"A property with only value tag.", false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.BothSummaryAndValue", new XmlComment(@"A property with both summary and value.", null, null, null, @"Additional value information.", false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.ReturnsOnly", new XmlComment(null, null, null, @"This should be ignored for properties.", null, false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.SummaryAndReturns", new XmlComment(@"A property with summary and returns.", null, null, @"This should be ignored for properties.", null, false, null, null, null));
             cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
 if (c &gt; 10)
 {
@@ -555,11 +561,20 @@ T", null, null, false, null, null, null));
                     if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyDocId), out var propertyComment))
                     {
                         var parameter = operation.Parameters?.SingleOrDefault(p => p.Name == metadata.Name);
+                        var description = propertyComment.Summary;
+                        if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                        {
+                            description = $"{description}\n{propertyComment.Value}";
+                        }
+                        else if (string.IsNullOrEmpty(description))
+                        {
+                            description = propertyComment.Value;
+                        }
                         if (parameter is null)
                         {
                             if (operation.RequestBody is not null)
                             {
-                                operation.RequestBody.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                                operation.RequestBody.Description = description;
                                 if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                                 {
                                     var content = operation.RequestBody.Content?.Values;
@@ -579,7 +594,7 @@ T", null, null, false, null, null, null));
                         var targetOperationParameter = UnwrapOpenApiParameter(parameter);
                         if (targetOperationParameter is not null)
                         {
-                            targetOperationParameter.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
+                            targetOperationParameter.Description = description;
                             if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                             {
                                 targetOperationParameter.Example = jsonString.Parse();
@@ -636,12 +651,21 @@ T", null, null, false, null, null, null));
                 // Apply comments from the property
                 if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
                 {
+                    var description = propertyComment.Summary;
+                    if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                    {
+                        description = $"{description}\n{propertyComment.Value}";
+                    }
+                    else if (string.IsNullOrEmpty(description))
+                    {
+                        description = propertyComment.Value;
+                    }
                     if (schema.Metadata is null
                         || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
                         || string.IsNullOrEmpty(schemaId as string))
                     {
                         // Inlined schema
-                        schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary!;
+                        schema.Description = description;
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
                             schema.Example = jsonString.Parse();
@@ -650,7 +674,10 @@ T", null, null, false, null, null, null));
                     else
                     {
                         // Schema Reference
-                        schema.Metadata["x-ref-description"] = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary!;
+                        if (!string.IsNullOrEmpty(description))
+                        {
+                            schema.Metadata["x-ref-description"] = description;
+                        }
                         if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
                         {
                             schema.Metadata["x-ref-example"] = jsonString.Parse()!;

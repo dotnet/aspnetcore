@@ -341,7 +341,7 @@
           },
           "description": {
             "type": "string",
-            "description": "Another description of the todo."
+            "description": "A description of the the todo.\nAnother description of the todo."
           }
         }
       },
