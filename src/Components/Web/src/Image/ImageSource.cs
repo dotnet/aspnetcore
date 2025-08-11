@@ -5,13 +5,16 @@ namespace Microsoft.AspNetCore.Components.Web.Image;
 
 /// <summary>
 /// Provides a unified source for image data that can be supplied as either byte arrays or streams.
+/// Internally stores the data as a byte array so that each consumer can obtain an independent
+/// read-only <see cref="MemoryStream"/>. This avoids concurrency issues when the same image is
+/// rendered simultaneously (e.g., thumbnail + modal) or when reloaded dynamically.
 /// </summary>
 public class ImageSource
 {
-    private readonly Stream _stream;
+    private readonly byte[] _data;
     private readonly string _mimeType;
     private readonly string? _cacheKey;
-    private long? _length;
+    private readonly long? _length;
 
     /// <summary>
     /// Gets the MIME type of the image.
@@ -24,60 +27,58 @@ public class ImageSource
     public string? CacheKey => _cacheKey;
 
     /// <summary>
-    /// Gets a stream to read the image data.
+    /// Gets a (fresh) stream to read the image data from the beginning. Each call returns a new
+    /// non-writable <see cref="MemoryStream"/> positioned at 0.
     /// </summary>
-    public Stream Stream => _stream;
+    public Stream Stream => OpenRead();
 
     /// <summary>
-    /// Gets or sets the length of the image data in bytes. May be null if the length cannot be determined.
+    /// Gets or sets the length of the image data in bytes. May be overridden manually if needed.
     /// </summary>
     public long? Length
     {
         get => _length;
-        set => _length = value;
     }
 
     /// <summary>
     /// Initializes a new instance of <see cref="ImageSource"/> with byte array data.
+    /// The byte array reference is stored directly (no copy), so callers should not mutate it afterwards.
     /// </summary>
-    /// <param name="data">The image data as a byte array.</param>
-    /// <param name="mimeType">The MIME type of the image.</param>
-    /// <param name="cacheKey">Optional cache key for memory caching. If not provided, no caching will be used.</param>
     public ImageSource(byte[] data, string mimeType, string cacheKey)
     {
-        _stream = new MemoryStream(data) ?? throw new ArgumentNullException(nameof(data));
+        _data = data ?? throw new ArgumentNullException(nameof(data));
         _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
         _cacheKey = cacheKey;
-
-        try
-        {
-            _length = _stream.Length;
-        }
-        catch
-        {
-            _length = null;
-        }
+        _length = _data.LongLength;
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ImageSource"/> with a stream.
+    /// Initializes a new instance of <see cref="ImageSource"/> by reading the provided stream fully into memory.
+    /// The original stream is consumed (read to end) but not disposed here; the caller retains ownership.
     /// </summary>
-    /// <param name="stream">The stream containing the image data.</param>
-    /// <param name="mimeType">The MIME type of the image.</param>
-    /// <param name="cacheKey">Optional cache key for memory caching. If not provided, no caching will be used.</param>
     public ImageSource(Stream stream, string mimeType, string cacheKey)
     {
-        _stream = stream ?? throw new ArgumentNullException(nameof(stream));
+        ArgumentNullException.ThrowIfNull(stream);
         _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
         _cacheKey = cacheKey;
 
-        try
+        // Copy stream contents once so future concurrent reads are safe and cheap.
+        if (stream is MemoryStream ms && ms.TryGetBuffer(out var segment))
         {
-            _length = _stream.Length;
+            // Fast path: direct buffer copy
+            _data = segment.Array![segment.Offset..(segment.Offset + segment.Count)];
         }
-        catch
+        else
         {
-            _length = null;
+            using var copy = new MemoryStream();
+            stream.CopyTo(copy);
+            _data = copy.ToArray();
         }
+        _length = _data.LongLength;
     }
+
+    /// <summary>
+    /// Opens a new read-only memory stream over the underlying image data.
+    /// </summary>
+    public MemoryStream OpenRead() => new MemoryStream(_data, writable: false);
 }

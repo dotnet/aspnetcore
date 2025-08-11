@@ -26,8 +26,8 @@ Microsoft.AspNetCore.Components.Web.Image.ImageSource.CacheKey.get -> string?
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(byte[]! data, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.Length.get -> long?
-Microsoft.AspNetCore.Components.Web.Image.ImageSource.Length.set -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.MimeType.get -> string!
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.OpenRead() -> System.IO.MemoryStream!
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.Stream.get -> System.IO.Stream!
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
 override Microsoft.AspNetCore.Components.Forms.InputHidden.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void

@@ -27,6 +27,9 @@ export class BinaryImageComponent {
 
   private static pendingTransfers: Map<string, ChunkedTransfer> = new Map();
 
+  // Track the active transfer id for each element so stale transfers can be ignored / cleaned.
+  private static elementActiveTransfer: WeakMap<HTMLImageElement, string> = new WeakMap();
+
   /**
      * Initializes a dynamic chunked image transfer.
      * @param imgElement - The HTMLImageElement reference
@@ -45,6 +48,18 @@ export class BinaryImageComponent {
     cacheStrategy: string,
     totalBytes: number | null = null
   ): boolean {
+    // Cancel any previous transfer for this element (remove partial chunks & progress state)
+    const previousId = this.elementActiveTransfer.get(imgElement);
+    if (previousId && this.pendingTransfers.has(previousId)) {
+      this.pendingTransfers.delete(previousId);
+      const prevContainer = imgElement.parentElement;
+      if (prevContainer) {
+        prevContainer.style.removeProperty('--blazor-image-progress');
+      }
+    }
+
+    this.elementActiveTransfer.set(imgElement, transferId);
+
     console.log(`Initializing dynamic chunked transfer ${transferId} for element${totalBytes ? ` (${totalBytes} bytes)` : ''}`);
 
     this.pendingTransfers.set(transferId, {
@@ -88,6 +103,13 @@ export class BinaryImageComponent {
       return false;
     }
 
+    // Ignore stale transfer (newer one started for this element)
+    if (this.elementActiveTransfer.get(transfer.imgElement) !== transferId) {
+      // Clean stale record
+      this.pendingTransfers.delete(transferId);
+      return false;
+    }
+
     const chunk = new Uint8Array(chunkData);
     transfer.receivedChunks.push(chunk);
     transfer.chunksReceived++;
@@ -125,6 +147,12 @@ export class BinaryImageComponent {
     const transfer = this.pendingTransfers.get(transferId);
     if (!transfer) {
       console.error(`Transfer ${transferId} not found`);
+      return false;
+    }
+
+    // Abort if stale
+    if (this.elementActiveTransfer.get(transfer.imgElement) !== transferId) {
+      this.pendingTransfers.delete(transferId);
       return false;
     }
 

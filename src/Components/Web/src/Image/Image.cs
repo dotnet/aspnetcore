@@ -22,6 +22,8 @@ public class Image : ComponentBase, IAsyncDisposable
     private bool _isLoading = true;
     private bool _hasError;
     private bool _isDisposed;
+    // Version counter to guard against stale concurrent loads.
+    private int _loadVersion;
 
     /// <summary>
     /// Gets or sets the associated <see cref="ElementReference"/>.
@@ -84,43 +86,41 @@ public class Image : ComponentBase, IAsyncDisposable
     {
         if (firstRender && !_isDisposed)
         {
-            await LoadImageIfSourceProvided();
+            await LoadImageIfSourceProvided(_loadVersion, Source);
         }
     }
 
     /// <inheritdoc />
     public override async Task SetParametersAsync(ParameterView parameters) // OnParametersAsync
     {
-        // var previousSource = Source;
+        var previousSource = Source;
 
         await base.SetParametersAsync(parameters);
 
-        // if (!ReferenceEquals(previousSource, Source))
-        // {
-        //     if (Source != null && !_isDisposed)
-        //     {
-        //         // Clean up old blob URL if exists
-        //         try
-        //         {
-        //             await JSRuntime.InvokeVoidAsync(
-        //                 "Blazor._internal.BinaryImageComponent.revokeImageUrl",
-        //                 Element);
-        //         }
-        //         catch (JSDisconnectedException)
-        //         {
-        //         }
-        //         catch (JSException)
-        //         {
-        //         }
+        if (!ReferenceEquals(previousSource, Source))
+        {
+            if (Source != null && !_isDisposed)
+            {
+                var version = ++_loadVersion;
 
-        //         await LoadImageIfSourceProvided();
-        //     }
-        // }
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync(
+                        "Blazor._internal.BinaryImageComponent.revokeImageUrl",
+                        Element);
+                }
+                catch (JSDisconnectedException) { }
+                catch (JSException) { }
+
+                await LoadImageIfSourceProvided(version, Source);
+            }
+        }
     }
 
-    private async Task LoadImageIfSourceProvided()
+    // Guarded load: only the invocation whose version matches _loadVersion at completion updates state.
+    private async Task LoadImageIfSourceProvided(int version, ImageSource? source)
     {
-        if (Source == null)
+        if (source == null)
         {
             return;
         }
@@ -129,32 +129,46 @@ public class Image : ComponentBase, IAsyncDisposable
         {
             SetLoadingState();
 
-            // Check if image is already cached before transferring data
-            if (!string.IsNullOrEmpty(Source.CacheKey))
+            // Check cache first
+            if (!string.IsNullOrEmpty(source.CacheKey))
             {
                 bool foundInCache = await JSRuntime.InvokeAsync<bool>(
                     "Blazor._internal.BinaryImageComponent.trySetFromCache",
-                    Element, Source.CacheKey);
+                    Element, source.CacheKey);
 
                 if (foundInCache)
                 {
-                    SetSuccessState();
+                    if (version == _loadVersion)
+                    {
+                        SetSuccessState();
+                    }
                     return;
                 }
             }
 
-            // Stream the image data in chunks
-            await StreamImageInChunks(Source);
-            SetSuccessState();
+            await StreamImageInChunks(source, version);
+
+            if (version == _loadVersion)
+            {
+                SetSuccessState();
+            }
         }
         catch (Exception)
         {
-            SetErrorState();
+            if (version == _loadVersion)
+            {
+                SetErrorState();
+            }
         }
     }
 
-    private async Task StreamImageInChunks(ImageSource source)
+    private async Task StreamImageInChunks(ImageSource source, int version)
     {
+        if (version != _loadVersion)
+        {
+            return;
+        }
+
         try
         {
             string transferId = $"transfer-{Guid.NewGuid():N}";
@@ -168,26 +182,26 @@ public class Image : ComponentBase, IAsyncDisposable
             try
             {
                 var stream = source.Stream;
-                if (stream.CanSeek)
-                {
-                    stream.Position = 0; // Ensure we read from start if reused.
-                }
 
                 int bytesRead;
-
                 while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, ChunkSize))) > 0)
                 {
+                    if (version != _loadVersion)
+                    {
+                        return;
+                    }
+
                     await JSRuntime.InvokeVoidAsync(
                         "Blazor._internal.BinaryImageComponent.addChunk",
                         transferId, buffer.AsMemory(0, bytesRead).ToArray());
-
-                    // Add delay for testing
-                    // await Task.Delay(444);
                 }
 
-                await JSRuntime.InvokeVoidAsync(
-                    "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
-                    transferId);
+                if (version == _loadVersion)
+                {
+                    await JSRuntime.InvokeVoidAsync(
+                        "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
+                        transferId);
+                }
             }
             finally
             {
