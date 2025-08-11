@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
-using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -229,24 +228,19 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     }
 
     [Fact]
-    public void PooledMemoryMetricTracksPooledMemory()
+    public void CurrentMemoryMetricTracksPooledMemory()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var currentMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", MemoryPoolMetrics.PooledMemoryName);
+        using var currentMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.current_memory");
 
-        var pool = CreateMemoryPool(owner: "test", meterFactory: testMeterFactory);
+        var pool = new PinnedBlockMemoryPool(testMeterFactory);
 
         Assert.Empty(currentMemoryMetric.GetMeasurementSnapshot());
 
         var mem = pool.Rent();
         mem.Dispose();
 
-        Assert.Collection(currentMemoryMetric.GetMeasurementSnapshot(),
-            m =>
-            {
-                Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value);
-                Assert.Equal("test", (string)m.Tags["aspnetcore.memory_pool.owner"]);
-            });
+        Assert.Collection(currentMemoryMetric.GetMeasurementSnapshot(), m => Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value));
 
         mem = pool.Rent();
 
@@ -273,26 +267,14 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     public void TotalAllocatedMetricTracksAllocatedMemory()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var totalMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", MemoryPoolMetrics.AllocatedMemoryName);
+        using var totalMemoryMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.total_allocated");
 
-        var pool = CreateMemoryPool(owner: "test", meterFactory: testMeterFactory);
+        var pool = new PinnedBlockMemoryPool(testMeterFactory);
 
         Assert.Empty(totalMemoryMetric.GetMeasurementSnapshot());
 
         var mem1 = pool.Rent();
         var mem2 = pool.Rent();
-
-        Assert.Collection(totalMemoryMetric.GetMeasurementSnapshot(),
-            m =>
-            {
-                Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value);
-                Assert.Equal("test", (string)m.Tags["aspnetcore.memory_pool.owner"]);
-            },
-            m =>
-            {
-                Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value);
-                Assert.Equal("test", (string)m.Tags["aspnetcore.memory_pool.owner"]);
-            });
 
         // Each Rent that allocates a new block should increment total memory by block size
         Assert.Equal(2 * PinnedBlockMemoryPool.BlockSize, totalMemoryMetric.GetMeasurementSnapshot().EvaluateAsCounter());
@@ -308,9 +290,9 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     public void TotalRentedMetricTracksRentOperations()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", MemoryPoolMetrics.RentedMemoryName);
+        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.total_rented");
 
-        var pool = CreateMemoryPool(owner: "test", meterFactory: testMeterFactory);
+        var pool = new PinnedBlockMemoryPool(testMeterFactory);
 
         Assert.Empty(rentMetric.GetMeasurementSnapshot());
 
@@ -319,16 +301,8 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
 
         // Each Rent should record the size of the block rented
         Assert.Collection(rentMetric.GetMeasurementSnapshot(),
-            m =>
-            {
-                Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value);
-                Assert.Equal("test", (string)m.Tags["aspnetcore.memory_pool.owner"]);
-            },
-            m =>
-            {
-                Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value);
-                Assert.Equal("test", (string)m.Tags["aspnetcore.memory_pool.owner"]);
-            });
+            m => Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value),
+            m => Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value));
 
         mem1.Dispose();
         mem2.Dispose();
@@ -341,9 +315,9 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     public void EvictedMemoryMetricTracksEvictedMemory()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var evictMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", MemoryPoolMetrics.EvictedMemoryName);
+        using var evictMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.evicted_memory");
 
-        var pool = CreateMemoryPool(owner: "test", meterFactory: testMeterFactory);
+        var pool = new PinnedBlockMemoryPool(testMeterFactory);
 
         // Fill the pool with some blocks
         var blocks = new List<IMemoryOwner<byte>>();
@@ -370,7 +344,6 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
         foreach (var measurement in evictMetric.GetMeasurementSnapshot())
         {
             Assert.Equal(PinnedBlockMemoryPool.BlockSize, measurement.Value);
-            Assert.Equal("test", (string)measurement.Tags["aspnetcore.memory_pool.owner"]);
         }
     }
 
@@ -379,10 +352,10 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
     public void MetricsAreAggregatedAcrossPoolsWithSameMeterFactory()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", MemoryPoolMetrics.RentedMemoryName);
+        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", "aspnetcore.memory_pool.total_rented");
 
-        var pool1 = CreateMemoryPool(owner: "test", meterFactory: testMeterFactory);
-        var pool2 = CreateMemoryPool(owner: "test", meterFactory: testMeterFactory);
+        var pool1 = new PinnedBlockMemoryPool(testMeterFactory);
+        var pool2 = new PinnedBlockMemoryPool(testMeterFactory);
 
         var mem1 = pool1.Rent();
         var mem2 = pool2.Rent();
@@ -401,39 +374,5 @@ public class PinnedBlockMemoryPoolTests : MemoryPoolTests
 
         mem3.Dispose();
         mem4.Dispose();
-    }
-
-    [Fact]
-    public void MetricsWithDifferentOwners()
-    {
-        var testMeterFactory = new TestMeterFactory();
-        using var rentMetric = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.MemoryPool", MemoryPoolMetrics.RentedMemoryName);
-
-        var pool1 = CreateMemoryPool(owner: "test1", meterFactory: testMeterFactory);
-        var pool2 = CreateMemoryPool(owner: "test2", meterFactory: testMeterFactory);
-
-        var mem1 = pool1.Rent();
-        var mem2 = pool2.Rent();
-
-        // Both pools should contribute to the same metric stream but with different owners
-        Assert.Collection(rentMetric.GetMeasurementSnapshot(),
-            m =>
-            {
-                Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value);
-                Assert.Equal("test1", (string)m.Tags["aspnetcore.memory_pool.owner"]);
-            },
-            m =>
-            {
-                Assert.Equal(PinnedBlockMemoryPool.BlockSize, m.Value);
-                Assert.Equal("test2", (string)m.Tags["aspnetcore.memory_pool.owner"]);
-            });
-
-        mem1.Dispose();
-        mem2.Dispose();
-    }
-
-    private static PinnedBlockMemoryPool CreateMemoryPool(string owner, TestMeterFactory meterFactory)
-    {
-        return new PinnedBlockMemoryPool(owner: owner, metrics: new MemoryPoolMetrics(meterFactory));
     }
 }

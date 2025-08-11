@@ -87,7 +87,6 @@ public static class WebHostBuilderKestrelExtensions
             services.AddSingleton<KestrelMetrics>();
 
             services.AddSingleton<PinnedBlockMemoryPoolFactory>();
-            services.AddSingleton<MemoryPoolMetrics>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHeartbeatHandler, PinnedBlockMemoryPoolFactory>(sp => sp.GetRequiredService<PinnedBlockMemoryPoolFactory>()));
             services.AddSingleton<IMemoryPoolFactory<byte>>(sp => sp.GetRequiredService<PinnedBlockMemoryPoolFactory>());
         });

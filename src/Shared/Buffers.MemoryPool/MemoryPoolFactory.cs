@@ -10,17 +10,17 @@ namespace Microsoft.AspNetCore;
 
 internal static class TestMemoryPoolFactory
 {
-    public static MemoryPool<byte> Create(string? owner = null, IMeterFactory? meterFactory = null)
+    public static MemoryPool<byte> Create(IMeterFactory? meterFactory = null)
     {
 #if DEBUG
-        return new DiagnosticMemoryPool(CreatePinnedBlockMemoryPool(owner, meterFactory));
+        return new DiagnosticMemoryPool(CreatePinnedBlockMemoryPool(meterFactory));
 #else
-        return CreatePinnedBlockMemoryPool(owner, meterFactory);
+        return CreatePinnedBlockMemoryPool(meterFactory);
 #endif
     }
 
-    public static MemoryPool<byte> CreatePinnedBlockMemoryPool(string? owner = null, IMeterFactory? meterFactory = null)
+    public static MemoryPool<byte> CreatePinnedBlockMemoryPool(IMeterFactory? meterFactory = null)
     {
-        return new PinnedBlockMemoryPool(owner: owner, metrics: meterFactory != null ? new MemoryPoolMetrics(meterFactory) : null);
+        return new PinnedBlockMemoryPool(meterFactory);
     }
 }

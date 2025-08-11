@@ -55,7 +55,7 @@ internal sealed partial class HttpSysListener : IDisposable
             throw new PlatformNotSupportedException();
         }
 
-        MemoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "httpsys" });
+        MemoryPool = memoryPoolFactory.Create();
 
         Options = options;
 

@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Collections.Concurrent;
 using System.Reflection;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.Extensions.Time.Testing;
@@ -16,26 +15,16 @@ public class PinnedBlockMemoryPoolFactoryTests
     [Fact]
     public void CreatePool()
     {
-        var factory = CreateMemoryPoolFactory();
+        var factory = new PinnedBlockMemoryPoolFactory(new TestMeterFactory());
         var pool = factory.Create();
         Assert.NotNull(pool);
         Assert.IsType<PinnedBlockMemoryPool>(pool);
-        Assert.Null(Assert.IsType<PinnedBlockMemoryPool>(pool).Owner);
-    }
-
-    [Fact]
-    public void CreatePoolWithOwner()
-    {
-        var factory = CreateMemoryPoolFactory();
-        var pool = factory.Create(new MemoryPoolOptions { Owner = "test" });
-        Assert.NotNull(pool);
-        Assert.Equal("test", Assert.IsType<PinnedBlockMemoryPool>(pool).Owner);
     }
 
     [Fact]
     public void CreateMultiplePools()
     {
-        var factory = CreateMemoryPoolFactory();
+        var factory = new PinnedBlockMemoryPoolFactory(new TestMeterFactory());
         var pool1 = factory.Create();
         var pool2 = factory.Create();
 
@@ -47,7 +36,7 @@ public class PinnedBlockMemoryPoolFactoryTests
     [Fact]
     public void DisposePoolRemovesFromFactory()
     {
-        var factory = CreateMemoryPoolFactory();
+        var factory = new PinnedBlockMemoryPoolFactory(new TestMeterFactory());
         var pool = factory.Create();
         Assert.NotNull(pool);
 
@@ -64,7 +53,7 @@ public class PinnedBlockMemoryPoolFactoryTests
     public async Task FactoryHeartbeatWorks()
     {
         var timeProvider = new FakeTimeProvider(DateTimeOffset.UtcNow.AddDays(1));
-        var factory = CreateMemoryPoolFactory(timeProvider);
+        var factory = new PinnedBlockMemoryPoolFactory(new TestMeterFactory(), timeProvider);
 
         // Use 2 pools to make sure they all get triggered by the heartbeat
         var pool = Assert.IsType<PinnedBlockMemoryPool>(factory.Create());
@@ -120,12 +109,5 @@ public class PinnedBlockMemoryPoolFactoryTests
             // This relies on the current implementation of eviction logic which may change in the future.
             Assert.InRange(pool.BlockCount(), previousCount - (previousCount / 10), previousCount - (previousCount / 30));
         }
-    }
-
-    private static PinnedBlockMemoryPoolFactory CreateMemoryPoolFactory(TimeProvider timeProvider = null)
-    {
-        return new PinnedBlockMemoryPoolFactory(
-            new MemoryPoolMetrics(new TestMeterFactory()),
-            timeProvider: timeProvider);
     }
 }

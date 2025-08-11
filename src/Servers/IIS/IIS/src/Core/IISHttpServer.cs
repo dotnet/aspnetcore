@@ -66,7 +66,7 @@ internal sealed class IISHttpServer : IServer
         ILogger<IISHttpServer> logger
         )
     {
-        _memoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "iis" });
+        _memoryPool = memoryPoolFactory.Create();
         _nativeApplication = nativeApplication;
         _applicationLifetime = applicationLifetime;
         _logger = logger;

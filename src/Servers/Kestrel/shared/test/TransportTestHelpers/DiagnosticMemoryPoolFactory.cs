@@ -25,11 +25,11 @@ public class DiagnosticMemoryPoolFactory : IMemoryPoolFactory<byte>
         _pools = new List<DiagnosticMemoryPool>();
     }
 
-    public MemoryPool<byte> Create(MemoryPoolOptions options = null)
+    public MemoryPool<byte> Create()
     {
         lock (_pools)
         {
-            var pool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(options?.Owner), _allowLateReturn, _rentTracking);
+            var pool = new DiagnosticMemoryPool(new PinnedBlockMemoryPool(), _allowLateReturn, _rentTracking);
             _pools.Add(pool);
             return pool;
         }
