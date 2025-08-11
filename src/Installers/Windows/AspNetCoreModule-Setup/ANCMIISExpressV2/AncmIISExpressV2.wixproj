@@ -16,6 +16,8 @@
     <ToolsetInstallerNuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</ToolsetInstallerNuspecFile>
     <!-- We import D.B.T ourselves in this file -->
     <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
+    <!-- False positive in aspnetcoremodulev2.wxs -->
+    <NoWarn>$(NoWarn);WIX5437</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup>
