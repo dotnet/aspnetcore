@@ -237,35 +237,39 @@ public class ScriptTagHelper : UrlResolutionTagHelper
     /// <inheritdoc />
     public override void Process(TagHelperContext context, TagHelperOutput output)
     {
+        ProcessAsync(context, output).GetAwaiter().GetResult();
+    }
+
+    /// <inheritdoc />
+    public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+    {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(output);
 
         if (string.Equals(Type, "importmap", StringComparison.OrdinalIgnoreCase))
         {
-            // This is an importmap script, we'll write out the import map and
-            // stop processing.
+            // This is an importmap script, check if there's existing content first
+            var childContent = await output.GetChildContentAsync();
+            if (!childContent.IsEmptyOrWhiteSpace)
+            {
+                // User provided explicit content, preserve it
+                return;
+            }
+
+            // No existing content, so we can apply import map logic
             var importMap = ImportMap ?? ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ImportMapDefinition>();
             if (importMap == null)
             {
-                // No importmap found. Only suppress output if this was intended to be
-                // an automatically generated importmap (i.e., when asp-importmap was used).
-                // If the user provided explicit content without asp-importmap, let it render as-is.
-                if (ImportMap != null || context.AllAttributes.ContainsName(ImportMapAttributeName))
-                {
-                    output.SuppressOutput();
-                    return;
-                }
-                // Let the tag render as-is by continuing with normal processing
-                // Don't return here, let normal attribute copying happen
-            }
-            else
-            {
-                output.TagName = "script";
-                output.TagMode = TagMode.StartTagAndEndTag;
-                output.Attributes.SetAttribute("type", "importmap");
-                output.Content.SetHtmlContent(importMap.ToString());
+                // No importmap found, nothing to do.
+                output.SuppressOutput();
                 return;
             }
+
+            output.TagName = "script";
+            output.TagMode = TagMode.StartTagAndEndTag;
+            output.Attributes.SetAttribute("type", "importmap");
+            output.Content.SetHtmlContent(importMap.ToString());
+            return;
         }
 
         // Pass through attribute that is also a well-known HTML attribute.

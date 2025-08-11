@@ -795,10 +795,9 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void ScriptTagHelper_PreservesExplicitImportMapContent_WhenNoImportMapDefinition()
+    public async Task ScriptTagHelper_PreservesExplicitImportMapContent_WhenUserProvidesContent()
     {
         // Arrange - this simulates the user's scenario where they provide explicit importmap content
-        // without using asp-importmap attribute
         var context = MakeTagHelperContext(
             attributes: new TagHelperAttributeList
             {
@@ -806,44 +805,46 @@ public class ScriptTagHelperTest
             });
         
         var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+        // Simulate user providing explicit content
+        output.Content.SetHtmlContent(@"{""imports"":{""jquery"":""https://code.jquery.com/jquery.js""}}");
 
         var helper = GetHelper();
         helper.Type = "importmap";
-        // No endpoint with ImportMapDefinition and no asp-importmap attribute
-        // This should NOT suppress the output, allowing user content to render
+        // No endpoint with ImportMapDefinition - this should NOT suppress the output
+        // since user provided explicit content
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName); // Tag should not be suppressed
         Assert.Equal("importmap", output.Attributes["type"].Value);
-        // The output should not be suppressed, allowing user's explicit content to render
-        Assert.False(output.IsContentModified); // Content should remain as user provided
+        // The user's explicit content should be preserved
+        Assert.Equal(@"{""imports"":{""jquery"":""https://code.jquery.com/jquery.js""}}", output.Content.GetContent());
     }
 
     [Fact]
-    public void ScriptTagHelper_SuppressesOutput_WhenAspImportMapAttributeUsedButNoDefinition()
+    public async Task ScriptTagHelper_SuppressesOutput_WhenNoContentAndNoImportMapDefinition()
     {
-        // Arrange - this simulates using asp-importmap attribute but having no ImportMapDefinition
+        // Arrange - this simulates an empty importmap script with no definition
         var context = MakeTagHelperContext(
             attributes: new TagHelperAttributeList
             {
                 new TagHelperAttribute("type", "importmap"),
-                new TagHelperAttribute("asp-importmap", null), // asp-importmap used but no value
             });
         
         var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+        // No content provided
 
         var helper = GetHelper();
         helper.Type = "importmap";
-        // No endpoint with ImportMapDefinition but asp-importmap attribute is present
-        // This should suppress the output since it was intended to be auto-generated
+        // No endpoint with ImportMapDefinition and no explicit content
+        // This should suppress the output since there's nothing to render
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
-        // Assert - output should be suppressed when asp-importmap is used but no definition found
+        // Assert - output should be suppressed when no content and no definition
         Assert.Null(output.TagName); // Tag should be suppressed
     }
 
