@@ -331,14 +331,23 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
     auto shadowCopyBaseDirectory = std::filesystem::directory_entry(shadowCopyPath);
     if (!shadowCopyBaseDirectory.exists())
     {
-        LOG_INFOF(L"Attempting to Create Directory");
-
         auto ret = CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), nullptr);
         if (!ret)
         {
-            LOG_ERRORF(L"Failed to create shadow copy base directory %ls. Error: %d",
-                        shadowCopyBaseDirectory.path().c_str(),
-                        GetLastError());
+            auto pathString = to_multi_byte_string(shadowCopyBaseDirectory.path(), CP_UTF8);
+            auto errorCode = std::error_code(GetLastError(), std::system_category());
+            std::string errorMessage = format("Failed to create shadow copy base directory %s. Error: %s",
+                                              pathString.c_str(),
+                                              errorCode.message().c_str());
+
+            // TODO: Better substatus code
+            error.statusCode = 500i16;
+            error.subStatusCode = 30i16;
+            error.generalErrorType = format("ASP.NET Core app failed to start - Failed to copy to shadow copy directory");
+            error.errorReason = format("Ensure the application pool process model has write permissions for the shadow copy base directory %s",
+                                       pathString.c_str());
+            error.detailedErrorContent = errorMessage;
+            return std::wstring();
         }
     }
 
@@ -373,7 +382,7 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
     // It could expand to a network drive, or an expanded link folder path
     // We already made it an absolute path relative to the physicalPath above
     try {
-        // CopyToDirectory throws exception on failure, therefore don't need to check return value
+        // CopyToDirectory will succeed or throw exception, so return value can be ignored
         Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), shadowCopyBaseDirectory.path(), copiedFileCount);
     }
     catch (const std::system_error& ex)
