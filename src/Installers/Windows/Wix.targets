@@ -106,7 +106,7 @@
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
-  <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile">
+  <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile" Condition="'true' == 'false'">
     <PropertyGroup>
       <WixpackWorkingDir>$(IntermediateOutputPath)wixpack</WixpackWorkingDir>
       <WixpackOutputDir>$(ArtifactsNonShippingPackagesDir)</WixpackOutputDir>
