@@ -76,7 +76,6 @@
     <Exec Command="powershell -NoProfile -NoLogo $(GenerateNupkgPowershellScript) ^
                       '$(ProductNameShort)' ^
                       '$(MsiFullPath)' ^
-                      '$(CabFullPath)' ^
                       '$(ToolsetInstallerNuspecFile)' ^
                       '$(ArtifactsNonShippingPackagesDir)' ^
                       '$(Platform)' ^

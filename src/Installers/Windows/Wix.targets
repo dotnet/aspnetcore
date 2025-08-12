@@ -24,6 +24,10 @@
     <InstallDir>$(ProductName)</InstallDir>
     <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(_GeneratedPackageVersion)</DepProviderKey>
     <DefineConstants>$(DefineConstants);DepProviderKey=$(DepProviderKey)</DefineConstants>
+    <!-- Everything built in those projects _except_ the final package & MSI are shipping assets. -->
+    <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
+    <_GeneratedPackageVersion
+        Condition="! $(PackageVersion.Contains('$(_PreReleaseLabel)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -106,7 +110,7 @@
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
-  <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile" Condition="'true' == 'false'">
+  <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile">
     <PropertyGroup>
       <WixpackWorkingDir>$(IntermediateOutputPath)wixpack</WixpackWorkingDir>
       <WixpackOutputDir>$(ArtifactsNonShippingPackagesDir)</WixpackOutputDir>
