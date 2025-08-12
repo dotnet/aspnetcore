@@ -14,7 +14,7 @@ public sealed class OpenApiDocumentLocalizationTests(LocalizedSampleAppFixture f
         var outputDirectory = SkipOnHelixAttribute.OnHelix()
             ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
             : "snapshots";
-        await Verify(json)
+        await Verify(json.ReplaceLineEndings("\n"))
             .UseDirectory(outputDirectory);
     }
 }

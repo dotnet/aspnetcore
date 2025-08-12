@@ -44,7 +44,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
             ? Path.Combine(Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT"), "Integration", "snapshots")
             : "snapshots";
         var outputDirectory = Path.Combine(baseSnapshotsDirectory, version.ToString());
-        await Verify(json)
+        await Verify(json.ReplaceLineEndings("\n"))
             .UseDirectory(outputDirectory)
             .UseParameters(documentName);
     }
