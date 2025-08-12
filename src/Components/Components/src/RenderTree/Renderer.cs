@@ -162,6 +162,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         => GetComponentRenderMode(GetRequiredComponentState(componentId).Component);
 
     /// <summary>
+    /// Internal method to get ComponentState by ID for error reporting.
+    /// </summary>
+    internal ComponentState GetRequiredComponentStateInternal(int componentId)
+        => GetRequiredComponentState(componentId);
+
+    /// <summary>
     /// Resolves the component state for a given <see cref="IComponent"/> instance.
     /// </summary>
     /// <param name="component">The <see cref="IComponent"/> instance</param>

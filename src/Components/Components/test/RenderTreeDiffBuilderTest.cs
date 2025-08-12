@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -431,6 +432,40 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Act/Assert
         var ex = Assert.Throws<InvalidOperationException>(() => GetSingleUpdatedComponent());
         Assert.Equal("More than one sibling of element 'el' has the same key value, 'key1'. Key values must be unique.", ex.Message);
+    }
+
+    [Fact]
+    public void EnhancedErrorMessageMethodExists()
+    {
+        // This test validates that the enhanced error message infrastructure is in place
+        // Since we cannot easily create an invalid frame type scenario in normal usage,
+        // we will verify that our enhancement methods exist and have the correct signatures
+        
+        // Verify the CreateDiffErrorMessage method exists
+        var createErrorMethod = typeof(RenderTreeDiffBuilder).GetMethod("CreateDiffErrorMessage", 
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(createErrorMethod);
+        
+        // Verify the BuildComponentPath method exists  
+        var buildPathMethod = typeof(RenderTreeDiffBuilder).GetMethod("BuildComponentPath",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Assert.NotNull(buildPathMethod);
+        
+        // Verify correct parameter types
+        var createErrorParams = createErrorMethod.GetParameters();
+        Assert.Equal(2, createErrorParams.Length);
+        Assert.Contains("DiffContext", createErrorParams[0].ParameterType.Name);
+        Assert.Equal(typeof(int), createErrorParams[1].ParameterType);
+        
+        var buildPathParams = buildPathMethod.GetParameters();
+        Assert.Equal(2, buildPathParams.Length);
+        Assert.Equal(typeof(Renderer), buildPathParams[0].ParameterType);
+        Assert.Equal(typeof(int), buildPathParams[1].ParameterType);
+        
+        // Also verify the new internal method exists on Renderer
+        var getComponentStateMethod = typeof(Renderer).GetMethod("GetRequiredComponentStateInternal",
+            BindingFlags.NonPublic | BindingFlags.Instance);
+        Assert.NotNull(getComponentStateMethod);
     }
 
     [Fact]

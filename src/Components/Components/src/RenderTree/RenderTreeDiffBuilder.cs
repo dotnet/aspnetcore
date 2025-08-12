@@ -746,8 +746,41 @@ internal static class RenderTreeDiffBuilder
             // We don't handle attributes here, they have their own diff logic.
             // See AppendDiffEntriesForAttributeFrame
             default:
-                throw new NotImplementedException($"Encountered unsupported frame type during diffing: {newTree[newFrameIndex].FrameTypeField}");
+                throw new NotImplementedException(CreateDiffErrorMessage(ref diffContext, newFrameIndex));
         }
+    }
+
+    private static string CreateDiffErrorMessage(ref DiffContext diffContext, int newFrameIndex)
+    {
+        var newTree = diffContext.NewTree;
+        var unsupportedFrameType = newTree[newFrameIndex].FrameTypeField;
+        
+        // Build component hierarchy path
+        var componentPath = BuildComponentPath(diffContext.Renderer, diffContext.ComponentId);
+        
+        // Build frame types list up to the failing frame
+        var frameTypes = new List<string>();
+        for (var i = 0; i <= newFrameIndex && i < newTree.Length; i++)
+        {
+            frameTypes.Add(newTree[i].FrameTypeField.ToString());
+        }
+        
+        return $"Encountered an unsupported frame type during diffing {unsupportedFrameType} for Component Path: '{componentPath}' on tree with length '{newTree.Length}' and contents '{string.Join(", ", frameTypes)}'.";
+    }
+
+    private static string BuildComponentPath(Renderer renderer, int componentId)
+    {
+        var componentPath = new List<string>();
+        var currentComponentState = renderer.GetRequiredComponentStateInternal(componentId);
+        
+        while (currentComponentState is not null)
+        {
+            var componentType = currentComponentState.Component.GetType();
+            componentPath.Insert(0, componentType.Name);
+            currentComponentState = currentComponentState.ParentComponentState;
+        }
+        
+        return string.Join(" -> ", componentPath);
     }
 
     // This should only be called for attributes that have the same name. This is an
