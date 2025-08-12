@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore;
 /// <summary>
 /// Provides convenience methods for creating instances of <see cref="IWebHost"/> and <see cref="IWebHostBuilder"/> with pre-configured defaults.
 /// </summary>
-[Obsolete("WebHost is obsolete. Use HostBuilder or WebApplicationBuilder instead.")]
+[Obsolete("WebHost is obsolete. Use HostBuilder or WebApplicationBuilder instead.", DiagnosticId = "ASPDEPR008")]
 public static class WebHost
 {
     /// <summary>

@@ -127,9 +127,9 @@ public sealed class WebApplicationBuilder : IHostApplicationBuilder
         bootstrapHostBuilder.ConfigureSlimWebHost(
             webHostBuilder =>
             {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
                 AspNetCore.WebHost.ConfigureWebDefaultsSlim(webHostBuilder);
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 
                 // Runs inline.
                 webHostBuilder.Configure(ConfigureApplication);
