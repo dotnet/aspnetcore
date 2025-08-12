@@ -31,12 +31,12 @@
     </Package>
 
     <Fragment>
-            <Directory Id="$(var.ProgramFilesFolder)">
-                <Directory Id="INSTALLFOLDER" Name="dotnet">
-                    <Directory Id="MM" Name="$(var.MajorVersion).$(var.MinorVersion)" />
-                </Directory>
+        <StandardDirectory Id="ProgramFiles6432Folder">
+            <Directory Id="INSTALLFOLDER" Name="dotnet">
+                <Directory Id="MM" Name="$(var.MajorVersion).$(var.MinorVersion)" />
             </Directory>
-        </Fragment>
+        </StandardDirectory>
+    </Fragment>
 
     <Fragment>
         <ComponentGroup Id="ProductComponents" Directory="MM">
