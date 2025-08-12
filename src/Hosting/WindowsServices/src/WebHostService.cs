@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices;
 ///     Provides an implementation of a Windows service that hosts ASP.NET Core.
 /// </summary>
 [DesignerCategory("Code")]
-[Obsolete("Use UseWindowsService and AddHostedService instead.")]
+[Obsolete("Use UseWindowsService and AddHostedService instead.", DiagnosticId = "ASPDEPR004")]
 public class WebHostService : ServiceBase
 {
     private readonly IWebHost _host;

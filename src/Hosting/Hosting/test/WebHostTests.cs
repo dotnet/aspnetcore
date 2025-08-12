@@ -1087,9 +1087,7 @@ public partial class WebHostTests
         public void Configure(IApplicationBuilder app) { }
     }
 
-#pragma warning disable CS0618 // Type or member is obsolete
     private IWebHost CreateHost(RequestDelegate requestDelegate)
-#pragma warning restore CS0618 // Type or member is obsolete
     {
         var builder = CreateBuilder()
             .UseFakeServer()

@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <NoWarn>$(NoWarn);ASPDEPR008</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
