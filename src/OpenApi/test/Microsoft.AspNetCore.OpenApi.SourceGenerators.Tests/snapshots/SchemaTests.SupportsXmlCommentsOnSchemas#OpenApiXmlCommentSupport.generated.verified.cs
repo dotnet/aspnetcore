@@ -467,7 +467,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         var description = propertyComment.Summary;
                         if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
                         {
-                            description = $"{description}{Environment.NewLine}{propertyComment.Value}";
+                            description = $"{description}\n{propertyComment.Value}";
                         }
                         else if (string.IsNullOrEmpty(description))
                         {
@@ -557,7 +557,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     var description = propertyComment.Summary;
                     if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
                     {
-                        description = $"{description}{Environment.NewLine}{propertyComment.Value}";
+                        description = $"{description}\n{propertyComment.Value}";
                     }
                     else if (string.IsNullOrEmpty(description))
                     {

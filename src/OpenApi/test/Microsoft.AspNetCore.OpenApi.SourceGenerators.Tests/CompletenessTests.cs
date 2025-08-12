@@ -569,7 +569,7 @@ public class XmlPropertyTestClass
             Assert.Equal("A property with only value tag.", xmlPropertyTest.Properties["valueOnly"].Description);
 
             // Property with both <summary> and <value> -> combines with newline separator
-            Assert.Equal($"A property with both summary and value.{Environment.NewLine}Additional value information.", xmlPropertyTest.Properties["bothSummaryAndValue"].Description);
+            Assert.Equal($"A property with both summary and value.\nAdditional value information.", xmlPropertyTest.Properties["bothSummaryAndValue"].Description);
 
             // Property with only <returns> -> should be null (ignored)
             Assert.Null(xmlPropertyTest.Properties["returnsOnly"].Description);
