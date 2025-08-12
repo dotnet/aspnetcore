@@ -212,7 +212,7 @@ internal class User : IUser
             // Name: only <value> tag -> uses value directly
             Assert.Equal("The name of the todo.", todo.Properties["name"].Description);
             // Description: both <summary> and <value> tags -> combines with newline separator
-            Assert.Equal("A description of the the todo.\nAnother description of the todo.", todo.Properties["description"].Description);
+            Assert.Equal($"A description of the the todo.{Environment.NewLine}Another description of the todo.", todo.Properties["description"].Description);
 
             path = document.Paths["/type-with-examples"].Operations[HttpMethod.Post];
             var typeWithExamples = path.RequestBody.Content["application/json"].Schema;

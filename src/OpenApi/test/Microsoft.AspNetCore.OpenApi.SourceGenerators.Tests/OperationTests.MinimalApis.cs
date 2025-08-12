@@ -508,7 +508,7 @@ public class SummaryValueParametersClass
             Assert.Equal("Property with summary documentation that should be overridden.", summaryAndReturnsParam.Description);
 
             var allThreeParam = path22.Parameters.First(p => p.Name == "AllThreeProperty");
-            Assert.Equal("Property with all three types of documentation.\nValue-based description that should take highest precedence.", allThreeParam.Description);
+            Assert.Equal($"Property with all three types of documentation.{Environment.NewLine}Value-based description that should take highest precedence.", allThreeParam.Description);
 
             var returnsOnlyParam = path22.Parameters.First(p => p.Name == "ReturnsOnlyProperty");
             Assert.Null(returnsOnlyParam.Description);
@@ -524,7 +524,7 @@ public class SummaryValueParametersClass
             Assert.Equal("Property with only summary documentation.", summaryParam.Description);
 
             var valueParam = path23.Parameters.First(p => p.Name == "ValueProperty");
-            Assert.Equal("Property with summary that should be overridden by value.\nValue description that should take precedence over summary.", valueParam.Description);
+            Assert.Equal($"Property with summary that should be overridden by value.{Environment.NewLine}Value description that should take precedence over summary.", valueParam.Description);
 
             var valueOnlyParam2 = path23.Parameters.First(p => p.Name == "ValueOnlyProperty");
             Assert.Equal("Property with only value documentation.", valueOnlyParam2.Description);
