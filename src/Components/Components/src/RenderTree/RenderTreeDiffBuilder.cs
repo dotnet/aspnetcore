@@ -758,14 +758,21 @@ internal static class RenderTreeDiffBuilder
         // Build component hierarchy path
         var componentPath = BuildComponentPath(diffContext.Renderer, diffContext.ComponentId);
         
-        // Build frame types list up to the failing frame
+        // Build frame types descriptor
+        var frameTypesDescriptor = BuildFrameTypeDescriptor(newTree, newFrameIndex);
+        
+        return $"Encountered an unsupported frame type during diffing {unsupportedFrameType} for Component Path: '{componentPath}' on tree with length '{newTree.Length}' and contents '{frameTypesDescriptor}'.";
+    }
+
+    private static string BuildFrameTypeDescriptor(RenderTreeFrame[] renderTree, int frameIndex)
+    {
         var frameTypes = new List<string>();
-        for (var i = 0; i <= newFrameIndex && i < newTree.Length; i++)
+        for (var i = 0; i <= frameIndex && i < renderTree.Length; i++)
         {
-            frameTypes.Add(newTree[i].FrameTypeField.ToString());
+            frameTypes.Add(renderTree[i].FrameTypeField.ToString());
         }
         
-        return $"Encountered an unsupported frame type during diffing {unsupportedFrameType} for Component Path: '{componentPath}' on tree with length '{newTree.Length}' and contents '{string.Join(", ", frameTypes)}'.";
+        return string.Join(", ", frameTypes);
     }
 
     private static string BuildComponentPath(Renderer renderer, int componentId)
