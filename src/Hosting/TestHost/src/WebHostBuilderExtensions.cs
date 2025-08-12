@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.TestHost;
 /// <summary>
 /// Contains extensions for configuring the <see cref="IWebHostBuilder" /> instance.
 /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
 public static class WebHostBuilderExtensions
 {
     /// <summary>
@@ -52,6 +51,7 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="host"></param>
     /// <returns></returns>
+    [Obsolete("IWebHost is obsolete. Use IHost instead.")]
     public static TestServer GetTestServer(this IWebHost host)
     {
         return (TestServer)host.Services.GetRequiredService<IServer>();
@@ -62,6 +62,7 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="host"></param>
     /// <returns></returns>
+    [Obsolete("IWebHost is obsolete. Use IHost instead.")]
     public static HttpClient GetTestClient(this IWebHost host)
     {
         return host.GetTestServer().CreateClient();
@@ -209,4 +210,3 @@ public static class WebHostBuilderExtensions
             };
     }
 }
-#pragma warning restore CS0618 // Type or member is obsolete

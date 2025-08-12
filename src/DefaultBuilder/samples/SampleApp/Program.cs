@@ -75,12 +75,9 @@ public class Program
     }
     private static void DirectWebHost(string[] args)
     {
-        // Using defaults with HostBuilder pattern
-        using (var host = Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<Startup>();
-            })
+        // Using defaults with a Startup class
+        using (var host = WebHost.CreateDefaultBuilder(args)
+            .UseStartup<Startup>()
             .Build())
         {
             host.Run();

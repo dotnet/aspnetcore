@@ -377,7 +377,9 @@ public class WebApplicationTests
     [MemberData(nameof(CreateBuilderFuncs))]
     public void WebApplicationBuilderWebHost_ThrowsWhenBuiltDirectly(CreateBuilderFunc createBuilder)
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         Assert.Throws<NotSupportedException>(() => ((IWebHostBuilder)createBuilder().WebHost).Build());
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
     [Theory]

@@ -18,6 +18,7 @@ public class TestServer : IServer
 {
 #pragma warning disable CS0618 // Type or member is obsolete
     private readonly IWebHost? _hostInstance;
+#pragma warning restore CS0618 // Type or member is obsolete
     private bool _disposed;
     private ApplicationWrapper? _application;
 
@@ -79,6 +80,7 @@ public class TestServer : IServer
     /// For use with IWebHostBuilder.
     /// </summary>
     /// <param name="builder"></param>
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.")]
     public TestServer(IWebHostBuilder builder)
         : this(builder, CreateTestFeatureCollection())
     {
@@ -89,6 +91,7 @@ public class TestServer : IServer
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="featureCollection"></param>
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.")]
     public TestServer(IWebHostBuilder builder, IFeatureCollection featureCollection)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -110,6 +113,7 @@ public class TestServer : IServer
     /// <summary>
     /// Gets the <see cref="IWebHost" /> instance associated with the test server.
     /// </summary>
+    [Obsolete("IWebHost is obsolete. Use IHost instead.")]
     public IWebHost Host
     {
         get
@@ -118,7 +122,6 @@ public class TestServer : IServer
                 ?? throw new InvalidOperationException("The TestServer constructor was not called with a IWebHostBuilder so IWebHost is not available.");
         }
     }
-#pragma warning restore CS0618 // Type or member is obsolete
 
     /// <summary>
     /// Gets the service provider associated with the test server.

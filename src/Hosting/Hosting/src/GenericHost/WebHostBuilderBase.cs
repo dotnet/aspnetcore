@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting;
 
-#pragma warning disable CS0618 // Type or member is obsolete
 internal abstract class WebHostBuilderBase : IWebHostBuilder, ISupportsUseDefaultServiceProvider
 {
     private protected readonly IHostBuilder _builder;
@@ -27,10 +26,12 @@ internal abstract class WebHostBuilderBase : IWebHostBuilder, ISupportsUseDefaul
         _config = configBuilder.Build();
     }
 
+#pragma warning disable CS0618 // Type or member is obsolete
     public IWebHost Build()
     {
         throw new NotSupportedException($"Building this implementation of {nameof(IWebHostBuilder)} is not supported.");
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 
     public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
     {
@@ -106,4 +107,3 @@ internal abstract class WebHostBuilderBase : IWebHostBuilder, ISupportsUseDefaul
         return this;
     }
 }
-#pragma warning restore CS0618 // Type or member is obsolete
