@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.TestHost;
 /// </summary>
 public class TestServer : IServer
 {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private readonly IWebHost? _hostInstance;
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
     private bool _disposed;
     private ApplicationWrapper? _application;
 

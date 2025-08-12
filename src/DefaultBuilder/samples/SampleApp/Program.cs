@@ -75,10 +75,12 @@ public class Program
     }
     private static void DirectWebHost(string[] args)
     {
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
         // Using defaults with a Startup class
         using (var host = WebHost.CreateDefaultBuilder(args)
             .UseStartup<Startup>()
             .Build())
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
         {
             host.Run();
         }

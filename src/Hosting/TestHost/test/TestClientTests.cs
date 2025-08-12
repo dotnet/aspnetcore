@@ -744,7 +744,9 @@ public class TestClientTests
                 .UseTestServer()
                 .ConfigureServices(services =>
                 {
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
                     services.AddSingleton<ILogger<IWebHost>>(logger);
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
                 })
                 .Configure(app =>
                 {
@@ -878,7 +880,9 @@ public class TestClientTests
             {
                 webHostBuilder
                     .UseTestServer()
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
                     .ConfigureServices(services => services.AddSingleton<ILogger<IWebHost>>(logger))
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
                     .Configure(app => app.Run(appDelegate));
             });
         using var host = builder.Build();
@@ -895,7 +899,9 @@ public class TestClientTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await client.ConnectAsync(new Uri("http://localhost"), tokenSource.Token));
     }
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private class VerifierLogger : ILogger<IWebHost>
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
     {
         public IDisposable BeginScope<TState>(TState state) => new NoopDispoasble();
 

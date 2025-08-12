@@ -26,12 +26,12 @@ internal abstract class WebHostBuilderBase : IWebHostBuilder, ISupportsUseDefaul
         _config = configBuilder.Build();
     }
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     public IWebHost Build()
     {
         throw new NotSupportedException($"Building this implementation of {nameof(IWebHostBuilder)} is not supported.");
     }
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
 
     public IWebHostBuilder ConfigureAppConfiguration(Action<WebHostBuilderContext, IConfigurationBuilder> configureDelegate)
     {

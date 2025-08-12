@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Contains extension methods for configuring the <see cref="IWebHostBuilder" />.
 /// </summary>
-#pragma warning disable CS0618 // Type or member is obsolete
 public static class HostingAbstractionsWebHostBuilderExtensions
 {
     /// <summary>
@@ -170,11 +169,12 @@ public static class HostingAbstractionsWebHostBuilderExtensions
     /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to start.</param>
     /// <param name="urls">The urls the hosted application will listen on.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     public static IWebHost Start(this IWebHostBuilder hostBuilder, [StringSyntax(StringSyntaxAttribute.Uri)] params string[] urls)
     {
         var host = hostBuilder.UseUrls(urls).Build();
         host.StartAsync(CancellationToken.None).GetAwaiter().GetResult();
         return host;
     }
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
 }
-#pragma warning restore CS0618 // Type or member is obsolete

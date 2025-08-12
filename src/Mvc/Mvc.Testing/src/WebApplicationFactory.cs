@@ -35,9 +35,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     private TestServer? _server;
     private IHost? _host;
     private Action<IWebHostBuilder> _configuration;
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private IWebHost? _webHost;
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
     private Uri? _webHostAddress;
     private readonly List<HttpClient> _clients = new();
     private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
@@ -207,7 +207,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         this._configureKestrelOptions = configureKestrelOptions;
     }
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private IWebHost CreateKestrelServer(IWebHostBuilder builder)
     {
         ConfigureBuilderToUseKestrel(builder);
@@ -219,7 +219,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         host.Start();
         return host;
     }
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
 
     private void TryConfigureServerPort(Func<IServerAddressesFeature?> serverAddressFeatureAccessor)
     {
@@ -606,9 +606,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private static IServerAddressesFeature? GetServerAddressFeature(IHost host) => host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private static IServerAddressesFeature? GetServerAddressFeature(IWebHost webHost) => webHost.ServerFeatures.Get<IServerAddressesFeature>();
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
 
     /// <summary>
     /// Gives a fixture an opportunity to configure the application before it gets built.

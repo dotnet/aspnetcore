@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
 
 using System.Collections.Concurrent;
 using System.Diagnostics.Tracing;
