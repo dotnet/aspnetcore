@@ -462,8 +462,8 @@ public class RenderTreeDiffBuilderTest : IDisposable
         Assert.Equal(typeof(Renderer), buildPathParams[0].ParameterType);
         Assert.Equal(typeof(int), buildPathParams[1].ParameterType);
         
-        // Also verify the new internal method exists on Renderer
-        var getComponentStateMethod = typeof(Renderer).GetMethod("GetRequiredComponentStateInternal",
+        // Also verify the GetRequiredComponentState method is internal
+        var getComponentStateMethod = typeof(Renderer).GetMethod("GetRequiredComponentState",
             BindingFlags.NonPublic | BindingFlags.Instance);
         Assert.NotNull(getComponentStateMethod);
     }

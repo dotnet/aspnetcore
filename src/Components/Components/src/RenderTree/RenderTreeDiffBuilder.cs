@@ -778,7 +778,7 @@ internal static class RenderTreeDiffBuilder
     private static string BuildComponentPath(Renderer renderer, int componentId)
     {
         var componentPath = new List<string>();
-        var currentComponentState = renderer.GetRequiredComponentStateInternal(componentId);
+        var currentComponentState = renderer.GetRequiredComponentState(componentId);
         
         while (currentComponentState is not null)
         {
