@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices;
 /// <summary>
 ///     Extensions to <see cref="IWebHost"/> for hosting inside a Windows service.
 /// </summary>
-[Obsolete("Use UseWindowsService and AddHostedService instead.", DiagnosticId = "ASPDEPR004")]
+[Obsolete("Use UseWindowsService and AddHostedService instead.", DiagnosticId = "ASPDEPR009")]
 public static class WebHostWindowsServiceExtensions
 {
     /// <summary>

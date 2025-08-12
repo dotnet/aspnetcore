@@ -56,12 +56,14 @@ public static class Program
                 return 12;
             case "HangOnStop":
                 {
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
 #pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                         .UseIIS()
                         .UseStartup<Startup>()
                         .Build();
 #pragma warning restore ASPDEPR008 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
                     host.Run();
 
                     Thread.Sleep(Timeout.Infinite);
@@ -69,6 +71,7 @@ public static class Program
                 break;
             case "IncreaseShutdownLimit":
                 {
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
 #pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                         .UseIIS()
@@ -76,6 +79,7 @@ public static class Program
                         .UseStartup<Startup>()
                         .Build();
 #pragma warning restore ASPDEPR008 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
                     host.Run();
                 }
@@ -98,6 +102,7 @@ public static class Program
                 return 0;
             case "OverriddenServer":
                 {
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
 #pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                             .UseIIS()
@@ -105,6 +110,7 @@ public static class Program
                             .Configure(builder => builder.Run(async context => { await context.Response.WriteAsync("I shouldn't work"); }))
                             .Build();
 #pragma warning restore ASPDEPR008 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
                     host.Run();
                 }
                 break;
@@ -117,6 +123,7 @@ public static class Program
 #if !FORWARDCOMPAT
             case "DecreaseRequestLimit":
                 {
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
 #pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                         .ConfigureLogging((_, factory) =>
@@ -132,6 +139,7 @@ public static class Program
                         .UseStartup<Startup>()
                         .Build();
 #pragma warning restore ASPDEPR008 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
                     host.Run();
                     break;
@@ -139,6 +147,7 @@ public static class Program
 #endif
             case "ThrowInStartup":
                 {
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
 #pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                                     .ConfigureLogging((_, factory) =>
@@ -150,6 +159,7 @@ public static class Program
                                     .UseStartup<ThrowingStartup>()
                                     .Build();
 #pragma warning restore ASPDEPR008 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
                     host.Run();
                 }
@@ -199,6 +209,7 @@ public static class Program
 
     private static int StartServer()
     {
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
 #pragma warning disable ASPDEPR008 // Type or member is obsolete
         var host = new WebHostBuilder()
             .ConfigureLogging((_, factory) =>
@@ -212,6 +223,7 @@ public static class Program
             .UseStartup<Startup>()
             .Build();
 #pragma warning restore ASPDEPR008 // Type or member is obsolete
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         host.Run();
         return 0;

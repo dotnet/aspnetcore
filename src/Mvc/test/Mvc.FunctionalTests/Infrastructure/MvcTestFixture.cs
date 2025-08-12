@@ -52,9 +52,9 @@ public class MvcTestFixture<TStartup> : WebApplicationFactory<TStartup>
         {
             CultureInfo.CurrentCulture = new CultureInfo("en-GB");
             CultureInfo.CurrentUICulture = new CultureInfo("en-US");
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
             return base.CreateServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
         }
         finally
         {

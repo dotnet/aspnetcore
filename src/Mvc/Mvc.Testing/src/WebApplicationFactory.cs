@@ -108,9 +108,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 return _webHost?.Services ?? _host!.Services;
             }
 
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
             return _host?.Services ?? _server!.Host.Services;
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
         }
     }
 
@@ -146,9 +146,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         var factory = new DelegatedWebApplicationFactory(
             ClientOptions,
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
             CreateServer,
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
             CreateServer,
             CreateHost,
             CreateWebHostBuilder,
@@ -319,9 +319,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             }
             else
             {
-#pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
                 _server = CreateServer(builder);
-#pragma warning restore CS0618 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
             }
         }
     }
