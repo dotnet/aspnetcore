@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <Content Include="thm.xml" />
-    <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle\upgradePolicies.wxs" />
+    <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix5\bundle\upgradePolicies.wxs" />
   </ItemGroup>
 
   <ItemGroup>
