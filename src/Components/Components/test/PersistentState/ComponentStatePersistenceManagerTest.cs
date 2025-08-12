@@ -120,6 +120,8 @@ public class ComponentStatePersistenceManagerTest
         persistenceManager.SetPlatformRenderMode(new TestRenderMode());
         var testStore = new TestStore([]);
 
+        await persistenceManager.RestoreStateAsync(new TestStore([]), RestoreContext.InitialValue);
+
         // Act
         await persistenceManager.PersistStateAsync(testStore, new TestRenderer());
 
@@ -349,6 +351,105 @@ public class ComponentStatePersistenceManagerTest
         Assert.Contains(4, executionSequence);
 
         Assert.Equal(4, executionSequence.Count);
+    }
+
+    [Fact]
+    public async Task RestoreStateAsync_ValidatesOnlySupportUpdatesWhenRestoreContextValueUpdate()
+    {
+        var store = new TestStore([]);
+
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            CreateServiceProvider());
+
+        // First restore should work (initialize state)
+        await persistenceManager.RestoreStateAsync(store, RestoreContext.InitialValue);
+
+        // Second restore with non-ValueUpdate context should throw
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            persistenceManager.RestoreStateAsync(store, RestoreContext.InitialValue));
+
+        Assert.Equal("State already initialized.", exception.Message);
+    }
+
+    [Fact]
+    public async Task RestoreStateAsync_ValidatesRegisteredUpdateCallbacksAreInvokedOnValueUpdates()
+    {
+        var store = new TestStore([]);
+
+        var persistenceManager = new ComponentStatePersistenceManager(
+            NullLogger<ComponentStatePersistenceManager>.Instance,
+            CreateServiceProvider());
+
+        var callbackInvoked = false;
+
+        // First restore to initialize state
+        await persistenceManager.RestoreStateAsync(store, RestoreContext.InitialValue);
+
+        // Register a callback for value updates through the state object
+        var options = new RestoreOptions { RestoreBehavior = RestoreBehavior.Default, AllowUpdates = true };
+        persistenceManager.State.RegisterOnRestoring(() => { callbackInvoked = true; }, options);
+        // RegisterOnRestoring will invoke the callback immediately, so we reset it
+        callbackInvoked = false;
+
+        // Second restore with ValueUpdate context should invoke callbacks
+        await persistenceManager.RestoreStateAsync(store, RestoreContext.ValueUpdate);
+
+        Assert.True(callbackInvoked);
+    }
+
+    [Theory]
+    [MemberData(nameof(RestoreContexts))]
+    public async Task RestoreStateAsync_RestoresServicesForDifferentContexts(RestoreContext context)
+    {
+        // Arrange
+        var componentRenderMode = new TestRenderMode();
+        var (serviceProvider, persistenceManager) = CreatePersistenceManagerWithService(componentRenderMode);
+
+        var service = serviceProvider.GetRequiredService<TestPersistentService>();
+        service.TestProperty = "Test Value";
+
+        var store = new TestStore([]);
+        await persistenceManager.RestoreStateAsync(store, RestoreContext.InitialValue);
+        await persistenceManager.PersistStateAsync(store, new TestRenderer());
+
+        // Act - Create new service provider and persistence manager
+        var (newServiceProvider, newPersistenceManager) = CreatePersistenceManagerWithService(componentRenderMode);
+
+        // Restore with the specified context
+        await newPersistenceManager.RestoreStateAsync(store, context);
+
+        // Assert
+        var restoredService = newServiceProvider.GetRequiredService<TestPersistentService>();
+        Assert.Equal("Test Value", restoredService.TestProperty);
+
+        static (IServiceProvider serviceProvider, ComponentStatePersistenceManager persistenceManager) CreatePersistenceManagerWithService(IComponentRenderMode renderMode)
+        {
+            var serviceProvider = new ServiceCollection()
+                .AddScoped<TestPersistentService>()
+                .AddPersistentService<TestPersistentService>(renderMode)
+                .BuildServiceProvider();
+
+            var persistenceManager = new ComponentStatePersistenceManager(
+                NullLogger<ComponentStatePersistenceManager>.Instance,
+                serviceProvider);
+            persistenceManager.SetPlatformRenderMode(renderMode);
+
+            return (serviceProvider, persistenceManager);
+        }
+    }
+
+    public static IEnumerable<object[]> RestoreContexts()
+    {
+        yield return new object[] { RestoreContext.InitialValue };
+        yield return new object[] { RestoreContext.ValueUpdate };
+        yield return new object[] { RestoreContext.LastSnapshot };
+    }
+
+    private class TestPersistentService
+    {
+        [PersistentState(AllowUpdates = true)]
+        public string TestProperty { get; set; } = string.Empty;
     }
 
     private class TestRenderer : Renderer

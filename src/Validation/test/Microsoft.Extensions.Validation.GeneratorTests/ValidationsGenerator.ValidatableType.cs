@@ -80,7 +80,7 @@ public class SubTypeWithInheritance : SubType
 }
 """;
         await Verify(source, out var compilation);
-        VerifyValidatableType(compilation, "ComplexType", async (validationOptions, type) =>
+        await VerifyValidatableType(compilation, "ComplexType", async (validationOptions, type) =>
         {
             Assert.True(validationOptions.TryGetValidatableTypeInfo(type, out var validatableTypeInfo));
 
@@ -449,7 +449,7 @@ public record SubTypeWithInheritance : SubType
 }
 """;
         await Verify(source, out var compilation);
-        VerifyValidatableType(compilation, "ComplexType", async (validationOptions, type) =>
+        await VerifyValidatableType(compilation, "ComplexType", async (validationOptions, type) =>
         {
             Assert.True(validationOptions.TryGetValidatableTypeInfo(type, out var validatableTypeInfo));
 

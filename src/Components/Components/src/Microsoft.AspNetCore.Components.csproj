@@ -89,6 +89,7 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.QuickGrid.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests" />
     <InternalsVisibleTo Include="Components.TestServer" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />

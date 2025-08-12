@@ -18,4 +18,7 @@ To update the Selenium and Playwright versions, these files need to be updated:
 ## Actions
 
 Please, open the PR against `main` branch and include changes to the files listed above.
-Also mention @dotnet/aspnet-build in the opened Pull Request - this will be a responsible engineer for changes validation.
+
+Also:
+- mention @dotnet/aspnet-build in the opened Pull Request - this will be a responsible engineer for changes validation.
+- add the `build-ops` label to the opened Pull Request
