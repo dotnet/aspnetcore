@@ -206,9 +206,13 @@ internal class User : IUser
 
             path = document.Paths["/todo-with-description"].Operations[HttpMethod.Post];
             todo = path.RequestBody.Content["application/json"].Schema;
+            // Test different XML comment scenarios for properties:
+            // Id: only <summary> tag -> uses summary directly
             Assert.Equal("The identifier of the todo.", todo.Properties["id"].Description);
+            // Name: only <value> tag -> uses value directly
             Assert.Equal("The name of the todo.", todo.Properties["name"].Description);
-            Assert.Equal("Another description of the todo.", todo.Properties["description"].Description);
+            // Description: both <summary> and <value> tags -> combines with newline separator
+            Assert.Equal($"A description of the the todo.\nAnother description of the todo.", todo.Properties["description"].Description);
 
             path = document.Paths["/type-with-examples"].Operations[HttpMethod.Post];
             var typeWithExamples = path.RequestBody.Content["application/json"].Schema;

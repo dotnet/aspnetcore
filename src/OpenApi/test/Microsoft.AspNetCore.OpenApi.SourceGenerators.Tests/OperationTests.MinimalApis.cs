@@ -49,6 +49,7 @@ app.MapPost("/18", RouteHandlerExtensionMethods.Post18);
 app.MapPost("/19", RouteHandlerExtensionMethods.Post19);
 app.MapGet("/20", RouteHandlerExtensionMethods.Get20);
 app.MapGet("/21", RouteHandlerExtensionMethods.Get21);
+app.MapGet("/22", RouteHandlerExtensionMethods.Get22);
 
 app.Run();
 
@@ -249,6 +250,15 @@ public static class RouteHandlerExtensionMethods
     {
         return TypedResults.Ok($"Processed parameters");
     }
+
+    /// <summary>
+    /// Tests summary and value documentation priority on AsParameters properties.
+    /// </summary>
+    /// <param name="summaryValueParams">Parameters testing summary vs value priority.</param>
+    public static IResult Get22([AsParameters] SummaryValueParametersClass summaryValueParams)
+    {
+        return TypedResults.Ok($"Summary: {summaryValueParams.SummaryProperty}, Value: {summaryValueParams.ValueProperty}");
+    }
 }
 
 public class FirstParameters
@@ -371,6 +381,23 @@ public class XmlDocPriorityParametersClass
     /// <value>Value-only description.</value>
     public string? ValueOnlyProperty { get; set; }
 }
+
+public class SummaryValueParametersClass
+{
+    /// <summary>
+    /// Property with only summary documentation.
+    /// </summary>
+    public string? SummaryProperty { get; set; }
+
+    /// <summary>
+    /// Property with summary that should be overridden by value.
+    /// </summary>
+    /// <value>Value description that should take precedence over summary.</value>
+    public string? ValueProperty { get; set; }
+
+    /// <value>Property with only value documentation.</value>
+    public string? ValueOnlyProperty { get; set; }
+}
 """;
         var generator = new XmlCommentGenerator();
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
@@ -478,16 +505,29 @@ public class XmlDocPriorityParametersClass
             Assert.Equal("Property with only summary documentation.", summaryOnlyParam.Description);
 
             var summaryAndReturnsParam = path22.Parameters.First(p => p.Name == "SummaryAndReturnsProperty");
-            Assert.Equal("Returns-based description that should take precedence over summary.", summaryAndReturnsParam.Description);
+            Assert.Equal("Property with summary documentation that should be overridden.", summaryAndReturnsParam.Description);
 
             var allThreeParam = path22.Parameters.First(p => p.Name == "AllThreeProperty");
-            Assert.Equal("Value-based description that should take highest precedence.", allThreeParam.Description);
+            Assert.Equal($"Property with all three types of documentation.\nValue-based description that should take highest precedence.", allThreeParam.Description);
 
             var returnsOnlyParam = path22.Parameters.First(p => p.Name == "ReturnsOnlyProperty");
-            Assert.Equal("Returns-only description.", returnsOnlyParam.Description);
+            Assert.Null(returnsOnlyParam.Description);
 
             var valueOnlyParam = path22.Parameters.First(p => p.Name == "ValueOnlyProperty");
             Assert.Equal("Value-only description.", valueOnlyParam.Description);
+
+            // Test summary and value documentation priority for AsParameters
+            var path23 = document.Paths["/22"].Operations[HttpMethod.Get];
+            Assert.Equal("Tests summary and value documentation priority on AsParameters properties.", path23.Summary);
+
+            var summaryParam = path23.Parameters.First(p => p.Name == "SummaryProperty");
+            Assert.Equal("Property with only summary documentation.", summaryParam.Description);
+
+            var valueParam = path23.Parameters.First(p => p.Name == "ValueProperty");
+            Assert.Equal($"Property with summary that should be overridden by value.\nValue description that should take precedence over summary.", valueParam.Description);
+
+            var valueOnlyParam2 = path23.Parameters.First(p => p.Name == "ValueOnlyProperty");
+            Assert.Equal("Property with only value documentation.", valueOnlyParam2.Description);
         });
     }
 }
