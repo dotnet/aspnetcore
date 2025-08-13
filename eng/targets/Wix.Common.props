@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProductVersion>3.14</ProductVersion>
     <WixVersion>$(MicrosoftSignedWixVersion)</WixVersion>
-    <Wix5Version>$(MicrosoftWixToolsetVersion)</Wix5Version>
+    <Wix5Version>$(MicrosoftWixToolsetSdkVersion)</Wix5Version>
     <UseWix5>true</UseWix5>
   </PropertyGroup>
 
@@ -26,13 +26,13 @@
 
   <ItemGroup Condition="'$(UseWix5)' == 'true'">
     <!-- Microsoft.Wix is a dotnet tool package, so exlude its assets. -->
-    <PackageReference Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetVersion)" ExcludeAssets="all" />
+    <PackageReference Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetSdkVersion)" ExcludeAssets="all" />
     <!-- Installers needs the $(PkgMicrosoftWixToolsetUIwixext) property to locate the extension. -->
-    <PackageReference Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetVersion)" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetVersion)" />
+    <PackageReference Include="Microsoft.WixToolset.UI.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Util.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Bal.wixext" Version="$(MicrosoftWixToolsetSdkVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Heat" Version="$(MicrosoftWixToolsetSdkVersion)" />
   </ItemGroup>
 
   <PropertyGroup>
