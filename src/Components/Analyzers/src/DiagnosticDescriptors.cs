@@ -83,4 +83,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.SupplyParameterFromFormShouldNotHavePropertyInitializer_Description)));
+
+    public static readonly DiagnosticDescriptor ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync = new(
+        "BL0009",
+        CreateLocalizableResourceString(nameof(Resources.ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync_Description)));
 }
