@@ -11,6 +11,7 @@
 
     <CblMariner1VersionSuffix>-cm.1</CblMariner1VersionSuffix>
     <CblMariner2VersionSuffix>-cm.2</CblMariner2VersionSuffix>
+    <NewKeyVersionSuffix>-newkey</NewKeyVersionSuffix>
 
     <!-- All installers are shipping assets. -->
     <IsShipping>true</IsShipping>
