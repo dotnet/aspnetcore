@@ -29,6 +29,8 @@ public class ElementReferenceUsageAnalyzerTest : DiagnosticVerifier
         {{
             protected virtual void OnInitialized() {{ }}
             protected virtual System.Threading.Tasks.Task OnInitializedAsync() => System.Threading.Tasks.Task.CompletedTask;
+            protected virtual void OnParametersSet() {{ }}
+            protected virtual System.Threading.Tasks.Task OnParametersSetAsync() => System.Threading.Tasks.Task.CompletedTask;
             protected virtual void OnAfterRender(bool firstRender) {{ }}
             protected virtual System.Threading.Tasks.Task OnAfterRenderAsync(bool firstRender) => System.Threading.Tasks.Task.CompletedTask;
         }}
@@ -181,6 +183,38 @@ public class ElementReferenceUsageAnalyzerTest : DiagnosticVerifier
             {
                 Id = DiagnosticDescriptors.ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync.Id,
                 Message = "ElementReference 'MyElement' should only be accessed within OnAfterRenderAsync or OnAfterRender",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 12, 33)
+                }
+            });
+    }
+
+    [Fact]
+    public void ElementReferenceUsageInOnParametersSet_Warns()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            private ElementReference myElement;
+
+            protected override void OnParametersSet()
+            {
+                var elementId = myElement.Id;
+            }
+        }
+    }" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync.Id,
+                Message = "ElementReference 'myElement' should only be accessed within OnAfterRenderAsync or OnAfterRender",
                 Severity = DiagnosticSeverity.Warning,
                 Locations = new[]
                 {

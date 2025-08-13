@@ -55,13 +55,6 @@ public class ElementReferenceUsageAnalyzer : DiagnosticAnalyzer
             return;
         }
 
-        // Only analyze operations within component types
-        if (context.ContainingSymbol?.ContainingType is not INamedTypeSymbol containingType ||
-            !ComponentFacts.IsComponent(symbols, context.Compilation, containingType))
-        {
-            return;
-        }
-
         var memberSymbol = memberReference.Member;
         var memberType = GetMemberType(memberSymbol);
         
