@@ -309,7 +309,7 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       }
 
       // Always treat "preloads" as new elements.
-      if ((b as Element).tagName === 'LINK' && (b as Element).attributes.getNamedItem('rel')?.value === 'preload') {
+      if (isPreloadElement(a as Element) || isPreloadElement(b as Element)) {
         return UpdateCost.Infinite;
       }
 
@@ -322,6 +322,10 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       // For anything else we know nothing, so the risk-averse choice is to say we can't retain or update the old value
       return UpdateCost.Infinite;
   }
+}
+
+function isPreloadElement(el: Element): bool {
+  return el.tagName === 'LINK' && el.attributes.getNamedItem('rel')?.value === 'preload';
 }
 
 function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDescriptor[] {
