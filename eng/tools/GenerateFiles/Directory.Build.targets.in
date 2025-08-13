@@ -116,7 +116,7 @@
 
     <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler">
       <ILCompilerPackVersion
-        Condition="'%(TargetFramework)' == '${DefaultNetCoreTargetFramework}'">$(MicrosoftNETCoreAppRefVersion)</ILCompilerPackVersion>
+        Condition="'%(TargetFramework)' == '${DefaultNetCoreTargetFramework}'">${MicrosoftNETCoreAppRefVersion}</ILCompilerPackVersion>
     </KnownILCompilerPack>
 
     <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->
