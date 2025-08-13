@@ -1103,7 +1103,9 @@ public partial class WebHostTests
 
     private IWebHostBuilder CreateBuilder(IConfiguration config = null)
     {
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         return new WebHostBuilder().UseConfiguration(config ?? new ConfigurationBuilder().Build()).UseStartup("Microsoft.AspNetCore.Hosting.Tests");
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
     }
 
     private static bool[] RegisterCallbacksThatThrow(IServiceCollection services)

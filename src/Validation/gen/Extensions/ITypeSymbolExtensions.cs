@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
@@ -151,5 +152,27 @@ internal static class ITypeSymbolExtensions
             attr.AttributeClass is not null &&
             (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
              SymbolEqualityComparer.Default.Equals(attr.AttributeClass, fromKeyedServiceAttributeSymbol)));
+    }
+
+    /// <summary>
+    /// Checks if the property is marked with [JsonIgnore] attribute.
+    /// </summary>
+    /// <param name="property">The property to check.</param>
+    /// <param name="jsonIgnoreAttributeSymbol">The symbol representing the [JsonIgnore] attribute.</param>
+    internal static bool IsJsonIgnoredProperty(this IPropertySymbol property, INamedTypeSymbol jsonIgnoreAttributeSymbol)
+    {
+        return property.GetAttributes().Any(attr =>
+            attr.AttributeClass is not null &&
+            SymbolEqualityComparer.Default.Equals(attr.AttributeClass, jsonIgnoreAttributeSymbol));
+    }
+
+    internal static bool IsSkippedValidationProperty(this IPropertySymbol property, INamedTypeSymbol skipValidationAttributeSymbol)
+    {
+        return property.HasAttribute(skipValidationAttributeSymbol) || property.Type.HasAttribute(skipValidationAttributeSymbol);
+    }
+
+    internal static bool IsSkippedValidationParameter(this IParameterSymbol parameter, INamedTypeSymbol skipValidationAttributeSymbol)
+    {
+        return parameter.HasAttribute(skipValidationAttributeSymbol) || parameter.Type.HasAttribute(skipValidationAttributeSymbol);
     }
 }

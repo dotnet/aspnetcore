@@ -24,6 +24,21 @@ public class WebAssemblyCultureProviderTest
         Assert.Equal(expected, actual);
     }
 
+    [Theory]
+    [InlineData("fr-FR", "tzm-Latn-DZ", new[] { "fr-FR", "fr", "tzm-Latn-DZ", "tzm-Latn", "tzm" })]
+    [InlineData("en-US", "en-GB", new[] { "en-US", "en", "en-GB" })]
+    [InlineData("fr-FR", null, new[] { "fr-FR", "fr" })]
+    public void GetCultures_ReturnCultureClosureWithUICulture(string cultureName, string uiCultureName, string[] expected)
+    {
+        // Arrange
+        var culture = cultureName != null ? new CultureInfo(cultureName) : null;
+        var uiCulture = uiCultureName != null ? new CultureInfo(uiCultureName) : null;
+        // Act
+        var actual = WebAssemblyCultureProvider.GetCultures(culture, uiCulture);
+        // Assert
+        Assert.Equal(expected, actual);
+    }
+
     [Fact]
     public void ThrowIfCultureChangeIsUnsupported_ThrowsIfCulturesAreDifferentAndICUShardingIsUsed()
     {

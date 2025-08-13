@@ -84,7 +84,10 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         IFormCollection? form = null)
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
-        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(GetContextBaseUri(httpContext.Request), GetFullUri(httpContext.Request), OnNavigateTo);
+        ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
+            GetContextBaseUri(httpContext.Request), 
+            GetFullUri(httpContext.Request), 
+            uri => GetErrorHandledTask(OnNavigateTo(uri)));
 
         navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
 
@@ -123,7 +126,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         // (which will obviously not work, but should not fail)
         var componentApplicationLifetime = httpContext.RequestServices.GetRequiredService<ComponentStatePersistenceManager>();
         componentApplicationLifetime.SetPlatformRenderMode(RenderMode.InteractiveAuto);
-        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore());
+        await componentApplicationLifetime.RestoreStateAsync(new PrerenderComponentApplicationStore(), RestoreContext.InitialValue);
 
         if (componentType != null)
         {
