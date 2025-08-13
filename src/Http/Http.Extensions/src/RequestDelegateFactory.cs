@@ -1801,7 +1801,7 @@ public static partial class RequestDelegateFactory
             ? Expression.IfThen(TempSourceStringNotNullExpr, tryParseExpression)
             : Expression.IfThenElse(TempSourceStringNotNullExpr, tryParseExpression,
                 Expression.Assign(argument,
-                Expression.Constant(parameter.DefaultValue, parameter.ParameterType)));
+                CreateDefaultValueExpression(parameter.DefaultValue, parameter.ParameterType)));
 
         var loopExit = Expression.Label();
 
@@ -1963,7 +1963,7 @@ public static partial class RequestDelegateFactory
         return Expression.Block(
             Expression.Condition(Expression.NotEqual(valueExpression, Expression.Constant(null)),
                 valueExpression,
-                Expression.Convert(Expression.Constant(parameter.DefaultValue), parameter.ParameterType)));
+                Expression.Convert(CreateDefaultValueExpression(parameter.DefaultValue, parameter.ParameterType), parameter.ParameterType)));
     }
 
     private static Expression BindParameterFromProperty(ParameterInfo parameter, MemberExpression property, PropertyInfo itemProperty, string key, RequestDelegateFactoryContext factoryContext, string source)
@@ -1980,6 +1980,34 @@ public static partial class RequestDelegateFactory
         type == typeof(StringValues) ? typeof(StringValues) :
         type == typeof(StringValues?) ? typeof(StringValues?) :
         null;
+
+    private static Expression CreateDefaultValueExpression(object? defaultValue, Type parameterType)
+    {
+        if (defaultValue is null)
+        {
+            return Expression.Constant(null, parameterType);
+        }
+
+        var underlyingType = Nullable.GetUnderlyingType(parameterType);
+        var isNullable = underlyingType != null;
+        var targetType = isNullable ? underlyingType! : parameterType;
+        var converted = defaultValue;
+
+        // Apply a conversion for scenarios where the default value's type
+        // doesn't match the parameter type
+        if (targetType.IsEnum && defaultValue.GetType() != targetType)
+        {
+            converted = Enum.ToObject(targetType, defaultValue);
+        }
+        else if (!targetType.IsAssignableFrom(defaultValue.GetType()))
+        {
+            converted = Convert.ChangeType(defaultValue, targetType, CultureInfo.InvariantCulture);
+        }
+
+        var constant = Expression.Constant(converted, targetType);
+        // Cast nullable types as needed
+        return isNullable ? Expression.Convert(constant, parameterType) : constant;
+    }
 
     private static Expression BindParameterFromRouteValueOrQueryString(ParameterInfo parameter, string key, RequestDelegateFactoryContext factoryContext)
     {
@@ -2358,7 +2386,7 @@ public static partial class RequestDelegateFactory
         {
             // Convert(bodyValue ?? SomeDefault, Todo)
             return Expression.Convert(
-                Expression.Coalesce(BodyValueExpr, Expression.Constant(parameter.DefaultValue)),
+                Expression.Coalesce(BodyValueExpr, CreateDefaultValueExpression(parameter.DefaultValue, typeof(object))),
                 parameter.ParameterType);
         }
 
