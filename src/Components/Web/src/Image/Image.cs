@@ -8,6 +8,13 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Image;
 
+/* This is equivalent to a .razor file containing:
+ *
+ * <img class="blazor-image @GetCssClass()"
+ *      data-state="@(_isLoading ? "loading" : _hasError ? "error" : null)"
+ *      @ref="Element" @attributes="AdditionalAttributes" />
+ *
+ */
 /// <summary>
 /// A component that efficiently renders images from non-HTTP sources like byte arrays.
 /// </summary>
@@ -21,6 +28,9 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     private bool _initialized;
     private bool _hasPendingRender;
     private bool _firstRender = true;
+
+    private bool IsInteractive => _renderHandle.IsInitialized &&
+                                _renderHandle.RendererInfo.IsInteractive;
 
     /// <summary>
     /// Gets or sets the associated <see cref="ElementReference"/>.
@@ -75,10 +85,11 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         {
             Render();
             _initialized = true;
+            return;
         }
 
         // Handle parameter changes
-        if (!_firstRender && previousSource?.CacheKey != Source?.CacheKey && Source != null && !_isDisposed)
+        if (previousSource?.CacheKey != Source?.CacheKey && Source != null && !_isDisposed)
         {
             var version = ++_loadVersion;
 
@@ -89,6 +100,11 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// <inheritdoc />
     public async Task OnAfterRenderAsync()
     {
+        if (!IsInteractive)
+        {
+            return;
+        }
+
         if (_firstRender && Source != null && !_isDisposed)
         {
             _firstRender = false;
@@ -137,7 +153,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
     private async Task LoadImageIfSourceProvided(int version, ImageSource? source)
     {
-        if (source == null)
+        if (source == null || !IsInteractive)
         {
             return;
         }
@@ -184,7 +200,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
     private async Task StreamImageInChunks(ImageSource source, int version)
     {
-        if (version != _loadVersion)
+        if (version != _loadVersion || !IsInteractive)
         {
             return;
         }
@@ -265,7 +281,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         {
             _isDisposed = true;
 
-            if (Source != null && _renderHandle.RendererInfo.IsInteractive == true)
+            if (Source != null && IsInteractive)
             {
                 try
                 {
