@@ -324,7 +324,7 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
   }
 }
 
-function isPreloadElement(el: Element): bool {
+function isPreloadElement(el: Element): boolean {
   return el.tagName === 'LINK' && el.attributes.getNamedItem('rel')?.value === 'preload';
 }
 
