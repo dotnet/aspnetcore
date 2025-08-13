@@ -6,7 +6,9 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Components.Endpoints.Forms;
 using Microsoft.AspNetCore.Components.Endpoints.Rendering;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
@@ -76,14 +78,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             return;
         }
 
-        context.Response.OnStarting(() =>
-        {
-            // Generate the antiforgery tokens before we start streaming the response, as it needs
-            // to set the cookie header.
-            antiforgery!.GetAndStoreTokens(context);
-            return Task.CompletedTask;
-        });
-
         if (httpActivityContext != default)
         {
             _activityLinkStore.SetActivityContext(ComponentsActivityLinkStore.Http, httpActivityContext, null);
@@ -112,7 +106,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             waitForQuiescence: result.IsPost || isErrorHandlerOrReExecuted);
 
         Task quiesceTask;
-        if (!result.IsPost)
+        if (!result.IsPost || isReExecuted)
         {
             quiesceTask = htmlContent.QuiescenceTask;
         }
@@ -136,6 +130,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             }
         }
 
+        if (_renderer.NotFoundEventArgs != null)
+        {
+            _renderer.SetNotFoundWhenResponseNotStarted();
+        }
+
         if (!quiesceTask.IsCompleted)
         {
             // An incomplete QuiescenceTask indicates there may be streaming rendering updates.
@@ -143,7 +142,16 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             var bufferingFeature = context.Features.GetRequiredFeature<IHttpResponseBodyFeature>();
             bufferingFeature.DisableBuffering();
 
+            // Store the tokens if not emitted already in case we stream a form in the response.
+            antiforgery!.GetAndStoreTokens(context);
+
             context.Response.Headers.ContentEncoding = "identity";
+        }
+        else if (endpoint.Metadata.GetMetadata<ConfiguredRenderModesMetadata>()?.ConfiguredRenderModes.Length == 0)
+        {
+            // Disable token generation on EndpointAntiforgeryStateProvider if we are not streaming.
+            var provider = (EndpointAntiforgeryStateProvider)context.RequestServices.GetRequiredService<AntiforgeryStateProvider>();
+            provider.DisableTokenGeneration();
         }
 
         // Importantly, we must not yield this thread (which holds exclusive access to the renderer sync context)
@@ -155,6 +163,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         if (!quiesceTask.IsCompletedSuccessfully)
         {
             await _renderer.SendStreamingUpdatesAsync(context, quiesceTask, bufferWriter);
+            if (_renderer.NotFoundEventArgs != null)
+            {
+                await _renderer.SetNotFoundWhenResponseHasStarted();
+            }
         }
         else
         {
@@ -166,6 +178,17 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         {
             var componentStateHtmlContent = await _renderer.PrerenderPersistedStateAsync(context);
             componentStateHtmlContent.WriteTo(bufferWriter, HtmlEncoder.Default);
+        }
+
+        if (context.Response.StatusCode == StatusCodes.Status404NotFound &&
+            !isReExecuted &&
+            string.IsNullOrEmpty(_renderer.NotFoundEventArgs?.Path))
+        {
+            // Router did not handle the NotFound event, otherwise this would not be empty.
+            // Don't flush the response if we have an unhandled 404 rendering
+            // This will allow the StatusCodePages middleware to re-execute the request
+            context.Response.ContentType = null;
+            return;
         }
 
         // Invoke FlushAsync to ensure any buffered content is asynchronously written to the underlying

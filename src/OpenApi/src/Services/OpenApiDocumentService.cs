@@ -250,8 +250,13 @@ internal sealed class OpenApiDocumentService(
         foreach (var descriptions in descriptionsByPath)
         {
             Debug.Assert(descriptions.Key != null, "Relative path mapped to OpenApiPath key cannot be null.");
-            paths.Add(descriptions.Key, new OpenApiPathItem { Operations = await GetOperationsAsync(descriptions, document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken) });
+            var operations = await GetOperationsAsync(descriptions, document, scopedServiceProvider, operationTransformers, schemaTransformers, cancellationToken);
+            if (operations.Count > 0)
+            {
+                paths.Add(descriptions.Key, new OpenApiPathItem { Operations = operations });
+            }
         }
+
         return paths;
     }
 
@@ -280,7 +285,14 @@ internal sealed class OpenApiDocumentService(
             };
 
             _operationTransformerContextCache.TryAdd(description.ActionDescriptor.Id, operationContext);
-            operations[description.GetHttpMethod()] = operation;
+
+            if (description.GetHttpMethod() is not { } method)
+            {
+                // Skip unsupported HTTP methods
+                continue;
+            }
+
+            operations[method] = operation;
 
             // Use index-based for loop to avoid allocating an enumerator with a foreach.
             for (var i = 0; i < operationTransformers.Length; i++)
@@ -494,11 +506,22 @@ internal sealed class OpenApiDocumentService(
     }
 
     // Apply [Description] attributes on the parameter to the top-level OpenApiParameter object and not the schema.
-    private static string? GetParameterDescriptionFromAttribute(ApiParameterDescription parameter) =>
-        parameter.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo } &&
-        parameterInfo.GetCustomAttributes().OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute ?
-            descriptionAttribute.Description :
-            null;
+    private static string? GetParameterDescriptionFromAttribute(ApiParameterDescription parameter)
+    {
+        if (parameter.ParameterDescriptor is IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo } &&
+            parameterInfo.GetCustomAttributes<DescriptionAttribute>().LastOrDefault() is { } parameterDescription)
+        {
+            return parameterDescription.Description;
+        }
+
+        if (parameter.ModelMetadata is Mvc.ModelBinding.Metadata.DefaultModelMetadata { Attributes.PropertyAttributes.Count: > 0 } metadata &&
+            metadata.Attributes.PropertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } propertyDescription)
+        {
+            return propertyDescription.Description;
+        }
+
+        return null;
+    }
 
     private async Task<OpenApiRequestBody?> GetRequestBodyAsync(OpenApiDocument document, ApiDescription description, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, CancellationToken cancellationToken)
     {
@@ -696,6 +719,12 @@ internal sealed class OpenApiDocumentService(
                 // Assume "application/octet-stream" as the default media type
                 // for stream-based parameter types.
                 supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/octet-stream" }];
+            }
+            else if (bodyParameter.Type.IsJsonPatchDocument())
+            {
+                // Assume "application/json-patch+json" as the default media type
+                // for JSON Patch documents.
+                supportedRequestFormats = [new ApiRequestFormat { MediaType = "application/json-patch+json" }];
             }
             else
             {

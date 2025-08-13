@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.Infrastructure;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.AspNetCore.Http.RequestDelegateGenerator.StaticRouteHandlerModel;
 using Microsoft.CodeAnalysis;
@@ -30,6 +31,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
             WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
         var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
             WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
+        var skipValidationAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
 
         var validatableTypes = new HashSet<ValidatableType>(ValidatableTypeComparer.Instance);
         List<ITypeSymbol> visitedTypes = [];
@@ -38,6 +41,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         {
             // Skip parameters that are injected as services
             if (parameter.IsServiceParameter(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+            {
+                continue;
+            }
+
+            // Skip method parameter if it or its type are annotated with SkipValidationAttribute
+            if (parameter.IsSkippedValidationParameter(skipValidationAttributeSymbol))
             {
                 continue;
             }
@@ -61,6 +70,12 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         if (typeSymbol.IsExemptType(wellKnownTypes))
+        {
+            return false;
+        }
+
+        // Skip types that are not accessible from generated code
+        if (typeSymbol.DeclaredAccessibility is not Accessibility.Public)
         {
             return false;
         }
@@ -110,6 +125,15 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var members = new List<ValidatableProperty>();
         var resolvedRecordProperty = new List<IPropertySymbol>();
 
+        var fromServiceMetadataSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_Metadata_IFromServiceMetadata);
+        var fromKeyedServiceAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_Extensions_DependencyInjection_FromKeyedServicesAttribute);
+        var jsonIgnoreAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonIgnoreAttribute);
+        var skipValidationAttributeSymbol = wellKnownTypes.Get(
+            WellKnownTypeData.WellKnownType.Microsoft_Extensions_Validation_SkipValidationAttribute);
+
         // Special handling for record types to extract properties from
         // the primary constructor.
         if (typeSymbol is INamedTypeSymbol { IsRecord: true } namedType)
@@ -137,6 +161,30 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                     {
                         resolvedRecordProperty.Add(correspondingProperty);
 
+                        // Skip parameters that are injected as services
+                        if (parameter.IsServiceParameter(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+                        {
+                            continue;
+                        }
+
+                        // Skip primary constructor parameter if it or its type are annotated with SkipValidationAttribute
+                        if (parameter.IsSkippedValidationParameter(skipValidationAttributeSymbol))
+                        {
+                            continue;
+                        }
+
+                        // Skip properties that are not accessible from generated code
+                        if (correspondingProperty.DeclaredAccessibility is not Accessibility.Public)
+                        {
+                            continue;
+                        }
+
+                        // Skip properties that have JsonIgnore attribute
+                        if (correspondingProperty.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
+                        {
+                            continue;
+                        }
+
                         // Check if the property's type is validatable, this resolves
                         // validatable types in the inheritance hierarchy
                         var hasValidatableType = TryExtractValidatableType(
@@ -162,7 +210,33 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         {
             // Skip compiler generated properties and properties already processed via
             // the record processing logic above.
-            if (member.IsImplicitlyDeclared || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            if (member.IsImplicitlyDeclared
+                || member.IsEqualityContract(wellKnownTypes)
+                || resolvedRecordProperty.Contains(member, SymbolEqualityComparer.Default))
+            {
+                continue;
+            }
+
+            // Skip properties that are injected as services
+            if (member.IsServiceProperty(fromServiceMetadataSymbol, fromKeyedServiceAttributeSymbol))
+            {
+                continue;
+            }
+
+            // Skip properties that are not accessible from generated code
+            if (member.DeclaredAccessibility is not Accessibility.Public)
+            {
+                continue;
+            }
+
+            // Skip properties that have JsonIgnore attribute
+            if (member.IsJsonIgnoredProperty(jsonIgnoreAttributeSymbol))
+            {
+                continue;
+            }
+
+            // Skip property if it or its type are annotated with SkipValidationAttribute
+            if (member.IsSkippedValidationProperty(skipValidationAttributeSymbol))
             {
                 continue;
             }

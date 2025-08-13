@@ -102,9 +102,7 @@
     <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
     <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
     <SharedFxMsiVersion>$(PackageVersion)</SharedFxMsiVersion>
-    <NonStableVersion>$(PackageVersion)</NonStableVersion>
-    <NonStableVersion
-        Condition="! $(NonStableVersion.Contains('$(_BuildNumberLabels)'))">$(PackageVersion)-$(_PreReleaseLabel)$(_BuildNumberLabels)</NonStableVersion>
+    <NonStableVersion>$(VersionPrefix)-$(_PreReleaseLabel)$(_BuildNumberLabels)</NonStableVersion>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -139,7 +139,14 @@ public final class GsonHubProtocol implements HubProtocol {
                             }
                             break;
                         case "headers":
-                            throw new RuntimeException("Headers not implemented yet.");
+                            // Parse headers as Map<String, String> but don't store for now as it's unused
+                            reader.beginObject();
+                            while (reader.hasNext()) {
+                                reader.nextName(); // Read the key
+                                reader.nextString(); // Read the value
+                            }
+                            reader.endObject();
+                            break;
                         default:
                             // Skip unknown property, allows new clients to still work with old protocols
                             reader.skipValue();

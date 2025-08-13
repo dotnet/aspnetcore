@@ -98,17 +98,6 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
     }
   });
 
-  // obsolete:
-  Blazor._internal.applyHotReload = (id: string, metadataDelta: string, ilDelta: string, pdbDelta: string | undefined, updatedTypes?: number[]) => {
-    dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDelta', id, metadataDelta, ilDelta, pdbDelta, updatedTypes ?? null);
-  };
-
-  Blazor._internal.applyHotReloadDeltas = (deltas: { moduleId: string, metadataDelta: string, ilDelta: string, pdbDelta: string, updatedTypes: number[] }[], loggingLevel: number) => {
-    return dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'ApplyHotReloadDeltas', deltas, loggingLevel) ?? [];
-  };
-
-  Blazor._internal.getApplyUpdateCapabilities = () => dispatcher.invokeDotNetStaticMethod('Microsoft.AspNetCore.Components.WebAssembly', 'GetApplyUpdateCapabilities') ?? '';
-
   // Configure JS interop
   Blazor._internal.invokeJSJson = invokeJSJson;
   Blazor._internal.endInvokeDotNetFromJS = endInvokeDotNetFromJS;
@@ -167,8 +156,9 @@ async function startCore(components: RootComponentManager<WebAssemblyComponentDe
 
   Blazor._internal.getInitialComponentsUpdate = () => initialUpdatePromise;
 
-  Blazor._internal.updateRootComponents = (operations: string) =>
-    Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations);
+  Blazor._internal.updateRootComponents = (operations: string, webAssemblyState: string) => {
+    Blazor._internal.dotNetExports?.UpdateRootComponentsCore(operations, webAssemblyState);
+  };
 
   Blazor._internal.endUpdateRootComponents = (batchId: number) =>
     components.onAfterUpdateRootComponents?.(batchId);
@@ -238,7 +228,7 @@ export function hasLoadedWebAssemblyPlatform(): boolean {
   return loadedWebAssemblyPlatform;
 }
 
-export function updateWebAssemblyRootComponents(operations: string): void {
+export function updateWebAssemblyRootComponents(operations: string, webAssemblyState: string): void {
   if (!startPromise) {
     throw new Error('Blazor WebAssembly has not started.');
   }
@@ -248,20 +238,20 @@ export function updateWebAssemblyRootComponents(operations: string): void {
   }
 
   if (!started) {
-    scheduleAfterStarted(operations);
+    scheduleAfterStarted(operations, webAssemblyState);
   } else {
-    Blazor._internal.updateRootComponents(operations);
+    Blazor._internal.updateRootComponents(operations, webAssemblyState);
   }
 }
 
-async function scheduleAfterStarted(operations: string): Promise<void> {
+async function scheduleAfterStarted(operations: string, webAssemblyState: string): Promise<void> {
   await startPromise;
 
   if (!Blazor._internal.updateRootComponents) {
     throw new Error('Blazor WebAssembly has not initialized.');
   }
 
-  Blazor._internal.updateRootComponents(operations);
+  Blazor._internal.updateRootComponents(operations, webAssemblyState);
 }
 
 function invokeJSJson(identifier: string, targetInstanceId: number, resultType: number, argsJson: string, asyncHandle: number, callType: number): string | null {

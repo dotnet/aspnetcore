@@ -36,11 +36,11 @@ public partial class JSInProcessObjectReference : JSObjectReference, IJSInProces
 
     /// <inheritdoc />
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
-    public IJSInProcessObjectReference InvokeNew(string identifier, object?[]? args)
+    public IJSInProcessObjectReference InvokeConstructor(string identifier, object?[]? args)
     {
         ThrowIfDisposed();
 
-        return _jsRuntime.Invoke<IJSInProcessObjectReference>(identifier, Id, JSCallType.NewCall, args);
+        return _jsRuntime.Invoke<IJSInProcessObjectReference>(identifier, Id, JSCallType.ConstructorCall, args);
     }
 
     /// <inheritdoc />

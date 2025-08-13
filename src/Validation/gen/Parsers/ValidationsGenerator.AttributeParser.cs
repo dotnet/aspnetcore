@@ -1,6 +1,5 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
@@ -14,7 +13,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 {
     internal static bool ShouldTransformSymbolWithAttribute(SyntaxNode syntaxNode, CancellationToken cancellationToken)
     {
-        return syntaxNode is ClassDeclarationSyntax;
+        return syntaxNode is ClassDeclarationSyntax or RecordDeclarationSyntax;
     }
 
     internal ImmutableArray<ValidatableType> TransformValidatableTypeWithAttribute(GeneratorAttributeSyntaxContext context, CancellationToken cancellationToken)
@@ -24,7 +23,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         var wellKnownTypes = WellKnownTypes.GetOrCreate(context.SemanticModel.Compilation);
         if (TryExtractValidatableType((ITypeSymbol)context.TargetSymbol, wellKnownTypes, ref validatableTypes, ref visitedTypes))
         {
-            return [..validatableTypes];
+            return [.. validatableTypes];
         }
         return [];
     }

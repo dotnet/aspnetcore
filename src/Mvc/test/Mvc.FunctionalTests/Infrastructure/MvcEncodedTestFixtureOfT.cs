@@ -3,10 +3,9 @@
 
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.WebEncoders.Testing;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
@@ -20,9 +19,9 @@ public class MvcEncodedTestFixture<TStartup> : MvcTestFixture<TStartup>
         base.ConfigureWebHost(builder);
         builder.ConfigureServices(services =>
         {
-            services.TryAddTransient<HtmlEncoder, HtmlTestEncoder>();
-            services.TryAddTransient<JavaScriptEncoder, JavaScriptTestEncoder>();
-            services.TryAddTransient<UrlEncoder, UrlTestEncoder>();
+            services.AddTransient<HtmlEncoder, HtmlTestEncoder>();
+            services.AddTransient<JavaScriptEncoder, JavaScriptTestEncoder>();
+            services.AddTransient<UrlEncoder, UrlTestEncoder>();
         });
     }
 }

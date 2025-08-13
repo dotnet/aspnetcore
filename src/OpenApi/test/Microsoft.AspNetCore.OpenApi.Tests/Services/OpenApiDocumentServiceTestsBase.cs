@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Constraints;
@@ -228,14 +229,19 @@ public abstract class OpenApiDocumentServiceTestBase
 
         action.AttributeRouteInfo = new()
         {
-            Template = action.MethodInfo.GetCustomAttribute<RouteAttribute>()?.Template,
+            Template = action.MethodInfo.GetCustomAttribute<RouteAttribute>()?.Template ?? string.Empty,
             Name = action.MethodInfo.GetCustomAttribute<RouteAttribute>()?.Name,
             Order = action.MethodInfo.GetCustomAttribute<RouteAttribute>()?.Order ?? 0,
         };
         action.RouteValues.Add("controller", "Test");
         action.RouteValues.Add("action", action.MethodInfo.Name);
-        action.ActionConstraints = [new HttpMethodActionConstraint(["GET"])];
         action.EndpointMetadata = [..action.MethodInfo.GetCustomAttributes()];
+        action.ActionConstraints = [new HttpMethodActionConstraint(action
+            .EndpointMetadata
+            .OfType<IActionHttpMethodProvider>()
+            .SelectMany(a => a.HttpMethods)
+            .DefaultIfEmpty("GET")
+        )];
         if (controllerType is not null)
         {
             foreach (var attribute in controllerType.GetCustomAttributes())

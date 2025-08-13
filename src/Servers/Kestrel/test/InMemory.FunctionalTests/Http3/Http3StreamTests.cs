@@ -3291,6 +3291,32 @@ public class Http3StreamTests : Http3TestBase
         await outboundcontrolStream.ReceiveEndAsync();
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CanHaveBody_ReturnsFalseWithoutRequestBody(bool endstream)
+    {
+        var headers = new[]
+        {
+            new KeyValuePair<string, string>(InternalHeaderNames.Method, "GET"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Path, "/"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
+            new KeyValuePair<string, string>(InternalHeaderNames.Authority, "localhost:80"),
+        };
+
+        var requestStream = await Http3Api.InitializeConnectionAndStreamsAsync(context =>
+        {
+            Assert.NotEqual(endstream, context.Features.Get<IHttpRequestBodyDetectionFeature>().CanHaveBody);
+            context.Response.StatusCode = 200;
+            return Task.CompletedTask;
+        }, headers, endStream: endstream);
+
+        var responseHeaders = await requestStream.ExpectHeadersAsync();
+        Assert.Equal("200", responseHeaders[InternalHeaderNames.Status]);
+
+        await requestStream.ExpectReceiveEndOfStream();
+    }
+
     private async Task WriteOneByteAtATime(PipeReader reader, PipeWriter writer)
     {
         var res = await reader.ReadAsync();

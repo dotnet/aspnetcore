@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Support.Extensions;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETests.Tests;
@@ -149,6 +150,23 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         }
     }
 
+    [Fact]
+    public void RowStyleApplied()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+        var birthDateColumn = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(4)"));
+        var ageColumn = grid.FindElement(By.CssSelector("thead > tr > th:nth-child(5)"));
+
+        Assert.Contains("col-justify-center", birthDateColumn.GetAttribute("class"));
+        Assert.Contains("col-justify-right", ageColumn.GetAttribute("class"));
+        Assert.Equal("center", Browser.ExecuteJavaScript<string>(@"
+        const p = document.querySelector('tbody > tr:first-child > td:nth-child(4)');
+        return p ? getComputedStyle(p).textAlign : null;"));
+        Assert.Equal("right", Browser.ExecuteJavaScript<string>(@"
+        const p = document.querySelector('tbody > tr:first-child > td:nth-child(5)');
+        return p ? getComputedStyle(p).textAlign : null;"));
+    }
+    
     [Fact]
     public void CanOpenColumnOptions()
     {
