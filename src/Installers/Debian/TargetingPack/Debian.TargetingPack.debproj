@@ -38,6 +38,7 @@
 
   <PropertyGroup>
     <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-$(TargetArchitecture).deb</TargetFileName>
+    <NewKeyTargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-newkey-$(TargetArchitecture).deb</NewKeyTargetFileName>
     <TargetPath>$(TargetDir)$(TargetFileName)</TargetPath>
 
     <DebPackageVersion>$(TargetingPackVersionPrefix)</DebPackageVersion>

@@ -40,6 +40,7 @@
     <PropertyGroup>
       <CblMariner1TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner1VersionSuffix)$(CblMarinerExtension)</CblMariner1TargetPath>
       <CblMariner2TargetPath>$(InstallersOutputPath)$(CblMarinerBaseName)$(CblMariner2VersionSuffix)$(CblMarinerExtension)</CblMariner2TargetPath>
+      <NewKeyTargetPath>$(InstallersOutputPath)$(NewKeyBaseName)$(NewKeyVersionSuffix)$(NewKeyExtension)</NewKeyTargetPath>
     </PropertyGroup>
 
     <!-- Create layout: Create changelog -->
@@ -103,5 +104,13 @@
           UseHardlinksIfPossible="False" />
 
     <Message Text="$(TargetPath) -> $(CblMariner2TargetPath)" Importance="high" />
+
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFiles="$(NewKeyTargetPath)"
+          OverwriteReadOnlyFiles="True"
+          SkipUnchangedFiles="False"
+          UseHardlinksIfPossible="False" />
+
+    <Message Text="$(TargetPath) -> $(NewKeyTargetPath)" Importance="high" />
   </Target>
 </Project>
