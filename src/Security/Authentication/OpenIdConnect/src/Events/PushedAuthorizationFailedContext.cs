@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect;
 
 /// <summary>
-/// A context for <see cref="OpenIdConnectEvents.PushAuthorization(PushedAuthorizationContext)"/>.
+/// A context for <see cref="OpenIdConnectEvents.PushAuthorizationFailed(PushedAuthorizationFailedContext)"/>.
 /// </summary>
 public sealed class PushedAuthorizationFailedContext : PropertiesContext<OpenIdConnectOptions>
 {
