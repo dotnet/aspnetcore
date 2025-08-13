@@ -129,6 +129,8 @@
       PdbFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetPdbFileName)"
       PdbType="$(DebugType)"
       SourceFiles="@(Compile)"
+      LocalizationFiles="@(_WixLocalizationFile)"
+      BindPaths="@(BindPath)"
       WixpackWorkingDir="$(WixpackWorkingDir)">
       <Output TaskParameter="OutputFile" PropertyName="_WixBuildCommandPackageNameOutput" />
     </CreateWixBuildWixpack>
