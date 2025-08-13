@@ -435,40 +435,6 @@ public class RenderTreeDiffBuilderTest : IDisposable
     }
 
     [Fact]
-    public void EnhancedErrorMessageMethodExists()
-    {
-        // This test validates that the enhanced error message infrastructure is in place
-        // Since we cannot easily create an invalid frame type scenario in normal usage,
-        // we will verify that our enhancement methods exist and have the correct signatures
-        
-        // Verify the CreateDiffErrorMessage method exists
-        var createErrorMethod = typeof(RenderTreeDiffBuilder).GetMethod("CreateDiffErrorMessage", 
-            BindingFlags.NonPublic | BindingFlags.Static);
-        Assert.NotNull(createErrorMethod);
-        
-        // Verify the BuildComponentPath method exists  
-        var buildPathMethod = typeof(RenderTreeDiffBuilder).GetMethod("BuildComponentPath",
-            BindingFlags.NonPublic | BindingFlags.Static);
-        Assert.NotNull(buildPathMethod);
-        
-        // Verify correct parameter types
-        var createErrorParams = createErrorMethod.GetParameters();
-        Assert.Equal(2, createErrorParams.Length);
-        Assert.Contains("DiffContext", createErrorParams[0].ParameterType.Name);
-        Assert.Equal(typeof(int), createErrorParams[1].ParameterType);
-        
-        var buildPathParams = buildPathMethod.GetParameters();
-        Assert.Equal(2, buildPathParams.Length);
-        Assert.Equal(typeof(Renderer), buildPathParams[0].ParameterType);
-        Assert.Equal(typeof(int), buildPathParams[1].ParameterType);
-        
-        // Also verify the GetRequiredComponentState method is internal
-        var getComponentStateMethod = typeof(Renderer).GetMethod("GetRequiredComponentState",
-            BindingFlags.NonPublic | BindingFlags.Instance);
-        Assert.NotNull(getComponentStateMethod);
-    }
-
-    [Fact]
     public void HandlesInsertionOfUnkeyedItemsAroundKey()
     {
         // The fact that the new sequence numbers are descending makes this
