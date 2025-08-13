@@ -1,7 +1,7 @@
 ﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
     <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)">
         <BootstrapperApplication>
-            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770" LogoFile="DotNetLogo.bmp" SuppressDowngradeFailure="yes" SuppressOptionsUI="yes" ThemeFile="thm.xml" LocalizationFile="1033\thm.wxl" Theme="hyperlinkLicense" />
+            <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770" LogoFile="DotNetLogo.bmp" SuppressDowngradeFailure="yes" SuppressOptionsUI="yes" ThemeFile="thm.xml" LocalizationFile="LCID\1033\thm.wxl" Theme="hyperlinkLicense" />
         </BootstrapperApplication>
 
         <!-- Search references for upgrade policy keys -->
