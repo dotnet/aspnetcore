@@ -80,9 +80,7 @@ public class WebHostTests
             }).Build();
 
         await host.StartAsync();
-#pragma warning disable CS0618 // Type or member is obsolete
         var client = host.GetTestClient();
-#pragma warning restore CS0618 // Type or member is obsolete
         client.DefaultRequestHeaders.Add("x-forwarded-proto", "https");
         var result = await client.GetAsync("http://localhost/");
         result.EnsureSuccessStatusCode();
