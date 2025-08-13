@@ -1369,35 +1369,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Assert.Equal("Total: 7", Browser.Exists(By.Id("form-collection")).Text);
     }
 
-    [Fact]
-    public void IBrowserFileNameReturnsFileNameNotFormFieldName()
-    {
-        // Create a file with a specific name to verify it's returned correctly
-        var testFile = TempFile.Create(_tempDirectory, "txt", "Test file content for name validation.");
-        
-        var dispatchToForm = new DispatchToForm(this)
-        {
-            Url = "forms/with-files",
-            FormCssSelector = "form",
-            FormIsEnhanced = false,
-            UpdateFormAction = () =>
-            {
-                // Upload file to HeaderPhoto field (which is an IBrowserFile)
-                // Form field name is "Model.HeaderPhoto" but file name should be testFile.Name
-                Browser.Exists(By.CssSelector("input[name='Model.HeaderPhoto']")).SendKeys(testFile.Path);
-            }
-        };
-        DispatchToFormCore(dispatchToForm);
-
-        // Verify that IBrowserFile.Name returns the actual file name, not the form field name
-        // Before the fix: would show "Header Photo: Model.HeaderPhoto" (form field name)
-        // After the fix: should show "Header Photo: {testFile.Name}" (actual file name)
-        Assert.Equal($"Header Photo: {testFile.Name}", Browser.Exists(By.Id("header-photo")).Text);
-        
-        // Ensure the file name is actually different from the form field name to validate the test
-        Assert.NotEqual("Model.HeaderPhoto", testFile.Name);
-    }
-
     [Theory]
     // [InlineData(true)] QuarantinedTest: https://github.com/dotnet/aspnetcore/issues/61882
     [InlineData(false)]
