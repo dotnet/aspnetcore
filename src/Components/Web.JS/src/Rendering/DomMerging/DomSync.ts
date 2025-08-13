@@ -308,6 +308,11 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
         return UpdateCost.Infinite;
       }
 
+      // Always treat "preloads" as new elements.
+      if ((b as Element).tagName === 'LINK' && (b as Element).attributes.getNamedItem('rel')?.value === 'preload') {
+        return UpdateCost.Infinite;
+      }
+
       return UpdateCost.None;
     case Node.DOCUMENT_TYPE_NODE:
       // It's invalid to insert or delete doctype, and we have no use case for doing that. So just skip such
