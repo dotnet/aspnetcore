@@ -57,6 +57,7 @@ public static class WebHostBuilderIISExtensions
                     );
 
                     services.TryAddSingleton<IMemoryPoolFactory<byte>, DefaultMemoryPoolFactory>();
+                    services.TryAddSingleton<MemoryPoolMetrics>();
                 });
         }
 

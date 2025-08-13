@@ -6,7 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <StaticWebAssetBasePath>WasmMinimal</StaticWebAssetBasePath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <WasmEnableHotReload>false</WasmEnableHotReload>
   </PropertyGroup>
 
   <ItemGroup>
