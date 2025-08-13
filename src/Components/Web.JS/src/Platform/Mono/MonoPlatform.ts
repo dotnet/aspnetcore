@@ -179,7 +179,11 @@ async function importDotnetJs(startOptions: Partial<WebAssemblyStartOptions>): P
     }
   }
 
-  const absoluteSrc = (new URL(src, document.baseURI)).toString();
+  const absoluteUrl = new URL(src, document.baseURI);
+  if (!absoluteUrl.searchParams.has('v')) {
+    absoluteUrl.searchParams.set('v', '8.0.19');
+  }
+  const absoluteSrc = absoluteUrl.toString();
   return await import(/* webpackIgnore: true */ absoluteSrc);
 }
 
