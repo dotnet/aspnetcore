@@ -60,5 +60,6 @@
     </PropertyGroup>
 
     <Copy SourceFiles="$(IntermediateOutputPath)out/$(BuildScriptOutputFileName)" DestinationFiles="$(TargetPath)" />
+    <Copy SourceFiles="$(IntermediateOutputPath)out/$(BuildScriptOutputFileName)" DestinationFiles="$(OutputPath)$(NewKeyTargetFileName)" />
   </Target>
 </Project>
