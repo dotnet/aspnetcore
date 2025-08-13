@@ -1,6 +1,8 @@
 {
   "sdk": {
-    "version": "10.0.100-preview.7.25322.101"
+    "version": "10.0.100-preview.7.25322.101",
+    "paths": [ ".dotnet", "$host$" ],
+    "errorMessage": "The .NET SDK could not be found, run ./restore.cmd or ./restore.sh first."
   },
   "tools": {
     "dotnet": "10.0.100-preview.7.25322.101",
