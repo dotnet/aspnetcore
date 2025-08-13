@@ -11,13 +11,13 @@
 
         <!-- Ensure upgrades from 3.0.0 preview 1 and 2 (Preview 3 was not shipped). Conditioned for the 3.0.0 family. Hosting bundle simships x86/x64 so there's
              a single set of upgrade codes. -->
-        <?if $(var.Version)=3.0.0.0?>
+        <?if $(Version)=3.0.0.0?>
         <RelatedBundle Action="upgrade" Id="{D8BFC3A1-72B1-36C1-9E5A-49FE36A5563B}" />
         <RelatedBundle Action="upgrade" Id="{EA47395A-BC9B-3ECC-8229-229BC9528DF6}" />
         <?endif?>
 
         <!-- Ensure upgrades from 3.1.0 thru 3.1.9 for x64. -->
-        <?if $(var.MajorVersion)=3 and $(var.MinorVersion)=1?>
+        <?if $(MajorVersion)=3 and $(MinorVersion)=1?>
         <!--'Microsoft .NET Core 3.1.9 - Windows Server Hosting'-->
         <RelatedBundle Action="upgrade" Id="{E4913286-9840-380A-8743-3DF839147FF0}" />
         <!--'Microsoft .NET Core 3.1.8 - Windows Server Hosting'-->
@@ -59,7 +59,7 @@
         <?define RegistrySeachCondition="NOT (OPT_NO_ANCM OR OPT_NO_ANCM=0 OR OPT_NO_SHAREDFX OR OPT_NO_SHAREDFX=0 OR OPT_NO_RUNTIME OR OPT_NO_RUNTIME=0 OR OPT_NO_X86 OR OPT_NO_X86=0 OR OPT_NO_SHARED_CONFIG_CHECK OR OPT_NO_SHARED_CONFIG_CHECK=0)" ?>
 
         <?foreach Option in $(var.Options) ?>
-            <util:RegistrySearch Id="$(var.Option)_should_be_set" Condition="$(var.RegistrySeachCondition)" Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" Value="$(var.Option)" Result="exists" Variable="$(var.Option)_Exists" />
+            <util:RegistrySearch Id="$(var.Option)_should_be_set" Condition="$(var.RegistrySeachCondition)" Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(MajorVersion).$(MinorVersion)" Value="$(var.Option)" Result="exists" Variable="$(var.Option)_Exists" />
 
             <util:RegistrySearch Condition="$(var.Option)_Exists" After="$(var.Option)_should_be_set" Root="HKLM" Key="Software\Microsoft\dotnet\host\options\$(var.MajorVersion).$(var.MinorVersion)" Value="$(var.Option)" Variable="$(var.Option)" Result="value" />
         <?endforeach?>
