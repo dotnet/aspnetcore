@@ -92,4 +92,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync_Description)));
+
+    public static readonly DiagnosticDescriptor ElementReferenceUsageInMethodCalledOutsideOnAfterRender = new(
+        "BL0010",
+        CreateLocalizableResourceString(nameof(Resources.ElementReferenceUsageInMethodCalledOutsideOnAfterRender_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ElementReferenceUsageInMethodCalledOutsideOnAfterRender_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ElementReferenceUsageInMethodCalledOutsideOnAfterRender_Description)));
 }

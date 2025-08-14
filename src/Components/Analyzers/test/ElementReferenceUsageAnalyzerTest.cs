@@ -223,6 +223,189 @@ public class ElementReferenceUsageAnalyzerTest : DiagnosticVerifier
             });
     }
 
+    [Fact]
+    public void ElementReferenceUsageInHelperMethodCalledFromOnAfterRender_DoesNotWarn()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+        using System.Threading.Tasks;
+
+        class TestComponent : ComponentBase
+        {
+            private ElementReference myElement;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    await Helper();
+                }
+            }
+
+            private async Task Helper()
+            {
+                await myElement.FocusAsync();
+            }
+        }
+    }" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void ElementReferenceUsageInHelperMethodCalledFromEventHandler_Warns()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+        using System.Threading.Tasks;
+
+        class TestComponent : ComponentBase
+        {
+            private ElementReference myElement;
+
+            private async Task HandleClick()
+            {
+                await Helper();
+            }
+
+            private async Task Helper()
+            {
+                await myElement.FocusAsync();
+            }
+        }
+    }" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ElementReferenceUsageInMethodCalledOutsideOnAfterRender.Id,
+                Message = "Method 'Helper' accesses ElementReference 'myElement' and is being invoked outside of OnAfterRenderAsync or OnAfterRender",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 18, 23)
+                }
+            });
+    }
+
+    [Fact]
+    public void ElementReferenceUsageInHelperMethodCalledFromBothSafeAndUnsafeContexts_Warns()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+        using System.Threading.Tasks;
+
+        class TestComponent : ComponentBase
+        {
+            private ElementReference myElement;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    await Helper(); // Safe call
+                }
+            }
+
+            private async Task HandleClick()
+            {
+                await Helper(); // Unsafe call
+            }
+
+            private async Task Helper()
+            {
+                await myElement.FocusAsync();
+            }
+        }
+    }" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ElementReferenceUsageInMethodCalledOutsideOnAfterRender.Id,
+                Message = "Method 'Helper' accesses ElementReference 'myElement' and is being invoked outside of OnAfterRenderAsync or OnAfterRender",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 26, 23)
+                }
+            });
+    }
+
+    [Fact]
+    public void ElementReferenceUsageInChainedHelperMethods_DoesNotWarn()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+        using System.Threading.Tasks;
+
+        class TestComponent : ComponentBase
+        {
+            private ElementReference myElement;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender)
+                {
+                    await HelperLevel1();
+                }
+            }
+
+            private async Task HelperLevel1()
+            {
+                await HelperLevel2();
+            }
+
+            private async Task HelperLevel2()
+            {
+                await myElement.FocusAsync();
+            }
+        }
+    }" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test);
+    }
+
+    [Fact]
+    public void ElementReferenceUsageInRegularMethod_StillWarns()
+    {
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.AspNetCore.Components;
+
+        class TestComponent : ComponentBase
+        {
+            private ElementReference myElement;
+
+            public void SomePublicMethod()
+            {
+                var elementId = myElement.Id; // Should warn with standard diagnostic
+            }
+        }
+    }" + TestDeclarations;
+
+        VerifyCSharpDiagnostic(test,
+            new DiagnosticResult
+            {
+                Id = DiagnosticDescriptors.ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync.Id,
+                Message = "ElementReference 'myElement' should only be accessed within OnAfterRenderAsync or OnAfterRender",
+                Severity = DiagnosticSeverity.Warning,
+                Locations = new[]
+                {
+                    new DiagnosticResultLocation("Test0.cs", 12, 33)
+                }
+            });
+    }
+
     protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
     {
         return new ElementReferenceUsageAnalyzer();
