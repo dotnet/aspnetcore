@@ -124,6 +124,8 @@ internal static class WellKnownTypeData
         System_ComponentModel_DataAnnotations_RequiredAttribute,
         System_ComponentModel_DataAnnotations_CustomValidationAttribute,
         System_Type,
+        Microsoft_AspNetCore_Hosting_IWebHostBuilder,
+        Microsoft_AspNetCore_WebHost,
     }
 
     public static string[] WellKnownTypeNames =
@@ -245,5 +247,7 @@ internal static class WellKnownTypeData
         "System.ComponentModel.DataAnnotations.RequiredAttribute",
         "System.ComponentModel.DataAnnotations.CustomValidationAttribute",
         "System.Type",
+        "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+        "Microsoft.AspNetCore.WebHost",
     ];
 }
