@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -24,10 +23,10 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     private bool _isLoading = true;
     private bool _hasError;
     private bool _isDisposed;
-    private int _loadVersion;
     private bool _initialized;
     private bool _hasPendingRender;
     private bool _firstRender = true;
+    private string? _activeCacheKey;
 
     private bool IsInteractive => _renderHandle.IsInitialized &&
                                 _renderHandle.RendererInfo.IsInteractive;
@@ -59,6 +58,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
     /// <summary>
     /// Gets or sets the size of the chunks used when sending image data.
+    /// (Currently unused with stream-based transfer but kept for back-compat extensibility.)
     /// </summary>
     [Parameter] public int ChunkSize { get; set; } = 64 * 1024;
 
@@ -89,11 +89,9 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         }
 
         // Handle parameter changes
-        if (previousSource?.CacheKey != Source?.CacheKey && Source != null && !_isDisposed)
+        if (!_isDisposed && Source != null && !string.Equals(previousSource?.CacheKey, Source.CacheKey, StringComparison.Ordinal))
         {
-            var version = ++_loadVersion;
-
-            await LoadImageIfSourceProvided(version, Source);
+            await LoadImage(Source);
         }
     }
 
@@ -108,8 +106,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         if (_firstRender && Source != null && !_isDisposed)
         {
             _firstRender = false;
-            var version = ++_loadVersion;
-            await LoadImageIfSourceProvided(version, Source);
+            await LoadImage(Source);
         }
     }
 
@@ -151,12 +148,14 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         builder.CloseElement();
     }
 
-    private async Task LoadImageIfSourceProvided(int version, ImageSource? source)
+    private async Task LoadImage(ImageSource? source)
     {
         if (source == null || !IsInteractive)
         {
             return;
         }
+
+        _activeCacheKey = source.CacheKey;
 
         try
         {
@@ -170,11 +169,9 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
                     "Blazor._internal.BinaryImageComponent.trySetFromCache",
                     Element, source.CacheKey);
 
-                Console.WriteLine($"Image found in cache: {foundInCache}");
-
                 if (foundInCache)
                 {
-                    if (version == _loadVersion)
+                    if (_activeCacheKey == source.CacheKey)
                     {
                         SetSuccessState();
                     }
@@ -182,71 +179,49 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
                 }
             }
 
-            await StreamImageInChunks(source, version);
+            await StreamImage(source);
 
-            if (version == _loadVersion)
+            if (_activeCacheKey == source.CacheKey)
             {
                 SetSuccessState();
             }
         }
         catch (Exception)
         {
-            if (version == _loadVersion)
+            if (_activeCacheKey == source.CacheKey)
             {
                 SetErrorState();
             }
         }
     }
 
-    private async Task StreamImageInChunks(ImageSource source, int version)
+    private async Task StreamImage(ImageSource source)
     {
-        if (version != _loadVersion || !IsInteractive)
+        if (!IsInteractive)
         {
             return;
         }
 
+        var loadKey = source.CacheKey;
         try
         {
-            string transferId = $"transfer-{Guid.NewGuid():N}";
+            using var streamRef = new DotNetStreamReference(source.Stream, leaveOpen: true);
 
             await JSRuntime.InvokeVoidAsync(
-                "Blazor._internal.BinaryImageComponent.initChunkedTransfer",
-                Element, transferId, source.MimeType, source.CacheKey,
-                CacheStrategy.ToString().ToLowerInvariant(), source.Length);
-
-            byte[] buffer = ArrayPool<byte>.Shared.Rent(ChunkSize);
-            try
-            {
-                var stream = source.Stream;
-
-                int bytesRead;
-                while ((bytesRead = await stream.ReadAsync(buffer.AsMemory(0, ChunkSize))) > 0)
-                {
-                    if (version != _loadVersion)
-                    {
-                        return;
-                    }
-
-                    await JSRuntime.InvokeVoidAsync(
-                        "Blazor._internal.BinaryImageComponent.addChunk",
-                        transferId, buffer.AsMemory(0, bytesRead).ToArray());
-                }
-
-                if (version == _loadVersion)
-                {
-                    await JSRuntime.InvokeVoidAsync(
-                        "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer",
-                        transferId);
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(buffer);
-            }
+                "Blazor._internal.BinaryImageComponent.loadImageFromStream",
+                Element,
+                streamRef,
+                source.MimeType,
+                source.CacheKey,
+                CacheStrategy.ToString().ToLowerInvariant(),
+                source.Length);
         }
         catch (Exception ex)
         {
-            throw new InvalidOperationException($"Failed to stream image data: {ex.Message}", ex);
+            if (_activeCacheKey == loadKey)
+            {
+                throw new InvalidOperationException($"Failed to stream image data via stream reference: {ex.Message}", ex);
+            }
         }
     }
 

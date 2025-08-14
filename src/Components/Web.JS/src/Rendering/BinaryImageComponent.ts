@@ -2,20 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 /**
- * Represents a pending chunked image transfer.
- */
-interface ChunkedTransfer {
-  imgElement: HTMLImageElement;
-  receivedChunks: Uint8Array[];
-  chunksReceived: number;
-  bytesReceived: number;
-  totalBytes: number | null;
-  mimeType: string;
-  cacheKey: string;
-  cacheStrategy: string;
-}
-
-/**
  * Provides functionality for rendering binary image data in Blazor components.
  */
 export class BinaryImageComponent {
@@ -27,10 +13,7 @@ export class BinaryImageComponent {
 
   private static loadingImages: Set<HTMLImageElement> = new Set();
 
-  private static pendingTransfers: Map<string, ChunkedTransfer> = new Map();
-
-  // Track the active transfer id for each element, to remove stale transfers
-  private static elementActiveTransfer: WeakMap<HTMLImageElement, string> = new WeakMap();
+  private static activeCacheKey: WeakMap<HTMLImageElement, string> = new WeakMap();
 
   /**
    * Opens or creates the cache storage
@@ -56,204 +39,6 @@ export class BinaryImageComponent {
   }
 
   /**
-   * Initializes a dynamic chunked image transfer.
-   */
-  public static initChunkedTransfer(
-    imgElement: HTMLImageElement,
-    transferId: string,
-    mimeType: string,
-    cacheKey: string,
-    cacheStrategy: string,
-    totalBytes: number | null = null
-  ): boolean {
-    // Cancel any previous transfer for this element
-    const previousId = this.elementActiveTransfer.get(imgElement);
-    if (previousId && this.pendingTransfers.has(previousId)) {
-      this.pendingTransfers.delete(previousId);
-      const prevContainer = imgElement.parentElement;
-      if (prevContainer) {
-        prevContainer.style.removeProperty('--blazor-image-progress');
-      }
-    }
-
-    this.elementActiveTransfer.set(imgElement, transferId);
-
-    console.log(`Initializing chunked transfer ${transferId}${totalBytes ? ` (${totalBytes} bytes)` : ''}`);
-
-    this.pendingTransfers.set(transferId, {
-      imgElement: imgElement,
-      receivedChunks: [],
-      chunksReceived: 0,
-      bytesReceived: 0,
-      totalBytes: totalBytes,
-      mimeType: mimeType,
-      cacheKey: cacheKey,
-      cacheStrategy: cacheStrategy,
-    });
-
-    if (imgElement) {
-      this.loadingImages.add(imgElement);
-      imgElement.dispatchEvent(new CustomEvent('blazorImageLoading'));
-    }
-
-    // Initialize progress CSS variables
-    const containerElement = imgElement.parentElement;
-    if (containerElement && totalBytes !== null) {
-      containerElement.style.setProperty('--blazor-image-progress', '0');
-    }
-
-    return true;
-  }
-
-  /**
-   * Adds a chunk to an in-progress dynamic chunked transfer.
-   */
-  public static addChunk(
-    transferId: string,
-    chunkData: Uint8Array
-  ): boolean {
-    const transfer = this.pendingTransfers.get(transferId);
-    if (!transfer) {
-      console.error(`Transfer ${transferId} not found`);
-      return false;
-    }
-
-    // Ignore stale transfer
-    if (this.elementActiveTransfer.get(transfer.imgElement) !== transferId) {
-      this.pendingTransfers.delete(transferId);
-      return false;
-    }
-
-    const chunk = new Uint8Array(chunkData);
-    transfer.receivedChunks.push(chunk);
-    transfer.chunksReceived++;
-    transfer.bytesReceived += chunk.length;
-
-    if (transfer.totalBytes !== null && transfer.totalBytes > 0) {
-      const progress = Math.min(1, transfer.bytesReceived / transfer.totalBytes);
-
-      const containerElement = transfer.imgElement.parentElement;
-      if (containerElement) {
-        containerElement.style.setProperty('--blazor-image-progress', progress.toString());
-      }
-    }
-
-    if (transfer.imgElement) {
-      transfer.imgElement.dispatchEvent(new CustomEvent('blazorImageProgress', {
-        detail: {
-          chunksReceived: transfer.chunksReceived,
-          bytesReceived: transfer.bytesReceived,
-          totalBytes: transfer.totalBytes,
-          percentage: transfer.totalBytes ? Math.round((transfer.bytesReceived / transfer.totalBytes) * 100) : null,
-        },
-      }));
-    }
-
-    return true;
-  }
-
-  /**
-   * Finalizes a dynamic chunked transfer by combining all chunks and setting the image.
-   */
-  public static async finalizeChunkedTransfer(transferId: string): Promise<boolean> {
-    const transfer = this.pendingTransfers.get(transferId);
-    if (!transfer) {
-      console.error(`Transfer ${transferId} not found`);
-      return false;
-    }
-
-    // Abort if stale
-    if (this.elementActiveTransfer.get(transfer.imgElement) !== transferId) {
-      this.pendingTransfers.delete(transferId);
-      return false;
-    }
-
-    try {
-      // Combine all chunks into complete data
-      const totalSize = transfer.totalBytes || transfer.receivedChunks.reduce((sum, chunk) => sum + chunk.length, 0);
-      const completeData = new Uint8Array(totalSize);
-      let offset = 0;
-      for (const chunk of transfer.receivedChunks) {
-        completeData.set(chunk, offset);
-        offset += chunk.length;
-      }
-
-      if (!transfer.imgElement) {
-        console.error(`Element not found in transfer ${transferId}`);
-        return false;
-      }
-
-      // Create blob from data
-      const blob = new Blob([completeData], { type: transfer.mimeType });
-
-      // Cache the blob if requested
-      if (transfer.cacheKey && transfer.cacheStrategy === 'memory') {
-        await this.cacheBlob(transfer.cacheKey, blob, transfer.mimeType);
-      }
-
-      // Create object URL for display
-      const url = URL.createObjectURL(blob);
-
-      // Clean up old URL if exists
-      const oldUrl = this.blobUrls.get(transfer.imgElement);
-      if (oldUrl) {
-        URL.revokeObjectURL(oldUrl);
-      }
-
-      this.blobUrls.set(transfer.imgElement, url);
-      transfer.imgElement.src = url;
-
-      // Set up event handlers
-      transfer.imgElement.onload = () => {
-        this.loadingImages.delete(transfer.imgElement);
-
-        const containerElement = transfer.imgElement.parentElement;
-        if (containerElement) {
-          containerElement.style.removeProperty('--blazor-image-progress');
-        }
-
-        transfer.imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
-      };
-
-      transfer.imgElement.onerror = (e) => {
-        this.loadingImages.delete(transfer.imgElement);
-
-        const containerElement = transfer.imgElement.parentElement;
-        if (containerElement) {
-          containerElement.style.removeProperty('--blazor-image-progress');
-        }
-
-        transfer.imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
-          detail: (e as ErrorEvent).message || 'Failed to load image',
-        }));
-      };
-
-      this.pendingTransfers.delete(transferId);
-
-      console.log(`Finalized transfer ${transferId} for cache key: ${transfer.cacheKey}`);
-      return true;
-    } catch (error) {
-      console.error(`Error finalizing chunked transfer: ${error}`);
-      this.pendingTransfers.delete(transferId);
-
-      if (transfer.imgElement) {
-        this.loadingImages.delete(transfer.imgElement);
-
-        const containerElement = transfer.imgElement.parentElement;
-        if (containerElement) {
-          containerElement.style.removeProperty('--blazor-image-progress');
-        }
-
-        transfer.imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
-          detail: (error as Error).message || 'Failed to process chunked image',
-        }));
-      }
-
-      return false;
-    }
-  }
-
-  /**
    * Caches a blob using the Cache API
    */
   private static async cacheBlob(cacheKey: string, blob: Blob, mimeType: string): Promise<void> {
@@ -264,11 +49,11 @@ export class BinaryImageComponent {
       }
 
       const cacheUrl = this.getCacheUrl(cacheKey);
-      const response = new Response(blob, {
+      const response = new Response(blob, { // use writable/readable stream
         headers: {
           'Content-Type': mimeType,
           'Content-Length': blob.size.toString(),
-          'Cache-Control': 'private, max-age=604800', // 7 days
+          // 'Cache-Control': 'private, max-age=604800', // 7 days
         },
       });
 
@@ -321,17 +106,12 @@ export class BinaryImageComponent {
       this.blobUrls.set(imgElement, url);
       imgElement.src = url;
 
-      // Set up event handlers
       imgElement.onload = () => {
         this.loadingImages.delete(imgElement);
-        imgElement.dispatchEvent(new CustomEvent('blazorImageLoaded'));
       };
 
-      imgElement.onerror = (e) => {
+      imgElement.onerror = () => {
         this.loadingImages.delete(imgElement);
-        imgElement.dispatchEvent(new CustomEvent('blazorImageError', {
-          detail: (e as ErrorEvent).message || 'Failed to load cached image',
-        }));
       };
 
       return true;
@@ -398,13 +178,120 @@ export class BinaryImageComponent {
     // Clear cache
     await this.clearCache();
 
-    // Clear pending transfers
-    this.pendingTransfers.clear();
-
     // Clear loading state
     this.loadingImages.clear();
 
     console.log('Cleared all image component state');
     return true;
+  }
+
+  /**
+   * Loads an image from a stream reference, caching the result.
+   */
+  public static async loadImageFromStream(
+    imgElement: HTMLImageElement,
+    streamRef: { stream: () => Promise<ReadableStream<Uint8Array>> },
+    mimeType: string,
+    cacheKey: string,
+    cacheStrategy: string,
+    totalBytes: number | null
+  ): Promise<boolean> {
+    if (!imgElement || !streamRef) {
+      console.warn('Invalid element or stream reference');
+      return false;
+    }
+    // Record active cache key for stale detection
+    this.activeCacheKey.set(imgElement, cacheKey);
+    try {
+      this.loadingImages.add(imgElement);
+
+      const readable = await streamRef.stream();
+
+      let bytesRead = 0;
+      const accumulatedChunks: Uint8Array[] = [];
+      const reader = readable.getReader();
+
+      for (;;) {
+        if (this.activeCacheKey.get(imgElement) !== cacheKey) {
+          try {
+            reader.cancel();
+          } catch {
+            // ignore
+          }
+          return false;
+        }
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        if (value) {
+          bytesRead += value.byteLength;
+          accumulatedChunks.push(value);
+          if (totalBytes) {
+            const progress = Math.min(1, bytesRead / totalBytes);
+            const containerElement = imgElement.parentElement;
+            if (containerElement) {
+              containerElement.style.setProperty('--blazor-image-progress', progress.toString());
+            }
+          }
+        }
+      }
+
+      if (this.activeCacheKey.get(imgElement) !== cacheKey) {
+        return false;
+      }
+
+      let combined: Uint8Array;
+      if (accumulatedChunks.length === 1) {
+        combined = accumulatedChunks[0];
+      } else {
+        const total = accumulatedChunks.reduce((s, c) => s + c.byteLength, 0);
+        combined = new Uint8Array(total);
+        let offset = 0;
+        for (const c of accumulatedChunks) {
+          combined.set(c, offset);
+          offset += c.byteLength;
+        }
+      }
+
+      const blob = new Blob([combined], { type: mimeType });
+      if (cacheKey && cacheStrategy === 'memory') {
+        await this.cacheBlob(cacheKey, blob, mimeType);
+      }
+
+      if (this.activeCacheKey.get(imgElement) !== cacheKey) {
+        return false;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const oldUrl = this.blobUrls.get(imgElement);
+      if (oldUrl) {
+        URL.revokeObjectURL(oldUrl);
+      }
+      this.blobUrls.set(imgElement, url);
+      imgElement.src = url;
+
+      imgElement.onload = () => {
+        if (this.activeCacheKey.get(imgElement) === cacheKey) {
+          this.loadingImages.delete(imgElement);
+          const containerElement = imgElement.parentElement;
+          if (containerElement) {
+            containerElement.style.removeProperty('--blazor-image-progress');
+          }
+        }
+      };
+
+      imgElement.onerror = () => {
+        this.loadingImages.delete(imgElement);
+      };
+
+      return true;
+    } catch (error) {
+      if (this.activeCacheKey.get(imgElement) === cacheKey) {
+        console.error('Failed to load image from stream reference', error);
+        this.loadingImages.delete(imgElement);
+      }
+      return false;
+    }
   }
 }

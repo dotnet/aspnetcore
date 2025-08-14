@@ -26,7 +26,7 @@ Microsoft.AspNetCore.Components.Web.Image.Image.SetParametersAsync(Microsoft.Asp
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.ImageSource?
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.set -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource
-Microsoft.AspNetCore.Components.Web.Image.ImageSource.CacheKey.get -> string?
+Microsoft.AspNetCore.Components.Web.Image.ImageSource.CacheKey.get -> string!
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(byte[]! data, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.ImageSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource.Length.get -> long?
