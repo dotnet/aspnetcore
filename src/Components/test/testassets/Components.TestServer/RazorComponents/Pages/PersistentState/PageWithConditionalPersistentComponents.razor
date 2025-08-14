@@ -1,11 +1,11 @@
-@page "/persistent-state/page-with-conditional-components"
+﻿@page "/persistent-state/page-with-conditional-components"
 @using TestContentPackage.PersistentComponents
 
 <h3>Persistent component state with conditional rendering</h3>
 
 <h3>
     This page tests persistent component state restoration for:
-    1. A component without @key that always renders (tests component recreation during navigation)
+    1. A component without @@key that always renders (tests component recreation during navigation)
     2. A component that gets conditionally rendered based on query string (tests add/remove scenarios)
     Both should restore state correctly regardless of when they are destroyed and recreated.
 </h3>
@@ -18,7 +18,7 @@
 {
     @* Component without @key that always renders - tests navigation scenarios *@
     <div id="always-rendered-component">
-        <h4>Always Rendered Component (no @key)</h4>
+        <h4>Always Rendered Component (no @@key)</h4>
         @if (!string.IsNullOrEmpty(StreamingId))
         {
             <StreamingComponentWithPersistentState @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
@@ -36,11 +36,11 @@
             <h4>Conditionally Rendered Component</h4>
             @if (!string.IsNullOrEmpty(StreamingId))
             {
-                <StreamingComponentWithPersistentState @key="conditional" @rendermode="@_renderMode" StreamingId="@($"{StreamingId}-conditional")" ServerState="@($"{ServerState}-conditional")" />
+                <StreamingComponentWithPersistentState @key="@("conditional")" @rendermode="@_renderMode" StreamingId="@($"{StreamingId}-conditional")" ServerState="@($"{ServerState}-conditional")" />
             }
             else
             {
-                <NonStreamingComponentWithPersistentState @key="conditional" @rendermode="@_renderMode" ServerState="@($"{ServerState}-conditional")" />
+                <NonStreamingComponentWithPersistentState @key="@("conditional")" @rendermode="@_renderMode" ServerState="@($"{ServerState}-conditional")" />
             }
         </div>
     }
