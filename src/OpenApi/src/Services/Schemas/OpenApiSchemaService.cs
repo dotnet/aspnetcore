@@ -558,7 +558,7 @@ internal sealed class OpenApiSchemaService(
             throw new InvalidOperationException($"Only fragment references (starting with '{OpenApiConstants.RefPrefix}') are supported. Found: {refPath}");
         }
 
-        var path = refPath.TrimStart('#').TrimStart('/');
+        var path = refPath.TrimStart('#', '/');
         if (string.IsNullOrEmpty(path))
         {
             return rootSchema;
@@ -578,13 +578,13 @@ internal sealed class OpenApiSchemaService(
                 }
                 else
                 {
-                    var partialPath = string.Join("/", segments.Take(i + 1));
+                    var partialPath = string.Join('/', segments.Take(i + 1));
                     throw new InvalidOperationException($"Failed to resolve reference '{refPath}': path segment '{segment}' not found at '#{partialPath}'");
                 }
             }
             else
             {
-                var partialPath = string.Join("/", segments.Take(i));
+                var partialPath = string.Join('/', segments.Take(i));
                 throw new InvalidOperationException($"Failed to resolve reference '{refPath}': cannot navigate beyond '#{partialPath}' - expected object but found {current?.GetType().Name ?? "null"}");
             }
         }
