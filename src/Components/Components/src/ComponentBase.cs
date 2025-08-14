@@ -322,7 +322,10 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
 
         // We always call StateHasChanged here as we want to trigger a rerender after OnParametersSet and
         // the synchronous part of OnParametersSetAsync has run.
-        StateHasChanged();
+        if (task.Status != TaskStatus.Faulted)
+        {
+            StateHasChanged();
+        }
 
         return shouldAwaitTask ?
             CallStateHasChangedOnAsyncCompletion(task) :
