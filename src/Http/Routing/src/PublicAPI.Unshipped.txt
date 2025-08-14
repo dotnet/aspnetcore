@@ -1,5 +1,3 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.ValidationEndpointConventionBuilderExtensions
-static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapQuery(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, Microsoft.AspNetCore.Http.RequestDelegate! requestDelegate) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
-static Microsoft.AspNetCore.Builder.EndpointRouteBuilderExtensions.MapQuery(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! pattern, System.Delegate! handler) -> Microsoft.AspNetCore.Builder.RouteHandlerBuilder!
 static Microsoft.AspNetCore.Builder.ValidationEndpointConventionBuilderExtensions.DisableValidation<TBuilder>(this TBuilder builder) -> TBuilder

@@ -24,7 +24,6 @@ public static class EndpointRouteBuilderExtensions
     private static readonly string[] PutVerb = new[] { HttpMethods.Put };
     private static readonly string[] DeleteVerb = new[] { HttpMethods.Delete };
     private static readonly string[] PatchVerb = new[] { HttpMethods.Patch };
-    private static readonly string[] QueryVerb = new[] { HttpMethods.Query };
 
     /// <summary>
     /// Creates a <see cref="RouteGroupBuilder"/> for defining endpoints all prefixed with the specified <paramref name="prefix"/>.
@@ -133,22 +132,6 @@ public static class EndpointRouteBuilderExtensions
         RequestDelegate requestDelegate)
     {
         return MapMethods(endpoints, pattern, PatchVerb, requestDelegate);
-    }
-
-    /// <summary>
-    /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP QUERY requests
-    /// for the specified pattern.
-    /// </summary>
-    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
-    /// <param name="pattern">The route pattern.</param>
-    /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
-    /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
-    public static IEndpointConventionBuilder MapQuery(
-        this IEndpointRouteBuilder endpoints,
-        [StringSyntax("Route")] string pattern,
-        RequestDelegate requestDelegate)
-    {
-        return MapMethods(endpoints, pattern, QueryVerb, requestDelegate);
     }
 
     /// <summary>
@@ -322,24 +305,6 @@ public static class EndpointRouteBuilderExtensions
         Delegate handler)
     {
         return MapMethods(endpoints, pattern, PatchVerb, handler);
-    }
-
-    /// <summary>
-    /// Adds a <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that matches HTTP QUERY requests
-    /// for the specified pattern.
-    /// </summary>
-    /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
-    /// <param name="pattern">The route pattern.</param>
-    /// <param name="handler">The <see cref="Delegate" /> executed when the endpoint is matched.</param>
-    /// <returns>A <see cref="RouteHandlerBuilder"/> that can be used to further customize the endpoint.</returns>
-    [RequiresUnreferencedCode(MapEndpointUnreferencedCodeWarning)]
-    [RequiresDynamicCode(MapEndpointDynamicCodeWarning)]
-    public static RouteHandlerBuilder MapQuery(
-        this IEndpointRouteBuilder endpoints,
-        [StringSyntax("Route")] string pattern,
-        Delegate handler)
-    {
-        return MapMethods(endpoints, pattern, QueryVerb, handler);
     }
 
     /// <summary>

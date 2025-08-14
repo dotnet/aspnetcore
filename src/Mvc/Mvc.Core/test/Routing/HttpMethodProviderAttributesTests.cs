@@ -27,7 +27,6 @@ public class HttpMethodProviderAttributesTests
             data.Add(new HttpDeleteAttribute(), new[] { "DELETE" });
             data.Add(new HttpHeadAttribute(), new[] { "HEAD" });
             data.Add(new HttpOptionsAttribute(), new[] { "OPTIONS" });
-            data.Add(new HttpQueryAttribute(), new[] { "QUERY" });
             data.Add(new AcceptVerbsAttribute("MERGE", "OPTIONS"), new[] { "MERGE", "OPTIONS" });
 
             return data;
