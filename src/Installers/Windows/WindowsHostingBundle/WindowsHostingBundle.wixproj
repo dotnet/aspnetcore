@@ -30,6 +30,7 @@
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
       <SetPlatform>Platform=x86</SetPlatform>
       <Name>AspNetCoreModuleV2_x86</Name>
+      <BindName>AspNetCoreModuleV2_x86</BindName>
       <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
@@ -37,6 +38,7 @@
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
       <SetPlatform>Platform=x64</SetPlatform>
       <Name>AspNetCoreModuleV2_x64</Name>
+      <BindName>AspNetCoreModuleV2_x64</BindName>
       <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
@@ -44,12 +46,14 @@
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
       <SetPlatform>Platform=arm64</SetPlatform>
       <Name>AspNetCoreModuleV2_arm64</Name>
+      <BindName>AspNetCoreModuleV2_arm64</BindName>
       <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
     <ProjectReference Include="..\HostOptions\HostOptions.wixproj">
       <Name>HostOptions</Name>
+      <BindName>HostOptions</BindName>
       <Project>20248cd1-c5aa-4f42-ad88-bc260d64deea</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
@@ -62,18 +66,21 @@
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj">
       <SetPlatform>Platform=x86</SetPlatform>
       <Name>AspNetCoreModuleV2IISExpress_x86</Name>
+      <BindName>AspNetCoreModuleV2IISExpress_x86</BindName>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj">
       <SetPlatform>Platform=x64</SetPlatform>
       <Name>AspNetCoreModuleV2IISExpress_x64</Name>
+      <BindName>AspNetCoreModuleV2IISExpress_x64</BindName>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj">
       <SetPlatform>Platform=arm64</SetPlatform>
       <Name>AspNetCoreModuleV2IISExpress_arm64</Name>
+      <BindName>AspNetCoreModuleV2IISExpress_arm64</BindName>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
