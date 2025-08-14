@@ -1365,7 +1365,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Assert.Equal($"Profile Picture: {profilePicture.Name}", Browser.Exists(By.Id("profile-picture")).Text);
         Assert.Equal("Documents: 2", Browser.Exists(By.Id("documents")).Text);
         Assert.Equal("Images: 3", Browser.Exists(By.Id("images")).Text);
-        Assert.Equal("Header Photo: Model.HeaderPhoto", Browser.Exists(By.Id("header-photo")).Text);
+        Assert.Equal($"Header Photo: {headerPhoto.Name}", Browser.Exists(By.Id("header-photo")).Text);
         Assert.Equal("Total: 7", Browser.Exists(By.Id("form-collection")).Text);
     }
 
