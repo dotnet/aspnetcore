@@ -44,7 +44,7 @@ namespace Microsoft.Extensions.Validation.Generated
         internal string Name { get; }
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
-            => ValidationAttributeCache.GetValidationAttributes(ContainingType, Name);
+            => ValidationAttributeCache.GetPropertyValidationAttributes(ContainingType, Name);
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.Validation.Generated
         internal global::System.Type Type { get; }
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
-            => ValidationAttributeCache.GetValidationAttributes(Type, null);
+            => ValidationAttributeCache.GetTypeValidationAttributes(Type);
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -202,59 +202,70 @@ namespace Microsoft.Extensions.Validation.Generated
             [property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type ContainingType,
             string? PropertyName);
-        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> _cache = new();
+        private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> _propertyCache = new();
+        private static readonly global::System.Lazy<global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]>> _lazyTypeCache = new (() => new ());
+        private static global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> TypeCache => _lazyTypeCache.Value;
 
-        public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes(
+        public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetPropertyValidationAttributes(
             [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
             string? propertyName)
         {
             var key = new CacheKey(containingType, propertyName);
-            return _cache.GetOrAdd(key, static k =>
+            return _propertyCache.GetOrAdd(key, static k =>
             {
                 var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
 
-                if (k.PropertyName is not null)
+                // Get attributes from the property
+                var property = k.ContainingType.GetProperty(k.PropertyName);
+                if (property != null)
                 {
-                    // Get attributes from the property
-                    var property = k.ContainingType.GetProperty(k.PropertyName);
-                    if (property != null)
+                    var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true);
+
+                    results.AddRange(propertyAttributes);
+                }
+
+                // Check constructors for parameters that match the property name
+                // to handle record scenarios
+                foreach (var constructor in k.ContainingType.GetConstructors())
+                {
+                    // Look for parameter with matching name (case insensitive)
+                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                        constructor.GetParameters(),
+                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+
+                    if (parameter != null)
                     {
-                        var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
-                            .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true);
+                        var paramAttributes = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameter, inherit: true);
 
-                        results.AddRange(propertyAttributes);
-                    }
+                        results.AddRange(paramAttributes);
 
-                    // Check constructors for parameters that match the property name
-                    // to handle record scenarios
-                    foreach (var constructor in k.ContainingType.GetConstructors())
-                    {
-                        // Look for parameter with matching name (case insensitive)
-                        var parameter = global::System.Linq.Enumerable.FirstOrDefault(
-                            constructor.GetParameters(),
-                            p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
-
-                        if (parameter != null)
-                        {
-                            var paramAttributes = global::System.Reflection.CustomAttributeExtensions
-                                .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameter, inherit: true);
-
-                            results.AddRange(paramAttributes);
-
-                            break;
-                        }
+                        break;
                     }
                 }
-                else
+
+                return results.ToArray();
+            });
+        }
+
+
+        public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetTypeValidationAttributes(
+            [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
+            global::System.Type type
+        )
+        {
+            return TypeCache.GetOrAdd(type, static t =>
+            {
+                var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
+
+                // Get attributes from the type itself and its super types
+                foreach (var attr in t.GetCustomAttributes(typeof(global::System.ComponentModel.DataAnnotations.ValidationAttribute), true))
                 {
-                    // Get attributes from the type itself and its super types
-                    foreach (var attr in k.ContainingType.GetCustomAttributes(typeof(global::System.ComponentModel.DataAnnotations.ValidationAttribute), true))
+                    if (attr is global::System.ComponentModel.DataAnnotations.ValidationAttribute validationAttribute)
                     {
-                        if (attr is global::System.ComponentModel.DataAnnotations.ValidationAttribute validationAttribute)
-                        {
-                            results.Add(validationAttribute);
-                        }
+                        results.Add(validationAttribute);
                     }
                 }
 
