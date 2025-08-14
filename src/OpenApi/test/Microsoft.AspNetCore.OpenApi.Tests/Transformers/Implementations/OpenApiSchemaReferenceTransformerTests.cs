@@ -740,8 +740,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Equal("Category", ((OpenApiSchemaReference)requestSchema).Reference.Id);
 
             // Assert that $ref is used for nested Tags
-            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
-            // Assert.Equal("Tag", ((OpenApiSchemaReference)requestSchema.Properties["tags"].Items).Reference.Id);
+            Assert.Equal("Tag", ((OpenApiSchemaReference)requestSchema.Properties["tags"].Items).Reference.Id);
 
             // Assert that $ref is used for nested Parent
             Assert.Equal("Category", ((OpenApiSchemaReference)requestSchema.Properties["parent"]).Reference.Id);

@@ -457,5 +457,111 @@ internal sealed class OpenApiSchemaService(
     }
 
     private JsonNode CreateSchema(OpenApiSchemaKey key)
-        => JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+    {
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+        return ResolveReferences(schema, schema);
+    }
+
+    /// <summary>
+    /// Recursively resolves references within a JSON schema node.
+    /// </summary>
+    private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
+    {
+        if (node is JsonObject jsonObject)
+        {
+            // Check if this is a reference object
+            if (jsonObject.TryGetPropertyValue("$ref", out var refNode) &&
+                refNode is JsonValue refValue &&
+                refValue.TryGetValue<string>(out var refString) &&
+                refString.StartsWith('#'))
+            {
+                // Resolve the reference path to the actual schema content
+                var resolvedNode = ResolveReference(refString, rootSchema);
+                if (resolvedNode != null)
+                {
+                    // Return a deep clone to avoid parent issues
+                    return resolvedNode.DeepClone();
+                }
+                // If resolution fails, return the original reference
+                return node;
+            }
+
+            // Process all properties recursively
+            var newObject = new JsonObject();
+            foreach (var property in jsonObject)
+            {
+                if (property.Value != null)
+                {
+                    var processedValue = ResolveReferences(property.Value, rootSchema);
+                    // Clone the processed value to avoid parent issues
+                    newObject[property.Key] = processedValue?.DeepClone();
+                }
+                else
+                {
+                    newObject[property.Key] = null;
+                }
+            }
+            return newObject;
+        }
+        else if (node is JsonArray jsonArray)
+        {
+            var newArray = new JsonArray();
+            for (var i = 0; i < jsonArray.Count; i++)
+            {
+                if (jsonArray[i] != null)
+                {
+                    var processedValue = ResolveReferences(jsonArray[i]!, rootSchema);
+                    // Clone the processed value to avoid parent issues
+                    newArray.Add(processedValue?.DeepClone());
+                }
+                else
+                {
+                    newArray.Add(null);
+                }
+            }
+            return newArray;
+        }
+
+        // Return primitive values as-is
+        return node;
+    }
+
+    /// <summary>
+    /// Resolves a JSON reference path (like "#/properties/parent/properties/tags") to the actual schema content.
+    /// </summary>
+    private static JsonNode? ResolveReference(string refPath, JsonNode rootSchema)
+    {
+        // Remove the leading "#" and split the path
+        var path = refPath.TrimStart('#').TrimStart('/');
+        if (string.IsNullOrEmpty(path))
+        {
+            return rootSchema;
+        }
+
+        var segments = path.Split('/');
+        var current = rootSchema;
+
+        foreach (var segment in segments)
+        {
+            if (current is JsonObject currentObject)
+            {
+                if (currentObject.TryGetPropertyValue(segment, out var nextNode) && nextNode != null)
+                {
+                    current = nextNode;
+                }
+                else
+                {
+                    // Path not found
+                    return null;
+                }
+            }
+            else
+            {
+                // Cannot navigate further
+                return null;
+            }
+        }
+
+        return current;
+    }
 }
