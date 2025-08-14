@@ -683,106 +683,271 @@ public class KestrelConfigurationLoaderTests
         Assert.IsAssignableFrom<CryptographicException>(ex.InnerException);
     }
 
+    public static TheoryData<string, string, string> GetPemCertificateTestData()
+    {
+        var data = new TheoryData<string, string, string>();
+        var algorithms = new List<string>
+        {
+            "RSA",
+            "ECDsa",
+            "DSA",
+            "MLDsa44",
+            "MLDsa65",
+            "MLDsa87"
+        };
+
+#pragma warning disable SYSLIB5006
+        if (SlhDsa.IsSupported)
+        {
+            algorithms.AddRange(
+            [
+                "SlhDsaSha2_128s",
+                "SlhDsaSha2_128f",
+                "SlhDsaSha2_192s",
+                "SlhDsaSha2_192f",
+                "SlhDsaSha2_256s",
+                "SlhDsaSha2_256f",
+                "SlhDsaShake_128s",
+                "SlhDsaShake_128f",
+                "SlhDsaShake_192s",
+                "SlhDsaShake_192f",
+                "SlhDsaShake_256s",
+                "SlhDsaShake_256f"
+            ]);
+        }
+#pragma warning restore SYSLIB5006
+
+        foreach (var algorithm in algorithms)
+        {
+            // Test with no password
+            data.Add(algorithm, null, ".pem");
+            data.Add(algorithm, null, ".crt");
+
+            // Test with password
+            data.Add(algorithm, "test", ".pem");
+            data.Add(algorithm, "test", ".crt");
+        }
+
+        return data;
+    }
+
     [Theory]
-    [InlineData("https-rsa.pem", "https-rsa.key", null)]
-    [InlineData("https-rsa.pem", "https-rsa-protected.key", "aspnetcore")]
-    [InlineData("https-rsa.crt", "https-rsa.key", null)]
-    [InlineData("https-rsa.crt", "https-rsa-protected.key", "aspnetcore")]
-    [InlineData("https-ecdsa.pem", "https-ecdsa.key", null)]
-    [InlineData("https-ecdsa.pem", "https-ecdsa-protected.key", "aspnetcore")]
-    [InlineData("https-ecdsa.crt", "https-ecdsa.key", null)]
-    [InlineData("https-ecdsa.crt", "https-ecdsa-protected.key", "aspnetcore")]
-    [InlineData("https-dsa.pem", "https-dsa.key", null)]
-    [InlineData("https-dsa.pem", "https-dsa-protected.key", "test")]
-    [InlineData("https-dsa.crt", "https-dsa.key", null)]
-    [InlineData("https-dsa.crt", "https-dsa-protected.key", "test")]
-    [InlineData("https-mldsa44.pem", "https-mldsa44.key", null)]
-    [InlineData("https-mldsa44.pem", "https-mldsa44-protected.key", "aspnetcore")]
-    [InlineData("https-mldsa44.crt", "https-mldsa44.key", null)]
-    [InlineData("https-mldsa44.crt", "https-mldsa44-protected.key", "aspnetcore")]
-    [InlineData("https-mldsa65.pem", "https-mldsa65.key", null)]
-    [InlineData("https-mldsa65.pem", "https-mldsa65-protected.key", "aspnetcore")]
-    [InlineData("https-mldsa65.crt", "https-mldsa65.key", null)]
-    [InlineData("https-mldsa65.crt", "https-mldsa65-protected.key", "aspnetcore")]
-    [InlineData("https-mldsa87.pem", "https-mldsa87.key", null)]
-    [InlineData("https-mldsa87.pem", "https-mldsa87-protected.key", "aspnetcore")]
-    [InlineData("https-mldsa87.crt", "https-mldsa87.key", null)]
-    [InlineData("https-mldsa87.crt", "https-mldsa87-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-128s.pem", "https-slhdsa-sha2-128s.key", null)]
-    [InlineData("https-slhdsa-sha2-128s.pem", "https-slhdsa-sha2-128s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-128s.crt", "https-slhdsa-sha2-128s.key", null)]
-    [InlineData("https-slhdsa-sha2-128s.crt", "https-slhdsa-sha2-128s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-128f.pem", "https-slhdsa-sha2-128f.key", null)]
-    [InlineData("https-slhdsa-sha2-128f.pem", "https-slhdsa-sha2-128f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-128f.crt", "https-slhdsa-sha2-128f.key", null)]
-    [InlineData("https-slhdsa-sha2-128f.crt", "https-slhdsa-sha2-128f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-192s.pem", "https-slhdsa-sha2-192s.key", null)]
-    [InlineData("https-slhdsa-sha2-192s.pem", "https-slhdsa-sha2-192s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-192s.crt", "https-slhdsa-sha2-192s.key", null)]
-    [InlineData("https-slhdsa-sha2-192s.crt", "https-slhdsa-sha2-192s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-192f.pem", "https-slhdsa-sha2-192f.key", null)]
-    [InlineData("https-slhdsa-sha2-192f.pem", "https-slhdsa-sha2-192f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-192f.crt", "https-slhdsa-sha2-192f.key", null)]
-    [InlineData("https-slhdsa-sha2-192f.crt", "https-slhdsa-sha2-192f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-256s.pem", "https-slhdsa-sha2-256s.key", null)]
-    [InlineData("https-slhdsa-sha2-256s.pem", "https-slhdsa-sha2-256s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-256s.crt", "https-slhdsa-sha2-256s.key", null)]
-    [InlineData("https-slhdsa-sha2-256s.crt", "https-slhdsa-sha2-256s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-256f.pem", "https-slhdsa-sha2-256f.key", null)]
-    [InlineData("https-slhdsa-sha2-256f.pem", "https-slhdsa-sha2-256f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-sha2-256f.crt", "https-slhdsa-sha2-256f.key", null)]
-    [InlineData("https-slhdsa-sha2-256f.crt", "https-slhdsa-sha2-256f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-128s.pem", "https-slhdsa-shake-128s.key", null)]
-    [InlineData("https-slhdsa-shake-128s.pem", "https-slhdsa-shake-128s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-128s.crt", "https-slhdsa-shake-128s.key", null)]
-    [InlineData("https-slhdsa-shake-128s.crt", "https-slhdsa-shake-128s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-128f.pem", "https-slhdsa-shake-128f.key", null)]
-    [InlineData("https-slhdsa-shake-128f.pem", "https-slhdsa-shake-128f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-128f.crt", "https-slhdsa-shake-128f.key", null)]
-    [InlineData("https-slhdsa-shake-128f.crt", "https-slhdsa-shake-128f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-192s.pem", "https-slhdsa-shake-192s.key", null)]
-    [InlineData("https-slhdsa-shake-192s.pem", "https-slhdsa-shake-192s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-192s.crt", "https-slhdsa-shake-192s.key", null)]
-    [InlineData("https-slhdsa-shake-192s.crt", "https-slhdsa-shake-192s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-192f.pem", "https-slhdsa-shake-192f.key", null)]
-    [InlineData("https-slhdsa-shake-192f.pem", "https-slhdsa-shake-192f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-192f.crt", "https-slhdsa-shake-192f.key", null)]
-    [InlineData("https-slhdsa-shake-192f.crt", "https-slhdsa-shake-192f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-256s.pem", "https-slhdsa-shake-256s.key", null)]
-    [InlineData("https-slhdsa-shake-256s.pem", "https-slhdsa-shake-256s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-256s.crt", "https-slhdsa-shake-256s.key", null)]
-    [InlineData("https-slhdsa-shake-256s.crt", "https-slhdsa-shake-256s-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-256f.pem", "https-slhdsa-shake-256f.key", null)]
-    [InlineData("https-slhdsa-shake-256f.pem", "https-slhdsa-shake-256f-protected.key", "aspnetcore")]
-    [InlineData("https-slhdsa-shake-256f.crt", "https-slhdsa-shake-256f.key", null)]
-    [InlineData("https-slhdsa-shake-256f.crt", "https-slhdsa-shake-256f-protected.key", "aspnetcore")]
-    public void ConfigureEndpoint_CanLoadPemCertificates(string certificateFile, string certificateKey, string password)
+    [MemberData(nameof(GetPemCertificateTestData))]
+    public void ConfigureEndpoint_CanLoadPemCertificates(string algorithmType, string keyPassword, string extension)
     {
         var serverOptions = CreateServerOptions();
-        var certificate = new X509Certificate2(TestResources.GetCertPath(Path.ChangeExtension(certificateFile, "crt")));
+        X509Certificate2 certificate;
+        string certificateFilePath;
+        string certificateKeyPath;
+        string tempDir = null;
 
-        var ran1 = false;
-        var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+        // For DSA, we rely on a pre-generated certificate since CertificateRequest APIs don't directly
+        // support DSA keys.
+        if (algorithmType == "DSA")
         {
-            new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
-            new KeyValuePair<string, string>("Certificates:Default:Path", Path.Combine("shared", "TestCertificates", certificateFile)),
-            new KeyValuePair<string, string>("Certificates:Default:KeyPath", Path.Combine("shared", "TestCertificates", certificateKey)),
+            var baseName = keyPassword == null ? "https-dsa" : "https-dsa";
+            var keyName = keyPassword == null ? "https-dsa.key" : "https-dsa-protected.key";
+
+            certificate = new X509Certificate2(TestResources.GetCertPath("https-dsa.crt"));
+            certificateFilePath = TestResources.GetCertPath(baseName + extension);
+            certificateKeyPath = TestResources.GetCertPath(keyName);
         }
-        .Concat(password != null ? new[] { new KeyValuePair<string, string>("Certificates:Default:Password", password) } : Array.Empty<KeyValuePair<string, string>>()))
-        .Build();
-
-        serverOptions
-            .Configure(config)
-            .Endpoint("End1", opt =>
+        else
+        {
+            // For all other algorithms, we generate the certificate and key dynamically, saving them
+            // in a temporary directory.
+            tempDir = Directory.CreateTempSubdirectory().FullName;
+            try
             {
-                ran1 = true;
-                Assert.True(opt.IsHttps);
-                Assert.Equal(opt.HttpsOptions.ServerCertificate.SerialNumber, certificate.SerialNumber);
-            }).Load();
+                certificateFilePath = Path.Combine(tempDir, $"test{extension}");
+                certificateKeyPath = Path.Combine(tempDir, "test.key");
+                certificate = GenerateTestCertificateWithAlgorithm(algorithmType, keyPassword, certificateFilePath, certificateKeyPath);
+            }
+            catch
+            {
+                if (Directory.Exists(tempDir))
+                {
+                    Directory.Delete(tempDir, recursive: true);
+                }
+                throw;
+            }
+        }
 
-        Assert.True(ran1);
-        Assert.Null(serverOptions.DevelopmentCertificate); // Not used since configuration cert is present
+        try
+        {
+            var ran1 = false;
+            var config = new ConfigurationBuilder().AddInMemoryCollection(new[]
+            {
+                new KeyValuePair<string, string>("Endpoints:End1:Url", "https://*:5001"),
+                new KeyValuePair<string, string>("Certificates:Default:Path", certificateFilePath),
+                new KeyValuePair<string, string>("Certificates:Default:KeyPath", certificateKeyPath),
+            }
+            .Concat(keyPassword != null ? [new KeyValuePair<string, string>("Certificates:Default:Password", keyPassword)] : Array.Empty<KeyValuePair<string, string>>()))
+            .Build();
+
+            serverOptions
+                .Configure(config)
+                .Endpoint("End1", opt =>
+                {
+                    ran1 = true;
+                    Assert.True(opt.IsHttps);
+                    Assert.Equal(certificate.SerialNumber, opt.HttpsOptions.ServerCertificate.SerialNumber);
+                }).Load();
+
+            Assert.True(ran1);
+            Assert.Null(serverOptions.DevelopmentCertificate); // Not used since configuration cert is present
+        }
+        finally
+        {
+            // Clean up generated certificate directory if it exists.
+            if (tempDir is not null && Directory.Exists(tempDir))
+            {
+                Directory.Delete(tempDir, recursive: true);
+            }
+        }
     }
+
+    private static X509Certificate2 GenerateTestCertificateWithAlgorithm(string algorithmType, string keyPassword, string certificatePath, string keyPath)
+    {
+        var distinguishedName = new X500DistinguishedName($"CN=test.{algorithmType}.local");
+        var sanBuilder = new SubjectAlternativeNameBuilder();
+        sanBuilder.AddDnsName($"test.{algorithmType}.local");
+
+        X509Certificate2 certificate;
+        string keyPem;
+
+        switch (algorithmType)
+        {
+            case "RSA":
+                using (var rsa = RSA.Create(2048))
+                {
+                    var request = new CertificateRequest(distinguishedName, rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                    certificate = CreateTestCertificate(request, sanBuilder);
+                    keyPem = ExportKeyToPem(rsa, keyPassword);
+                }
+                break;
+
+            case "ECDsa":
+                using (var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256))
+                {
+                    var request = new CertificateRequest(distinguishedName, ecdsa, HashAlgorithmName.SHA256);
+                    certificate = CreateTestCertificate(request, sanBuilder);
+                    keyPem = ExportKeyToPem(ecdsa, keyPassword);
+                }
+                break;
+
+            case "MLDsa44":
+            case "MLDsa65":
+            case "MLDsa87":
+#pragma warning disable SYSLIB5006
+                var mlDsaAlgorithm = algorithmType switch
+                {
+                    "MLDsa44" => MLDsaAlgorithm.MLDsa44,
+                    "MLDsa65" => MLDsaAlgorithm.MLDsa65,
+                    "MLDsa87" => MLDsaAlgorithm.MLDsa87,
+                    _ => throw new ArgumentException($"Unknown ML-DSA variant: {algorithmType}")
+                };
+                using (var mlDsa = MLDsa.GenerateKey(mlDsaAlgorithm))
+                {
+                    var request = new CertificateRequest(distinguishedName, mlDsa);
+                    certificate = CreateTestCertificate(request, sanBuilder);
+                    keyPem = ExportMLDsaKeyToPem(mlDsa, keyPassword);
+                }
+#pragma warning restore SYSLIB5006
+                break;
+
+            case "SlhDsaSha2_128s":
+            case "SlhDsaSha2_128f":
+            case "SlhDsaSha2_192s":
+            case "SlhDsaSha2_192f":
+            case "SlhDsaSha2_256s":
+            case "SlhDsaSha2_256f":
+            case "SlhDsaShake_128s":
+            case "SlhDsaShake_128f":
+            case "SlhDsaShake_192s":
+            case "SlhDsaShake_192f":
+            case "SlhDsaShake_256s":
+            case "SlhDsaShake_256f":
+#pragma warning disable SYSLIB5006
+                var slhDsaAlgorithm = algorithmType switch
+                {
+                    "SlhDsaSha2_128s" => SlhDsaAlgorithm.SlhDsaSha2_128s,
+                    "SlhDsaSha2_128f" => SlhDsaAlgorithm.SlhDsaSha2_128f,
+                    "SlhDsaSha2_192s" => SlhDsaAlgorithm.SlhDsaSha2_192s,
+                    "SlhDsaSha2_192f" => SlhDsaAlgorithm.SlhDsaSha2_192f,
+                    "SlhDsaSha2_256s" => SlhDsaAlgorithm.SlhDsaSha2_256s,
+                    "SlhDsaSha2_256f" => SlhDsaAlgorithm.SlhDsaSha2_256f,
+                    "SlhDsaShake_128s" => SlhDsaAlgorithm.SlhDsaShake128s,
+                    "SlhDsaShake_128f" => SlhDsaAlgorithm.SlhDsaShake128f,
+                    "SlhDsaShake_192s" => SlhDsaAlgorithm.SlhDsaShake192s,
+                    "SlhDsaShake_192f" => SlhDsaAlgorithm.SlhDsaShake192f,
+                    "SlhDsaShake_256s" => SlhDsaAlgorithm.SlhDsaShake256s,
+                    "SlhDsaShake_256f" => SlhDsaAlgorithm.SlhDsaShake256f,
+                    _ => throw new ArgumentException($"Unknown SLH-DSA variant: {algorithmType}")
+                };
+                using (var slhDsa = SlhDsa.GenerateKey(slhDsaAlgorithm))
+                {
+                    var request = new CertificateRequest(distinguishedName, slhDsa);
+                    certificate = CreateTestCertificate(request, sanBuilder);
+                    keyPem = ExportSlhDsaKeyToPem(slhDsa, keyPassword);
+                }
+#pragma warning restore SYSLIB5006
+                break;
+
+            default:
+                throw new ArgumentException($"Unknown algorithm type: {algorithmType}");
+        }
+
+        if (certificatePath.EndsWith(".pem", StringComparison.OrdinalIgnoreCase))
+        {
+            // Export the certificate in PEM format
+            File.WriteAllText(certificatePath, certificate.ExportCertificatePem());
+        }
+        else
+        {
+            // Export the certificate in DER format
+            File.WriteAllBytes(certificatePath, certificate.Export(X509ContentType.Cert));
+        }
+
+        File.WriteAllText(keyPath, keyPem);
+
+        return certificate;
+    }
+
+    private static X509Certificate2 CreateTestCertificate(CertificateRequest request, SubjectAlternativeNameBuilder sanBuilder)
+    {
+        request.CertificateExtensions.Add(sanBuilder.Build());
+        request.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.DigitalSignature | X509KeyUsageFlags.KeyEncipherment, critical: true));
+        request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension([new Oid("1.3.6.1.5.5.7.3.1")], critical: false)); // Server Authentication
+
+        var notBefore = DateTimeOffset.UtcNow.AddDays(-1);
+        var notAfter = DateTimeOffset.UtcNow.AddYears(1);
+
+        return request.CreateSelfSigned(notBefore, notAfter);
+    }
+
+    private static string ExportKeyToPem(AsymmetricAlgorithm key, string password)
+    {
+        return password is null
+            ? key.ExportPkcs8PrivateKeyPem()
+            : key.ExportEncryptedPkcs8PrivateKeyPem(password.AsSpan(), new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100_000));
+    }
+
+#pragma warning disable SYSLIB5006
+    private static string ExportMLDsaKeyToPem(MLDsa mlDsa, string password)
+    {
+        return password is null
+            ? mlDsa.ExportPkcs8PrivateKeyPem()
+            : mlDsa.ExportEncryptedPkcs8PrivateKeyPem(password.AsSpan(), new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100_000));
+    }
+
+    private static string ExportSlhDsaKeyToPem(SlhDsa slhDsa, string password)
+    {
+        return password is null
+            ? slhDsa.ExportPkcs8PrivateKeyPem()
+            : slhDsa.ExportEncryptedPkcs8PrivateKeyPem(password.AsSpan(), new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100_000));
+    }
+#pragma warning restore SYSLIB5006
 
     [Fact]
     public void ConfigureEndpointDevelopmentCertificateGetsIgnoredIfPasswordIsNotCorrect()
