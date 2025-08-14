@@ -116,15 +116,22 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     // In each case, we validate that the state is available until the initial set of components first render reaches quiescence. Similar to how it works for Server and WebAssembly.
     // For server we validate that the state is provided every time a circuit is initialized.
     [Theory]
-    [InlineData(typeof(InteractiveServerRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming")]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
-    [InlineData(typeof(InteractiveAutoRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveAutoRenderMode), "AutoStreaming")]
+    [InlineData(typeof(InteractiveServerRenderMode), (string)null, "yes")]
+    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming", "yes")]
+    [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null, "yes")]
+    [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming", "yes")]
+    [InlineData(typeof(InteractiveAutoRenderMode), (string)null, "yes")]
+    [InlineData(typeof(InteractiveAutoRenderMode), "AutoStreaming", "yes")]
+    [InlineData(typeof(InteractiveServerRenderMode), (string)null, null)]
+    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming", null)]
+    [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null, null)]
+    [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming", null)]
+    [InlineData(typeof(InteractiveAutoRenderMode), (string)null, null)]
+    [InlineData(typeof(InteractiveAutoRenderMode), "AutoStreaming", null)]
     public void CanUpdateComponentsWithPersistedStateAndEnhancedNavUpdates(
         Type renderMode,
-        string streaming)
+        string streaming,
+        string key)
     {
         var mode = renderMode switch
         {
@@ -136,7 +143,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
 
         // Navigate to a page without components first to make sure that we exercise rendering components
         // with enhanced navigation on.
-        NavigateToInitialPage(streaming, mode);
+        NavigateToInitialPage(streaming, mode, key);
         if (mode == "auto")
         {
             BlockWebAssemblyResourceLoad();
@@ -156,22 +163,36 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
 
             UnblockWebAssemblyResourceLoad();
             Browser.Navigate().Refresh();
-            NavigateToInitialPage(streaming, mode);
+            NavigateToInitialPage(streaming, mode, key);
             Browser.Click(By.Id("call-blazor-start"));
             Browser.Click(By.Id("page-with-components-link-and-declarative-state"));
 
             RenderComponentsWithDeclarativePersistentStateAndValidate(mode, renderMode, streaming, interactiveRuntime: "wasm", stateValue: "other");
         }
 
-        void NavigateToInitialPage(string streaming, string mode)
+        void NavigateToInitialPage(string streaming, string mode, string key)
         {
-            if (streaming == null)
+            if (key == null)
             {
-                Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
+                if (streaming == null)
+                {
+                    Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
+                }
+                else
+                {
+                    Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&streaming-id={streaming}&suppress-autostart");
+                }
             }
             else
             {
-                Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&streaming-id={streaming}&suppress-autostart");
+                if (streaming == null)
+                {
+                    Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&key={key}&suppress-autostart");
+                }
+                else
+                {
+                    Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&key={key}&streaming-id={streaming}&suppress-autostart");
+                }
             }
         }
     }
@@ -379,255 +400,6 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
 
             Browser.Equal($"Interactive runtime: {interactiveRuntime}", () => Browser.FindElement(By.Id("interactive-runtime")).Text);
             Browser.Equal($"State value:{stateValue}", () => Browser.FindElement(By.Id("state-value")).Text);
-        }
-        else
-        {
-            Browser.Equal("Streaming: True", () => Browser.FindElement(By.Id("streaming")).Text);
-        }
-    }
-
-    // Tests for components with conditional rendering and recreation scenarios
-    // These tests validate the fix for issue #63193 where persistent state restoration
-    // was failing for components without keys or during component add/remove cycles
-
-    [Theory]
-    [InlineData(typeof(InteractiveServerRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming")]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
-    [InlineData(typeof(InteractiveAutoRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveAutoRenderMode), "AutoStreaming")]
-    public void CanRestoreStateForComponentsWithoutKeysAndConditionalRendering(
-        Type renderMode,
-        string streaming)
-    {
-        var mode = renderMode switch
-        {
-            var t when t == typeof(InteractiveServerRenderMode) => "server",
-            var t when t == typeof(InteractiveWebAssemblyRenderMode) => "wasm",
-            var t when t == typeof(InteractiveAutoRenderMode) => "auto",
-            _ => throw new ArgumentException($"Unknown render mode: {renderMode.Name}")
-        };
-
-        // Navigate to a page without components first to exercise enhanced navigation
-        NavigateToInitialPageConditional(streaming, mode);
-        if (mode == "auto")
-        {
-            BlockWebAssemblyResourceLoad();
-        }
-        Browser.Click(By.Id("call-blazor-start"));
-        
-        // Navigate to page with conditional components - initially show both components
-        Browser.Click(By.Id("page-with-conditional-components-link"));
-
-        if (mode != "auto")
-        {
-            RenderConditionalComponentsAndValidate(mode, renderMode, streaming, showConditional: true);
-        }
-        else
-        {
-            // For auto mode, validate that the state is persisted for both runtimes
-            RenderConditionalComponentsAndValidate(mode, renderMode, streaming, interactiveRuntime: "server", showConditional: true);
-
-            UnblockWebAssemblyResourceLoad();
-            Browser.Navigate().Refresh();
-            NavigateToInitialPageConditional(streaming, mode);
-            Browser.Click(By.Id("call-blazor-start"));
-            Browser.Click(By.Id("page-with-conditional-components-link"));
-
-            RenderConditionalComponentsAndValidate(mode, renderMode, streaming, interactiveRuntime: "wasm", showConditional: true);
-        }
-    }
-
-    [Theory]
-    [InlineData(typeof(InteractiveServerRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming")]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
-    [InlineData(typeof(InteractiveAutoRenderMode), (string)null)]
-    [InlineData(typeof(InteractiveAutoRenderMode), "AutoStreaming")]
-    public void CanRestoreStateAfterConditionalComponentToggling(
-        Type renderMode,
-        string streaming)
-    {
-        var mode = renderMode switch
-        {
-            var t when t == typeof(InteractiveServerRenderMode) => "server",
-            var t when t == typeof(InteractiveWebAssemblyRenderMode) => "wasm",
-            var t when t == typeof(InteractiveAutoRenderMode) => "auto",
-            _ => throw new ArgumentException($"Unknown render mode: {renderMode.Name}")
-        };
-
-        // Navigate to page with conditional components showing initially
-        NavigateToInitialPageConditional(streaming, mode);
-        if (mode == "auto")
-        {
-            BlockWebAssemblyResourceLoad();
-        }
-        Browser.Click(By.Id("call-blazor-start"));
-        Browser.Click(By.Id("page-with-conditional-components-show"));
-
-        if (mode != "auto")
-        {
-            TestConditionalComponentToggling(mode, renderMode, streaming);
-        }
-        else
-        {
-            // For auto mode, validate both runtimes
-            TestConditionalComponentToggling(mode, renderMode, streaming, interactiveRuntime: "server");
-
-            UnblockWebAssemblyResourceLoad();
-            Browser.Navigate().Refresh();
-            NavigateToInitialPageConditional(streaming, mode);
-            Browser.Click(By.Id("call-blazor-start"));
-            Browser.Click(By.Id("page-with-conditional-components-show"));
-
-            TestConditionalComponentToggling(mode, renderMode, streaming, interactiveRuntime: "wasm");
-        }
-    }
-
-    private void NavigateToInitialPageConditional(string streaming, string mode)
-    {
-        if (streaming == null)
-        {
-            Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
-        }
-        else
-        {
-            Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&streaming-id={streaming}&suppress-autostart");
-        }
-    }
-
-    private void RenderConditionalComponentsAndValidate(
-        string mode,
-        Type renderMode,
-        string streaming,
-        string interactiveRuntime = null,
-        bool showConditional = true)
-    {
-        AssertConditionalPageState(
-            mode: mode,
-            renderMode: renderMode.Name,
-            interactive: streaming == null,
-            showConditional: showConditional,
-            streamingId: streaming,
-            streamingCompleted: false,
-            interactiveRuntime: interactiveRuntime);
-
-        if (streaming == null)
-        {
-            return;
-        }
-
-        Browser.Click(By.Id("end-streaming"));
-
-        AssertConditionalPageState(
-            mode: mode,
-            renderMode: renderMode.Name,
-            interactive: true,
-            showConditional: showConditional,
-            streamingId: streaming,
-            streamingCompleted: true,
-            interactiveRuntime: interactiveRuntime);
-    }
-
-    private void TestConditionalComponentToggling(
-        string mode,
-        Type renderMode,
-        string streaming,
-        string interactiveRuntime = null)
-    {
-        // Initially both components should be present and restore state
-        AssertConditionalPageState(
-            mode: mode,
-            renderMode: renderMode.Name,
-            interactive: streaming == null,
-            showConditional: true,
-            streamingId: streaming,
-            streamingCompleted: false,
-            interactiveRuntime: interactiveRuntime);
-
-        // Hide the conditional component
-        Browser.Click(By.Id("toggle-conditional"));
-        
-        AssertConditionalPageState(
-            mode: mode,
-            renderMode: renderMode.Name,
-            interactive: streaming == null,
-            showConditional: false,
-            streamingId: streaming,
-            streamingCompleted: false,
-            interactiveRuntime: interactiveRuntime);
-
-        // Show the conditional component again - it should restore its state
-        Browser.Click(By.Id("toggle-conditional"));
-        
-        AssertConditionalPageState(
-            mode: mode,
-            renderMode: renderMode.Name,
-            interactive: streaming == null,
-            showConditional: true,
-            streamingId: streaming,
-            streamingCompleted: false,
-            interactiveRuntime: interactiveRuntime);
-
-        if (streaming != null)
-        {
-            Browser.Click(By.Id("end-streaming"));
-
-            AssertConditionalPageState(
-                mode: mode,
-                renderMode: renderMode.Name,
-                interactive: true,
-                showConditional: true,
-                streamingId: streaming,
-                streamingCompleted: true,
-                interactiveRuntime: interactiveRuntime);
-        }
-    }
-
-    private void AssertConditionalPageState(
-        string mode,
-        string renderMode,
-        bool interactive,
-        bool showConditional,
-        string streamingId = null,
-        bool streamingCompleted = false,
-        string interactiveRuntime = null)
-    {
-        Browser.Equal($"Render mode: {renderMode}", () => Browser.FindElement(By.Id("render-mode")).Text);
-        Browser.Equal($"Streaming id:{streamingId}", () => Browser.FindElement(By.Id("streaming-id")).Text);
-        Browser.Equal($"Show conditional: {showConditional.ToString()}", () => Browser.FindElement(By.Id("show-conditional")).Text);
-        Browser.Equal($"Interactive: {interactive}", () => Browser.FindElement(By.Id("interactive")).Text);
-        
-        if (streamingId == null || streamingCompleted)
-        {
-            interactiveRuntime = !interactive ? "none" : mode == "server" || mode == "wasm" ? mode : (interactiveRuntime ?? throw new InvalidOperationException("Specify interactiveRuntime for auto mode"));
-
-            // Always rendered component should always be present
-            Browser.Exists(By.Id("always-rendered-component"));
-            
-            // Conditional component should only be present when showConditional is true
-            if (showConditional)
-            {
-                Browser.Exists(By.Id("conditional-component"));
-            }
-            else
-            {
-                Browser.DoesNotExist(By.Id("conditional-component"));
-            }
-
-            // Check state restoration - components should restore their state correctly
-            Browser.Equal($"Interactive runtime: {interactiveRuntime}", () => Browser.FindElement(By.XPath("//div[@id='always-rendered-component']//p[@id='interactive-runtime']")).Text);
-            Browser.Equal("State found:True", () => Browser.FindElement(By.XPath("//div[@id='always-rendered-component']//p[@id='state-found']")).Text);
-            Browser.Equal("State value:restored", () => Browser.FindElement(By.XPath("//div[@id='always-rendered-component']//p[@id='state-value']")).Text);
-
-            if (showConditional)
-            {
-                Browser.Equal($"Interactive runtime: {interactiveRuntime}", () => Browser.FindElement(By.XPath("//div[@id='conditional-component']//p[@id='interactive-runtime']")).Text);
-                Browser.Equal("State found:True", () => Browser.FindElement(By.XPath("//div[@id='conditional-component']//p[@id='state-found']")).Text);
-                Browser.Equal("State value:restored-conditional", () => Browser.FindElement(By.XPath("//div[@id='conditional-component']//p[@id='state-value']")).Text);
-            }
         }
         else
         {
