@@ -464,10 +464,10 @@ internal sealed class OpenApiSchemaService(
 
     private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
     {
-        return ResolveReferencesRecursive(node, rootSchema, []);
+        return ResolveReferencesRecursive(node, rootSchema);
     }
 
-    private static JsonNode ResolveReferencesRecursive(JsonNode node, JsonNode rootSchema, HashSet<string> visitedRefs)
+    private static JsonNode ResolveReferencesRecursive(JsonNode node, JsonNode rootSchema)
     {
         if (node is JsonObject jsonObject)
         {
@@ -476,13 +476,6 @@ internal sealed class OpenApiSchemaService(
                 refValue.TryGetValue<string>(out var refString) &&
                 refString.StartsWith(OpenApiConstants.RefPrefix, StringComparison.Ordinal))
             {
-                if (visitedRefs.Contains(refString))
-                {
-                    return node;
-                }
-
-                visitedRefs.Add(refString);
-
                 try
                 {
                     // Resolve the reference path to the actual schema content
@@ -498,11 +491,6 @@ internal sealed class OpenApiSchemaService(
                     // If resolution fails due to invalid path, return the original reference
                     // This maintains backward compatibility while preventing crashes
                 }
-                finally
-                {
-                    // Remove from visited set to allow the same reference in different branches
-                    visitedRefs.Remove(refString);
-                }
 
                 // If resolution fails, return the original reference
                 return node;
@@ -514,7 +502,7 @@ internal sealed class OpenApiSchemaService(
             {
                 if (property.Value != null)
                 {
-                    var processedValue = ResolveReferencesRecursive(property.Value, rootSchema, visitedRefs);
+                    var processedValue = ResolveReferencesRecursive(property.Value, rootSchema);
                     newObject[property.Key] = processedValue?.DeepClone();
                 }
                 else
@@ -531,7 +519,7 @@ internal sealed class OpenApiSchemaService(
             {
                 if (jsonArray[i] != null)
                 {
-                    var processedValue = ResolveReferencesRecursive(jsonArray[i]!, rootSchema, visitedRefs);
+                    var processedValue = ResolveReferencesRecursive(jsonArray[i]!, rootSchema);
                     newArray.Add(processedValue?.DeepClone());
                 }
                 else
