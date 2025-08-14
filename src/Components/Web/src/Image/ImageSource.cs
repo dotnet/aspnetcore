@@ -4,14 +4,14 @@
 namespace Microsoft.AspNetCore.Components.Web.Image;
 
 /// <summary>
-/// Provides a unified source for image data that can be supplied as either byte arrays or streams.
-/// Internally stores the data as a byte array so that each consumer can obtain an independent
-/// read-only <see cref="MemoryStream"/>. This avoids concurrency issues when the same image is
-/// rendered simultaneously (e.g., thumbnail + modal) or when reloaded dynamically.
+/// Represents a single-use source for image data. An <see cref="ImageSource"/> corresponds to
+/// exactly one image load. It holds a single underlying <see cref="Stream"/> that will be
+/// consumed by the image component. Reuse of an instance for multiple components or multiple
+/// loads is not supported.
 /// </summary>
 public class ImageSource
 {
-    private readonly byte[] _data;
+    private readonly Stream _stream;
     private readonly string _mimeType;
     private readonly string _cacheKey;
     private readonly long? _length;
@@ -27,55 +27,52 @@ public class ImageSource
     public string CacheKey => _cacheKey;
 
     /// <summary>
-    /// Gets a (fresh) stream to read the image data from the beginning. Each call returns a new
-    /// non-writable <see cref="MemoryStream"/> positioned at 0.
+    /// Gets the underlying stream. This stream is single-use and will be consumed when the
+    /// image component reads it.
     /// </summary>
-    public Stream Stream => OpenRead();
+    public Stream Stream => _stream;
 
     /// <summary>
-    /// Gets the length of the image data in bytes.
+    /// Gets the length of the image data in bytes if known.
     /// </summary>
     public long? Length => _length;
 
     /// <summary>
     /// Initializes a new instance of <see cref="ImageSource"/> with byte array data.
-    /// The byte array reference is stored directly (no copy), so callers should not mutate it afterwards.
+    /// A non-writable <see cref="MemoryStream"/> is created over the provided data. The byte
+    /// array reference is not copied, so callers should not mutate it afterwards.
     /// </summary>
     public ImageSource(byte[] data, string mimeType, string cacheKey)
     {
-        _data = data ?? throw new ArgumentNullException(nameof(data));
+        ArgumentNullException.ThrowIfNull(data);
         _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
         _cacheKey = cacheKey ?? throw new ArgumentNullException(nameof(cacheKey));
-        _length = _data.LongLength;
+        _stream = new MemoryStream(data, writable: false);
+        _length = data.LongLength;
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="ImageSource"/> by reading the provided stream fully into memory.
-    /// The original stream is consumed (read to end) but not disposed here; the caller retains ownership.
+    /// Initializes a new instance of <see cref="ImageSource"/> from an existing stream.
+    /// The stream reference is retained (not copied). The caller retains ownership and is
+    /// responsible for disposal after the image has loaded. The stream must remain readable
+    /// for the duration of the load.
     /// </summary>
+    /// <param name="stream">The readable stream positioned at the beginning.</param>
+    /// <param name="mimeType">The image MIME type.</param>
+    /// <param name="cacheKey">The cache key.</param>
     public ImageSource(Stream stream, string mimeType, string cacheKey)
     {
         ArgumentNullException.ThrowIfNull(stream);
         _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
         _cacheKey = cacheKey ?? throw new ArgumentNullException(nameof(cacheKey));
-
-        // Copy stream contents once so future concurrent reads are safe and cheap.
-        if (stream is MemoryStream ms && ms.TryGetBuffer(out var segment))
+        _stream = stream;
+        if (stream.CanSeek)
         {
-            // Fast path: direct buffer copy
-            _data = segment.Array![segment.Offset..(segment.Offset + segment.Count)];
+            _length = stream.Length;
         }
         else
         {
-            using var copy = new MemoryStream();
-            stream.CopyTo(copy);
-            _data = copy.ToArray();
+            _length = null;
         }
-        _length = _data.LongLength;
     }
-
-    /// <summary>
-    /// Opens a new read-only memory stream over the underlying image data.
-    /// </summary>
-    public MemoryStream OpenRead() => new MemoryStream(_data, writable: false);
 }

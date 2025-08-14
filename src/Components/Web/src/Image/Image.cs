@@ -202,6 +202,11 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             return;
         }
 
+        if (source.Stream.CanSeek && source.Stream.Position != 0)
+        {
+            throw new InvalidOperationException("ImageSource stream must be at position 0 when starting a load.");
+        }
+
         var loadKey = source.CacheKey;
         try
         {

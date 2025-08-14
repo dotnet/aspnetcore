@@ -4,8 +4,8 @@
 @using Microsoft.AspNetCore.Components.Web.Image
 @inject ServerImageRepository ImageRepository
 @inject IJSRuntime JSRuntime
-@* @rendermode @(new InteractiveServerRenderMode(prerender: false)) *@
-@rendermode InteractiveServer
+@rendermode @(new InteractiveServerRenderMode(prerender: false))
+@* @rendermode InteractiveServer *@
 
 <PageTitle>Image Gallery</PageTitle>
 
@@ -124,7 +124,7 @@
         }
         await base.OnAfterRenderAsync(firstRender);
 
-        if (!firstRender && !cleanedCache)
+        if (!cleanedCache) // !firstRender &&
         {
             await JSRuntime.InvokeAsync<bool>("Blazor._internal.BinaryImageComponent.clearCache");
             cleanedCache = true;

@@ -115,13 +115,6 @@ export class BinaryImageComponent {
   }
 
   /**
-   * Checks if an image is currently loading
-   */
-  public static isLoading(imgElement: HTMLImageElement): boolean {
-    return imgElement ? this.loadingImages.has(imgElement) : false;
-  }
-
-  /**
    * Clears the cache
    */
   public static async clearCache(): Promise<boolean> {
@@ -181,7 +174,7 @@ export class BinaryImageComponent {
 
       const readable = await streamRef.stream();
 
-      // If we should cache, tee the original stream so one branch goes into Cache API as a streamed Response
+      // Tee the original stream so one branch goes into Cache API as a streamed Response
       let displayStream: ReadableStream<Uint8Array> = readable;
       if (cacheStrategy === 'memory' && cacheKey) {
         try {
