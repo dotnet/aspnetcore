@@ -1,0 +1,12 @@
+@{
+    throw new Exception("error2");
+}
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Yield(); // Make it actually async
+        throw new Exception("error");
+    }
+}

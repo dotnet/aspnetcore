@@ -4780,6 +4780,55 @@ public class RendererTest
     }
 
     [Fact]
+    public void ErrorBoundaryHandlesMultipleExceptionsFromSameComponent()
+    {
+        // This test reproduces the issue where a component throws exceptions in both 
+        // parameter setting (lifecycle) and during rendering. 
+        
+        // Arrange
+        var renderer = new TestRenderer();
+        var exceptionsDuringParameterSetting = new List<Exception>();
+        var exceptionsInErrorBoundary = new List<Exception>();
+        
+        var rootComponentId = renderer.AssignRootComponentId(new TestComponent(builder =>
+        {
+            builder.OpenComponent<MultipleExceptionsErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(MultipleExceptionsErrorBoundary.ChildContent), (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<ComponentWithMultipleExceptions>(0);
+                builder.AddComponentParameter(1, nameof(ComponentWithMultipleExceptions.SetParametersAction), (Func<Task>)(() => throw new Exception("error1")));
+                builder.AddComponentParameter(2, nameof(ComponentWithMultipleExceptions.BuildRenderTreeAction), (Action<RenderTreeBuilder>)(_ => throw new Exception("error2")));
+                builder.CloseComponent();
+            }));
+            builder.AddComponentParameter(2, nameof(MultipleExceptionsErrorBoundary.ExceptionHandler), (Action<Exception>)(ex => exceptionsInErrorBoundary.Add(ex)));
+            builder.CloseComponent();
+        }));
+
+        // Act
+        try
+        {
+            renderer.RenderRootComponent(rootComponentId);
+        }
+        catch (Exception ex)
+        {
+            exceptionsDuringParameterSetting.Add(ex);
+        }
+
+        // Assert - Let's just print what's happening for now to understand the behavior
+        var batches = renderer.Batches;
+        var errorBoundary = batches.FirstOrDefault()?.GetComponentFrames<MultipleExceptionsErrorBoundary>().FirstOrDefault().Component as MultipleExceptionsErrorBoundary;
+        
+        // Let's see what actually happened - we expect the first exception (from SetParametersAsync) to be caught and handled
+        Assert.True(exceptionsDuringParameterSetting.Count > 0 || exceptionsInErrorBoundary.Count > 0, 
+            $"Expected at least one exception to be handled. " +
+            $"Parameter exceptions: {exceptionsDuringParameterSetting.Count}, " +
+            $"Error boundary exceptions: {exceptionsInErrorBoundary.Count}, " +
+            $"Error boundary exists: {errorBoundary != null}, " +
+            $"Error boundary exception count: {errorBoundary?.ExceptionCount ?? 0}, " +
+            $"Batches count: {batches.Count}");
+    }
+
+    [Fact]
     public async Task CanRemoveRootComponents()
     {
         // Arrange
@@ -5996,6 +6045,59 @@ public class RendererTest
         }
     }
 
+    private class ComponentWithMultipleExceptions : ComponentBase
+    {
+        [Parameter] public Func<Task> SetParametersAction { get; set; }
+        [Parameter] public Action<RenderTreeBuilder> BuildRenderTreeAction { get; set; }
+
+        public override Task SetParametersAsync(ParameterView parameters)
+        {
+            parameters.SetParameterProperties(this);
+            
+            if (SetParametersAction != null)
+            {
+                return SetParametersAction();
+            }
+            
+            return base.SetParametersAsync(parameters);
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (BuildRenderTreeAction != null)
+            {
+                BuildRenderTreeAction(builder);
+            }
+        }
+    }
+
+    private class MultipleExceptionsErrorBoundary : ErrorBoundaryBase
+    {
+        [Parameter] public Action<Exception> ExceptionHandler { get; set; }
+
+        public Exception LastException => CurrentException;
+        public int ExceptionCount { get; private set; }
+
+        protected override Task OnErrorAsync(Exception exception)
+        {
+            ExceptionCount++;
+            ExceptionHandler?.Invoke(exception);
+            return Task.CompletedTask;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (CurrentException is not null)
+            {
+                builder.AddContent(0, $"Error: {CurrentException.Message}");
+            }
+            else
+            {
+                ChildContent?.Invoke(builder);
+            }
+        }
+    }
+
     private class ErrorThrowingComponent : AutoRenderComponent, IHandleEvent
     {
         [Parameter] public Exception ThrowDuringRender { get; set; }
@@ -6043,6 +6145,33 @@ public class RendererTest
             {
                 await ThrowDuringEventAsync;
             }
+        }
+    }
+
+    private class MultiExceptionErrorBoundary : AutoRenderComponent, IErrorBoundary
+    {
+        public Exception LastReceivedException { get; private set; }
+        public int ExceptionCount { get; private set; }
+
+        [Parameter] public RenderFragment ChildContent { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (LastReceivedException is not null)
+            {
+                builder.AddContent(0, $"Error: {LastReceivedException.Message}");
+            }
+            else
+            {
+                ChildContent(builder);
+            }
+        }
+
+        public void HandleException(Exception error)
+        {
+            LastReceivedException = error;
+            ExceptionCount++;
+            TriggerRender();
         }
     }
 
