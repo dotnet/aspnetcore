@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Claims;
@@ -169,15 +170,16 @@ public class SignInManager<TUser> where TUser : class
     /// <returns>The task object representing the asynchronous operation.</returns>
     public virtual async Task RefreshSignInAsync(TUser user)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var (success, isPersistent) = await RefreshSignInCoreAsync(user);
             var signInResult = success ? SignInResult.Success : SignInResult.Failed;
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, signInResult, SignInType.Refresh, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, signInResult, SignInType.Refresh, isPersistent, startTimestamp);
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Refresh, isPersistent: null, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Refresh, isPersistent: null, startTimestamp, ex);
             throw;
         }
     }
@@ -391,6 +393,7 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> PasswordSignInAsync(TUser user, string password,
         bool isPersistent, bool lockoutOnFailure)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             ArgumentNullException.ThrowIfNull(user);
@@ -399,13 +402,13 @@ public class SignInManager<TUser> where TUser : class
             var result = attempt.Succeeded
                 ? await SignInOrTwoFactorAsync(user, isPersistent)
                 : attempt;
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Password, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Password, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Password, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Password, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -423,10 +426,11 @@ public class SignInManager<TUser> where TUser : class
     public virtual async Task<SignInResult> PasswordSignInAsync(string userName, string password,
         bool isPersistent, bool lockoutOnFailure)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         var user = await UserManager.FindByNameAsync(userName);
         if (user == null)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, SignInResult.Failed, SignInType.Password, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, SignInResult.Failed, SignInType.Password, isPersistent, startTimestamp);
             return SignInResult.Failed;
         }
 
@@ -635,16 +639,17 @@ public class SignInManager<TUser> where TUser : class
     /// </returns>
     public virtual async Task<SignInResult> PasskeySignInAsync(string credentialJson)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await PasskeySignInCoreAsync(credentialJson);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Passkey, isPersistent: false);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.Passkey, isPersistent: false, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Passkey, isPersistent: false, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.Passkey, isPersistent: false, startTimestamp, ex);
             throw;
         }
     }
@@ -787,16 +792,17 @@ public class SignInManager<TUser> where TUser : class
     /// <returns></returns>
     public virtual async Task<SignInResult> TwoFactorRecoveryCodeSignInAsync(string recoveryCode)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await TwoFactorRecoveryCodeSignInCoreAsync(recoveryCode);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorRecoveryCode, isPersistent: false);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorRecoveryCode, isPersistent: false, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorRecoveryCode, isPersistent: false, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorRecoveryCode, isPersistent: false, startTimestamp, ex);
             throw;
         }
     }
@@ -868,16 +874,17 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorAuthenticatorSignInAsync(string code, bool isPersistent, bool rememberClient)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await TwoFactorAuthenticatorSignInCoreAsync(code, isPersistent, rememberClient);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorAuthenticator, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactorAuthenticator, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorAuthenticator, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactorAuthenticator, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -932,16 +939,17 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> TwoFactorSignInAsync(string provider, string code, bool isPersistent, bool rememberClient)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await TwoFactorSignInCoreAsync(provider, code, isPersistent, rememberClient);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactor, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.TwoFactor, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactor, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.TwoFactor, isPersistent, startTimestamp, ex);
             throw;
         }
     }
@@ -1021,16 +1029,17 @@ public class SignInManager<TUser> where TUser : class
     /// for the sign-in attempt.</returns>
     public virtual async Task<SignInResult> ExternalLoginSignInAsync(string loginProvider, string providerKey, bool isPersistent, bool bypassTwoFactor)
     {
+        var startTimestamp = Stopwatch.GetTimestamp();
         try
         {
             var result = await ExternalLoginSignInCoreAsync(loginProvider, providerKey, isPersistent, bypassTwoFactor);
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.External, isPersistent);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result, SignInType.External, isPersistent, startTimestamp);
 
             return result;
         }
         catch (Exception ex)
         {
-            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.External, isPersistent, ex);
+            _metrics?.AuthenticateSignIn(typeof(TUser).FullName!, AuthenticationScheme, result: null, SignInType.External, isPersistent, startTimestamp, ex);
             throw;
         }
     }

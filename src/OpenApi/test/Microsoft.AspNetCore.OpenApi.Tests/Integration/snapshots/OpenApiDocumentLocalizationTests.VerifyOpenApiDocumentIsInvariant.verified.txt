@@ -1077,6 +1077,25 @@
         }
       }
     },
+    "/schemas-by-ref/custom-iresult": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomIResultImplementor"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/responses/200-add-xml": {
       "get": {
         "tags": [
@@ -1407,6 +1426,17 @@
             "type": "number",
             "format": "float",
             "default": 0.1
+          }
+        }
+      },
+      "CustomIResultImplementor": {
+        "required": [
+          "content"
+        ],
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
           }
         }
       },
@@ -1815,7 +1845,7 @@
           },
           "description": {
             "type": "string",
-            "description": "Another description of the todo."
+            "description": "A description of the the todo.\nAnother description of the todo."
           }
         }
       },

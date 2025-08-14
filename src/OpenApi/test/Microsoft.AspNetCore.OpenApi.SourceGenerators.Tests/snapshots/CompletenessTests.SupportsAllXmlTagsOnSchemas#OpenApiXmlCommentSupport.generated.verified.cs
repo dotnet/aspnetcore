@@ -39,6 +39,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.OpenApi;
     using Microsoft.AspNetCore.Mvc.Controllers;
+    using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OpenApi;
 
@@ -147,6 +148,7 @@ generic types to open generics for use in
 typeof expressions.", null, null, null, null, false, null, null, null));
             cache.Add(@"T:ParamsAndParamRefs", new XmlComment(@"This shows examples of typeparamref and typeparam tags", null, null, null, null, false, null, null, null));
             cache.Add(@"T:DisposableType", new XmlComment(@"A class that implements the IDisposable interface.", null, null, null, null, false, null, null, null));
+            cache.Add(@"T:XmlPropertyTestClass", new XmlComment(@"This class tests different XML comment scenarios for properties.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:ExampleClass.Label", new XmlComment(null, null, @"    The string? ExampleClass.Label is a `string`
     that you use for a label.
     Note that there isn't a way to provide a ""cref"" to
@@ -159,6 +161,11 @@ for this instance.", false, null, null, null));
             cache.Add(@"P:GenericParent.TaskOfTupleProp", new XmlComment(@"This property is a generic type containing a tuple.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:GenericParent.TupleWithGenericProp", new XmlComment(@"This property is a tuple with a generic type inside.", null, null, null, null, false, null, null, null));
             cache.Add(@"P:GenericParent.TupleWithNestedGenericProp", new XmlComment(@"This property is a tuple with a nested generic type inside.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.SummaryOnly", new XmlComment(@"A property with only summary tag.", null, null, null, null, false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.ValueOnly", new XmlComment(null, null, null, null, @"A property with only value tag.", false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.BothSummaryAndValue", new XmlComment(@"A property with both summary and value.", null, null, null, @"Additional value information.", false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.ReturnsOnly", new XmlComment(null, null, null, @"This should be ignored for properties.", null, false, null, null, null));
+            cache.Add(@"P:XmlPropertyTestClass.SummaryAndReturns", new XmlComment(@"A property with summary and returns.", null, null, @"This should be ignored for properties.", null, false, null, null, null));
             cache.Add(@"M:ExampleClass.Add(System.Int32,System.Int32)", new XmlComment(@"Adds two integers and returns the result.", null, null, @"The sum of two integers.", null, false, [@"    ```int c = Math.Add(4, 5);
 if (c &gt; 10)
 {
@@ -251,6 +258,30 @@ T", null, null, false, null, null, null));
                 }
                 sb.Append(')');
             }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates a documentation comment ID for a property given its container type and property name.
+        /// Example: P:Namespace.ContainingType.PropertyName
+        /// </summary>
+        public static string CreateDocumentationId(Type containerType, string propertyName)
+        {
+            if (containerType == null)
+            {
+                throw new ArgumentNullException(nameof(containerType));
+            }
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                throw new ArgumentException("Property name cannot be null or empty.", nameof(propertyName));
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("P:");
+            sb.Append(GetTypeDocId(containerType, includeGenericArguments: false, omitGenericArity: false));
+            sb.Append('.');
+            sb.Append(propertyName);
 
             return sb.ToString();
         }
@@ -519,6 +550,59 @@ T", null, null, false, null, null, null));
                     }
                 }
             }
+            foreach (var parameterDescription in context.Description.ParameterDescriptions)
+            {
+                var metadata = parameterDescription.ModelMetadata;
+                if (metadata.MetadataKind == ModelMetadataKind.Property
+                    && metadata.ContainerType is { } containerType
+                    && metadata.PropertyName is { } propertyName)
+                {
+                    var propertyDocId = DocumentationCommentIdHelper.CreateDocumentationId(containerType, propertyName);
+                    if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyDocId), out var propertyComment))
+                    {
+                        var parameter = operation.Parameters?.SingleOrDefault(p => p.Name == metadata.Name);
+                        var description = propertyComment.Summary;
+                        if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                        {
+                            description = $"{description}\n{propertyComment.Value}";
+                        }
+                        else if (string.IsNullOrEmpty(description))
+                        {
+                            description = propertyComment.Value;
+                        }
+                        if (parameter is null)
+                        {
+                            if (operation.RequestBody is not null)
+                            {
+                                operation.RequestBody.Description = description;
+                                if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                                {
+                                    var content = operation.RequestBody.Content?.Values;
+                                    if (content is null)
+                                    {
+                                        continue;
+                                    }
+                                    var parsedExample = jsonString.Parse();
+                                    foreach (var mediaType in content)
+                                    {
+                                        mediaType.Example = parsedExample;
+                                    }
+                                }
+                            }
+                            continue;
+                        }
+                        var targetOperationParameter = UnwrapOpenApiParameter(parameter);
+                        if (targetOperationParameter is not null)
+                        {
+                            targetOperationParameter.Description = description;
+                            if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                            {
+                                targetOperationParameter.Example = jsonString.Parse();
+                            }
+                        }
+                    }
+                }
+            }
 
             return Task.CompletedTask;
         }
@@ -552,23 +636,53 @@ T", null, null, false, null, null, null));
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
-            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
-            {
-                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
-                {
-                    schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
-                    if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
-                    {
-                        schema.Example = jsonString.Parse();
-                    }
-                }
-            }
+            // Apply comments from the type
             if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
                 {
                     schema.Example = jsonString.Parse();
+                }
+            }
+
+            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            {
+                // Apply comments from the property
+                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
+                {
+                    var description = propertyComment.Summary;
+                    if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                    {
+                        description = $"{description}\n{propertyComment.Value}";
+                    }
+                    else if (string.IsNullOrEmpty(description))
+                    {
+                        description = propertyComment.Value;
+                    }
+                    if (schema.Metadata is null
+                        || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
+                        || string.IsNullOrEmpty(schemaId as string))
+                    {
+                        // Inlined schema
+                        schema.Description = description;
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Example = jsonString.Parse();
+                        }
+                    }
+                    else
+                    {
+                        // Schema Reference
+                        if (!string.IsNullOrEmpty(description))
+                        {
+                            schema.Metadata["x-ref-description"] = description;
+                        }
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Metadata["x-ref-example"] = jsonString.Parse()!;
+                        }
+                    }
                 }
             }
             return Task.CompletedTask;

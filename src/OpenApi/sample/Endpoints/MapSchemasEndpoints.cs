@@ -39,8 +39,18 @@ public static class SchemasEndpointsExtensions
         schemas.MapPost("/child", (ChildObject child) => Results.Ok(child));
         schemas.MapPatch("/json-patch", (JsonPatchDocument patchDoc) => Results.NoContent());
         schemas.MapPatch("/json-patch-generic", (JsonPatchDocument<ParentObject> patchDoc) => Results.NoContent());
-
+        schemas.MapGet("/custom-iresult", () => new CustomIResultImplementor { Content = "Hello world!" })
+            .Produces<CustomIResultImplementor>(200);
         return endpointRouteBuilder;
+    }
+
+    public class CustomIResultImplementor : IResult
+    {
+        public required string Content { get; set; }
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return Task.CompletedTask;
+        }
     }
 
     public sealed class Category

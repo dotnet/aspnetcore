@@ -31,6 +31,7 @@ internal sealed partial class DefaultWebAssemblyJSRuntime : WebAssemblyJSRuntime
     [DynamicDependency(nameof(BeginInvokeDotNet))]
     [DynamicDependency(nameof(ReceiveByteArrayFromJS))]
     [DynamicDependency(nameof(UpdateRootComponentsCore))]
+    [DynamicDependency(JsonSerialized, typeof(KeyValuePair<,>))]
     private DefaultWebAssemblyJSRuntime()
     {
         ElementReferenceContext = new WebElementReferenceContext(this);

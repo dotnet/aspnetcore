@@ -101,19 +101,35 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
+            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            {
+                schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
+            }
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
-                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
+                var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
+                if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
                 {
                     schema.ApplyValidationAttributes(validationAttributes);
                 }
-                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DefaultValueAttribute>().LastOrDefault() is DefaultValueAttribute defaultValueAttribute)
+                if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
                 {
                     schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
                 }
-                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is DescriptionAttribute descriptionAttribute)
+                var isInlinedSchema = schema[OpenApiConstants.SchemaId] is null;
+                if (isInlinedSchema)
                 {
-                    schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    {
+                        schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                    }
+                }
+                else
+                {
+                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    {
+                        schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                    }
                 }
             }
 
