@@ -41,6 +41,11 @@ public static class SchemasEndpointsExtensions
         schemas.MapPatch("/json-patch-generic", (JsonPatchDocument<ParentObject> patchDoc) => Results.NoContent());
         schemas.MapGet("/custom-iresult", () => new CustomIResultImplementor { Content = "Hello world!" })
             .Produces<CustomIResultImplementor>(200);
+
+        // Tests for validating scenarios related to https://github.com/dotnet/aspnetcore/issues/61194
+        schemas.MapPost("/config-with-generic-lists", (Config config) => Results.Ok(config));
+        schemas.MapPost("/project-response", (ProjectResponse project) => Results.Ok(project));
+        schemas.MapPost("/subscription", (Subscription subscription) => Results.Ok(subscription));
         return endpointRouteBuilder;
     }
 
@@ -110,5 +115,62 @@ public static class SchemasEndpointsExtensions
     {
         public int Id { get; set; }
         public required ParentObject Parent { get; set; }
+    }
+
+    // Example types for GitHub issue 61194: Generic types referenced multiple times
+    public sealed class Config
+    {
+        public List<ConfigItem> Items1 { get; set; } = [];
+        public List<ConfigItem> Items2 { get; set; } = [];
+    }
+
+    public sealed class ConfigItem
+    {
+        public int? Id { get; set; }
+        public string? Lang { get; set; }
+        public Dictionary<string, object?>? Words { get; set; }
+        public List<string>? Break { get; set; }
+        public string? WillBeGood { get; set; }
+    }
+
+    // Example types for GitHub issue 63054: Reused types across different hierarchies
+    public sealed class ProjectResponse
+    {
+        public required ProjectAddressResponse Address { get; init; }
+        public required ProjectBuilderResponse Builder { get; init; }
+    }
+
+    public sealed class ProjectAddressResponse
+    {
+        public required CityResponse City { get; init; }
+    }
+
+    public sealed class ProjectBuilderResponse
+    {
+        public required CityResponse City { get; init; }
+    }
+
+    public sealed class CityResponse
+    {
+        public string Name { get; set; } = "";
+    }
+
+    // Example types for GitHub issue 63211: Nullable reference types
+    public sealed class Subscription
+    {
+        public required string Id { get; set; }
+        public required RefProfile PrimaryUser { get; set; }
+        public RefProfile? SecondaryUser { get; set; }
+    }
+
+    public sealed class RefProfile
+    {
+        public required RefUser User { get; init; }
+    }
+
+    public sealed class RefUser
+    {
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
     }
 }

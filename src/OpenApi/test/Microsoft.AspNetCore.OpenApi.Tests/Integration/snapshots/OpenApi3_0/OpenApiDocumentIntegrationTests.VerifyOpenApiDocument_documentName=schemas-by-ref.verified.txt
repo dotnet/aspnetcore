@@ -570,6 +570,72 @@
           }
         }
       }
+    },
+    "/schemas-by-ref/config-with-generic-lists": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Config"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/project-response": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectResponse"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/subscription": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Subscription"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -630,6 +696,60 @@
           },
           "parent": {
             "$ref": "#/components/schemas/ParentObject"
+          }
+        }
+      },
+      "CityResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "Config": {
+        "type": "object",
+        "properties": {
+          "items1": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfigItem"
+            }
+          },
+          "items2": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfigItem"
+            }
+          }
+        }
+      },
+      "ConfigItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "lang": {
+            "type": "string",
+            "nullable": true
+          },
+          "words": {
+            "type": "object",
+            "nullable": true
+          },
+          "break": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true
+          },
+          "willBeGood": {
+            "type": "string",
+            "nullable": true
           }
         }
       },
@@ -856,6 +976,66 @@
           }
         }
       },
+      "ProjectAddressResponse": {
+        "required": [
+          "city"
+        ],
+        "type": "object",
+        "properties": {
+          "city": {
+            "$ref": "#/components/schemas/CityResponse"
+          }
+        }
+      },
+      "ProjectBuilderResponse": {
+        "required": [
+          "city"
+        ],
+        "type": "object",
+        "properties": {
+          "city": {
+            "$ref": "#/components/schemas/CityResponse"
+          }
+        }
+      },
+      "ProjectResponse": {
+        "required": [
+          "address",
+          "builder"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/ProjectAddressResponse"
+          },
+          "builder": {
+            "$ref": "#/components/schemas/ProjectBuilderResponse"
+          }
+        }
+      },
+      "RefProfile": {
+        "required": [
+          "user"
+        ],
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/RefUser"
+          }
+        },
+        "nullable": true
+      },
+      "RefUser": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
       "Root": {
         "type": "object",
         "properties": {
@@ -927,6 +1107,24 @@
           "sides": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "Subscription": {
+        "required": [
+          "id",
+          "primaryUser"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "primaryUser": {
+            "$ref": "#/components/schemas/RefProfile"
+          },
+          "secondaryUser": {
+            "$ref": "#/components/schemas/RefProfile"
           }
         }
       },
