@@ -21,11 +21,11 @@
         <h4>Always Rendered Component (no @@key)</h4>
         @if (!string.IsNullOrEmpty(StreamingId))
         {
-            <StreamingComponentWithPersistentState @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
+            <StreamingComponentWithDeclarativePersistentState @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
         }
         else
         {
-            <NonStreamingComponentWithPersistentState @rendermode="@_renderMode" ServerState="@ServerState" />
+            <NonStreamingComponentWithDeclarativePersistentState @rendermode="@_renderMode" ServerState="@ServerState" />
         }
     </div>
 
@@ -36,11 +36,11 @@
             <h4>Conditionally Rendered Component</h4>
             @if (!string.IsNullOrEmpty(StreamingId))
             {
-                <StreamingComponentWithPersistentState @key="@("conditional")" @rendermode="@_renderMode" StreamingId="@($"{StreamingId}-conditional")" ServerState="@($"{ServerState}-conditional")" />
+                <StreamingComponentWithDeclarativePersistentState @key="@("conditional")" @rendermode="@_renderMode" StreamingId="@($"{StreamingId}-conditional")" ServerState="@($"{ServerState}-conditional")" />
             }
             else
             {
-                <NonStreamingComponentWithPersistentState @key="@("conditional")" @rendermode="@_renderMode" ServerState="@($"{ServerState}-conditional")" />
+                <NonStreamingComponentWithDeclarativePersistentState @key="@("conditional")" @rendermode="@_renderMode" ServerState="@($"{ServerState}-conditional")" />
             }
         </div>
     }
