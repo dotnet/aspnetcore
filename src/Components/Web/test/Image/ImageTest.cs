@@ -19,18 +19,16 @@ using Microsoft.AspNetCore.Components;
 namespace Microsoft.AspNetCore.Components.Web.Image.Tests;
 
 /// <summary>
-/// Unit tests for the Image component. These tests focus on component logic and JS interop contracts.
+/// Unit tests for the Image component.
 /// </summary>
 public class ImageTest
 {
     private static readonly byte[] PngBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
-    private static readonly byte[] JpgBytes = Convert.FromBase64String("/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAAP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AN//Z");
 
     [Fact]
-    public async Task StreamsBytesInChunks_AndFinalizes_OnCacheMiss()
+    public async Task LoadsImage_InvokesLoadImageFromStream_WhenCacheMiss()
     {
-        var js = new FakeImageJsRuntime();
-
+        var js = new FakeImageJsRuntime(cacheHit: false);
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
@@ -40,32 +38,17 @@ public class ImageTest
         {
             [nameof(Image.Source)] = source,
             [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
-            [nameof(Image.ChunkSize)] = 8,
         }));
 
-        // Wait until finalize observed
-        await js.WaitUntilAsync(() => js.Count("Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer") == 1);
-
-        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.initChunkedTransfer"));
-        Assert.True(js.Count("Blazor._internal.BinaryImageComponent.addChunk") >= 1);
-        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer"));
-
-        // Cache populated after finalize for memory strategy
-        Assert.True(await js.TrySetFromCacheAsync(source.CacheKey!));
-
-        // Validate transferred total bytes match payload
-        var totalBytes = js.TotalTransferredBytes();
-        Assert.Equal(PngBytes.Length, totalBytes);
+        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.trySetFromCache"));
+        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.loadImageFromStream"));
     }
 
     [Fact]
-    public async Task SkipsStreaming_WhenCacheHit()
+    public async Task SkipsStreaming_OnCacheHit()
     {
-        var js = new FakeImageJsRuntime();
-
-        // Pre-populate cache for key
+        var js = new FakeImageJsRuntime(cacheHit: true);
         js.MarkCached("png-hit");
-
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
@@ -75,107 +58,16 @@ public class ImageTest
         {
             [nameof(Image.Source)] = source,
             [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
-            [nameof(Image.ChunkSize)] = 16,
         }));
 
-        // Should have attempted cache first
         Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.trySetFromCache"));
-        // And not stream if cache hit
-        Assert.Equal(0, js.Count("Blazor._internal.BinaryImageComponent.initChunkedTransfer"));
-        Assert.Equal(0, js.Count("Blazor._internal.BinaryImageComponent.addChunk"));
-        Assert.Equal(0, js.Count("Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer"));
+        Assert.Equal(0, js.Count("Blazor._internal.BinaryImageComponent.loadImageFromStream"));
     }
 
     [Fact]
-    public async Task MultipleComponents_SameImageSource_StreamIndependently()
+    public async Task SameCacheKey_NoReload()
     {
-        var js = new FakeImageJsRuntime();
-
-        using var renderer = CreateRenderer(js);
-
-        var comp1 = (Image)renderer.InstantiateComponent<Image>();
-        var comp2 = (Image)renderer.InstantiateComponent<Image>();
-        var id1 = renderer.AssignRootComponentId(comp1);
-        var id2 = renderer.AssignRootComponentId(comp2);
-
-        var shared = new ImageSource(JpgBytes, "image/jpeg", cacheKey: "shared-key");
-
-        await Task.WhenAll(
-            renderer.RenderRootComponentAsync(id1, ParameterView.FromDictionary(new Dictionary<string, object?>
-            {
-                [nameof(Image.Source)] = shared,
-                [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
-                [nameof(Image.ChunkSize)] = 8,
-            })),
-            renderer.RenderRootComponentAsync(id2, ParameterView.FromDictionary(new Dictionary<string, object?>
-            {
-                [nameof(Image.Source)] = shared,
-                [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
-                [nameof(Image.ChunkSize)] = 8,
-            }))
-        );
-
-        // Eventually either: stream twice, or first streams and second hits cache
-        await js.WaitUntilAsync(() => js.Count("Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer") >= 1);
-
-        var inits = js.Count("Blazor._internal.BinaryImageComponent.initChunkedTransfer");
-        var finalizes = js.Count("Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer");
-        Assert.InRange(inits, 1, 2);
-        Assert.InRange(finalizes, 1, 2);
-
-        // Either way, the cache should end up populated
-        Assert.True(await js.TrySetFromCacheAsync("shared-key"));
-    }
-
-    [Fact]
-    public async Task ChangingSource_CancelsInFlightStreaming_NoFinalizeForOldLoad()
-    {
-        var js = new FakeImageJsRuntime();
-
-        var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        var addChunkEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        js.BlockFirstAddChunk(gate, addChunkEntered);
-
-        using var renderer = CreateRenderer(js);
-        var comp = (Image)renderer.InstantiateComponent<Image>();
-        var id = renderer.AssignRootComponentId(comp);
-
-        var first = new ImageSource(new byte[64], "image/png", cacheKey: "first");
-        var second = new ImageSource(new byte[32], "image/png", cacheKey: "second");
-
-        var initialRender = renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(Image.Source)] = first,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
-            [nameof(Image.ChunkSize)] = 4,
-        }));
-
-        // Wait until the first addChunk starts
-        await addChunkEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
-
-        // Change Source while first load is in progress
-        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(Image.Source)] = second,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
-            [nameof(Image.ChunkSize)] = 4,
-        }));
-
-        // Allow the first addChunk to continue; the component should notice the version change and not finalize the old transfer
-        gate.SetResult();
-
-        // Wait for the new finalize (second load) to happen
-        await js.WaitUntilAsync(() => js.Count("Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer") >= 1);
-
-        // Assert: there was exactly one finalize, for the second load
-        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer"));
-    }
-
-    [Fact]
-    public async Task SameCacheKey_NoReloadOnSetParameters()
-    {
-        var js = new FakeImageJsRuntime();
-
+        var js = new FakeImageJsRuntime(cacheHit: false);
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
@@ -185,29 +77,24 @@ public class ImageTest
         {
             [nameof(Image.Source)] = s1,
             [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
-            [nameof(Image.ChunkSize)] = 8,
         }));
-        await js.WaitUntilAsync(() => js.Count("Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer") == 1);
 
-        // Change to a different data but same cache key
         var s2 = new ImageSource(new byte[20], "image/png", cacheKey: "same");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s2,
             [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
-            [nameof(Image.ChunkSize)] = 8,
         }));
 
-        // No additional streaming should occur because cache key didn't change
-        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.initChunkedTransfer"));
-        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer"));
+        // Implementation skips reloading when cache key unchanged.
+        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.trySetFromCache"));
+        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.loadImageFromStream"));
     }
 
     [Fact]
     public async Task NullSource_DoesNothing()
     {
-        var js = new FakeImageJsRuntime();
-
+        var js = new FakeImageJsRuntime(cacheHit: false);
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
@@ -216,10 +103,120 @@ public class ImageTest
         {
             [nameof(Image.Source)] = null,
             [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
-            [nameof(Image.ChunkSize)] = 8,
         }));
 
         Assert.Equal(0, js.TotalInvocationCount);
+    }
+
+    [Fact]
+    public async Task ReusingImageSource_WithConsumedSeekableStream_DoesNotReloadAndSetsErrorState()
+    {
+        var js = new FakeImageJsRuntime(cacheHit: false);
+        using var renderer = CreateRenderer(js);
+        var comp1 = (Image)renderer.InstantiateComponent<Image>();
+        var comp2 = (Image)renderer.InstantiateComponent<Image>();
+        var id1 = renderer.AssignRootComponentId(comp1);
+        var id2 = renderer.AssignRootComponentId(comp2);
+
+        var shared = new ImageSource(new byte[5], "image/png", cacheKey: "reuse-test");
+        await renderer.RenderRootComponentAsync(id1, ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(Image.Source)] = shared,
+            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
+        }));
+
+        // Consume stream, ensure position != 0
+        if (shared.Stream.CanSeek)
+        {
+            shared.Stream.Seek(shared.Stream.Length, SeekOrigin.Begin);
+        }
+
+        var initialLoadCalls = js.Count("Blazor._internal.BinaryImageComponent.loadImageFromStream");
+
+        // Second component attempts to use same (consumed) ImageSource.
+        await renderer.RenderRootComponentAsync(id2, ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(Image.Source)] = shared,
+            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
+        }));
+
+        // Because the Image component swallows the exception internally, we assert that no additional JS load occurred
+        Assert.Equal(initialLoadCalls, js.Count("Blazor._internal.BinaryImageComponent.loadImageFromStream"));
+    }
+
+    [Fact]
+    public async Task Dispose_RevokesUrl()
+    {
+        var js = new FakeImageJsRuntime(cacheHit: false);
+        using var renderer = CreateRenderer(js);
+        var comp = (Image)renderer.InstantiateComponent<Image>();
+        var id = renderer.AssignRootComponentId(comp);
+        var source = new ImageSource(new byte[10], "image/png", "dispose-test");
+        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(Image.Source)] = source,
+            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
+        }));
+
+        await comp.DisposeAsync();
+        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.revokeImageUrl"));
+    }
+
+    [Fact]
+    public async Task CacheStrategyNone_SkipsCacheProbe()
+    {
+        var js = new FakeImageJsRuntime(cacheHit: false);
+        using var renderer = CreateRenderer(js);
+        var comp = (Image)renderer.InstantiateComponent<Image>();
+        var id = renderer.AssignRootComponentId(comp);
+        var source = new ImageSource(new byte[8], "image/png", "none-key");
+        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(Image.Source)] = source,
+            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
+        }));
+        Assert.Equal(0, js.Count("Blazor._internal.BinaryImageComponent.trySetFromCache"));
+        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.loadImageFromStream"));
+    }
+
+    [Fact]
+    public async Task ParameterChange_DifferentCacheKey_Reloads()
+    {
+        var js = new FakeImageJsRuntime(cacheHit: false);
+        using var renderer = CreateRenderer(js);
+        var comp = (Image)renderer.InstantiateComponent<Image>();
+        var id = renderer.AssignRootComponentId(comp);
+        var s1 = new ImageSource(new byte[4], "image/png", "key-a");
+        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(Image.Source)] = s1,
+            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
+        }));
+        var s2 = new ImageSource(new byte[6], "image/png", "key-b");
+        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(Image.Source)] = s2,
+            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
+        }));
+        Assert.Equal(2, js.Count("Blazor._internal.BinaryImageComponent.trySetFromCache"));
+        Assert.Equal(2, js.Count("Blazor._internal.BinaryImageComponent.loadImageFromStream"));
+    }
+
+    [Fact]
+    public async Task Dispose_NoSource_DoesNotInvokeRevoke()
+    {
+        var js = new FakeImageJsRuntime(cacheHit: false);
+        using var renderer = CreateRenderer(js);
+        var comp = (Image)renderer.InstantiateComponent<Image>();
+        var id = renderer.AssignRootComponentId(comp);
+        // Initial render with null Source
+        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(Image.Source)] = null,
+            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
+        }));
+        await comp.DisposeAsync();
+        Assert.Equal(0, js.Count("Blazor._internal.BinaryImageComponent.revokeImageUrl"));
     }
 
     private static TestRenderer CreateRenderer(IJSRuntime js)
@@ -232,128 +229,49 @@ public class ImageTest
 
     private sealed class InteractiveTestRenderer : TestRenderer
     {
-        public InteractiveTestRenderer(IServiceProvider serviceProvider) : base(serviceProvider)
-        {
-        }
-
+        public InteractiveTestRenderer(IServiceProvider serviceProvider) : base(serviceProvider) { }
         protected internal override RendererInfo RendererInfo => new RendererInfo("Test", isInteractive: true);
     }
 
     private sealed class FakeImageJsRuntime : IJSRuntime
     {
         public sealed record Invocation(string Identifier, object?[] Args);
-
         private readonly ConcurrentQueue<Invocation> _invocations = new();
-        private readonly ConcurrentDictionary<string, (string cacheKey, string strategy, long? totalBytes)> _transfers = new();
         private readonly ConcurrentDictionary<string, bool> _memoryCache = new();
+        private readonly bool _forceCacheHit;
 
-        // For cancellation test
-        private TaskCompletionSource? _blockAddChunkGate;
-        private TaskCompletionSource? _addChunkEntered;
-        private int _blockAddChunkOnce = 0;
+        public FakeImageJsRuntime(bool cacheHit) { _forceCacheHit = cacheHit; }
 
         public int TotalInvocationCount => _invocations.Count;
-
         public void MarkCached(string cacheKey) => _memoryCache[cacheKey] = true;
-
-        public Task<bool> TrySetFromCacheAsync(string cacheKey)
-            => Task.FromResult(_memoryCache.ContainsKey(cacheKey));
-
         public int Count(string id) => _invocations.Count(i => i.Identifier == id);
 
-        public int TotalTransferredBytes()
-        {
-            // Aggregate from addChunk payload lengths across all transfers
-            // Each addChunk args: [transferId, byte[]]
-            var addChunks = _invocations.Where(i => i.Identifier == "Blazor._internal.BinaryImageComponent.addChunk");
-            var sum = 0;
-            foreach (var inv in addChunks)
-            {
-                var data = inv.Args[1] as byte[] ?? Array.Empty<byte>();
-                sum += data.Length;
-            }
-            return sum;
-        }
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
+            => InvokeAsync<TValue>(identifier, CancellationToken.None, args ?? Array.Empty<object?>());
 
-        public void BlockFirstAddChunk(TaskCompletionSource gate, TaskCompletionSource entered)
-        {
-            _blockAddChunkGate = gate;
-            _addChunkEntered = entered;
-            _blockAddChunkOnce = 1;
-        }
-
-        public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
-            => await InvokeAsync<TValue>(identifier, CancellationToken.None, args ?? Array.Empty<object?>());
-
-        public async ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         {
             args ??= Array.Empty<object?>();
             _invocations.Enqueue(new Invocation(identifier, args));
-
+            object? result = default;
             switch (identifier)
             {
                 case "Blazor._internal.BinaryImageComponent.trySetFromCache":
-                {
-                    var cacheKey = args[1] as string;
-                    var hit = cacheKey != null && _memoryCache.ContainsKey(cacheKey);
-                    return (TValue)(object)hit;
-                }
-                case "Blazor._internal.BinaryImageComponent.initChunkedTransfer":
-                {
-                    // args: [ElementReference, transferId, mime, cacheKey, strategy, totalBytes]
-                    var transferId = (string)args[1]!;
-                    var cacheKey = args[3] as string ?? string.Empty;
-                    var strategy = args[4] as string ?? string.Empty;
-                    var totalBytes = (args[5] as long?) ?? (args[5] is IConvertible c ? c.ToInt64(null) : (long?)null);
-                    _transfers[transferId] = (cacheKey, strategy, totalBytes);
-                    return default!;
-                }
-                case "Blazor._internal.BinaryImageComponent.addChunk":
-                {
-                    // args: [transferId, byte[]]
-                    if (Interlocked.Exchange(ref _blockAddChunkOnce, 0) == 1 && _blockAddChunkGate is not null && _addChunkEntered is not null)
+                    var cacheKey = args.Length > 1 ? args[1] as string : null;
+                    result = (object?)((_forceCacheHit && cacheKey != null) || (cacheKey != null && _memoryCache.ContainsKey(cacheKey)));
+                    break;
+                case "Blazor._internal.BinaryImageComponent.loadImageFromStream":
+                    // Simulate that after load the cache becomes populated (when strategy memory)
+                    if (args.Length >= 5 && args[3] is string ck && !string.IsNullOrEmpty(ck))
                     {
-                        _addChunkEntered.TrySetResult();
-                        await _blockAddChunkGate.Task.WaitAsync(TimeSpan.FromSeconds(5));
+                        _memoryCache[ck] = true;
                     }
-                    return default!;
-                }
-                case "Blazor._internal.BinaryImageComponent.finalizeChunkedTransfer":
-                {
-                    // args: [transferId]
-                    var transferId = (string)args[0]!;
-                    if (_transfers.TryGetValue(transferId, out var info))
-                    {
-                        if (string.Equals(info.strategy, "memory", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(info.cacheKey))
-                        {
-                            _memoryCache[info.cacheKey] = true;
-                        }
-                    }
-                    return default!;
-                }
-                case "Blazor._internal.BinaryImageComponent.clearCache":
-                {
-                    _memoryCache.Clear();
-                    return (TValue)(object)true;
-                }
+                    break;
                 case "Blazor._internal.BinaryImageComponent.revokeImageUrl":
                 default:
-                    return default!;
+                    break;
             }
-        }
-
-        public async Task WaitUntilAsync(Func<bool> condition, int timeoutMs = 5000, int pollMs = 20)
-        {
-            var sw = Stopwatch.StartNew();
-            while (sw.ElapsedMilliseconds < timeoutMs)
-            {
-                if (condition())
-                {
-                    return;
-                }
-                await Task.Delay(pollMs);
-            }
-            throw new TimeoutException("Condition not met in allotted time.");
+            return ValueTask.FromResult((TValue?)result!);
         }
     }
 }

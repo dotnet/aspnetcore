@@ -27,8 +27,7 @@ public class ImageSource
     public string CacheKey => _cacheKey;
 
     /// <summary>
-    /// Gets the underlying stream. This stream is single-use and will be consumed when the
-    /// image component reads it.
+    /// Gets the underlying stream.
     /// </summary>
     public Stream Stream => _stream;
 

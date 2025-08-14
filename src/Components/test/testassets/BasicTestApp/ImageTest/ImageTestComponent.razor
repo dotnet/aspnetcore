@@ -17,9 +17,8 @@
     <!-- New controls -->
     <button id="clear-cache" @onclick="ClearCache">Clear Cache</button>
     <button id="mount-cached" @onclick="MountCached">Mount Cached Image</button>
-    <button id="remount-cached" @onclick="RemountCached">Remount Cached Image</button>
     <button id="load-pair-sequence" @onclick="LoadPairSequence">Load Two Images (Same Key)</button>
-    <button id="rapid-change" @onclick="RapidChange">Rapid Change</button>
+    <button id="load-error" @onclick="LoadErrorImage">Load Error</button>
 
     <div id="test-status">
         Status: <span id="current-status">@_currentStatus</span>
@@ -89,6 +88,15 @@
            CacheStrategy="CacheStrategy.Memory" />
 }
 
+@if (_errorImage)
+{
+    <h4>Error Image</h4>
+    <Image @ref="_errorRef"
+            id="error-image"
+            Source="@_errorSource"
+            CacheStrategy="CacheStrategy.None" />
+}
+
 @code {
     private Image _pngBasicRef;
     private Image _jpgStreamRef;
@@ -97,6 +105,7 @@
     private Image _cachedRef;
     private Image _pair1Ref;
     private Image _pair2Ref;
+    private Image _errorRef;
 
     private ImageSource _basicImageSource = new ImageSource(new byte[0], "", "");
     private ImageSource _jpgStreamSource = new ImageSource(new byte[0], "", "");
@@ -104,6 +113,7 @@
     private ImageSource _dynamicImageSource = new ImageSource(new byte[0], "", "");
     private ImageSource _cachedSource = new ImageSource(new byte[0], "", "");
     private ImageSource _pairSource = new ImageSource(new byte[0], "", "");
+    private ImageSource _errorSource = new ImageSource(new byte[0], "", "");
 
     private bool _pngBasic = false;
     private bool _jpgStream = false;
@@ -112,6 +122,7 @@
     private bool _cachedMount = false;
     private bool _pair1Visible = false;
     private bool _pair2Visible = false;
+    private bool _errorImage = false;
 
     private string _currentStatus = "Ready";
     private int _chunkSize = 128; // Small chunks for testing
@@ -213,17 +224,6 @@
         _currentStatus = "Cached mount loaded";
     }
 
-    private async Task RemountCached()
-    {
-        _currentStatus = "Remounting cached image...";
-        _cachedMount = false;
-        await Task.Delay(10);
-        _cachedSource = new ImageSource(TestPngData, "image/png", "cache-persist");
-        _cachedMount = true;
-        await Task.Delay(10);
-        _currentStatus = "Remounted cached image";
-    }
-
     private async Task LoadPairSequence()
     {
         _currentStatus = "Loading pair sequence...";
@@ -233,22 +233,6 @@
         _pair2Visible = true;
         await Task.Delay(10);
         _currentStatus = "Pair second loaded";
-    }
-
-    private async Task RapidChange()
-    {
-        _currentStatus = "Rapid changing...";
-        if (!_dynamicSource)
-        {
-            _dynamicImageSource = new ImageSource(TestPngData, "image/png", "rapid-dyn");
-            _dynamicSource = true;
-            await Task.Delay(1);
-        }
-        _dynamicImageSource = new ImageSource(TestJpgData, "image/jpeg", "rapid-dyn");
-        await Task.Delay(1);
-        _dynamicImageSource = new ImageSource(TestPngData, "image/png", "rapid-dyn");
-        await Task.Delay(10);
-        _currentStatus = "Rapid change completed";
     }
 
     private async Task ReloadPng()
@@ -263,6 +247,18 @@
         _pngBasic = true;
         await Task.Delay(10);
         _currentStatus = "PNG reloaded";
+    }
+
+    private async Task LoadErrorImage()
+    {
+        _currentStatus = "Loading error image...";
+        // Create a stream then seek to end so component throws when validating position
+        var ms = new MemoryStream(new byte[] { 1, 2, 3, 4 });
+        ms.Seek(ms.Length, SeekOrigin.Begin);
+        _errorSource = new ImageSource(ms, "image/png", "error-key");
+        _errorImage = true;
+        await Task.Delay(10);
+        _currentStatus = "Error image loaded";
     }
 
     public async ValueTask DisposeAsync()

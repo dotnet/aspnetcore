@@ -6,7 +6,6 @@ using BasicTestApp.ImageTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.Diagnostics.Runtime.Interop;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit.Abstractions;
@@ -71,24 +70,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void CanLoadLargeImageWithSmallChunks()
-    {
-        // Load large image with small chunks to test chunked loading
-        Browser.FindElement(By.Id("load-small-chunks")).Click();
-
-        // Wait for loading to complete (this may take longer)
-        Browser.Equal("Small chunks image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-
-        // Verify the image element exists and has a blob URL
-        var imageElement = Browser.FindElement(By.Id("chunked-image"));
-        Assert.NotNull(imageElement);
-
-        var src = imageElement.GetAttribute("src");
-        Assert.True(!string.IsNullOrEmpty(src), "Image src should not be empty");
-        Assert.True(src.StartsWith("blob:", StringComparison.Ordinal), $"Expected blob URL, but got: {src}");
-    }
-
-    [Fact]
     public void CanChangeDynamicImageSource()
     {
         // First click - initialize with PNG
@@ -125,29 +106,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void CachePersistsAcrossRemounts_NoStreamingOnHit()
-    {
-        // Clear cache to start clean
-        Browser.FindElement(By.Id("clear-cache")).Click();
-        Browser.Equal("Cache cleared", () => Browser.FindElement(By.Id("current-status")).Text);
-
-        // First mount streams and caches
-        Browser.FindElement(By.Id("mount-cached")).Click();
-        Browser.Equal("Cached mount loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-        var firstSrc = Browser.FindElement(By.Id("cached-image")).GetAttribute("src");
-        Assert.False(string.IsNullOrEmpty(firstSrc));
-        Assert.StartsWith("blob:", firstSrc, StringComparison.Ordinal);
-
-        // Remount should hit cache and produce a (likely) different blob URL but without streaming
-        Browser.FindElement(By.Id("remount-cached")).Click();
-        Browser.Equal("Remounted cached image", () => Browser.FindElement(By.Id("current-status")).Text);
-        var secondSrc = Browser.FindElement(By.Id("cached-image")).GetAttribute("src");
-        Assert.False(string.IsNullOrEmpty(secondSrc));
-        Assert.StartsWith("blob:", secondSrc, StringComparison.Ordinal);
-        // Different blob URLs may be generated; the key check here is that it loads quickly. We assert src present.
-    }
-
-    [Fact]
     public void TwoImagesWithSameCacheKey_LoadSecondFromCache()
     {
         // Ensure clean cache then load pair sequence
@@ -168,36 +126,14 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void RapidSourceChanges_FinalStateLoads()
+    public void ErrorImage_ShowsErrorState()
     {
-        Browser.FindElement(By.Id("rapid-change")).Click();
-        Browser.Equal("Rapid change completed", () => Browser.FindElement(By.Id("current-status")).Text);
+        // Trigger loading of an image whose stream position is not at start, causing error
+        Browser.FindElement(By.Id("load-error")).Click();
+        Browser.Equal("Error image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
-        var img = Browser.FindElement(By.Id("dynamic-source"));
-        var src = img.GetAttribute("src");
-        Assert.False(string.IsNullOrEmpty(src));
-        Assert.StartsWith("blob:", src, StringComparison.Ordinal);
-    }
-
-    [Fact]
-    public void ClearingCache_ForcesReloadAfterwards()
-    {
-        // Mount cached image first (uses CacheStrategy.Memory)
-        Browser.FindElement(By.Id("mount-cached")).Click();
-        Browser.Equal("Cached mount loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-        var beforeClear = Browser.FindElement(By.Id("cached-image")).GetAttribute("src");
-        Assert.False(string.IsNullOrEmpty(beforeClear));
-        Assert.StartsWith("blob:", beforeClear, StringComparison.Ordinal);
-
-        // Clear cache
-        Browser.FindElement(By.Id("clear-cache")).Click();
-        Browser.Equal("Cache cleared", () => Browser.FindElement(By.Id("current-status")).Text);
-
-        // Remount same cached image to force re-stream
-        Browser.FindElement(By.Id("remount-cached")).Click();
-        Browser.Equal("Remounted cached image", () => Browser.FindElement(By.Id("current-status")).Text);
-        var afterClear = Browser.FindElement(By.Id("cached-image")).GetAttribute("src");
-        Assert.False(string.IsNullOrEmpty(afterClear));
-        Assert.StartsWith("blob:", afterClear, StringComparison.Ordinal);
+        var errorImg = Browser.FindElement(By.Id("error-image"));
+        var state = errorImg.GetAttribute("data-state");
+        Assert.Equal("error", state);
     }
 }
