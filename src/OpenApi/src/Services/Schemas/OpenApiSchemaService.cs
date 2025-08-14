@@ -462,26 +462,48 @@ internal sealed class OpenApiSchemaService(
         return ResolveReferences(schema, schema);
     }
 
-    /// <summary>
-    /// Recursively resolves references within a JSON schema node.
-    /// </summary>
     private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
+    {
+        return ResolveReferencesRecursive(node, rootSchema, []);
+    }
+
+    private static JsonNode ResolveReferencesRecursive(JsonNode node, JsonNode rootSchema, HashSet<string> visitedRefs)
     {
         if (node is JsonObject jsonObject)
         {
-            // Check if this is a reference object
-            if (jsonObject.TryGetPropertyValue("$ref", out var refNode) &&
+            if (jsonObject.TryGetPropertyValue(OpenApiConstants.RefKeyword, out var refNode) &&
                 refNode is JsonValue refValue &&
                 refValue.TryGetValue<string>(out var refString) &&
-                refString.StartsWith('#'))
+                refString.StartsWith(OpenApiConstants.RefPrefix, StringComparison.Ordinal))
             {
-                // Resolve the reference path to the actual schema content
-                var resolvedNode = ResolveReference(refString, rootSchema);
-                if (resolvedNode != null)
+                if (visitedRefs.Contains(refString))
                 {
-                    // Return a deep clone to avoid parent issues
-                    return resolvedNode.DeepClone();
+                    return node;
                 }
+
+                visitedRefs.Add(refString);
+
+                try
+                {
+                    // Resolve the reference path to the actual schema content
+                    // to avoid relative references
+                    var resolvedNode = ResolveReference(refString, rootSchema);
+                    if (resolvedNode != null)
+                    {
+                        return resolvedNode.DeepClone();
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // If resolution fails due to invalid path, return the original reference
+                    // This maintains backward compatibility while preventing crashes
+                }
+                finally
+                {
+                    // Remove from visited set to allow the same reference in different branches
+                    visitedRefs.Remove(refString);
+                }
+
                 // If resolution fails, return the original reference
                 return node;
             }
@@ -492,8 +514,7 @@ internal sealed class OpenApiSchemaService(
             {
                 if (property.Value != null)
                 {
-                    var processedValue = ResolveReferences(property.Value, rootSchema);
-                    // Clone the processed value to avoid parent issues
+                    var processedValue = ResolveReferencesRecursive(property.Value, rootSchema, visitedRefs);
                     newObject[property.Key] = processedValue?.DeepClone();
                 }
                 else
@@ -510,8 +531,7 @@ internal sealed class OpenApiSchemaService(
             {
                 if (jsonArray[i] != null)
                 {
-                    var processedValue = ResolveReferences(jsonArray[i]!, rootSchema);
-                    // Clone the processed value to avoid parent issues
+                    var processedValue = ResolveReferencesRecursive(jsonArray[i]!, rootSchema, visitedRefs);
                     newArray.Add(processedValue?.DeepClone());
                 }
                 else
@@ -522,16 +542,22 @@ internal sealed class OpenApiSchemaService(
             return newArray;
         }
 
-        // Return primitive values as-is
+        // Return non-$ref nodes as-is
         return node;
     }
 
-    /// <summary>
-    /// Resolves a JSON reference path (like "#/properties/parent/properties/tags") to the actual schema content.
-    /// </summary>
     private static JsonNode? ResolveReference(string refPath, JsonNode rootSchema)
     {
-        // Remove the leading "#" and split the path
+        if (string.IsNullOrWhiteSpace(refPath))
+        {
+            throw new InvalidOperationException("Reference path cannot be null or empty.");
+        }
+
+        if (!refPath.StartsWith(OpenApiConstants.RefPrefix, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"Only fragment references (starting with '{OpenApiConstants.RefPrefix}') are supported. Found: {refPath}");
+        }
+
         var path = refPath.TrimStart('#').TrimStart('/');
         if (string.IsNullOrEmpty(path))
         {
@@ -541,8 +567,9 @@ internal sealed class OpenApiSchemaService(
         var segments = path.Split('/');
         var current = rootSchema;
 
-        foreach (var segment in segments)
+        for (var i = 0; i < segments.Length; i++)
         {
+            var segment = segments[i];
             if (current is JsonObject currentObject)
             {
                 if (currentObject.TryGetPropertyValue(segment, out var nextNode) && nextNode != null)
@@ -551,14 +578,14 @@ internal sealed class OpenApiSchemaService(
                 }
                 else
                 {
-                    // Path not found
-                    return null;
+                    var partialPath = string.Join("/", segments.Take(i + 1));
+                    throw new InvalidOperationException($"Failed to resolve reference '{refPath}': path segment '{segment}' not found at '#{partialPath}'");
                 }
             }
             else
             {
-                // Cannot navigate further
-                return null;
+                var partialPath = string.Join("/", segments.Take(i));
+                throw new InvalidOperationException($"Failed to resolve reference '{refPath}': cannot navigate beyond '#{partialPath}' - expected object but found {current?.GetType().Name ?? "null"}");
             }
         }
 
