@@ -53,7 +53,16 @@ namespace Microsoft.Extensions.Validation.Generated
         public GeneratedValidatableTypeInfo(
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
             global::System.Type type,
-            ValidatablePropertyInfo[] members) : base(type, members) { }
+            ValidatablePropertyInfo[] members) : base(type, members)
+        {
+            Type = type;
+        }
+
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+        internal global::System.Type Type { get; }
+
+        protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
+            => ValidationAttributeCache.GetValidationAttributes(Type, null);
     }
 
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.Extensions.Validation.ValidationsGenerator, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -162,46 +171,60 @@ namespace Microsoft.Extensions.Validation.Generated
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             [property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type ContainingType,
-            string PropertyName);
+            string? PropertyName);
         private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> _cache = new();
 
         public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes(
             [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
-            string propertyName)
+            string? propertyName)
         {
             var key = new CacheKey(containingType, propertyName);
             return _cache.GetOrAdd(key, static k =>
             {
                 var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
 
-                // Get attributes from the property
-                var property = k.ContainingType.GetProperty(k.PropertyName);
-                if (property != null)
+                if (k.PropertyName is not null)
                 {
-                    var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
-                        .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true);
-
-                    results.AddRange(propertyAttributes);
-                }
-
-                // Check constructors for parameters that match the property name
-                // to handle record scenarios
-                foreach (var constructor in k.ContainingType.GetConstructors())
-                {
-                    // Look for parameter with matching name (case insensitive)
-                    var parameter = global::System.Linq.Enumerable.FirstOrDefault(
-                        constructor.GetParameters(),
-                        p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
-
-                    if (parameter != null)
+                    // Get attributes from the property
+                    var property = k.ContainingType.GetProperty(k.PropertyName);
+                    if (property != null)
                     {
-                        var paramAttributes = global::System.Reflection.CustomAttributeExtensions
-                            .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameter, inherit: true);
+                        var propertyAttributes = global::System.Reflection.CustomAttributeExtensions
+                            .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(property, inherit: true);
 
-                        results.AddRange(paramAttributes);
+                        results.AddRange(propertyAttributes);
+                    }
 
-                        break;
+                    // Check constructors for parameters that match the property name
+                    // to handle record scenarios
+                    foreach (var constructor in k.ContainingType.GetConstructors())
+                    {
+                        // Look for parameter with matching name (case insensitive)
+                        var parameter = global::System.Linq.Enumerable.FirstOrDefault(
+                            constructor.GetParameters(),
+                            p => string.Equals(p.Name, k.PropertyName, global::System.StringComparison.OrdinalIgnoreCase));
+
+                        if (parameter != null)
+                        {
+                            var paramAttributes = global::System.Reflection.CustomAttributeExtensions
+                                .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(parameter, inherit: true);
+
+                            results.AddRange(paramAttributes);
+
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    // Get attributes from the type itself and its super types
+                    foreach (var attr in k.ContainingType.GetCustomAttributes(typeof(global::System.ComponentModel.DataAnnotations.ValidationAttribute), true))
+                    {
+                        if (attr is global::System.ComponentModel.DataAnnotations.ValidationAttribute validationAttribute)
+                        {
+                            results.Add(validationAttribute);
+                        }
                     }
                 }
 

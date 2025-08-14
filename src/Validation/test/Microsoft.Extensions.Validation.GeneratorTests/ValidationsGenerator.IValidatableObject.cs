@@ -104,11 +104,10 @@ public class TestService
         await Verify(source, out var compilation);
         await VerifyEndpoint(compilation, "/validatable-object", async (endpoint, serviceProvider) =>
         {
-            await ValidateMethodCalledIfPropertyValidationsFail();
-            await ValidateForSubtypeInvokedFirst();
+            await ValidateMethodNotCalledIfPropertyValidationsFail();
             await ValidateForTopLevelInvoked();
 
-            async Task ValidateMethodCalledIfPropertyValidationsFail()
+            async Task ValidateMethodNotCalledIfPropertyValidationsFail()
             {
                 var httpContext = CreateHttpContextWithPayload("""
                 {
@@ -136,46 +135,6 @@ public class TestService
                     {
                         Assert.Equal("SubType.RequiredProperty", error.Key);
                         Assert.Equal("The RequiredProperty field is required.", error.Value.Single());
-                    },
-                    error =>
-                    {
-                        Assert.Equal("SubType.Value3", error.Key);
-                        Assert.Equal("The field ValidatableSubType must be 'some-value'.", error.Value.Single());
-                    },
-                    error =>
-                    {
-                        Assert.Equal("Value1", error.Key);
-                        Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
-                    });
-            }
-
-            async Task ValidateForSubtypeInvokedFirst()
-            {
-                var httpContext = CreateHttpContextWithPayload("""
-                {
-                    "Value1": 5,
-                    "Value2": "test@test.com",
-                    "SubType": {
-                        "Value3": "foo",
-                        "RequiredProperty": "some-value-2",
-                        "StringWithLength": "element"
-                    }
-                }
-                """, serviceProvider);
-
-                await endpoint.RequestDelegate(httpContext);
-
-                var problemDetails = await AssertBadRequest(httpContext);
-                Assert.Collection(problemDetails.Errors,
-                    error =>
-                    {
-                        Assert.Equal("SubType.Value3", error.Key);
-                        Assert.Equal("The field ValidatableSubType must be 'some-value'.", error.Value.Single());
-                    },
-                    error =>
-                    {
-                        Assert.Equal("Value1", error.Key);
-                        Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
                     });
             }
 

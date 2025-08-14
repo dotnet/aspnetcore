@@ -82,6 +82,11 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         visitedTypes.Add(typeSymbol);
 
+        var hasValidationAttributes = typeSymbol.GetAttributes()
+            .Any(attribute => attribute.AttributeClass != null &&
+                              attribute.AttributeClass.ImplementsValidationAttribute(
+                                  wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_ValidationAttribute)));
+
         // Extract validatable types discovered in base types of this type and add them to the top-level list.
         var current = typeSymbol.BaseType;
         var hasValidatableBaseType = false;
@@ -107,7 +112,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // No validatable members or derived types found, so we don't need to add this type.
-        if (members.IsDefaultOrEmpty && !hasValidatableBaseType && !hasValidatableDerivedTypes)
+        if (members.IsDefaultOrEmpty && !hasValidationAttributes && !hasValidatableBaseType && !hasValidatableDerivedTypes)
         {
             return false;
         }
