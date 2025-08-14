@@ -3,7 +3,7 @@
     "version": "10.0.100-preview.7.25380.108"
   },
   "tools": {
-    "dotnet": "10.0.100-preview.7.25372.107",
+    "dotnet": "10.0.100-preview.7.25380.108",
     "runtimes": {
       "dotnet/x86": [
         "$(MicrosoftInternalRuntimeAspNetCoreTransportVersion)"
