@@ -40,4 +40,10 @@ internal static class ComponentsApi
         public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
         public const string MetadataName = FullTypeName;
     }
+
+    public static class ElementReference
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.ElementReference";
+        public const string MetadataName = FullTypeName;
+    }
 }

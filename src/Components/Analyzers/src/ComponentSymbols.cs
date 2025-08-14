@@ -50,12 +50,14 @@ internal sealed class ComponentSymbols
         // Try to get optional symbols for SupplyParameterFromForm analyzer
         var supplyParameterFromFormAttribute = compilation.GetTypeByMetadataName(ComponentsApi.SupplyParameterFromFormAttribute.MetadataName);
         var componentBaseType = compilation.GetTypeByMetadataName(ComponentsApi.ComponentBase.MetadataName);
+        var elementReferenceType = compilation.GetTypeByMetadataName(ComponentsApi.ElementReference.MetadataName);
 
         symbols = new ComponentSymbols(
             parameterAttribute,
             cascadingParameterAttribute,
             supplyParameterFromFormAttribute,
             componentBaseType,
+            elementReferenceType,
             parameterCaptureUnmatchedValuesRuntimeType,
             icomponentType);
         return true;
@@ -66,6 +68,7 @@ internal sealed class ComponentSymbols
         INamedTypeSymbol cascadingParameterAttribute,
         INamedTypeSymbol supplyParameterFromFormAttribute,
         INamedTypeSymbol componentBaseType,
+        INamedTypeSymbol elementReferenceType,
         INamedTypeSymbol parameterCaptureUnmatchedValuesRuntimeType,
         INamedTypeSymbol icomponentType)
     {
@@ -73,6 +76,7 @@ internal sealed class ComponentSymbols
         CascadingParameterAttribute = cascadingParameterAttribute;
         SupplyParameterFromFormAttribute = supplyParameterFromFormAttribute; // Can be null
         ComponentBaseType = componentBaseType; // Can be null
+        ElementReferenceType = elementReferenceType; // Can be null
         ParameterCaptureUnmatchedValuesRuntimeType = parameterCaptureUnmatchedValuesRuntimeType;
         IComponentType = icomponentType;
     }
@@ -87,6 +91,8 @@ internal sealed class ComponentSymbols
     public INamedTypeSymbol SupplyParameterFromFormAttribute { get; } // Can be null if not available
 
     public INamedTypeSymbol ComponentBaseType { get; } // Can be null if not available
+
+    public INamedTypeSymbol ElementReferenceType { get; } // Can be null if not available
 
     public INamedTypeSymbol IComponentType { get; }
 }

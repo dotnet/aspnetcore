@@ -189,4 +189,22 @@
   <data name="SupplyParameterFromFormShouldNotHavePropertyInitializer_Title" xml:space="preserve">
     <value>Property with [SupplyParameterFromForm] should not have initializer</value>
   </data>
+  <data name="ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync_Description" xml:space="preserve">
+    <value>ElementReference instances should only be accessed within OnAfterRenderAsync (or OnAfterRender) to avoid accessing stale references or non-existent elements.</value>
+  </data>
+  <data name="ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync_Format" xml:space="preserve">
+    <value>ElementReference '{0}' should only be accessed within OnAfterRenderAsync or OnAfterRender</value>
+  </data>
+  <data name="ElementReferenceShouldOnlyBeAccessedInOnAfterRenderAsync_Title" xml:space="preserve">
+    <value>ElementReference should only be accessed in OnAfterRenderAsync</value>
+  </data>
+  <data name="ElementReferenceUsageInMethodCalledOutsideOnAfterRender_Description" xml:space="preserve">
+    <value>Methods that access ElementReference instances should only be called from within OnAfterRenderAsync (or OnAfterRender) to avoid accessing stale references or non-existent elements.</value>
+  </data>
+  <data name="ElementReferenceUsageInMethodCalledOutsideOnAfterRender_Format" xml:space="preserve">
+    <value>Method '{0}' accesses ElementReference '{1}' and is being invoked outside of OnAfterRenderAsync or OnAfterRender</value>
+  </data>
+  <data name="ElementReferenceUsageInMethodCalledOutsideOnAfterRender_Title" xml:space="preserve">
+    <value>Method accessing ElementReference called outside OnAfterRenderAsync</value>
+  </data>
 </root>
