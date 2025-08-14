@@ -1423,6 +1423,16 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
+    public void EditFormRecursiveBinding()
+    {
+        GoTo("forms/recursive-edit-form");
+        Browser.Equal("", () => Browser.Exists(By.Id("result-form")).Text);
+        Browser.Exists(By.Id("text-input")).SendKeys("John");
+        Browser.Exists(By.Id("submit-button")).Click();
+        Browser.Equal("John", () => Browser.Exists(By.Id("result-form")).Text);
+    }
+
+    [Fact]
     public void RadioButtonGetsResetAfterSubmittingEnhancedForm()
     {
         GoTo("forms/form-with-checkbox-and-radio-button");
