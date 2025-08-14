@@ -39,32 +39,6 @@ export class BinaryImageComponent {
   }
 
   /**
-   * Caches a blob using the Cache API
-   */
-  private static async cacheBlob(cacheKey: string, blob: Blob, mimeType: string): Promise<void> {
-    try {
-      const cache = await this.getCache();
-      if (!cache) {
-        return;
-      }
-
-      const cacheUrl = this.getCacheUrl(cacheKey);
-      const response = new Response(blob, { // use writable/readable stream
-        headers: {
-          'Content-Type': mimeType,
-          'Content-Length': blob.size.toString(),
-          // 'Cache-Control': 'private, max-age=604800', // 7 days
-        },
-      });
-
-      await cache.put(cacheUrl, response);
-      console.log(`Cached blob for key: ${cacheKey}`);
-    } catch (error) {
-      console.error(`Failed to cache blob for key ${cacheKey}:`, error);
-    }
-  }
-
-  /**
    * Tries to set image from cache
    */
   public static async trySetFromCache(imgElement: HTMLImageElement, cacheKey: string): Promise<boolean> {
@@ -207,9 +181,30 @@ export class BinaryImageComponent {
 
       const readable = await streamRef.stream();
 
+      // If we should cache, tee the original stream so one branch goes into Cache API as a streamed Response
+      let displayStream: ReadableStream<Uint8Array> = readable;
+      if (cacheStrategy === 'memory' && cacheKey) {
+        try {
+          const cache = await this.getCache();
+          if (cache) {
+            const [displayBranch, cacheBranch] = readable.tee();
+            displayStream = displayBranch;
+            const cacheResponse = new Response(cacheBranch);
+
+            try {
+              await cache.put(this.getCacheUrl(cacheKey), cacheResponse);
+            } catch (err) {
+              console.error('Failed to cache streamed response', err);
+            }
+          }
+        } catch (err) {
+          console.error('Error setting up stream caching', err);
+        }
+      }
+
       let bytesRead = 0;
       const accumulatedChunks: Uint8Array[] = [];
-      const reader = readable.getReader();
+      const reader = displayStream.getReader();
 
       for (;;) {
         if (this.activeCacheKey.get(imgElement) !== cacheKey) {
@@ -255,10 +250,6 @@ export class BinaryImageComponent {
       }
 
       const blob = new Blob([combined], { type: mimeType });
-      if (cacheKey && cacheStrategy === 'memory') {
-        await this.cacheBlob(cacheKey, blob, mimeType);
-      }
-
       if (this.activeCacheKey.get(imgElement) !== cacheKey) {
         return false;
       }
@@ -282,7 +273,13 @@ export class BinaryImageComponent {
       };
 
       imgElement.onerror = () => {
-        this.loadingImages.delete(imgElement);
+        if (this.activeCacheKey.get(imgElement) === cacheKey) {
+          this.loadingImages.delete(imgElement);
+          const containerElement = imgElement.parentElement;
+          if (containerElement) {
+            containerElement.style.removeProperty('--blazor-image-progress');
+          }
+        }
       };
 
       return true;
