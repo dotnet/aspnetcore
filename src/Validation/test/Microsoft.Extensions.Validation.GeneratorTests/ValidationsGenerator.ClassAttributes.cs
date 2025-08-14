@@ -90,7 +90,7 @@ public class SumLimitAttribute : ValidationAttribute
             await InvalidClassAttributeCheck_ProducesError(validatableTypeInfo);
             await InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(validatableTypeInfo);
 
-            async Task InvalidPropertyAttributeCheck_ProducesError_AndShortCirctuits(IValidatableInfo validatableInfo)
+            async Task InvalidPropertyAttributeCheck_ProducesError_AndShortCircuits(IValidatableInfo validatableInfo)
             {
                 var instance = Activator.CreateInstance(type);
                 type.GetProperty("X")?.SetValue(instance, 16);
