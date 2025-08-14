@@ -35,6 +35,12 @@ internal static class ComponentsApi
         public const string MetadataName = FullTypeName;
     }
 
+    public static class PersistentStateAttribute
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.PersistentStateAttribute";
+        public const string MetadataName = FullTypeName;
+    }
+
     public static class IComponent
     {
         public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
