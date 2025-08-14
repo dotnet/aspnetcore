@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.Validation.Generated
             Type = type;
         }
 
-        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
+        [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.Interfaces)]
         internal global::System.Type Type { get; }
 
         protected override global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetValidationAttributes()
