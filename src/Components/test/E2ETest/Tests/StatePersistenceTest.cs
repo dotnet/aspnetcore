@@ -597,7 +597,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     {
         Browser.Equal($"Render mode: {renderMode}", () => Browser.FindElement(By.Id("render-mode")).Text);
         Browser.Equal($"Streaming id:{streamingId}", () => Browser.FindElement(By.Id("streaming-id")).Text);
-        Browser.Equal($"Show conditional: {showConditional.ToString().ToLowerInvariant()}", () => Browser.FindElement(By.Id("show-conditional")).Text);
+        Browser.Equal($"Show conditional: {showConditional.ToString()}", () => Browser.FindElement(By.Id("show-conditional")).Text);
         Browser.Equal($"Interactive: {interactive}", () => Browser.FindElement(By.Id("interactive")).Text);
         
         if (streamingId == null || streamingCompleted)
