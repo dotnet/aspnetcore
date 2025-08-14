@@ -250,7 +250,7 @@ internal static class DiagnosticDescriptors
         helpLinkUri: AnalyzersLink);
 
     internal static readonly DiagnosticDescriptor UseCreateHostBuilderInsteadOfCreateWebHostBuilder = new(
-        "ASP0029",
+        "ASP0030",
         CreateLocalizableResourceString(nameof(Resources.Analyzer_UseCreateHostBuilderInsteadOfCreateWebHostBuilder_Title)),
         CreateLocalizableResourceString(nameof(Resources.Analyzer_UseCreateHostBuilderInsteadOfCreateWebHostBuilder_Message)),
         Usage,

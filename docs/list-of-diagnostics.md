@@ -35,6 +35,7 @@
 |  __`ASP0027`__ | Unnecessary public Program class declaration |
 |  __`ASP0028`__ | Consider using ListenAnyIP() instead of Listen(IPAddress.Any) |
 |  __`ASP0029`__ | Experimental warning for validations resolver APIs |
+|  __`ASP0030`__ | Use Host.CreateDefaultBuilder instead of WebHost.CreateDefaultBuilder |
 
 ### API (`API1000-API1003`)
 

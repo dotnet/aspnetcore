@@ -10,6 +10,8 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
+using WellKnownType = Microsoft.AspNetCore.App.Analyzers.Infrastructure.WellKnownTypeData.WellKnownType;
+
 namespace Microsoft.AspNetCore.Analyzers.WebApplicationBuilder;
 
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -34,7 +36,7 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderAnalyzer : 
                 var targetMethod = invocation.TargetMethod;
 
                 // Check if this is WebHost.CreateDefaultBuilder
-                if (IsWebHostCreateDefaultBuilderCall(targetMethod))
+                if (IsWebHostCreateDefaultBuilderCall(targetMethod, wellKnownTypes))
                 {
                     var diagnostic = Diagnostic.Create(
                         DiagnosticDescriptors.UseCreateHostBuilderInsteadOfCreateWebHostBuilder,
@@ -51,7 +53,7 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderAnalyzer : 
                 var symbol = semantic.GetDeclaredSymbol(methodDeclaration);
                 
                 // Check if this method returns IWebHostBuilder
-                if (symbol != null && IsWebHostBuilderReturnType(symbol))
+                if (symbol != null && IsWebHostBuilderReturnType(symbol, wellKnownTypes))
                 {
                     // Check if the method body contains WebHost.CreateDefaultBuilder
                     if (ContainsWebHostCreateDefaultBuilder(methodDeclaration))
@@ -67,12 +69,11 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderAnalyzer : 
         });
     }
 
-    private static bool IsWebHostCreateDefaultBuilderCall(IMethodSymbol method)
+    private static bool IsWebHostCreateDefaultBuilderCall(IMethodSymbol method, WellKnownTypes wellKnownTypes)
     {
         // Check if this is WebHost.CreateDefaultBuilder (not other WebHost methods)
-        if (method.Name == "CreateDefaultBuilder" && 
-            method.ContainingType?.Name == "WebHost" &&
-            method.ContainingType?.ContainingNamespace?.ToDisplayString() == "Microsoft.AspNetCore")
+        if (method.Name == "CreateDefaultBuilder" &&
+            SymbolEqualityComparer.Default.Equals(method.ContainingType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_WebHost)))
         {
             return true;
         }
@@ -80,12 +81,11 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderAnalyzer : 
         return false;
     }
 
-    private static bool IsWebHostBuilderReturnType(IMethodSymbol method)
+    private static bool IsWebHostBuilderReturnType(IMethodSymbol method, WellKnownTypes wellKnownTypes)
     {
         // Check if the return type is IWebHostBuilder
         var returnType = method.ReturnType;
-        return returnType.Name == "IWebHostBuilder" && 
-               returnType.ContainingNamespace?.ToDisplayString() == "Microsoft.AspNetCore.Hosting";
+        return SymbolEqualityComparer.Default.Equals(returnType, wellKnownTypes.Get(WellKnownType.Microsoft_AspNetCore_Hosting_IWebHostBuilder));
     }
 
     private static bool ContainsWebHostCreateDefaultBuilder(MethodDeclarationSyntax methodDeclaration)

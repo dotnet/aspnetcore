@@ -129,7 +129,7 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
 
     private static bool IsWebHostBuilderType(TypeSyntax typeSyntax)
     {
-        return typeSyntax.ToString().Contains("IWebHostBuilder");
+        return typeSyntax.ToString().Equals("IWebHostBuilder");
     }
 
     private static async Task<Document> ConvertWebHostCreateDefaultBuilder(Document document, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
@@ -257,7 +257,7 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
                     hostCreateCall.WithTrailingTrivia(),
                     SyntaxFactory.IdentifierName("ConfigureWebHostDefaults"))
                     .WithOperatorToken(SyntaxFactory.Token(SyntaxKind.DotToken)
-                        .WithLeadingTrivia(SyntaxFactory.EndOfLine("\r\n"))
+                        .WithLeadingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
                         .WithTrailingTrivia()))
                 .WithArgumentList(SyntaxFactory.ArgumentList(
                     SyntaxFactory.SingletonSeparatedList(
@@ -267,11 +267,13 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
             ExpressionSyntax result = configureCall;
             if (remainingChain != null)
             {
-                // Replace the placeholder with the actual configure call
-                result = remainingChain.ReplaceNode(
-                    remainingChain.DescendantNodes().OfType<IdentifierNameSyntax>()
-                        .First(n => n.Identifier.ValueText == "HOST_PLACEHOLDER"),
-                    configureCall);
+                var placeHolder = remainingChain.DescendantNodes().OfType<IdentifierNameSyntax>()
+                        .FirstOrDefault(n => n.Identifier.ValueText == "HOST_PLACEHOLDER");
+                if (placeHolder != null)
+                {
+                    // Replace the placeholder with the actual configure call
+                    result = remainingChain.ReplaceNode(placeHolder, configureCall);
+                }
             }
 
             return result.WithTrailingTrivia(expression.GetTrailingTrivia())
