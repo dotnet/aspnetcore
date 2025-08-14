@@ -56,12 +56,6 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    /// <summary>
-    /// Gets or sets the size of the chunks used when sending image data.
-    /// (Currently unused with stream-based transfer but kept for back-compat extensibility.)
-    /// </summary>
-    [Parameter] public int ChunkSize { get; set; } = 64 * 1024;
-
     /// <inheritdoc />
     public void Attach(RenderHandle renderHandle)
     {

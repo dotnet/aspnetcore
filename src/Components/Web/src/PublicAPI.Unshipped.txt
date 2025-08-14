@@ -12,8 +12,6 @@ Microsoft.AspNetCore.Components.Web.Image.Image.AdditionalAttributes.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.CacheStrategy.get -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
 Microsoft.AspNetCore.Components.Web.Image.Image.CacheStrategy.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.ChunkSize.get -> int
-Microsoft.AspNetCore.Components.Web.Image.Image.ChunkSize.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Web.Image.Image.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Web.Image.Image.Element.set -> void
