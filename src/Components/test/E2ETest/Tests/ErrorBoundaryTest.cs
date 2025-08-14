@@ -130,7 +130,7 @@ public class ErrorBoundaryTest : ServerTestBase<ToggleExecutionModeServerFixture
     public void CanHandleErrorsAfterDisposingErrorBoundaryComponent()
     {
         var container = Browser.Exists(By.Id("multiple-errors-at-once-test"));
-        container.FindElement(By.ClassName("throw-miltiple-errors")).Click();
+        container.FindElement(By.ClassName("throw-multiple-errors")).Click();
         // The error boundary is still there, so we see the error message
         Browser.Collection(() => container.FindElements(By.ClassName("error-message")),
             elem => Assert.Equal("OnInitializedAsyncError", elem.Text));
