@@ -85,7 +85,7 @@ public class SumLimitAttribute : ValidationAttribute
         {
             Assert.True(validationOptions.TryGetValidatableTypeInfo(type, out var validatableTypeInfo));
 
-            await InvalidPropertyAttributeCheck_ProducesError_AndShortCirctuits(validatableTypeInfo);
+            await InvalidPropertyAttributeCheck_ProducesError_AndShortCircuits(validatableTypeInfo);
             await ValidClassAttributeCheck_DoesNotProduceError(validatableTypeInfo);
             await InvalidClassAttributeCheck_ProducesError(validatableTypeInfo);
             await InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(validatableTypeInfo);
