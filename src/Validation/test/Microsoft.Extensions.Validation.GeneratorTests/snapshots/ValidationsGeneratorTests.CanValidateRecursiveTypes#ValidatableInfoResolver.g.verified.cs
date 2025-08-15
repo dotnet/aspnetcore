@@ -129,7 +129,7 @@ namespace Microsoft.Extensions.Validation.Generated
             [param: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             [property: global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type ContainingType,
-            string? PropertyName);
+            string PropertyName);
         private static readonly global::System.Collections.Concurrent.ConcurrentDictionary<CacheKey, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> _propertyCache = new();
         private static readonly global::System.Lazy<global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]>> _lazyTypeCache = new (() => new ());
         private static global::System.Collections.Concurrent.ConcurrentDictionary<global::System.Type, global::System.ComponentModel.DataAnnotations.ValidationAttribute[]> TypeCache => _lazyTypeCache.Value;
@@ -137,7 +137,7 @@ namespace Microsoft.Extensions.Validation.Generated
         public static global::System.ComponentModel.DataAnnotations.ValidationAttribute[] GetPropertyValidationAttributes(
             [global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMembers(global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicProperties | global::System.Diagnostics.CodeAnalysis.DynamicallyAccessedMemberTypes.PublicConstructors)]
             global::System.Type containingType,
-            string? propertyName)
+            string propertyName)
         {
             var key = new CacheKey(containingType, propertyName);
             return _propertyCache.GetOrAdd(key, static k =>
@@ -186,18 +186,9 @@ namespace Microsoft.Extensions.Validation.Generated
         {
             return TypeCache.GetOrAdd(type, static t =>
             {
-                var results = new global::System.Collections.Generic.List<global::System.ComponentModel.DataAnnotations.ValidationAttribute>();
-
-                // Get attributes from the type itself and its super types
-                foreach (var attr in t.GetCustomAttributes(typeof(global::System.ComponentModel.DataAnnotations.ValidationAttribute), true))
-                {
-                    if (attr is global::System.ComponentModel.DataAnnotations.ValidationAttribute validationAttribute)
-                    {
-                        results.Add(validationAttribute);
-                    }
-                }
-
-                return results.ToArray();
+                var typeAttributes = global::System.Reflection.CustomAttributeExtensions
+                        .GetCustomAttributes<global::System.ComponentModel.DataAnnotations.ValidationAttribute>(t, inherit: true);
+                return global::System.Linq.Enumerable.ToArray(typeAttributes);
             });
         }
     }
