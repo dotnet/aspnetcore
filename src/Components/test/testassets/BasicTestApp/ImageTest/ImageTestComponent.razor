@@ -9,16 +9,14 @@
 
 <div>
     <h4>Test Controls</h4>
-    <button id="load-png" @onclick="LoadPngWithCache">Load PNG</button>
-    <button id="reload-png" @onclick="ReloadPng">Reload PNG</button>
+    <button id="load-png" @onclick="ReloadPng">Load PNG</button>
     <button id="load-jpg-stream" @onclick="LoadJpgFromStream">Load JPG (Stream)</button>
-    <button id="load-small-chunks" @onclick="LoadImageSmallChunks">Load Large Image (Small Chunks)</button>
     <button id="change-source" @onclick="ChangeDynamicImageSource">Change Dynamic Source</button>
     <!-- New controls -->
     <button id="clear-cache" @onclick="ClearCache">Clear Cache</button>
-    <button id="mount-cached" @onclick="MountCached">Mount Cached Image</button>
     <button id="load-pair-sequence" @onclick="LoadPairSequence">Load Two Images (Same Key)</button>
     <button id="load-error" @onclick="LoadErrorImage">Load Error</button>
+    <button id="load-cached-jpg" @onclick="LoadCachedJpg">Load Cached JPG</button>
 
     <div id="test-status">
         Status: <span id="current-status">@_currentStatus</span>
@@ -43,16 +41,6 @@
         CacheStrategy="CacheStrategy.None" />
 }
 
-@if (_smallChunks)
-{
-    <h4>Small chunks Image</h4>
-    <Image @ref="@_smallChunksRef"
-        id="chunked-image"
-        Source="@_smallChunksSource"
-        ChunkSize="@_chunkSize"
-        CacheStrategy="CacheStrategy.None" />
-}
-
 @if (_dynamicSource)
 {
     <h4>Dynamic Source Image</h4>
@@ -60,15 +48,6 @@
         id="dynamic-source"
         Source="@_dynamicImageSource"
         CacheStrategy="CacheStrategy.None" />
-}
-
-@if (_cachedMount)
-{
-    <h4>Cached Remount</h4>
-    <Image @ref="@_cachedRef"
-           id="cached-image"
-           Source="@_cachedSource"
-           CacheStrategy="CacheStrategy.Memory" />
 }
 
 @if (_pair1Visible)
@@ -97,35 +76,40 @@
             CacheStrategy="CacheStrategy.None" />
 }
 
+@if (_cachedJpgVisible)
+{
+    <h4>Cached JPG</h4>
+    <Image @ref="@_cachedJpgRef"
+           id="cached-jpg"
+           Source="@_cachedJpgSource"
+           CacheStrategy="CacheStrategy.Memory" />
+}
+
 @code {
     private Image _pngBasicRef;
     private Image _jpgStreamRef;
-    private Image _smallChunksRef;
     private Image _dynamicSourceRef;
-    private Image _cachedRef;
     private Image _pair1Ref;
     private Image _pair2Ref;
     private Image _errorRef;
+    private Image _cachedJpgRef;
 
     private ImageSource _basicImageSource = new ImageSource(new byte[0], "", "");
     private ImageSource _jpgStreamSource = new ImageSource(new byte[0], "", "");
-    private ImageSource _smallChunksSource = new ImageSource(new byte[0], "", "");
     private ImageSource _dynamicImageSource = new ImageSource(new byte[0], "", "");
-    private ImageSource _cachedSource = new ImageSource(new byte[0], "", "");
     private ImageSource _pairSource = new ImageSource(new byte[0], "", "");
     private ImageSource _errorSource = new ImageSource(new byte[0], "", "");
+    private ImageSource _cachedJpgSource = new ImageSource(new byte[0], "", "");
 
     private bool _pngBasic = false;
     private bool _jpgStream = false;
-    private bool _smallChunks = false;
     private bool _dynamicSource = false;
-    private bool _cachedMount = false;
     private bool _pair1Visible = false;
     private bool _pair2Visible = false;
     private bool _errorImage = false;
+    private bool _cachedJpgVisible = false;
 
     private string _currentStatus = "Ready";
-    private int _chunkSize = 128; // Small chunks for testing
     private bool _isCurrentlyShowingPng = true; // Track which image is currently shown in dynamic test
 
     // Test image data - 1x1 gray PNG and JPG byte arrays
@@ -138,15 +122,6 @@
         _currentStatus = "Component initialized";
     }
 
-    private async Task LoadPngWithCache()
-    {
-        _currentStatus = "Loading PNG with cache...";
-        _basicImageSource = new ImageSource(TestPngData, "image/png", "test-png-cached");
-        _pngBasic = true;
-        await Task.Delay(10);
-        _currentStatus = "PNG basic loaded";
-    }
-
     private async Task LoadJpgFromStream()
     {
         _currentStatus = "Loading JPG from stream...";
@@ -156,15 +131,6 @@
         _jpgStream = true;
         _currentStatus = "JPG from stream loaded";
 
-    }
-
-    private async Task LoadImageSmallChunks()
-    {
-        _currentStatus = "Loading large image with small chunks...";
-        _smallChunksSource = new ImageSource(TestJpgData, "image/jpg", "large-chunked-image");
-        await Task.Delay(10);
-        _smallChunks = true;
-        _currentStatus = "Small chunks image loaded";
     }
 
     private async Task ChangeDynamicImageSource()
@@ -215,15 +181,6 @@
         }
     }
 
-    private async Task MountCached()
-    {
-        _currentStatus = "Mounting cached image...";
-        _cachedSource = new ImageSource(TestPngData, "image/png", "cache-persist");
-        _cachedMount = true;
-        await Task.Delay(10);
-        _currentStatus = "Cached mount loaded";
-    }
-
     private async Task LoadPairSequence()
     {
         _currentStatus = "Loading pair sequence...";
@@ -237,16 +194,21 @@
 
     private async Task ReloadPng()
     {
-        _currentStatus = "Reloading PNG...";
         if (_pngBasic)
         {
+            _currentStatus = "Reloading PNG...";
             _pngBasic = false; // unmount to force a new component instance
             await Task.Delay(10);
         }
-        _basicImageSource = new ImageSource(TestPngData, "image/png", "test-png-cached");
+        else
+        {
+            _currentStatus = "Loading PNG...";
+        }
+
+        _basicImageSource = new ImageSource(TestPngData, "image/png", "test-png-basic");
         _pngBasic = true;
         await Task.Delay(10);
-        _currentStatus = "PNG reloaded";
+        _currentStatus = "PNG basic loaded";
     }
 
     private async Task LoadErrorImage()
@@ -261,20 +223,25 @@
         _currentStatus = "Error image loaded";
     }
 
+    private async Task LoadCachedJpg()
+    {
+        _currentStatus = "Loading cached JPG...";
+        _cachedJpgSource = new ImageSource(TestJpgData, "image/jpeg", "single-cached-jpg");
+        _cachedJpgVisible = true;
+        await Task.Delay(10);
+        _currentStatus = "Cached JPG loaded";
+    }
+
     public async ValueTask DisposeAsync()
     {
         _currentStatus = "Disposing component...";
 
         if (_dynamicSourceRef != null)
             await _dynamicSourceRef.DisposeAsync();
-        if (_smallChunksRef != null)
-            await _smallChunksRef.DisposeAsync();
         if (_jpgStreamRef != null)
             await _jpgStreamRef.DisposeAsync();
         if (_pngBasicRef != null)
             await _pngBasicRef.DisposeAsync();
-        if (_cachedRef != null)
-            await _cachedRef.DisposeAsync();
         if (_pair1Ref != null)
             await _pair1Ref.DisposeAsync();
         if (_pair2Ref != null)

@@ -106,7 +106,7 @@
 @code {
     private bool _isLoading = true;
     private List<ImageMetadata> _images = new();
-    private Dictionary<int, ImageSource> _imageSources = new();
+    private Dictionary<int, byte[]> _imageData = new();
 
     private bool _showImageModal = false;
     private ImageMetadata? _currentImage;
@@ -130,22 +130,27 @@
     private async Task LoadImagesAsync()
     {
         _images = await ImageRepository.GetAllImagesMetadataAsync();
-        _imageSources.Clear();
+        _imageData.Clear();
 
-        // Pre-load all image sources
+        // Pre-load all image bytes
         foreach (var image in _images)
         {
             var imageBytes = await ImageRepository.GetImageBytesAsync(image.Id) ?? Array.Empty<byte>();
-            var imageSource = new ImageSource(imageBytes, image.MimeType, $"imgkey-{image.Id}");
-            _imageSources[image.Id] = imageSource;
+            _imageData[image.Id] = imageBytes;
         }
     }
 
     private ImageSource GetImageSource(int imageId)
     {
-        // Now this is purely synchronous
-        if (_imageSources.TryGetValue(imageId, out var existingSource))
-            return existingSource;
+        // Create a new ImageSource each time
+        if (_imageData.TryGetValue(imageId, out var bytes))
+        {
+            var metadata = _images.FirstOrDefault(img => img.Id == imageId);
+            if (metadata != null)
+            {
+                return new ImageSource(bytes, metadata.MimeType, $"imgkey-{imageId}");
+            }
+        }
 
         // Fallback for missing images
         return new ImageSource(new byte[0], "image/png", "");

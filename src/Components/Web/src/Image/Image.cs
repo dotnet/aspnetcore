@@ -167,6 +167,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
                 {
                     if (_activeCacheKey == source.CacheKey)
                     {
+                        Console.WriteLine($"Image loaded from memory cache: {source.CacheKey}");
                         SetSuccessState();
                     }
                     return;
