@@ -4,7 +4,6 @@
 param(
     [Parameter(Mandatory=$true)][string]$Name,
     [Parameter(Mandatory=$true)][string]$MsiPath,
-    [Parameter(Mandatory=$false)][string]$CabPath,
     [Parameter(Mandatory=$true)][string]$NuspecFile,
     [Parameter(Mandatory=$true)][string]$OutputDirectory,
     [Parameter(Mandatory=$true)][string]$Architecture,
@@ -34,5 +33,5 @@ if (-not (Test-Path $NuGetExe)) {
     -OutputDirectory $OutputDirectory `
     -NoDefaultExcludes `
     -NoPackageAnalysis `
-    -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ASPNETCORE_CAB_FILE=$CabPath`;ARCH=$Architecture`;MAJOR=$MajorVersion`;MINOR=$MinorVersion`;PackageIcon=$PackageIcon`;PackageIconFullPath=$PackageIconFullPath`;PackageLicenseExpression=$PackageLicenseExpression`;
+    -Properties ASPNETCORE_RUNTIME_MSI=$MsiPath`;ARCH=$Architecture`;MAJOR=$MajorVersion`;MINOR=$MinorVersion`;PackageIcon=$PackageIcon`;PackageIconFullPath=$PackageIconFullPath`;PackageLicenseExpression=$PackageLicenseExpression`;
 Exit $LastExitCode
