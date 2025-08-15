@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
