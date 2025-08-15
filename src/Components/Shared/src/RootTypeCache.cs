@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 
 #if COMPONENTS
 namespace Microsoft.AspNetCore.Components.Infrastructure;
@@ -14,7 +15,45 @@ namespace Microsoft.AspNetCore.Components;
 // A cache for root component types
 internal sealed class RootTypeCache
 {
+    private static readonly List<WeakReference> _instances = new();
+
+    static RootTypeCache()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
+
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
+
+    public RootTypeCache()
+    {
+        lock (_instances)
+        {
+            _instances.Add(new WeakReference(this));
+        }
+    }
+
+    private static void ClearCache()
+    {
+        lock (_instances)
+        {
+            for (int i = _instances.Count - 1; i >= 0; i--)
+            {
+                var weakRef = _instances[i];
+                if (weakRef.Target is RootTypeCache instance)
+                {
+                    instance._typeToKeyLookUp.Clear();
+                }
+                else
+                {
+                    // Remove dead reference
+                    _instances.RemoveAt(i);
+                }
+            }
+        }
+    }
 
     public Type? GetRootType(string assembly, string type)
     {
