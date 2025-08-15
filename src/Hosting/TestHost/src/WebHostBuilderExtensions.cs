@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
@@ -153,7 +152,6 @@ public static class WebHostBuilderExtensions
     /// <param name="applicationBasePath">The root of the app's directory.</param>
     /// <param name="solutionName">The name of the solution file to make the content root relative to.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IWebHostBuilder UseSolutionRelativeContentRoot(
         this IWebHostBuilder builder,
         string solutionRelativePath,
@@ -171,7 +169,6 @@ public static class WebHostBuilderExtensions
     /// <param name="applicationBasePath">The root of the app's directory.</param>
     /// <param name="solutionNames">The names of the solution files to make the content root relative to. If empty, defaults to *.sln and *.slnx.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IWebHostBuilder UseSolutionRelativeContentRoot(
         this IWebHostBuilder builder,
         string solutionRelativePath,
