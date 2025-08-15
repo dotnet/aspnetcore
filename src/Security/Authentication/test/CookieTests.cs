@@ -135,7 +135,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Fact]
-    public async Task CanReanableAccessDeniedRedirectWithMetadata()
+    public async Task CanReenableAccessDeniedRedirectWithMetadata()
     {
         using var host = await CreateHost(s => { });
         using var server = host.GetTestServer();
