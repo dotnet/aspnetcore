@@ -68,8 +68,6 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         Assert.Empty(errors);
     }
 
-    // The test below can be removed when https://github.com/microsoft/OpenAPI.NET/issues/2453 is implemented
-
     [Theory] // See https://github.com/dotnet/aspnetcore/issues/63090
     [MemberData(nameof(OpenApiDocuments))]
     public async Task OpenApiDocumentReferencesAreValid(string documentName, OpenApiSpecVersion version)
@@ -103,6 +101,7 @@ public sealed class OpenApiDocumentIntegrationTests(SampleAppFixture fixture) : 
         var documentService = fixture.Services.GetRequiredKeyedService<OpenApiDocumentService>(documentName);
         var scopedServiceProvider = fixture.Services.CreateScope();
         var document = await documentService.GetOpenApiDocumentAsync(scopedServiceProvider.ServiceProvider);
+
         return await document.SerializeAsJsonAsync(version);
     }
 
