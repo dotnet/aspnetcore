@@ -63,7 +63,7 @@ public class TestServerTests : VerifiableLoggedTest
                 });
             connectionBuilder.Services.AddLogging();
             connectionBuilder.Services.AddSingleton(LoggerFactory);
-            var connection = connectionBuilder.Build();
+            await using var connection = connectionBuilder.Build();
 
             var originalMessage = "message";
             connection.On<string>("Echo", (receivedMessage) =>
@@ -118,7 +118,7 @@ public class TestServerTests : VerifiableLoggedTest
                 });
             connectionBuilder.Services.AddLogging();
             connectionBuilder.Services.AddSingleton(LoggerFactory);
-            var connection = connectionBuilder.Build();
+            await using var connection = connectionBuilder.Build();
 
             var originalMessage = "message";
             connection.On<string>("Echo", (receivedMessage) =>
