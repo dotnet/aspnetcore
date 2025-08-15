@@ -1021,6 +1021,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         var testSource = new ActivitySource(Path.GetRandomFileName());
         var hostingApplication = CreateApplication(out var features, activitySource: testSource);
         var parentSpanId = "";
+        var tags = new List<KeyValuePair<string, object>>();
         using var listener = new ActivityListener
         {
             ShouldListenTo = activitySource => ReferenceEquals(activitySource, testSource),
@@ -1028,6 +1029,7 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             ActivityStarted = activity =>
             {
                 parentSpanId = Activity.Current.ParentSpanId.ToHexString();
+                tags = Activity.Current.TagObjects.OrderBy(t => t.Key).ToList();
             }
         };
 
@@ -1039,12 +1041,32 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
             {
                 {"traceparent", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"},
                 {"tracestate", "TraceState1"},
-                {"baggage", "Key1=value1, Key2=value2"}
-            }
+                {"baggage", "Key1=value1, Key2=value2"},
+                {"host", "localhost:8080" }
+            },
+            PathBase = "/path_base",
+            Path = "/path",
+            Scheme = "http",
+            Method = "CUSTOM_METHOD",
+            Protocol = "HTTP/1.1"
         });
 
         hostingApplication.CreateContext(features);
         Assert.Equal("0123456789abcdef", parentSpanId);
+
+        Assert.Collection(tags,
+            kvp => AssertKeyValuePair(kvp, "http.request.method", "_OTHER"),
+            kvp => AssertKeyValuePair(kvp, "http.request.method_original", "CUSTOM_METHOD"),
+            kvp => AssertKeyValuePair(kvp, "server.address", "localhost"),
+            kvp => AssertKeyValuePair(kvp, "server.port", 8080),
+            kvp => AssertKeyValuePair(kvp, "url.path", "/path_base/path"),
+            kvp => AssertKeyValuePair(kvp, "url.scheme", "http"));
+
+        static void AssertKeyValuePair<T>(KeyValuePair<string, T> pair, string key, T value)
+        {
+            Assert.Equal(key, pair.Key);
+            Assert.Equal(value, pair.Value);
+        }
     }
 
     [Fact]
