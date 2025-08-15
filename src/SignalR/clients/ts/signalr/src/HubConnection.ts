@@ -1153,7 +1153,7 @@ export class HubConnection {
         return { type: MessageType.Close };
     }
 
-    private _trySendPingMessage(): Promise<void> {
+    private async _trySendPingMessage(): Promise<void> {
         try {
             await this._sendMessage(this._cachedPingMessage);
         } catch {
