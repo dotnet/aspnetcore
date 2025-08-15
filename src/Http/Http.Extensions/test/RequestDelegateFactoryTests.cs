@@ -2825,8 +2825,8 @@ public partial class RequestDelegateFactoryTests : LoggedTest
             m => Assert.True(m is AcceptsMetadata am && am.RequestType == typeof(AddsCustomParameterMetadata)),
             // Inferred ParameterBinding metadata
             m => Assert.True(m is IParameterBindingMetadata { Name: "param1" }),
-            // Inferred IApiEndpointMetadata from RDF for complex request and response type
-            m => Assert.True(m is IApiEndpointMetadata),
+            // Inferred IDisableCookieRedirectMetadata from RDF for complex request and response type
+            m => Assert.True(m is IDisableCookieRedirectMetadata),
             // Inferred ProducesResponseTypeMetadata from RDF for complex type
             m => Assert.Equal(typeof(CountsDefaultEndpointMetadataPoco), ((IProducesResponseTypeMetadata)m).Type),
             // Metadata provided by parameters implementing IEndpointParameterMetadataProvider
