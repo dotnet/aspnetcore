@@ -10,18 +10,15 @@ namespace Microsoft.AspNetCore.Hosting;
 
 internal static class HostingTelemetryHelpers
 {
-    public const string AttributeHttpRequestMethod = "http.request.method"; // replaces: "http.method" (AttributeHttpMethod)
+    // Semantic Conventions for HTTP.
+    // Note: Not all telemetry code is using these const attribute names yet.
+    public const string AttributeHttpRequestMethod = "http.request.method";
     public const string AttributeHttpRequestMethodOriginal = "http.request.method_original";
-    public const string AttributeHttpResponseStatusCode = "http.response.status_code"; // replaces: "http.status_code" (AttributeHttpStatusCode)
-    public const string AttributeUrlScheme = "url.scheme"; // replaces: "http.scheme" (AttributeHttpScheme)
-    public const string AttributeUrlFull = "url.full"; // replaces: "http.url" (AttributeHttpUrl)
-    public const string AttributeUrlPath = "url.path"; // replaces: "http.target" (AttributeHttpTarget)
-    public const string AttributeUrlQuery = "url.query"; // replaces: "http.target" (AttributeHttpTarget)
-    public const string AttributeServerSocketAddress = "server.socket.address"; // replaces: "net.peer.ip" (AttributeNetPeerIp)
-
-    public const string AttributeServerAddress = "server.address"; // replaces: "net.host.name" (AttributeNetHostName)
-    public const string AttributeServerPort = "server.port"; // replaces: "net.host.port" (AttributeNetHostPort)
-    public const string AttributeUserAgentOriginal = "user_agent.original"; // replaces: http.user_agent (AttributeHttpUserAgent)
+    public const string AttributeUrlScheme = "url.scheme";
+    public const string AttributeUrlPath = "url.path";
+    public const string AttributeServerAddress = "server.address";
+    public const string AttributeServerPort = "server.port";
+    public const string AttributeUserAgentOriginal = "user_agent.original";
 
     // The value "_OTHER" is used for non-standard HTTP methods.
     // https://github.com/open-telemetry/semantic-conventions/blob/v1.23.0/docs/http/http-spans.md#common-attributes
@@ -102,38 +99,5 @@ internal static class HostingTelemetryHelpers
         {
             tags.Add(AttributeHttpRequestMethodOriginal, originalHttpMethod);
         }
-    }
-
-    public static void SetActivityDisplayName(Activity activity, string originalHttpMethod, string? httpRoute = null)
-    {
-        // https://github.com/open-telemetry/semantic-conventions/blob/v1.24.0/docs/http/http-spans.md#name
-
-        var normalizedHttpMethod = GetNormalizedHttpMethod(originalHttpMethod);
-        var namePrefix = normalizedHttpMethod == OtherHttpMethod ? "HTTP" : normalizedHttpMethod;
-
-        activity.DisplayName = string.IsNullOrEmpty(httpRoute) ? namePrefix : $"{namePrefix} {httpRoute}";
-    }
-
-    internal static string GetHttpProtocolVersion(Version httpVersion)
-    {
-        return httpVersion switch
-        {
-            { Major: 1, Minor: 0 } => "1.0",
-            { Major: 1, Minor: 1 } => "1.1",
-            { Major: 2, Minor: 0 } => "2",
-            { Major: 3, Minor: 0 } => "3",
-            _ => httpVersion.ToString(),
-        };
-    }
-
-    internal static string GetHttpProtocolVersion(string protocol)
-    {
-        return protocol switch
-        {
-            "HTTP/1.1" => "1.1",
-            "HTTP/2" => "2",
-            "HTTP/3" => "3",
-            _ => protocol,
-        };
     }
 }
