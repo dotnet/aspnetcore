@@ -1947,11 +1947,11 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                             }
 
                             var apiRouteGroup = endpoints.MapGroup("/api").DisableCookieRedirect();
-                            AddChallengeAndForbidEndpionts(apiRouteGroup);
+                            AddChallengeAndForbidEndpoints(apiRouteGroup);
 
                             // IAllowCookieRedirect always wins if present. Adding IDisableCookieRedirect before and afterwards does not override it.
                             var overriddenRouteGroup = apiRouteGroup.MapGroup("/jk").AllowCookieRedirect().DisableCookieRedirect();
-                            AddChallengeAndForbidEndpionts(overriddenRouteGroup);
+                            AddChallengeAndForbidEndpoints(overriddenRouteGroup);
                         });
                     })
                     .ConfigureServices(services =>
