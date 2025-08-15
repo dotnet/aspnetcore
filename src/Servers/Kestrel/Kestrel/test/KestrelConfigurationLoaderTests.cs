@@ -683,6 +683,50 @@ public class KestrelConfigurationLoaderTests
         Assert.IsAssignableFrom<CryptographicException>(ex.InnerException);
     }
 
+#pragma warning disable SYSLIB5006
+    private static readonly Dictionary<string, MLDsaAlgorithm> _mlDsaAlgorithms = ((IEnumerable<MLDsaAlgorithm>)[
+        MLDsaAlgorithm.MLDsa44,
+        MLDsaAlgorithm.MLDsa65,
+        MLDsaAlgorithm.MLDsa87,
+    ]).ToDictionary(a => a.Name);
+
+    private static readonly Dictionary<string, SlhDsaAlgorithm> _slhDsaAlgorithms = ((IEnumerable<SlhDsaAlgorithm>)[
+        SlhDsaAlgorithm.SlhDsaSha2_128s,
+        SlhDsaAlgorithm.SlhDsaSha2_128f,
+        SlhDsaAlgorithm.SlhDsaSha2_192s,
+        SlhDsaAlgorithm.SlhDsaSha2_192f,
+        SlhDsaAlgorithm.SlhDsaSha2_256s,
+        SlhDsaAlgorithm.SlhDsaSha2_256f,
+        SlhDsaAlgorithm.SlhDsaShake128s,
+        SlhDsaAlgorithm.SlhDsaShake128f,
+        SlhDsaAlgorithm.SlhDsaShake192s,
+        SlhDsaAlgorithm.SlhDsaShake192f,
+        SlhDsaAlgorithm.SlhDsaShake256s,
+        SlhDsaAlgorithm.SlhDsaShake256f,
+    ]).ToDictionary(a => a.Name);
+
+    private static readonly Dictionary<string, CompositeMLDsaAlgorithm> _compositeMLDsaAlgorithms = ((IEnumerable<CompositeMLDsaAlgorithm>)[
+        CompositeMLDsaAlgorithm.MLDsa65WithECDsaP256,
+        CompositeMLDsaAlgorithm.MLDsa65WithRSA3072Pkcs15,
+        CompositeMLDsaAlgorithm.MLDsa65WithEd25519,
+        CompositeMLDsaAlgorithm.MLDsa65WithECDsaP384,
+        CompositeMLDsaAlgorithm.MLDsa87WithRSA4096Pss,
+        CompositeMLDsaAlgorithm.MLDsa65WithECDsaBrainpoolP256r1,
+        CompositeMLDsaAlgorithm.MLDsa44WithRSA2048Pss,
+        CompositeMLDsaAlgorithm.MLDsa44WithRSA2048Pkcs15,
+        CompositeMLDsaAlgorithm.MLDsa44WithEd25519,
+        CompositeMLDsaAlgorithm.MLDsa44WithECDsaP256,
+        CompositeMLDsaAlgorithm.MLDsa65WithRSA4096Pss,
+        CompositeMLDsaAlgorithm.MLDsa87WithECDsaBrainpoolP384r1,
+        CompositeMLDsaAlgorithm.MLDsa87WithECDsaP384,
+        CompositeMLDsaAlgorithm.MLDsa87WithECDsaP521,
+        CompositeMLDsaAlgorithm.MLDsa87WithEd448,
+        CompositeMLDsaAlgorithm.MLDsa87WithRSA3072Pss,
+        CompositeMLDsaAlgorithm.MLDsa65WithRSA3072Pss,
+        CompositeMLDsaAlgorithm.MLDsa65WithRSA4096Pkcs15,
+    ]).ToDictionary(a => a.Name);
+#pragma warning restore SYSLIB5006
+
     public static TheoryData<string, string, string> GetPemCertificateTestData()
     {
         var data = new TheoryData<string, string, string>();
@@ -695,29 +739,24 @@ public class KestrelConfigurationLoaderTests
 #pragma warning disable SYSLIB5006
         if (MLDsa.IsSupported)
         {
-            algorithms.AddRange([
-                "MLDsa44",
-                "MLDsa65",
-                "MLDsa87",
-            ]);
+            algorithms.AddRange(_mlDsaAlgorithms.Keys);
         }
 
         if (SlhDsa.IsSupported)
         {
-            algorithms.AddRange([
-                "SlhDsaSha2_128s",
-                "SlhDsaSha2_128f",
-                "SlhDsaSha2_192s",
-                "SlhDsaSha2_192f",
-                "SlhDsaSha2_256s",
-                "SlhDsaSha2_256f",
-                "SlhDsaShake_128s",
-                "SlhDsaShake_128f",
-                "SlhDsaShake_192s",
-                "SlhDsaShake_192f",
-                "SlhDsaShake_256s",
-                "SlhDsaShake_256f"
-            ]);
+            algorithms.AddRange(_slhDsaAlgorithms.Keys);
+        }
+
+        // Composite ML-DSA certificate generation is not supported at the time
+        // of writing, so we skip it.
+        // When it gets implemented in the future, simply remove the SkipCompositeMLDsa
+        // condition to include it in the tests.
+        const bool SkipCompositeMLDsa = true;
+        if (CompositeMLDsa.IsSupported && !SkipCompositeMLDsa)
+        {
+            algorithms.AddRange(_compositeMLDsaAlgorithms
+                .Where(kvp => CompositeMLDsa.IsAlgorithmSupported(kvp.Value))
+                .Select(kvp => kvp.Key));
         }
 #pragma warning restore SYSLIB5006
 
@@ -840,63 +879,34 @@ public class KestrelConfigurationLoaderTests
                 }
                 break;
 
-            case "MLDsa44":
-            case "MLDsa65":
-            case "MLDsa87":
 #pragma warning disable SYSLIB5006
-                var mlDsaAlgorithm = algorithmType switch
-                {
-                    "MLDsa44" => MLDsaAlgorithm.MLDsa44,
-                    "MLDsa65" => MLDsaAlgorithm.MLDsa65,
-                    "MLDsa87" => MLDsaAlgorithm.MLDsa87,
-                    _ => throw new ArgumentException($"Unknown ML-DSA variant: {algorithmType}")
-                };
+            case var x when _mlDsaAlgorithms.TryGetValue(x, out var mlDsaAlgorithm):
                 using (var mlDsa = MLDsa.GenerateKey(mlDsaAlgorithm))
                 {
                     var request = new CertificateRequest(distinguishedName, mlDsa);
                     certificate = CreateTestCertificate(request, sanBuilder);
                     keyPem = ExportMLDsaKeyToPem(mlDsa, keyPassword);
                 }
-#pragma warning restore SYSLIB5006
                 break;
 
-            case "SlhDsaSha2_128s":
-            case "SlhDsaSha2_128f":
-            case "SlhDsaSha2_192s":
-            case "SlhDsaSha2_192f":
-            case "SlhDsaSha2_256s":
-            case "SlhDsaSha2_256f":
-            case "SlhDsaShake_128s":
-            case "SlhDsaShake_128f":
-            case "SlhDsaShake_192s":
-            case "SlhDsaShake_192f":
-            case "SlhDsaShake_256s":
-            case "SlhDsaShake_256f":
-#pragma warning disable SYSLIB5006
-                var slhDsaAlgorithm = algorithmType switch
-                {
-                    "SlhDsaSha2_128s" => SlhDsaAlgorithm.SlhDsaSha2_128s,
-                    "SlhDsaSha2_128f" => SlhDsaAlgorithm.SlhDsaSha2_128f,
-                    "SlhDsaSha2_192s" => SlhDsaAlgorithm.SlhDsaSha2_192s,
-                    "SlhDsaSha2_192f" => SlhDsaAlgorithm.SlhDsaSha2_192f,
-                    "SlhDsaSha2_256s" => SlhDsaAlgorithm.SlhDsaSha2_256s,
-                    "SlhDsaSha2_256f" => SlhDsaAlgorithm.SlhDsaSha2_256f,
-                    "SlhDsaShake_128s" => SlhDsaAlgorithm.SlhDsaShake128s,
-                    "SlhDsaShake_128f" => SlhDsaAlgorithm.SlhDsaShake128f,
-                    "SlhDsaShake_192s" => SlhDsaAlgorithm.SlhDsaShake192s,
-                    "SlhDsaShake_192f" => SlhDsaAlgorithm.SlhDsaShake192f,
-                    "SlhDsaShake_256s" => SlhDsaAlgorithm.SlhDsaShake256s,
-                    "SlhDsaShake_256f" => SlhDsaAlgorithm.SlhDsaShake256f,
-                    _ => throw new ArgumentException($"Unknown SLH-DSA variant: {algorithmType}")
-                };
+            case var x when _slhDsaAlgorithms.TryGetValue(x, out var slhDsaAlgorithm):
                 using (var slhDsa = SlhDsa.GenerateKey(slhDsaAlgorithm))
                 {
                     var request = new CertificateRequest(distinguishedName, slhDsa);
                     certificate = CreateTestCertificate(request, sanBuilder);
                     keyPem = ExportSlhDsaKeyToPem(slhDsa, keyPassword);
                 }
-#pragma warning restore SYSLIB5006
                 break;
+
+            case var x when _compositeMLDsaAlgorithms.TryGetValue(x, out var compositeMLDsaAlgorithm):
+                using (var compositeMLDsa = CompositeMLDsa.GenerateKey(compositeMLDsaAlgorithm))
+                {
+                    var request = new CertificateRequest(distinguishedName, compositeMLDsa);
+                    certificate = CreateTestCertificate(request, sanBuilder);
+                    keyPem = ExportCompositeMLDsaKeyToPem(compositeMLDsa, keyPassword);
+                }
+                break;
+#pragma warning restore SYSLIB5006
 
             default:
                 throw new ArgumentException($"Unknown algorithm type: {algorithmType}");
@@ -951,6 +961,14 @@ public class KestrelConfigurationLoaderTests
             ? slhDsa.ExportPkcs8PrivateKeyPem()
             : slhDsa.ExportEncryptedPkcs8PrivateKeyPem(password.AsSpan(), new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100_000));
     }
+
+    private static string ExportCompositeMLDsaKeyToPem(CompositeMLDsa compositeMLDsa, string password)
+    {
+        return password is null
+            ? compositeMLDsa.ExportPkcs8PrivateKeyPem()
+            : compositeMLDsa.ExportEncryptedPkcs8PrivateKeyPem(password.AsSpan(), new PbeParameters(PbeEncryptionAlgorithm.Aes256Cbc, HashAlgorithmName.SHA256, 100_000));
+    }
+
 #pragma warning restore SYSLIB5006
 
     [Fact]
