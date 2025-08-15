@@ -1933,7 +1933,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                         app.UseRouting();
                         app.UseEndpoints(endpoints =>
                         {
-                            void AddChallengeAndForbidEndpionts(IEndpointRouteBuilder routeGroup)
+                            void AddChallengeAndForbidEndpoints(IEndpointRouteBuilder routeGroup)
                             {
                                 routeGroup.MapGet("/challenge", async context =>
                                 {
