@@ -5,6 +5,7 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using System.Text.Json;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 
@@ -57,10 +58,18 @@ namespace Microsoft.AspNetCore.Components.Server;
 //  * If a marker can't be unprotected we will fail early. We know that the marker was tampered with and can't be trusted.
 internal sealed partial class ServerComponentDeserializer : IServerComponentDeserializer
 {
+    private static readonly RootTypeCache _rootTypeCache = new();
     private readonly IDataProtector _dataProtector;
     private readonly ILogger<ServerComponentDeserializer> _logger;
-    private readonly RootTypeCache _RootTypeCache;
     private readonly ComponentParameterDeserializer _parametersDeserializer;
+
+    static ServerComponentDeserializer()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += _rootTypeCache.Clear;
+        }
+    }
 
     // The following fields are only used in TryDeserializeSingleComponentDescriptor.
     // The TryDeserializeComponentDescriptorCollection method uses a stateless
@@ -72,7 +81,6 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     public ServerComponentDeserializer(
         IDataProtectionProvider dataProtectionProvider,
         ILogger<ServerComponentDeserializer> logger,
-        RootTypeCache RootTypeCache,
         ComponentParameterDeserializer parametersDeserializer)
     {
         // When we protect the data we use a time-limited data protector with the
@@ -87,7 +95,6 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
             .ToTimeLimitedDataProtector();
 
         _logger = logger;
-        _RootTypeCache = RootTypeCache;
         _parametersDeserializer = parametersDeserializer;
     }
 
@@ -206,7 +213,7 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
     private bool TryDeserializeComponentTypeAndParameters(ServerComponent serverComponent, [NotNullWhen(true)] out Type? componentType, out ParameterView parameters)
     {
         parameters = default;
-        componentType = _RootTypeCache
+        componentType = _rootTypeCache
             .GetRootType(serverComponent.AssemblyName, serverComponent.TypeName);
 
         if (componentType == null)
