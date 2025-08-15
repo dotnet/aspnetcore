@@ -114,6 +114,25 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         const string SlhDsaShake_256sOid = "2.16.840.1.101.3.4.3.30";
         const string SlhDsaShake_256fOid = "2.16.840.1.101.3.4.3.31";
 
+        const string MLDsa44WithRSA2048PssPreHashSha256Oid = "2.16.840.1.114027.80.9.1.0";
+        const string MLDsa44WithRSA2048Pkcs15PreHashSha256Oid = "2.16.840.1.114027.80.9.1.1";
+        const string MLDsa44WithEd25519PreHashSha512Oid = "2.16.840.1.114027.80.9.1.2";
+        const string MLDsa44WithECDsaP256PreHashSha256Oid = "2.16.840.1.114027.80.9.1.3";
+        const string MLDsa65WithRSA3072PssPreHashSha512Oid = "2.16.840.1.114027.80.9.1.4";
+        const string MLDsa65WithRSA3072Pkcs15PreHashSha512Oid = "2.16.840.1.114027.80.9.1.5";
+        const string MLDsa65WithRSA4096PssPreHashSha512Oid = "2.16.840.1.114027.80.9.1.6";
+        const string MLDsa65WithRSA4096Pkcs15PreHashSha512Oid = "2.16.840.1.114027.80.9.1.7";
+        const string MLDsa65WithECDsaP256PreHashSha512Oid = "2.16.840.1.114027.80.9.1.8";
+        const string MLDsa65WithECDsaP384PreHashSha512Oid = "2.16.840.1.114027.80.9.1.9";
+        const string MLDsa65WithECDsaBrainpoolP256r1PreHashSha512Oid = "2.16.840.1.114027.80.9.1.10";
+        const string MLDsa65WithEd25519PreHashSha512Oid = "2.16.840.1.114027.80.9.1.11";
+        const string MLDsa87WithECDsaP384PreHashSha512Oid = "2.16.840.1.114027.80.9.1.12";
+        const string MLDsa87WithECDsaBrainpoolP384r1PreHashSha512Oid = "2.16.840.1.114027.80.9.1.13";
+        const string MLDsa87WithEd448PreHashShake256_512Oid = "2.16.840.1.114027.80.9.1.14";
+        const string MLDsa87WithRSA3072PssPreHashSha512Oid = "2.16.840.1.114027.80.9.1.15";
+        const string MLDsa87WithRSA4096PssPreHashSha512Oid = "2.16.840.1.114027.80.9.1.16";
+        const string MLDsa87WithECDsaP521PreHashSha512Oid = "2.16.840.1.114027.80.9.1.17";
+
         // Duplication is required here because there are separate CopyWithPrivateKey methods for each algorithm.
         var keyText = File.ReadAllText(keyPath);
         switch (certificate.PublicKey.Oid.Value)
@@ -200,6 +219,36 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
                         throw CreateErrorGettingPrivateKeyException(keyPath, ex);
                     }
                 }
+            case MLDsa44WithRSA2048PssPreHashSha256Oid:
+            case MLDsa44WithRSA2048Pkcs15PreHashSha256Oid:
+            case MLDsa44WithEd25519PreHashSha512Oid:
+            case MLDsa44WithECDsaP256PreHashSha256Oid:
+            case MLDsa65WithRSA3072PssPreHashSha512Oid:
+            case MLDsa65WithRSA3072Pkcs15PreHashSha512Oid:
+            case MLDsa65WithRSA4096PssPreHashSha512Oid:
+            case MLDsa65WithRSA4096Pkcs15PreHashSha512Oid:
+            case MLDsa65WithECDsaP256PreHashSha512Oid:
+            case MLDsa65WithECDsaP384PreHashSha512Oid:
+            case MLDsa65WithECDsaBrainpoolP256r1PreHashSha512Oid:
+            case MLDsa65WithEd25519PreHashSha512Oid:
+            case MLDsa87WithECDsaP384PreHashSha512Oid:
+            case MLDsa87WithECDsaBrainpoolP384r1PreHashSha512Oid:
+            case MLDsa87WithEd448PreHashShake256_512Oid:
+            case MLDsa87WithRSA3072PssPreHashSha512Oid:
+            case MLDsa87WithRSA4096PssPreHashSha512Oid:
+            case MLDsa87WithECDsaP521PreHashSha512Oid:
+                {
+                    using var compositeMLDsa = ImportCompositeMLDsaKeyFromFile(keyText, password);
+
+                    try
+                    {
+                        return certificate.CopyWithPrivateKey(compositeMLDsa);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw CreateErrorGettingPrivateKeyException(keyPath, ex);
+                    }
+                }
 #pragma warning restore SYSLIB5006 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             default:
                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, CoreStrings.UnrecognizedCertificateKeyOid, certificate.PublicKey.Oid.Value));
@@ -256,6 +305,19 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         else
         {
             return SlhDsa.ImportFromEncryptedPem(keyText, password);
+        }
+    }
+
+    [Experimental("SYSLIB5006")]
+    private static CompositeMLDsa ImportCompositeMLDsaKeyFromFile(string keyText, string? password)
+    {
+        if (password == null)
+        {
+            return CompositeMLDsa.ImportFromPem(keyText);
+        }
+        else
+        {
+            return CompositeMLDsa.ImportFromEncryptedPem(keyText, password);
         }
     }
 
