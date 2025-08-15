@@ -602,15 +602,16 @@ internal sealed class Http3Connection : IHttp3StreamLifetimeHandler, IRequestPro
 
         // Check whether there is an existing HTTP/3 stream on the transport stream.
         // A stream will only be cached if the transport stream itself is reused.
-        if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s))
+        if (!persistentStateFeature.State.TryGetValue(StreamPersistentStateKey, out var s) ||
+            s is not Http3Stream<TContext> { CanReuse: true } reusableStream)
         {
             stream = new Http3Stream<TContext>(application, CreateHttpStreamContext(streamContext));
             persistentStateFeature.State.Add(StreamPersistentStateKey, stream);
         }
         else
         {
-            stream = (Http3Stream<TContext>)s!;
-            stream.InitializeWithExistingContext(streamContext.Transport);
+            reusableStream.InitializeWithExistingContext(streamContext.Transport);
+            stream = reusableStream;
         }
 
         _streamLifetimeHandler.OnStreamCreated(stream);

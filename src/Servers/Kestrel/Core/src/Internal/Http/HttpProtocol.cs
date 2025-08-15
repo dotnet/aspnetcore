@@ -407,20 +407,18 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
 
         _manuallySetRequestAbortToken = null;
 
-        // Lock to prevent CancelRequestAbortedToken from attempting to cancel a disposed CTS.
-        CancellationTokenSource? localAbortCts = null;
-
         lock (_abortLock)
         {
             _preventRequestAbortedCancellation = false;
-            if (_abortedCts?.TryReset() == false)
+
+            // If the connection has already been aborted, allow that to be observed during the next request.
+            if (!_connectionAborted && _abortedCts is not null)
             {
-                localAbortCts = _abortedCts;
-                _abortedCts = null;
+                // _connectionAborted is terminal and only set inside the _abortLock, so if it isn't set here,
+                // it has not been canceled yet.
+                Trace.Assert(_abortedCts.TryReset());
             }
         }
-
-        localAbortCts?.Dispose();
 
         Output?.Reset();
 
@@ -760,7 +758,7 @@ internal abstract partial class HttpProtocol : IHttpResponseControl
                 }
                 else if (!HasResponseStarted)
                 {
-                    // If the request was aborted and no response was sent, we use status code 499 for logging                    
+                    // If the request was aborted and no response was sent, we use status code 499 for logging
                     StatusCode = StatusCodes.Status499ClientClosedRequest;
                 }
             }
