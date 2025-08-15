@@ -474,7 +474,6 @@ public class CircuitPersistenceManagerTest
     private static ServerComponentDeserializer CreateDeserializer(EphemeralDataProtectionProvider dataProtectionProvider) => new ServerComponentDeserializer(
                     dataProtectionProvider,
                     NullLoggerFactory.Instance.CreateLogger<ServerComponentDeserializer>(),
-                    new RootTypeCache(),
                     new ComponentParameterDeserializer(
                         NullLoggerFactory.Instance.CreateLogger<ComponentParameterDeserializer>(),
                         new ComponentParametersTypeCache()));
