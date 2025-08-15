@@ -169,7 +169,9 @@ public static class WebHostBuilderExtensions
     /// <param name="applicationBasePath">The root of the app's directory.</param>
     /// <param name="solutionNames">The names of the solution files to make the content root relative to. If empty, defaults to *.sln and *.slnx.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
     public static IWebHostBuilder UseSolutionRelativeContentRoot(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         this IWebHostBuilder builder,
         string solutionRelativePath,
         string applicationBasePath,
