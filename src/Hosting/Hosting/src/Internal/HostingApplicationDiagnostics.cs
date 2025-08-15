@@ -451,9 +451,9 @@ internal sealed class HostingApplicationDiagnostics
         {
             creationTags.Add(HostingTelemetryHelpers.AttributeServerAddress, request.Host.Host);
 
-            if (request.Host.Port.HasValue)
+            if (HostingTelemetryHelpers.TryGetServerPort(request.Host, request.Scheme, out var port))
             {
-                creationTags.Add(HostingTelemetryHelpers.AttributeServerPort, request.Host.Port.Value);
+                creationTags.Add(HostingTelemetryHelpers.AttributeServerPort, port);
             }
         }
 

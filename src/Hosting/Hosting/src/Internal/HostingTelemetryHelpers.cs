@@ -38,6 +38,35 @@ internal static class HostingTelemetryHelpers
         KeyValuePair.Create(HttpMethods.Trace, HttpMethods.Trace)
     ], StringComparer.OrdinalIgnoreCase);
 
+    // Boxed port values for HTTP and HTTPS.
+    private static readonly object HttpPort = 80;
+    private static readonly object HttpsPort = 443;
+
+    public static bool TryGetServerPort(HostString host, string scheme, [NotNullWhen(true)] out object? port)
+    {
+        if (host.Port.HasValue)
+        {
+            port = host.Port.Value;
+            return true;
+        }
+
+        // If the port is not specified, use the default port for the scheme.
+        if (string.Equals(scheme, "http", StringComparison.OrdinalIgnoreCase))
+        {
+            port = HttpPort;
+            return true;
+        }
+        else if (string.Equals(scheme, "https", StringComparison.OrdinalIgnoreCase))
+        {
+            port = HttpsPort;
+            return true;
+        }
+
+        // Unknown scheme, no default port.
+        port = null;
+        return false;
+    }
+
     public static object GetBoxedStatusCode(int statusCode)
     {
         object[] boxes = BoxedStatusCodes;
