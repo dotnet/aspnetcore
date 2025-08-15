@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
@@ -169,9 +170,8 @@ public static class WebHostBuilderExtensions
     /// <param name="applicationBasePath">The root of the app's directory.</param>
     /// <param name="solutionNames">The names of the solution files to make the content root relative to. If empty, defaults to *.sln and *.slnx.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads", Justification = "Required to maintain compatibility")]
     public static IWebHostBuilder UseSolutionRelativeContentRoot(
-#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         this IWebHostBuilder builder,
         string solutionRelativePath,
         string applicationBasePath,
