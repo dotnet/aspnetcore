@@ -440,9 +440,9 @@ internal sealed class HostingApplicationDiagnostics
         // The tags here are set when the activity is created. They can be used in sampling decisions.
         // Most values in semantic conventions that are present at creation are specified:
         // https://github.com/open-telemetry/semantic-conventions/blob/27735ccca3746d7bb7fa061dfb73d93bcbae2b6e/docs/http/http-spans.md#L581-L592
-        // Missing valuse are:
-        // -url.query (need configuration around redaction to do properly)
-        // -http.request.header.<key>
+        // Missing values recommended by the spec are:
+        // - url.query (need configuration around redaction to do properly)
+        // - http.request.header.<key>
 
         var request = httpContext.Request;
         var creationTags = new TagList();
