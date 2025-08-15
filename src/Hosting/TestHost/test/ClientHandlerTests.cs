@@ -699,7 +699,9 @@ public class ClientHandlerTests
                     .UseTestServer()
                     .ConfigureServices(services =>
                     {
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
                         services.AddSingleton<ILogger<IWebHost>>(logger);
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
                     })
                     .Configure(app =>
                     {
@@ -718,7 +720,9 @@ public class ClientHandlerTests
         var result = await server.CreateClient().GetStringAsync("/");
     }
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private class VerifierLogger : ILogger<IWebHost>
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
     {
         public IDisposable BeginScope<TState>(TState state) => new NoopDispoasble();
 

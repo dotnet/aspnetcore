@@ -161,11 +161,15 @@ public class TestingInfrastructureInheritanceTests
             base.ConfigureWebHost(builder);
         }
 
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
+#pragma warning disable CS0672 // Member overrides obsolete member
         protected override TestServer CreateServer(IWebHostBuilder builder)
+#pragma warning restore CS0672 // Member overrides obsolete member
         {
             CreateServerIWebHostBuilderCalled = true;
             return base.CreateServer(builder);
         }
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 
         protected override TestServer CreateServer(IServiceProvider serviceProvider)
         {
