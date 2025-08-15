@@ -323,7 +323,11 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
         Services.AddSingleton(_jsMethods);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
-        Services.AddSingleton(_ => _rootComponentCache ?? new());
+        Services.AddSingleton(serviceProvider =>
+        {
+            var cache = _rootComponentCache ?? new RootTypeCache();
+            return cache;
+        });
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         Services.AddSupplyValueFromPersistentComponentStateProvider();

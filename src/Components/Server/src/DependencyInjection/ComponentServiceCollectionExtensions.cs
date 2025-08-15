@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.BlazorPack;
@@ -67,7 +68,12 @@ public static class ComponentServiceCollectionExtensions
         services.TryAddSingleton<CircuitMetrics>();
         services.TryAddSingleton<ICircuitFactory, CircuitFactory>();
         services.TryAddSingleton<ICircuitHandleRegistry, CircuitHandleRegistry>();
-        services.TryAddSingleton<RootTypeCache>();
+        services.TryAddSingleton<RootTypeCache>(serviceProvider =>
+        {
+            var cache = new RootTypeCache();
+            RegisterForHotReload(cache);
+            return cache;
+        });
         services.TryAddSingleton<ComponentParameterDeserializer>();
         services.TryAddSingleton<ComponentParametersTypeCache>();
         services.TryAddSingleton<CircuitIdFactory>();
@@ -122,6 +128,14 @@ public static class ComponentServiceCollectionExtensions
         }
 
         return builder;
+    }
+
+    private static void RegisterForHotReload(RootTypeCache cache)
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += cache.Clear;
+        }
     }
 
     private sealed class DefaultServerSideBlazorBuilder : IServerSideBlazorBuilder

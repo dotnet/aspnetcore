@@ -4,64 +4,22 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
-#if COMPONENTS
-using Microsoft.AspNetCore.Components.HotReload;
-#endif
 
-#if COMPONENTS
-namespace Microsoft.AspNetCore.Components.Infrastructure;
-#else
 namespace Microsoft.AspNetCore.Components;
-#endif
 
 // A cache for root component types
 internal sealed class RootTypeCache
 {
-#if COMPONENTS
-    private static readonly List<WeakReference> _instances = new();
-
-    static RootTypeCache()
-    {
-        if (HotReloadManager.Default.MetadataUpdateSupported)
-        {
-            HotReloadManager.Default.OnDeltaApplied += ClearCache;
-        }
-    }
-#endif
-
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
 
     public RootTypeCache()
     {
-#if COMPONENTS
-        lock (_instances)
-        {
-            _instances.Add(new WeakReference(this));
-        }
-#endif
     }
 
-#if COMPONENTS
-    private static void ClearCache()
+    internal void Clear()
     {
-        lock (_instances)
-        {
-            for (int i = _instances.Count - 1; i >= 0; i--)
-            {
-                var weakRef = _instances[i];
-                if (weakRef.Target is RootTypeCache instance)
-                {
-                    instance._typeToKeyLookUp.Clear();
-                }
-                else
-                {
-                    // Remove dead reference
-                    _instances.RemoveAt(i);
-                }
-            }
-        }
+        _typeToKeyLookUp.Clear();
     }
-#endif
 
     public Type? GetRootType(string assembly, string type)
     {
