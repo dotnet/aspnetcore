@@ -79,6 +79,14 @@ namespace Microsoft.Extensions.Validation.Generated
                 );
                 return true;
             }
+            if (type == typeof(global::BasePolymorphicType))
+            {
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::BasePolymorphicType),
+                    members: []
+                );
+                return true;
+            }
             if (type == typeof(global::ComplexType))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
@@ -102,7 +110,21 @@ namespace Microsoft.Extensions.Validation.Generated
                             name: "ObjectProperty",
                             displayName: "ObjectProperty"
                         ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexType),
+                            propertyType: typeof(global::BasePolymorphicType),
+                            name: "PolymorphicProperty",
+                            displayName: "PolymorphicProperty"
+                        ),
                     ]
+                );
+                return true;
+            }
+            if (type == typeof(global::DerivedPolymorphicType))
+            {
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::DerivedPolymorphicType),
+                    members: []
                 );
                 return true;
             }

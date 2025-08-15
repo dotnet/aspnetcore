@@ -47,6 +47,8 @@ public class ComplexType : IPoint
     public int Y { get; set; } = 10;
 
     public NestedType ObjectProperty { get; set; } = new NestedType();
+
+    public BasePolymorphicType PolymorphicProperty { get; set; } = new DerivedPolymorphicType();
 }
 
 // This class does not have any property-level validation attributes, but it has a class-level validation attribute.
@@ -57,6 +59,22 @@ public class NestedType : IPoint
     public int X { get; set; } = 10;
 
     public int Y { get; set; } = 10;
+}
+
+[ValidatableType]
+[SumLimit]
+public class BasePolymorphicType : IPoint
+{
+    public int X { get; set; } = 5;
+
+    public int Y { get; set; } = 5;
+}
+
+[ValidatableType]
+[ProductLimit]
+public class DerivedPolymorphicType : BasePolymorphicType
+{
+    public int Z { get; set; } = 2;
 }
 
 public interface IPoint
@@ -79,6 +97,21 @@ public class SumLimitAttribute : ValidationAttribute
         return ValidationResult.Success;
     }
 }
+
+public class ProductLimitAttribute : ValidationAttribute
+{
+    protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
+    {
+        if (value is DerivedPolymorphicType derived)
+        {
+            if (derived.X * derived.Y * derived.Z > 100)
+            {
+                return new ValidationResult($"Product is too high");
+            }
+        }
+        return ValidationResult.Success;
+    }
+}
 """;
         await Verify(source, out var compilation);
         await VerifyValidatableType(compilation, "ComplexType", async (validationOptions, type) =>
@@ -89,6 +122,10 @@ public class SumLimitAttribute : ValidationAttribute
             await ValidClassAttributeCheck_DoesNotProduceError(validatableTypeInfo);
             await InvalidClassAttributeCheck_ProducesError(validatableTypeInfo);
             await InvalidNestedClassAttributeCheck_ProducesError_AndShortCircuits(validatableTypeInfo);
+            await ValidPolymorphicClassAttributeCheck_DoesNotProduceError(validatableTypeInfo);
+            await InvalidPolymorphicBaseClassAttributeCheck_ProducesError(validatableTypeInfo);
+            await InvalidPolymorphicDerivedClassAttributeCheck_ProducesError(validatableTypeInfo);
+            await InvalidPolymorphicBothClassAttributesCheck_ProducesError(validatableTypeInfo);
 
             async Task InvalidPropertyAttributeCheck_ProducesError_AndShortCircuits(IValidatableInfo validatableInfo)
             {
@@ -164,6 +201,105 @@ public class SumLimitAttribute : ValidationAttribute
                 var classAttributeError = Assert.Single(context.ValidationErrors);
                 Assert.Equal("ObjectProperty", classAttributeError.Key);
                 Assert.Equal("Sum is too high", classAttributeError.Value.Single());
+            }
+
+            async Task ValidPolymorphicClassAttributeCheck_DoesNotProduceError(IValidatableInfo validatableInfo)
+            {
+                var instance = Activator.CreateInstance(type);
+                var polymorphicPropertyInstance = type.GetProperty("PolymorphicProperty").GetValue(instance);
+                // Set valid values that satisfy both base and derived validation
+                polymorphicPropertyInstance.GetType().GetProperty("X")?.SetValue(polymorphicPropertyInstance, 3);
+                polymorphicPropertyInstance.GetType().GetProperty("Y")?.SetValue(polymorphicPropertyInstance, 3);
+                polymorphicPropertyInstance.GetType().GetProperty("Z")?.SetValue(polymorphicPropertyInstance, 2);
+
+                var context = new ValidateContext
+                {
+                    ValidationOptions = validationOptions,
+                    ValidationContext = new ValidationContext(instance)
+                };
+
+                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+
+                Assert.Null(context.ValidationErrors);
+            }
+
+            async Task InvalidPolymorphicBaseClassAttributeCheck_ProducesError(IValidatableInfo validatableInfo)
+            {
+                var instance = Activator.CreateInstance(type);
+                var polymorphicPropertyInstance = type.GetProperty("PolymorphicProperty").GetValue(instance);
+                // Set values that violate base class SumLimit validation (X + Y > 20) but not ProductLimit (X * Y * Z <= 100)
+                polymorphicPropertyInstance.GetType().GetProperty("X")?.SetValue(polymorphicPropertyInstance, 15);
+                polymorphicPropertyInstance.GetType().GetProperty("Y")?.SetValue(polymorphicPropertyInstance, 6);
+                polymorphicPropertyInstance.GetType().GetProperty("Z")?.SetValue(polymorphicPropertyInstance, 1); // Sum: 21 > 20, Product: 90 <= 100
+
+                var context = new ValidateContext
+                {
+                    ValidationOptions = validationOptions,
+                    ValidationContext = new ValidationContext(instance)
+                };
+
+                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+
+                Assert.NotNull(context.ValidationErrors);
+                var classAttributeError = Assert.Single(context.ValidationErrors);
+                Assert.Equal("PolymorphicProperty", classAttributeError.Key);
+                Assert.Equal("Sum is too high", classAttributeError.Value.Single());
+            }
+
+            async Task InvalidPolymorphicDerivedClassAttributeCheck_ProducesError(IValidatableInfo validatableInfo)
+            {
+                var instance = Activator.CreateInstance(type);
+                var polymorphicPropertyInstance = type.GetProperty("PolymorphicProperty").GetValue(instance);
+                // Set values that violate derived class ProductLimit validation (X * Y * Z > 100) but not SumLimit (X + Y <= 20)
+                polymorphicPropertyInstance.GetType().GetProperty("X")?.SetValue(polymorphicPropertyInstance, 5);
+                polymorphicPropertyInstance.GetType().GetProperty("Y")?.SetValue(polymorphicPropertyInstance, 5);
+                polymorphicPropertyInstance.GetType().GetProperty("Z")?.SetValue(polymorphicPropertyInstance, 5); // Sum: 10 <= 20, Product: 125 > 100
+
+                var context = new ValidateContext
+                {
+                    ValidationOptions = validationOptions,
+                    ValidationContext = new ValidationContext(instance)
+                };
+
+                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+
+                Assert.NotNull(context.ValidationErrors);
+                var classAttributeError = Assert.Single(context.ValidationErrors);
+                Assert.Equal("PolymorphicProperty", classAttributeError.Key);
+                Assert.Equal("Product is too high", classAttributeError.Value.Single());
+            }
+
+            async Task InvalidPolymorphicBothClassAttributesCheck_ProducesError(IValidatableInfo validatableInfo)
+            {
+                var instance = Activator.CreateInstance(type);
+                var polymorphicPropertyInstance = type.GetProperty("PolymorphicProperty").GetValue(instance);
+                // Set values that violate both base and derived class validations
+                polymorphicPropertyInstance.GetType().GetProperty("X")?.SetValue(polymorphicPropertyInstance, 11);
+                polymorphicPropertyInstance.GetType().GetProperty("Y")?.SetValue(polymorphicPropertyInstance, 12);
+                polymorphicPropertyInstance.GetType().GetProperty("Z")?.SetValue(polymorphicPropertyInstance, 5); // Sum: 23 > 20, Product: 660 > 100
+
+                var context = new ValidateContext
+                {
+                    ValidationOptions = validationOptions,
+                    ValidationContext = new ValidationContext(instance)
+                };
+
+                await validatableTypeInfo.ValidateAsync(instance, context, CancellationToken.None);
+
+                Assert.NotNull(context.ValidationErrors);
+                Assert.Collection(context.ValidationErrors, kvp =>
+                {
+                    Assert.Equal("PolymorphicProperty", kvp.Key);
+                    Assert.Collection(kvp.Value,
+                        error =>
+                        {
+                            Assert.Equal("Product is too high", error);
+                        },
+                        error =>
+                        {
+                            Assert.Equal("Sum is too high", error);
+                        });
+                });
             }
         });
     }
