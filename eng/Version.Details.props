@@ -10,13 +10,13 @@ This file should be imported by eng/Versions.props
     <dotnetefPackageVersion>10.0.0-rc.1.25414.101</dotnetefPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.0-rc.1.25414.101</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftBclTimeProviderPackageVersion>10.0.0-rc.1.25414.101</MicrosoftBclTimeProviderPackageVersion>
-    <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.25414.101</MicrosoftDotNetArcadeSdkPackageVersion>
-    <MicrosoftDotNetBuildTasksArchivesPackageVersion>10.0.0-beta.25414.101</MicrosoftDotNetBuildTasksArchivesPackageVersion>
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.25414.101</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>10.0.0-beta.25414.101</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
-    <MicrosoftDotNetHelixSdkPackageVersion>10.0.0-beta.25414.101</MicrosoftDotNetHelixSdkPackageVersion>
-    <MicrosoftDotNetRemoteExecutorPackageVersion>10.0.0-beta.25414.101</MicrosoftDotNetRemoteExecutorPackageVersion>
-    <MicrosoftDotNetSharedFrameworkSdkPackageVersion>10.0.0-beta.25414.101</MicrosoftDotNetSharedFrameworkSdkPackageVersion>
+    <MicrosoftDotNetArcadeSdkPackageVersion>10.0.0-beta.25414.2</MicrosoftDotNetArcadeSdkPackageVersion>
+    <MicrosoftDotNetBuildTasksArchivesPackageVersion>10.0.0-beta.25414.2</MicrosoftDotNetBuildTasksArchivesPackageVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>10.0.0-beta.25414.2</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>10.0.0-beta.25414.2</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
+    <MicrosoftDotNetHelixSdkPackageVersion>10.0.0-beta.25414.2</MicrosoftDotNetHelixSdkPackageVersion>
+    <MicrosoftDotNetRemoteExecutorPackageVersion>10.0.0-beta.25414.2</MicrosoftDotNetRemoteExecutorPackageVersion>
+    <MicrosoftDotNetSharedFrameworkSdkPackageVersion>10.0.0-beta.25414.2</MicrosoftDotNetSharedFrameworkSdkPackageVersion>
     <MicrosoftEntityFrameworkCorePackageVersion>10.0.0-rc.1.25414.101</MicrosoftEntityFrameworkCorePackageVersion>
     <MicrosoftEntityFrameworkCoreDesignPackageVersion>10.0.0-rc.1.25414.101</MicrosoftEntityFrameworkCoreDesignPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>10.0.0-rc.1.25414.101</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>

@@ -362,31 +362,31 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>992b076e9bc005baa97d3de57dccfa739b50f82e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25414.101">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25414.2">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>992b076e9bc005baa97d3de57dccfa739b50f82e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Archives" Version="10.0.0-beta.25414.101">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Archives" Version="10.0.0-beta.25414.2">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>992b076e9bc005baa97d3de57dccfa739b50f82e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.25414.101">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.25414.2">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>992b076e9bc005baa97d3de57dccfa739b50f82e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="10.0.0-beta.25414.101">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="10.0.0-beta.25414.2">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>992b076e9bc005baa97d3de57dccfa739b50f82e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.25414.101">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.25414.2">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>992b076e9bc005baa97d3de57dccfa739b50f82e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="10.0.0-beta.25414.101">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="10.0.0-beta.25414.2">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>992b076e9bc005baa97d3de57dccfa739b50f82e</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SharedFramework.Sdk" Version="10.0.0-beta.25414.101">
+    <Dependency Name="Microsoft.DotNet.SharedFramework.Sdk" Version="10.0.0-beta.25414.2">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>992b076e9bc005baa97d3de57dccfa739b50f82e</Sha>
     </Dependency>
