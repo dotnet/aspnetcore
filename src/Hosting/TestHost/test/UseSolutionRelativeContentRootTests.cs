@@ -6,7 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.TestHost;
 
-#pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR004 // WebHostBuilder is obsolete
+#pragma warning disable ASPDEPR008 // WebHost is obsolete
 public class UseSolutionRelativeContentRootTests : IDisposable
 {
     private readonly string _tempDirectory;
@@ -195,4 +196,5 @@ public class UseSolutionRelativeContentRootTests : IDisposable
         }
     }
 }
-#pragma warning restore ASPDEPR004 // Type or member is obsolete
+#pragma warning restore ASPDEPR008 // WebHost is obsolete
+#pragma warning disable ASPDEPR004 // WebHostBuilder is obsolete
