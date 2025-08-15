@@ -12,7 +12,7 @@
         ],
         "parameters": [
           {
-            "name": "Id",
+            "name": "id",
             "in": "path",
             "required": true,
             "schema": {
@@ -21,7 +21,7 @@
             }
           },
           {
-            "name": "Name",
+            "name": "name",
             "in": "path",
             "required": true,
             "schema": {
@@ -116,35 +116,6 @@
             "description": "OK",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrentWeather"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/query": {
-      "query": {
-        "tags": [
-          "Test"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrentWeather"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrentWeather"
-                }
-              },
-              "text/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CurrentWeather"
                 }
