@@ -75,7 +75,6 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
         var driver = CSharpGeneratorDriver.Create(generators: [generator.AsSourceGenerator()], parseOptions: ParseOptions);
         return Verifier
             .Verify(driver.RunGeneratorsAndUpdateCompilation(inputCompilation, out compilation, out var diagnostics))
-            .AutoVerify()
             .ScrubLinesWithReplace(line => InterceptsLocationRegex().Replace(line, "[InterceptsLocation]"))
             .UseDirectory(SkipOnHelixAttribute.OnHelix() && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ROOT") is { } workItemRoot
                 ? Path.Combine(workItemRoot, "snapshots")
