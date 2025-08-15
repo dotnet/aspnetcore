@@ -114,24 +114,24 @@ internal sealed class CertificateConfigLoader : ICertificateConfigLoader
         const string SlhDsaShake_256sOid = "2.16.840.1.101.3.4.3.30";
         const string SlhDsaShake_256fOid = "2.16.840.1.101.3.4.3.31";
 
-        const string MLDsa44WithRSA2048PssPreHashSha256Oid = "2.16.840.1.114027.80.9.0";
-        const string MLDsa44WithRSA2048Pkcs15PreHashSha256Oid = "2.16.840.1.114027.80.9.1";
-        const string MLDsa44WithEd25519PreHashSha512Oid = "2.16.840.1.114027.80.9.2";
-        const string MLDsa44WithECDsaP256PreHashSha256Oid = "2.16.840.1.114027.80.9.3";
-        const string MLDsa65WithRSA3072PssPreHashSha512Oid = "2.16.840.1.114027.80.9.4";
-        const string MLDsa65WithRSA3072Pkcs15PreHashSha512Oid = "2.16.840.1.114027.80.9.5";
-        const string MLDsa65WithRSA4096PssPreHashSha512Oid = "2.16.840.1.114027.80.9.6";
-        const string MLDsa65WithRSA4096Pkcs15PreHashSha512Oid = "2.16.840.1.114027.80.9.7";
-        const string MLDsa65WithECDsaP256PreHashSha512Oid = "2.16.840.1.114027.80.9.8";
-        const string MLDsa65WithECDsaP384PreHashSha512Oid = "2.16.840.1.114027.80.9.9";
-        const string MLDsa65WithECDsaBrainpoolP256r1PreHashSha512Oid = "2.16.840.1.114027.80.9.10";
-        const string MLDsa65WithEd25519PreHashSha512Oid = "2.16.840.1.114027.80.9.11";
-        const string MLDsa87WithECDsaP384PreHashSha512Oid = "2.16.840.1.114027.80.9.12";
-        const string MLDsa87WithECDsaBrainpoolP384r1PreHashSha512Oid = "2.16.840.1.114027.80.9.13";
-        const string MLDsa87WithEd448PreHashShake256_512Oid = "2.16.840.1.114027.80.9.14";
-        const string MLDsa87WithRSA3072PssPreHashSha512Oid = "2.16.840.1.114027.80.9.15";
-        const string MLDsa87WithRSA4096PssPreHashSha512Oid = "2.16.840.1.114027.80.9.16";
-        const string MLDsa87WithECDsaP521PreHashSha512Oid = "2.16.840.1.114027.80.9.17";
+        const string MLDsa44WithRSA2048PssPreHashSha256Oid = "2.16.840.1.114027.80.9.1.0";
+        const string MLDsa44WithRSA2048Pkcs15PreHashSha256Oid = "2.16.840.1.114027.80.9.1.1";
+        const string MLDsa44WithEd25519PreHashSha512Oid = "2.16.840.1.114027.80.9.1.2";
+        const string MLDsa44WithECDsaP256PreHashSha256Oid = "2.16.840.1.114027.80.9.1.3";
+        const string MLDsa65WithRSA3072PssPreHashSha512Oid = "2.16.840.1.114027.80.9.1.4";
+        const string MLDsa65WithRSA3072Pkcs15PreHashSha512Oid = "2.16.840.1.114027.80.9.1.5";
+        const string MLDsa65WithRSA4096PssPreHashSha512Oid = "2.16.840.1.114027.80.9.1.6";
+        const string MLDsa65WithRSA4096Pkcs15PreHashSha512Oid = "2.16.840.1.114027.80.9.1.7";
+        const string MLDsa65WithECDsaP256PreHashSha512Oid = "2.16.840.1.114027.80.9.1.8";
+        const string MLDsa65WithECDsaP384PreHashSha512Oid = "2.16.840.1.114027.80.9.1.9";
+        const string MLDsa65WithECDsaBrainpoolP256r1PreHashSha512Oid = "2.16.840.1.114027.80.9.1.10";
+        const string MLDsa65WithEd25519PreHashSha512Oid = "2.16.840.1.114027.80.9.1.11";
+        const string MLDsa87WithECDsaP384PreHashSha512Oid = "2.16.840.1.114027.80.9.1.12";
+        const string MLDsa87WithECDsaBrainpoolP384r1PreHashSha512Oid = "2.16.840.1.114027.80.9.1.13";
+        const string MLDsa87WithEd448PreHashShake256_512Oid = "2.16.840.1.114027.80.9.1.14";
+        const string MLDsa87WithRSA3072PssPreHashSha512Oid = "2.16.840.1.114027.80.9.1.15";
+        const string MLDsa87WithRSA4096PssPreHashSha512Oid = "2.16.840.1.114027.80.9.1.16";
+        const string MLDsa87WithECDsaP521PreHashSha512Oid = "2.16.840.1.114027.80.9.1.17";
 
         // Duplication is required here because there are separate CopyWithPrivateKey methods for each algorithm.
         var keyText = File.ReadAllText(keyPath);
