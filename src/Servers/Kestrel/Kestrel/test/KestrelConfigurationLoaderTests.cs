@@ -686,21 +686,25 @@ public class KestrelConfigurationLoaderTests
     public static TheoryData<string, string, string> GetPemCertificateTestData()
     {
         var data = new TheoryData<string, string, string>();
-        var algorithms = new List<string>
-        {
+        List<string> algorithms = [
             "RSA",
             "ECDsa",
             "DSA",
-            "MLDsa44",
-            "MLDsa65",
-            "MLDsa87"
-        };
+        ];
 
 #pragma warning disable SYSLIB5006
+        if (MLDsa.IsSupported)
+        {
+            algorithms.AddRange([
+                "MLDsa44",
+                "MLDsa65",
+                "MLDsa87",
+            ]);
+        }
+
         if (SlhDsa.IsSupported)
         {
-            algorithms.AddRange(
-            [
+            algorithms.AddRange([
                 "SlhDsaSha2_128s",
                 "SlhDsaSha2_128f",
                 "SlhDsaSha2_192s",
