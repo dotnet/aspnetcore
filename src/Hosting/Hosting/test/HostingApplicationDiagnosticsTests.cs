@@ -1096,16 +1096,9 @@ public class HostingApplicationDiagnosticsTests : LoggedTest
         {
             Headers = new HeaderDictionary()
             {
-                {"traceparent", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"},
-                {"tracestate", "TraceState1"},
-                {"baggage", "Key1=value1, Key2=value2"},
                 {"host", "localhost" }
             },
-            PathBase = "/path_base",
-            Path = "/path",
             Scheme = scheme,
-            Method = "CUSTOM_METHOD",
-            Protocol = "HTTP/1.1"
         });
 
         hostingApplication.CreateContext(features);
