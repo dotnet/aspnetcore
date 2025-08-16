@@ -32,6 +32,7 @@ var app = builder.Build();
 
 app.MapPost("/complex-type-with-json-ignore", (ComplexTypeWithJsonIgnore complexType) => Results.Ok("Passed"!));
 app.MapPost("/record-type-with-json-ignore", (RecordTypeWithJsonIgnore recordType) => Results.Ok("Passed"!));
+app.MapPost("/complex-type-with-json-property-name", (ComplexTypeWithJsonPropertyName complexType) => Results.Ok("Passed"!));
 
 app.Run();
 
@@ -75,6 +76,21 @@ public record CircularReferenceRecord
     public RecordTypeWithJsonIgnore? Parent { get; set; }
     
     public string Name { get; set; } = "test";
+}
+
+public class ComplexTypeWithJsonPropertyName
+{
+    [Range(10, 100)]
+    public int DefaultPropertyName { get; set; } = 10;
+
+    [Range(10, 100)]
+    [JsonPropertyName("custom-property-name")]
+    public int CustomJsonPropertyName { get; set; } = 20;
+
+    [Display(Name = "display-name")]
+    [Range(10, 100)]
+    [JsonPropertyName("custom-property-name-with-display-name")]
+    public int CustomJsonPropertyNameWithDisplayName { get; set; } = 30;
 }
 """;
         await Verify(source, out var compilation);
