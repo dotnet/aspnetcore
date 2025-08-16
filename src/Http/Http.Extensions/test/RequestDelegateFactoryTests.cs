@@ -685,6 +685,34 @@ public partial class RequestDelegateFactoryTests : LoggedTest
     }
 
     [Fact]
+    public async Task RequestDelegateHandlesFromFormStringArrayParameter()
+    {
+        var httpContext = CreateHttpContext();
+        httpContext.Request.Form = new FormCollection(new Dictionary<string, StringValues>
+        {
+            ["form"] = new(new[] { "1", "2", "3" })
+        });
+
+        var factoryResult = RequestDelegateFactory.Create(
+            (HttpContext context, [FromForm(Name = "form")] string[] formValues) =>
+        {
+            context.Items["form"] = formValues;
+        });
+
+        var requestDelegate = factoryResult.RequestDelegate;
+
+        await requestDelegate(httpContext);
+
+        var parameterBindingMetadata = factoryResult.EndpointMetadata
+            .FirstOrDefault(e => e is ParameterBindingMetadata metadata &&
+                metadata.Name == "formValues") as ParameterBindingMetadata;
+
+        Assert.NotNull(parameterBindingMetadata);
+        Assert.Equal(typeof(string[]), parameterBindingMetadata.ParameterInfo.ParameterType);
+        Assert.Equal(new StringValues(new[] { "1", "2", "3" }), httpContext.Items["form"]!);
+    }
+
+    [Fact]
     public async Task RequestDelegateCanAwaitValueTasksThatAreNotImmediatelyCompleted()
     {
         var httpContext = CreateHttpContext();
