@@ -751,7 +751,11 @@ internal sealed class OpenApiDocumentService(
         foreach (var requestFormat in supportedRequestFormats)
         {
             var contentType = requestFormat.MediaType;
-            requestBody.Content[contentType] = new OpenApiMediaType { Schema = await _componentService.GetOrCreateSchemaAsync(document, bodyParameter.Type, scopedServiceProvider, schemaTransformers, bodyParameter, cancellationToken: cancellationToken) };
+            var schema = await _componentService.GetOrCreateSchemaAsync(document, bodyParameter.Type, scopedServiceProvider, schemaTransformers, bodyParameter, cancellationToken: cancellationToken);
+            schema = bodyParameter.ShouldApplyNullableRequestSchema()
+                ? schema.CreateAllOfNullableWrapper()
+                : schema;
+            requestBody.Content[contentType] = new OpenApiMediaType { Schema = schema };
         }
 
         return requestBody;

@@ -465,6 +465,188 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiRequestBody_HandlesNullableParameterWithAllOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        builder.MapPost("/api/nullable-todo", (Todo? todo) => { });
+        builder.MapPost("/api/nullable-point", (Point? point) => { });
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable Todo parameter
+            var todoOperation = document.Paths["/api/nullable-todo"].Operations[HttpMethod.Post];
+            var todoRequestBody = todoOperation.RequestBody;
+            var todoContent = Assert.Single(todoRequestBody.Content);
+            Assert.Equal("application/json", todoContent.Key);
+            var todoSchema = todoContent.Value.Schema;
+            Assert.NotNull(todoSchema.AllOf);
+            Assert.Equal(2, todoSchema.AllOf.Count);
+            Assert.Collection(todoSchema.AllOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Object, item.Type);
+                    Assert.Collection(item.Properties,
+                        property =>
+                        {
+                            Assert.Equal("id", property.Key);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("title", property.Key);
+                            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("completed", property.Key);
+                            Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("createdAt", property.Key);
+                            Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                            Assert.Equal("date-time", property.Value.Format);
+                        });
+                });
+
+            // Verify nullable Point parameter
+            var pointOperation = document.Paths["/api/nullable-point"].Operations[HttpMethod.Post];
+            var pointRequestBody = pointOperation.RequestBody;
+            var pointContent = Assert.Single(pointRequestBody.Content);
+            Assert.Equal("application/json", pointContent.Key);
+            var pointSchema = pointContent.Value.Schema;
+            Assert.NotNull(pointSchema.AllOf);
+            Assert.Equal(2, pointSchema.AllOf.Count);
+            Assert.Collection(pointSchema.AllOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Object, item.Type);
+                    Assert.Collection(item.Properties,
+                        property =>
+                        {
+                            Assert.Equal("x", property.Key);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("y", property.Key);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
+                        });
+                });
+
+            Assert.Equal(["Point", "Todo"], [.. document.Components.Schemas.Keys]);
+            Assert.Collection(document.Components.Schemas.Values,
+                item => Assert.Equal(JsonSchemaType.Object, item.Type),
+                item => Assert.Equal(JsonSchemaType.Object, item.Type));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesNullableCollectionParametersWithAllOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        builder.MapPost("/api/nullable-array", (Todo[]? todos) => { });
+        builder.MapPost("/api/nullable-list", (List<Todo>? todoList) => { });
+        builder.MapPost("/api/nullable-enumerable", (IEnumerable<Todo>? todoEnumerable) => { });
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable array parameter - verify actual behavior with AllOf
+            var arrayOperation = document.Paths["/api/nullable-array"].Operations[HttpMethod.Post];
+            var arrayRequestBody = arrayOperation.RequestBody;
+            var arrayContent = Assert.Single(arrayRequestBody.Content);
+            Assert.Equal("application/json", arrayContent.Key);
+            var arraySchema = arrayContent.Value.Schema;
+            Assert.NotNull(arraySchema.AllOf); // AllOf IS used for nullable collections
+            Assert.Equal(2, arraySchema.AllOf.Count);
+            Assert.Collection(arraySchema.AllOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+
+            // Verify nullable List parameter - verify actual behavior with AllOf
+            var listOperation = document.Paths["/api/nullable-list"].Operations[HttpMethod.Post];
+            var listRequestBody = listOperation.RequestBody;
+            var listContent = Assert.Single(listRequestBody.Content);
+            Assert.Equal("application/json", listContent.Key);
+            var listSchema = listContent.Value.Schema;
+            Assert.NotNull(listSchema.AllOf); // AllOf IS used for nullable collections
+            Assert.Equal(2, listSchema.AllOf.Count);
+            Assert.Collection(listSchema.AllOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+
+            // Verify nullable IEnumerable parameter - verify actual behavior with AllOf
+            var enumerableOperation = document.Paths["/api/nullable-enumerable"].Operations[HttpMethod.Post];
+            var enumerableRequestBody = enumerableOperation.RequestBody;
+            var enumerableContent = Assert.Single(enumerableRequestBody.Content);
+            Assert.Equal("application/json", enumerableContent.Key);
+            var enumerableSchema = enumerableContent.Value.Schema;
+            Assert.NotNull(enumerableSchema.AllOf); // AllOf IS used for nullable collections
+            Assert.Equal(2, enumerableSchema.AllOf.Count);
+            Assert.Collection(enumerableSchema.AllOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+        });
+    }
+
+    [Fact]
     public async Task SupportsNestedTypes()
     {
         // Arrange

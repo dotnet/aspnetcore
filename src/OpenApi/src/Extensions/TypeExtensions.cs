@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.OpenApi;
 
@@ -67,6 +68,30 @@ internal static class TypeExtensions
 
         var nullabilityInfoContext = new NullabilityInfoContext();
         var nullabilityInfo = nullabilityInfoContext.Create(methodInfo.ReturnParameter);
+
+        return nullabilityInfo.WriteState == NullabilityState.Nullable;
+    }
+
+    public static bool ShouldApplyNullableRequestSchema(this ApiParameterDescription apiParameterDescription)
+    {
+        var parameterType = apiParameterDescription.Type;
+        if (parameterType is null)
+        {
+            return false;
+        }
+
+        if (apiParameterDescription.ParameterDescriptor is not IParameterInfoParameterDescriptor { ParameterInfo: { } parameterInfo })
+        {
+            return false;
+        }
+
+        if (parameterType.IsValueType)
+        {
+            return apiParameterDescription.ModelMetadata?.IsNullableValueType ?? false;
+        }
+
+        var nullabilityInfoContext = new NullabilityInfoContext();
+        var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
 
         return nullabilityInfo.WriteState == NullabilityState.Nullable;
     }
