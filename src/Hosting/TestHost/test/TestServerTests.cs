@@ -93,7 +93,9 @@ public class TestServerTests
         // Arrange
         // Act & Assert (Does not throw)
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         new TestServer(new WebHostBuilder().Configure(app => { }));
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
     }
 
@@ -121,7 +123,9 @@ public class TestServerTests
                 throw new InvalidOperationException();
             });
 
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
     }
 
@@ -135,7 +139,9 @@ public class TestServerTests
             .ConfigureTestServices(services => services.AddSingleton(new SimpleService { Message = "OverridesConfigureServices" }))
             .ConfigureTestContainer<ThirdPartyContainer>(container => container.Services.AddSingleton(new TestService { Message = "OverridesConfigureContainer" }));
 
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         var host = new TestServer(builder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         var response = await host.CreateClient().GetStringAsync("/");
@@ -179,8 +185,10 @@ public class TestServerTests
                 throw new InvalidOperationException();
             });
 
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         // Does not throw
         new TestServer(builder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
     }
 
@@ -195,10 +203,12 @@ public class TestServerTests
             {
                 services.AddSingleton(testService);
             });
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         var server = new TestServer(builder);
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         Assert.Equal(testService, server.Host.Services.GetRequiredService<TestService>());
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
     }
 
     [Fact]
@@ -304,7 +314,9 @@ public class TestServerTests
     {
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
         var builder = new WebHostBuilder().UseStartup<CustomContainerStartup>();
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         var server = new TestServer(builder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
         string result = await server.CreateClient().GetStringAsync("/path");
         Assert.Equal("ApplicationServicesEqual:True", result);
@@ -329,7 +341,9 @@ public class TestServerTests
         featureCollection.Set<IServerAddressesFeature>(new ServerAddressesFeature());
 
         // Act
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         new TestServer(builder, featureCollection);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 
         // Assert
         // Is inside configure callback
@@ -348,7 +362,9 @@ public class TestServerTests
             });
 
         // Act
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         new TestServer(builder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         // Assert
@@ -362,7 +378,9 @@ public class TestServerTests
         var builder = new WebHostBuilder()
             .Configure(b => { });
 
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         Assert.Throws<ArgumentNullException>(() => new TestServer(builder, null));
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
     }
 
@@ -390,7 +408,9 @@ public class TestServerTests
             .Configure(_ => { });
 
         // Act
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         var testServer = new TestServer(builder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         // Assert
@@ -811,7 +831,9 @@ public class TestServerTests
                 context.Response.Body.Dispose();
             });
         });
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         var server = new TestServer(builder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         HttpResponseMessage result = await server.CreateClient().GetAsync("/");

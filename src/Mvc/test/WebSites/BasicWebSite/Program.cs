@@ -9,7 +9,9 @@ public class Program
 {
     public static void Main(string[] args)
     {
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         using var host = CreateWebHostBuilder(args).Build();
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
         host.Run();
     }
 

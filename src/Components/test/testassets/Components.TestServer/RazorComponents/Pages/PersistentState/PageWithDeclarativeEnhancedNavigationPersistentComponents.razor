@@ -14,15 +14,30 @@
 <p id="streaming-id">Streaming id:@StreamingId</p>
 @if (_renderMode != null)
 {
-    @if (!string.IsNullOrEmpty(StreamingId))
+    @if(!string.IsNullOrEmpty(KeyValue))
     {
-        <StreamingComponentWithDeclarativePersistentState @key="0" @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
+        @if (!string.IsNullOrEmpty(StreamingId))
+        {
+            <StreamingComponentWithDeclarativePersistentState @key="0" @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
+        }
+        else
+        {
+            <NonStreamingComponentWithDeclarativePersistentState @key="0" @rendermode="@_renderMode" ServerState="@ServerState" />
+        }
     }
     else
     {
-        <NonStreamingComponentWithDeclarativePersistentState @key="0" @rendermode="@_renderMode" ServerState="@ServerState" />
+        @if (!string.IsNullOrEmpty(StreamingId))
+        {
+            <StreamingComponentWithDeclarativePersistentState @rendermode="@_renderMode" StreamingId="@StreamingId" ServerState="@ServerState" />
+        }
+        else
+        {
+            <NonStreamingComponentWithDeclarativePersistentState @rendermode="@_renderMode" ServerState="@ServerState" />
+        }
     }
 }
+
 @if (!string.IsNullOrEmpty(StreamingId))
 {
     <a id="end-streaming" href="@($"persistent-state/end-streaming?streaming-id={StreamingId}")" target="_blank">End streaming</a>
@@ -40,6 +55,8 @@
     [SupplyParameterFromQuery(Name = "streaming-id")] public string StreamingId { get; set; }
 
     [SupplyParameterFromQuery(Name = "server-state")] public string ServerState { get; set; }
+
+    [SupplyParameterFromQuery(Name = "key")] public string KeyValue { get; set; }
 
     protected override void OnInitialized()
     {
