@@ -71,31 +71,36 @@ namespace Microsoft.Extensions.Validation.Generated
         public bool TryGetValidatableTypeInfo(global::System.Type type, [global::System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out global::Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo)
         {
             validatableInfo = null;
-            if (type == typeof(global::NamespaceOne.Type))
+            if (type == typeof(global::NestedType))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::NamespaceOne.Type),
-                    members: [
-                        new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::NamespaceOne.Type),
-                            propertyType: typeof(string),
-                            name: "StringWithLength",
-                            displayName: "StringWithLength"
-                        ),
-                    ]
+                    type: typeof(global::NestedType),
+                    members: []
                 );
                 return true;
             }
-            if (type == typeof(global::NamespaceTwo.Type))
+            if (type == typeof(global::ComplexType))
             {
                 validatableInfo = new GeneratedValidatableTypeInfo(
-                    type: typeof(global::NamespaceTwo.Type),
+                    type: typeof(global::ComplexType),
                     members: [
                         new GeneratedValidatablePropertyInfo(
-                            containingType: typeof(global::NamespaceTwo.Type),
-                            propertyType: typeof(string),
-                            name: "StringWithLength",
-                            displayName: "StringWithLength"
+                            containingType: typeof(global::ComplexType),
+                            propertyType: typeof(int),
+                            name: "X",
+                            displayName: "X"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexType),
+                            propertyType: typeof(int),
+                            name: "Y",
+                            displayName: "Y"
+                        ),
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexType),
+                            propertyType: typeof(global::NestedType),
+                            name: "ObjectProperty",
+                            displayName: "ObjectProperty"
                         ),
                     ]
                 );
