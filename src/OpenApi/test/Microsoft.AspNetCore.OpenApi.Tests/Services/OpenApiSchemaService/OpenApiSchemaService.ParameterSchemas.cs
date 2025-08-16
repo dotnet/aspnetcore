@@ -451,18 +451,25 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+#nullable enable
     public static object[][] ArrayBasedQueryParameters =>
     [
         [(int[] id) => { }, JsonSchemaType.Integer, false],
         [(int?[] id) => { }, JsonSchemaType.Integer, true],
         [(Guid[] id) => { }, JsonSchemaType.String, false],
         [(Guid?[] id) => { }, JsonSchemaType.String, true],
+        [(string[] id) => { }, JsonSchemaType.String, false],
+        // Due to runtime restrictions, we can't resolve nullability
+        // info for reference types as element types so this will still
+        // encode as non-nullable.
+        [(string?[] id) => { }, JsonSchemaType.String, false],
         [(DateTime[] id) => { }, JsonSchemaType.String, false],
         [(DateTime?[] id) => { }, JsonSchemaType.String, true],
         [(DateTimeOffset[] id) => { }, JsonSchemaType.String, false],
         [(DateTimeOffset?[] id) => { }, JsonSchemaType.String, true],
         [(Uri[] id) => { }, JsonSchemaType.String, false],
     ];
+#nullable restore
 
     [Theory]
     [MemberData(nameof(ArrayBasedQueryParameters))]
