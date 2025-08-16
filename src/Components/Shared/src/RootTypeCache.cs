@@ -5,7 +5,8 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components
+{
 
 // A cache for root component types
 internal sealed class RootTypeCache
@@ -88,4 +89,5 @@ internal sealed class RootTypeCache
 
         public override int GetHashCode() => HashCode.Combine(Assembly, Type);
     }
+}
 }
