@@ -71,6 +71,8 @@ internal sealed partial class ServerComponentDeserializer : IServerComponentDese
         }
     }
 
+
+
     // The following fields are only used in TryDeserializeSingleComponentDescriptor.
     // The TryDeserializeComponentDescriptorCollection method uses a stateless
     // approach to efficiently detect invalid component records.

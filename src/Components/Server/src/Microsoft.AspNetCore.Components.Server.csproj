@@ -51,6 +51,7 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationBatch.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootComponentOperationType.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RootTypeCache.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\DefaultAntiforgeryStateProvider.cs" LinkBase="Forms" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRendererId.cs" />
     <Compile Include="$(SharedSourceRoot)Components\ServerComponentSerializer.cs" LinkBase="DependencyInjection" />
