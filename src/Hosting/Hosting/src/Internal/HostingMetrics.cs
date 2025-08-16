@@ -127,6 +127,7 @@ internal sealed class HostingMetrics : IDisposable
         KeyValuePair.Create(HttpMethods.Patch, HttpMethods.Patch),
         KeyValuePair.Create(HttpMethods.Post, HttpMethods.Post),
         KeyValuePair.Create(HttpMethods.Put, HttpMethods.Put),
+        KeyValuePair.Create(HttpMethods.Query, HttpMethods.Query),
         KeyValuePair.Create(HttpMethods.Trace, HttpMethods.Trace)
     }, StringComparer.OrdinalIgnoreCase);
 
