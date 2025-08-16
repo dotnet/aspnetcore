@@ -182,6 +182,114 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
             var schema = mediaType.Schema;
+            Assert.NotNull(schema.AllOf);
+            Assert.Equal(2, schema.AllOf.Count);
+            // Check that the allOf consists of a nullable schema and the GetTodo schema
+            Assert.Collection(schema.AllOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Object, item.Type);
+                    Assert.Collection(item.Properties,
+                        property =>
+                        {
+                            Assert.Equal("id", property.Key);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("title", property.Key);
+                            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("completed", property.Key);
+                            Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("createdAt", property.Key);
+                            Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                            Assert.Equal("date-time", property.Value.Format);
+                        });
+                });
+
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesNullablePocoTaskResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        static Task<Todo?> GetTodoAsync() => Task.FromResult(Random.Shared.Next() < 0.5 ? new Todo(1, "Test Title", true, DateTime.Now) : null);
+        builder.MapGet("/api", GetTodoAsync);
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.Object, schema.Type);
+            Assert.Collection(schema.Properties,
+                property =>
+                {
+                    Assert.Equal("id", property.Key);
+                    Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                    Assert.Equal("int32", property.Value.Format);
+                },
+                property =>
+                {
+                    Assert.Equal("title", property.Key);
+                    Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("completed", property.Key);
+                    Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
+                },
+                property =>
+                {
+                    Assert.Equal("createdAt", property.Key);
+                    Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                    Assert.Equal("date-time", property.Value.Format);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesNullablePocoValueTaskResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        static ValueTask<Todo?> GetTodoValueTaskAsync() => ValueTask.FromResult(Random.Shared.Next() < 0.5 ? new Todo(1, "Test Title", true, DateTime.Now) : null);
+        builder.MapGet("/api", GetTodoValueTaskAsync);
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/api"].Operations[HttpMethod.Get];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
+            var schema = mediaType.Schema;
             Assert.Equal(JsonSchemaType.Object, schema.Type);
             Assert.Collection(schema.Properties,
                 property =>
@@ -228,6 +336,95 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Collection(schema.Required,
                 property => Assert.Equal("title", property),
                 property => Assert.Equal("completed", property));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesNullableValueTypeResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        static Point? GetNullablePoint() => Random.Shared.Next() < 0.5 ? new Point { X = 10, Y = 20 } : null;
+        builder.MapGet("/api/nullable-point", GetNullablePoint);
+
+        static Coordinate? GetNullableCoordinate() => Random.Shared.Next() < 0.5 ? new Coordinate(1.5, 2.5) : null;
+        builder.MapGet("/api/nullable-coordinate", GetNullableCoordinate);
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable Point response
+            var pointOperation = document.Paths["/api/nullable-point"].Operations[HttpMethod.Get];
+            var pointResponses = Assert.Single(pointOperation.Responses);
+            var pointResponse = pointResponses.Value;
+            Assert.True(pointResponse.Content.TryGetValue("application/json", out var pointMediaType));
+            var pointSchema = pointMediaType.Schema;
+            Assert.NotNull(pointSchema.AllOf);
+            Assert.Equal(2, pointSchema.AllOf.Count);
+            Assert.Collection(pointSchema.AllOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Object, item.Type);
+                    Assert.Collection(item.Properties,
+                        property =>
+                        {
+                            Assert.Equal("x", property.Key);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("y", property.Key);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
+                        });
+                });
+
+            // Verify nullable Coordinate response
+            var coordinateOperation = document.Paths["/api/nullable-coordinate"].Operations[HttpMethod.Get];
+            var coordinateResponses = Assert.Single(coordinateOperation.Responses);
+            var coordinateResponse = coordinateResponses.Value;
+            Assert.True(coordinateResponse.Content.TryGetValue("application/json", out var coordinateMediaType));
+            var coordinateSchema = coordinateMediaType.Schema;
+            Assert.NotNull(coordinateSchema.AllOf);
+            Assert.Equal(2, coordinateSchema.AllOf.Count);
+            Assert.Collection(coordinateSchema.AllOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Object, item.Type);
+                    Assert.Collection(item.Properties,
+                        property =>
+                        {
+                            Assert.Equal("latitude", property.Key);
+                            Assert.Equal(JsonSchemaType.Number, property.Value.Type);
+                            Assert.Equal("double", property.Value.Format);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("longitude", property.Key);
+                            Assert.Equal(JsonSchemaType.Number, property.Value.Type);
+                            Assert.Equal("double", property.Value.Format);
+                        });
+                });
+
+            // Assert that Point and Coordinates are the only schemas defined at the top-level
+            Assert.Equal(["Coordinate", "Point"], [.. document.Components.Schemas.Keys]);
         });
     }
 
@@ -731,5 +928,23 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [Description("This is a description")]
         [DefaultValue(32)]
         public object AnotherObject { get; set; }
+    }
+
+    private struct Point
+    {
+        public int X { get; set; }
+        public int Y { get; set; }
+    }
+
+    private readonly struct Coordinate
+    {
+        public double Latitude { get; }
+        public double Longitude { get; }
+
+        public Coordinate(double latitude, double longitude)
+        {
+            Latitude = latitude;
+            Longitude = longitude;
+        }
     }
 }

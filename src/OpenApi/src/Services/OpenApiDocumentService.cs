@@ -423,7 +423,14 @@ internal sealed class OpenApiDocumentService(
             .Select(responseFormat => responseFormat.MediaType);
         foreach (var contentType in apiResponseFormatContentTypes)
         {
-            var schema = apiResponseType.Type is { } type ? await _componentService.GetOrCreateSchemaAsync(document, type, scopedServiceProvider, schemaTransformers, null, cancellationToken) : new OpenApiSchema();
+            IOpenApiSchema schema = new OpenApiSchema();
+            if (apiResponseType.Type is { } responseType)
+            {
+                schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
+                schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
+                    ? schema.CreateAllOfNullableWrapper()
+                    : schema;
+            }
             response.Content[contentType] = new OpenApiMediaType { Schema = schema };
         }
 

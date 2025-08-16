@@ -97,6 +97,21 @@ internal sealed class OpenApiSchemaService(
             schema.ApplyPrimitiveTypesAndFormats(context, createSchemaReferenceId);
             schema.ApplySchemaReferenceId(context, createSchemaReferenceId);
             schema.MapPolymorphismOptionsToDiscriminator(context, createSchemaReferenceId);
+            if (schema[OpenApiConstants.SchemaId] is { } schemaId && schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
+            {
+                // Remove null from union types when present
+                for (var i = typeArray.Count - 1; i >= 0; i--)
+                {
+                    if (typeArray[i]?.GetValue<string>() == "null")
+                    {
+                        typeArray.RemoveAt(i);
+                    }
+                }
+                if (typeArray.Count == 1)
+                {
+                    schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
+                }
+            }
             if (context.PropertyInfo is { } jsonPropertyInfo)
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
