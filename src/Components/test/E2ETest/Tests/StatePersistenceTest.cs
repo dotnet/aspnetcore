@@ -29,7 +29,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
 
     // Separate contexts to ensure that caches and other state don't interfere across tests.
     public override Task InitializeAsync()
-        => InitializeAsync(BrowserFixture.StreamingContext + _nextStreamingIdContext++);
+        => InitializeAsync(BrowserFixture.StreamingContext + _nextStreamingIdContext++, supportEnhancedNavigationSuppression: true);
 
     // Validates that we can use persisted state across server, webassembly, and auto modes, with and without
     // streaming rendering.

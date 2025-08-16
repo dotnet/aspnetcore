@@ -27,7 +27,7 @@ public class StreamingRenderingTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     public override Task InitializeAsync()
-        => InitializeAsync(BrowserFixture.StreamingContext);
+        => InitializeAsync(BrowserFixture.StreamingContext, supportEnhancedNavigationSuppression: true);
 
     [Fact]
     public async Task CanRenderNonstreamingPageWithoutInjectingStreamingMarkersOrHeaders()

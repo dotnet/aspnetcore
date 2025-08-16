@@ -32,7 +32,7 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         _tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_tempDirectory);
 
-        return InitializeAsync(BrowserFixture.StreamingContext);
+        return InitializeAsync(BrowserFixture.StreamingContext, supportEnhancedNavigationSuppression: true);
     }
 
     [Theory]
