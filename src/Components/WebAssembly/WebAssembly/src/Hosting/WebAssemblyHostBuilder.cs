@@ -28,7 +28,6 @@ public sealed class WebAssemblyHostBuilder
 {
     private readonly IInternalJSImportMethods _jsMethods;
     private Func<IServiceProvider> _createServiceProvider;
-    private RootTypeCache? _rootComponentCache;
     private string? _persistedState;
     private ServiceProviderOptions? _serviceProviderOptions;
 
@@ -146,11 +145,10 @@ public sealed class WebAssemblyHostBuilder
             registeredComponents[i].PrerenderId = i.ToString(CultureInfo.InvariantCulture);
         }
 
-        _rootComponentCache = new RootTypeCache();
         var componentDeserializer = WebAssemblyComponentParameterDeserializer.Instance;
         foreach (var registeredComponent in registeredComponents)
         {
-            var componentType = _rootComponentCache.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!);
+            var componentType = DefaultWebAssemblyJSRuntime._rootComponentCache.GetRootType(registeredComponent.Assembly!, registeredComponent.TypeName!);
             if (componentType is null)
             {
                 throw new InvalidOperationException(
@@ -323,7 +321,10 @@ public sealed class WebAssemblyHostBuilder
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);
         Services.AddSingleton(_jsMethods);
         Services.AddSingleton(new LazyAssemblyLoader(DefaultWebAssemblyJSRuntime.Instance));
-        Services.AddSingleton(_ => _rootComponentCache ?? new());
+        Services.AddSingleton(serviceProvider =>
+        {
+            return new RootTypeCache();
+        });
         Services.AddSingleton<ComponentStatePersistenceManager>();
         Services.AddSingleton(sp => sp.GetRequiredService<ComponentStatePersistenceManager>().State);
         Services.AddSupplyValueFromPersistentComponentStateProvider();

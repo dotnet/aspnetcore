@@ -5,16 +5,21 @@ using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 
-#if COMPONENTS
-namespace Microsoft.AspNetCore.Components.Infrastructure;
-#else
 namespace Microsoft.AspNetCore.Components;
-#endif
 
 // A cache for root component types
 internal sealed class RootTypeCache
 {
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
+
+    public RootTypeCache()
+    {
+    }
+
+    internal void Clear()
+    {
+        _typeToKeyLookUp.Clear();
+    }
 
     public Type? GetRootType(string assembly, string type)
     {
