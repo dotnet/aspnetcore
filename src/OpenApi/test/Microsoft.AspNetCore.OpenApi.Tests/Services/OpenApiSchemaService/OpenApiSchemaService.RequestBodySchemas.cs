@@ -853,6 +853,67 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiRequestBody_HandlesNullableGenericTypesWithAllOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        builder.MapPost("/api/nullable-result", (Result<Todo>? result) => { });
+        builder.MapPost("/api/nullable-list", (List<Todo>? todos) => { });
+        builder.MapPost("/api/nullable-dictionary", (Dictionary<string, Todo>? todoDict) => { });
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable Result<Todo> uses allOf
+            var resultOperation = document.Paths["/api/nullable-result"].Operations[HttpMethod.Post];
+            var resultRequestBody = resultOperation.RequestBody;
+            var resultContent = Assert.Single(resultRequestBody.Content);
+            var resultSchema = resultContent.Value.Schema;
+            Assert.NotNull(resultSchema.AllOf);
+            Assert.Equal(2, resultSchema.AllOf.Count);
+            Assert.Collection(resultSchema.AllOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal(JsonSchemaType.Object, item.Type));
+
+            // Verify nullable List<Todo> uses allOf
+            var listOperation = document.Paths["/api/nullable-list"].Operations[HttpMethod.Post];
+            var listRequestBody = listOperation.RequestBody;
+            var listContent = Assert.Single(listRequestBody.Content);
+            var listSchema = listContent.Value.Schema;
+            Assert.NotNull(listSchema.AllOf);
+            Assert.Equal(2, listSchema.AllOf.Count);
+            Assert.Collection(listSchema.AllOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item =>
+                {
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+
+            // Verify nullable Dictionary<string, Todo> uses allOf
+            var dictOperation = document.Paths["/api/nullable-dictionary"].Operations[HttpMethod.Post];
+            var dictRequestBody = dictOperation.RequestBody;
+            var dictContent = Assert.Single(dictRequestBody.Content);
+            var dictSchema = dictContent.Value.Schema;
+            Assert.NotNull(dictSchema.AllOf);
+            Assert.Equal(2, dictSchema.AllOf.Count);
+            Assert.Collection(dictSchema.AllOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item =>
+                {
+                    Assert.Equal(JsonSchemaType.Object, item.Type);
+                    Assert.NotNull(item.AdditionalProperties);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.AdditionalProperties).Reference.Id);
+                });
+        });
+    }
+
+    [Fact]
     public async Task SupportsTypesWithSelfReferencedProperties()
     {
         // Arrange
