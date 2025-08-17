@@ -1027,10 +1027,7 @@
         "required": [
           "user"
         ],
-        "type": [
-          "null",
-          "object"
-        ],
+        "type": "object",
         "properties": {
           "user": {
             "$ref": "#/components/schemas/RefUser"
@@ -1136,7 +1133,14 @@
             "$ref": "#/components/schemas/RefProfile"
           },
           "secondaryUser": {
-            "$ref": "#/components/schemas/RefProfile"
+            "allOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/RefProfile"
+              }
+            ]
           }
         }
       },
