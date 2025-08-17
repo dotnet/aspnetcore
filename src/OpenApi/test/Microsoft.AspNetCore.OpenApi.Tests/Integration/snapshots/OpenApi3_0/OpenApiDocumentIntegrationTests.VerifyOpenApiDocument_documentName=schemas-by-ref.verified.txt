@@ -1022,8 +1022,7 @@
           "user": {
             "$ref": "#/components/schemas/RefUser"
           }
-        },
-        "nullable": true
+        }
       },
       "RefUser": {
         "type": "object",
@@ -1124,7 +1123,14 @@
             "$ref": "#/components/schemas/RefProfile"
           },
           "secondaryUser": {
-            "$ref": "#/components/schemas/RefProfile"
+            "allOf": [
+              {
+                "nullable": true
+              },
+              {
+                "$ref": "#/components/schemas/RefProfile"
+              }
+            ]
           }
         }
       },

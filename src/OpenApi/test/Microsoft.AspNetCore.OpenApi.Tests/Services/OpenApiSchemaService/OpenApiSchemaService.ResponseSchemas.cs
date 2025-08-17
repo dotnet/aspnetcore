@@ -510,7 +510,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("value", property.Key);
                     var propertyValue = property.Value;
-                    Assert.Equal(JsonSchemaType.Null | JsonSchemaType.Object, propertyValue.Type);
+                    Assert.Equal(JsonSchemaType.Object, propertyValue.Type);
                     Assert.Collection(propertyValue.Properties,
                     property =>
                     {
@@ -536,7 +536,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("error", property.Key);
                     var propertyValue = property.Value;
-                    Assert.Equal(JsonSchemaType.Null | JsonSchemaType.Object, propertyValue.Type);
+                    Assert.Equal(JsonSchemaType.Object, propertyValue.Type);
                     Assert.Collection(propertyValue.Properties, property =>
                     {
                         Assert.Equal("code", property.Key);
@@ -624,7 +624,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("todo", property.Key);
                     var propertyValue = property.Value;
-                    Assert.Equal(JsonSchemaType.Null | JsonSchemaType.Object, propertyValue.Type);
+                    Assert.Equal(JsonSchemaType.Object, propertyValue.Type);
                     Assert.Collection(propertyValue.Properties,
                         property =>
                         {

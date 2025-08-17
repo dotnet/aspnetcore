@@ -17,6 +17,7 @@ internal static class OpenApiConstants
     internal const string RefExampleAnnotation = "x-ref-example";
     internal const string RefKeyword = "$ref";
     internal const string RefPrefix = "#";
+    internal const string NullableProperty = "x-is-nullable-property";
     internal const string DefaultOpenApiResponseKey = "default";
     // Since there's a finite set of HTTP methods that can be included in a given
     // OpenApiPaths, we can pre-allocate an array of these methods and use a direct

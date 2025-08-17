@@ -460,6 +460,30 @@ internal static class JsonNodeSchemaExtensions
                 schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
             }
         }
+        if (schema[OpenApiConstants.SchemaId] is not null &&
+            propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
+        {
+            schema[OpenApiConstants.NullableProperty] = true;
+        }
+    }
+
+    internal static void PruneNullTypeForReferencedTypes(this JsonNode schema)
+    {
+        if (schema[OpenApiConstants.SchemaId] is not null &&
+                schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
+        {
+            for (var i = typeArray.Count - 1; i >= 0; i--)
+            {
+                if (typeArray[i]?.GetValue<string>() == "null")
+                {
+                    typeArray.RemoveAt(i);
+                }
+            }
+            if (typeArray.Count == 1)
+            {
+                schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
+            }
+        }
     }
 
     private static JsonSchemaType? MapJsonNodeToSchemaType(JsonNode? jsonNode)

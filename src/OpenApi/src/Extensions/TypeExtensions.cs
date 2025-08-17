@@ -3,6 +3,7 @@
 
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -68,7 +69,6 @@ internal static class TypeExtensions
 
         var nullabilityInfoContext = new NullabilityInfoContext();
         var nullabilityInfo = nullabilityInfoContext.Create(methodInfo.ReturnParameter);
-
         return nullabilityInfo.WriteState == NullabilityState.Nullable;
     }
 
@@ -92,7 +92,18 @@ internal static class TypeExtensions
 
         var nullabilityInfoContext = new NullabilityInfoContext();
         var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
+        return nullabilityInfo.WriteState == NullabilityState.Nullable;
+    }
 
+    public static bool ShouldApplyNullablePropertySchema(this JsonPropertyInfo jsonPropertyInfo)
+    {
+        if (jsonPropertyInfo.AttributeProvider is not PropertyInfo propertyInfo)
+        {
+            return false;
+        }
+
+        var nullabilityInfoContext = new NullabilityInfoContext();
+        var nullabilityInfo = nullabilityInfoContext.Create(propertyInfo);
         return nullabilityInfo.WriteState == NullabilityState.Nullable;
     }
 }
