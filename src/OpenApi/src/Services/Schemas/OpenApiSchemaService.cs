@@ -132,7 +132,7 @@ internal sealed class OpenApiSchemaService(
                     }
                 }
             }
-            schema.PruneNullTypeForReferencedTypes();
+            schema.PruneNullTypeForComponentizedTypes();
             return schema;
         }
     };
