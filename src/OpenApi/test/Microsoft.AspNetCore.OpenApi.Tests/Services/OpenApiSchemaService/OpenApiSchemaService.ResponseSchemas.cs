@@ -429,6 +429,125 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiResponse_HandlesNullableCollectionResponsesWithAllOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        static List<Todo>? GetNullableTodos() => Random.Shared.Next() < 0.5 ?
+            [new Todo(1, "Test", true, DateTime.Now)] : null;
+        static Todo[]? GetNullableTodoArray() => Random.Shared.Next() < 0.5 ?
+            [new Todo(1, "Test", true, DateTime.Now)] : null;
+        static IEnumerable<Todo>? GetNullableTodoEnumerable() => Random.Shared.Next() < 0.5 ?
+            [new Todo(1, "Test", true, DateTime.Now)] : null;
+
+        builder.MapGet("/api/nullable-list", GetNullableTodos);
+        builder.MapGet("/api/nullable-array", GetNullableTodoArray);
+        builder.MapGet("/api/nullable-enumerable", GetNullableTodoEnumerable);
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable List<Todo> response uses allOf
+            var listOperation = document.Paths["/api/nullable-list"].Operations[HttpMethod.Get];
+            var listResponse = Assert.Single(listOperation.Responses).Value;
+            Assert.True(listResponse.Content.TryGetValue("application/json", out var listMediaType));
+            var listSchema = listMediaType.Schema;
+            Assert.NotNull(listSchema.AllOf);
+            Assert.Equal(2, listSchema.AllOf.Count);
+            Assert.Collection(listSchema.AllOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item =>
+                {
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+
+            // Verify nullable Todo[] response uses allOf
+            var arrayOperation = document.Paths["/api/nullable-array"].Operations[HttpMethod.Get];
+            var arrayResponse = Assert.Single(arrayOperation.Responses).Value;
+            Assert.True(arrayResponse.Content.TryGetValue("application/json", out var arrayMediaType));
+            var arraySchema = arrayMediaType.Schema;
+            Assert.NotNull(arraySchema.AllOf);
+            Assert.Equal(2, arraySchema.AllOf.Count);
+            Assert.Collection(arraySchema.AllOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item =>
+                {
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+
+            // Verify nullable IEnumerable<Todo> response uses allOf
+            var enumerableOperation = document.Paths["/api/nullable-enumerable"].Operations[HttpMethod.Get];
+            var enumerableResponse = Assert.Single(enumerableOperation.Responses).Value;
+            Assert.True(enumerableResponse.Content.TryGetValue("application/json", out var enumerableMediaType));
+            var enumerableSchema = enumerableMediaType.Schema;
+            Assert.NotNull(enumerableSchema.AllOf);
+            Assert.Equal(2, enumerableSchema.AllOf.Count);
+            Assert.Collection(enumerableSchema.AllOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item =>
+                {
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesNullableEnumResponsesWithAllOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        static Status? GetNullableStatus() => Random.Shared.Next() < 0.5 ? Status.Approved : null;
+        static TaskStatus? GetNullableTaskStatus() => Random.Shared.Next() < 0.5 ? TaskStatus.Running : null;
+
+        builder.MapGet("/api/nullable-status", GetNullableStatus);
+        builder.MapGet("/api/nullable-task-status", GetNullableTaskStatus);
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable Status (with string converter) response uses allOf
+            var statusOperation = document.Paths["/api/nullable-status"].Operations[HttpMethod.Get];
+            var statusResponse = Assert.Single(statusOperation.Responses).Value;
+            Assert.True(statusResponse.Content.TryGetValue("application/json", out var statusMediaType));
+            var statusSchema = statusMediaType.Schema;
+            Assert.NotNull(statusSchema.AllOf);
+            Assert.Equal(2, statusSchema.AllOf.Count);
+            Assert.Collection(statusSchema.AllOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item =>
+                {
+                    // Status has string enum converter, so it should be a reference to the enum schema
+                    Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id);
+                });
+
+            // Verify nullable TaskStatus (without converter) response uses allOf
+            var taskStatusOperation = document.Paths["/api/nullable-task-status"].Operations[HttpMethod.Get];
+            var taskStatusResponse = Assert.Single(taskStatusOperation.Responses).Value;
+            Assert.True(taskStatusResponse.Content.TryGetValue("application/json", out var taskStatusMediaType));
+            var taskStatusSchema = taskStatusMediaType.Schema;
+            Assert.NotNull(taskStatusSchema.AllOf);
+            Assert.Equal(2, taskStatusSchema.AllOf.Count);
+            Assert.Collection(taskStatusSchema.AllOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal(JsonSchemaType.Integer, item.Type));
+        });
+    }
+
+    [Fact]
     public async Task GetOpenApiResponse_HandlesInheritedTypeResponse()
     {
         // Arrange
