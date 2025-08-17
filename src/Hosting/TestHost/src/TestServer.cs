@@ -16,9 +16,7 @@ namespace Microsoft.AspNetCore.TestHost;
 /// </summary>
 public class TestServer : IServer
 {
-#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private readonly IWebHost? _hostInstance;
-#pragma warning restore ASPDEPR008 // IWebHost is obsolete
     private bool _disposed;
     private ApplicationWrapper? _application;
 
@@ -80,7 +78,6 @@ public class TestServer : IServer
     /// For use with IWebHostBuilder.
     /// </summary>
     /// <param name="builder"></param>
-    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
     public TestServer(IWebHostBuilder builder)
         : this(builder, CreateTestFeatureCollection())
     {
@@ -91,7 +88,6 @@ public class TestServer : IServer
     /// </summary>
     /// <param name="builder"></param>
     /// <param name="featureCollection"></param>
-    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
     public TestServer(IWebHostBuilder builder, IFeatureCollection featureCollection)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -113,7 +109,6 @@ public class TestServer : IServer
     /// <summary>
     /// Gets the <see cref="IWebHost" /> instance associated with the test server.
     /// </summary>
-    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
     public IWebHost Host
     {
         get

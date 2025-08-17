@@ -116,22 +116,15 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     // In each case, we validate that the state is available until the initial set of components first render reaches quiescence. Similar to how it works for Server and WebAssembly.
     // For server we validate that the state is provided every time a circuit is initialized.
     [Theory]
-    [InlineData(typeof(InteractiveServerRenderMode), (string)null, "yes")]
-    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming", "yes")]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null, "yes")]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming", "yes")]
-    [InlineData(typeof(InteractiveAutoRenderMode), (string)null, "yes")]
-    [InlineData(typeof(InteractiveAutoRenderMode), "AutoStreaming", "yes")]
-    [InlineData(typeof(InteractiveServerRenderMode), (string)null, null)]
-    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming", null)]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null, null)]
-    [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming", null)]
-    [InlineData(typeof(InteractiveAutoRenderMode), (string)null, null)]
-    [InlineData(typeof(InteractiveAutoRenderMode), "AutoStreaming", null)]
+    [InlineData(typeof(InteractiveServerRenderMode), (string)null)]
+    [InlineData(typeof(InteractiveServerRenderMode), "ServerStreaming")]
+    [InlineData(typeof(InteractiveWebAssemblyRenderMode), (string)null)]
+    [InlineData(typeof(InteractiveWebAssemblyRenderMode), "WebAssemblyStreaming")]
+    [InlineData(typeof(InteractiveAutoRenderMode), (string)null)]
+    [InlineData(typeof(InteractiveAutoRenderMode), "AutoStreaming")]
     public void CanUpdateComponentsWithPersistedStateAndEnhancedNavUpdates(
         Type renderMode,
-        string streaming,
-        string key)
+        string streaming)
     {
         var mode = renderMode switch
         {
@@ -143,7 +136,7 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
 
         // Navigate to a page without components first to make sure that we exercise rendering components
         // with enhanced navigation on.
-        NavigateToInitialPage(streaming, mode, key);
+        NavigateToInitialPage(streaming, mode);
         if (mode == "auto")
         {
             BlockWebAssemblyResourceLoad();
@@ -163,36 +156,22 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
 
             UnblockWebAssemblyResourceLoad();
             Browser.Navigate().Refresh();
-            NavigateToInitialPage(streaming, mode, key);
+            NavigateToInitialPage(streaming, mode);
             Browser.Click(By.Id("call-blazor-start"));
             Browser.Click(By.Id("page-with-components-link-and-declarative-state"));
 
             RenderComponentsWithDeclarativePersistentStateAndValidate(mode, renderMode, streaming, interactiveRuntime: "wasm", stateValue: "other");
         }
 
-        void NavigateToInitialPage(string streaming, string mode, string key)
+        void NavigateToInitialPage(string streaming, string mode)
         {
-            if (key == null)
+            if (streaming == null)
             {
-                if (streaming == null)
-                {
-                    Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
-                }
-                else
-                {
-                    Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&streaming-id={streaming}&suppress-autostart");
-                }
+                Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&suppress-autostart");
             }
             else
             {
-                if (streaming == null)
-                {
-                    Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&key={key}&suppress-autostart");
-                }
-                else
-                {
-                    Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&key={key}&streaming-id={streaming}&suppress-autostart");
-                }
+                Navigate($"subdir/persistent-state/page-no-components?render-mode={mode}&streaming-id={streaming}&suppress-autostart");
             }
         }
     }

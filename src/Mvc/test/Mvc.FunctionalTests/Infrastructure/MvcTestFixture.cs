@@ -42,9 +42,7 @@ public class MvcTestFixture<TStartup> : WebApplicationFactory<TStartup>
                 });
     }
 
-#pragma warning disable CS0672 // Member overrides obsolete member
     protected override TestServer CreateServer(IWebHostBuilder builder)
-#pragma warning restore CS0672 // Member overrides obsolete member
     {
         var originalCulture = CultureInfo.CurrentCulture;
         var originalUICulture = CultureInfo.CurrentUICulture;
@@ -52,9 +50,7 @@ public class MvcTestFixture<TStartup> : WebApplicationFactory<TStartup>
         {
             CultureInfo.CurrentCulture = new CultureInfo("en-GB");
             CultureInfo.CurrentUICulture = new CultureInfo("en-US");
-#pragma warning disable ASPDEPR008 // Type or member is obsolete
             return base.CreateServer(builder);
-#pragma warning restore ASPDEPR008 // Type or member is obsolete
         }
         finally
         {
