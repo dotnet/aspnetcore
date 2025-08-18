@@ -37,18 +37,18 @@ internal static class ISymbolExtensions
         return null;
     }
 
-    public static string? GetJsonPropertyName(this ISymbol property, INamedTypeSymbol jsonPropertyNameAttribute)
+    public static string? GetJsonPropertyName(this ISymbol property, INamedTypeSymbol nameAttribute)
     {
-        var displayNameAttribute = property.GetAttributes()
+        var jsonPropertyNameAttribute = property.GetAttributes()
             .FirstOrDefault(attribute =>
                 attribute.AttributeClass is { } attributeClass &&
-                SymbolEqualityComparer.Default.Equals(attributeClass, jsonPropertyNameAttribute));
+                SymbolEqualityComparer.Default.Equals(attributeClass, nameAttribute));
 
-        if (displayNameAttribute is not null)
+        if (jsonPropertyNameAttribute is not null)
         {
-            if (displayNameAttribute.ConstructorArguments.Length is 1)
+            if (jsonPropertyNameAttribute.ConstructorArguments.Length is 1)
             {
-                var arg = displayNameAttribute.ConstructorArguments[0];
+                var arg = jsonPropertyNameAttribute.ConstructorArguments[0];
                 if (arg.Kind == TypedConstantKind.Primitive && arg.Value is string name)
                 {
                     return name;
