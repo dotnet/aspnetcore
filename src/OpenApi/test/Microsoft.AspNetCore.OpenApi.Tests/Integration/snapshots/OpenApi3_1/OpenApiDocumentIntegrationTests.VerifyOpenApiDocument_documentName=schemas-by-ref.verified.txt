@@ -656,6 +656,32 @@
         }
       }
     },
+    "/schemas-by-ref/nullable-return-type": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NullableResponseModel"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/schemas-by-ref/nullable-request": {
       "post": {
         "tags": [
@@ -735,7 +761,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelWithDefaults"
+                }
+              }
+            }
           }
         }
       }
@@ -747,7 +780,14 @@
         ],
         "responses": {
           "200": {
-            "description": "OK"
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnumNullableModel"
+                }
+              }
+            }
           }
         }
       }
@@ -964,6 +1004,33 @@
           }
         }
       },
+      "EnumNullableModel": {
+        "required": [
+          "requiredEnum"
+        ],
+        "type": "object",
+        "properties": {
+          "requiredEnum": {
+            "$ref": "#/components/schemas/TestEnum"
+          },
+          "nullableEnum": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TestEnum"
+              }
+            ]
+          },
+          "listOfNullableEnums": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestEnum"
+            }
+          }
+        }
+      },
       "Item": {
         "type": "object",
         "properties": {
@@ -1072,6 +1139,27 @@
         "properties": {
           "address": {
             "$ref": "#/components/schemas/AddressDto"
+          }
+        }
+      },
+      "ModelWithDefaults": {
+        "type": "object",
+        "properties": {
+          "propertyWithDefault": {
+            "type": "string"
+          },
+          "nullableWithNull": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "numberWithDefault": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "boolWithDefault": {
+            "type": "boolean"
           }
         }
       },
@@ -1440,6 +1528,9 @@
             "type": "string"
           }
         }
+      },
+      "TestEnum": {
+        "type": "integer"
       },
       "Triangle": {
         "type": "object",
