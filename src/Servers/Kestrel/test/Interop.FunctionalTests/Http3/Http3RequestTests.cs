@@ -881,6 +881,160 @@ public class Http3RequestTests : LoggedTest
 
     [ConditionalFact]
     [MsQuicSupported]
+    public async Task GET_RequestAbortedByClient_StateNotReused()
+    {
+        // Arrange
+        object persistedState = null;
+        var requestCount = 0;
+        var abortedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var requestStartedTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        var builder = CreateHostBuilder(async context =>
+        {
+            requestCount++;
+            var persistentStateCollection = context.Features.Get<IPersistentStateFeature>().State;
+            if (persistentStateCollection.TryGetValue("Counter", out var value))
+            {
+                persistedState = value;
+            }
+            persistentStateCollection["Counter"] = requestCount;
+
+            if (requestCount == 1)
+            {
+                // For the first request, wait for RequestAborted to fire before returning
+                context.RequestAborted.Register(() =>
+                {
+                    Logger.LogInformation("Server received cancellation");
+                    abortedTcs.SetResult();
+                });
+
+                // Signal that the request has started and is ready to be cancelled
+                requestStartedTcs.SetResult();
+
+                // Wait for the request to be aborted
+                await abortedTcs.Task;
+            }
+        });
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync();
+
+            // Act - Send first request and cancel it
+            var cts1 = new CancellationTokenSource();
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request1.Version = HttpVersion.Version30;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var responseTask1 = client.SendAsync(request1, cts1.Token);
+
+            // Wait for the server to start processing the request
+            await requestStartedTcs.Task.DefaultTimeout();
+
+            // Cancel the first request
+            cts1.Cancel();
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => responseTask1).DefaultTimeout();
+
+            // Wait for the server to process the abort
+            await abortedTcs.Task.DefaultTimeout();
+
+            // Store the state from the first (aborted) request
+            var firstRequestState = persistedState;
+
+            // Delay to ensure the stream has enough time to return to pool
+            await Task.Delay(100);
+
+            // Send second request (should not reuse state from aborted request)
+            var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request2.Version = HttpVersion.Version30;
+            request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response2 = await client.SendAsync(request2, CancellationToken.None);
+            response2.EnsureSuccessStatusCode();
+            var secondRequestState = persistedState;
+
+            // Assert
+            // First request has no persisted state (it was aborted)
+            Assert.Null(firstRequestState);
+
+            // Second request should also have no persisted state since the first request was aborted
+            // and state should not be reused from aborted requests
+            Assert.Null(secondRequestState);
+
+            await host.StopAsync();
+        }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
+    public async Task GET_RequestAbortedByServer_StateNotReused()
+    {
+        // Arrange
+        object persistedState = null;
+        var requestCount = 0;
+
+        var builder = CreateHostBuilder(context =>
+        {
+            requestCount++;
+            var persistentStateCollection = context.Features.Get<IPersistentStateFeature>().State;
+            if (persistentStateCollection.TryGetValue("Counter", out var value))
+            {
+                persistedState = value;
+            }
+            persistentStateCollection["Counter"] = requestCount;
+
+            if (requestCount == 1)
+            {
+                context.Abort();
+            }
+
+            return Task.CompletedTask;
+        });
+
+        using (var host = builder.Build())
+        using (var client = HttpHelpers.CreateClient())
+        {
+            await host.StartAsync();
+
+            var request1 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request1.Version = HttpVersion.Version30;
+            request1.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var responseTask1 = client.SendAsync(request1, CancellationToken.None);
+            var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => responseTask1).DefaultTimeout();
+            var innerEx = Assert.IsType<HttpProtocolException>(ex.InnerException);
+            Assert.Equal(Http3ErrorCode.InternalError, (Http3ErrorCode)innerEx.ErrorCode);
+
+            // Store the state from the first (aborted) request
+            var firstRequestState = persistedState;
+
+            // Delay to ensure the stream has enough time to return to pool
+            await Task.Delay(100);
+
+            // Send second request (should not reuse state from aborted request)
+            var request2 = new HttpRequestMessage(HttpMethod.Get, $"https://127.0.0.1:{host.GetPort()}/");
+            request2.Version = HttpVersion.Version30;
+            request2.VersionPolicy = HttpVersionPolicy.RequestVersionExact;
+
+            var response2 = await client.SendAsync(request2, CancellationToken.None);
+            response2.EnsureSuccessStatusCode();
+            var secondRequestState = persistedState;
+
+            // Assert
+            // First request has no persisted state (it was aborted)
+            Assert.Null(firstRequestState);
+
+            // Second request should also have no persisted state since the first request was aborted
+            // and state should not be reused from aborted requests
+            Assert.Null(secondRequestState);
+
+            await host.StopAsync();
+        }
+    }
+
+    [ConditionalFact]
+    [MsQuicSupported]
     public async Task GET_MultipleRequests_RequestVersionOrHigher_UpgradeToHttp3()
     {
         // Arrange

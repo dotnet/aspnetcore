@@ -405,7 +405,7 @@ public static partial class RequestDelegateFactory
             // When present, authentication handlers should prefer returning status codes over browser redirects.
             if (factoryContext.JsonRequestBodyParameter is not null)
             {
-                factoryContext.EndpointBuilder.Metadata.Add(ApiEndpointMetadata.Instance);
+                factoryContext.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
             }
 
             PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext);
@@ -1062,7 +1062,7 @@ public static partial class RequestDelegateFactory
             {
                 // Since this endpoint responds with JSON, we assume its an API endpoint not intended for browser navigation,
                 // but we don't want to bother adding this metadata twice if we've already inferred it based on the expected JSON request body.
-                builder.Metadata.Add(ApiEndpointMetadata.Instance);
+                builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
             }
         }
     }
