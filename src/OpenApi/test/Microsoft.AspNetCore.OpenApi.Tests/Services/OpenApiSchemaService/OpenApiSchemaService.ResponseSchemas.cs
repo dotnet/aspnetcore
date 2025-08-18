@@ -429,7 +429,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiResponse_HandlesNullableCollectionResponsesWithAllOf()
+    public async Task GetOpenApiResponse_HandlesNullableCollectionResponsesWithOneOf()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -502,7 +502,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiResponse_HandlesNullableEnumResponsesWithAllOf()
+    public async Task GetOpenApiResponse_HandlesNullableEnumResponsesWithOneOf()
     {
         // Arrange
         var builder = CreateBuilder();

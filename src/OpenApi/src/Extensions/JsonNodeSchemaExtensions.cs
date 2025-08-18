@@ -469,9 +469,9 @@ internal static class JsonNodeSchemaExtensions
 
     /// <summary>
     /// Prunes the "null" type from the schema for types that are componentized. These
-    /// types should represent their nullability using allOf with null instead.
+    /// types should represent their nullability using oneOf with null instead.
     /// </summary>
-    /// <param name="schema"></param>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     internal static void PruneNullTypeForComponentizedTypes(this JsonNode schema)
     {
         if (schema[OpenApiConstants.SchemaId] is not null &&

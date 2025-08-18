@@ -465,7 +465,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiRequestBody_HandlesNullableParameterWithAllOf()
+    public async Task GetOpenApiRequestBody_HandlesNullableParameterWithOneOf()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -563,7 +563,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiRequestBody_HandlesNullableCollectionParametersWithAllOf()
+    public async Task GetOpenApiRequestBody_HandlesNullableCollectionParametersWithOneOf()
     {
         // Arrange
         var builder = CreateBuilder();
@@ -578,7 +578,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            // Verify nullable array parameter - verify actual behavior with AllOf
+            // Verify nullable array parameter - verify actual behavior with OneOf
             var arrayOperation = document.Paths["/api/nullable-array"].Operations[HttpMethod.Post];
             var arrayRequestBody = arrayOperation.RequestBody;
             var arrayContent = Assert.Single(arrayRequestBody.Content);
@@ -600,7 +600,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
                 });
 
-            // Verify nullable List parameter - verify actual behavior with AllOf
+            // Verify nullable List parameter - verify actual behavior with OneOf
             var listOperation = document.Paths["/api/nullable-list"].Operations[HttpMethod.Post];
             var listRequestBody = listOperation.RequestBody;
             var listContent = Assert.Single(listRequestBody.Content);
@@ -622,7 +622,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
                 });
 
-            // Verify nullable IEnumerable parameter - verify actual behavior with AllOf
+            // Verify nullable IEnumerable parameter - verify actual behavior with OneOf
             var enumerableOperation = document.Paths["/api/nullable-enumerable"].Operations[HttpMethod.Post];
             var enumerableRequestBody = enumerableOperation.RequestBody;
             var enumerableContent = Assert.Single(enumerableRequestBody.Content);
@@ -853,7 +853,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiRequestBody_HandlesNullableGenericTypesWithAllOf()
+    public async Task GetOpenApiRequestBody_HandlesNullableGenericTypesWithOneOf()
     {
         // Arrange
         var builder = CreateBuilder();

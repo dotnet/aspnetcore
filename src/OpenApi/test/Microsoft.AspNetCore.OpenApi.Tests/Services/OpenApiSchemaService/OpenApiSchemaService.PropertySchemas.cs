@@ -29,11 +29,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
             Assert.Equal(JsonSchemaType.Object, schema.Type);
 
-            // Check nullable int property has null in type directly or uses allOf
+            // Check nullable int property has null in type directly or uses oneOf
             var nullableIntProperty = schema.Properties["nullableInt"];
             if (nullableIntProperty.OneOf != null)
             {
-                // If still uses allOf, verify structure
+                // If still uses oneOf, verify structure
                 Assert.Equal(2, nullableIntProperty.OneOf.Count);
                 Assert.Collection(nullableIntProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -51,11 +51,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.Equal("int32", nullableIntProperty.Format);
             }
 
-            // Check nullable string property has null in type directly or uses allOf
+            // Check nullable string property has null in type directly or uses oneOf
             var nullableStringProperty = schema.Properties["nullableString"];
             if (nullableStringProperty.OneOf != null)
             {
-                // If still uses allOf, verify structure
+                // If still uses oneOf, verify structure
                 Assert.Equal(2, nullableStringProperty.OneOf.Count);
                 Assert.Collection(nullableStringProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -68,11 +68,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.True(nullableStringProperty.Type?.HasFlag(JsonSchemaType.Null));
             }
 
-            // Check nullable bool property has null in type directly or uses allOf
+            // Check nullable bool property has null in type directly or uses oneOf
             var nullableBoolProperty = schema.Properties["nullableBool"];
             if (nullableBoolProperty.OneOf != null)
             {
-                // If still uses allOf, verify structure
+                // If still uses oneOf, verify structure
                 Assert.Equal(2, nullableBoolProperty.OneOf.Count);
                 Assert.Collection(nullableBoolProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -85,11 +85,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.True(nullableBoolProperty.Type?.HasFlag(JsonSchemaType.Null));
             }
 
-            // Check nullable DateTime property has null in type directly or uses allOf
+            // Check nullable DateTime property has null in type directly or uses oneOf
             var nullableDateTimeProperty = schema.Properties["nullableDateTime"];
             if (nullableDateTimeProperty.OneOf != null)
             {
-                // If still uses allOf, verify structure
+                // If still uses oneOf, verify structure
                 Assert.Equal(2, nullableDateTimeProperty.OneOf.Count);
                 Assert.Collection(nullableDateTimeProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -107,11 +107,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.Equal("date-time", nullableDateTimeProperty.Format);
             }
 
-            // Check nullable Guid property has null in type directly or uses allOf
+            // Check nullable Guid property has null in type directly or uses oneOf
             var nullableGuidProperty = schema.Properties["nullableGuid"];
             if (nullableGuidProperty.OneOf != null)
             {
-                // If still uses allOf, verify structure
+                // If still uses oneOf, verify structure
                 Assert.Equal(2, nullableGuidProperty.OneOf.Count);
                 Assert.Collection(nullableGuidProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -129,11 +129,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.Equal("uuid", nullableGuidProperty.Format);
             }
 
-            // Check nullable Uri property has null in type directly or uses allOf
+            // Check nullable Uri property has null in type directly or uses oneOf
             var nullableUriProperty = schema.Properties["nullableUri"];
             if (nullableUriProperty.OneOf != null)
             {
-                // If still uses allOf, verify structure
+                // If still uses oneOf, verify structure
                 Assert.Equal(2, nullableUriProperty.OneOf.Count);
                 Assert.Collection(nullableUriProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -172,7 +172,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
             Assert.Equal(JsonSchemaType.Object, schema.Type);
 
-            // Check nullable Todo property uses allOf with reference
+            // Check nullable Todo property uses oneOf with reference
             var nullableTodoProperty = schema.Properties["nullableTodo"];
             Assert.NotNull(nullableTodoProperty.OneOf);
             Assert.Equal(2, nullableTodoProperty.OneOf.Count);
@@ -180,7 +180,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item => Assert.Equal("Todo", ((OpenApiSchemaReference)item).Reference.Id));
 
-            // Check nullable Account property uses allOf with reference
+            // Check nullable Account property uses oneOf with reference
             var nullableAccountProperty = schema.Properties["nullableAccount"];
             Assert.NotNull(nullableAccountProperty.OneOf);
             Assert.Equal(2, nullableAccountProperty.OneOf.Count);
@@ -213,11 +213,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
             Assert.Equal(JsonSchemaType.Object, schema.Type);
 
-            // Check nullable List<Todo> property has null in type or uses allOf
+            // Check nullable List<Todo> property has null in type or uses oneOf
             var nullableTodoListProperty = schema.Properties["nullableTodoList"];
             if (nullableTodoListProperty.OneOf != null)
             {
-                // If still uses allOf, verify structure
+                // If still uses oneOf, verify structure
                 Assert.Equal(2, nullableTodoListProperty.OneOf.Count);
                 Assert.Collection(nullableTodoListProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -235,11 +235,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.True(nullableTodoListProperty.Type?.HasFlag(JsonSchemaType.Null));
             }
 
-            // Check nullable Todo[] property has null in type or uses allOf
+            // Check nullable Todo[] property has null in type or uses oneOf
             var nullableTodoArrayProperty = schema.Properties["nullableTodoArray"];
             if (nullableTodoArrayProperty.OneOf != null)
             {
-                // If still uses allOf, verify structure
+                // If still uses oneOf, verify structure
                 Assert.Equal(2, nullableTodoArrayProperty.OneOf.Count);
                 Assert.Collection(nullableTodoArrayProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -257,11 +257,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.True(nullableTodoArrayProperty.Type?.HasFlag(JsonSchemaType.Null));
             }
 
-            // Check nullable Dictionary<string, Todo> property has null in type or uses allOf
+            // Check nullable Dictionary<string, Todo> property has null in type or uses oneOf
             var nullableDictionaryProperty = schema.Properties["nullableDictionary"];
             if (nullableDictionaryProperty.OneOf != null)
             {
-                // If still uses allOf, verify structure
+                // If still uses oneOf, verify structure
                 Assert.Equal(2, nullableDictionaryProperty.OneOf.Count);
                 Assert.Collection(nullableDictionaryProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -300,7 +300,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
             Assert.Equal(JsonSchemaType.Object, schema.Type);
 
-            // Check nullable Status (with string converter) property uses allOf with reference
+            // Check nullable Status (with string converter) property uses oneOf with reference
             var nullableStatusProperty = schema.Properties["nullableStatus"];
             Assert.NotNull(nullableStatusProperty.OneOf);
             Assert.Equal(2, nullableStatusProperty.OneOf.Count);
@@ -308,7 +308,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item => Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id));
 
-            // Check nullable TaskStatus (without converter) property uses allOf
+            // Check nullable TaskStatus (without converter) property uses oneOf
             var nullableTaskStatusProperty = schema.Properties["nullableTaskStatus"];
             Assert.NotNull(nullableTaskStatusProperty.OneOf);
             Assert.Equal(2, nullableTaskStatusProperty.OneOf.Count);
@@ -337,11 +337,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
             Assert.Equal(JsonSchemaType.Object, schema.Type);
 
-            // Check nullable string with validation attributes has null in type or uses allOf
+            // Check nullable string with validation attributes has null in type or uses oneOf
             var nullableNameProperty = schema.Properties["nullableName"];
             if (nullableNameProperty.OneOf != null)
             {
-                // If still uses allOf for properties with validation, verify structure
+                // If still uses oneOf for properties with validation, verify structure
                 Assert.Equal(2, nullableNameProperty.OneOf.Count);
                 Assert.Collection(nullableNameProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -361,11 +361,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.Equal(50, nullableNameProperty.MaxLength);
             }
 
-            // Check nullable int with range validation has null in type or uses allOf
+            // Check nullable int with range validation has null in type or uses oneOf
             var nullableAgeProperty = schema.Properties["nullableAge"];
             if (nullableAgeProperty.OneOf != null)
             {
-                // If still uses allOf for properties with validation, verify structure
+                // If still uses oneOf for properties with validation, verify structure
                 Assert.Equal(2, nullableAgeProperty.OneOf.Count);
                 Assert.Collection(nullableAgeProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
@@ -387,11 +387,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 Assert.Equal("120", nullableAgeProperty.Maximum);
             }
 
-            // Check nullable string with description has null in type or uses allOf
+            // Check nullable string with description has null in type or uses oneOf
             var nullableDescriptionProperty = schema.Properties["nullableDescription"];
             if (nullableDescriptionProperty.OneOf != null)
             {
-                // If still uses allOf for properties with description, verify structure
+                // If still uses oneOf for properties with description, verify structure
                 Assert.Equal(2, nullableDescriptionProperty.OneOf.Count);
                 Assert.Collection(nullableDescriptionProperty.OneOf,
                     item => Assert.Equal(JsonSchemaType.Null, item.Type),
