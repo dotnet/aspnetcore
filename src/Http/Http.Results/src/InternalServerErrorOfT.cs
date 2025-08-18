@@ -66,6 +66,6 @@ public sealed class InternalServerError<TValue> : IResult, IEndpointMetadataProv
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status500InternalServerError, ContentTypeConstants.ApplicationJsonContentTypes));
-        builder.Metadata.Add(ApiEndpointMetadata.Instance);
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

@@ -244,6 +244,7 @@ public class ValidatableTypeInfoBenchmark
 
     private class MockValidatableTypeInfo(Type type, ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, members)
     {
+        protected override ValidationAttribute[] GetValidationAttributes() => [];
     }
 
     private class MockValidatablePropertyInfo(
