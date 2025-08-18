@@ -20,6 +20,36 @@ export class BinaryImageComponent {
 
   private static activeCacheKey: WeakMap<HTMLImageElement, string> = new WeakMap();
 
+  private static setupEventHandlers(
+    imgElement: HTMLImageElement,
+    cacheKey: string | null = null
+  ): void {
+    const onLoad = (_e: Event) => {
+      if (!cacheKey || BinaryImageComponent.activeCacheKey.get(imgElement) === cacheKey) {
+        BinaryImageComponent.loadingImages.delete(imgElement);
+        const containerElement = imgElement.parentElement;
+        if (containerElement) {
+          containerElement.style.removeProperty('--blazor-image-progress');
+        }
+      }
+      imgElement.removeEventListener('error', onError);
+    };
+
+    const onError = (_e: Event) => {
+      if (!cacheKey || BinaryImageComponent.activeCacheKey.get(imgElement) === cacheKey) {
+        BinaryImageComponent.loadingImages.delete(imgElement);
+        const containerElement = imgElement.parentElement;
+        if (containerElement) {
+          containerElement.style.removeProperty('--blazor-image-progress');
+        }
+      }
+      imgElement.removeEventListener('load', onLoad);
+    };
+
+    imgElement.addEventListener('load', onLoad, { once: true });
+    imgElement.addEventListener('error', onError, { once: true });
+  }
+
   /**
    * Opens or creates the cache storage
    */
@@ -89,13 +119,7 @@ export class BinaryImageComponent {
       this.blobUrls.set(imgElement, url);
       imgElement.src = url;
 
-      imgElement.onload = () => {
-        this.loadingImages.delete(imgElement);
-      };
-
-      imgElement.onerror = () => {
-        this.loadingImages.delete(imgElement);
-      };
+      this.setupEventHandlers(imgElement);
 
       return true;
     } catch (error) {
@@ -259,25 +283,7 @@ export class BinaryImageComponent {
       this.blobUrls.set(imgElement, url);
       imgElement.src = url;
 
-      imgElement.onload = () => {
-        if (this.activeCacheKey.get(imgElement) === cacheKey) {
-          this.loadingImages.delete(imgElement);
-          const containerElement = imgElement.parentElement;
-          if (containerElement) {
-            containerElement.style.removeProperty('--blazor-image-progress');
-          }
-        }
-      };
-
-      imgElement.onerror = () => {
-        if (this.activeCacheKey.get(imgElement) === cacheKey) {
-          this.loadingImages.delete(imgElement);
-          const containerElement = imgElement.parentElement;
-          if (containerElement) {
-            containerElement.style.removeProperty('--blazor-image-progress');
-          }
-        }
-      };
+      this.setupEventHandlers(imgElement, cacheKey);
 
       return true;
     } catch (error) {
