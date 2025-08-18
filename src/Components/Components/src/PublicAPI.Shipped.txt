@@ -265,10 +265,17 @@ Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.Dispose() -> void
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.PersistingComponentStateSubscription() -> void
+Microsoft.AspNetCore.Components.EnumRendererInfo
+Microsoft.AspNetCore.Components.EnumRendererInfo.Static = 0 -> Microsoft.AspNetCore.Components.EnumRendererInfo
+Microsoft.AspNetCore.Components.EnumRendererInfo.SSR = 1 -> Microsoft.AspNetCore.Components.EnumRendererInfo
+Microsoft.AspNetCore.Components.EnumRendererInfo.Server = 2 -> Microsoft.AspNetCore.Components.EnumRendererInfo
+Microsoft.AspNetCore.Components.EnumRendererInfo.WebAssembly = 3 -> Microsoft.AspNetCore.Components.EnumRendererInfo
+Microsoft.AspNetCore.Components.EnumRendererInfo.WebView = 4 -> Microsoft.AspNetCore.Components.EnumRendererInfo
 Microsoft.AspNetCore.Components.RendererInfo
 Microsoft.AspNetCore.Components.RendererInfo.IsInteractive.get -> bool
 Microsoft.AspNetCore.Components.RendererInfo.Name.get -> string!
-Microsoft.AspNetCore.Components.RendererInfo.RendererInfo(string! rendererName, bool isInteractive) -> void
+Microsoft.AspNetCore.Components.RendererInfo.RenderedType.get -> Microsoft.AspNetCore.Components.EnumRendererInfo
+Microsoft.AspNetCore.Components.RendererInfo.RendererInfo(Microsoft.AspNetCore.Components.EnumRendererInfo rendererType, bool isInteractive) -> void
 Microsoft.AspNetCore.Components.RenderFragment
 Microsoft.AspNetCore.Components.RenderFragment<TValue>
 Microsoft.AspNetCore.Components.RenderHandle

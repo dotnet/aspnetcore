@@ -26,7 +26,7 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
     private readonly Dispatcher _dispatcher;
     private readonly ResourceAssetCollection _resourceCollection;
     private readonly IInternalJSImportMethods _jsMethods;
-    private static readonly RendererInfo _componentPlatform = new("WebAssembly", isInteractive: true);
+    private static readonly RendererInfo _componentPlatform = new(EnumRendererInfo.WebAssembly, isInteractive: true);
 
     public WebAssemblyRenderer(IServiceProvider serviceProvider, ResourceAssetCollection resourceCollection, ILoggerFactory loggerFactory, JSComponentInterop jsComponentInterop)
         : base(serviceProvider, loggerFactory, DefaultWebAssemblyJSRuntime.Instance.ReadJsonSerializerOptions(), jsComponentInterop)

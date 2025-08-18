@@ -15,7 +15,7 @@
     [PersistentState]
     public int CustomValue { get; set; }
 
-    private string _renderMode = "SSR";
+    private EnumRendererInfo _renderMode = EnumRendererInfo.SSR;
 
     protected override void OnInitialized()
     {
@@ -24,6 +24,6 @@
         {
             CustomValue = !RendererInfo.IsInteractive ? 42 : 0;
         }
-        _renderMode = OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+        _renderMode = OperatingSystem.IsBrowser() ? EnumRendererInfo.WebAssembly : EnumRendererInfo.Server;
     }
 }

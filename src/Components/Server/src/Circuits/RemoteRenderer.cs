@@ -19,7 +19,7 @@ internal partial class RemoteRenderer : WebRenderer
 #pragma warning restore CA1852 // Seal internal types
 {
     private static readonly Task CanceledTask = Task.FromCanceled(new CancellationToken(canceled: true));
-    private static readonly RendererInfo _componentPlatform = new("Server", isInteractive: true);
+    private static readonly RendererInfo _componentPlatform = new(EnumRendererInfo.Server, isInteractive: true);
 
     private readonly CircuitClientProxy _client;
     private readonly CircuitOptions _options;

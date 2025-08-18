@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.HtmlRendering.Infrastructure;
 /// </summary>
 public partial class StaticHtmlRenderer : Renderer
 {
-    private static readonly RendererInfo _componentPlatform = new RendererInfo("Static", isInteractive: false);
+    private static readonly RendererInfo _componentPlatform = new RendererInfo(EnumRendererInfo.Static, isInteractive: false);
 
     private readonly NavigationManager? _navigationManager;
 

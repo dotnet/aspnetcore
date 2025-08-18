@@ -12,11 +12,11 @@
 
 @code {
 
-    private string _renderMode = "";
+    private EnumRendererInfo _renderMode;
 
     protected override void OnInitialized()
     {
-        _renderMode = RendererInfo.Name;
+        _renderMode = RendererInfo.RenderedType;
         if (!RendererInfo.IsInteractive)
         {
             InteractiveServerState.State = "Server state";
