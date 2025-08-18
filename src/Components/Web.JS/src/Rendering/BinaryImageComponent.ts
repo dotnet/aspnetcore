@@ -10,6 +10,8 @@ import { ConsoleLogger } from '../Platform/Logging/Loggers';
 export class BinaryImageComponent {
   private static readonly CACHE_NAME = 'blazor-image-cache';
 
+  private static cachePromise?: Promise<Cache | null> = undefined;
+
   private static logger: Logger = new ConsoleLogger(LogLevel.Warning);
 
   private static blobUrls: WeakMap<HTMLImageElement, string> = new WeakMap();
@@ -22,21 +24,28 @@ export class BinaryImageComponent {
    * Opens or creates the cache storage
    */
   private static async getCache(): Promise<Cache | null> {
-    try {
-      if (!('caches' in window)) {
-        this.logger.log(LogLevel.Warning, 'Cache API not supported in this browser');
-        return null;
-      }
-      return await caches.open(this.CACHE_NAME);
-    } catch (error) {
-      this.logger.log(LogLevel.Error, 'Failed to open cache');
-      if (error instanceof Error) {
-        this.logger.log(LogLevel.Error, error);
-      } else {
-        this.logger.log(LogLevel.Error, String(error));
-      }
+    if (!('caches' in window)) {
+      this.logger.log(LogLevel.Warning, 'Cache API not supported in this browser');
       return null;
     }
+
+    if (!this.cachePromise) {
+      this.cachePromise = (async () => {
+        try {
+          return await caches.open(this.CACHE_NAME);
+        } catch (error) {
+          console.error('Failed to open cache:', error);
+          return null;
+        }
+      })();
+    }
+
+    const cache = await this.cachePromise;
+    // If opening failed previously, allow retry next time
+    if (!cache) {
+      this.cachePromise = undefined;
+    }
+    return cache;
   }
 
   /**
@@ -45,11 +54,9 @@ export class BinaryImageComponent {
   public static async trySetFromCache(imgElement: HTMLImageElement, cacheKey: string): Promise<boolean> {
     if (!cacheKey || !imgElement) {
       this.logger.log(LogLevel.Warning, 'Invalid cache key or image element');
-      this.logger.log(LogLevel.Debug, `Cache key: ${cacheKey}, Image element: ${imgElement}`);
+      this.logger.log(LogLevel.Warning, `Cache key: ${cacheKey}, Image element: ${imgElement}`);
       return false;
     }
-    // this.logger.log(LogLevel.Debug, 'Using cache');
-
 
     try {
       const cache = await this.getCache();
@@ -61,11 +68,11 @@ export class BinaryImageComponent {
       const cachedResponse = await cache.match(cacheUrl);
 
       if (!cachedResponse) {
-        this.logger.log(LogLevel.Debug, `Cache miss for key: ${cacheKey}`);
+        console.log(`Cache miss for key: ${cacheKey}`);
         return false;
       }
 
-      this.logger.log(LogLevel.Debug, `Cache hit for key: ${cacheKey}`);
+      console.log(`Cache hit for key: ${cacheKey}`);
 
       // Get blob from cached response
       const blob = await cachedResponse.blob();
@@ -92,12 +99,7 @@ export class BinaryImageComponent {
 
       return true;
     } catch (error) {
-      this.logger.log(LogLevel.Error, `Error loading from cache for key ${cacheKey}`);
-      if (error instanceof Error) {
-        this.logger.log(LogLevel.Error, error);
-      } else {
-        this.logger.log(LogLevel.Error, String(error));
-      }
+      console.error(`Error loading from cache for key ${cacheKey}:`, error);
       return false;
     }
   }
@@ -114,7 +116,7 @@ export class BinaryImageComponent {
     if (url) {
       URL.revokeObjectURL(url);
       this.blobUrls.delete(imgElement);
-      this.logger.log(LogLevel.Debug, 'Revoked blob URL for element');
+      console.log('Revoked blob URL for element');
     }
 
     this.loadingImages.delete(imgElement);
@@ -126,26 +128,12 @@ export class BinaryImageComponent {
    */
   public static async clearCache(): Promise<boolean> {
     try {
-      const cache = await this.getCache();
-      if (!cache) {
-        return false;
-      }
+      const deleted = await caches.delete(this.CACHE_NAME);
 
-      // Get all cached requests
-      const requests = await cache.keys();
-
-      // Delete all cached entries
-      await Promise.all(requests.map(request => cache.delete(request)));
-
-      this.logger.log(LogLevel.Information, `Cleared ${requests.length} cached images`);
+      console.log(`Cleared ${deleted ? 1 : 0} cache`);
       return true;
     } catch (error) {
-      this.logger.log(LogLevel.Error, 'Failed to clear cache');
-      if (error instanceof Error) {
-        this.logger.log(LogLevel.Error, error);
-      } else {
-        this.logger.log(LogLevel.Error, String(error));
-      }
+      console.error('Failed to clear cache:', error);
       return false;
     }
   }
@@ -190,7 +178,7 @@ export class BinaryImageComponent {
     totalBytes: number | null
   ): Promise<boolean> {
     if (!imgElement || !streamRef) {
-      this.logger.log(LogLevel.Warning, 'Invalid element or stream reference');
+      console.warn('Invalid element or stream reference');
       return false;
     }
     // Record active cache key for stale detection
@@ -213,21 +201,11 @@ export class BinaryImageComponent {
             try {
               await cache.put(encodeURIComponent(cacheKey), cacheResponse);
             } catch (err) {
-              this.logger.log(LogLevel.Error, 'Failed to cache streamed response');
-              if (err instanceof Error) {
-                this.logger.log(LogLevel.Error, err);
-              } else {
-                this.logger.log(LogLevel.Error, String(err));
-              }
+              console.error('Failed to cache streamed response', err);
             }
           }
         } catch (err) {
-          this.logger.log(LogLevel.Error, 'Error setting up stream caching');
-          if (err instanceof Error) {
-            this.logger.log(LogLevel.Error, err);
-          } else {
-            this.logger.log(LogLevel.Error, String(err));
-          }
+          console.error('Error setting up stream caching', err);
         }
       }
 
@@ -304,12 +282,7 @@ export class BinaryImageComponent {
       return true;
     } catch (error) {
       if (this.activeCacheKey.get(imgElement) === cacheKey) {
-        this.logger.log(LogLevel.Error, 'Failed to load image from stream reference');
-        if (error instanceof Error) {
-          this.logger.log(LogLevel.Error, error);
-        } else {
-          this.logger.log(LogLevel.Error, String(error));
-        }
+        console.error('Failed to load image from stream reference', error);
         this.loadingImages.delete(imgElement);
       }
       return false;
