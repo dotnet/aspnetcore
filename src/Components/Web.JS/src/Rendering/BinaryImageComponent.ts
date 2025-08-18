@@ -7,8 +7,6 @@
 export class BinaryImageComponent {
   private static readonly CACHE_NAME = 'blazor-image-cache';
 
-  private static readonly CACHE_PREFIX = 'https://blazor-images/';
-
   private static blobUrls: WeakMap<HTMLImageElement, string> = new WeakMap();
 
   private static loadingImages: Set<HTMLImageElement> = new Set();
@@ -32,13 +30,6 @@ export class BinaryImageComponent {
   }
 
   /**
-   * Creates a cache URL from a cache key
-   */
-  private static getCacheUrl(cacheKey: string): string {
-    return `${this.CACHE_PREFIX}${encodeURIComponent(cacheKey)}`;
-  }
-
-  /**
    * Tries to set image from cache
    */
   public static async trySetFromCache(imgElement: HTMLImageElement, cacheKey: string): Promise<boolean> {
@@ -51,11 +42,10 @@ export class BinaryImageComponent {
     try {
       const cache = await this.getCache();
       if (!cache) {
-        console.warn('Cache not available');
         return false;
       }
 
-      const cacheUrl = this.getCacheUrl(cacheKey);
+      const cacheUrl = encodeURIComponent(cacheKey);
       const cachedResponse = await cache.match(cacheUrl);
 
       if (!cachedResponse) {
@@ -185,7 +175,7 @@ export class BinaryImageComponent {
             const cacheResponse = new Response(cacheBranch);
 
             try {
-              await cache.put(this.getCacheUrl(cacheKey), cacheResponse);
+              await cache.put(encodeURIComponent(cacheKey), cacheResponse);
             } catch (err) {
               console.error('Failed to cache streamed response', err);
             }
