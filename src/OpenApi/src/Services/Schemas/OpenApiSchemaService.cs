@@ -281,16 +281,16 @@ internal sealed class OpenApiSchemaService(
         {
             foreach (var property in schema.Properties)
             {
+                var resolvedProperty = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
                 if (property.Value is OpenApiSchema targetSchema &&
                     targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
                     isNullableProperty is true)
                 {
-                    var resolvedProperty = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
                     schema.Properties[property.Key] = resolvedProperty.CreateOneOfNullableWrapper();
                 }
                 else
                 {
-                    schema.Properties[property.Key] = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
+                    schema.Properties[property.Key] = resolvedProperty;
                 }
             }
         }

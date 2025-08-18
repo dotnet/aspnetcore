@@ -423,7 +423,7 @@ internal sealed class OpenApiDocumentService(
             .Select(responseFormat => responseFormat.MediaType);
         foreach (var contentType in apiResponseFormatContentTypes)
         {
-            IOpenApiSchema schema = new OpenApiSchema();
+            IOpenApiSchema? schema = null;
             if (apiResponseType.Type is { } responseType)
             {
                 schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
@@ -431,7 +431,7 @@ internal sealed class OpenApiDocumentService(
                     ? schema.CreateOneOfNullableWrapper()
                     : schema;
             }
-            response.Content[contentType] = new OpenApiMediaType { Schema = schema };
+            response.Content[contentType] = new OpenApiMediaType { Schema = schema ?? new OpenApiSchema() };
         }
 
         // MVC's `ProducesAttribute` doesn't implement the produces metadata that the ApiExplorer
