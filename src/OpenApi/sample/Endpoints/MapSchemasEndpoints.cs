@@ -54,13 +54,19 @@ public static class SchemasEndpointsExtensions
             NullableProperty = null,
             NullableComplexProperty = null
         }));
+        schemas.MapGet("/nullable-return-type", NullableResponseModel? () => new NullableResponseModel
+        {
+            RequiredProperty = "required",
+            NullableProperty = null,
+            NullableComplexProperty = null
+        });
         schemas.MapPost("/nullable-request", (NullableRequestModel? request) => Results.Ok(request));
         schemas.MapPost("/complex-nullable-hierarchy", (ComplexHierarchyModel model) => Results.Ok(model));
 
         // Additional edge cases for nullable testing
         schemas.MapPost("/nullable-array-elements", (NullableArrayModel model) => Results.Ok(model));
-        schemas.MapGet("/optional-with-default", () => Results.Ok(new ModelWithDefaults()));
-        schemas.MapGet("/nullable-enum-response", () => Results.Ok(new EnumNullableModel
+        schemas.MapGet("/optional-with-default", () => TypedResults.Ok(new ModelWithDefaults()));
+        schemas.MapGet("/nullable-enum-response", () => TypedResults.Ok(new EnumNullableModel
         {
             RequiredEnum = TestEnum.Value1,
             NullableEnum = null
