@@ -482,12 +482,13 @@ internal abstract class CertificateManager
             {
                 Log.NoHttpsDevelopmentCertificate(GetDescription(certificate));
             }
+            certificate.Dispose();
             return ImportCertificateResult.NoDevelopmentHttpsCertificate;
         }
 
         try
         {
-            SaveCertificate(certificate);
+            certificate = SaveCertificate(certificate);
         }
         catch (Exception e)
         {
@@ -495,9 +496,11 @@ internal abstract class CertificateManager
             {
                 Log.SaveCertificateInStoreError(e.ToString());
             }
+            certificate.Dispose();
             return ImportCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
         }
 
+        certificate.Dispose();
         return ImportCertificateResult.Succeeded;
     }
 
