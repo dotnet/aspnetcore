@@ -115,12 +115,10 @@ public class PersistentComponentState
             throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
         }
 
-        if (_currentState.ContainsKey(key))
+        if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options)))
         {
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
-
-        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, JsonSerializerOptionsProvider.Options));
     }
 
     [RequiresUnreferencedCode("JSON serialization and deserialization might require types that cannot be statically analyzed.")]
@@ -133,12 +131,10 @@ public class PersistentComponentState
             throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
         }
 
-        if (_currentState.ContainsKey(key))
+        if (!_currentState.TryAdd(key, JsonSerializer.SerializeToUtf8Bytes(instance, type, JsonSerializerOptionsProvider.Options)))
         {
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
-
-        _currentState.Add(key, JsonSerializer.SerializeToUtf8Bytes(instance, type, JsonSerializerOptionsProvider.Options));
     }
 
     /// <summary>
@@ -155,12 +151,10 @@ public class PersistentComponentState
             throw new InvalidOperationException("Persisting state is only allowed during an OnPersisting callback.");
         }
 
-        if (_currentState.ContainsKey(key))
+        if (!_currentState.TryAdd(key, data))
         {
             throw new ArgumentException($"There is already a persisted object under the same key '{key}'");
         }
-
-        _currentState.Add(key, data);
     }
 
     /// <summary>

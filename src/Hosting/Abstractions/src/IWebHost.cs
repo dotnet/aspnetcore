@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// Represents a configured web host.
 /// </summary>
+[Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
 public interface IWebHost : IDisposable
 {
     /// <summary>

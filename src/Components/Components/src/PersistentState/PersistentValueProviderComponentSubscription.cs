@@ -143,9 +143,9 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
                 Log.RestoringValueFromState(_logger, _storageKey, _propertyType.Name, _propertyName);
                 var sequence = new ReadOnlySequence<byte>(data!);
                 _lastValue = _customSerializer.Restore(_propertyType, sequence);
+                _ignoreComponentPropertyValue = true;
                 if (!skipNotifications)
                 {
-                    _ignoreComponentPropertyValue = true;
                     _subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
                 }
             }
@@ -160,9 +160,9 @@ internal partial class PersistentValueProviderComponentSubscription : IDisposabl
             {
                 Log.RestoredValueFromPersistentState(_logger, _storageKey, _propertyType.Name, "null", _propertyName);
                 _lastValue = value;
+                _ignoreComponentPropertyValue = true;
                 if (!skipNotifications)
                 {
-                    _ignoreComponentPropertyValue = true;
                     _subscriber.NotifyCascadingValueChanged(ParameterViewLifetime.Unbound);
                 }
             }
