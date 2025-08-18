@@ -34,12 +34,12 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// <summary>
     /// Gets or sets the associated <see cref="ElementReference"/>.
     /// </summary>
-    [DisallowNull] public ElementReference? Element { get; protected set; }
+    [DisallowNull] private ElementReference? Element { get; set; }
 
     /// <summary>
     /// Gets the injected <see cref="IJSRuntime"/>.
     /// </summary>
-    [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the source for the image.
@@ -107,7 +107,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// <summary>
     /// Queues a render of the component.
     /// </summary>
-    protected void Render()
+    private void Render()
     {
         if (!_hasPendingRender && _renderHandle.IsInitialized)
         {
@@ -120,7 +120,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// <summary>
     /// Builds the render tree for the component.
     /// </summary>
-    protected virtual void BuildRenderTree(RenderTreeBuilder builder)
+    private void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "img");
 

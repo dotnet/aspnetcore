@@ -129,17 +129,32 @@ export class BinaryImageComponent {
   }
 
   /**
-   * Cleans up everything
+   * Async iterator over a ReadableStream that ensures proper cancellation when iteration stops early.
    */
-  public static async clearAll(): Promise<boolean> {
-    // Clear cache
-    await this.clearCache();
-
-    // Clear loading state
-    this.loadingImages.clear();
-
-    console.log('Cleared all image component state');
-    return true;
+  private static async *iterateStream(stream: ReadableStream<Uint8Array>): AsyncGenerator<Uint8Array, void, unknown> {
+    const reader = stream.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) {
+          return;
+        }
+        if (value) {
+          yield value;
+        }
+      }
+    } finally {
+      try {
+        await reader.cancel();
+      } catch {
+        // ignore
+      }
+      try {
+        reader.releaseLock?.();
+      } catch {
+        // ignore
+      }
+    }
   }
 
   /**
@@ -187,20 +202,10 @@ export class BinaryImageComponent {
 
       let bytesRead = 0;
       const accumulatedChunks: Uint8Array[] = [];
-      const reader = displayStream.getReader();
 
-      for (;;) {
+      for await (const value of this.iterateStream(displayStream)) {
         if (this.activeCacheKey.get(imgElement) !== cacheKey) {
-          try {
-            reader.cancel();
-          } catch {
-            // ignore
-          }
           return false;
-        }
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
         }
         if (value) {
           bytesRead += value.byteLength;

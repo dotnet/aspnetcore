@@ -13,13 +13,8 @@ Microsoft.AspNetCore.Components.Web.Image.Image.Attach(Microsoft.AspNetCore.Comp
 Microsoft.AspNetCore.Components.Web.Image.Image.CacheStrategy.get -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
 Microsoft.AspNetCore.Components.Web.Image.Image.CacheStrategy.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.DisposeAsync() -> System.Threading.Tasks.ValueTask
-Microsoft.AspNetCore.Components.Web.Image.Image.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
-Microsoft.AspNetCore.Components.Web.Image.Image.Element.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Image() -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.get -> Microsoft.JSInterop.IJSRuntime!
-Microsoft.AspNetCore.Components.Web.Image.Image.JSRuntime.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.OnAfterRenderAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.Web.Image.Image.Render() -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.ImageSource?
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.set -> void
@@ -34,4 +29,3 @@ Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.Invo
 override Microsoft.AspNetCore.Components.Forms.InputHidden.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputHidden.TryParseValueFromString(string? value, out string? result, out string? validationErrorMessage) -> bool
 virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool
-virtual Microsoft.AspNetCore.Components.Web.Image.Image.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
