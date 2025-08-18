@@ -47,11 +47,6 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     [Parameter] public ImageSource? Source { get; set; }
 
     /// <summary>
-    /// Gets or sets the caching strategy for the image.
-    /// </summary>
-    [Parameter] public CacheStrategy CacheStrategy { get; set; } = CacheStrategy.Memory;
-
-    /// <summary>
     /// Gets or sets the attributes for the image.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
@@ -155,23 +150,18 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         {
             SetLoadingState();
 
-            if (CacheStrategy == CacheStrategy.Memory)
+            // Always try to load from cache first
+            bool foundInCache = await JSRuntime.InvokeAsync<bool>(
+                "Blazor._internal.BinaryImageComponent.trySetFromCache",
+                Element, source.CacheKey);
+
+            if (foundInCache)
             {
-                Console.WriteLine($"Loading image from memory cache: {source.CacheKey}");
-
-                bool foundInCache = await JSRuntime.InvokeAsync<bool>(
-                    "Blazor._internal.BinaryImageComponent.trySetFromCache",
-                    Element, source.CacheKey);
-
-                if (foundInCache)
+                if (_activeCacheKey == source.CacheKey)
                 {
-                    if (_activeCacheKey == source.CacheKey)
-                    {
-                        Console.WriteLine($"Image loaded from memory cache: {source.CacheKey}");
-                        SetSuccessState();
-                    }
-                    return;
+                    SetSuccessState();
                 }
+                return;
             }
 
             await StreamImage(source);
@@ -213,7 +203,6 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
                 streamRef,
                 source.MimeType,
                 source.CacheKey,
-                CacheStrategy.ToString().ToLowerInvariant(),
                 source.Length);
         }
         catch (Exception ex)

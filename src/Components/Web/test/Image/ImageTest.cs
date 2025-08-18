@@ -37,7 +37,6 @@ public class ImageTest
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = source,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
         }));
 
         Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.trySetFromCache"));
@@ -57,7 +56,6 @@ public class ImageTest
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = source,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
         }));
 
         Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.trySetFromCache"));
@@ -76,14 +74,12 @@ public class ImageTest
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s1,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
         }));
 
         var s2 = new ImageSource(new byte[20], "image/png", cacheKey: "same");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s2,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
         }));
 
         // Implementation skips reloading when cache key unchanged.
@@ -102,7 +98,6 @@ public class ImageTest
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = null,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
         }));
 
         Assert.Equal(0, js.TotalInvocationCount);
@@ -122,7 +117,6 @@ public class ImageTest
         await renderer.RenderRootComponentAsync(id1, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = shared,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
         }));
 
         // Consume stream, ensure position != 0
@@ -137,7 +131,6 @@ public class ImageTest
         await renderer.RenderRootComponentAsync(id2, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = shared,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
         }));
 
         // Because the Image component swallows the exception internally, we assert that no additional JS load occurred
@@ -155,28 +148,10 @@ public class ImageTest
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = source,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
         }));
 
         await comp.DisposeAsync();
         Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.revokeImageUrl"));
-    }
-
-    [Fact]
-    public async Task CacheStrategyNone_SkipsCacheProbe()
-    {
-        var js = new FakeImageJsRuntime(cacheHit: false);
-        using var renderer = CreateRenderer(js);
-        var comp = (Image)renderer.InstantiateComponent<Image>();
-        var id = renderer.AssignRootComponentId(comp);
-        var source = new ImageSource(new byte[8], "image/png", "none-key");
-        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(Image.Source)] = source,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.None,
-        }));
-        Assert.Equal(0, js.Count("Blazor._internal.BinaryImageComponent.trySetFromCache"));
-        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.loadImageFromStream"));
     }
 
     [Fact]
@@ -190,13 +165,11 @@ public class ImageTest
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s1,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
         }));
         var s2 = new ImageSource(new byte[6], "image/png", "key-b");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s2,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
         }));
         Assert.Equal(2, js.Count("Blazor._internal.BinaryImageComponent.trySetFromCache"));
         Assert.Equal(2, js.Count("Blazor._internal.BinaryImageComponent.loadImageFromStream"));
@@ -213,7 +186,6 @@ public class ImageTest
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = null,
-            [nameof(Image.CacheStrategy)] = CacheStrategy.Memory,
         }));
         await comp.DisposeAsync();
         Assert.Equal(0, js.Count("Blazor._internal.BinaryImageComponent.revokeImageUrl"));

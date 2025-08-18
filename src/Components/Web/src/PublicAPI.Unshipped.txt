@@ -3,15 +3,10 @@ Microsoft.AspNetCore.Components.Forms.InputHidden
 Microsoft.AspNetCore.Components.Forms.InputHidden.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
 Microsoft.AspNetCore.Components.Forms.InputHidden.Element.set -> void
 Microsoft.AspNetCore.Components.Forms.InputHidden.InputHidden() -> void
-Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
-Microsoft.AspNetCore.Components.Web.Image.CacheStrategy.Memory = 1 -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
-Microsoft.AspNetCore.Components.Web.Image.CacheStrategy.None = 0 -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
 Microsoft.AspNetCore.Components.Web.Image.Image
 Microsoft.AspNetCore.Components.Web.Image.Image.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
 Microsoft.AspNetCore.Components.Web.Image.Image.AdditionalAttributes.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.CacheStrategy.get -> Microsoft.AspNetCore.Components.Web.Image.CacheStrategy
-Microsoft.AspNetCore.Components.Web.Image.Image.CacheStrategy.set -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Web.Image.Image.Image() -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.OnAfterRenderAsync() -> System.Threading.Tasks.Task!

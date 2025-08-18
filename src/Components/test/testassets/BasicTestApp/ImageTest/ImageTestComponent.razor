@@ -28,8 +28,7 @@
     <h4>PNG basic</h4>
     <Image @ref="@_pngBasicRef"
         id="png-basic"
-        Source="@_basicImageSource"
-        CacheStrategy="CacheStrategy.None" />
+        Source="@_basicImageSource" />
 }
 
 @if (_jpgStream)
@@ -37,8 +36,7 @@
     <h4>JPG Stream</h4>
     <Image @ref="@_jpgStreamRef"
         id="jpg-stream"
-        Source="@_jpgStreamSource"
-        CacheStrategy="CacheStrategy.None" />
+        Source="@_jpgStreamSource" />
 }
 
 @if (_dynamicSource)
@@ -46,8 +44,7 @@
     <h4>Dynamic Source Image</h4>
     <Image @ref="@_dynamicSourceRef"
         id="dynamic-source"
-        Source="@_dynamicImageSource"
-        CacheStrategy="CacheStrategy.None" />
+        Source="@_dynamicImageSource" />
 }
 
 @if (_pair1Visible)
@@ -55,16 +52,14 @@
     <h4>Pair Image 1</h4>
     <Image @ref="@_pair1Ref"
            id="pair-image-1"
-           Source="@_pairSource"
-           CacheStrategy="CacheStrategy.Memory" />
+           Source="@_pairSource" />
 }
 @if (_pair2Visible)
 {
     <h4>Pair Image 2</h4>
     <Image @ref="@_pair2Ref"
            id="pair-image-2"
-           Source="@_pairSource"
-           CacheStrategy="CacheStrategy.Memory" />
+           Source="@_pairSource" />
 }
 
 @if (_errorImage)
@@ -72,8 +67,7 @@
     <h4>Error Image</h4>
     <Image @ref="_errorRef"
             id="error-image"
-            Source="@_errorSource"
-            CacheStrategy="CacheStrategy.None" />
+            Source="@_errorSource" />
 }
 
 @if (_cachedJpgVisible)
@@ -81,8 +75,7 @@
     <h4>Cached JPG</h4>
     <Image @ref="@_cachedJpgRef"
            id="cached-jpg"
-           Source="@_cachedJpgSource"
-           CacheStrategy="CacheStrategy.Memory" />
+           Source="@_cachedJpgSource" />
 }
 
 @code {

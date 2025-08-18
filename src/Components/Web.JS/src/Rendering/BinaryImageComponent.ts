@@ -165,7 +165,6 @@ export class BinaryImageComponent {
     streamRef: { stream: () => Promise<ReadableStream<Uint8Array>> },
     mimeType: string,
     cacheKey: string,
-    cacheStrategy: string,
     totalBytes: number | null
   ): Promise<boolean> {
     if (!imgElement || !streamRef) {
@@ -181,7 +180,7 @@ export class BinaryImageComponent {
 
       // Tee the original stream so one branch goes into Cache API as a streamed Response
       let displayStream: ReadableStream<Uint8Array> = readable;
-      if (cacheStrategy === 'memory' && cacheKey) {
+      if (cacheKey) {
         try {
           const cache = await this.getCache();
           if (cache) {
