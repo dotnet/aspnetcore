@@ -196,9 +196,9 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
                         var displayName =
                             parameter.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
-                            parameter.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
+                            parameter.GetJsonPropertyName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
                             correspondingProperty.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
-                            correspondingProperty.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
+                            correspondingProperty.GetJsonPropertyName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
                             parameter.Name ??
                             correspondingProperty.Name;
 
@@ -260,7 +260,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
             var displayName =
                 member.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
-                member.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
+                member.GetJsonPropertyName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
                 member.Name;
 
             members.Add(new ValidatableProperty(

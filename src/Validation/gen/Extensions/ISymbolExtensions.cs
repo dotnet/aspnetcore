@@ -19,7 +19,6 @@ internal static class ISymbolExtensions
 
         if (displayNameAttribute is not null)
         {
-            // For the [Foo(Name = "bar")] case
             if (!displayNameAttribute.NamedArguments.IsDefaultOrEmpty)
             {
                 foreach (var namedArgument in displayNameAttribute.NamedArguments)
@@ -33,8 +32,20 @@ internal static class ISymbolExtensions
                     }
                 }
             }
+        }
 
-            // For the [Foo("bar")] case
+        return null;
+    }
+
+    public static string? GetJsonPropertyName(this ISymbol property, INamedTypeSymbol jsonPropertyNameAttribute)
+    {
+        var displayNameAttribute = property.GetAttributes()
+            .FirstOrDefault(attribute =>
+                attribute.AttributeClass is { } attributeClass &&
+                SymbolEqualityComparer.Default.Equals(attributeClass, jsonPropertyNameAttribute));
+
+        if (displayNameAttribute is not null)
+        {
             if (displayNameAttribute.ConstructorArguments.Length is 1)
             {
                 var arg = displayNameAttribute.ConstructorArguments[0];
