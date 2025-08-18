@@ -196,8 +196,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
                         var displayName =
                             parameter.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
-                            parameter.GetJsonPropertyName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
                             correspondingProperty.GetDisplayName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_DisplayAttribute)) ??
+                            parameter.GetJsonPropertyName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
                             correspondingProperty.GetJsonPropertyName(wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Text_Json_Serialization_JsonPropertyNameAttribute)) ??
                             parameter.Name ??
                             correspondingProperty.Name;

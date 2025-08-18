@@ -15,6 +15,7 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -22,7 +23,6 @@ using Microsoft.Extensions.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder();
 
