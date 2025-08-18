@@ -428,7 +428,7 @@ internal sealed class OpenApiDocumentService(
             {
                 schema = await _componentService.GetOrCreateSchemaAsync(document, responseType, scopedServiceProvider, schemaTransformers, null, cancellationToken);
                 schema = apiResponseType.ShouldApplyNullableResponseSchema(apiDescription)
-                    ? schema.CreateAllOfNullableWrapper()
+                    ? schema.CreateOneOfNullableWrapper()
                     : schema;
             }
             response.Content[contentType] = new OpenApiMediaType { Schema = schema };
@@ -753,7 +753,7 @@ internal sealed class OpenApiDocumentService(
             var contentType = requestFormat.MediaType;
             var schema = await _componentService.GetOrCreateSchemaAsync(document, bodyParameter.Type, scopedServiceProvider, schemaTransformers, bodyParameter, cancellationToken: cancellationToken);
             schema = bodyParameter.ShouldApplyNullableRequestSchema()
-                ? schema.CreateAllOfNullableWrapper()
+                ? schema.CreateOneOfNullableWrapper()
                 : schema;
             requestBody.Content[contentType] = new OpenApiMediaType { Schema = schema };
         }

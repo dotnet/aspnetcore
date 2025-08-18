@@ -286,7 +286,7 @@ internal sealed class OpenApiSchemaService(
                     isNullableProperty is true)
                 {
                     var resolvedProperty = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
-                    schema.Properties[property.Key] = resolvedProperty.CreateAllOfNullableWrapper();
+                    schema.Properties[property.Key] = resolvedProperty.CreateOneOfNullableWrapper();
                 }
                 else
                 {

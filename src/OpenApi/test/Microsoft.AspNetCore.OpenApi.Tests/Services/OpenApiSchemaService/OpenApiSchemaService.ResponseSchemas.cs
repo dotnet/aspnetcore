@@ -182,10 +182,10 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var response = responses.Value;
             Assert.True(response.Content.TryGetValue("application/json", out var mediaType));
             var schema = mediaType.Schema;
-            Assert.NotNull(schema.AllOf);
-            Assert.Equal(2, schema.AllOf.Count);
-            // Check that the allOf consists of a nullable schema and the GetTodo schema
-            Assert.Collection(schema.AllOf,
+            Assert.NotNull(schema.OneOf);
+            Assert.Equal(2, schema.OneOf.Count);
+            // Check that the oneOf consists of a nullable schema and the GetTodo schema
+            Assert.Collection(schema.OneOf,
                 item =>
                 {
                     Assert.NotNull(item);
@@ -363,9 +363,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var pointResponse = pointResponses.Value;
             Assert.True(pointResponse.Content.TryGetValue("application/json", out var pointMediaType));
             var pointSchema = pointMediaType.Schema;
-            Assert.NotNull(pointSchema.AllOf);
-            Assert.Equal(2, pointSchema.AllOf.Count);
-            Assert.Collection(pointSchema.AllOf,
+            Assert.NotNull(pointSchema.OneOf);
+            Assert.Equal(2, pointSchema.OneOf.Count);
+            Assert.Collection(pointSchema.OneOf,
                 item =>
                 {
                     Assert.NotNull(item);
@@ -396,9 +396,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var coordinateResponse = coordinateResponses.Value;
             Assert.True(coordinateResponse.Content.TryGetValue("application/json", out var coordinateMediaType));
             var coordinateSchema = coordinateMediaType.Schema;
-            Assert.NotNull(coordinateSchema.AllOf);
-            Assert.Equal(2, coordinateSchema.AllOf.Count);
-            Assert.Collection(coordinateSchema.AllOf,
+            Assert.NotNull(coordinateSchema.OneOf);
+            Assert.Equal(2, coordinateSchema.OneOf.Count);
+            Assert.Collection(coordinateSchema.OneOf,
                 item =>
                 {
                     Assert.NotNull(item);
@@ -451,14 +451,14 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            // Verify nullable List<Todo> response uses allOf
+            // Verify nullable List<Todo> response uses oneOf
             var listOperation = document.Paths["/api/nullable-list"].Operations[HttpMethod.Get];
             var listResponse = Assert.Single(listOperation.Responses).Value;
             Assert.True(listResponse.Content.TryGetValue("application/json", out var listMediaType));
             var listSchema = listMediaType.Schema;
-            Assert.NotNull(listSchema.AllOf);
-            Assert.Equal(2, listSchema.AllOf.Count);
-            Assert.Collection(listSchema.AllOf,
+            Assert.NotNull(listSchema.OneOf);
+            Assert.Equal(2, listSchema.OneOf.Count);
+            Assert.Collection(listSchema.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item =>
                 {
@@ -467,14 +467,14 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
                 });
 
-            // Verify nullable Todo[] response uses allOf
+            // Verify nullable Todo[] response uses oneOf
             var arrayOperation = document.Paths["/api/nullable-array"].Operations[HttpMethod.Get];
             var arrayResponse = Assert.Single(arrayOperation.Responses).Value;
             Assert.True(arrayResponse.Content.TryGetValue("application/json", out var arrayMediaType));
             var arraySchema = arrayMediaType.Schema;
-            Assert.NotNull(arraySchema.AllOf);
-            Assert.Equal(2, arraySchema.AllOf.Count);
-            Assert.Collection(arraySchema.AllOf,
+            Assert.NotNull(arraySchema.OneOf);
+            Assert.Equal(2, arraySchema.OneOf.Count);
+            Assert.Collection(arraySchema.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item =>
                 {
@@ -483,14 +483,14 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
                 });
 
-            // Verify nullable IEnumerable<Todo> response uses allOf
+            // Verify nullable IEnumerable<Todo> response uses oneOf
             var enumerableOperation = document.Paths["/api/nullable-enumerable"].Operations[HttpMethod.Get];
             var enumerableResponse = Assert.Single(enumerableOperation.Responses).Value;
             Assert.True(enumerableResponse.Content.TryGetValue("application/json", out var enumerableMediaType));
             var enumerableSchema = enumerableMediaType.Schema;
-            Assert.NotNull(enumerableSchema.AllOf);
-            Assert.Equal(2, enumerableSchema.AllOf.Count);
-            Assert.Collection(enumerableSchema.AllOf,
+            Assert.NotNull(enumerableSchema.OneOf);
+            Assert.Equal(2, enumerableSchema.OneOf.Count);
+            Assert.Collection(enumerableSchema.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item =>
                 {
@@ -519,14 +519,14 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            // Verify nullable Status (with string converter) response uses allOf
+            // Verify nullable Status (with string converter) response uses oneOf
             var statusOperation = document.Paths["/api/nullable-status"].Operations[HttpMethod.Get];
             var statusResponse = Assert.Single(statusOperation.Responses).Value;
             Assert.True(statusResponse.Content.TryGetValue("application/json", out var statusMediaType));
             var statusSchema = statusMediaType.Schema;
-            Assert.NotNull(statusSchema.AllOf);
-            Assert.Equal(2, statusSchema.AllOf.Count);
-            Assert.Collection(statusSchema.AllOf,
+            Assert.NotNull(statusSchema.OneOf);
+            Assert.Equal(2, statusSchema.OneOf.Count);
+            Assert.Collection(statusSchema.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item =>
                 {
@@ -534,14 +534,14 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal("Status", ((OpenApiSchemaReference)item).Reference.Id);
                 });
 
-            // Verify nullable TaskStatus (without converter) response uses allOf
+            // Verify nullable TaskStatus (without converter) response uses oneOf
             var taskStatusOperation = document.Paths["/api/nullable-task-status"].Operations[HttpMethod.Get];
             var taskStatusResponse = Assert.Single(taskStatusOperation.Responses).Value;
             Assert.True(taskStatusResponse.Content.TryGetValue("application/json", out var taskStatusMediaType));
             var taskStatusSchema = taskStatusMediaType.Schema;
-            Assert.NotNull(taskStatusSchema.AllOf);
-            Assert.Equal(2, taskStatusSchema.AllOf.Count);
-            Assert.Collection(taskStatusSchema.AllOf,
+            Assert.NotNull(taskStatusSchema.OneOf);
+            Assert.Equal(2, taskStatusSchema.OneOf.Count);
+            Assert.Collection(taskStatusSchema.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item => Assert.Equal(JsonSchemaType.Integer, item.Type));
         });

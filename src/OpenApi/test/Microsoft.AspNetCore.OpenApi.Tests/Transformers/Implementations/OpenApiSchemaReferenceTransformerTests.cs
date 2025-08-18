@@ -979,8 +979,8 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
             // Check secondaryUser property (nullable RefProfile)
             var secondaryUserSchema = requestSchema.Properties!["secondaryUser"];
-            Assert.NotNull(secondaryUserSchema.AllOf);
-            Assert.Collection(secondaryUserSchema.AllOf,
+            Assert.NotNull(secondaryUserSchema.OneOf);
+            Assert.Collection(secondaryUserSchema.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item => Assert.Equal("RefProfile", ((OpenApiSchemaReference)item).Reference.Id));
 
@@ -995,7 +995,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Contains("email", userSchemaContent.Properties?.Keys ?? []);
 
             // Both properties should reference the same RefProfile schema
-            var secondaryUserSchemaRef = secondaryUserSchema.AllOf.Last();
+            var secondaryUserSchemaRef = secondaryUserSchema.OneOf.Last();
             Assert.Equal(((OpenApiSchemaReference)primaryUserSchema).Reference.Id,
                         ((OpenApiSchemaReference)secondaryUserSchemaRef).Reference.Id);
 

@@ -7,11 +7,11 @@ internal static class OpenApiSchemaExtensions
 {
     private static readonly OpenApiSchema _nullSchema = new() { Type = JsonSchemaType.Null };
 
-    public static IOpenApiSchema CreateAllOfNullableWrapper(this IOpenApiSchema originalSchema)
+    public static IOpenApiSchema CreateOneOfNullableWrapper(this IOpenApiSchema originalSchema)
     {
         return new OpenApiSchema
         {
-            AllOf =
+            OneOf =
             [
                 _nullSchema,
                 originalSchema

@@ -665,7 +665,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "allOf": [
+                "oneOf": [
                   {
                     "nullable": true
                   },
@@ -833,7 +833,7 @@
             "type": "string"
           },
           "optionalNested": {
-            "allOf": [
+            "oneOf": [
               {
                 "nullable": true
               },
@@ -1074,7 +1074,7 @@
             "nullable": true
           },
           "deepNested": {
-            "allOf": [
+            "oneOf": [
               {
                 "nullable": true
               },
@@ -1153,7 +1153,7 @@
             "nullable": true
           },
           "nullableComplexProperty": {
-            "allOf": [
+            "oneOf": [
               {
                 "nullable": true
               },
@@ -1389,7 +1389,7 @@
             "$ref": "#/components/schemas/RefProfile"
           },
           "secondaryUser": {
-            "allOf": [
+            "oneOf": [
               {
                 "nullable": true
               },
