@@ -97,7 +97,7 @@ steps:
 - task: CopyFiles@2
   displayName: Prepare BuildLogs staging directory
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)'
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
     Contents: |
       **/*.log
       **/*.binlog
@@ -126,5 +126,5 @@ steps:
   parameters:
     displayName: Component Detection (Exclude upstream cache)
     is1ESPipeline: ${{ parameters.is1ESPipeline }}
-    componentGovernanceIgnoreDirectories: '$(Build.SourcesDirectory)/artifacts/sb/src/artifacts/obj/source-built-upstream-cache'
+    componentGovernanceIgnoreDirectories: '$(System.DefaultWorkingDirectory)/artifacts/sb/src/artifacts/obj/source-built-upstream-cache'
     disableComponentGovernance: ${{ eq(variables['System.TeamProject'], 'public') }}
