@@ -47,7 +47,7 @@ public static class SchemasEndpointsExtensions
         schemas.MapPost("/project-response", (ProjectResponse project) => Results.Ok(project));
         schemas.MapPost("/subscription", (Subscription subscription) => Results.Ok(subscription));
 
-        // Tests for allOf nullable behavior on responses and request bodies
+        // Tests for oneOf nullable behavior on responses and request bodies
         schemas.MapGet("/nullable-response", () => TypedResults.Ok(new NullableResponseModel
         {
             RequiredProperty = "required",
@@ -194,7 +194,7 @@ public static class SchemasEndpointsExtensions
         public string Email { get; set; } = "";
     }
 
-    // Models for testing allOf nullable behavior
+    // Models for testing oneOf nullable behavior
     public sealed class NullableResponseModel
     {
         public required string RequiredProperty { get; set; }

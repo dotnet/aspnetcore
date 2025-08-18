@@ -920,11 +920,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var todoSchema = todoContent.Value.Schema;
 
             // For complex types, check if it has both null and the reference type
-            if (todoSchema.AllOf != null)
+            if (todoSchema.OneOf != null)
             {
-                // If it still uses allOf, verify the structure
-                Assert.Equal(2, todoSchema.AllOf.Count);
-                Assert.Collection(todoSchema.AllOf,
+                // If it now uses oneOf, verify the structure
+                Assert.Equal(2, todoSchema.OneOf.Count);
+                Assert.Collection(todoSchema.OneOf,
                     item =>
                     {
                         Assert.NotNull(item);
@@ -949,11 +949,11 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             Assert.Equal("application/json", accountContent.Key);
             var accountSchema = accountContent.Value.Schema;
 
-            if (accountSchema.AllOf != null)
+            if (accountSchema.OneOf != null)
             {
-                // If it still uses allOf, verify the structure
-                Assert.Equal(2, accountSchema.AllOf.Count);
-                Assert.Collection(accountSchema.AllOf,
+                // If it now uses oneOf, verify the structure
+                Assert.Equal(2, accountSchema.OneOf.Count);
+                Assert.Collection(accountSchema.OneOf,
                     item =>
                     {
                         Assert.NotNull(item);

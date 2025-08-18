@@ -485,9 +485,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var todoContent = Assert.Single(todoRequestBody.Content);
             Assert.Equal("application/json", todoContent.Key);
             var todoSchema = todoContent.Value.Schema;
-            Assert.NotNull(todoSchema.AllOf);
-            Assert.Equal(2, todoSchema.AllOf.Count);
-            Assert.Collection(todoSchema.AllOf,
+            Assert.NotNull(todoSchema.OneOf);
+            Assert.Equal(2, todoSchema.OneOf.Count);
+            Assert.Collection(todoSchema.OneOf,
                 item =>
                 {
                     Assert.NotNull(item);
@@ -528,9 +528,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var pointContent = Assert.Single(pointRequestBody.Content);
             Assert.Equal("application/json", pointContent.Key);
             var pointSchema = pointContent.Value.Schema;
-            Assert.NotNull(pointSchema.AllOf);
-            Assert.Equal(2, pointSchema.AllOf.Count);
-            Assert.Collection(pointSchema.AllOf,
+            Assert.NotNull(pointSchema.OneOf);
+            Assert.Equal(2, pointSchema.OneOf.Count);
+            Assert.Collection(pointSchema.OneOf,
                 item =>
                 {
                     Assert.NotNull(item);
@@ -584,9 +584,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var arrayContent = Assert.Single(arrayRequestBody.Content);
             Assert.Equal("application/json", arrayContent.Key);
             var arraySchema = arrayContent.Value.Schema;
-            Assert.NotNull(arraySchema.AllOf); // AllOf IS used for nullable collections
-            Assert.Equal(2, arraySchema.AllOf.Count);
-            Assert.Collection(arraySchema.AllOf,
+            Assert.NotNull(arraySchema.OneOf); // OneOf IS used for nullable collections
+            Assert.Equal(2, arraySchema.OneOf.Count);
+            Assert.Collection(arraySchema.OneOf,
                 item =>
                 {
                     Assert.NotNull(item);
@@ -606,9 +606,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var listContent = Assert.Single(listRequestBody.Content);
             Assert.Equal("application/json", listContent.Key);
             var listSchema = listContent.Value.Schema;
-            Assert.NotNull(listSchema.AllOf); // AllOf IS used for nullable collections
-            Assert.Equal(2, listSchema.AllOf.Count);
-            Assert.Collection(listSchema.AllOf,
+            Assert.NotNull(listSchema.OneOf); // OneOf IS used for nullable collections
+            Assert.Equal(2, listSchema.OneOf.Count);
+            Assert.Collection(listSchema.OneOf,
                 item =>
                 {
                     Assert.NotNull(item);
@@ -628,9 +628,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var enumerableContent = Assert.Single(enumerableRequestBody.Content);
             Assert.Equal("application/json", enumerableContent.Key);
             var enumerableSchema = enumerableContent.Value.Schema;
-            Assert.NotNull(enumerableSchema.AllOf); // AllOf IS used for nullable collections
-            Assert.Equal(2, enumerableSchema.AllOf.Count);
-            Assert.Collection(enumerableSchema.AllOf,
+            Assert.NotNull(enumerableSchema.OneOf); // OneOf IS used for nullable collections
+            Assert.Equal(2, enumerableSchema.OneOf.Count);
+            Assert.Collection(enumerableSchema.OneOf,
                 item =>
                 {
                     Assert.NotNull(item);
@@ -873,9 +873,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var resultRequestBody = resultOperation.RequestBody;
             var resultContent = Assert.Single(resultRequestBody.Content);
             var resultSchema = resultContent.Value.Schema;
-            Assert.NotNull(resultSchema.AllOf);
-            Assert.Equal(2, resultSchema.AllOf.Count);
-            Assert.Collection(resultSchema.AllOf,
+            Assert.NotNull(resultSchema.OneOf);
+            Assert.Equal(2, resultSchema.OneOf.Count);
+            Assert.Collection(resultSchema.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item => Assert.Equal(JsonSchemaType.Object, item.Type));
 
@@ -884,9 +884,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var listRequestBody = listOperation.RequestBody;
             var listContent = Assert.Single(listRequestBody.Content);
             var listSchema = listContent.Value.Schema;
-            Assert.NotNull(listSchema.AllOf);
-            Assert.Equal(2, listSchema.AllOf.Count);
-            Assert.Collection(listSchema.AllOf,
+            Assert.NotNull(listSchema.OneOf);
+            Assert.Equal(2, listSchema.OneOf.Count);
+            Assert.Collection(listSchema.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item =>
                 {
@@ -900,9 +900,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
             var dictRequestBody = dictOperation.RequestBody;
             var dictContent = Assert.Single(dictRequestBody.Content);
             var dictSchema = dictContent.Value.Schema;
-            Assert.NotNull(dictSchema.AllOf);
-            Assert.Equal(2, dictSchema.AllOf.Count);
-            Assert.Collection(dictSchema.AllOf,
+            Assert.NotNull(dictSchema.OneOf);
+            Assert.Equal(2, dictSchema.OneOf.Count);
+            Assert.Collection(dictSchema.OneOf,
                 item => Assert.Equal(JsonSchemaType.Null, item.Type),
                 item =>
                 {

@@ -1190,7 +1190,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "allOf": [
+                "oneOf": [
                   {
                     "type": "null"
                   },
@@ -1571,7 +1571,7 @@
             "type": "string"
           },
           "optionalNested": {
-            "allOf": [
+            "oneOf": [
               {
                 "type": "null"
               },
@@ -1871,7 +1871,7 @@
             "format": "int32"
           },
           "deepNested": {
-            "allOf": [
+            "oneOf": [
               {
                 "type": "null"
               },
@@ -1962,7 +1962,7 @@
             ]
           },
           "nullableComplexProperty": {
-            "allOf": [
+            "oneOf": [
               {
                 "type": "null"
               },
@@ -2232,7 +2232,7 @@
             "$ref": "#/components/schemas/RefProfile"
           },
           "secondaryUser": {
-            "allOf": [
+            "oneOf": [
               {
                 "type": "null"
               },
