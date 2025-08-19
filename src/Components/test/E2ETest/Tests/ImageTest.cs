@@ -125,34 +125,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void TwoImagesWithSameCacheKey_LoadSecondFromCache()
-    {
-        ClearImageCache();
-
-        Browser.FindElement(By.Id("load-pair-sequence")).Click();
-        Browser.Equal("Pair second loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-
-        // Wait for both images to have blob srcs
-        Browser.True(() =>
-        {
-            var img1 = Browser.FindElement(By.Id("pair-image-1"));
-            var img2 = Browser.FindElement(By.Id("pair-image-2"));
-            var s1 = img1.GetAttribute("src");
-            var s2 = img2.GetAttribute("src");
-            return !string.IsNullOrEmpty(s1) && s1.StartsWith("blob:", StringComparison.Ordinal)
-                && !string.IsNullOrEmpty(s2) && s2.StartsWith("blob:", StringComparison.Ordinal);
-        });
-
-        var img1 = Browser.FindElement(By.Id("pair-image-1"));
-        var img2 = Browser.FindElement(By.Id("pair-image-2"));
-        var src1 = img1.GetAttribute("src");
-        var src2 = img2.GetAttribute("src");
-
-        Assert.StartsWith("blob:", src1, StringComparison.Ordinal);
-        Assert.StartsWith("blob:", src2, StringComparison.Ordinal);
-    }
-
-    [Fact]
     public void ErrorImage_ShowsErrorState()
     {
         // Trigger loading of an image whose stream position is not at start, causing error

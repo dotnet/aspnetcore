@@ -11,30 +11,25 @@ namespace Microsoft.AspNetCore.Components.Web.Image;
 /// </summary>
 public class ImageSource
 {
-    private readonly Stream _stream;
-    private readonly string _mimeType;
-    private readonly string _cacheKey;
-    private readonly long? _length;
-
     /// <summary>
     /// Gets the MIME type of the image.
     /// </summary>
-    public string MimeType => _mimeType;
+    public string MimeType { get; }
 
     /// <summary>
     /// Gets the cache key for the image. Always non-null.
     /// </summary>
-    public string CacheKey => _cacheKey;
+    public string CacheKey { get; }
 
     /// <summary>
     /// Gets the underlying stream.
     /// </summary>
-    public Stream Stream => _stream;
+    public Stream Stream { get; }
 
     /// <summary>
     /// Gets the length of the image data in bytes if known.
     /// </summary>
-    public long? Length => _length;
+    public long? Length { get; }
 
     /// <summary>
     /// Initializes a new instance of <see cref="ImageSource"/> with byte array data.
@@ -44,10 +39,13 @@ public class ImageSource
     public ImageSource(byte[] data, string mimeType, string cacheKey)
     {
         ArgumentNullException.ThrowIfNull(data);
-        _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
-        _cacheKey = cacheKey ?? throw new ArgumentNullException(nameof(cacheKey));
-        _stream = new MemoryStream(data, writable: false);
-        _length = data.LongLength;
+        ArgumentNullException.ThrowIfNull(mimeType);
+        ArgumentNullException.ThrowIfNull(cacheKey);
+
+        MimeType = mimeType;
+        CacheKey = cacheKey;
+        Stream = new MemoryStream(data, writable: false);
+        Length = data.LongLength;
     }
 
     /// <summary>
@@ -62,16 +60,19 @@ public class ImageSource
     public ImageSource(Stream stream, string mimeType, string cacheKey)
     {
         ArgumentNullException.ThrowIfNull(stream);
-        _mimeType = mimeType ?? throw new ArgumentNullException(nameof(mimeType));
-        _cacheKey = cacheKey ?? throw new ArgumentNullException(nameof(cacheKey));
-        _stream = stream;
+        ArgumentNullException.ThrowIfNull(mimeType);
+        ArgumentNullException.ThrowIfNull(cacheKey);
+
+        Stream = stream;
+        MimeType = mimeType;
+        CacheKey = cacheKey;
         if (stream.CanSeek)
         {
-            _length = stream.Length;
+            Length = stream.Length;
         }
         else
         {
-            _length = null;
+            Length = null;
         }
     }
 }
