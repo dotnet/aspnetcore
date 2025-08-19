@@ -501,10 +501,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             serializedSchema = writer.ToString();
             Assert.Equal("""
             {
-                "type": [
-                    "null",
-                    "object"
-                ],
+                "type": "object",
                 "properties": {
                     "address": {
                         "$ref": "#/components/schemas/AddressDto"
@@ -519,10 +516,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             serializedSchema = writer.ToString();
             Assert.Equal("""
             {
-                "type": [
-                    "null",
-                    "object"
-                ],
+                "type": "object",
                 "properties": {
                     "relatedLocation": {
                         "$ref": "#/components/schemas/LocationDto"
@@ -985,7 +979,10 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
             // Check secondaryUser property (nullable RefProfile)
             var secondaryUserSchema = requestSchema.Properties!["secondaryUser"];
-            Assert.Equal("RefProfile", ((OpenApiSchemaReference)secondaryUserSchema).Reference.Id);
+            Assert.NotNull(secondaryUserSchema.OneOf);
+            Assert.Collection(secondaryUserSchema.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal("RefProfile", ((OpenApiSchemaReference)item).Reference.Id));
 
             // Verify the RefProfile schema has a User property that references RefUser
             var userPropertySchema = primaryUserSchema.Properties!["user"];
@@ -998,10 +995,12 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Contains("email", userSchemaContent.Properties?.Keys ?? []);
 
             // Both properties should reference the same RefProfile schema
+            var secondaryUserSchemaRef = secondaryUserSchema.OneOf.Last();
             Assert.Equal(((OpenApiSchemaReference)primaryUserSchema).Reference.Id,
-                        ((OpenApiSchemaReference)secondaryUserSchema).Reference.Id);
+                        ((OpenApiSchemaReference)secondaryUserSchemaRef).Reference.Id);
 
             Assert.Equal(["RefProfile", "RefUser", "Subscription"], document.Components!.Schemas!.Keys.OrderBy(x => x));
+            Assert.All(document.Components.Schemas.Values, item => Assert.False(item.Type?.HasFlag(JsonSchemaType.Null)));
         });
     }
 

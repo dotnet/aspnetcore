@@ -195,11 +195,6 @@ internal static class JsonNodeSchemaExtensions
     /// underlying schema generator does not support this, we need to manually apply the
     /// supported formats to the schemas associated with the generated type.
     ///
-    /// Whereas JsonSchema represents nullable types via `type: ["string", "null"]`, OpenAPI
-    /// v3 exposes a nullable property on the schema. This method will set the nullable property
-    /// based on whether the underlying schema generator returned an array type containing "null" to
-    /// represent a nullable type or if the type was denoted as nullable from our lookup cache.
-    ///
     /// Note that this method targets <see cref="JsonNode"/> and not <see cref="OpenApiSchema"/> because
     /// it is is designed to be invoked via the `OnGenerated` callback in the underlying schema generator as
     /// opposed to after the generated schemas have been mapped to OpenAPI schemas.
@@ -349,8 +344,6 @@ internal static class JsonNodeSchemaExtensions
             {
                 schema.ApplyValidationAttributes(validationAttributes);
             }
-
-            schema.ApplyNullabilityContextInfo(parameterInfo);
         }
         // Route constraints are only defined on parameters that are sourced from the path. Since
         // they are encoded in the route template, and not in the type information based to the underlying
@@ -451,28 +444,6 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
-    /// Support applying nullability status for reference types provided as a parameter.
-    /// </summary>
-    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
-    /// <param name="parameterInfo">The <see cref="ParameterInfo" /> associated with the schema.</param>
-    internal static void ApplyNullabilityContextInfo(this JsonNode schema, ParameterInfo parameterInfo)
-    {
-        if (parameterInfo.ParameterType.IsValueType)
-        {
-            return;
-        }
-
-        var nullabilityInfoContext = new NullabilityInfoContext();
-        var nullabilityInfo = nullabilityInfoContext.Create(parameterInfo);
-        if (nullabilityInfo.WriteState == NullabilityState.Nullable
-            && MapJsonNodeToSchemaType(schema[OpenApiSchemaKeywords.TypeKeyword]) is { } schemaTypes
-            && !schemaTypes.HasFlag(JsonSchemaType.Null))
-        {
-            schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
-        }
-    }
-
-    /// <summary>
     /// Support applying nullability status for reference types provided as a property or field.
     /// </summary>
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
@@ -487,6 +458,35 @@ internal static class JsonNodeSchemaExtensions
                 !schemaTypes.HasFlag(JsonSchemaType.Null))
             {
                 schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
+            }
+        }
+        if (schema[OpenApiConstants.SchemaId] is not null &&
+            propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
+        {
+            schema[OpenApiConstants.NullableProperty] = true;
+        }
+    }
+
+    /// <summary>
+    /// Prunes the "null" type from the schema for types that are componentized. These
+    /// types should represent their nullability using oneOf with null instead.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    internal static void PruneNullTypeForComponentizedTypes(this JsonNode schema)
+    {
+        if (schema[OpenApiConstants.SchemaId] is not null &&
+                schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
+        {
+            for (var i = typeArray.Count - 1; i >= 0; i--)
+            {
+                if (typeArray[i]?.GetValue<string>() == "null")
+                {
+                    typeArray.RemoveAt(i);
+                }
+            }
+            if (typeArray.Count == 1)
+            {
+                schema[OpenApiSchemaKeywords.TypeKeyword] = typeArray[0]?.GetValue<string>();
             }
         }
     }
