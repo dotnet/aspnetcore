@@ -64,7 +64,7 @@ export class BinaryImageComponent {
         try {
           return await caches.open(this.CACHE_NAME);
         } catch (error) {
-          console.error('Failed to open cache:', error);
+          this.logger.log(LogLevel.Debug, `Failed to open cache: ${error}`);
           return null;
         }
       })();
@@ -83,8 +83,8 @@ export class BinaryImageComponent {
    */
   public static async trySetFromCache(imgElement: HTMLImageElement, cacheKey: string): Promise<boolean> {
     if (!cacheKey || !imgElement) {
-      this.logger.log(LogLevel.Warning, 'Invalid cache key or image element');
-      this.logger.log(LogLevel.Warning, `Cache key: ${cacheKey}, Image element: ${imgElement}`);
+      this.logger.log(LogLevel.Debug, 'Invalid cache key or image element');
+      this.logger.log(LogLevel.Debug, `Cache key: ${cacheKey}, Image element: ${imgElement}`);
       return false;
     }
 
@@ -98,11 +98,8 @@ export class BinaryImageComponent {
       const cachedResponse = await cache.match(cacheUrl);
 
       if (!cachedResponse) {
-        console.log(`Cache miss for key: ${cacheKey}`);
         return false;
       }
-
-      console.log(`Cache hit for key: ${cacheKey}`);
 
       // Get blob from cached response
       const blob = await cachedResponse.blob();
@@ -123,7 +120,7 @@ export class BinaryImageComponent {
 
       return true;
     } catch (error) {
-      console.error(`Error loading from cache for key ${cacheKey}:`, error);
+      this.logger.log(LogLevel.Debug, `Error loading from cache for key ${cacheKey}: ${error}`);
       return false;
     }
   }
@@ -140,7 +137,6 @@ export class BinaryImageComponent {
     if (url) {
       URL.revokeObjectURL(url);
       this.blobUrls.delete(imgElement);
-      console.log('Revoked blob URL for element');
     }
 
     this.loadingImages.delete(imgElement);
@@ -187,7 +183,7 @@ export class BinaryImageComponent {
     totalBytes: number | null
   ): Promise<boolean> {
     if (!imgElement || !streamRef) {
-      console.warn('Invalid element or stream reference');
+      this.logger.log(LogLevel.Debug, 'Invalid element or stream reference');
       return false;
     }
     // Record active cache key for stale detection
@@ -210,11 +206,11 @@ export class BinaryImageComponent {
             try {
               await cache.put(encodeURIComponent(cacheKey), cacheResponse);
             } catch (err) {
-              console.error('Failed to cache streamed response', err);
+              this.logger.log(LogLevel.Debug, `Failed to cache streamed response: ${err}`);
             }
           }
         } catch (err) {
-          console.error('Error setting up stream caching', err);
+          this.logger.log(LogLevel.Debug, `Error setting up stream caching: ${err}`);
         }
       }
 
@@ -273,9 +269,9 @@ export class BinaryImageComponent {
       return true;
     } catch (error) {
       if (this.activeCacheKey.get(imgElement) === cacheKey) {
-        console.error('Failed to load image from stream reference', error);
         this.loadingImages.delete(imgElement);
       }
+      this.logger.log(LogLevel.Debug, `Error loading image from stream: ${error}`);
       return false;
     }
   }
