@@ -587,15 +587,17 @@ public class SetCookieHeaderValue
                     maxAge = -maxAge;
                 }
 
-                try
-                {
-                    result.MaxAge = TimeSpan.FromSeconds(maxAge);
-                }
-                catch (ArgumentOutOfRangeException)
+                // Check if maxAge would cause TimeSpan.FromSeconds to overflow
+                // TimeSpan.MaxValue.TotalSeconds is approximately 922337203685.4775
+                const long MaxTimeSpanSeconds = 922337203685L;
+                const long MinTimeSpanSeconds = -922337203685L;
+                if (maxAge > MaxTimeSpanSeconds || maxAge < MinTimeSpanSeconds)
                 {
                     // MaxAge value would overflow TimeSpan, abort
                     return 0;
                 }
+
+                result.MaxAge = TimeSpan.FromSeconds(maxAge);
                 offset += itemLength;
             }
             // domain-av = "Domain=" domain-value
