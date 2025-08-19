@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Web.Image;
 public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 {
     private RenderHandle _renderHandle;
-    private bool _isLoading = true;
+    private string? _currentObjectUrl;
     private bool _hasError;
     private bool _isDisposed;
     private bool _initialized;
@@ -29,6 +29,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     private string? _activeCacheKey;
     private ImageSource? _currentSource;
     private CancellationTokenSource? _loadCts;
+    private bool IsLoading => _currentSource != null && string.IsNullOrEmpty(_currentObjectUrl);
 
     private bool IsInteractive => _renderHandle.IsInitialized &&
                                 _renderHandle.RendererInfo.IsInteractive;
@@ -126,21 +127,35 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     {
         builder.OpenElement(0, "img");
 
-        builder.AddAttribute(1, "data-blazor-image", "");
-
-        if (_isLoading)
+        // Set src if we have an object URL
+        if (!string.IsNullOrEmpty(_currentObjectUrl))
         {
-            builder.AddAttribute(2, "data-state", "loading");
+            builder.AddAttribute(1, "src", _currentObjectUrl);
+        }
+
+        builder.AddAttribute(2, "data-blazor-image", "");
+
+        if (IsLoading)
+        {
+            builder.AddAttribute(3, "data-state", "loading");
         }
         else if (_hasError)
         {
-            builder.AddAttribute(2, "data-state", "error");
+            builder.AddAttribute(3, "data-state", "error");
         }
 
-        builder.AddMultipleAttributes(3, AdditionalAttributes);
-        builder.AddElementReferenceCapture(4, elementReference => Element = elementReference);
+        builder.AddMultipleAttributes(4, AdditionalAttributes);
+        builder.AddElementReferenceCapture(5, elementReference => Element = elementReference);
 
         builder.CloseElement();
+    }
+
+    private sealed class ImageLoadResult
+    {
+        public bool Success { get; set; }
+        public bool FromCache { get; set; }
+        public string? ObjectUrl { get; set; }
+        public string? Error { get; set; }
     }
 
     private async Task LoadImage(ImageSource? source, CancellationToken cancellationToken)
@@ -155,35 +170,45 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         try
         {
             Log.BeginLoad(Logger, source.CacheKey);
-            SetLoadingState();
 
-            // Check if operation was already canceled
             cancellationToken.ThrowIfCancellationRequested();
 
-            // Always try to load from cache first
-            bool foundInCache = await JSRuntime.InvokeAsync<bool>(
-                "Blazor._internal.BinaryImageComponent.trySetFromCache",
+            using var streamRef = new DotNetStreamReference(source.Stream, leaveOpen: true);
+
+            var result = await JSRuntime.InvokeAsync<ImageLoadResult>(
+                "Blazor._internal.BinaryImageComponent.setImageAsync",
                 cancellationToken,
-                new object?[] { Element, source.CacheKey });
-
-            if (foundInCache)
-            {
-                Log.CacheHit(Logger, source.CacheKey);
-                if (_activeCacheKey == source.CacheKey && !cancellationToken.IsCancellationRequested)
-                {
-                    SetSuccessState();
-                    Log.LoadSuccess(Logger, source.CacheKey);
-                }
-                return;
-            }
-
-            Log.StreamStart(Logger, source.CacheKey);
-            await StreamImage(source, cancellationToken);
+                Element,
+                streamRef,
+                source.MimeType,
+                source.CacheKey,
+                source.Length);
 
             if (_activeCacheKey == source.CacheKey && !cancellationToken.IsCancellationRequested)
             {
-                SetSuccessState();
-                Log.LoadSuccess(Logger, source.CacheKey);
+                if (result.Success)
+                {
+                    _currentObjectUrl = result.ObjectUrl;
+                    _hasError = false;
+
+                    if (result.FromCache)
+                    {
+                        Log.CacheHit(Logger, source.CacheKey);
+                    }
+                    else
+                    {
+                        Log.StreamStart(Logger, source.CacheKey);
+                    }
+
+                    Log.LoadSuccess(Logger, source.CacheKey);
+                }
+                else
+                {
+                    _hasError = true;
+                    Log.LoadFailed(Logger, source.CacheKey, new InvalidOperationException(result.Error ?? "Image load failed"));
+                }
+
+                Render();
             }
         }
         catch (OperationCanceledException)
@@ -196,70 +221,15 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             Log.LoadFailed(Logger, source?.CacheKey ?? "(null)", ex);
             if (source != null && _activeCacheKey == source.CacheKey && !cancellationToken.IsCancellationRequested)
             {
-                SetErrorState();
+                _currentObjectUrl = null;
+                _hasError = true;
+                Render();
             }
         }
-    }
-
-    private async Task StreamImage(ImageSource source, CancellationToken cancellationToken)
-    {
-        if (!IsInteractive)
-        {
-            return;
-        }
-
-        if (source.Stream.CanSeek && source.Stream.Position != 0)
-        {
-            throw new InvalidOperationException("ImageSource stream must be at position 0 when starting a load.");
-        }
-
-        var loadKey = source.CacheKey;
-        try
-        {
-            using var streamRef = new DotNetStreamReference(source.Stream, leaveOpen: true);
-
-            await JSRuntime.InvokeVoidAsync(
-                "Blazor._internal.BinaryImageComponent.loadImageFromStream",
-                cancellationToken,
-                new object?[] { Element, streamRef, source.MimeType, source.CacheKey, source.Length });
-        }
-        catch (OperationCanceledException)
-        {
-            // bubble up to caller
-            throw;
-        }
-        catch (Exception ex)
-        {
-            if (_activeCacheKey == loadKey)
-            {
-                throw new InvalidOperationException($"Failed to stream image data via stream reference: {ex.Message}", ex);
-            }
-        }
-    }
-
-    private void SetLoadingState()
-    {
-        _isLoading = true;
-        _hasError = false;
-        Render();
-    }
-
-    private void SetSuccessState()
-    {
-        _isLoading = false;
-        _hasError = false;
-        Render();
-    }
-
-    private void SetErrorState()
-    {
-        _isLoading = false;
-        _hasError = true;
-        Render();
     }
 
     /// <inheritdoc />
-    public async ValueTask DisposeAsync()
+    public ValueTask DisposeAsync()
     {
         if (!_isDisposed)
         {
@@ -267,25 +237,11 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
             // Cancel any pending operations
             try { _loadCts?.Cancel(); } catch { }
-
-            if (Source != null && IsInteractive)
-            {
-                try
-                {
-                    await JSRuntime.InvokeVoidAsync(
-                        "Blazor._internal.BinaryImageComponent.revokeImageUrl",
-                        Element);
-                    Log.RevokedUrl(Logger);
-                }
-                catch (JSDisconnectedException)
-                {
-                    // Client disconnected
-                }
-            }
-
             _loadCts?.Dispose();
             _loadCts = null;
         }
+
+        return new ValueTask();
     }
 
     private static partial class Log
