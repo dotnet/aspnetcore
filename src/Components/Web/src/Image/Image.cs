@@ -144,17 +144,16 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     {
         builder.OpenElement(0, "img");
 
+        builder.AddAttribute(1, "data-blazor-image", "");
+
         if (_isLoading)
         {
-            builder.AddAttribute(1, "data-state", "loading");
+            builder.AddAttribute(2, "data-state", "loading");
         }
         else if (_hasError)
         {
-            builder.AddAttribute(1, "data-state", "error");
+            builder.AddAttribute(2, "data-state", "error");
         }
-
-        var cssClass = GetCssClass();
-        builder.AddAttribute(2, "class", $"blazor-image {cssClass}".Trim());
 
         builder.AddMultipleAttributes(3, AdditionalAttributes);
         builder.AddElementReferenceCapture(4, elementReference => Element = elementReference);
@@ -276,9 +275,6 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         _hasError = true;
         Render();
     }
-
-    private string GetCssClass() => AdditionalAttributes?.TryGetValue("class", out var cssClass) == true
-        ? cssClass?.ToString() ?? string.Empty : string.Empty;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

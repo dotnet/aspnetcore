@@ -69,6 +69,9 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Assert.True(!string.IsNullOrEmpty(src), "Image src should not be empty");
         Assert.True(src.StartsWith("blob:", StringComparison.Ordinal), $"Expected blob URL, but got: {src}");
 
+        var marker = imageElement.GetAttribute("data-blazor-image");
+        Assert.NotNull(marker);
+
         var state = imageElement.GetAttribute("data-state");
         Assert.True(string.IsNullOrEmpty(state), $"Expected data-state to be cleared after load, but found '{state}'");
     }
