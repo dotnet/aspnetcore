@@ -516,8 +516,6 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
                 e.RawData[0] == 2);
     }
 
-
-
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "https://github.com/dotnet/aspnetcore/issues/6720")]
