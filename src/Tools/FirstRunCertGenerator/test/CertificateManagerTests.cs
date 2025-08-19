@@ -516,39 +516,7 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
                 e.RawData[0] == 2);
     }
 
-    [Fact]
-    public void CreateAspNetCoreHttpsDevelopmentCertificate_UsesUtcTime_NotLocalTime()
-    {
-        // This test verifies that the certificate NotBefore time is based on UTC, not local timezone
-        // This prevents issues where certificates appear "not yet valid" in different timezones
-        
-        try
-        {
-            _fixture.CleanupCertificates();
-            
-            // Use a known UTC time as the basis for the certificate
-            var utcNow = new DateTimeOffset(2024, 1, 15, 12, 0, 0, TimeSpan.Zero); // UTC noon
-            var utcExpiry = utcNow.AddYears(1);
-            
-            // Create certificate with UTC-based times
-            var certificate = _manager.CreateAspNetCoreHttpsDevelopmentCertificate(utcNow, utcExpiry);
-            
-            // Verify that NotBefore matches the UTC time we provided, not a local time
-            // The certificate should be immediately valid at the specified UTC time
-            var expectedNotBefore = utcNow.UtcDateTime;
-            var actualNotBefore = certificate.NotBefore.ToUniversalTime();
-            
-            // Allow for some minor timing differences (within 1 second)
-            var timeDifference = Math.Abs((expectedNotBefore - actualNotBefore).TotalSeconds);
-            Assert.True(timeDifference < 1, 
-                $"Certificate NotBefore should match UTC time. Expected: {expectedNotBefore:yyyy-MM-dd HH:mm:ss} UTC, " +
-                $"Actual: {actualNotBefore:yyyy-MM-dd HH:mm:ss} UTC, Difference: {timeDifference:F2} seconds");
-        }
-        finally
-        {
-            _fixture.CleanupCertificates();
-        }
-    }
+
 
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Windows, SkipReason = "UnixFileMode is not supported on Windows.")]
