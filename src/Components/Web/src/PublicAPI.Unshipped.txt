@@ -6,11 +6,8 @@ Microsoft.AspNetCore.Components.Forms.InputHidden.InputHidden() -> void
 Microsoft.AspNetCore.Components.Web.Image.Image
 Microsoft.AspNetCore.Components.Web.Image.Image.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
 Microsoft.AspNetCore.Components.Web.Image.Image.AdditionalAttributes.set -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
 Microsoft.AspNetCore.Components.Web.Image.Image.DisposeAsync() -> System.Threading.Tasks.ValueTask
 Microsoft.AspNetCore.Components.Web.Image.Image.Image() -> void
-Microsoft.AspNetCore.Components.Web.Image.Image.OnAfterRenderAsync() -> System.Threading.Tasks.Task!
-Microsoft.AspNetCore.Components.Web.Image.Image.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.get -> Microsoft.AspNetCore.Components.Web.Image.ImageSource?
 Microsoft.AspNetCore.Components.Web.Image.Image.Source.set -> void
 Microsoft.AspNetCore.Components.Web.Image.ImageSource

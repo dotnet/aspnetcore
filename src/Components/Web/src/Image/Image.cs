@@ -33,19 +33,10 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     private bool IsInteractive => _renderHandle.IsInitialized &&
                                 _renderHandle.RendererInfo.IsInteractive;
 
-    /// <summary>
-    /// Gets or sets the associated <see cref="ElementReference"/>.
-    /// </summary>
     [DisallowNull] private ElementReference? Element { get; set; }
 
-    /// <summary>
-    /// Gets the injected <see cref="IJSRuntime"/>.
-    /// </summary>
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
-    /// <summary>
-    /// Gets the injected <see cref="ILogger"/>.
-    /// </summary>
     [Inject] private ILogger<Image> Logger { get; set; } = default!;
 
     /// <summary>
@@ -58,8 +49,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
-    /// <inheritdoc />
-    public void Attach(RenderHandle renderHandle)
+    void IComponent.Attach(RenderHandle renderHandle)
     {
         if (_renderHandle.IsInitialized)
         {
@@ -68,8 +58,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         _renderHandle = renderHandle;
     }
 
-    /// <inheritdoc />
-    public Task SetParametersAsync(ParameterView parameters)
+    Task IComponent.SetParametersAsync(ParameterView parameters)
     {
         var previousSource = Source;
 
@@ -92,8 +81,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         return Task.CompletedTask;
     }
 
-    /// <inheritdoc />
-    public async Task OnAfterRenderAsync()
+    async Task IHandleAfterRender.OnAfterRenderAsync()
     {
         if (!IsInteractive || Source == null)
         {
@@ -124,9 +112,6 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Queues a render of the component.
-    /// </summary>
     private void Render()
     {
         if (!_hasPendingRender && _renderHandle.IsInitialized)
@@ -137,9 +122,6 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         }
     }
 
-    /// <summary>
-    /// Builds the render tree for the component.
-    /// </summary>
     private void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "img");

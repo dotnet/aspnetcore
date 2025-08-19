@@ -225,13 +225,13 @@
     }
 
     /* Loading state using ::before for spinner */
-    img.blazor-image[data-state="loading"] {
+    img[data-blazor-image][data-state="loading"] {
         min-height: 50px;
         opacity: 0; /* Hide the image to prevent broken icon */
     }
 
     /* Container for loading image gets a progress indicator */
-    *:has(> img.blazor-image[data-state="loading"]) {
+    *:has(> img[data-blazor-image][data-state="loading"]) {
         position: relative;
         display: flex;
         align-items: center;
@@ -239,7 +239,7 @@
     }
 
     /* Simple progress bar background */
-    *:has(> img.blazor-image[data-state="loading"])::before {
+    *:has(> img[data-blazor-image][data-state="loading"])::before {
         content: "";
         position: absolute;
         width: 60px;
@@ -250,7 +250,7 @@
     }
 
     /* Progress bar fill using the --blazor-image-progress variable */
-    *:has(> img.blazor-image[data-state="loading"])::after {
+    *:has(> img[data-blazor-image][data-state="loading"])::after {
         content: "";
         position: absolute;
         width: calc(60px * var(--blazor-image-progress, 0));
@@ -263,20 +263,20 @@
     }
 
     /* Error state styling */
-    img.blazor-image[data-state="error"] {
+    img[data-blazor-image][data-state="error"] {
         min-height: 50px;
         opacity: 0; /* Hide the image to prevent broken icon */
     }
 
     /* Any container with an error image */
-    *:has(> img.blazor-image[data-state="error"])::before {
+    *:has(> img[data-blazor-image][data-state="error"])::before {
         content: "⚠️";
         position: absolute;
         font-size: 24px;
         z-index: 10;
     }
 
-    *:has(> img.blazor-image[data-state="error"])::after {
+    *:has(> img[data-blazor-image][data-state="error"])::after {
         content: "Failed to load image";
         position: absolute;
         top: 40px;
