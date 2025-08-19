@@ -33,7 +33,9 @@ internal sealed class HostingApplicationDiagnostics
     private readonly HostingEventSource _eventSource;
     private readonly HostingMetrics _metrics;
     private readonly ILogger _logger;
-    private readonly bool _suppressActivityOpenTelemetryData;
+
+    // Internal for testing purposes only
+    internal bool SuppressActivityOpenTelemetryData { get; set; }
 
     public HostingApplicationDiagnostics(
         ILogger logger,
@@ -49,7 +51,19 @@ internal sealed class HostingApplicationDiagnostics
         _propagator = propagator;
         _eventSource = eventSource;
         _metrics = metrics;
-        _suppressActivityOpenTelemetryData = AppContext.TryGetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData", out var enabled) && enabled;
+
+        SuppressActivityOpenTelemetryData = GetSuppressActivityOpenTelemetryData();
+    }
+
+    private static bool GetSuppressActivityOpenTelemetryData()
+    {
+        // Default to true if the switch isn't set.
+        if (!AppContext.TryGetSwitch("Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData", out var enabled))
+        {
+            return true;
+        }
+
+        return enabled;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -395,7 +409,7 @@ internal sealed class HostingApplicationDiagnostics
 
         hasDiagnosticListener = false;
 
-        var initializeTags = !_suppressActivityOpenTelemetryData
+        var initializeTags = !SuppressActivityOpenTelemetryData
             ? CreateInitializeActivityTags(httpContext)
             : (TagList?)null;
 
