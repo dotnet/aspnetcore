@@ -454,7 +454,7 @@ internal abstract class CertificateManager
             return ImportCertificateResult.ExistingCertificatesPresent;
         }
 
-        X509Certificate2 certificate;
+        X509Certificate2? certificate = null;
         try
         {
             Log.LoadCertificateStart(certificatePath);
@@ -470,6 +470,7 @@ internal abstract class CertificateManager
             {
                 Log.LoadCertificateError(e.ToString());
             }
+            certificate?.Dispose();
             return ImportCertificateResult.InvalidCertificate;
         }
 
