@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Components.Web.Image;
 /* This is equivalent to a .razor file containing:
  *
  * <img class="blazor-image @GetCssClass()"
- *      data-state="@(_isLoading ? "loading" : _hasError ? "error" : null)"
+ *      data-state=@(_isLoading ? "loading" : _hasError ? "error" : null)
  *      @ref="Element" @attributes="AdditionalAttributes" />
  *
  */
@@ -26,8 +26,8 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     private bool _isDisposed;
     private bool _initialized;
     private bool _hasPendingRender;
-    private bool _firstRender = true;
     private string? _activeCacheKey;
+    private ImageSource? _currentSource;
 
     private bool IsInteractive => _renderHandle.IsInitialized &&
                                 _renderHandle.RendererInfo.IsInteractive;
@@ -68,7 +68,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     }
 
     /// <inheritdoc />
-    public async Task SetParametersAsync(ParameterView parameters)
+    public Task SetParametersAsync(ParameterView parameters)
     {
         var previousSource = Source;
 
@@ -80,29 +80,33 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         {
             Render();
             _initialized = true;
-            return;
+            return Task.CompletedTask;
         }
 
-        // Handle parameter changes
         if (!_isDisposed && Source != null && !string.Equals(previousSource?.CacheKey, Source.CacheKey, StringComparison.Ordinal))
         {
-            await LoadImage(Source);
+            Render();
         }
+
+        return Task.CompletedTask;
     }
 
     /// <inheritdoc />
     public async Task OnAfterRenderAsync()
     {
-        if (!IsInteractive)
+        if (!IsInteractive || _isDisposed || Source == null)
         {
             return;
         }
 
-        if (_firstRender && Source != null && !_isDisposed)
+        // Avoid re-loading the same source repeatedly
+        if (_currentSource != null && string.Equals(_currentSource.CacheKey, Source.CacheKey, StringComparison.Ordinal))
         {
-            _firstRender = false;
-            await LoadImage(Source);
+            return;
         }
+
+        _currentSource = Source;
+        await LoadImage(Source);
     }
 
     /// <summary>
