@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.Web.Image;
 
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Web.Image;
 /// <summary>
 /// A component that efficiently renders images from non-HTTP sources like byte arrays.
 /// </summary>
-public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
+public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 {
     private RenderHandle _renderHandle;
     private bool _isLoading = true;
@@ -40,6 +41,11 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// Gets the injected <see cref="IJSRuntime"/>.
     /// </summary>
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+    /// <summary>
+    /// Gets the injected <see cref="ILogger"/>.
+    /// </summary>
+    [Inject] private ILogger<Image> Logger { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the source for the image.
@@ -148,6 +154,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
         try
         {
+            Log.BeginLoad(Logger, source.CacheKey);
             SetLoadingState();
 
             // Always try to load from cache first
@@ -157,23 +164,28 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
             if (foundInCache)
             {
+                Log.CacheHit(Logger, source.CacheKey);
                 if (_activeCacheKey == source.CacheKey)
                 {
                     SetSuccessState();
+                    Log.LoadSuccess(Logger, source.CacheKey);
                 }
                 return;
             }
 
+            Log.StreamStart(Logger, source.CacheKey);
             await StreamImage(source);
 
             if (_activeCacheKey == source.CacheKey)
             {
                 SetSuccessState();
+                Log.LoadSuccess(Logger, source.CacheKey);
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            if (_activeCacheKey == source.CacheKey)
+            Log.LoadFailed(Logger, source?.CacheKey ?? "(null)", ex);
+            if (source != null && _activeCacheKey == source.CacheKey)
             {
                 SetErrorState();
             }
@@ -252,6 +264,7 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
                     await JSRuntime.InvokeVoidAsync(
                         "Blazor._internal.BinaryImageComponent.revokeImageUrl",
                         Element);
+                    Log.RevokedUrl(Logger);
                 }
                 catch (JSDisconnectedException)
                 {
@@ -259,5 +272,26 @@ public class Image : IComponent, IHandleAfterRender, IAsyncDisposable
                 }
             }
         }
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(1, LogLevel.Debug, "Begin load for key '{CacheKey}'", EventName = "BeginLoad")]
+        public static partial void BeginLoad(ILogger logger, string cacheKey);
+
+        [LoggerMessage(2, LogLevel.Debug, "Loaded image from cache for key '{CacheKey}'", EventName = "CacheHit")]
+        public static partial void CacheHit(ILogger logger, string cacheKey);
+
+        [LoggerMessage(3, LogLevel.Debug, "Streaming image for key '{CacheKey}'", EventName = "StreamStart")]
+        public static partial void StreamStart(ILogger logger, string cacheKey);
+
+        [LoggerMessage(4, LogLevel.Debug, "Image load succeeded for key '{CacheKey}'", EventName = "LoadSuccess")]
+        public static partial void LoadSuccess(ILogger logger, string cacheKey);
+
+        [LoggerMessage(5, LogLevel.Debug, "Image load failed for key '{CacheKey}'", EventName = "LoadFailed")]
+        public static partial void LoadFailed(ILogger logger, string cacheKey, Exception exception);
+
+        [LoggerMessage(6, LogLevel.Debug, "Revoked image URL on dispose", EventName = "RevokedUrl")]
+        public static partial void RevokedUrl(ILogger logger);
     }
 }

@@ -13,7 +13,6 @@
     <button id="load-jpg-stream" @onclick="LoadJpgFromStream">Load JPG (Stream)</button>
     <button id="change-source" @onclick="ChangeDynamicImageSource">Change Dynamic Source</button>
     <!-- New controls -->
-    <button id="clear-cache" @onclick="ClearCache">Clear Cache</button>
     <button id="load-pair-sequence" @onclick="LoadPairSequence">Load Two Images (Same Key)</button>
     <button id="load-error" @onclick="LoadErrorImage">Load Error</button>
     <button id="load-cached-jpg" @onclick="LoadCachedJpg">Load Cached JPG</button>
@@ -161,19 +160,6 @@
     }
 
     // New helpers for extended E2E scenarios
-    private async Task ClearCache()
-    {
-        try
-        {
-            var cleared = await JS.InvokeAsync<bool>("Blazor._internal.BinaryImageComponent.clearCache");
-            _currentStatus = cleared ? "Cache cleared" : "Cache clear failed";
-        }
-        catch
-        {
-            _currentStatus = "Cache clear failed";
-        }
-    }
-
     private async Task LoadPairSequence()
     {
         _currentStatus = "Loading pair sequence...";

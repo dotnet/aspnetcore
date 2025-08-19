@@ -29,6 +29,31 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.MountTestComponent<ImageTestComponent>();
     }
 
+    private void ClearImageCache()
+    {
+        var ok = (bool)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(@"
+          var done = arguments[0];
+          (async () => {
+            try {
+              if ('caches' in window) {
+                await caches.delete('blazor-image-cache');
+              }
+              // Reset memoized cache promise if present
+              try {
+                const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+                if (root && 'cachePromise' in root) {
+                  root.cachePromise = undefined;
+                }
+              } catch {}
+              done(true);
+            } catch (e) {
+              done(false);
+            }
+          })();
+        ");
+        Assert.True(ok, "Failed to clear image cache");
+    }
+
     [Fact]
     public void CanLoadPngImage()
     {
@@ -102,29 +127,27 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void TwoImagesWithSameCacheKey_LoadSecondFromCache()
     {
-        // IMPORTANT: This test deliberately reuses the SAME ImageSource instance for two <Image> components.
-        // ImageSource is documented as single-use.
-        // The reason this still passes today is that the second component never streams the data:
-        //   1. First image probes cache (miss) then streams bytes, advancing the MemoryStream to end and
-        //      populating the browser Cache API under the shared cache key.
-        //   2. Second image (same cache key, same ImageSource whose stream is now at end) probes cache and
-        //      gets a HIT. On a cache hit the component SHORT-CIRCUITS and skips StreamImage(), so the
-        //      position check that would detect a consumed stream is never executed.
-        // If we later enforce single-use before the streaming method (e.g. checking stream state
-        // before the cache probe) this test should be rewritten.
-
-        Browser.FindElement(By.Id("clear-cache")).Click();
-        Browser.Equal("Cache cleared", () => Browser.FindElement(By.Id("current-status")).Text);
+        ClearImageCache();
 
         Browser.FindElement(By.Id("load-pair-sequence")).Click();
         Browser.Equal("Pair second loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+
+        // Wait for both images to have blob srcs
+        Browser.True(() =>
+        {
+            var img1 = Browser.FindElement(By.Id("pair-image-1"));
+            var img2 = Browser.FindElement(By.Id("pair-image-2"));
+            var s1 = img1.GetAttribute("src");
+            var s2 = img2.GetAttribute("src");
+            return !string.IsNullOrEmpty(s1) && s1.StartsWith("blob:", StringComparison.Ordinal)
+                && !string.IsNullOrEmpty(s2) && s2.StartsWith("blob:", StringComparison.Ordinal);
+        });
 
         var img1 = Browser.FindElement(By.Id("pair-image-1"));
         var img2 = Browser.FindElement(By.Id("pair-image-2"));
         var src1 = img1.GetAttribute("src");
         var src2 = img2.GetAttribute("src");
-        Assert.False(string.IsNullOrEmpty(src1));
-        Assert.False(string.IsNullOrEmpty(src2));
+
         Assert.StartsWith("blob:", src1, StringComparison.Ordinal);
         Assert.StartsWith("blob:", src2, StringComparison.Ordinal);
     }
@@ -209,8 +232,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void ImageCache_PersistsAcrossPageReloads()
     {
-        Browser.FindElement(By.Id("clear-cache")).Click();
-        Browser.Equal("Cache cleared", () => Browser.FindElement(By.Id("current-status")).Text);
+        ClearImageCache();
 
         // First load (streams, then caches)
         Browser.FindElement(By.Id("load-cached-jpg")).Click();
@@ -230,7 +252,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             (function(){
             const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
             if (!root) return;
-            // Reset counters
             window.__cacheHits = 0;
             window.__streamCalls = 0;
             if (!window.__origTrySet){
@@ -258,15 +279,13 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var secondSrc = secondImg.GetAttribute("src");
         Assert.StartsWith("blob:", secondSrc, StringComparison.Ordinal);
 
-        // Read counters
         var hits = (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.__cacheHits || 0;");
         var streamCalls = (long)((IJavaScriptExecutor)Browser).ExecuteScript("return window.__streamCalls || 0;");
 
         Assert.Equal(1, hits);
         Assert.Equal(0, streamCalls);
-        Assert.NotEqual(firstSrc, secondSrc); // New blob URL created from cached bytes
+        Assert.NotEqual(firstSrc, secondSrc);
 
-        // Cleanup instrumentation
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
             const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;

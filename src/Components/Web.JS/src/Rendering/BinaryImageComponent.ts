@@ -148,21 +148,6 @@ export class BinaryImageComponent {
   }
 
   /**
-   * Clears the cache
-   */
-  public static async clearCache(): Promise<boolean> {
-    try {
-      const deleted = await caches.delete(this.CACHE_NAME);
-
-      console.log(`Cleared ${deleted ? 1 : 0} cache`);
-      return true;
-    } catch (error) {
-      console.error('Failed to clear cache:', error);
-      return false;
-    }
-  }
-
-  /**
    * Async iterator over a ReadableStream that ensures proper cancellation when iteration stops early.
    */
   private static async *iterateStream(stream: ReadableStream<Uint8Array>): AsyncGenerator<Uint8Array, void, unknown> {
