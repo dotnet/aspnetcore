@@ -330,6 +330,7 @@ internal abstract class CertificateManager
             catch (Exception e)
             {
                 Log.SaveCertificateInStoreError(e.ToString());
+                certificate?.Dispose();
                 result = EnsureCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
                 return result;
             }
@@ -387,6 +388,7 @@ internal abstract class CertificateManager
                     result :
                     EnsureCertificateResult.ErrorExportingTheCertificate;
 
+                certificate?.Dispose();
                 return result;
             }
         }
@@ -403,21 +405,25 @@ internal abstract class CertificateManager
                         break;
                     case TrustLevel.Partial:
                         result = EnsureCertificateResult.PartiallyFailedToTrustTheCertificate;
+                        certificate?.Dispose();
                         return result;
                     case TrustLevel.None:
                     default: // Treat unknown status (should be impossible) as failure
                         result = EnsureCertificateResult.FailedToTrustTheCertificate;
+                        certificate?.Dispose();
                         return result;
                 }
             }
             catch (UserCancelledTrustException)
             {
                 result = EnsureCertificateResult.UserCancelledTrustStep;
+                certificate?.Dispose();
                 return result;
             }
             catch
             {
                 result = EnsureCertificateResult.FailedToTrustTheCertificate;
+                certificate?.Dispose();
                 return result;
             }
 
@@ -457,52 +463,55 @@ internal abstract class CertificateManager
         X509Certificate2? certificate = null;
         try
         {
-            Log.LoadCertificateStart(certificatePath);
-            certificate = new X509Certificate2(certificatePath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
-            if (Log.IsEnabled())
+            try
             {
-                Log.LoadCertificateEnd(GetDescription(certificate));
+                Log.LoadCertificateStart(certificatePath);
+                certificate = new X509Certificate2(certificatePath, password, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.EphemeralKeySet);
+                if (Log.IsEnabled())
+                {
+                    Log.LoadCertificateEnd(GetDescription(certificate));
+                }
             }
+            catch (Exception e)
+            {
+                if (Log.IsEnabled())
+                {
+                    Log.LoadCertificateError(e.ToString());
+                }
+                return ImportCertificateResult.InvalidCertificate;
+            }
+
+            // Note that we're checking Subject, rather than LocalhostHttpsDistinguishedName,
+            // because the tests use a different subject.
+            if (!string.Equals(certificate.Subject, Subject, StringComparison.Ordinal) || // Kestrel requires this
+                !IsHttpsDevelopmentCertificate(certificate))
+            {
+                if (Log.IsEnabled())
+                {
+                    Log.NoHttpsDevelopmentCertificate(GetDescription(certificate));
+                }
+                return ImportCertificateResult.NoDevelopmentHttpsCertificate;
+            }
+
+            try
+            {
+                certificate = SaveCertificate(certificate);
+            }
+            catch (Exception e)
+            {
+                if (Log.IsEnabled())
+                {
+                    Log.SaveCertificateInStoreError(e.ToString());
+                }
+                return ImportCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
+            }
+
+            return ImportCertificateResult.Succeeded;
         }
-        catch (Exception e)
+        finally
         {
-            if (Log.IsEnabled())
-            {
-                Log.LoadCertificateError(e.ToString());
-            }
             certificate?.Dispose();
-            return ImportCertificateResult.InvalidCertificate;
         }
-
-        // Note that we're checking Subject, rather than LocalhostHttpsDistinguishedName,
-        // because the tests use a different subject.
-        if (!string.Equals(certificate.Subject, Subject, StringComparison.Ordinal) || // Kestrel requires this
-            !IsHttpsDevelopmentCertificate(certificate))
-        {
-            if (Log.IsEnabled())
-            {
-                Log.NoHttpsDevelopmentCertificate(GetDescription(certificate));
-            }
-            certificate.Dispose();
-            return ImportCertificateResult.NoDevelopmentHttpsCertificate;
-        }
-
-        try
-        {
-            certificate = SaveCertificate(certificate);
-        }
-        catch (Exception e)
-        {
-            if (Log.IsEnabled())
-            {
-                Log.SaveCertificateInStoreError(e.ToString());
-            }
-            certificate.Dispose();
-            return ImportCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
-        }
-
-        certificate.Dispose();
-        return ImportCertificateResult.Succeeded;
     }
 
     public void CleanupHttpsCertificates()
