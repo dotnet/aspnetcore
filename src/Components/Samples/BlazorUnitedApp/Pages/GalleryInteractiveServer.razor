@@ -117,9 +117,38 @@
     {
         if (firstRender)
         {
+            try
+            {
+                await ClearImageCacheAsync();
+            }
+            catch
+            {
+                // Ignore cache clear failures in the sample UI
+            }
             StateHasChanged();
         }
         await base.OnAfterRenderAsync(firstRender);
+    }
+
+    private async Task ClearImageCacheAsync()
+    {
+        // Mirrors the E2E test helper: delete the Cache API entry and reset the memoized cache promise
+        await JSRuntime.InvokeAsync<bool>("eval", @"(async () => {
+            try {
+                if ('caches' in window) {
+                await caches.delete('blazor-image-cache');
+                }
+                try {
+                const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+                if (root && 'cachePromise' in root) {
+                    root.cachePromise = undefined;
+                }
+                } catch {}
+                return true;
+            } catch (e) {
+                return false;
+            }
+            })() ");
     }
 
     protected override async Task OnInitializedAsync()

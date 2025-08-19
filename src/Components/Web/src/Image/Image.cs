@@ -28,6 +28,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     private bool _hasPendingRender;
     private string? _activeCacheKey;
     private ImageSource? _currentSource;
+    private CancellationTokenSource? _loadCts;
 
     private bool IsInteractive => _renderHandle.IsInitialized &&
                                 _renderHandle.RendererInfo.IsInteractive;
@@ -83,7 +84,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             return Task.CompletedTask;
         }
 
-        if (!_isDisposed && Source != null && !string.Equals(previousSource?.CacheKey, Source.CacheKey, StringComparison.Ordinal))
+        if (Source != null && !string.Equals(previousSource?.CacheKey, Source.CacheKey, StringComparison.Ordinal))
         {
             Render();
         }
@@ -94,7 +95,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// <inheritdoc />
     public async Task OnAfterRenderAsync()
     {
-        if (!IsInteractive || _isDisposed || Source == null)
+        if (!IsInteractive || Source == null)
         {
             return;
         }
@@ -105,8 +106,22 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             return;
         }
 
+        // Cancel any in-progress load operation
+        try { _loadCts?.Cancel(); } catch { }
+        _loadCts?.Dispose();
+        _loadCts = new CancellationTokenSource();
+        var token = _loadCts.Token;
+
         _currentSource = Source;
-        await LoadImage(Source);
+
+        try
+        {
+            await LoadImage(Source, token);
+        }
+        catch (OperationCanceledException)
+        {
+
+        }
     }
 
     /// <summary>
@@ -147,7 +162,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         builder.CloseElement();
     }
 
-    private async Task LoadImage(ImageSource? source)
+    private async Task LoadImage(ImageSource? source, CancellationToken cancellationToken)
     {
         if (source == null || !IsInteractive)
         {
@@ -161,15 +176,19 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             Log.BeginLoad(Logger, source.CacheKey);
             SetLoadingState();
 
+            // Check if operation was already canceled
+            cancellationToken.ThrowIfCancellationRequested();
+
             // Always try to load from cache first
             bool foundInCache = await JSRuntime.InvokeAsync<bool>(
                 "Blazor._internal.BinaryImageComponent.trySetFromCache",
-                Element, source.CacheKey);
+                cancellationToken,
+                new object?[] { Element, source.CacheKey });
 
             if (foundInCache)
             {
                 Log.CacheHit(Logger, source.CacheKey);
-                if (_activeCacheKey == source.CacheKey)
+                if (_activeCacheKey == source.CacheKey && !cancellationToken.IsCancellationRequested)
                 {
                     SetSuccessState();
                     Log.LoadSuccess(Logger, source.CacheKey);
@@ -178,25 +197,30 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             }
 
             Log.StreamStart(Logger, source.CacheKey);
-            await StreamImage(source);
+            await StreamImage(source, cancellationToken);
 
-            if (_activeCacheKey == source.CacheKey)
+            if (_activeCacheKey == source.CacheKey && !cancellationToken.IsCancellationRequested)
             {
                 SetSuccessState();
                 Log.LoadSuccess(Logger, source.CacheKey);
             }
         }
+        catch (OperationCanceledException)
+        {
+            // bubble up to caller
+            throw;
+        }
         catch (Exception ex)
         {
             Log.LoadFailed(Logger, source?.CacheKey ?? "(null)", ex);
-            if (source != null && _activeCacheKey == source.CacheKey)
+            if (source != null && _activeCacheKey == source.CacheKey && !cancellationToken.IsCancellationRequested)
             {
                 SetErrorState();
             }
         }
     }
 
-    private async Task StreamImage(ImageSource source)
+    private async Task StreamImage(ImageSource source, CancellationToken cancellationToken)
     {
         if (!IsInteractive)
         {
@@ -215,11 +239,13 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
             await JSRuntime.InvokeVoidAsync(
                 "Blazor._internal.BinaryImageComponent.loadImageFromStream",
-                Element,
-                streamRef,
-                source.MimeType,
-                source.CacheKey,
-                source.Length);
+                cancellationToken,
+                new object?[] { Element, streamRef, source.MimeType, source.CacheKey, source.Length });
+        }
+        catch (OperationCanceledException)
+        {
+            // bubble up to caller
+            throw;
         }
         catch (Exception ex)
         {
@@ -261,6 +287,9 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         {
             _isDisposed = true;
 
+            // Cancel any pending operations
+            try { _loadCts?.Cancel(); } catch { }
+
             if (Source != null && IsInteractive)
             {
                 try
@@ -275,6 +304,9 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
                     // Client disconnected
                 }
             }
+
+            _loadCts?.Dispose();
+            _loadCts = null;
         }
     }
 
