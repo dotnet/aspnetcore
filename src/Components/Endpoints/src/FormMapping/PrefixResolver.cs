@@ -50,7 +50,10 @@ internal readonly struct PrefixResolver : IDisposable
         // When comparing values, y is the element we are trying to find.
         public int Compare(FormKey x, FormKey y)
         {
-            int separatorX = 0, separatorY = 0, currentXPos = 0, currentYPos = 0;
+            var separatorX = 0;
+            var separatorY = 0;
+            var currentXPos = 0;
+            var currentYPos = 0;
             while (separatorX != -1 && separatorY != -1)
             {
                 separatorX = x.Value.Span[currentXPos..].IndexOfAny('.', '[');
@@ -65,7 +68,9 @@ internal readonly struct PrefixResolver : IDisposable
                 else if (separatorX == -1)
                 {
                     // x has no more segments, y has remaining segments
-                    compare = MemoryExtensions.CompareTo(x.Value.Span[currentXPos..], y.Value.Span[currentYPos..][..separatorY], StringComparison.Ordinal);
+                    var segmentX = x.Value.Span[currentXPos..];
+                    var segmentY = y.Value.Span[currentYPos..][..separatorY];
+                    compare = MemoryExtensions.CompareTo(segmentX, segmentY, StringComparison.Ordinal);
                     if (compare == 0 && !checkPrefix)
                     {
                         return -1;
@@ -75,7 +80,9 @@ internal readonly struct PrefixResolver : IDisposable
                 else if (separatorY == -1)
                 {
                     // y has no more segments, x has remaining segments
-                    compare = MemoryExtensions.CompareTo(x.Value.Span[currentXPos..][..separatorX], y.Value.Span[currentYPos..], StringComparison.Ordinal);
+                    var segmentX = x.Value.Span[currentXPos..][..separatorX];
+                    var segmentY = y.Value.Span[currentYPos..];
+                    compare = MemoryExtensions.CompareTo(segmentX, segmentY, StringComparison.Ordinal);
                     if (compare == 0 && !checkPrefix)
                     {
                         return 1;
@@ -83,6 +90,8 @@ internal readonly struct PrefixResolver : IDisposable
                     return compare;
                 }
 
+                var segmentX = x.Value.Span[currentXPos..][..separatorX];
+                var segmentY = y.Value.Span[currentYPos..][..separatorY];
                 compare = MemoryExtensions.CompareTo(x.Value.Span[currentXPos..][..separatorX], y.Value.Span[currentYPos..][..separatorY], StringComparison.Ordinal);
                 if (compare != 0)
                 {
