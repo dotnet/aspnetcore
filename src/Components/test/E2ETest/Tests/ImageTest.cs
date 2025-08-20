@@ -73,7 +73,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Assert.NotNull(marker);
 
         var state = imageElement.GetAttribute("data-state");
-        // After load, state should be cleared (null or empty)
+
         Assert.True(string.IsNullOrEmpty(state), $"Expected data-state to be cleared after load, but found '{state}'");
     }
 
@@ -135,7 +135,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.Equal("Error image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
         var errorImg = Browser.FindElement(By.Id("error-image"));
-        // Wait until the component reflects the error state
+
         Browser.Equal("error", () => Browser.FindElement(By.Id("error-image")).GetAttribute("data-state"));
         var src = errorImg.GetAttribute("src");
         Assert.True(string.IsNullOrEmpty(src) || !src.StartsWith("blob:", StringComparison.Ordinal));
@@ -166,7 +166,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void Image_CompletesLoad_AfterArtificialDelay()
     {
-        // Monkey-patch setImageAsync to introduce a delay before delegating to original
+        // Patch setImageAsync to introduce a delay before delegating to original
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
               const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
@@ -182,7 +182,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         Browser.FindElement(By.Id("load-png")).Click();
 
-        // Wait until it loads and src is set to a blob URL
         var imageElement = Browser.FindElement(By.Id("png-basic"));
         Browser.True(() =>
         {
@@ -207,7 +206,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     {
         ClearImageCache();
 
-        // First load (streams, then caches)
         Browser.FindElement(By.Id("load-cached-jpg")).Click();
         Browser.Equal("Cached JPG loaded", () => Browser.FindElement(By.Id("current-status")).Text);
         var firstImg = Browser.FindElement(By.Id("cached-jpg"));
@@ -215,7 +213,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var firstSrc = firstImg.GetAttribute("src");
         Assert.StartsWith("blob:", firstSrc, StringComparison.Ordinal);
 
-        // Refresh page (loses any prior instrumentation)
         Browser.Navigate().Refresh();
         Navigate(ServerPathBase);
         Browser.MountTestComponent<ImageTestComponent>();
@@ -238,7 +235,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
               }
             })();");
 
-        // Second load should hit cache (no streaming)
+        // Second load should hit cache
         Browser.FindElement(By.Id("load-cached-jpg")).Click();
         Browser.Equal("Cached JPG loaded", () => Browser.FindElement(By.Id("current-status")).Text);
         var secondImg = Browser.FindElement(By.Id("cached-jpg"));
@@ -253,6 +250,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Assert.Equal(0, streamCalls);
         Assert.NotEqual(firstSrc, secondSrc);
 
+        // Restore
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
               const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
@@ -279,7 +277,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             Browser.FindElement(By.Id("change-source")).Click();
         }
 
-        // Wait until status shows a completed PNG or JPG change and image has a blob src
         Browser.True(() =>
         {
             var status = Browser.FindElement(By.Id("current-status")).Text;
@@ -301,7 +298,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var finalSrc = imageElement.GetAttribute("src");
         Assert.False(string.IsNullOrEmpty(finalSrc));
         Assert.StartsWith("blob:", finalSrc, StringComparison.Ordinal);
-        // After multiple toggles we expect a change in src
+
         Assert.NotEqual(initialSrc, finalSrc);
     }
 
@@ -316,7 +313,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Assert.False(string.IsNullOrEmpty(blobUrl));
         Assert.StartsWith("blob:", blobUrl, StringComparison.Ordinal);
 
-        // Remove the element from the DOM so the MutationObserver should revoke the URL
+        // MutationObserver should revoke the URL
         ((IJavaScriptExecutor)Browser).ExecuteScript("document.getElementById('png-basic').remove();");
 
         // Poll until fetch fails, indicating the URL has been revoked

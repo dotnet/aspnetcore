@@ -22,8 +22,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
 namespace Microsoft.AspNetCore.Components.Web.Image.Tests;
 
 /// <summary>
-/// Unit tests for the Image component updated for the single JS interop (setImageAsync)
-/// and OnAfterRender-driven loading.
+/// Unit tests for the Image component
 /// </summary>
 public class ImageTest
 {
@@ -245,7 +244,6 @@ public class ImageTest
                 return ValueTask.FromResult((TValue)instance);
             }
 
-            // Default return
             return ValueTask.FromResult(default(TValue)!);
         }
     }

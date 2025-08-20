@@ -195,9 +195,9 @@ export class BinaryImageComponent {
       chunks.push(chunk);
       bytesRead += chunk.byteLength;
 
-      if (totalBytes && imgElement.parentElement) {
+      if (totalBytes) {
         const progress = Math.min(1, bytesRead / totalBytes);
-        imgElement.parentElement.style.setProperty('--blazor-image-progress', progress.toString());
+        imgElement.style.setProperty('--blazor-image-progress', progress.toString());
       }
     }
 
@@ -239,10 +239,7 @@ export class BinaryImageComponent {
     const onLoad = (_e: Event) => {
       if (!cacheKey || BinaryImageComponent.activeCacheKey.get(imgElement) === cacheKey) {
         BinaryImageComponent.loadingImages.delete(imgElement);
-        const containerElement = imgElement.parentElement;
-        if (containerElement) {
-          containerElement.style.removeProperty('--blazor-image-progress');
-        }
+        imgElement.style.removeProperty('--blazor-image-progress');
       }
       imgElement.removeEventListener('error', onError);
     };
@@ -250,10 +247,7 @@ export class BinaryImageComponent {
     const onError = (_e: Event) => {
       if (!cacheKey || BinaryImageComponent.activeCacheKey.get(imgElement) === cacheKey) {
         BinaryImageComponent.loadingImages.delete(imgElement);
-        const containerElement = imgElement.parentElement;
-        if (containerElement) {
-          containerElement.style.removeProperty('--blazor-image-progress');
-        }
+        imgElement.style.removeProperty('--blazor-image-progress');
       }
       imgElement.removeEventListener('load', onLoad);
     };

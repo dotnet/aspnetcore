@@ -12,7 +12,6 @@
     <button id="load-png" @onclick="ReloadPng">Load PNG</button>
     <button id="load-jpg-stream" @onclick="LoadJpgFromStream">Load JPG (Stream)</button>
     <button id="change-source" @onclick="ChangeDynamicImageSource">Change Dynamic Source</button>
-    <!-- New controls -->
     <button id="load-pair-sequence" @onclick="LoadPairSequence">Load Two Images (Same Key)</button>
     <button id="load-error" @onclick="LoadErrorImage">Load Error</button>
     <button id="load-cached-jpg" @onclick="LoadCachedJpg">Load Cached JPG</button>
@@ -158,8 +157,6 @@
             }
         }
     }
-
-    // New helpers for extended E2E scenarios
     private async Task LoadPairSequence()
     {
         _currentStatus = "Loading pair sequence...";
@@ -176,7 +173,7 @@
         if (_pngBasic)
         {
             _currentStatus = "Reloading PNG...";
-            _pngBasic = false; // unmount to force a new component instance
+            _pngBasic = false;
             await Task.Delay(10);
         }
         else
