@@ -18,14 +18,6 @@ public static class EnhancedNavigationTestUtil
         {
             var browser = fixture.Browser;
 
-            // Set the suppression flag - this will prevent enhanced navigation from being attached on the next navigation
-            // and trigger detachment of currently attached enhanced navigation via the periodic check
-            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
-            if (testId == null)
-            {
-                throw new InvalidOperationException("Test ID not found in sessionStorage. Ensure that suppression is enabled for test class by passing `supportEnhancedNavigationSuppression: true` to InitializeAsync or for a given test by calling `GrantTestId()` in the beginning of the test.");
-            }
-
             if (!skipNavigation)
             {
                 // Normally we need to navigate here first otherwise the browser isn't on the correct origin to access
@@ -34,12 +26,32 @@ public static class EnhancedNavigationTestUtil
                 browser.Equal("Hello", () => browser.Exists(By.TagName("h1")).Text);
             }
 
+            try
+            {
+                ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.", ex);
+            }
+            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
+            if (testId == null)
+            {
+                testId = GrantTestId(browser);
+            }
+
             ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('suppress-enhanced-navigation-{testId}', 'true')");
 
             var suppressEnhancedNavigation = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('suppress-enhanced-navigation-{testId}');");
             Assert.True(suppressEnhancedNavigation is not null && (string)suppressEnhancedNavigation == "true",
                 "Expected 'suppress-enhanced-navigation' to be set in sessionStorage.");
         }
+    }
+    private static string GrantTestId(IWebDriver browser)
+    {
+        var testId = Guid.NewGuid().ToString("N")[..8];
+        ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
+        return testId;
     }
 
     public static long GetScrollY(this IWebDriver browser)
