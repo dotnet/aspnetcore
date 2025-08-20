@@ -16,6 +16,8 @@ public class BrowserFixture : IAsyncLifetime
     public static string StreamingContext { get; } = "streaming";
     public static string RoutingTestContext { get; } = "routing";
 
+    public static string BackForwardCacheContext { get; } = "backforwardcache";
+
     private readonly ConcurrentDictionary<string, (IWebDriver browser, ILogs log)> _browsers = new();
 
     public BrowserFixture(IMessageSink diagnosticsMessageSink)
@@ -145,6 +147,14 @@ public class BrowserFixture : IAsyncLifetime
         if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true)
         {
             // Tells Selenium not to wait until the page navigation has completed before continuing with the tests
+            opts.PageLoadStrategy = PageLoadStrategy.None;
+        }
+
+        if (context?.Contains(BackForwardCacheContext, StringComparison.Ordinal) == true)
+        {
+            // Tells Selenium to disable the back/forward cache, which is enabled by default in Chrome.
+            // This is needed for tests that rely on the browser's back/forward navigation.
+            opts.AddArgument("--disable-back-forward-cache");
             opts.PageLoadStrategy = PageLoadStrategy.None;
         }
 
