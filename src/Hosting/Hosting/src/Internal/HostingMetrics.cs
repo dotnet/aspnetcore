@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Shared;
 
 namespace Microsoft.AspNetCore.Hosting;
 
@@ -66,7 +67,7 @@ internal sealed class HostingMetrics : IDisposable
             tags.Add("http.response.status_code", HostingTelemetryHelpers.GetBoxedStatusCode(statusCode));
             if (route != null)
             {
-                tags.Add("http.route", route);
+                tags.Add("http.route", RouteDiagnosticsHelpers.ResolveHttpRoute(route));
             }
 
             // Add before some built in tags so custom tags are prioritized when dealing with duplicates.
