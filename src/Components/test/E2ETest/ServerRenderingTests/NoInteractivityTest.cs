@@ -285,7 +285,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false, true)]
     public void NotFoundSetOnInitialization_ResponseStarted_EnhancedNavigationDisabled_SSR(bool hasReExecutionMiddleware, bool hasCustomNotFoundPageSet)
     {
-        GrantTestId();
         EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, true, skipNavigation: true);
         string reexecution = hasReExecutionMiddleware ? "/reexecution" : "";
         string testUrl = $"{ServerPathBase}{reexecution}/set-not-found-ssr-streaming?useCustomNotFoundPage={hasCustomNotFoundPageSet}";
