@@ -1443,7 +1443,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60067")]
     public void SubmitButtonFormactionAttributeOverridesEnhancedFormAction()
     {
         GoTo("forms/form-submit-button-with-formaction");
