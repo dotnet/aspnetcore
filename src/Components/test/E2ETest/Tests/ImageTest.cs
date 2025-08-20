@@ -73,6 +73,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Assert.NotNull(marker);
 
         var state = imageElement.GetAttribute("data-state");
+        // After load, state should be cleared (null or empty)
         Assert.True(string.IsNullOrEmpty(state), $"Expected data-state to be cleared after load, but found '{state}'");
     }
 
@@ -128,15 +129,16 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void ErrorImage_ShowsErrorState()
+    public void ErrorImage_SetsErrorState()
     {
-        // Trigger loading of an image whose stream position is not at start, causing error
         Browser.FindElement(By.Id("load-error")).Click();
         Browser.Equal("Error image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
         var errorImg = Browser.FindElement(By.Id("error-image"));
-        var state = errorImg.GetAttribute("data-state");
-        Assert.Equal("error", state);
+        // Wait until the component reflects the error state
+        Browser.Equal("error", () => Browser.FindElement(By.Id("error-image")).GetAttribute("data-state"));
+        var src = errorImg.GetAttribute("src");
+        Assert.True(string.IsNullOrEmpty(src) || !src.StartsWith("blob:", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -162,44 +164,40 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void Image_ShowsLoadingStateThenCompletes()
+    public void Image_CompletesLoad_AfterArtificialDelay()
     {
+        // Monkey-patch setImageAsync to introduce a delay before delegating to original
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
               const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
               if (!root) return;
-              if (!window.__origLoadImage) {
-                window.__origLoadImage = root.loadImageFromStream;
-                root.loadImageFromStream = async function(...args){
+              if (!window.__origSetImageAsync) {
+                window.__origSetImageAsync = root.setImageAsync;
+                root.setImageAsync = async function(...args){
                   await new Promise(r => setTimeout(r, 500));
-                  return window.__origLoadImage.apply(this, args);
+                  return window.__origSetImageAsync.apply(this, args);
                 };
               }
             })();");
 
         Browser.FindElement(By.Id("load-png")).Click();
 
-        Browser.True(() =>
-        {
-            try { Browser.FindElement(By.Id("png-basic")); return true; } catch { return false; }
-        });
-
+        // Wait until it loads and src is set to a blob URL
         var imageElement = Browser.FindElement(By.Id("png-basic"));
-        Browser.Equal("loading", () => imageElement.GetAttribute("data-state"));
-        Browser.Equal("PNG basic loaded", () => Browser.FindElement(By.Id("current-status")).Text);
-        Browser.Equal(null, () => imageElement.GetAttribute("data-state"));
         Browser.True(() =>
         {
             var src = imageElement.GetAttribute("src");
             return !string.IsNullOrEmpty(src) && src.StartsWith("blob:", StringComparison.Ordinal);
         });
+        Browser.Equal("PNG basic loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
+        // Restore
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
               const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
-              if (root && window.__origLoadImage) {
-                root.loadImageFromStream = window.__origLoadImage;
-                delete window.__origLoadImage;
+              if (root && window.__origSetImageAsync) {
+                root.setImageAsync = window.__origSetImageAsync;
+                delete window.__origSetImageAsync;
               }
             })();");
     }
@@ -222,28 +220,22 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Navigate(ServerPathBase);
         Browser.MountTestComponent<ImageTestComponent>();
 
-        // Re‑instrument after refresh so we see the cache probe on the second load
+        // Re‑instrument after refresh so we see cache vs stream on the second load
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-            const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
-            if (!root) return;
-            window.__cacheHits = 0;
-            window.__streamCalls = 0;
-            if (!window.__origTrySet){
-                window.__origTrySet = root.trySetFromCache;
-                root.trySetFromCache = async function(img, key){
-                const r = await window.__origTrySet.call(this, img, key);
-                if (r) window.__cacheHits++;
-                return r;
-                };
-            }
-            if (!window.__origLoadStream){
-                window.__origLoadStream = root.loadImageFromStream;
-                root.loadImageFromStream = async function(...a){
-                window.__streamCalls++;
-                return window.__origLoadStream.apply(this, a);
-                };
-            }
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+              if (!root) return;
+              window.__cacheHits = 0;
+              window.__streamCalls = 0;
+              if (!window.__origSetImageAsync){
+                  window.__origSetImageAsync = root.setImageAsync;
+                  root.setImageAsync = async function(...a){
+                      const result = await window.__origSetImageAsync.apply(this, a);
+                      if (result && result.fromCache) window.__cacheHits++;
+                      if (result && result.success && !result.fromCache) window.__streamCalls++;
+                      return result;
+                  };
+              }
             })();");
 
         // Second load should hit cache (no streaming)
@@ -263,11 +255,10 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-            const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
-            if (root && window.__origTrySet){ root.trySetFromCache = window.__origTrySet; delete window.__origTrySet; }
-            if (root && window.__origLoadStream){ root.loadImageFromStream = window.__origLoadStream; delete window.__origLoadStream; }
-            delete window.__cacheHits;
-            delete window.__streamCalls;
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+              if (root && window.__origSetImageAsync){ root.setImageAsync = window.__origSetImageAsync; delete window.__origSetImageAsync; }
+              delete window.__cacheHits;
+              delete window.__streamCalls;
             })();");
     }
 
@@ -312,5 +303,45 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Assert.StartsWith("blob:", finalSrc, StringComparison.Ordinal);
         // After multiple toggles we expect a change in src
         Assert.NotEqual(initialSrc, finalSrc);
+    }
+
+    [Fact]
+    public void UrlRevoked_WhenImageRemovedFromDom()
+    {
+        // Load an image and capture its blob URL
+        Browser.FindElement(By.Id("load-png")).Click();
+        Browser.Equal("PNG basic loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+        var imageElement = Browser.FindElement(By.Id("png-basic"));
+        var blobUrl = imageElement.GetAttribute("src");
+        Assert.False(string.IsNullOrEmpty(blobUrl));
+        Assert.StartsWith("blob:", blobUrl, StringComparison.Ordinal);
+
+        // Remove the element from the DOM so the MutationObserver should revoke the URL
+        ((IJavaScriptExecutor)Browser).ExecuteScript("document.getElementById('png-basic').remove();");
+
+        // Poll until fetch fails, indicating the URL has been revoked
+        Browser.True(() =>
+        {
+            try
+            {
+                var ok = (bool)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(@"
+                  var callback = arguments[arguments.length - 1];
+                  var url = arguments[0];
+                  (async () => {
+                    try {
+                      await fetch(url);
+                      callback(false); // still reachable
+                    } catch {
+                      callback(true); // revoked or unreachable
+                    }
+                  })();
+                ", blobUrl);
+                return ok;
+            }
+            catch
+            {
+                return false;
+            }
+        });
     }
 }

@@ -29,7 +29,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     private string? _activeCacheKey;
     private ImageSource? _currentSource;
     private CancellationTokenSource? _loadCts;
-    private bool IsLoading => _currentSource != null && string.IsNullOrEmpty(_currentObjectUrl);
+    private bool IsLoading => _currentSource != null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
 
     private bool IsInteractive => _renderHandle.IsInitialized &&
                                 _renderHandle.RendererInfo.IsInteractive;
@@ -89,7 +89,6 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             return;
         }
 
-        // Avoid re-loading the same source repeatedly
         if (_currentSource != null && string.Equals(_currentSource.CacheKey, Source.CacheKey, StringComparison.Ordinal))
         {
             return;
@@ -127,7 +126,6 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     {
         builder.OpenElement(0, "img");
 
-        // Set src if we have an object URL
         if (!string.IsNullOrEmpty(_currentObjectUrl))
         {
             builder.AddAttribute(1, "src", _currentObjectUrl);
@@ -135,7 +133,9 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
         builder.AddAttribute(2, "data-blazor-image", "");
 
-        if (IsLoading)
+        var showInitial = Source != null && _currentSource == null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
+
+        if (IsLoading || showInitial)
         {
             builder.AddAttribute(3, "data-state", "loading");
         }

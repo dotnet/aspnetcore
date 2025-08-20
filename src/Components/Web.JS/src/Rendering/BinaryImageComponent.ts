@@ -136,7 +136,7 @@ export class BinaryImageComponent {
         }
       }
 
-      return { success: false, fromCache: false, objectUrl: null, error: 'No stream provided and not in cache' };
+      return { success: false, fromCache: false, objectUrl: null, error: 'No/empty stream provided and not in cache' };
     } catch (error) {
       this.logger.log(LogLevel.Debug, `Error in setImageAsync: ${error}`);
       return { success: false, fromCache: false, objectUrl: null, error: String(error) };
@@ -199,6 +199,13 @@ export class BinaryImageComponent {
         const progress = Math.min(1, bytesRead / totalBytes);
         imgElement.parentElement.style.setProperty('--blazor-image-progress', progress.toString());
       }
+    }
+
+    if (bytesRead === 0) {
+      if (typeof totalBytes === 'number' && totalBytes > 0) {
+        throw new Error('Stream was already consumed or at end position');
+      }
+      return null;
     }
 
     const combined = this.combineChunks(chunks);
