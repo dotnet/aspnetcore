@@ -691,7 +691,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // or to the beginning of a fragment, regardless of the previous scroll position
         string landingPageSuffix = enableStreaming ? "" : "-no-streaming";
         string buttonKeyword = programmaticNavigation ? "-programmatic" : "";
-        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress: !useEnhancedNavigation, skipNavigation: true);
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress: !useEnhancedNavigation);
         Navigate($"{ServerPathBase}/nav/scroll-test{landingPageSuffix}");
 
         // "landing" page: scroll maximally down and go to "next" page - we should land at the top of that page
@@ -744,7 +744,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         // This test checks if the scroll position is preserved after backwards/forwards action
         string landingPageSuffix = enableStreaming ? "" : "-no-streaming";
         string buttonKeyword = programmaticNavigation ? "-programmatic" : "";
-        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress: !useEnhancedNavigation, skipNavigation: true);
+        EnhancedNavigationTestUtil.SuppressEnhancedNavigation(this, shouldSuppress: !useEnhancedNavigation);
         Navigate($"{ServerPathBase}/nav/scroll-test{landingPageSuffix}");
 
         // "landing" page: scroll to pos1, navigate away

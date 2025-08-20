@@ -53,6 +53,7 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
     {
         return Task.CompletedTask;
     }
+
     public virtual Task InitializeAsync()
     {
         return InitializeAsync("");
