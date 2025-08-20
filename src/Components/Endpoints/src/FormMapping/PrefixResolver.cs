@@ -68,9 +68,7 @@ internal readonly struct PrefixResolver : IDisposable
                 else if (separatorX == -1)
                 {
                     // x has no more segments, y has remaining segments
-                    var segmentX = x.Value.Span[currentXPos..];
-                    var segmentY = y.Value.Span[currentYPos..][..separatorY];
-                    compare = MemoryExtensions.CompareTo(segmentX, segmentY, StringComparison.Ordinal);
+                    compare = MemoryExtensions.CompareTo(x.Value.Span[currentXPos..], y.Value.Span[currentYPos..][..separatorY], StringComparison.Ordinal);
                     if (compare == 0 && !checkPrefix)
                     {
                         return -1;
@@ -80,9 +78,7 @@ internal readonly struct PrefixResolver : IDisposable
                 else if (separatorY == -1)
                 {
                     // y has no more segments, x has remaining segments
-                    var segmentX = x.Value.Span[currentXPos..][..separatorX];
-                    var segmentY = y.Value.Span[currentYPos..];
-                    compare = MemoryExtensions.CompareTo(segmentX, segmentY, StringComparison.Ordinal);
+                    compare = MemoryExtensions.CompareTo(x.Value.Span[currentXPos..][..separatorX], y.Value.Span[currentYPos..], StringComparison.Ordinal);
                     if (compare == 0 && !checkPrefix)
                     {
                         return 1;
@@ -90,8 +86,6 @@ internal readonly struct PrefixResolver : IDisposable
                     return compare;
                 }
 
-                var segmentX = x.Value.Span[currentXPos..][..separatorX];
-                var segmentY = y.Value.Span[currentYPos..][..separatorY];
                 compare = MemoryExtensions.CompareTo(x.Value.Span[currentXPos..][..separatorX], y.Value.Span[currentYPos..][..separatorY], StringComparison.Ordinal);
                 if (compare != 0)
                 {
