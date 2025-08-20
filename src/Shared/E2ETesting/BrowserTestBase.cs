@@ -58,16 +58,11 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
         return InitializeAsync("");
     }
 
-    public virtual Task InitializeAsync(string isolationContext, bool supportEnhancedNavigationSuppression = false)
+    public virtual Task InitializeAsync(string isolationContext)
     {
         InitializeBrowser(isolationContext);
-        InitializeAsyncCore(supportEnhancedNavigationSuppression);
-        return Task.CompletedTask;
-    }
-
-    protected virtual void InitializeAsyncCore(bool supportEnhancedNavigationSuppression = false)
-    {
         InitializeAsyncCore();
+        return Task.CompletedTask;
     }
 
     protected virtual void InitializeAsyncCore()
