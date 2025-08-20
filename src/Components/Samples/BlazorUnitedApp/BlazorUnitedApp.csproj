@@ -2,14 +2,12 @@
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
-    <!-- <TreatWarningsAsErrors>false</TreatWarningsAsErrors> -->
     <IsShippingPackage>false</IsShippingPackage>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BlazorUnitedApp.Client\BlazorUnitedApp.Client.csproj" />
-    <ProjectReference Include="..\BlazorShared\BlazorShared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
