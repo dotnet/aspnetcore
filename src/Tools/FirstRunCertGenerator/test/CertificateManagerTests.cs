@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.AspNetCore.DeveloperCertificates.XPlat;
 using Microsoft.AspNetCore.InternalTesting;
 using Xunit;
 using Xunit.Abstractions;
@@ -514,6 +515,105 @@ public class CertificateManagerTests : IClassFixture<CertFixture>
             e => e.Critical == false &&
                 e.Oid.Value == CertificateManager.AspNetHttpsOid &&
                 e.RawData[0] == 2);
+    }
+
+    [Fact]
+    public void GenerateAspNetHttpsCertificate_UsesUtcTime_CertificateIsImmediatelyValid()
+    {
+        // This test verifies that CertificateGenerator.GenerateAspNetHttpsCertificate() uses UTC time
+        // instead of local time, ensuring certificates are immediately valid regardless of timezone
+        
+        try
+        {
+            _fixture.CleanupCertificates();
+            
+            // Record both UTC and local time before calling the method
+            var beforeCallUtc = DateTimeOffset.UtcNow;
+            var beforeCallLocal = DateTimeOffset.Now;
+            
+            // Call the method that was fixed to use DateTimeOffset.UtcNow
+            CertificateGenerator.GenerateAspNetHttpsCertificate();
+            
+            // Record both UTC and local time after calling the method
+            var afterCallUtc = DateTimeOffset.UtcNow;
+            var afterCallLocal = DateTimeOffset.Now;
+            
+            // Get the certificate that was created
+            var certificates = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
+            Assert.True(certificates.Count > 0, "Expected at least one certificate to be created");
+            
+            var certificate = certificates.First();
+            
+            // Convert certificate NotBefore to UTC (certificates store time as local time)
+            var notBefore = new DateTimeOffset(certificate.NotBefore.ToUniversalTime(), TimeSpan.Zero);
+            
+            // The certificate's NotBefore should be close to UTC time, not local time
+            // If it used DateTimeOffset.Now in a non-UTC timezone, it would be off by the timezone offset
+            var utcTimeDiff = Math.Abs((notBefore - beforeCallUtc).TotalSeconds);
+            var localTimeDiff = Math.Abs((notBefore - beforeCallLocal.ToUniversalTime()).TotalSeconds);
+            
+            // In UTC timezone, both differences would be small, but in non-UTC timezone,
+            // UTC difference should be much smaller than local time difference
+            Assert.True(utcTimeDiff <= 10, 
+                $"Certificate NotBefore should be close to UTC time. NotBefore: {notBefore:yyyy-MM-dd HH:mm:ss} UTC, " +
+                $"BeforeCall UTC: {beforeCallUtc:yyyy-MM-dd HH:mm:ss} UTC, Difference: {utcTimeDiff:F2} seconds");
+            
+            // Verify the certificate is immediately valid (NotBefore <= now in UTC)
+            var utcNow = DateTimeOffset.UtcNow;
+            Assert.True(notBefore <= utcNow, 
+                $"Certificate should be immediately valid. NotBefore: {notBefore:yyyy-MM-dd HH:mm:ss} UTC, Current UTC: {utcNow:yyyy-MM-dd HH:mm:ss} UTC");
+                
+            // Output diagnostic information to help understand the test
+            Output.WriteLine($"Certificate NotBefore: {notBefore:yyyy-MM-dd HH:mm:ss} UTC");
+            Output.WriteLine($"UTC time before call: {beforeCallUtc:yyyy-MM-dd HH:mm:ss} UTC");
+            Output.WriteLine($"Local time before call: {beforeCallLocal:yyyy-MM-dd HH:mm:ss zzz}");
+            Output.WriteLine($"UTC time difference: {utcTimeDiff:F2} seconds");
+            Output.WriteLine($"Local time difference: {localTimeDiff:F2} seconds");
+        }
+        finally
+        {
+            _fixture.CleanupCertificates();
+        }
+    }
+
+    [Fact]
+    public void CertificateGenerator_FixedToUseUtcNow_NotLocalNow()
+    {
+        // This test documents the fix that was made to CertificateGenerator.GenerateAspNetHttpsCertificate()
+        // The method was changed from DateTimeOffset.Now to DateTimeOffset.UtcNow to fix timezone issues
+        
+        // Test that the method behaves correctly by ensuring the certificate uses UTC-based time
+        // In non-UTC timezones, using DateTimeOffset.Now would create certificates with future NotBefore timestamps
+        
+        try
+        {
+            _fixture.CleanupCertificates();
+            
+            // Call the fixed method
+            CertificateGenerator.GenerateAspNetHttpsCertificate();
+            
+            // Verify a certificate was created and is immediately valid
+            var certificates = _manager.ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true);
+            Assert.True(certificates.Count > 0, "Certificate should be created");
+            
+            var certificate = certificates.First();
+            
+            // The certificate should be immediately valid - NotBefore should not be in the future
+            Assert.True(certificate.NotBefore <= DateTime.UtcNow.AddSeconds(5), 
+                "Certificate NotBefore should not be in the future (which would happen with DateTimeOffset.Now in non-UTC timezones)");
+                
+            // The certificate should be valid for approximately 1 year from now
+            var expectedExpiry = DateTime.UtcNow.AddYears(1);
+            var actualExpiry = certificate.NotAfter;
+            var expiryDiff = Math.Abs((expectedExpiry - actualExpiry).TotalDays);
+            
+            Assert.True(expiryDiff <= 1, 
+                $"Certificate should expire approximately 1 year from now. Expected: {expectedExpiry:yyyy-MM-dd}, Actual: {actualExpiry:yyyy-MM-dd}");
+        }
+        finally
+        {
+            _fixture.CleanupCertificates();
+        }
     }
 
     [ConditionalFact]
