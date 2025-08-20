@@ -813,7 +813,7 @@ public class CommandLineApplicationTests
 
         Assert.Throws<CommandParsingException>(() => app.Execute("subcmd", "-b", "B"));
 
-        Assert.Contains("-a|--option-a", subcmd.GetHelpText());
+        Assert.Contains("-a, --option-a", subcmd.GetHelpText());
     }
 
     [Fact]
