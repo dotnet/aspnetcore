@@ -142,11 +142,24 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
 
         // Find the full expression chain that contains this invocation
         var fullExpression = GetFullExpressionChain(invocation);
-        
-        // Transform the entire expression
-        var transformedExpression = TransformExpression(fullExpression);
 
-        var newRoot = root.ReplaceNode(fullExpression, transformedExpression.WithLeadingTrivia(fullExpression.GetLeadingTrivia()));
+        SyntaxTriviaList leadingTrivia = fullExpression.GetLeadingTrivia();
+        if (!fullExpression.HasLeadingTrivia)
+        {
+            // Try to find some leading trivia from a parent
+            // e.g. using (var host = WebHost.CreateDefaultBuilder(args)) would not have leading trivia on the WebHost call
+            var parent = fullExpression.Parent;
+            while (parent != null && !parent.HasLeadingTrivia)
+            {
+                parent = parent.Parent;
+            }
+            leadingTrivia = parent?.GetLeadingTrivia() ?? SyntaxFactory.TriviaList();
+        }
+
+        // Transform the entire expression
+        var transformedExpression = TransformExpression(fullExpression, leadingTrivia);
+
+        var newRoot = root.ReplaceNode(fullExpression, transformedExpression);
         
         // Add the required using statement if not already present
         if (root is CompilationUnitSyntax compilationUnit)
@@ -209,7 +222,7 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
 
     private static ArrowExpressionClauseSyntax TransformExpressionBody(ArrowExpressionClauseSyntax expressionBody)
     {
-        var transformedExpression = TransformExpression(expressionBody.Expression);
+        var transformedExpression = TransformExpression(expressionBody.Expression, expressionBody.Expression.GetLeadingTrivia());
         return expressionBody.WithExpression(transformedExpression);
     }
 
@@ -217,13 +230,14 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
     {
         if (statement is ReturnStatementSyntax returnStatement && returnStatement.Expression != null)
         {
-            var transformedExpression = TransformExpression(returnStatement.Expression);
+            var transformedExpression = TransformExpression(returnStatement.Expression,
+                new SyntaxTriviaList(SyntaxFactory.ElasticCarriageReturnLineFeed).AddRange(returnStatement.GetLeadingTrivia()).Add(SyntaxFactory.ElasticTab));
             return returnStatement.WithExpression(transformedExpression);
         }
         return statement;
     }
 
-    private static ExpressionSyntax TransformExpression(ExpressionSyntax expression)
+    private static ExpressionSyntax TransformExpression(ExpressionSyntax expression, SyntaxTriviaList leadingTrivia)
     {
         // Transform WebHost.CreateDefaultBuilder(args).ConfigureServices(...).UseStartup<Startup>()
         // to Host.CreateDefaultBuilder(args).ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureServices(...).UseStartup<Startup>())
@@ -242,26 +256,27 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
                 .WithArgumentList(webHostCreateCall.ArgumentList);
 
             // Create the webBuilder expression chain
-            var webBuilderChain = CreateWebBuilderChain(chainedCalls);
+            var webBuilderChain = CreateWebBuilderChain(chainedCalls, leadingTrivia);
 
             // Create the ConfigureWebHostDefaults lambda with proper formatting
             var lambda = SyntaxFactory.SimpleLambdaExpression(
                 SyntaxFactory.Parameter(SyntaxFactory.Identifier("webBuilder")),
-                webBuilderChain)
-                .WithArrowToken(SyntaxFactory.Token(SyntaxKind.EqualsGreaterThanToken));
+                webBuilderChain);
 
             // Create Host.CreateDefaultBuilder().ConfigureWebHostDefaults(...)
             var configureCall = SyntaxFactory.InvocationExpression(
                 SyntaxFactory.MemberAccessExpression(
                     SyntaxKind.SimpleMemberAccessExpression,
-                    hostCreateCall.WithTrailingTrivia(),
+                    hostCreateCall.WithLeadingTrivia(leadingTrivia),
                     SyntaxFactory.IdentifierName("ConfigureWebHostDefaults"))
                     .WithOperatorToken(SyntaxFactory.Token(SyntaxKind.DotToken)
-                        .WithLeadingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
-                        .WithTrailingTrivia()))
+                        .WithLeadingTrivia(leadingTrivia)
+                        ))
                 .WithArgumentList(SyntaxFactory.ArgumentList(
                     SyntaxFactory.SingletonSeparatedList(
-                        SyntaxFactory.Argument(lambda))));
+                        SyntaxFactory.Argument(lambda))))
+                // Adds new line and indentation for remaining chain calls e.g. Build(), Run(), etc.
+                .WithTrailingTrivia(new SyntaxTriviaList(SyntaxFactory.ElasticCarriageReturnLineFeed).AddRange(leadingTrivia));
 
             // If there's a remaining chain (like .Build()), append it
             ExpressionSyntax result = configureCall;
@@ -276,8 +291,7 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
                 }
             }
 
-            return result.WithTrailingTrivia(expression.GetTrailingTrivia())
-                         .WithLeadingTrivia(expression.GetLeadingTrivia());
+            return result;
         }
         
         // Handle standalone WebHost.CreateDefaultBuilder without chaining
@@ -320,9 +334,9 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
         "UseDefaultServiceProvider"
     };
 
-    private static (InvocationExpressionSyntax? webHostCreateCall, List<(SimpleNameSyntax methodName, ArgumentListSyntax arguments)> chainedCalls, ExpressionSyntax? remainingChain) ExtractWebHostBuilderChain(ExpressionSyntax expression)
+    private static (InvocationExpressionSyntax? webHostCreateCall, List<(SimpleNameSyntax methodName, ArgumentListSyntax arguments, SyntaxTriviaList leadingTrivia)> chainedCalls, ExpressionSyntax? remainingChain) ExtractWebHostBuilderChain(ExpressionSyntax expression)
     {
-        var chainedCalls = new List<(SimpleNameSyntax methodName, ArgumentListSyntax arguments)>();
+        var chainedCalls = new List<(SimpleNameSyntax methodName, ArgumentListSyntax arguments, SyntaxTriviaList leadingTrivia)>();
         InvocationExpressionSyntax? webHostCreateCall = null;
         ExpressionSyntax? remainingChain = null;
         
@@ -373,42 +387,55 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
                 // Check if it's a WebHostBuilder method that should go inside ConfigureWebHostDefaults
                 if (WebHostBuilderMethods.Contains(methodName.Identifier.ValueText))
                 {
-                    chainedCalls.Add((methodName, arguments));
+                    chainedCalls.Add((methodName, arguments, invocationExpr.GetLeadingTrivia()));
                 }
                 else
                 {
                     // This method should remain outside the lambda (like Build(), Run(), etc.)
                     nonWebHostMethods.Add((methodName, arguments, invocationExpr));
-                    break; // Stop processing once we hit a non-WebHostBuilder method
+                    // Add any remaining methods to the non-WebHostBuilder list
+                    nonWebHostMethods.AddRange(methodCalls);
+                    methodCalls.Clear();
+                    // Stop processing once we hit a non-WebHostBuilder method
+                    break;
                 }
             }
         }
-        
+
         // Build the remaining chain from non-WebHostBuilder methods
         if (nonWebHostMethods.Count > 0)
         {
             // Create a placeholder for the Host.CreateDefaultBuilder().ConfigureWebHostDefaults(...) call
             // This will be replaced later, but we need something to chain the remaining methods to
             var placeholder = SyntaxFactory.IdentifierName("HOST_PLACEHOLDER");
-            
+
             // Chain the remaining methods
             ExpressionSyntax current = placeholder;
-            foreach (var (methodName, arguments, _) in nonWebHostMethods)
+            foreach (var (methodName, arguments, invocation) in nonWebHostMethods)
             {
+                SyntaxTriviaList leadingTrivia = default;
+                if (invocation.Expression is MemberAccessExpressionSyntax memberAccessExpr)
+                {
+                    leadingTrivia = memberAccessExpr.Expression.GetLeadingTrivia();
+                }
+
                 var memberAccess = SyntaxFactory.MemberAccessExpression(
                     SyntaxKind.SimpleMemberAccessExpression,
-                    current,
+                    // Since we're appending method calls,
+                    // we need to add trailing trivia after each one to affect the new method calls formatting
+                    current.WithTrailingTrivia(current.GetTrailingTrivia().AddRange(leadingTrivia)),
                     methodName);
+
                 current = SyntaxFactory.InvocationExpression(memberAccess, arguments);
             }
-            
+
             remainingChain = current;
         }
-        
+
         return (webHostCreateCall, chainedCalls, remainingChain);
     }
 
-    private static ExpressionSyntax CreateWebBuilderChain(List<(SimpleNameSyntax methodName, ArgumentListSyntax arguments)> chainedCalls)
+    private static ExpressionSyntax CreateWebBuilderChain(List<(SimpleNameSyntax methodName, ArgumentListSyntax arguments, SyntaxTriviaList leadingTrivia)> chainedCalls, SyntaxTriviaList leadingTrivia2)
     {
         if (chainedCalls.Count == 0)
         {
@@ -421,16 +448,25 @@ public sealed class UseCreateHostBuilderInsteadOfCreateWebHostBuilderFixer : Cod
         // Chain all the method calls with proper formatting
         for (int i = 0; i < chainedCalls.Count; i++)
         {
-            var (methodName, arguments) = chainedCalls[i];
-            
+            var (methodName, arguments, leadingTrivia) = chainedCalls[i];
+
             var memberAccess = SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
                 current,
                 methodName); // Use the SimpleNameSyntax directly to preserve generics
 
             current = SyntaxFactory.InvocationExpression(memberAccess, arguments);
+            current = current.WithTrailingTrivia();
+
+            if (i < chainedCalls.Count - 1)
+            {
+                // Add a line break and indentation for all but the last method call
+                var triviaList = new SyntaxTriviaList(SyntaxFactory.ElasticCarriageReturnLineFeed).AddRange(leadingTrivia);
+                triviaList = triviaList.Add(SyntaxFactory.ElasticTab);
+                current = current.WithTrailingTrivia(triviaList);
+            }
         }
-        
+
         return current;
     }
 }

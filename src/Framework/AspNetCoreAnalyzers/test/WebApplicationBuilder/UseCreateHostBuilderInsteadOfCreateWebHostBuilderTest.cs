@@ -70,7 +70,7 @@ public static class Program
 
     public static IHostBuilder CreateWebHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
-.ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+        .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
 }
 public class Startup { }
 ";
@@ -125,7 +125,7 @@ public static class Program
     public static IHostBuilder CreateWebHostBuilder(string[] args)
     {
         return Host.CreateDefaultBuilder(args)
-.ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
+            .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
     }
 }
 public class Startup { }
@@ -301,11 +301,61 @@ public static class Program
     public static void Main(string[] args)
     {
         using (var host = Host.CreateDefaultBuilder(args)
-.ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>()
-).Build())
+        .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
+        .Build())
         {
             host.Run();
         }
+    }
+}
+public class Startup { }
+";
+
+        var diagnostic = new DiagnosticResult(DiagnosticDescriptors.UseCreateHostBuilderInsteadOfCreateWebHostBuilder)
+            .WithMessage(Resources.Analyzer_UseCreateHostBuilderInsteadOfCreateWebHostBuilder_Message);
+
+        var expectedDiagnostics = new[]
+        {
+            diagnostic.WithLocation(0),
+        };
+
+        // Assert
+        await VerifyCS.VerifyCodeFixAsync(source, expectedDiagnostics, fixedSource);
+    }
+
+    [Fact]
+    public async Task FixerWorksWithMultipleNonWebHostChainedMethods()
+    {
+        // Arrange
+        var source = @"
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore;
+public static class Program
+{
+    public static void Main(string[] args)
+    {
+        {|#0:WebHost.CreateDefaultBuilder(args)|}
+            .UseStartup<Startup>()
+            .Build()
+            .RunAsync(default);
+    }
+}
+public class Startup { }
+";
+
+        var fixedSource = @"
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore;
+using Microsoft.Extensions.Hosting;
+
+public static class Program
+{
+    public static void Main(string[] args)
+    {
+        Host.CreateDefaultBuilder(args)
+        .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>())
+        .Build()
+        .RunAsync(default);
     }
 }
 public class Startup { }
@@ -355,10 +405,10 @@ public static class Program
     public static void Main(string[] args)
     {
         Host.CreateDefaultBuilder(new[] { ""--cliKey"", ""cliValue"" })
-.ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureServices((context, service) => { })
-.ConfigureKestrel(options =>
+        .ConfigureWebHostDefaults(webBuilder => webBuilder.ConfigureServices((context, service) => { })
+            .ConfigureKestrel(options =>
                 options.Configure(options.ConfigurationLoader.Configuration))
-.Configure(app =>
+            .Configure(app =>
             {
             }));
     }
