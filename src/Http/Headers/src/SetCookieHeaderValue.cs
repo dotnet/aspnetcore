@@ -591,7 +591,7 @@ public class SetCookieHeaderValue
                 // TimeSpan.MaxValue.TotalSeconds is approximately 922337203685.4775
                 const long MaxTimeSpanSeconds = 922337203685L;
                 const long MinTimeSpanSeconds = -922337203685L;
-                if (maxAge > MaxTimeSpanSeconds || maxAge < MinTimeSpanSeconds)
+                if (maxAge is > MaxTimeSpanSeconds or < MinTimeSpanSeconds)
                 {
                     // MaxAge value would overflow TimeSpan, abort
                     return 0;
