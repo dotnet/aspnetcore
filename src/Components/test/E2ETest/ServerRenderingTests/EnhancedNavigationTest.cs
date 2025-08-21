@@ -317,6 +317,9 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         Browser.Navigate().Refresh();
         Browser.Equal("Page with interactive components that navigate", () => Browser.Exists(By.TagName("h1")).Text);
 
+        // if we don't clean up the suppression, all subsequent navigations will be suppressed by default
+        EnhancedNavigationTestUtil.CleanEnhancedNavigationSuppression(this);
+
         // Normally, you shouldn't store references to elements because they could become stale references
         // after the page re-renders. However, we want to explicitly test that the element becomes stale
         // across renders to ensure that a full page reload occurs.

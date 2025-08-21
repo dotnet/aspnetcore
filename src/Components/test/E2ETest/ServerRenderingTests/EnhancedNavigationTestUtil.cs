@@ -47,6 +47,23 @@ public static class EnhancedNavigationTestUtil
                 "Expected 'suppress-enhanced-navigation' to be set in sessionStorage.");
         }
     }
+
+    public static void CleanEnhancedNavigationSuppression<TServerFixture>(ServerTestBase<TServerFixture> fixture)
+        where TServerFixture : ServerFixture
+    {
+        var browser = fixture.Browser;
+
+        // only tests that suppress enhanced navigation will have these items set, so it can throw
+        var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
+        if (testId == null)
+        {
+            return;
+        }
+
+        ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('test-id')");
+        ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('suppress-enhanced-navigation-{testId}')");
+    }
+
     private static string GrantTestId(IWebDriver browser)
     {
         var testId = Guid.NewGuid().ToString("N")[..8];

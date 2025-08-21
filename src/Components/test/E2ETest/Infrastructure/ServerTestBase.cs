@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using Xunit.Abstractions;
@@ -49,15 +50,7 @@ public abstract class ServerTestBase<TServerFixture>
     {
         try
         {
-            // only tests that suppress enhanced navigation will have these items set
-            var testId = ((IJavaScriptExecutor)Browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
-            if (testId == null)
-            {
-                return;
-            }
-
-            ((IJavaScriptExecutor)Browser).ExecuteScript($"sessionStorage.removeItem('test-id')");
-            ((IJavaScriptExecutor)Browser).ExecuteScript($"sessionStorage.removeItem('suppress-enhanced-navigation-{testId}')");
+            EnhancedNavigationTestUtil.CleanEnhancedNavigationSuppression(this);
         }
         catch (Exception ex)
         {
