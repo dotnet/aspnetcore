@@ -7,6 +7,11 @@ namespace Microsoft.AspNetCore.Shared;
 
 internal static class ActivityCreator
 {
+    public static bool IsActivityCreated(ActivitySource activitySource, bool diagnosticsOrLoggingEnabled)
+    {
+        return activitySource.HasListeners() || diagnosticsOrLoggingEnabled;
+    }
+
     /// <summary>
     /// Create an activity with details received from a remote source.
     /// </summary>

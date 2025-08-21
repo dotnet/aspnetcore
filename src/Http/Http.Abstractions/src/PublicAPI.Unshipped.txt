@@ -1,5 +1,6 @@
 #nullable enable
-Microsoft.AspNetCore.Http.Metadata.IApiEndpointMetadata
+Microsoft.AspNetCore.Http.Metadata.IAllowCookieRedirectMetadata
+Microsoft.AspNetCore.Http.Metadata.IDisableCookieRedirectMetadata
 Microsoft.AspNetCore.Http.Metadata.IDisableValidationMetadata
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.get -> string?
 Microsoft.AspNetCore.Http.ProducesResponseTypeMetadata.Description.set -> void
