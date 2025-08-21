@@ -335,7 +335,10 @@ internal abstract class CertificateManager
             catch (Exception e)
             {
                 Log.SaveCertificateInStoreError(e.ToString());
-                certificate?.Dispose();
+                if (isNewCertificate)
+                {
+                    certificate?.Dispose();
+                }
                 DisposeCertificates(certificates);
                 result = EnsureCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
                 return result;
@@ -394,7 +397,10 @@ internal abstract class CertificateManager
                     result :
                     EnsureCertificateResult.ErrorExportingTheCertificate;
 
-                certificate?.Dispose();
+                if (isNewCertificate)
+                {
+                    certificate?.Dispose();
+                }
                 DisposeCertificates(certificates);
                 return result;
             }
@@ -412,13 +418,19 @@ internal abstract class CertificateManager
                         break;
                     case TrustLevel.Partial:
                         result = EnsureCertificateResult.PartiallyFailedToTrustTheCertificate;
-                        certificate?.Dispose();
+                        if (isNewCertificate)
+                        {
+                            certificate?.Dispose();
+                        }
                         DisposeCertificates(certificates);
                         return result;
                     case TrustLevel.None:
                     default: // Treat unknown status (should be impossible) as failure
                         result = EnsureCertificateResult.FailedToTrustTheCertificate;
-                        certificate?.Dispose();
+                        if (isNewCertificate)
+                        {
+                            certificate?.Dispose();
+                        }
                         DisposeCertificates(certificates);
                         return result;
                 }
@@ -426,14 +438,20 @@ internal abstract class CertificateManager
             catch (UserCancelledTrustException)
             {
                 result = EnsureCertificateResult.UserCancelledTrustStep;
-                certificate?.Dispose();
+                if (isNewCertificate)
+                {
+                    certificate?.Dispose();
+                }
                 DisposeCertificates(certificates);
                 return result;
             }
             catch
             {
                 result = EnsureCertificateResult.FailedToTrustTheCertificate;
-                certificate?.Dispose();
+                if (isNewCertificate)
+                {
+                    certificate?.Dispose();
+                }
                 DisposeCertificates(certificates);
                 return result;
             }
