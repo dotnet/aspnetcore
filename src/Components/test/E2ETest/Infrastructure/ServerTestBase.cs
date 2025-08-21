@@ -33,7 +33,7 @@ public abstract class ServerTestBase<TServerFixture>
 
     public override async Task DisposeAsync()
     {
-        TryCleanupTestId();
+        TryCleanSessionStorage();
 
         await base.DisposeAsync();
     }
@@ -45,11 +45,19 @@ public abstract class ServerTestBase<TServerFixture>
         ((IJavaScriptExecutor)Browser).ExecuteScript("console.clear()");
     }
 
-    private void TryCleanupTestId()
+    private void TryCleanSessionStorage()
     {
         try
         {
+            // only tests that suppress enhanced navigation will have these items set
+            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
+            if (testId == null)
+            {
+                return;
+            }
+
             ((IJavaScriptExecutor)Browser).ExecuteScript($"sessionStorage.removeItem('test-id')");
+            ((IJavaScriptExecutor)Browser).ExecuteScript($"sessionStorage.removeItem('suppress-enhanced-navigation-{testId}')");
         }
         catch (Exception ex)
         {
