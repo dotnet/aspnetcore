@@ -78,7 +78,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             return Task.CompletedTask;
         }
 
-        if (!string.Equals(previousSource?.CacheKey, Source.CacheKey, StringComparison.Ordinal))
+        if (!HasSameKey(previousSource, Source))
         {
             Render();
         }
@@ -94,7 +94,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             return;
         }
 
-        if (_currentSource != null && string.Equals(_currentSource.CacheKey, source.CacheKey, StringComparison.Ordinal))
+        if (_currentSource != null && HasSameKey(_currentSource, source))
         {
             return;
         }
@@ -136,9 +136,9 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
         builder.AddAttribute(2, "data-blazor-image", "");
 
-        var showInitial = Source != null && _currentSource == null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
+        var showInitialLoad = Source != null && _currentSource == null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
 
-        if (IsLoading || showInitial)
+        if (IsLoading || showInitialLoad)
         {
             builder.AddAttribute(3, "data-state", "loading");
         }
@@ -261,6 +261,11 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     {
         _loadCts = new CancellationTokenSource();
         return _loadCts.Token;
+    }
+
+    private static bool HasSameKey(ImageSource? a, ImageSource? b)
+    {
+        return a is not null && b is not null && string.Equals(a.CacheKey, b.CacheKey, StringComparison.Ordinal);
     }
 
     private static partial class Log

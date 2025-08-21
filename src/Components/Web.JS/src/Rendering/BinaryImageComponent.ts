@@ -27,23 +27,25 @@ export class BinaryImageComponent {
 
   private static trackedImages: WeakMap<HTMLImageElement, { url: string; cacheKey: string }> = new WeakMap();
 
-  private static observer: MutationObserver | null = null;
+  private static observersByParent: WeakMap<Element, MutationObserver> = new WeakMap();
 
-  private static initializeObserver(): void {
-    if (this.observer) {
+  private static controllers: WeakMap<HTMLImageElement, AbortController> = new WeakMap();
+
+  private static initializeParentObserver(parent: Element): void {
+    if (this.observersByParent.has(parent)) {
       return;
     }
 
-    this.observer = new MutationObserver((mutations) => {
+    const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        // Handle removed nodes
+        // Handle removed nodes within this parent subtree
         if (mutation.type === 'childList') {
           for (const node of Array.from(mutation.removedNodes)) {
             if (node.nodeType === Node.ELEMENT_NODE) {
               const element = node as Element;
 
-              if (element.tagName === 'IMG' && this.trackedImages.has(element as unknown as HTMLImageElement)) {
-                this.revokeTrackedUrl(element as unknown as HTMLImageElement);
+              if (element.tagName === 'IMG' && this.trackedImages.has(element as HTMLImageElement)) {
+                this.revokeTrackedUrl(element as HTMLImageElement);
               }
 
               // Any tracked descendants
@@ -69,12 +71,14 @@ export class BinaryImageComponent {
       }
     });
 
-    this.observer.observe(document.body, {
+    observer.observe(parent, {
       childList: true,
       subtree: true,
       attributes: true,
       attributeFilter: ['src'],
     });
+
+    this.observersByParent.set(parent, observer);
   }
 
   private static revokeTrackedUrl(img: HTMLImageElement): void {
@@ -88,6 +92,17 @@ export class BinaryImageComponent {
       this.trackedImages.delete(img);
       this.loadingImages.delete(img);
       this.activeCacheKey.delete(img);
+    }
+
+    // Abort any in-flight stream tied to this element
+    const controller = this.controllers.get(img);
+    if (controller) {
+      try {
+        controller.abort();
+      } catch {
+        // ignore
+      }
+      this.controllers.delete(img);
     }
   }
 
@@ -105,8 +120,25 @@ export class BinaryImageComponent {
       return { success: false, fromCache: false, objectUrl: null, error: 'Invalid parameters' };
     }
 
-    // Initialize global observer on first use
-    this.initializeObserver();
+    // Ensure we are observing this image's parent
+    const parent = imgElement.parentElement;
+    if (parent) {
+      this.initializeParentObserver(parent);
+    }
+
+    // If there was a previous different key for this element, abort its in-flight operation
+    const previousKey = this.activeCacheKey.get(imgElement);
+    if (previousKey && previousKey !== cacheKey) {
+      const prevController = this.controllers.get(imgElement);
+      if (prevController) {
+        try {
+          prevController.abort();
+        } catch {
+          // ignore
+        }
+        this.controllers.delete(imgElement);
+      }
+    }
 
     this.activeCacheKey.set(imgElement, cacheKey);
 
@@ -169,6 +201,10 @@ export class BinaryImageComponent {
   ): Promise<string | null> {
     this.loadingImages.add(imgElement);
 
+    // Create and track an AbortController for this element
+    const controller = new AbortController();
+    this.controllers.set(imgElement, controller);
+
     const readable = await streamRef.stream();
     let displayStream = readable;
 
@@ -187,8 +223,13 @@ export class BinaryImageComponent {
     const chunks: Uint8Array[] = [];
     let bytesRead = 0;
 
-    for await (const chunk of this.iterateStream(displayStream)) {
-      if (this.activeCacheKey.get(imgElement) !== cacheKey) {
+    for await (const chunk of this.iterateStream(displayStream, controller.signal)) {
+      if (controller.signal.aborted) { // Stream aborted in a new setImageAsync call due to cache key change
+        if (this.controllers.get(imgElement) === controller) {
+          this.controllers.delete(imgElement);
+        }
+        this.loadingImages.delete(imgElement);
+        imgElement.style.removeProperty('--blazor-image-progress');
         return null;
       }
 
@@ -205,6 +246,11 @@ export class BinaryImageComponent {
       if (typeof totalBytes === 'number' && totalBytes > 0) {
         throw new Error('Stream was already consumed or at end position');
       }
+      if (this.controllers.get(imgElement) === controller) {
+        this.controllers.delete(imgElement);
+      }
+      this.loadingImages.delete(imgElement);
+      imgElement.style.removeProperty('--blazor-image-progress');
       return null;
     }
 
@@ -213,6 +259,10 @@ export class BinaryImageComponent {
     const url = URL.createObjectURL(blob);
 
     this.setImageUrl(imgElement, url, cacheKey);
+
+    if (this.controllers.get(imgElement) === controller) {
+      this.controllers.delete(imgElement);
+    }
 
     return url;
   }
@@ -287,12 +337,23 @@ export class BinaryImageComponent {
   /**
    * Async iterator over a ReadableStream that ensures proper cancellation when iteration stops early.
    */
-  private static async *iterateStream(stream: ReadableStream<Uint8Array>): AsyncGenerator<Uint8Array, void, unknown> {
+  private static async *iterateStream(stream: ReadableStream<Uint8Array>, signal?: AbortSignal): AsyncGenerator<Uint8Array, void, unknown> {
     const reader = stream.getReader();
+    let finished = false;
+
     try {
       while (true) {
+        if (signal?.aborted) {
+          try {
+            await reader.cancel();
+          } catch {
+            // ignore
+          }
+          return;
+        }
         const { done, value } = await reader.read();
         if (done) {
+          finished = true;
           return;
         }
         if (value) {
@@ -300,10 +361,12 @@ export class BinaryImageComponent {
         }
       }
     } finally {
-      try {
-        await reader.cancel();
-      } catch {
-        // ignore
+      if (!finished) {
+        try {
+          await reader.cancel();
+        } catch {
+          // ignore
+        }
       }
       try {
         reader.releaseLock?.();
