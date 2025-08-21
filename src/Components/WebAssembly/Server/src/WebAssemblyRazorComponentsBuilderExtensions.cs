@@ -22,9 +22,17 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
     /// Adds services to support rendering interactive WebAssembly components.
     /// </summary>
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
+    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
+    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder)
+        => AddInteractiveWebAssemblyComponents(builder, pesistCultureFromServer: true);
+
+    /// <summary>
+    /// Adds services to support rendering interactive WebAssembly components.
+    /// </summary>
+    /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
     /// <param name="pesistCultureFromServer">If set to <c>true</c>, the culture from the server is persisted and restored on the client.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
-    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder, bool pesistCultureFromServer = true)
+    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder, bool pesistCultureFromServer)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
