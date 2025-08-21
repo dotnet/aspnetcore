@@ -31,10 +31,30 @@ public abstract class ServerTestBase<TServerFixture>
         Browser.Navigate(_serverFixture.RootUri, relativeUrl);
     }
 
+    public override async Task DisposeAsync()
+    {
+        TryCleanupTestId();
+
+        await base.DisposeAsync();
+    }
+
     protected override void InitializeAsyncCore()
     {
         // Clear logs - we check these during tests in some cases.
         // Make sure each test starts clean.
         ((IJavaScriptExecutor)Browser).ExecuteScript("console.clear()");
+    }
+
+    private void TryCleanupTestId()
+    {
+        try
+        {
+            ((IJavaScriptExecutor)Browser).ExecuteScript($"sessionStorage.removeItem('test-id')");
+        }
+        catch (Exception ex)
+        {
+            // exception here most probably means session storage is not available - no cleanup needed
+            Output?.WriteLine("Error when removing test id from session storage: " + ex.Message);
+        }
     }
 }
