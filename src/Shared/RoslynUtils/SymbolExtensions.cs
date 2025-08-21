@@ -231,7 +231,7 @@ internal static class SymbolExtensions
             double d when d is double.PositiveInfinity => "double.PositiveInfinity",
             double d when d is double.NaN => "double.NaN",
             decimal d => $"{SymbolDisplay.FormatPrimitive(d, false, false)}M",
-            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false),
+            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false)!,
         };
     }
 
