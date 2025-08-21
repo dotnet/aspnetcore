@@ -67,6 +67,25 @@ internal static class SymbolExtensions
         return attributes.TryGetAttribute(attributeType, out _);
     }
 
+    public static bool HasAttribute(this ITypeSymbol typeSymbol, INamedTypeSymbol attributeSymbol)
+    {
+        var current = typeSymbol;
+
+        while (current is not null)
+        {
+            if (current.GetAttributes().Any(attr =>
+                attr.AttributeClass is not null &&
+                SymbolEqualityComparer.Default.Equals(attr.AttributeClass, attributeSymbol)))
+            {
+                return true;
+            }
+
+            current = current.BaseType;
+        }
+
+        return false;
+    }
+
     public static bool TryGetAttribute(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol attributeType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
     {
         foreach (var attributeData in attributes)
@@ -177,11 +196,27 @@ internal static class SymbolExtensions
     {
         return !parameterSymbol.HasExplicitDefaultValue
             ? "null"
-            : InnerGetDefaultValueString(parameterSymbol.ExplicitDefaultValue);
+            : InnerGetDefaultValueString(parameterSymbol.ExplicitDefaultValue, parameterSymbol.Type);
     }
 
-    private static string InnerGetDefaultValueString(object? defaultValue)
+    private static string InnerGetDefaultValueString(object? defaultValue, ITypeSymbol parameterType)
     {
+        // Handle enum types with proper casting
+        if (IsEnumType(parameterType, out var enumType))
+        {
+            return $"({enumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){SymbolDisplay.FormatPrimitive(defaultValue!, false, false)}";
+        }
+
+        // Handle nullable enum types
+        if (IsNullableEnumType(parameterType, out var underlyingEnumType))
+        {
+            if (defaultValue == null)
+            {
+                return "default";
+            }
+            return $"({underlyingEnumType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)}){SymbolDisplay.FormatPrimitive(defaultValue!, false, false)}";
+        }
+
         return defaultValue switch
         {
             string s => SymbolDisplay.FormatLiteral(s, true),
@@ -196,7 +231,7 @@ internal static class SymbolExtensions
             double d when d is double.PositiveInfinity => "double.PositiveInfinity",
             double d when d is double.NaN => "double.NaN",
             decimal d => $"{SymbolDisplay.FormatPrimitive(d, false, false)}M",
-            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false),
+            _ => SymbolDisplay.FormatPrimitive(defaultValue, false, false)!,
         };
     }
 
@@ -226,5 +261,27 @@ internal static class SymbolExtensions
             return $"{constructedType}.GetConstructor({getConstructorParameters})?.GetParameters()[{parameterSymbol.Ordinal}]";
         }
         return "null";
+    }
+
+    private static bool IsEnumType(ITypeSymbol typeSymbol, out ITypeSymbol enumType)
+    {
+        enumType = typeSymbol;
+        return typeSymbol.TypeKind == TypeKind.Enum;
+    }
+
+    private static bool IsNullableEnumType(ITypeSymbol typeSymbol, [NotNullWhen(true)] out ITypeSymbol? underlyingEnumType)
+    {
+        underlyingEnumType = null;
+        if (typeSymbol.OriginalDefinition?.SpecialType == SpecialType.System_Nullable_T &&
+            typeSymbol is INamedTypeSymbol namedType)
+        {
+            var underlyingType = namedType.TypeArguments.FirstOrDefault();
+            if (underlyingType?.TypeKind == TypeKind.Enum)
+            {
+                underlyingEnumType = underlyingType;
+                return true;
+            }
+        }
+        return false;
     }
 }

@@ -94,7 +94,12 @@
         <_Parameter2>$(RepositoryUrl)/tree/$(SourceRevisionId)</_Parameter2>
       </AssemblyAttribute>
 
-      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Serviceable)' == 'true'">
+      <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(RepoOriginalSourceRevisionId)' != ''">
+        <_Parameter1>OriginalRepoCommitHash</_Parameter1>
+        <_Parameter2>$(RepoOriginalSourceRevisionId)</_Parameter2>
+      </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute" Condition="'$(Serviceable)' == 'true'">
         <_Parameter1>Serviceable</_Parameter1>
         <_Parameter2>True</_Parameter2>
       </AssemblyAttribute>

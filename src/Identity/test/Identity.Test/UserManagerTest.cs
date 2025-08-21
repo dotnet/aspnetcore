@@ -128,7 +128,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var deleteUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteCounterName);
+        using var deleteUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteDurationName);
 
         var store = new Mock<IUserStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -143,7 +143,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(deleteUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -155,7 +155,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var deleteUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteCounterName);
+        using var deleteUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.DeleteDurationName);
 
         var store = new Mock<IUserStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -170,7 +170,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(deleteUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "failure"),
@@ -564,7 +564,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserClaimStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -583,7 +583,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "add_claims"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -595,7 +595,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserClaimStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -615,7 +615,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "replace_claim"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -627,8 +627,8 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
-        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
+        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordAttemptsCounterName);
 
         var store = new Mock<IUserPasswordStore<PocoUser>>();
         var hasher = new Mock<IPasswordHasher<PocoUser>>();
@@ -656,7 +656,8 @@ public class UserManagerTest
         store.VerifyAll();
         hasher.VerifyAll();
 
-        Assert.Collection(updateUser.GetMeasurementSnapshot(), m => MetricsHelpers.AssertContainsTags(m.Tags,
+        Assert.Collection(updateUser.GetMeasurementSnapshot(),
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "password_rehash"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -673,7 +674,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var createUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CreateCounterName);
+        using var createUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CreateDurationName);
 
         var store = new Mock<IUserSecurityStampStore<PocoUser>>();
         var manager = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
@@ -688,7 +689,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(createUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user_type", "Microsoft.AspNetCore.Identity.Test.PocoUser"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException")
@@ -700,7 +701,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserSecurityStampStore<PocoUser>>();
         var manager = MockHelpers.TestUserManager(store.Object, meterFactory: testMeterFactory);
@@ -715,7 +716,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "update"),
                 KeyValuePair.Create<string, object>("error.type", "System.InvalidOperationException")
@@ -727,7 +728,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserClaimStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -746,7 +747,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_claims"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -758,7 +759,7 @@ public class UserManagerTest
     {
         // Setup
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var store = new Mock<IUserClaimStore<PocoUser>>();
         var user = new PocoUser { UserName = "Foo" };
@@ -777,7 +778,7 @@ public class UserManagerTest
         store.VerifyAll();
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_claims"),
                 KeyValuePair.Create<string, object>("aspnetcore.identity.result", "success")
@@ -863,7 +864,7 @@ public class UserManagerTest
     public async Task CheckPasswordWithNullUserReturnsFalse()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordCounterName);
+        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordAttemptsCounterName);
 
         var manager = MockHelpers.TestUserManager(new EmptyStore(), meterFactory: testMeterFactory);
         Assert.False(await manager.CheckPasswordAsync(null, "whatevs"));
@@ -887,7 +888,7 @@ public class UserManagerTest
     public async Task UsersEmailMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserEmail);
@@ -898,12 +899,12 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(() => manager.ConfirmEmailAsync(null, null));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "set_email"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "confirm_email"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
@@ -914,7 +915,7 @@ public class UserManagerTest
     public async Task UsersPhoneNumberMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserPhoneNumber);
@@ -923,12 +924,12 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetPhoneNumberAsync(null));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "set_phone_number"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "change_phone_number"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
@@ -939,8 +940,8 @@ public class UserManagerTest
     public async Task TokenMethodsThrowWithNoTokenProvider()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var generateToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.GenerateTokenCounterName);
-        using var verifyToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.VerifyTokenCounterName);
+        using var generateToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.GenerateTokensCounterName);
+        using var verifyToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.VerifyTokenAttemptsCounterName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         var user = new PocoUser();
@@ -967,9 +968,9 @@ public class UserManagerTest
     public async Task PasswordMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var createUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CreateCounterName);
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
-        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordCounterName);
+        using var createUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CreateDurationName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
+        using var checkPassword = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.CheckPasswordAttemptsCounterName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserPassword);
@@ -981,22 +982,22 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(() => manager.HasPasswordAsync(null));
 
         Assert.Collection(createUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "change_password"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "add_password"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_password"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
@@ -1012,8 +1013,8 @@ public class UserManagerTest
     public async Task SecurityStampMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
-        using var generateToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.GenerateTokenCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
+        using var generateToken = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.GenerateTokensCounterName);
 
         var store = new Mock<IUserStore<PocoUser>>();
         store.Setup(x => x.GetUserIdAsync(It.IsAny<PocoUser>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(Guid.NewGuid().ToString()));
@@ -1027,9 +1028,9 @@ public class UserManagerTest
                 () => manager.GenerateChangePhoneNumberTokenAsync(new PocoUser(), "111-111-1111"));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
-                KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "security_stamp"),
+                KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "update_security_stamp"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]));
         Assert.Collection(generateToken.GetMeasurementSnapshot(),
@@ -1044,7 +1045,7 @@ public class UserManagerTest
     public async Task LoginMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserLogin);
@@ -1054,12 +1055,12 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.FindByLoginAsync(null, null));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "add_login"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_login"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
@@ -1070,7 +1071,7 @@ public class UserManagerTest
     public async Task ClaimMethodsFailWhenStoreNotImplemented()
     {
         var testMeterFactory = new TestMeterFactory();
-        using var updateUser = new MetricCollector<long>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateCounterName);
+        using var updateUser = new MetricCollector<double>(testMeterFactory, "Microsoft.AspNetCore.Identity", UserManagerMetrics.UpdateDurationName);
 
         var manager = MockHelpers.TestUserManager(new NoopUserStore(), meterFactory: testMeterFactory);
         Assert.False(manager.SupportsUserClaim);
@@ -1080,17 +1081,17 @@ public class UserManagerTest
         await Assert.ThrowsAsync<NotSupportedException>(async () => await manager.GetClaimsAsync(null));
 
         Assert.Collection(updateUser.GetMeasurementSnapshot(),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "add_claims"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "replace_claim"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),
             ]),
-            m => MetricsHelpers.AssertContainsTags(m.Tags,
+            m => MetricsHelpers.AssertHasDurationAndContainsTags(m.Value, m.Tags,
             [
                 KeyValuePair.Create<string, object>("aspnetcore.identity.user.update_type", "remove_claims"),
                 KeyValuePair.Create<string, object>("error.type", "System.NotSupportedException"),

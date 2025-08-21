@@ -83,17 +83,14 @@ app.MapGet("/", Task<string> () => Task.FromResult("Hello, world!"));
     }
 
     [Fact]
-    public async Task MapAction_ReturnsTask_ProducesInferredMetadata()
+    public async Task MapAction_ReturnsTask_ProducesNoInferredProducesResponseTypeMetadata()
     {
         var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", Task () => Task.CompletedTask);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
-        Assert.Equal(200, metadata.StatusCode);
-        Assert.Equal("text/plain", metadata.ContentTypes.Single());
-        Assert.Equal(typeof(void), metadata.Type);
+        Assert.Empty(endpoint.Metadata.OfType<IProducesResponseTypeMetadata>());
     }
 
     [Fact]
@@ -111,17 +108,14 @@ app.MapGet("/", ValueTask<string> () => ValueTask.FromResult("Hello, world!"));
     }
 
     [Fact]
-    public async Task MapAction_ReturnsValueTask_ProducesInferredMetadata()
+    public async Task MapAction_ReturnsValueTask_ProducesNoInferredProducesResponseTypeMetadata()
     {
         var (_, compilation) = await RunGeneratorAsync("""
 app.MapGet("/", ValueTask () => ValueTask.CompletedTask);
 """);
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        var metadata = endpoint.Metadata.OfType<IProducesResponseTypeMetadata>().Single();
-        Assert.Equal(200, metadata.StatusCode);
-        Assert.Equal("text/plain", metadata.ContentTypes.Single());
-        Assert.Equal(typeof(void), metadata.Type);
+        Assert.Empty(endpoint.Metadata.OfType<IProducesResponseTypeMetadata>());
     }
 
     [Fact]
@@ -512,6 +506,11 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
         // Act
         var endpoint = GetEndpointFromCompilation(compilation);
 
+        // IDisableCookieRedirectMetadata is tricky to order consistently because it depends on whether AddsCustomParameterMetadata is registered
+        // as a service at runtime. However, the order of IDisableCookieRedirectMetadata is not significant since there's no way to override it
+        // other than removing it.
+        Assert.Single(endpoint.Metadata, m => m is IDisableCookieRedirectMetadata);
+
         // Assert
         // NOTE: Depending on whether we are running under RDG or RDG, there are some generated types which
         //       don't have equivalents in the opposite. The two examples here are NullableContextAttribute which
@@ -525,7 +524,8 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
             m is not HttpMethodMetadata &&
             m is not Attribute1 &&
             m is not Attribute2 &&
-            m is not IRouteDiagnosticsMetadata);
+            m is not IRouteDiagnosticsMetadata &&
+            m is not IDisableCookieRedirectMetadata);
 
         Assert.Collection(filteredMetadata,
             // Inferred AcceptsMetadata from RDF for complex type

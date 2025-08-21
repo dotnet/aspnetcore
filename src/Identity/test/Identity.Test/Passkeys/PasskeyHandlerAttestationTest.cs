@@ -978,7 +978,10 @@ public class PasskeyHandlerAttestationTest
         private static readonly byte[] _defaultAaguid = new byte[16];
         private static readonly byte[] _defaultAttestationStatement = [0xA0]; // Empty CBOR map
 
-        public IdentityPasskeyOptions PasskeyOptions { get; } = new();
+        public IdentityPasskeyOptions PasskeyOptions { get; } = new()
+        {
+            UserVerificationRequirement = "preferred",
+        };
         public string? UserId { get; set; } = "df0a3af4-bd65-440f-82bd-5b839e300dcd";
         public string? UserName { get; set; } = "johndoe";
         public string? UserDisplayName { get; set; } = "John Doe";

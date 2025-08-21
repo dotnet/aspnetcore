@@ -758,7 +758,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         return eventHandlerId;
     }
 
-    private ComponentState GetRequiredComponentState(int componentId)
+    internal ComponentState GetRequiredComponentState(int componentId)
         => _componentStateById.TryGetValue(componentId, out var componentState)
             ? componentState
             : throw new ArgumentException($"The renderer does not have a component with ID {componentId}.");
