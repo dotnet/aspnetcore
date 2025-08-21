@@ -64,7 +64,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
         }
         else
         {
-            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(pesistCultureFromServer: false);
+            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(persistCultureFromServer: false);
         }
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
