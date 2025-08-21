@@ -22,13 +22,27 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
     /// Adds services to support rendering interactive WebAssembly components.
     /// </summary>
     /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
+    /// <param name="pesistCultureFromServer">If set to <c>true</c>, the culture from the server is persisted and restored on the client.</param>
     /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
-    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder)
+    public static IRazorComponentsBuilder AddInteractiveWebAssemblyComponents(this IRazorComponentsBuilder builder, bool pesistCultureFromServer = true)
     {
         ArgumentNullException.ThrowIfNull(builder, nameof(builder));
 
         builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<RenderModeEndpointProvider, WebAssemblyEndpointProvider>());
         builder.Services.TryAddScoped<LazyAssemblyLoader>();
+
+        if (pesistCultureFromServer)
+        {
+            builder.Services.TryAddScoped(_ =>
+            {
+                var provider = new CultureStateProvider();
+                provider.CaptureCurrentCulture();
+                return provider;
+            });
+            RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<CultureStateProvider>(
+                builder.Services,
+                RenderMode.InteractiveWebAssembly);
+        }
 
         return builder;
     }
@@ -49,27 +63,6 @@ public static class WebAssemblyRazorComponentsBuilderExtensions
             builder.Services.Configure(configure);
         }
 
-        return builder;
-    }
-
-    /// <summary>
-    /// Adds services to enforce Server culture on the Client side.
-    /// </summary>
-    /// <param name="builder">The <see cref="IRazorComponentsBuilder"/>.</param>
-    /// <returns>An <see cref="IRazorComponentsBuilder"/> that can be used to further customize the configuration.</returns>
-    public static IRazorComponentsBuilder EnforceServerCultureOnClient(this IRazorComponentsBuilder builder)
-    {
-        ArgumentNullException.ThrowIfNull(builder);
-
-        builder.Services.TryAddScoped(_ =>
-        {
-            var provider = new CultureStateProvider();
-            provider.CaptureCurrentCulture();
-            return provider;
-        });
-        RegisterPersistentComponentStateServiceCollectionExtensions.AddPersistentServiceRegistration<CultureStateProvider>(
-            builder.Services,
-            RenderMode.InteractiveWebAssembly);
         return builder;
     }
 }

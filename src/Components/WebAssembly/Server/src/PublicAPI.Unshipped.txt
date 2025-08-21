@@ -1,2 +1,2 @@
 #nullable enable
-static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.EnforceServerCultureOnClient(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!
+static Microsoft.Extensions.DependencyInjection.WebAssemblyRazorComponentsBuilderExtensions.AddInteractiveWebAssemblyComponents(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, bool pesistCultureFromServer = true) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

@@ -43,7 +43,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
             .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
             .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
-            .AddInteractiveWebAssemblyComponents()
             .AddInteractiveServerComponents(options =>
             {
                 if (Configuration.GetValue<bool>("DisableReconnectionCache"))
@@ -61,7 +60,11 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         if (Configuration.GetValue<bool>("EnforceServerCultureOnClient"))
         {
-            razorComponentsBuilder.EnforceServerCultureOnClient();
+            razorComponentsBuilder.AddInteractiveWebAssemblyComponents();
+        }
+        else
+        {
+            razorComponentsBuilder.AddInteractiveWebAssemblyComponents(pesistCultureFromServer: false);
         }
 
         if (Configuration.GetValue<bool>("UseHybridCache"))
