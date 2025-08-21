@@ -50,7 +50,7 @@ public abstract class ServerTestBase<TServerFixture>
         try
         {
             // only tests that suppress enhanced navigation will have these items set
-            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
+            var testId = ((IJavaScriptExecutor)Browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
             if (testId == null)
             {
                 return;
