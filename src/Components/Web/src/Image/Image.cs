@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -94,11 +95,8 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             return;
         }
 
-        // Cancel any in-progress load operation
-        try { _loadCts?.Cancel(); } catch { }
-        _loadCts?.Dispose();
-        _loadCts = new CancellationTokenSource();
-        var token = _loadCts.Token;
+        CancelPreviousLoad();
+        var token = ResetCancellationToken();
 
         _currentSource = Source;
 
@@ -114,7 +112,9 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
     private void Render()
     {
-        if (!_hasPendingRender && _renderHandle.IsInitialized)
+        Debug.Assert(_renderHandle.IsInitialized);
+
+        if (!_hasPendingRender)
         {
             _hasPendingRender = true;
             _renderHandle.Render(BuildRenderTree);
@@ -236,12 +236,30 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             _isDisposed = true;
 
             // Cancel any pending operations
-            try { _loadCts?.Cancel(); } catch { }
-            _loadCts?.Dispose();
-            _loadCts = null;
+            CancelPreviousLoad();
         }
 
         return new ValueTask();
+    }
+
+    private void CancelPreviousLoad()
+    {
+        try
+        {
+            _loadCts?.Cancel();
+        }
+        catch
+        {
+        }
+
+        _loadCts?.Dispose();
+        _loadCts = null;
+    }
+
+    private CancellationToken ResetCancellationToken()
+    {
+        _loadCts = new CancellationTokenSource();
+        return _loadCts.Token;
     }
 
     private static partial class Log
