@@ -23,6 +23,8 @@ Microsoft.AspNetCore.Components.Web.Image.ImageSource.Stream.get -> System.IO.St
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
 Microsoft.AspNetCore.Components.Web.Media.Image
 Microsoft.AspNetCore.Components.Web.Media.Image.Image() -> void
+Microsoft.AspNetCore.Components.Web.Media.Video
+Microsoft.AspNetCore.Components.Web.Media.Video.Video() -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.AdditionalAttributes.get -> System.Collections.Generic.Dictionary<string!, object!>?
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.AdditionalAttributes.set -> void

@@ -20,7 +20,7 @@ import { WebStartOptions } from './Platform/WebStartOptions';
 import { RuntimeAPI } from '@microsoft/dotnet-runtime';
 import { JSEventRegistry } from './Services/JSEventRegistry';
 import { BinaryImageComponent } from './Rendering/BinaryImageComponent';
-import { BinaryMedia } from './Rendering/Media/BinaryMedia';
+import { BinaryMedia } from './Rendering/BinaryMedia';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
 // It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
