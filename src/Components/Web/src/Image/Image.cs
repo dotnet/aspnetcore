@@ -44,7 +44,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// <summary>
     /// Gets or sets the source for the image.
     /// </summary>
-    [Parameter] public ImageSource? Source { get; set; }
+    [Parameter, EditorRequired] public ImageSource? Source { get; set; }
 
     /// <summary>
     /// Gets or sets the attributes for the image.
@@ -64,8 +64,11 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     {
         var previousSource = Source;
 
-        // Set component parameters
         parameters.SetParameterProperties(this);
+        if (Source is null)
+        {
+            throw new InvalidOperationException("Image.Source is required.");
+        }
 
         // Initialize on first parameters set
         if (!_initialized)
@@ -75,7 +78,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
             return Task.CompletedTask;
         }
 
-        if (Source != null && !string.Equals(previousSource?.CacheKey, Source.CacheKey, StringComparison.Ordinal))
+        if (!string.Equals(previousSource?.CacheKey, Source.CacheKey, StringComparison.Ordinal))
         {
             Render();
         }
@@ -85,12 +88,13 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
 
     async Task IHandleAfterRender.OnAfterRenderAsync()
     {
-        if (!IsInteractive || Source == null)
+        var source = Source;
+        if (!IsInteractive || source is null)
         {
             return;
         }
 
-        if (_currentSource != null && string.Equals(_currentSource.CacheKey, Source.CacheKey, StringComparison.Ordinal))
+        if (_currentSource != null && string.Equals(_currentSource.CacheKey, source.CacheKey, StringComparison.Ordinal))
         {
             return;
         }
@@ -98,15 +102,14 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         CancelPreviousLoad();
         var token = ResetCancellationToken();
 
-        _currentSource = Source;
+        _currentSource = source;
 
         try
         {
-            await LoadImage(Source, token);
+            await LoadImage(source, token);
         }
         catch (OperationCanceledException)
         {
-
         }
     }
 
@@ -150,7 +153,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         builder.CloseElement();
     }
 
-    private sealed class ImageLoadResult
+    private struct ImageLoadResult
     {
         public bool Success { get; set; }
         public bool FromCache { get; set; }
@@ -158,9 +161,9 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         public string? Error { get; set; }
     }
 
-    private async Task LoadImage(ImageSource? source, CancellationToken cancellationToken)
+    private async Task LoadImage(ImageSource source, CancellationToken cancellationToken)
     {
-        if (source == null || !IsInteractive)
+        if (!IsInteractive)
         {
             return;
         }
@@ -213,13 +216,11 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
         }
         catch (OperationCanceledException)
         {
-            // bubble up to caller
-            throw;
         }
         catch (Exception ex)
         {
-            Log.LoadFailed(Logger, source?.CacheKey ?? "(null)", ex);
-            if (source != null && _activeCacheKey == source.CacheKey && !cancellationToken.IsCancellationRequested)
+            Log.LoadFailed(Logger, source.CacheKey, ex);
+            if (_activeCacheKey == source.CacheKey && !cancellationToken.IsCancellationRequested)
             {
                 _currentObjectUrl = null;
                 _hasError = true;

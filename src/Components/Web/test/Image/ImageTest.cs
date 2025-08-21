@@ -70,18 +70,22 @@ public class ImageTest
     }
 
     [Fact]
-    public async Task NullSource_DoesNothing()
+    public async Task NullSource_Throws()
     {
         var js = new FakeImageJsRuntime(cacheHit: false);
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
 
-        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
+        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
         {
-            [nameof(Image.Source)] = null,
-        }));
+            await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
+            {
+                [nameof(Image.Source)] = null,
+            }));
+        });
 
+        // Ensure no JS interop calls were made
         Assert.Equal(0, js.TotalInvocationCount);
     }
 
