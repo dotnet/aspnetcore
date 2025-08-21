@@ -27,7 +27,7 @@ public class FormWithNoBackForwardCacheTest : ServerTestBase<BasicTestAppServerS
 
     public override Task InitializeAsync()
     {
-        return InitializeAsync(BrowserFixture.BackForwardCacheContext);
+        return InitializeAsync(BrowserFixture.StreamingBackForwardCacheContext);
     }
 
     private void SuppressEnhancedNavigation(bool shouldSuppress)
