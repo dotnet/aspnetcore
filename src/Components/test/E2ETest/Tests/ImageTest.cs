@@ -29,18 +29,18 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.MountTestComponent<ImageTestComponent>();
     }
 
-    private void ClearImageCache()
+    private void ClearMediaCache()
     {
         var ok = (bool)((IJavaScriptExecutor)Browser).ExecuteAsyncScript(@"
           var done = arguments[0];
           (async () => {
             try {
               if ('caches' in window) {
-                await caches.delete('blazor-image-cache');
+                await caches.delete('blazor-media-cache');
               }
               // Reset memoized cache promise if present
               try {
-                const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+                const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
                 if (root && 'cachePromise' in root) {
                   root.cachePromise = undefined;
                 }
@@ -51,7 +51,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             }
           })();
         ");
-        Assert.True(ok, "Failed to clear image cache");
+        Assert.True(ok, "Failed to clear media cache");
     }
 
     [Fact]
@@ -166,16 +166,16 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void Image_CompletesLoad_AfterArtificialDelay()
     {
-        // Patch setImageAsync to introduce a delay before delegating to original
+        // Patch setContentAsync to introduce a delay before delegating to original
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
               if (!root) return;
-              if (!window.__origSetImageAsync) {
-                window.__origSetImageAsync = root.setImageAsync;
-                root.setImageAsync = async function(...args){
+              if (!window.__origSetContentAsync) {
+                window.__origSetContentAsync = root.setContentAsync;
+                root.setContentAsync = async function(...args){
                   await new Promise(r => setTimeout(r, 500));
-                  return window.__origSetImageAsync.apply(this, args);
+                  return window.__origSetContentAsync.apply(this, args);
                 };
               }
             })();");
@@ -193,10 +193,10 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Restore
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
-              if (root && window.__origSetImageAsync) {
-                root.setImageAsync = window.__origSetImageAsync;
-                delete window.__origSetImageAsync;
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
+              if (root && window.__origSetContentAsync) {
+                root.setContentAsync = window.__origSetContentAsync;
+                delete window.__origSetContentAsync;
               }
             })();");
     }
@@ -204,7 +204,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void ImageCache_PersistsAcrossPageReloads()
     {
-        ClearImageCache();
+        ClearMediaCache();
 
         Browser.FindElement(By.Id("load-cached-jpg")).Click();
         Browser.Equal("Cached JPG loaded", () => Browser.FindElement(By.Id("current-status")).Text);
@@ -220,14 +220,14 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Re‑instrument after refresh so we see cache vs stream on the second load
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
               if (!root) return;
               window.__cacheHits = 0;
               window.__streamCalls = 0;
-              if (!window.__origSetImageAsync){
-                  window.__origSetImageAsync = root.setImageAsync;
-                  root.setImageAsync = async function(...a){
-                      const result = await window.__origSetImageAsync.apply(this, a);
+              if (!window.__origSetContentAsync){
+                  window.__origSetContentAsync = root.setContentAsync;
+                  root.setContentAsync = async function(...a){
+                      const result = await window.__origSetContentAsync.apply(this, a);
                       if (result && result.fromCache) window.__cacheHits++;
                       if (result && result.success && !result.fromCache) window.__streamCalls++;
                       return result;
@@ -253,8 +253,8 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Restore
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
-              const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
-              if (root && window.__origSetImageAsync){ root.setImageAsync = window.__origSetImageAsync; delete window.__origSetImageAsync; }
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
+              if (root && window.__origSetContentAsync){ root.setContentAsync = window.__origSetContentAsync; delete window.__origSetContentAsync; }
               delete window.__cacheHits;
               delete window.__streamCalls;
             })();");

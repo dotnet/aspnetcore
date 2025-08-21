@@ -3,23 +3,16 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
-namespace Microsoft.AspNetCore.Components.Web.Image;
+namespace Microsoft.AspNetCore.Components.Web.Media;
 
-/* This is equivalent to a .razor file containing:
- *
- * <img data-blazor-image
- *      data-state=@(IsLoading ? "loading" : _hasError ? "error" : null)
- *      @ref="Element"
- *      @attributes="AdditionalAttributes" />
- *
- */
 /// <summary>
-/// A component that efficiently renders images from non-HTTP sources like byte arrays.
+/// Base component that handles turning a media stream into an object URL, caching and lifetime management.
+/// Derived components provide the element tag name (e.g., img, video) and target attribute (e.g., src, href).
 /// </summary>
-public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
+public abstract partial class MediaComponentBase : IComponent, IHandleAfterRender, IAsyncDisposable
 {
     private RenderHandle _renderHandle;
     private string? _currentObjectUrl;
@@ -28,26 +21,64 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
     private bool _initialized;
     private bool _hasPendingRender;
     private string? _activeCacheKey;
-    private ImageSource? _currentSource;
+    private MediaSource? _currentSource;
     private CancellationTokenSource? _loadCts;
-    private bool IsLoading => _currentSource != null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
-
-    private bool IsInteractive => _renderHandle.IsInitialized &&
-                                _renderHandle.RendererInfo.IsInteractive;
-
-    [DisallowNull] private ElementReference? Element { get; set; }
-
-    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
-
-    [Inject] private ILogger<ImageOld> Logger { get; set; } = default!;
 
     /// <summary>
-    /// Gets or sets the source for the image.
+    /// Gets a value indicating whether the component is currently loading the media content.
+    /// True when a source has been provided, no object URL is available yet, and there is no error.
     /// </summary>
-    [Parameter] public ImageSource? Source { get; set; }
+    protected bool IsLoading => _currentSource != null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
 
     /// <summary>
-    /// Gets or sets the attributes for the image.
+    /// Gets a value indicating whether the renderer is interactive so client-side JS interop can be performed.
+    /// </summary>
+    protected bool IsInteractive => _renderHandle.IsInitialized && _renderHandle.RendererInfo.IsInteractive;
+
+    /// <summary>
+    /// Gets the reference to the rendered HTML element for this media component.
+    /// </summary>
+    [DisallowNull] protected ElementReference? Element { get; set; }
+
+    /// <summary>
+    /// Gets or sets the JS runtime used for interop with the browser to materialize media object URLs.
+    /// </summary>
+    [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
+
+    /// <summary>
+    /// Gets or sets the logger factory used to create the <see cref="Logger"/> instance.
+    /// </summary>
+    [Inject] protected ILoggerFactory LoggerFactory { get; set; } = default!;
+
+    /// <summary>
+    /// Logger for media operations.
+    /// </summary>
+    protected ILogger Logger => _logger ??= LoggerFactory.CreateLogger(GetType());
+    private ILogger? _logger;
+
+    /// <summary>
+    /// Gets the element tag name (e.g., "img", "video").
+    /// </summary>
+    protected abstract string TagName { get; }
+
+    /// <summary>
+    /// Gets the attribute name to assign the object URL to (e.g., "src" or "href").
+    /// </summary>
+    protected abstract string TargetAttributeName { get; }
+
+    /// <summary>
+    /// Gets the custom marker data-attribute name added to the rendered element for diagnostics and tests.
+    /// Derived components must override to provide a component-specific marker (e.g., "data-blazor-image").
+    /// </summary>
+    protected abstract string MarkerAttributeName { get; }
+
+    /// <summary>
+    /// Gets or sets the media source.
+    /// </summary>
+    [Parameter] public MediaSource? Source { get; set; }
+
+    /// <summary>
+    /// Unmatched attributes applied to the rendered element.
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
 
@@ -64,10 +95,8 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
     {
         var previousSource = Source;
 
-        // Set component parameters
         parameters.SetParameterProperties(this);
 
-        // Initialize on first parameters set
         if (!_initialized)
         {
             Render();
@@ -95,7 +124,6 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
             return;
         }
 
-        // Cancel any in-progress load operation
         try { _loadCts?.Cancel(); } catch { }
         _loadCts?.Dispose();
         _loadCts = new CancellationTokenSource();
@@ -105,11 +133,10 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
 
         try
         {
-            await LoadImage(Source, token);
+            await LoadMediaAsync(Source, token);
         }
         catch (OperationCanceledException)
         {
-
         }
     }
 
@@ -123,16 +150,21 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
         }
     }
 
-    private void BuildRenderTree(RenderTreeBuilder builder)
+    /// <summary>
+    /// Builds the component render tree for the underlying media element and common attributes.
+    /// Derived components can override to extend the markup.
+    /// </summary>
+    /// <param name="builder">The <see cref="RenderTreeBuilder"/> used to construct the render tree.</param>
+    protected virtual void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, "img");
+        builder.OpenElement(0, TagName);
 
         if (!string.IsNullOrEmpty(_currentObjectUrl))
         {
-            builder.AddAttribute(1, "src", _currentObjectUrl);
+            builder.AddAttribute(1, TargetAttributeName, _currentObjectUrl);
         }
 
-        builder.AddAttribute(2, "data-blazor-image", "");
+        builder.AddAttribute(2, MarkerAttributeName, "");
 
         var showInitial = Source != null && _currentSource == null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
 
@@ -151,7 +183,7 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
         builder.CloseElement();
     }
 
-    private sealed class ImageLoadResult
+    private sealed class MediaLoadResult
     {
         public bool Success { get; set; }
         public bool FromCache { get; set; }
@@ -159,7 +191,7 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
         public string? Error { get; set; }
     }
 
-    private async Task LoadImage(ImageSource? source, CancellationToken cancellationToken)
+    private async Task LoadMediaAsync(MediaSource? source, CancellationToken cancellationToken)
     {
         if (source == null || !IsInteractive)
         {
@@ -176,14 +208,15 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
 
             using var streamRef = new DotNetStreamReference(source.Stream, leaveOpen: true);
 
-            var result = await JSRuntime.InvokeAsync<ImageLoadResult>(
-                "Blazor._internal.BinaryImageComponent.setImageAsync",
+            var result = await JSRuntime.InvokeAsync<MediaLoadResult>(
+                "Blazor._internal.BinaryMedia.setContentAsync",
                 cancellationToken,
                 Element,
                 streamRef,
                 source.MimeType,
                 source.CacheKey,
-                source.Length);
+                source.Length,
+                TargetAttributeName);
 
             if (_activeCacheKey == source.CacheKey && !cancellationToken.IsCancellationRequested)
             {
@@ -206,7 +239,7 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
                 else
                 {
                     _hasError = true;
-                    Log.LoadFailed(Logger, source.CacheKey, new InvalidOperationException(result.Error ?? "Image load failed"));
+                    Log.LoadFailed(Logger, source.CacheKey, new InvalidOperationException(result.Error ?? "Unknown error"));
                 }
 
                 Render();
@@ -250,17 +283,16 @@ public partial class ImageOld : IComponent, IHandleAfterRender, IAsyncDisposable
         [LoggerMessage(1, LogLevel.Debug, "Begin load for key '{CacheKey}'", EventName = "BeginLoad")]
         public static partial void BeginLoad(ILogger logger, string cacheKey);
 
-        [LoggerMessage(2, LogLevel.Debug, "Loaded image from cache for key '{CacheKey}'", EventName = "CacheHit")]
+        [LoggerMessage(2, LogLevel.Debug, "Loaded media from cache for key '{CacheKey}'", EventName = "CacheHit")]
         public static partial void CacheHit(ILogger logger, string cacheKey);
 
-        [LoggerMessage(3, LogLevel.Debug, "Streaming image for key '{CacheKey}'", EventName = "StreamStart")]
+        [LoggerMessage(3, LogLevel.Debug, "Streaming media for key '{CacheKey}'", EventName = "StreamStart")]
         public static partial void StreamStart(ILogger logger, string cacheKey);
 
-        [LoggerMessage(4, LogLevel.Debug, "Image load succeeded for key '{CacheKey}'", EventName = "LoadSuccess")]
+        [LoggerMessage(4, LogLevel.Debug, "Media load succeeded for key '{CacheKey}'", EventName = "LoadSuccess")]
         public static partial void LoadSuccess(ILogger logger, string cacheKey);
 
-        [LoggerMessage(5, LogLevel.Debug, "Image load failed for key '{CacheKey}'", EventName = "LoadFailed")]
+        [LoggerMessage(5, LogLevel.Debug, "Media load failed for key '{CacheKey}'", EventName = "LoadFailed")]
         public static partial void LoadFailed(ILogger logger, string cacheKey, Exception exception);
-
     }
 }

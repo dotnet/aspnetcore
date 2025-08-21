@@ -1,5 +1,5 @@
 ﻿@using System.IO
-@using Microsoft.AspNetCore.Components.Web.Image
+@using Microsoft.AspNetCore.Components.Web.Media
 @using Microsoft.JSInterop
 @inject IJSRuntime JS
 
@@ -85,12 +85,12 @@
     private Image _errorRef;
     private Image _cachedJpgRef;
 
-    private ImageSource _basicImageSource = new ImageSource(new byte[0], "", "");
-    private ImageSource _jpgStreamSource = new ImageSource(new byte[0], "", "");
-    private ImageSource _dynamicImageSource = new ImageSource(new byte[0], "", "");
-    private ImageSource _pairSource = new ImageSource(new byte[0], "", "");
-    private ImageSource _errorSource = new ImageSource(new byte[0], "", "");
-    private ImageSource _cachedJpgSource = new ImageSource(new byte[0], "", "");
+    private MediaSource _basicImageSource = new MediaSource(new byte[0], "", "");
+    private MediaSource _jpgStreamSource = new MediaSource(new byte[0], "", "");
+    private MediaSource _dynamicImageSource = new MediaSource(new byte[0], "", "");
+    private MediaSource _pairSource = new MediaSource(new byte[0], "", "");
+    private MediaSource _errorSource = new MediaSource(new byte[0], "", "");
+    private MediaSource _cachedJpgSource = new MediaSource(new byte[0], "", "");
 
     private bool _pngBasic = false;
     private bool _jpgStream = false;
@@ -117,7 +117,7 @@
     {
         _currentStatus = "Loading JPG from stream...";
         var stream = new MemoryStream(TestJpgData);
-        _jpgStreamSource = new ImageSource(stream, "image/jpeg", "test-jpg-stream");
+        _jpgStreamSource = new MediaSource(stream, "image/jpeg", "test-jpg-stream");
         await Task.Delay(10);
         _jpgStream = true;
         _currentStatus = "JPG from stream loaded";
@@ -130,7 +130,7 @@
         {
             // First time - show the component with PNG
             _currentStatus = "Loading dynamic source (PNG)...";
-            _dynamicImageSource = new ImageSource(TestPngData, "image/png", "dynamic-png");
+            _dynamicImageSource = new MediaSource(TestPngData, "image/png", "dynamic-png");
             _dynamicSource = true;
             _isCurrentlyShowingPng = true;
             await Task.Delay(10);
@@ -142,7 +142,7 @@
             if (_isCurrentlyShowingPng)
             {
                 _currentStatus = "Changing to JPG...";
-                _dynamicImageSource = new ImageSource(TestJpgData, "image/jpeg", "dynamic-jpg");
+                _dynamicImageSource = new MediaSource(TestJpgData, "image/jpeg", "dynamic-jpg");
                 _isCurrentlyShowingPng = false;
                 await Task.Delay(10);
                 _currentStatus = "Dynamic source changed to JPG";
@@ -150,7 +150,7 @@
             else
             {
                 _currentStatus = "Changing to PNG...";
-                _dynamicImageSource = new ImageSource(TestPngData, "image/png", "dynamic-png");
+                _dynamicImageSource = new MediaSource(TestPngData, "image/png", "dynamic-png");
                 _isCurrentlyShowingPng = true;
                 await Task.Delay(10);
                 _currentStatus = "Dynamic source changed to PNG";
@@ -160,7 +160,7 @@
     private async Task LoadPairSequence()
     {
         _currentStatus = "Loading pair sequence...";
-        _pairSource = new ImageSource(TestJpgData, "image/jpeg", "pair-cache");
+        _pairSource = new MediaSource(TestJpgData, "image/jpeg", "pair-cache");
         _pair1Visible = true;
         await Task.Delay(50);
         _pair2Visible = true;
@@ -181,7 +181,7 @@
             _currentStatus = "Loading PNG...";
         }
 
-        _basicImageSource = new ImageSource(TestPngData, "image/png", "test-png-basic");
+        _basicImageSource = new MediaSource(TestPngData, "image/png", "test-png-basic");
         _pngBasic = true;
         await Task.Delay(10);
         _currentStatus = "PNG basic loaded";
@@ -193,7 +193,7 @@
         // Create a stream then seek to end so component throws when validating position
         var ms = new MemoryStream(new byte[] { 1, 2, 3, 4 });
         ms.Seek(ms.Length, SeekOrigin.Begin);
-        _errorSource = new ImageSource(ms, "image/png", "error-key");
+        _errorSource = new MediaSource(ms, "image/png", "error-key");
         _errorImage = true;
         await Task.Delay(10);
         _currentStatus = "Error image loaded";
@@ -202,7 +202,7 @@
     private async Task LoadCachedJpg()
     {
         _currentStatus = "Loading cached JPG...";
-        _cachedJpgSource = new ImageSource(TestJpgData, "image/jpeg", "single-cached-jpg");
+        _cachedJpgSource = new MediaSource(TestJpgData, "image/jpeg", "single-cached-jpg");
         _cachedJpgVisible = true;
         await Task.Delay(10);
         _currentStatus = "Cached JPG loaded";
