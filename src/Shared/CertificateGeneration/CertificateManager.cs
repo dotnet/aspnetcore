@@ -236,18 +236,22 @@ internal abstract class CertificateManager
 
         var currentUserCertificates = ListCertificates(StoreName.My, StoreLocation.CurrentUser, isValid: true, requireExportable: true);
         var localMachineCertificates = ListCertificates(StoreName.My, StoreLocation.LocalMachine, isValid: true, requireExportable: true);
-        var certificates = currentUserCertificates.Concat(localMachineCertificates);
+        var allCertificates = currentUserCertificates.Concat(localMachineCertificates).ToList();
 
-        var filteredCertificates = certificates.Where(c => c.Subject == Subject);
+        var filteredCertificates = allCertificates.Where(c => c.Subject == Subject).ToList();
 
         if (Log.IsEnabled())
         {
-            var excludedCertificates = certificates.Except(filteredCertificates);
+            var excludedCertificates = allCertificates.Except(filteredCertificates);
             Log.FilteredCertificates(ToCertificateDescription(filteredCertificates));
             Log.ExcludedCertificates(ToCertificateDescription(excludedCertificates));
         }
 
-        certificates = filteredCertificates;
+        // Dispose certificates we're not going to use
+        var certificatesToDispose = allCertificates.Except(filteredCertificates);
+        DisposeCertificates(certificatesToDispose);
+
+        var certificates = filteredCertificates;
 
         X509Certificate2? certificate = null;
         var isNewCertificate = false;
@@ -319,6 +323,7 @@ internal abstract class CertificateManager
                     Log.CreateDevelopmentCertificateError(e.ToString());
                 }
                 result = EnsureCertificateResult.ErrorCreatingTheCertificate;
+                DisposeCertificates(certificates);
                 return result;
             }
             Log.CreateDevelopmentCertificateEnd();
@@ -331,6 +336,7 @@ internal abstract class CertificateManager
             {
                 Log.SaveCertificateInStoreError(e.ToString());
                 certificate?.Dispose();
+                DisposeCertificates(certificates);
                 result = EnsureCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
                 return result;
             }
@@ -389,6 +395,7 @@ internal abstract class CertificateManager
                     EnsureCertificateResult.ErrorExportingTheCertificate;
 
                 certificate?.Dispose();
+                DisposeCertificates(certificates);
                 return result;
             }
         }
@@ -406,11 +413,13 @@ internal abstract class CertificateManager
                     case TrustLevel.Partial:
                         result = EnsureCertificateResult.PartiallyFailedToTrustTheCertificate;
                         certificate?.Dispose();
+                        DisposeCertificates(certificates);
                         return result;
                     case TrustLevel.None:
                     default: // Treat unknown status (should be impossible) as failure
                         result = EnsureCertificateResult.FailedToTrustTheCertificate;
                         certificate?.Dispose();
+                        DisposeCertificates(certificates);
                         return result;
                 }
             }
@@ -418,12 +427,14 @@ internal abstract class CertificateManager
             {
                 result = EnsureCertificateResult.UserCancelledTrustStep;
                 certificate?.Dispose();
+                DisposeCertificates(certificates);
                 return result;
             }
             catch
             {
                 result = EnsureCertificateResult.FailedToTrustTheCertificate;
                 certificate?.Dispose();
+                DisposeCertificates(certificates);
                 return result;
             }
 
