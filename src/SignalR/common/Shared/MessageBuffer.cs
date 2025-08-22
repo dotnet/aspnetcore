@@ -121,15 +121,16 @@ internal sealed class MessageBuffer : IDisposable
 
     public ValueTask<FlushResult> WriteAsync(SerializedHubMessage hubMessage, CancellationToken cancellationToken)
     {
-        return WriteAsyncCore(hubMessage.Message!, hubMessage.GetSerializedMessage(_protocol), cancellationToken);
+        // Default to HubInvocationMessage as that's the only type we use SerializedHubMessage for currently when Message is null. Should harden this in the future.
+        return WriteAsyncCore(hubMessage.Message?.GetType() ?? typeof(HubInvocationMessage), hubMessage.GetSerializedMessage(_protocol), cancellationToken);
     }
 
     public ValueTask<FlushResult> WriteAsync(HubMessage hubMessage, CancellationToken cancellationToken)
     {
-        return WriteAsyncCore(hubMessage, _protocol.GetMessageBytes(hubMessage), cancellationToken);
+        return WriteAsyncCore(hubMessage.GetType(), _protocol.GetMessageBytes(hubMessage), cancellationToken);
     }
 
-    private async ValueTask<FlushResult> WriteAsyncCore(HubMessage hubMessage, ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
+    private async ValueTask<FlushResult> WriteAsyncCore(Type hubMessageType, ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
     {
         // TODO: Add backpressure based on message count
         if (_bufferedByteCount > _bufferLimit)
@@ -158,7 +159,7 @@ internal sealed class MessageBuffer : IDisposable
         await _writeLock.WaitAsync(cancellationToken: default).ConfigureAwait(false);
         try
         {
-            if (hubMessage is HubInvocationMessage invocationMessage)
+            if (typeof(HubInvocationMessage).IsAssignableFrom(hubMessageType))
             {
                 _totalMessageCount++;
                 _bufferedByteCount += messageBytes.Length;

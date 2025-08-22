@@ -277,7 +277,7 @@ public class ModelBinderFactoryTest
         Assert.Same(result1, result2);
     }
 
-    public static TheoryData BindingInfoData
+    public static TheoryData<BindingInfo, BindingMetadata, BindingInfo> BindingInfoData
     {
         get
         {

@@ -543,12 +543,4 @@ internal sealed class ActionEndpointFactory
             return invoker!.InvokeAsync();
         };
     }
-
-    private sealed class InertEndpointBuilder : EndpointBuilder
-    {
-        public override Endpoint Build()
-        {
-            return new Endpoint(RequestDelegate, new EndpointMetadataCollection(Metadata), DisplayName);
-        }
-    }
 }

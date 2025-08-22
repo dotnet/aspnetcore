@@ -43,7 +43,7 @@ TEST(PassUnexpandedEnvString, LongStringExpandsResults)
 }
 
 
-TEST(GetEnvironmentVariableValue, ReturnsCorrectLenght)
+TEST(GetEnvironmentVariableValue, ReturnsCorrectLength)
 {
     SetEnvironmentVariable(L"RANDOM_ENV_VAR_1", L"test");
 

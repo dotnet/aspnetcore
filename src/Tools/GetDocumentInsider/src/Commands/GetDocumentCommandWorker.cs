@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -254,16 +254,28 @@ internal sealed class GetDocumentCommandWorker
             return false;
         }
 
-        // If an explicit document name is provided, then generate only that document.
+        // Get document names
         var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, _getDocumentsArguments);
         if (documentNames == null)
         {
             return false;
         }
 
-        if (!string.IsNullOrEmpty(_context.DocumentName) && !documentNames.Contains(_context.DocumentName))
+        // If an explicit document name is provided, then generate only that document.
+        if (!string.IsNullOrEmpty(_context.DocumentName))
         {
-            _reporter.WriteError(Resources.FormatDocumentNotFound(_context.DocumentName));
+            if (!documentNames.Contains(_context.DocumentName))
+            {
+                _reporter.WriteError(Resources.FormatDocumentNotFound(_context.DocumentName));
+                return false;
+            }
+
+            documentNames = [_context.DocumentName];
+        }
+
+        if (!string.IsNullOrWhiteSpace(_context.FileName) && !Regex.IsMatch(_context.FileName, "^([A-Za-z0-9-_]+)$"))
+        {
+            _reporter.WriteError(Resources.FileNameFormatInvalid);
             return false;
         }
 
@@ -271,7 +283,10 @@ internal sealed class GetDocumentCommandWorker
         var found = false;
         Directory.CreateDirectory(_context.OutputDirectory);
         var filePathList = new List<string>();
-        foreach (var documentName in documentNames)
+        var targetDocumentNames = string.IsNullOrEmpty(_context.DocumentName)
+            ? documentNames
+            : [_context.DocumentName];
+        foreach (var documentName in targetDocumentNames)
         {
             var filePath = GetDocument(
                 documentName,
@@ -279,7 +294,8 @@ internal sealed class GetDocumentCommandWorker
                 _context.OutputDirectory,
                 generateMethod,
                 service,
-                generateWithVersionMethod);
+                generateWithVersionMethod,
+                _context.FileName);
             if (filePath == null)
             {
                 return false;
@@ -308,12 +324,13 @@ internal sealed class GetDocumentCommandWorker
         string outputDirectory,
         MethodInfo generateMethod,
         object service,
-        MethodInfo? generateWithVersionMethod)
+        MethodInfo? generateWithVersionMethod,
+        string fileName)
     {
         _reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
         using var stream = new MemoryStream();
-        using (var writer = new StreamWriter(stream, _utf8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
+        using (var writer = new InvariantStreamWriter(stream, _utf8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
         {
             var targetMethod = generateWithVersionMethod ?? generateMethod;
             object[] arguments = [documentName, writer];
@@ -326,8 +343,11 @@ internal sealed class GetDocumentCommandWorker
                 }
                 else
                 {
-                    _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
-                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_0];
+                    if (!string.IsNullOrWhiteSpace(_context.OpenApiVersion))
+                    {
+                        _reporter.WriteWarning(Resources.FormatInvalidOpenApiVersion(_context.OpenApiVersion));
+                    }
+                    arguments = [documentName, writer, OpenApiSpecVersion.OpenApi3_1];
                 }
             }
             using var resultTask = (Task)InvokeMethod(targetMethod, service, arguments);
@@ -352,7 +372,9 @@ internal sealed class GetDocumentCommandWorker
             return null;
         }
 
-        var filePath = GetDocumentPath(documentName, projectName, outputDirectory);
+        fileName = !string.IsNullOrWhiteSpace(fileName) ? fileName : projectName;
+
+        var filePath = GetDocumentPath(documentName, fileName, outputDirectory);
         _reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
         try
         {
@@ -371,13 +393,14 @@ internal sealed class GetDocumentCommandWorker
         return filePath;
     }
 
-    private static string GetDocumentPath(string documentName, string projectName, string outputDirectory)
+    private static string GetDocumentPath(string documentName, string fileName, string outputDirectory)
     {
         string path;
+
         if (string.Equals(DefaultDocumentName, documentName, StringComparison.Ordinal))
         {
             // Leave default document name out of the filename.
-            path = projectName + JsonExtension;
+            path = fileName + JsonExtension;
         }
         else
         {
@@ -392,7 +415,7 @@ internal sealed class GetDocumentCommandWorker
                 sanitizedDocumentName = sanitizedDocumentName.Replace(InvalidFilenameString, DotString);
             }
 
-            path = $"{projectName}_{documentName}{JsonExtension}";
+            path = $"{fileName}_{documentName}{JsonExtension}";
         }
 
         if (!string.IsNullOrEmpty(outputDirectory))
@@ -439,6 +462,12 @@ internal sealed class GetDocumentCommandWorker
         }
 
         return result;
+    }
+
+    private sealed class InvariantStreamWriter(Stream stream, Encoding? encoding = null, int bufferSize = -1, bool leaveOpen = false)
+        : StreamWriter(stream, encoding, bufferSize, leaveOpen)
+    {
+        public override IFormatProvider FormatProvider => System.Globalization.CultureInfo.InvariantCulture;
     }
 
 #if NET7_0_OR_GREATER

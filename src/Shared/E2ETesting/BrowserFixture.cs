@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.E2ETesting;
 public class BrowserFixture : IAsyncLifetime
 {
     public static string StreamingContext { get; } = "streaming";
+    public static string RoutingTestContext { get; } = "routing";
+    public static string StreamingBackForwardCacheContext { get; } = "streaming.backforwardcache";
 
     private readonly ConcurrentDictionary<string, (IWebDriver browser, ILogs log)> _browsers = new();
 
@@ -77,7 +79,7 @@ public class BrowserFixture : IAsyncLifetime
                 // Continue disposing other browsers
             }
         }
-
+        
         await DeleteBrowserUserProfileDirectoriesAsync();
     }
 
@@ -136,10 +138,28 @@ public class BrowserFixture : IAsyncLifetime
     {
         var opts = new ChromeOptions();
 
-        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true)
+        if (context?.StartsWith(RoutingTestContext, StringComparison.Ordinal) == true)
+        {
+            // Enables WebDriver BiDi, which is required to allow the 'beforeunload' event
+            // to display an alert dialog. This is needed by some of our routing tests.
+            // See: https://w3c.github.io/webdriver/#user-prompts
+            // We could consider making this the default for all tests when the BiDi spec
+            // becomes standard (it's in draft at the time of writing).
+            // See: https://w3c.github.io/webdriver-bidi/
+            opts.UseWebSocketUrl = true;
+        }
+
+        if (context?.StartsWith(StreamingContext, StringComparison.Ordinal) == true || context?.StartsWith(StreamingBackForwardCacheContext, StringComparison.Ordinal) == true)
         {
             // Tells Selenium not to wait until the page navigation has completed before continuing with the tests
             opts.PageLoadStrategy = PageLoadStrategy.None;
+        }
+
+        if (context?.StartsWith(StreamingBackForwardCacheContext, StringComparison.Ordinal) == true)
+        {
+            // Tells Selenium to disable the back/forward cache, which is enabled by default in Chrome.
+            // This is needed for tests that rely on the browser's back/forward navigation.
+            opts.AddArgument("--disable-back-forward-cache");
         }
 
         // Force language to english for tests

@@ -39,6 +39,7 @@ a, .btn-link {
 }
 
 #blazor-error-ui {
+    color-scheme: light only;
     background: lightyellow;
     bottom: 0;
     box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
@@ -69,11 +70,12 @@ a, .btn-link {
     }
 
 .loading-progress {
-    position: relative;
+    position: absolute;
     display: block;
     width: 8rem;
     height: 8rem;
-    margin: 20vh auto 1rem auto;
+    inset: 20vh 0 auto 0;
+    margin: 0 auto 0 auto;
 }
 
     .loading-progress circle {
@@ -103,4 +105,13 @@ a, .btn-link {
 
 code {
     color: #c02d76;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
 }

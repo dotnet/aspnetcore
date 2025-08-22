@@ -636,7 +636,7 @@ public class PropertyHelperTest
 
         // Assert
         Assert.NotNull(dictValues);
-        Assert.Equal(0, dictValues.Count);
+        Assert.Empty(dictValues);
     }
 
     [Fact]
@@ -650,7 +650,7 @@ public class PropertyHelperTest
 
         // Assert
         Assert.NotNull(dictValues);
-        Assert.Equal(0, dictValues.Count);
+        Assert.Empty(dictValues);
     }
 
     [Fact]
@@ -664,7 +664,7 @@ public class PropertyHelperTest
 
         // Assert
         Assert.NotNull(dictValues);
-        Assert.Equal(1, dictValues.Count);
+        Assert.Single(dictValues);
         Assert.Equal(4, dictValues["Length"]);
     }
 

@@ -28,9 +28,6 @@ public class RouteView : IComponent
         }
     }
 
-    [Inject]
-    private NavigationManager NavigationManager { get; set; }
-
     /// <summary>
     /// Gets or sets the route data. This determines the page that will be
     /// displayed and the parameter values that will be supplied to the page.

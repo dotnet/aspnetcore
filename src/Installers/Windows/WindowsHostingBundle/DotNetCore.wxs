@@ -2,62 +2,80 @@
 <?include ..\AspNetCoreModule-Setup\IIS-Setup\include.wxi ?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:util="http://schemas.microsoft.com/wix/UtilExtension">
     <Fragment>
-        <util:ProductSearch Id="DotNetRedistLtsProductSearch_x86"
-                            Condition="NOT VersionNT64"
-                            ProductCode="$(var.DotNetRedistLtsInstallerProductCodex86)"
-                            Result="version"
-                            Variable="DotNetRedistLtsProductVersion_x86" />
-
-        <util:ProductSearch Id="DotNetRedistLtsProductSearch_x64"
-                            Condition="VersionNT64 AND NOT (NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;)"
-                            ProductCode="$(var.DotNetRedistLtsInstallerProductCodex64)"
-                            Result="version"
-                            Variable="DotNetRedistLtsProductVersion_x64" />
-
-        <util:ProductSearch Id="DotNetRedistLtsProductSearch_arm64"
-                            Condition="(NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;)"
-                            ProductCode="$(var.DotNetRedistLtsInstallerProductCodearm64)"
-                            Result="version"
-                            Variable="DotNetRedistLtsProductVersion_arm64" />
-
         <PackageGroup Id="PG_DOTNET_REDIST_LTS_BUNDLE">
             <RollbackBoundary Id="RB_DOTNET_REDIST_LTS_BUNDLE" />
 
             <!-- OPT_NO_RUNTIME could be unset at this point, which we explicitly treat as 'false' -->
-            <ExePackage Id="DotNetRedistLts_arm64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerarm64)"
+            <MsiPackage Id="DotNetRedistLts_arm64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerarm64)"
                         Name="$(var.DotNetRedistLtsInstallerarm64)"
                         Compressed="yes"
                         Vital="yes"
-                        InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)"
-                        InstallCommand="/quiet /norestart"
-                        RepairCommand="/quiet /norestart /repair"
-                        Permanent="yes"
-                        DetectCondition="DotNetRedistLtsProductVersion_arm64 = v$(var.DotNetRedistLtsInstallerProductVersionarm64)">
-            </ExePackage>            
+                        InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)">
+            </MsiPackage>            
             
             <!-- OPT_NO_RUNTIME could be unset at this point, which we explicitly treat as 'false' -->
-            <ExePackage Id="DotNetRedistLts_x64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerx64)"
+            <MsiPackage Id="DotNetRedistLts_x64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerx64)"
                         Name="$(var.DotNetRedistLtsInstallerx64)"
                         Compressed="yes"
                         Vital="yes"
-                        InstallCondition="VersionNT64 AND NOT (NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)"
-                        InstallCommand="/quiet /norestart"
-                        RepairCommand="/quiet /norestart /repair"
-                        UninstallCommand="/quiet /norestart /uninstall"
-                        DetectCondition="DotNetRedistLtsProductVersion_x64 = v$(var.DotNetRedistLtsInstallerProductVersionx64)">
-            </ExePackage>
+                        InstallCondition="VersionNT64 AND NOT (NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)">
+            </MsiPackage>
 
             <!-- OPT_NO_X86 could be unset at this point, which we explicitly treat as 'false' -->
-            <ExePackage Id="DotNetRedistLts_x86" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerx86)"
+            <MsiPackage Id="DotNetRedistLts_x86" SourceFile="$(var.DepsPath)\$(var.DotNetRedistLtsInstallerx86)"
                         Name="$(var.DotNetRedistLtsInstallerx86)"
                         Compressed="yes"
                         Vital="yes"
-                        InstallCondition="(NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;) AND (NOT OPT_NO_X86 OR OPT_NO_X86=&quot;0&quot;)"
-                        InstallCommand="/quiet /norestart"
-                        RepairCommand="/quiet /norestart /repair"
-                        UninstallCommand="/quiet /norestart /uninstall"
-                        DetectCondition="DotNetRedistLtsProductVersion_x86 = v$(var.DotNetRedistLtsInstallerProductVersionx86)">
-            </ExePackage>
+                        InstallCondition="(NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;) AND (NOT OPT_NO_X86 OR OPT_NO_X86=&quot;0&quot;)">
+            </MsiPackage>
+
+            <!-- OPT_NO_RUNTIME could be unset at this point, which we explicitly treat as 'false' -->
+            <MsiPackage Id="DotNetRedistHost_arm64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistHostInstallerarm64)"
+                        Name="$(var.DotNetRedistHostInstallerarm64)"
+                        Compressed="yes"
+                        Vital="yes"
+                        InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)">
+            </MsiPackage>            
+            
+            <!-- OPT_NO_RUNTIME could be unset at this point, which we explicitly treat as 'false' -->
+            <MsiPackage Id="DotNetRedistHost_x64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistHostInstallerx64)"
+                        Name="$(var.DotNetRedistHostInstallerx64)"
+                        Compressed="yes"
+                        Vital="yes"
+                        InstallCondition="VersionNT64 AND NOT (NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)">
+            </MsiPackage>
+
+            <!-- OPT_NO_X86 could be unset at this point, which we explicitly treat as 'false' -->
+            <MsiPackage Id="DotNetRedistHost_x86" SourceFile="$(var.DepsPath)\$(var.DotNetRedistHostInstallerx86)"
+                        Name="$(var.DotNetRedistHostInstallerx86)"
+                        Compressed="yes"
+                        Vital="yes"
+                        InstallCondition="(NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;) AND (NOT OPT_NO_X86 OR OPT_NO_X86=&quot;0&quot;)">
+            </MsiPackage>
+
+            <!-- OPT_NO_RUNTIME could be unset at this point, which we explicitly treat as 'false' -->
+            <MsiPackage Id="DotNetRedistHostfxr_arm64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistHostfxrInstallerarm64)"
+                        Name="$(var.DotNetRedistHostfxrInstallerarm64)"
+                        Compressed="yes"
+                        Vital="yes"
+                        InstallCondition="(NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)">
+            </MsiPackage>            
+            
+            <!-- OPT_NO_RUNTIME could be unset at this point, which we explicitly treat as 'false' -->
+            <MsiPackage Id="DotNetRedistHostfxr_x64" SourceFile="$(var.DepsPath)\$(var.DotNetRedistHostfxrInstallerx64)"
+                        Name="$(var.DotNetRedistHostfxrInstallerx64)"
+                        Compressed="yes"
+                        Vital="yes"
+                        InstallCondition="VersionNT64 AND NOT (NativeMachine=&quot;$(var.NativeMachine_arm64)&quot;) AND (NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;)">
+            </MsiPackage>
+
+            <!-- OPT_NO_X86 could be unset at this point, which we explicitly treat as 'false' -->
+            <MsiPackage Id="DotNetRedistHostfxr_x86" SourceFile="$(var.DepsPath)\$(var.DotNetRedistHostfxrInstallerx86)"
+                        Name="$(var.DotNetRedistHostfxrInstallerx86)"
+                        Compressed="yes"
+                        Vital="yes"
+                        InstallCondition="(NOT OPT_NO_RUNTIME OR OPT_NO_RUNTIME=&quot;0&quot;) AND (NOT OPT_NO_X86 OR OPT_NO_X86=&quot;0&quot;)">
+            </MsiPackage>
         </PackageGroup>
     </Fragment>
 </Wix>

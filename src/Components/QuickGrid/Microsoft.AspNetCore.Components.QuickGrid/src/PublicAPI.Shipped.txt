@@ -110,6 +110,8 @@ Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemSize.get -> f
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemSize.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemsProvider.get -> Microsoft.AspNetCore.Components.QuickGrid.GridItemsProvider<TGridItem>?
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.ItemsProvider.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OverscanCount.get -> int
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.OverscanCount.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Pagination.get -> Microsoft.AspNetCore.Components.QuickGrid.PaginationState?
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.Pagination.set -> void
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.QuickGrid() -> void

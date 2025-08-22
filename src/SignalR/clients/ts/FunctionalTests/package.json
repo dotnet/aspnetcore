@@ -1,5 +1,5 @@
 {
-  "name": "functionaltests",
+  "name": "@microsoft/functionaltests",
   "private": true,
   "version": "1.0.0",
   "description": "",
@@ -38,7 +38,7 @@
     "rxjs": "^6.3.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.0.2",
-    "webpack": "^5.76.3",
+    "webpack": "^5.94.0",
     "ws": " ^6.0.0"
   },
   "scripts": {

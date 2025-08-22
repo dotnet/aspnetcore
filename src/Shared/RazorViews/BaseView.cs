@@ -158,7 +158,7 @@ internal abstract class BaseView
         Debug.Assert(AttributeValues != null);
         Debug.Assert(!string.IsNullOrEmpty(AttributeEnding));
 
-        var attributes = string.Join(" ", AttributeValues);
+        var attributes = string.Join(' ', AttributeValues);
         Output.Write(attributes);
         AttributeValues = null;
 
@@ -193,9 +193,9 @@ internal abstract class BaseView
             // instead of the string 'true'. If the value is the bool 'false' we don't want to write anything.
             // Otherwise the value is another object (perhaps an HtmlString) and we'll ask it to format itself.
             string? stringValue;
-            if (value.Value is bool)
+            if (value.Value is bool flag)
             {
-                if ((bool)value.Value)
+                if (flag)
                 {
                     stringValue = name;
                 }

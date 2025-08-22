@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Components.WebView.Services;
 
 internal sealed class WebViewRenderer : WebRenderer
 {
-    private static readonly ComponentPlatform _componentPlatform = new("WebView", isInteractive: true);
+    private static readonly RendererInfo _componentPlatform = new("WebView", isInteractive: true);
     private readonly Queue<UnacknowledgedRenderBatch> _unacknowledgedRenderBatches = new();
     private readonly Dispatcher _dispatcher;
     private readonly IpcSender _ipcSender;
@@ -32,7 +32,7 @@ internal sealed class WebViewRenderer : WebRenderer
 
     public override Dispatcher Dispatcher => _dispatcher;
 
-    protected override ComponentPlatform ComponentPlatform => _componentPlatform;
+    protected override RendererInfo RendererInfo => _componentPlatform;
 
     protected override int GetWebRendererId() => (int)WebRendererId.WebView;
 

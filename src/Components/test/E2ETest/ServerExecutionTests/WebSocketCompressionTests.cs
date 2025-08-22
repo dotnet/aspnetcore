@@ -104,11 +104,11 @@ public abstract partial class BlockedWebSocketCompressionTests(
 
         Assert.True(logs.Count > 0);
 
-        Assert.Matches(ParseErrorMessage(), logs[0].Message);
+        Assert.Matches(ParseErrorMessageRegex, logs[0].Message);
     }
 
     [GeneratedRegex(@"security - Refused to frame 'http://\d+\.\d+\.\d+\.\d+:\d+/' because an ancestor violates the following Content Security Policy directive: ""frame-ancestors 'none'"".")]
-    private static partial Regex ParseErrorMessage();
+    private static partial Regex ParseErrorMessageRegex { get; }
 }
 
 public partial class DefaultConfigurationWebSocketCompressionTests : AllowedWebSocketCompressionTests

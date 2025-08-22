@@ -159,7 +159,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
 
             var error = negotiateResponse.Value<string>("error");
-            Assert.Equal("The client requested an invalid protocol version 'Invalid'", error);
+            Assert.Equal("The client requested a non-integer protocol version.", error);
 
             var connectionId = negotiateResponse.Value<string>("connectionId");
             Assert.Null(connectionId);
@@ -1504,7 +1504,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             }
             if (count == 50)
             {
-                Assert.True(false, "Poll took too long to start");
+                Assert.Fail("Poll took too long to start");
             }
 
             var request2 = dispatcher.ExecuteAsync(context2, options, app);
@@ -1524,7 +1524,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
             }
             if (count == 50)
             {
-                Assert.True(false, "Poll took too long to start");
+                Assert.Fail("Poll took too long to start");
             }
             Assert.Equal(HttpConnectionStatus.Active, connection.Status);
 
@@ -3525,7 +3525,7 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                     app.UseRouting();
                     app.UseEndpoints(endpoints =>
                     {
-                        endpoints.MapConnectionHandler<TestConnectionHandler>("/foo");
+                        endpoints.MapConnectionHandler<EchoConnectionHandler>("/foo");
                     });
                 })
                 .UseUrls("http://127.0.0.1:0");
@@ -3549,6 +3549,10 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
                 LoggerFactory);
 
             await connection.StartAsync();
+
+            // Easy way to make sure everything is set is to send and receive data over the connection
+            await connection.Transport.Output.WriteAsync(new byte[2]);
+            await connection.Transport.Input.ReadAsync();
 
             var negotiateResponse = NegotiateProtocol.ParseResponse(stream.ToArray());
 
@@ -3886,6 +3890,34 @@ public class TestConnectionHandler : ConnectionHandler
             try
             {
                 if (result.IsCompleted)
+                {
+                    break;
+                }
+            }
+            finally
+            {
+                connection.Transport.Input.AdvanceTo(result.Buffer.End);
+            }
+        }
+    }
+}
+
+public class EchoConnectionHandler : ConnectionHandler
+{
+    public override async Task OnConnectedAsync(ConnectionContext connection)
+    {
+        while (true)
+        {
+            var result = await connection.Transport.Input.ReadAsync();
+            var buffer = result.Buffer;
+
+            try
+            {
+                if (!buffer.IsEmpty)
+                {
+                    await connection.Transport.Output.WriteAsync(buffer.ToArray());
+                }
+                else if (result.IsCompleted)
                 {
                     break;
                 }

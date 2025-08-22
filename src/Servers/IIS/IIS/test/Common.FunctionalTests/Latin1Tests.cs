@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class Latin1Tests : IISFunctionalTestBase
 {
     public Latin1Tests(PublishedSitesFixture fixture) : base(fixture)
@@ -36,6 +35,7 @@ public class Latin1Tests : IISFunctionalTestBase
 
     [ConditionalFact]
     [RequiresNewHandler]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61055")]
     public async Task Latin1Works()
     {
         var deploymentParameters = Fixture.GetBaseDeploymentParameters();

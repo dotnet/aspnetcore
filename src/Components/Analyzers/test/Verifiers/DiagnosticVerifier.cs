@@ -112,7 +112,7 @@ public abstract partial class DiagnosticVerifier
         {
             string diagnosticsOutput = actualResults.Any() ? FormatDiagnostics(analyzer, actualResults.ToArray()) : "    NONE.";
 
-            Assert.True(false,
+            Assert.Fail(
                 string.Format(CultureInfo.InvariantCulture, "Mismatch between number of diagnostics returned, expected \"{0}\" actual \"{1}\"\r\n\r\nDiagnostics:\r\n{2}\r\n", expectedCount, actualCount, diagnosticsOutput));
         }
 
@@ -125,7 +125,7 @@ public abstract partial class DiagnosticVerifier
             {
                 if (actual.Location != Location.None)
                 {
-                    Assert.True(false,
+                    Assert.Fail(
                         string.Format(CultureInfo.InvariantCulture, "Expected:\nA project diagnostic with No location\nActual:\n{0}",
                         FormatDiagnostics(analyzer, actual)));
                 }
@@ -137,7 +137,7 @@ public abstract partial class DiagnosticVerifier
 
                 if (additionalLocations.Length != expected.Locations.Length - 1)
                 {
-                    Assert.True(false,
+                    Assert.Fail(
                         string.Format(
                             CultureInfo.InvariantCulture,
                             "Expected {0} additional locations but got {1} for Diagnostic:\r\n    {2}\r\n",
@@ -153,7 +153,7 @@ public abstract partial class DiagnosticVerifier
 
             if (actual.Id != expected.Id)
             {
-                Assert.True(false,
+                Assert.Fail(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Expected diagnostic id to be \"{0}\" was \"{1}\"\r\n\r\nDiagnostic:\r\n    {2}\r\n",
@@ -162,7 +162,7 @@ public abstract partial class DiagnosticVerifier
 
             if (actual.Severity != expected.Severity)
             {
-                Assert.True(false,
+                Assert.Fail(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Expected diagnostic severity to be \"{0}\" was \"{1}\"\r\n\r\nDiagnostic:\r\n    {2}\r\n",
@@ -171,7 +171,7 @@ public abstract partial class DiagnosticVerifier
 
             if (actual.GetMessage(CultureInfo.InvariantCulture) != expected.Message)
             {
-                Assert.True(false,
+                Assert.Fail(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Expected diagnostic message to be \"{0}\" was \"{1}\"\r\n\r\nDiagnostic:\r\n    {2}\r\n",
@@ -204,7 +204,7 @@ public abstract partial class DiagnosticVerifier
         {
             if (actualLinePosition.Line + 1 != expected.Line)
             {
-                Assert.True(false,
+                Assert.Fail(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Expected diagnostic to be on line \"{0}\" was actually on line \"{1}\"\r\n\r\nDiagnostic:\r\n    {2}\r\n",
@@ -217,7 +217,7 @@ public abstract partial class DiagnosticVerifier
         {
             if (actualLinePosition.Character + 1 != expected.Column)
             {
-                Assert.True(false,
+                Assert.Fail(
                     string.Format(
                         CultureInfo.InvariantCulture,
                         "Expected diagnostic to start at column \"{0}\" was actually at column \"{1}\"\r\n\r\nDiagnostic:\r\n    {2}\r\n",

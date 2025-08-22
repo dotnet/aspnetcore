@@ -12,7 +12,7 @@
 // the low end of the hashtable otherwise.  LKRhash applies this internally
 // to all hash signatures for exactly this reason.
 
-inline DWORD
+inline constexpr DWORD
 HashScramble(DWORD dwHash)
 {
     // Here are 10 primes slightly greater than 10^9
@@ -20,9 +20,9 @@ HashScramble(DWORD dwHash)
     //  1000000093, 1000000097, 1000000103, 1000000123, 1000000181.
 
     // default value for "scrambling constant"
-    const DWORD RANDOM_CONSTANT = 314159269UL;
+    constexpr DWORD RANDOM_CONSTANT = 314159269UL;
     // large prime number, also used for scrambling
-    const DWORD RANDOM_PRIME =   1000000007UL;
+    constexpr DWORD RANDOM_PRIME =   1000000007UL;
 
     return (RANDOM_CONSTANT * dwHash) % RANDOM_PRIME ;
 }
@@ -30,7 +30,7 @@ HashScramble(DWORD dwHash)
 
 // Faster scrambling function suggested by Eric Jacobsen
 
-inline DWORD
+inline DWORD constexpr
 HashRandomizeBits(DWORD dw)
 {
 	return (((dw * 1103515245 + 12345) >> 16)
@@ -39,7 +39,7 @@ HashRandomizeBits(DWORD dw)
 
 
 // Small prime number used as a multiplier in the supplied hash functions
-const DWORD HASH_MULTIPLIER = 101;
+constexpr DWORD HASH_MULTIPLIER = 101;
 
 #undef HASH_SHIFT_MULTIPLY
 
@@ -273,51 +273,51 @@ Hash(
 }
 
 // Identity hash functions: scalar values map to themselves
-inline DWORD Hash(char c)
+inline constexpr DWORD Hash(char c)
 { return c; }
 
-inline DWORD Hash(unsigned char uc)
+inline constexpr DWORD Hash(unsigned char uc)
 { return uc; }
 
-inline DWORD Hash(signed char sc)
+inline constexpr DWORD Hash(signed char sc)
 { return sc; }
 
-inline DWORD Hash(short sh)
+inline constexpr DWORD Hash(short sh)
 { return sh; }
 
-inline DWORD Hash(unsigned short ush)
+inline constexpr DWORD Hash(unsigned short ush)
 { return ush; }
 
-inline DWORD Hash(int i)
+inline constexpr DWORD Hash(int i)
 { return i; }
 
-inline DWORD Hash(unsigned int u)
+inline constexpr DWORD Hash(unsigned int u)
 { return u; }
 
-inline DWORD Hash(long l)
+inline constexpr DWORD Hash(long l)
 { return l; }
 
-inline DWORD Hash(unsigned long ul)
+inline constexpr DWORD Hash(unsigned long ul)
 { return ul; }
 
-inline DWORD Hash(float f)
+inline constexpr DWORD Hash(float f)
 {
     // be careful of rounding errors when computing keys
     union {
         float f;
         DWORD dw;
-    } u;
+    } u{};
     u.f = f;
     return u.dw;
 }
 
-inline DWORD Hash(double dbl)
+inline constexpr DWORD Hash(double dbl)
 {
     // be careful of rounding errors when computing keys
     union {
         double dbl;
         DWORD  dw[2];
-    } u;
+    } u{};
     u.dbl = dbl;
     return u.dw[0] * HASH_MULTIPLIER + u.dw[1];
 }

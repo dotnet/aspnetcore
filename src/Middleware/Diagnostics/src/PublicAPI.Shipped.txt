@@ -17,6 +17,8 @@ Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandler.set -> voi
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlerOptions() -> void
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlingPath.get -> Microsoft.AspNetCore.Http.PathString
 Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.ExceptionHandlingPath.set -> void
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.StatusCodeSelector.get -> System.Func<System.Exception!, int>?
+Microsoft.AspNetCore.Builder.ExceptionHandlerOptions.StatusCodeSelector.set -> void
 Microsoft.AspNetCore.Builder.StatusCodePagesExtensions
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions
 Microsoft.AspNetCore.Builder.StatusCodePagesOptions.HandleAsync.get -> System.Func<Microsoft.AspNetCore.Diagnostics.StatusCodeContext!, System.Threading.Tasks.Task!>!

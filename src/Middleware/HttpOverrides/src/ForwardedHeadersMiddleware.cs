@@ -213,26 +213,30 @@ public class ForwardedHeadersMiddleware
             // Host and Scheme initial values are never inspected, no need to set them here.
         };
 
-        var checkKnownIps = _options.KnownNetworks.Count > 0 || _options.KnownProxies.Count > 0;
+        var checkKnownIps = _options.KnownIPNetworks.Count > 0
+#pragma warning disable ASPDEPR005 // KnownNetworks is obsolete
+            || _options.KnownNetworks.Count > 0
+#pragma warning restore ASPDEPR005 // KnownNetworks is obsolete
+            || _options.KnownProxies.Count > 0;
         bool applyChanges = false;
         int entriesConsumed = 0;
 
         for (; entriesConsumed < sets.Length; entriesConsumed++)
         {
             var set = sets[entriesConsumed];
+            // For the first instance, allow remoteIp to be null for servers that don't support it natively.
+            if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
+            {
+                // Stop at the first unknown remote IP, but still apply changes processed so far.
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
+                }
+                break;
+            }
+
             if (checkFor)
             {
-                // For the first instance, allow remoteIp to be null for servers that don't support it natively.
-                if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
-                {
-                    // Stop at the first unknown remote IP, but still apply changes processed so far.
-                    if (_logger.IsEnabled(LogLevel.Debug))
-                    {
-                        _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
-                    }
-                    break;
-                }
-
                 if (IPEndPoint.TryParse(set.IpAndPortText, out var parsedEndPoint))
                 {
                     applyChanges = true;
@@ -399,6 +403,14 @@ public class ForwardedHeadersMiddleware
         {
             return true;
         }
+        foreach (var network in _options.KnownIPNetworks)
+        {
+            if (network.Contains(address))
+            {
+                return true;
+            }
+        }
+#pragma warning disable ASPDEPR005 // KnownNetworks is obsolete
         foreach (var network in _options.KnownNetworks)
         {
             if (network.Contains(address))
@@ -406,6 +418,7 @@ public class ForwardedHeadersMiddleware
                 return true;
             }
         }
+#pragma warning restore ASPDEPR005 // KnownNetworks is obsolete
         return false;
     }
 

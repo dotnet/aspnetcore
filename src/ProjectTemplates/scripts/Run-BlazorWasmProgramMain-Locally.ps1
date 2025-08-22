@@ -10,4 +10,4 @@ $ErrorActionPreference = 'Stop'
 
 . $PSScriptRoot\Test-Template.ps1
 
-Test-Template "blazorwasm" "blazorwasm --use-program-main --hosted --auth Individual" "Microsoft.DotNet.Web.ProjectTemplates.9.0.9.0.0-dev.nupkg" $true
+Test-Template "blazorwasm" "blazorwasm --use-program-main --hosted --auth Individual" "Microsoft.DotNet.Web.ProjectTemplates.10.0.10.0.0-dev.nupkg" $true

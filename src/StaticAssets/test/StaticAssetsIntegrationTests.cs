@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
-using System.IO;
 using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
@@ -67,6 +66,223 @@ public class StaticAssetsIntegrationTests
         Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
         Assert.Equal("Hello, World!", await response.Content.ReadAsStringAsync());
 
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task CachingHeadersAreDisabled_InDevelopment()
+    {
+        // Arrange
+        var appName = nameof(CachingHeadersAreDisabled_InDevelopment);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false, [new("Cache-Control", "immutable")]),
+            ]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        // Act
+        var response = await client.GetAsync("/sample.txt");
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal($"\"{GetEtag("Hello, World!")}\"", response.Headers.ETag.Tag);
+        Assert.Equal(13, response.Content.Headers.ContentLength);
+        Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+        Assert.Equal("Hello, World!", await response.Content.ReadAsStringAsync());
+        Assert.True(response.Headers.CacheControl.NoCache);
+
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task CanEnable_CachingHeadersAreDisabled_InDevelopment()
+    {
+        // Arrange
+        var appName = nameof(CanEnable_CachingHeadersAreDisabled_InDevelopment);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false, [new("Cache-Control", "immutable")]),
+            ]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.Configuration["EnableStaticAssetsDevelopmentCaching"] = "true";
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapStaticAssets();
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        // Act
+        var response = await client.GetAsync("/sample.txt");
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal($"\"{GetEtag("Hello, World!")}\"", response.Headers.ETag.Tag);
+        Assert.Equal(13, response.Content.Headers.ContentLength);
+        Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+        Assert.Equal("Hello, World!", await response.Content.ReadAsStringAsync());
+        Assert.Equal("immutable", response.Headers.CacheControl.ToString());
+
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task Integrity_IsDisabled_InDevelopment()
+    {
+        // Arrange
+        var appName = nameof(Integrity_IsDisabled_InDevelopment);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false, [new("Cache-Control", "immutable")]),
+            ]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            var builder = endpoints.MapStaticAssets();
+            var descriptors = builder.Descriptors;
+
+            endpoints.MapGet("/has-integrity", context =>
+            {
+                var descriptor = descriptors[0];
+                var integrity = descriptors[0].Properties.FirstOrDefault(p => p.Name == "integrity");
+                if (integrity != null)
+                {
+                    context.Response.StatusCode = 400;
+                }
+                return Task.CompletedTask;
+            });
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        // Act
+        var response = await client.GetAsync("/has-integrity");
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Directory.Delete(webRoot, true);
+    }
+
+    [Fact]
+    public async Task CanEnableIntegrity_InDevelopment()
+    {
+        // Arrange
+        var appName = nameof(Integrity_IsDisabled_InDevelopment);
+        var (contentRoot, webRoot) = ConfigureAppPaths(appName);
+
+        CreateTestManifest(
+            appName,
+            webRoot,
+            [
+                new TestResource("sample.txt", "Hello, World!", false, [new("Cache-Control", "immutable")]),
+            ]);
+
+        var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
+        {
+            ApplicationName = appName,
+            ContentRootPath = contentRoot,
+            EnvironmentName = "Development",
+            WebRootPath = webRoot
+        });
+        builder.WebHost.ConfigureServices(services =>
+        {
+            services.AddRouting();
+        });
+        builder.WebHost.UseTestServer();
+        builder.Configuration["EnableStaticAssetsDevelopmentIntegrity"] = "true";
+        var app = builder.Build();
+        app.UseRouting();
+        app.UseEndpoints(endpoints =>
+        {
+            var builder = endpoints.MapStaticAssets();
+            var descriptors = builder.Descriptors;
+
+            endpoints.MapGet("/has-integrity", context =>
+            {
+                var descriptor = descriptors[0];
+                var integrity = descriptors[0].Properties.FirstOrDefault(p => p.Name == "integrity");
+                if (integrity == null)
+                {
+                    context.Response.StatusCode = 400;
+                }
+                return Task.CompletedTask;
+            });
+        });
+
+        await app.StartAsync();
+
+        var client = app.GetTestClient();
+
+        // Act
+        var response = await client.GetAsync("/has-integrity");
+        Assert.NotNull(response);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Directory.Delete(webRoot, true);
     }
 
@@ -275,32 +491,36 @@ public class StaticAssetsIntegrationTests
             var filePath = Path.Combine(webRoot, resource.Path);
             var lastModified = DateTimeOffset.UtcNow;
             File.WriteAllText(filePath, resource.Content);
-
-            manifest.Endpoints.Add(new StaticAssetDescriptor(
-                resource.Path,
-                resource.Path,
-                [],
-                [],
-                [
+            var hash = GetEtag(resource.Content);
+            manifest.ManifestType = "Build";
+            manifest.Endpoints.Add(new StaticAssetDescriptor
+            {
+                Route = resource.Path,
+                AssetPath = resource.Path,
+                Selectors = [],
+                Properties = [new("integrity", $"sha256-{hash}")],
+                ResponseHeaders = [
                     new ("Accept-Ranges", "bytes"),
                     new("Content-Length", resource.Content.Length.ToString(CultureInfo.InvariantCulture)),
                     new("Content-Type", GetContentType(filePath)),
-                    new ("ETag", $"\"{GetEtag(resource.Content)}\""),
-                    new("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture))
+                    new ("ETag", $"\"{hash}\""),
+                    new("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
+                    ..(resource.AdditionalHeaders ?? [])
                 ]
-                ));
+            });
 
             if (resource.IncludeCompressedVersion)
             {
                 var compressedFilePath = Path.Combine(webRoot, resource.Path + ".gz");
                 var length = CreateCompressedFile(compressedFilePath, resource);
 
-                manifest.Endpoints.Add(new StaticAssetDescriptor(
-                    resource.Path,
-                    $"{resource.Path}.gz",
-                    [new StaticAssetSelector("Content-Encoding", "gzip", "1.0")],
-                    [],
-                    [
+                manifest.Endpoints.Add(new StaticAssetDescriptor
+                {
+                    Route = resource.Path,
+                    AssetPath = $"{resource.Path}.gz",
+                    Selectors = [new StaticAssetSelector("Content-Encoding", "gzip", "1.0")],
+                    Properties = [],
+                    ResponseHeaders = [
                         new ("Accept-Ranges", "bytes"),
                         new ("Content-Type", GetContentType(filePath)),
 
@@ -312,7 +532,7 @@ public class StaticAssetsIntegrationTests
                         new ("Content-Encoding", "gzip"),
                         new ("Vary", "Accept-Encoding"),
                     ]
-                    ));
+                });
             }
         }
         using var stream = File.Create(manifestPath);
@@ -352,19 +572,20 @@ public class StaticAssetsIntegrationTests
         {
             Version = 1
         };
-        manifest.Endpoints.Add(new StaticAssetDescriptor(
-            "sample.txt",
-            "sample.txt",
-            [],
-            [],
-            [
+        manifest.Endpoints.Add(new StaticAssetDescriptor
+        {
+            Route = "sample.txt",
+            AssetPath = "sample.txt",
+            Selectors = [],
+            Properties = [],
+            ResponseHeaders = [
                 new ("Accept-Ranges", "bytes"),
                 new("Content-Length", "Hello, World!".Length.ToString(CultureInfo.InvariantCulture)),
                 new("Content-Type", GetContentType("sample.txt")),
                 new ("ETag", $"\"{GetEtag("Hello, World!")}\""),
                 new("Last-Modified", new DateTimeOffset(2023,03,03,0,0,0,TimeSpan.Zero).ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture))
             ]
-        ));
+        });
 
         var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions
         {
@@ -768,6 +989,33 @@ public class StaticAssetsIntegrationTests
         Assert.Equal(HttpStatusCode.PreconditionFailed, res2.StatusCode);
     }
 
+    // 14.35.2 Range Retrieval Requests
+    // The presence of a Range header in an unconditional GET modifies
+    // what is returned if the GET is otherwise successful. In other
+    // words, the response carries a status code of 206 (Partial
+    // Content) instead of 200 (OK).
+    [Fact]
+    public async Task RangeGivesMatchingRange()
+    {
+        var client = await CreateClient();
+
+        var req1 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        req1.Headers.Range = new RangeHeaderValue(0, 4);
+        var res1 = await client.SendAsync(req1);
+
+        var req2 = new HttpRequestMessage(HttpMethod.Get, "http://localhost/sample.txt");
+        req2.Headers.Range = new RangeHeaderValue(7, 11);
+        var res2 = await client.SendAsync(req2);
+
+        Assert.Equal(HttpStatusCode.PartialContent, res1.StatusCode);
+        Assert.Equal("Hello", await res1.Content.ReadAsStringAsync());
+        Assert.Equal(5, res1.Content.Headers.ContentLength);
+
+        Assert.Equal(HttpStatusCode.PartialContent, res2.StatusCode);
+        Assert.Equal("World", await res2.Content.ReadAsStringAsync());
+        Assert.Equal(5, res2.Content.Headers.ContentLength);
+    }
+
     public static IEnumerable<object[]> SupportedMethods => new[]
     {
             new [] { HttpMethod.Get },
@@ -799,9 +1047,9 @@ public class StaticAssetsIntegrationTests
         };
     }
 
-    private record TestResource(string Path, string Content, bool IncludeCompressedVersion);
+    private record TestResource(string Path, string Content, bool IncludeCompressedVersion, StaticAssetResponseHeader[] AdditionalHeaders = null);
 
-    private class TestFileProvider(StaticAssetsIntegrationTests.TestResource[] testResources) : IFileProvider
+    private class TestFileProvider(TestResource[] testResources) : IFileProvider
     {
         public IDirectoryContents GetDirectoryContents(string subpath)
         {

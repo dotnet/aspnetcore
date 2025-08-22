@@ -5,11 +5,11 @@ using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Testing;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Microsoft.CodeAnalysis.Testing.Verifiers;
+using Microsoft.CodeAnalysis.Testing;
 
 namespace Microsoft.AspNetCore.Analyzers;
 
-internal sealed class StartupCSharpAnalyzerTest : CSharpAnalyzerTest<StartupAnalyzer, XUnitVerifier>
+internal sealed class StartupCSharpAnalyzerTest : CSharpAnalyzerTest<StartupAnalyzer, DefaultVerifier>
 {
     public StartupCSharpAnalyzerTest(StartupAnalyzer analyzer, ImmutableArray<MetadataReference> metadataReferences)
     {

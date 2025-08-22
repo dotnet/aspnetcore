@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Authentication;
+using System.Security.Cryptography;
+using System;
+using Microsoft.AspNetCore.Shared;
 
 #if NETCOREAPP
 using System.Net.Security;
@@ -35,30 +38,48 @@ public interface ITlsHandshakeFeature
     /// <summary>
     /// Gets the <see cref="CipherAlgorithmType"/>.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+#endif
     CipherAlgorithmType CipherAlgorithm { get; }
 
     /// <summary>
     /// Gets the cipher strength.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+#endif
     int CipherStrength { get; }
 
     /// <summary>
     /// Gets the <see cref="HashAlgorithmType"/>.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+#endif
     HashAlgorithmType HashAlgorithm { get; }
 
     /// <summary>
     /// Gets the hash strength.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+#endif
     int HashStrength { get; }
 
     /// <summary>
-    /// Gets the <see cref="KeyExchangeAlgorithm"/>.
+    /// Gets the <see cref="ExchangeAlgorithmType"/>.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+#endif
     ExchangeAlgorithmType KeyExchangeAlgorithm { get; }
 
     /// <summary>
     /// Gets the key exchange algorithm strength.
     /// </summary>
+#if NETCOREAPP
+    [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
+#endif
     int KeyExchangeStrength { get; }
 }

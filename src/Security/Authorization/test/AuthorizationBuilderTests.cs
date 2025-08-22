@@ -99,7 +99,7 @@ public class AuthorizationBuilderTests
         // Assert
         var policy = options.GetPolicy("name");
         Assert.NotNull(policy);
-        Assert.Equal(1, policy.Requirements.Count);
+        Assert.Single(policy.Requirements);
         Assert.IsType<AssertionRequirement>(policy.Requirements.First());
     }
 }

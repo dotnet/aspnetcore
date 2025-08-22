@@ -36,7 +36,9 @@ public class KestrelServer : IServer
             Array.Empty<IMultiplexedConnectionListenerFactory>(),
             new SimpleHttpsConfigurationService(),
             loggerFactory,
-            new KestrelMetrics(new DummyMeterFactory()));
+            diagnosticSource: null,
+            new KestrelMetrics(new DummyMeterFactory()),
+            heartbeatHandlers: []);
     }
 
     /// <inheritdoc />

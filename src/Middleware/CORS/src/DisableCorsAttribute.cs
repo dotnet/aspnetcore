@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Cors;
 [DebuggerDisplay("{ToString(),nq}")]
 public class DisableCorsAttribute : Attribute, IDisableCorsAttribute
 {
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return "CORS Disable";

@@ -61,7 +61,8 @@ public class H2SpecTests : LoggedTest
         get
         {
             var dataset = new TheoryData<H2SpecTestCase>();
-            var toSkip = new string[] { "http2/6.9.1/2" };
+            // { Test name, Skip Reason }
+            var toSkip = new Dictionary<string, string>();
 
             var testCases = H2SpecCommands.EnumerateTestCases();
 
@@ -79,9 +80,9 @@ public class H2SpecTests : LoggedTest
             foreach (var testcase in testCases)
             {
                 string skip = null;
-                if (toSkip.Contains(testcase.Item1))
+                if (toSkip.TryGetValue(testcase.Item1, out var skipReason))
                 {
-                    skip = "https://github.com/dotnet/aspnetcore/issues/30373";
+                    skip = skipReason;
                 }
 
                 dataset.Add(new H2SpecTestCase

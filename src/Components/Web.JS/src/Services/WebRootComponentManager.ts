@@ -1,17 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { ComponentDescriptor, ComponentMarker, descriptorToMarker } from './ComponentDescriptorDiscovery';
+import { ComponentDescriptor, ComponentMarker, descriptorToMarker, discoverServerPersistedState, discoverWebAssemblyPersistedState, WebAssemblyServerOptions } from './ComponentDescriptorDiscovery';
 import { isRendererAttached, registerRendererAttachedListener } from '../Rendering/WebRendererInteropMethods';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { DescriptorHandler } from '../Rendering/DomMerging/DomSync';
 import { disposeCircuit, hasStartedServer, isCircuitAvailable, startCircuit, startServer, updateServerRootComponents } from '../Boot.Server.Common';
 import { hasLoadedWebAssemblyPlatform, hasStartedLoadingWebAssemblyPlatform, hasStartedWebAssembly, isFirstUpdate, loadWebAssemblyPlatformIfNotStarted, resolveInitialUpdate, setWaitForRootComponents, startWebAssembly, updateWebAssemblyRootComponents, waitForBootConfigLoaded } from '../Boot.WebAssembly.Common';
-import { MonoConfig } from 'dotnet-runtime';
+import { MonoConfig } from '@microsoft/dotnet-runtime';
 import { RootComponentManager } from './RootComponentManager';
 import { getRendererer } from '../Rendering/Renderer';
 import { isPageLoading } from './NavigationEnhancement';
-import { setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
+import { markAsInteractiveRootComponentElement, setClearContentOnRootComponentRerender, setShouldPreserveContentOnInteractiveComponentDisposal } from '../Rendering/BrowserRenderer';
 import { LogicalElement } from '../Rendering/LogicalElements';
 
 type RootComponentOperationBatch = {
@@ -38,7 +38,7 @@ type RootComponentRemoveOperation = {
   ssrComponentId: number;
 };
 
-type RootComponentInfo = {
+export type RootComponentInfo = {
   descriptor: ComponentDescriptor;
   ssrComponentId: number;
   assignedRendererId?: WebRendererId;
@@ -62,6 +62,8 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   private _isComponentRefreshPending = false;
 
   private _circuitInactivityTimeoutId: any;
+
+  private _webAssemblyOptions: WebAssemblyServerOptions | undefined;
 
   // Implements RootComponentManager.
   // An empty array becuase all root components managed
@@ -91,7 +93,12 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   public onEnhancedNavigationCompleted() {
     // Root components may now be ready for activation if they had been previously
     // skipped for activation due to an enhanced navigation being underway.
-    this.rootComponentsMayRequireRefresh();
+    // Only look for state after the page has finished loading.
+    this.rootComponentsMayRequireRefresh(true);
+  }
+
+  public setWebAssemblyOptions(webAssemblyOptions: WebAssemblyServerOptions | undefined): void {
+    this._webAssemblyOptions = webAssemblyOptions;
   }
 
   public registerComponent(descriptor: ComponentDescriptor) {
@@ -132,7 +139,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
 
     setWaitForRootComponents();
 
-    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted();
+    const loadWebAssemblyPromise = loadWebAssemblyPlatformIfNotStarted(this._webAssemblyOptions);
     const bootConfig = await waitForBootConfigLoaded();
 
     if (maxParallelDownloadsOverride !== undefined) {
@@ -182,7 +189,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     this.startLoadingWebAssemblyIfNotStarted();
 
     if (!hasStartedWebAssembly()) {
-      await startWebAssembly(this);
+      await startWebAssembly(this, this._webAssemblyOptions);
     }
   }
 
@@ -190,7 +197,7 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
   // should be reflected in an interactive component renderer.
   // Examples include component descriptors updating, document content changing,
   // or an interactive renderer attaching for the first time.
-  private rootComponentsMayRequireRefresh() {
+  private rootComponentsMayRequireRefresh(discoverNewState = false) {
     if (this._isComponentRefreshPending) {
       return;
     }
@@ -200,10 +207,10 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     // The following timeout allows us to liberally call this function without
     // taking the small performance hit from requent repeated calls to
     // refreshRootComponents.
-    setTimeout(() => {
+    queueMicrotask(() => {
       this._isComponentRefreshPending = false;
-      this.refreshRootComponents(this._rootComponentsBySsrComponentId.values());
-    }, 0);
+      this.refreshRootComponents(this._rootComponentsBySsrComponentId.values(), discoverNewState);
+    });
   }
 
   private circuitMayHaveNoRootComponents() {
@@ -261,10 +268,16 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
     return false;
   }
 
-  private refreshRootComponents(components: Iterable<RootComponentInfo>) {
+  private refreshRootComponents(components: Iterable<RootComponentInfo>, discoverNewState = false) {
     const operationsByRendererId = new Map<WebRendererId, RootComponentOperation[]>();
-
+    const rendererIds: Set<WebRendererId> = new Set<WebRendererId>();
     for (const component of components) {
+      if (discoverNewState && component.assignedRendererId !== undefined) {
+        // Capture the renderer IDs for the available components to determine the
+        // effective render modes in the document for discovering new persisted state.
+        rendererIds.add(component.assignedRendererId);
+      }
+
       const operation = this.determinePendingOperation(component);
       if (!operation) {
         continue;
@@ -284,6 +297,35 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       operations.push(operation);
     }
 
+    let serverState = '';
+    let webAssemblyState = '';
+    if (discoverNewState) {
+      for (const rendererId of rendererIds) {
+        if (rendererId === WebRendererId.Server) {
+          // We have server components. Try to discover the persisted state for them
+          // and if there are no updates on this batch, push an empty set of operations
+          // to ensure we send the state over. Same for wasm below.
+          serverState = discoverServerPersistedState(document) || '';
+          if (serverState && serverState !== '') {
+            const ops = operationsByRendererId.get(WebRendererId.Server);
+            if (!ops) {
+              operationsByRendererId.set(WebRendererId.Server, []);
+            }
+          }
+        } else if (rendererId === WebRendererId.WebAssembly) {
+          webAssemblyState = discoverWebAssemblyPersistedState(document) || '';
+          if (webAssemblyState && webAssemblyState !== '') {
+            const ops = operationsByRendererId.get(WebRendererId.WebAssembly);
+            if (!ops) {
+              operationsByRendererId.set(WebRendererId.WebAssembly, []);
+            }
+          }
+        } else {
+          throw new Error(`Unexpected renderer ID '${rendererId}' encountered while discovering new state.`);
+        }
+      }
+    }
+
     for (const [rendererId, operations] of operationsByRendererId) {
       const batch: RootComponentOperationBatch = {
         batchId: this._nextOperationBatchId++,
@@ -293,20 +335,20 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       const batchJson = JSON.stringify(batch);
 
       if (rendererId === WebRendererId.Server) {
-        updateServerRootComponents(batchJson);
+        updateServerRootComponents(batchJson, serverState);
       } else {
-        this.updateWebAssemblyRootComponents(batchJson);
+        this.updateWebAssemblyRootComponents(batchJson, webAssemblyState);
       }
     }
 
     this.circuitMayHaveNoRootComponents();
   }
 
-  private updateWebAssemblyRootComponents(operationsJson: string) {
+  private updateWebAssemblyRootComponents(operationsJson: string, webAssemblyState: string) {
     if (isFirstUpdate()) {
       resolveInitialUpdate(operationsJson);
     } else {
-      updateWebAssemblyRootComponents(operationsJson);
+      updateWebAssemblyRootComponents(operationsJson, webAssemblyState);
     }
   }
 
@@ -457,6 +499,18 @@ export class WebRootComponentManager implements DescriptorHandler, RootComponent
       }
     }
   }
+
+  public onComponentReload(browserRendererId: number): void {
+    for (const [_, value] of this._rootComponentsBySsrComponentId.entries()) {
+      if (value.assignedRendererId === browserRendererId) {
+        value.assignedRendererId = undefined;
+        markAsInteractiveRootComponentElement(value.descriptor.start as unknown as LogicalElement, false);
+        setClearContentOnRootComponentRerender(value.descriptor.start as unknown as LogicalElement);
+      }
+    }
+
+    this.rootComponentsMayRequireRefresh();
+  }
 }
 
 function isDescriptorInDocument(descriptor: ComponentDescriptor): boolean {
@@ -464,10 +518,6 @@ function isDescriptorInDocument(descriptor: ComponentDescriptor): boolean {
 }
 
 function areWebAssemblyResourcesLikelyCached(config: MonoConfig): boolean {
-  if (!config.cacheBootResources) {
-    return false;
-  }
-
   const hash = getWebAssemblyResourceHash(config);
   if (!hash) {
     return false;

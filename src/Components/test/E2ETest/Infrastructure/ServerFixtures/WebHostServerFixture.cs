@@ -36,9 +36,15 @@ public abstract class WebHostServerFixture : ServerFixture, IAsyncDisposable, IA
 
     private async ValueTask DisposeCore()
     {
-        // This can be null if creating the webhost throws, we don't want to throw here and hide
-        // the original exception.
-        Host?.Dispose();
-        await Host?.StopAsync();
+        try
+        {
+            await Host?.StopAsync();
+            // This can be null if creating the webhost throws, we don't want to throw here and hide
+            // the original exception.
+            Host?.Dispose();
+        }
+        catch
+        {
+        }
     }
 }

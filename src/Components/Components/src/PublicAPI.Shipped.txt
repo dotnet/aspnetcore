@@ -72,10 +72,13 @@ Microsoft.AspNetCore.Components.ChangeEventArgs.Value.get -> object?
 Microsoft.AspNetCore.Components.ChangeEventArgs.Value.set -> void
 Microsoft.AspNetCore.Components.CompilerServices.RuntimeHelpers
 Microsoft.AspNetCore.Components.ComponentBase
+Microsoft.AspNetCore.Components.ComponentBase.Assets.get -> Microsoft.AspNetCore.Components.ResourceAssetCollection!
+Microsoft.AspNetCore.Components.ComponentBase.AssignedRenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 Microsoft.AspNetCore.Components.ComponentBase.ComponentBase() -> void
 Microsoft.AspNetCore.Components.ComponentBase.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ComponentBase.InvokeAsync(System.Action! workItem) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.ComponentBase.InvokeAsync(System.Func<System.Threading.Tasks.Task!>! workItem) -> System.Threading.Tasks.Task!
+Microsoft.AspNetCore.Components.ComponentBase.RendererInfo.get -> Microsoft.AspNetCore.Components.RendererInfo!
 Microsoft.AspNetCore.Components.ComponentBase.StateHasChanged() -> void
 Microsoft.AspNetCore.Components.Dispatcher
 Microsoft.AspNetCore.Components.Dispatcher.AssertAccess() -> void
@@ -150,6 +153,8 @@ Microsoft.AspNetCore.Components.EventHandlerAttribute.EnableStopPropagation.get 
 Microsoft.AspNetCore.Components.EventHandlerAttribute.EventArgsType.get -> System.Type!
 Microsoft.AspNetCore.Components.EventHandlerAttribute.EventHandlerAttribute(string! attributeName, System.Type! eventArgsType) -> void
 Microsoft.AspNetCore.Components.EventHandlerAttribute.EventHandlerAttribute(string! attributeName, System.Type! eventArgsType, bool enableStopPropagation, bool enablePreventDefault) -> void
+Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute
+Microsoft.AspNetCore.Components.ExcludeFromInteractiveRoutingAttribute.ExcludeFromInteractiveRoutingAttribute() -> void
 Microsoft.AspNetCore.Components.IComponent
 Microsoft.AspNetCore.Components.IComponent.Attach(Microsoft.AspNetCore.Components.RenderHandle renderHandle) -> void
 Microsoft.AspNetCore.Components.IComponent.SetParametersAsync(Microsoft.AspNetCore.Components.ParameterView parameters) -> System.Threading.Tasks.Task!
@@ -260,15 +265,22 @@ Microsoft.AspNetCore.Components.PersistentComponentState.TryTakeFromJson<TValue>
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.Dispose() -> void
 Microsoft.AspNetCore.Components.PersistingComponentStateSubscription.PersistingComponentStateSubscription() -> void
+Microsoft.AspNetCore.Components.RendererInfo
+Microsoft.AspNetCore.Components.RendererInfo.IsInteractive.get -> bool
+Microsoft.AspNetCore.Components.RendererInfo.Name.get -> string!
+Microsoft.AspNetCore.Components.RendererInfo.RendererInfo(string! rendererName, bool isInteractive) -> void
 Microsoft.AspNetCore.Components.RenderFragment
 Microsoft.AspNetCore.Components.RenderFragment<TValue>
 Microsoft.AspNetCore.Components.RenderHandle
+Microsoft.AspNetCore.Components.RenderHandle.Assets.get -> Microsoft.AspNetCore.Components.ResourceAssetCollection!
 Microsoft.AspNetCore.Components.RenderHandle.Dispatcher.get -> Microsoft.AspNetCore.Components.Dispatcher!
 Microsoft.AspNetCore.Components.RenderHandle.DispatchExceptionAsync(System.Exception! exception) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.RenderHandle.IsInitialized.get -> bool
 Microsoft.AspNetCore.Components.RenderHandle.IsRenderingOnMetadataUpdate.get -> bool
 Microsoft.AspNetCore.Components.RenderHandle.Render(Microsoft.AspNetCore.Components.RenderFragment! renderFragment) -> void
+Microsoft.AspNetCore.Components.RenderHandle.RendererInfo.get -> Microsoft.AspNetCore.Components.RendererInfo!
 Microsoft.AspNetCore.Components.RenderHandle.RenderHandle() -> void
+Microsoft.AspNetCore.Components.RenderHandle.RenderMode.get -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 Microsoft.AspNetCore.Components.Rendering.ComponentState
 Microsoft.AspNetCore.Components.Rendering.ComponentState.Component.get -> Microsoft.AspNetCore.Components.IComponent!
 Microsoft.AspNetCore.Components.Rendering.ComponentState.ComponentId.get -> int
@@ -403,6 +415,18 @@ Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.NamedEvent = 10 -
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.None = 0 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Region = 5 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
 Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType.Text = 2 -> Microsoft.AspNetCore.Components.RenderTree.RenderTreeFrameType
+Microsoft.AspNetCore.Components.ResourceAsset
+Microsoft.AspNetCore.Components.ResourceAsset.Properties.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>?
+Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+Microsoft.AspNetCore.Components.ResourceAsset.Url.get -> string!
+Microsoft.AspNetCore.Components.ResourceAssetCollection
+Microsoft.AspNetCore.Components.ResourceAssetCollection.IsContentSpecificUrl(string! path) -> bool
+Microsoft.AspNetCore.Components.ResourceAssetCollection.ResourceAssetCollection(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAsset!>! resources) -> void
+Microsoft.AspNetCore.Components.ResourceAssetCollection.this[string! key].get -> string!
+Microsoft.AspNetCore.Components.ResourceAssetProperty
+Microsoft.AspNetCore.Components.ResourceAssetProperty.Name.get -> string!
+Microsoft.AspNetCore.Components.ResourceAssetProperty.ResourceAssetProperty(string! name, string! value) -> void
+Microsoft.AspNetCore.Components.ResourceAssetProperty.Value.get -> string!
 Microsoft.AspNetCore.Components.RouteAttribute
 Microsoft.AspNetCore.Components.RouteAttribute.RouteAttribute(string! template) -> void
 Microsoft.AspNetCore.Components.RouteAttribute.Template.get -> string!
@@ -685,6 +709,7 @@ static readonly Microsoft.AspNetCore.Components.EventCallback.Empty -> Microsoft
 static readonly Microsoft.AspNetCore.Components.EventCallback.Factory -> Microsoft.AspNetCore.Components.EventCallbackFactory!
 static readonly Microsoft.AspNetCore.Components.EventCallback<TValue>.Empty -> Microsoft.AspNetCore.Components.EventCallback<TValue>
 static readonly Microsoft.AspNetCore.Components.EventCallbackWorkItem.Empty -> Microsoft.AspNetCore.Components.EventCallbackWorkItem
+static readonly Microsoft.AspNetCore.Components.ResourceAssetCollection.Empty -> Microsoft.AspNetCore.Components.ResourceAssetCollection!
 virtual Microsoft.AspNetCore.Components.ComponentBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 virtual Microsoft.AspNetCore.Components.ComponentBase.OnAfterRender(bool firstRender) -> void
 virtual Microsoft.AspNetCore.Components.ComponentBase.OnAfterRenderAsync(bool firstRender) -> System.Threading.Tasks.Task!
@@ -703,11 +728,13 @@ virtual Microsoft.AspNetCore.Components.NavigationManager.SetNavigationLockState
 virtual Microsoft.AspNetCore.Components.OwningComponentBase.Dispose(bool disposing) -> void
 virtual Microsoft.AspNetCore.Components.Rendering.ComponentState.DisposeAsync() -> System.Threading.Tasks.ValueTask
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.AddPendingTask(Microsoft.AspNetCore.Components.Rendering.ComponentState? componentState, System.Threading.Tasks.Task! task) -> void
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Assets.get -> Microsoft.AspNetCore.Components.ResourceAssetCollection!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.CreateComponentState(int componentId, Microsoft.AspNetCore.Components.IComponent! component, Microsoft.AspNetCore.Components.Rendering.ComponentState? parentComponentState) -> Microsoft.AspNetCore.Components.Rendering.ComponentState!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.DispatchEventAsync(ulong eventHandlerId, Microsoft.AspNetCore.Components.RenderTree.EventFieldInfo? fieldInfo, System.EventArgs! eventArgs, bool waitForQuiescence) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.Dispose(bool disposing) -> void
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.GetComponentRenderMode(Microsoft.AspNetCore.Components.IComponent! component) -> Microsoft.AspNetCore.Components.IComponentRenderMode?
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ProcessPendingRender() -> void
+virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.RendererInfo.get -> Microsoft.AspNetCore.Components.RendererInfo!
 virtual Microsoft.AspNetCore.Components.RenderTree.Renderer.ResolveComponentForRenderMode(System.Type! componentType, int? parentComponentId, Microsoft.AspNetCore.Components.IComponentActivator! componentActivator, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> Microsoft.AspNetCore.Components.IComponent!
 virtual Microsoft.AspNetCore.Components.RouteView.Render(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void

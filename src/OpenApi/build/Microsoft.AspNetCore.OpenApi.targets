@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <PropertyGroup>
+    <InterceptorsNamespaces>$(InterceptorsNamespaces);Microsoft.AspNetCore.OpenApi.Generated</InterceptorsNamespaces>
+  </PropertyGroup>
+  <Target Name="GenerateAdditionalXmlFilesForOpenApi"
+    AfterTargets="ResolveReferences">
+    <ItemGroup>
+      <AdditionalFiles
+        Include="@(ReferencePath->'%(RootDir)%(Directory)%(Filename).xml')"
+        Condition="'%(ReferencePath.Extension)' == '.dll' AND
+        Exists('%(ReferencePath.RootDir)%(ReferencePath.Directory)%(ReferencePath.Filename).xml') AND
+        ('%(ReferencePath.ReferenceSourceTarget)' == 'ProjectReference')"
+         KeepMetadata="Identity" />
+    </ItemGroup>
+  </Target>
+</Project>

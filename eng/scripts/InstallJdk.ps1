@@ -22,8 +22,7 @@ $installDir = "$repoRoot\.tools\jdk\win-x64\"
 $javacExe = "$installDir\bin\javac.exe"
 $tempDir = "$repoRoot\obj"
 if (-not $JdkVersion) {
-    $globalJson = Get-Content "$repoRoot\global.json" | ConvertFrom-Json
-    $JdkVersion = $globalJson.'native-tools'.jdk
+    $JdkVersion = "11.0.24"
 }
 
 if (Test-Path $javacExe) {
@@ -46,7 +45,7 @@ Expand-Archive "$tempDir/jdk.zip" -d "$tempDir/jdk/"
 Write-Host "Expanded JDK to $tempDir"
 Write-Host "Installing JDK to $installDir"
 # The name of the file directory within the zip is based on the version, but may contain a +N for build number.
-Move-Item "$(Get-ChildItem -Path "$tempDir/jdk" | Select-Object -First 1)/*" $installDir
+Move-Item "$(Get-ChildItem -Path "$tempDir/jdk" | Select-Object -First 1 -ExpandProperty FullName)/*" $installDir
 Write-Host "Done installing JDK to $installDir"
 
 if ($env:TF_BUILD) {

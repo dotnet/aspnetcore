@@ -5,6 +5,14 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// Tracks HTTP/2 settings for a peer (client or server).
+/// </summary>
+/// <remarks>
+/// There are expected to be exactly two instances, one for the client and one for the server.
+/// Both are owned by the <see cref="Http2Connection"/>.
+/// </remarks>
+/// <seealso href="https://datatracker.ietf.org/doc/html/rfc9113#name-defined-settings"/>
 internal sealed class Http2PeerSettings
 {
     // Note these are protocol defaults, not Kestrel defaults.

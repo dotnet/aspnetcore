@@ -191,9 +191,13 @@ internal abstract class MessageBody
         var maxRequestBodySize = _context.MaxRequestBodySize;
         if (_observedBytes > maxRequestBodySize)
         {
-            _context.DisableHttp1KeepAlive();
-            KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.GetValueOrDefault().ToString(CultureInfo.InvariantCulture));
+            OnObservedBytesExceedMaxRequestBodySize(maxRequestBodySize.Value);
         }
+    }
+
+    protected virtual void OnObservedBytesExceedMaxRequestBodySize(long maxRequestBodySize)
+    {
+        KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.ToString(CultureInfo.InvariantCulture));
     }
 
     protected ValueTask<ReadResult> StartTimingReadAsync(ValueTask<ReadResult> readAwaitable, CancellationToken cancellationToken)

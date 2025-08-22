@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.IO.Pipelines;
+using System.Net.ServerSentEvents;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -712,12 +713,33 @@ public static partial class Results
     /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult Problem(
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+        => TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
+
+    /// <summary>
+    /// Produces a <see cref="ProblemDetails"/> response.
+    /// </summary>
+    /// <param name="statusCode">The value for <see cref="ProblemDetails.Status" />.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />.</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static IResult Problem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
         => TypedResults.Problem(detail, instance, statusCode, title, type, extensions);
 
     /// <summary>
@@ -742,13 +764,41 @@ public static partial class Results
     /// <returns>The created <see cref="IResult"/> for the response.</returns>
     public static IResult ValidationProblem(
         IDictionary<string, string[]> errors,
+        string? detail,
+        string? instance,
+        int? statusCode,
+        string? title,
+        string? type,
+        IDictionary<string, object?>? extensions)
+    {
+        return ValidationProblem(errors, detail, instance, statusCode, title, type, (IEnumerable<KeyValuePair<string, object?>>?)extensions);
+    }
+
+    /// <summary>
+    /// Produces a <see cref="StatusCodes.Status400BadRequest"/> response
+    /// with a <see cref="HttpValidationProblemDetails"/> value.
+    /// </summary>
+    /// <param name="errors">One or more validation errors.</param>
+    /// <param name="detail">The value for <see cref="ProblemDetails.Detail" />.</param>
+    /// <param name="instance">The value for <see cref="ProblemDetails.Instance" />.</param>
+    /// <param name="statusCode">The status code.</param>
+    /// <param name="title">The value for <see cref="ProblemDetails.Title" />. Defaults to "One or more validation errors occurred."</param>
+    /// <param name="type">The value for <see cref="ProblemDetails.Type" />.</param>
+    /// <param name="extensions">The value for <see cref="ProblemDetails.Extensions" />.</param>
+    /// <returns>The created <see cref="IResult"/> for the response.</returns>
+#pragma warning disable RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+    public static IResult ValidationProblem(
+#pragma warning restore RS0027 // Public API with optional parameter(s) should have the most parameters amongst its public overloads
+        IEnumerable<KeyValuePair<string, string[]>> errors,
         string? detail = null,
         string? instance = null,
         int? statusCode = null,
         string? title = null,
         string? type = null,
-        IDictionary<string, object?>? extensions = null)
+        IEnumerable<KeyValuePair<string, object?>>? extensions = null)
     {
+        ArgumentNullException.ThrowIfNull(errors);
+
         // TypedResults.ValidationProblem() does not allow setting the statusCode so we do this manually here
         var problemDetails = new HttpValidationProblemDetails(errors)
         {
@@ -765,7 +815,7 @@ public static partial class Results
         return TypedResults.Problem(problemDetails);
     }
 
-    private static void CopyExtensions(IDictionary<string, object?>? extensions, HttpValidationProblemDetails problemDetails)
+    private static void CopyExtensions(IEnumerable<KeyValuePair<string, object?>>? extensions, HttpValidationProblemDetails problemDetails)
     {
         if (extensions is not null)
         {
@@ -928,6 +978,49 @@ public static partial class Results
     public static IResult AcceptedAtRoute<TValue>(string? routeName, RouteValueDictionary? routeValues, TValue? value = default)
 #pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
         => value is null ? TypedResults.AcceptedAtRoute(routeName, routeValues) : TypedResults.AcceptedAtRoute(value, routeName, routeValues);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{TValue}"/> response.
+    /// </summary>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <param name="eventType">The event type to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{TValue}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult ServerSentEvents(IAsyncEnumerable<string> values, string? eventType = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new ServerSentEventsResult<string>(values, eventType);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{T}"/> response.
+    /// </summary>
+    /// <typeparam name="T">The type of object that will be serialized to the response body.</typeparam>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <param name="eventType">The event type to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{T}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// Other types are serialized using the configured JSON serializer options.
+    /// </remarks>
+#pragma warning disable RS0026 // Do not add multiple public overloads with optional parameters
+    public static IResult ServerSentEvents<T>(IAsyncEnumerable<T> values, string? eventType = null)
+#pragma warning restore RS0026 // Do not add multiple public overloads with optional parameters
+        => new ServerSentEventsResult<T>(values, eventType);
+
+    /// <summary>
+    /// Produces a <see cref="ServerSentEventsResult{T}"/> response.
+    /// </summary>
+    /// <typeparam name="T">The type of object that will be serialized to the response body.</typeparam>
+    /// <param name="values">The values to be included in the HTTP response body.</param>
+    /// <returns>The created <see cref="ServerSentEventsResult{T}"/> for the response.</returns>
+    /// <remarks>
+    /// Strings serialized by this result type are serialized as raw strings without any additional formatting.
+    /// Other types are serialized using the configured JSON serializer options.
+    /// </remarks>
+    public static IResult ServerSentEvents<T>(IAsyncEnumerable<SseItem<T>> values)
+        => new ServerSentEventsResult<T>(values);
 
     /// <summary>
     /// Produces an empty result response, that when executed will do nothing.

@@ -3,7 +3,7 @@
   "name": "Blazor WebAssembly Standalone App",
   "description": "A project template for creating a Blazor app that runs on WebAssembly. This template can be used for web apps with rich dynamic user interfaces (UIs).",
   "symbols/Framework/description": "The target framework for the project.",
-  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",
   "symbols/auth/choices/None/description": "No authentication",
   "symbols/auth/choices/Individual/description": "Individual authentication",

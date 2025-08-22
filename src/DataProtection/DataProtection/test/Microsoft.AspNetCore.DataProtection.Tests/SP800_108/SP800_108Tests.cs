@@ -163,8 +163,7 @@ public unsafe class SP800_108Tests
         Buffer.BlockCopy(context, 0, contextSegment.Array, contextSegment.Offset, contextSegment.Count);
         var derivedSubkeySegment = new ArraySegment<byte>(new byte[numDerivedBytes + 10], 4, numDerivedBytes);
 
-        ManagedSP800_108_CTR_HMACSHA512.DeriveKeysWithContextHeader(kdk, labelSegment, contextHeader, contextSegment,
-            bytes => new HMACSHA512(bytes), derivedSubkeySegment);
+        ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(kdk, labelSegment, contextHeader, contextSegment, derivedSubkeySegment, validationSubkey: Span<byte>.Empty /* filling in derivedSubkeySegment only */);
         Assert.Equal(expectedDerivedSubkeyAsBase64, Convert.ToBase64String(derivedSubkeySegment.AsStandaloneArray()));
     }
 }

@@ -13,7 +13,7 @@ export DOTNET_MULTILEVEL_LOOKUP=0
 export PATH="$DOTNET_ROOT:$PATH"
 
 # Sets TFW for Visual Studio Code usage
-export TARGET=net9.0
+export TARGET=net10.0
 
 if [ ! -f "$DOTNET_ROOT/dotnet" ]; then
     echo ".NET Core has not yet been installed. Run `./restore.sh` to install tools."

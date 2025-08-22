@@ -49,7 +49,7 @@ public class UrlHelperExtensionsTest
         Assert.Null(actual.Fragment);
     }
 
-    public static TheoryData Page_WithNameAndRouteValues_WorksData
+    public static TheoryData<object> Page_WithNameAndRouteValues_WorksData
     {
         get => new TheoryData<object>
             {

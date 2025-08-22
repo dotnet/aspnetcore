@@ -39,10 +39,8 @@ internal class StaticAssetEndpointFactory(IServiceProvider serviceProvider)
         }
 
         var logger = serviceProvider.GetRequiredService<ILogger<StaticAssetsInvoker>>();
-        var fileInfo = serviceProvider.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider.GetFileInfo(resource.AssetFile) ??
-            throw new InvalidOperationException($"The file '{resource.AssetFile}' could not be found.");
-
-        var invoker = new StaticAssetsInvoker(resource, fileInfo, logger);
+        var fileProvider = serviceProvider.GetRequiredService<IWebHostEnvironment>().WebRootFileProvider;
+        var invoker = new StaticAssetsInvoker(resource, fileProvider, logger);
 
         routeEndpointBuilder.RequestDelegate = invoker.Invoke;
 

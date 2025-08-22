@@ -8,10 +8,9 @@
     $CommonFileElements$
     <file src="build\*" target="build" />
     <file src="buildMultiTargeting\*" target="buildMultiTargeting" />
-    <file src="$artifactsBinDir$\dotnet-getdocument\$configuration$\netcoreapp2.1\publish\*.*" target="tools" />
+    <file src="$artifactsBinDir$\dotnet-getdocument\$configuration$\net10.0\publish\*.*" target="tools" />
     <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net462\*.*" target="tools\net462" />
     <file src="$artifactsBinDir$\GetDocument.Insider\x86\$configuration$\net462\*.*" target="tools\net462-x86" />
-    <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\netcoreapp2.1\publish\*.*" target="tools\netcoreapp2.1" />
-    <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net9.0\publish\*.*" target="tools\net9.0" />
+    <file src="$artifactsBinDir$\GetDocument.Insider\$configuration$\net10.0\publish\*.*" target="tools\net10.0" />
   </files>
 </package>

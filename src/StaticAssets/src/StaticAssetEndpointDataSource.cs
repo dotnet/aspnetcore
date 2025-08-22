@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.StaticAssets;
 internal class StaticAssetsEndpointDataSource : EndpointDataSource
 {
     private readonly object _lock = new();
-    private readonly StaticAssetsManifest _manifest;
+    private readonly List<StaticAssetDescriptor> _descriptors;
     private readonly StaticAssetEndpointFactory _endpointFactory;
     private readonly List<Action<EndpointBuilder>> _conventions = [];
     private readonly List<Action<EndpointBuilder>> _finallyConventions = [];
@@ -24,17 +24,28 @@ internal class StaticAssetsEndpointDataSource : EndpointDataSource
     private CancellationTokenSource _cancellationTokenSource;
     private CancellationChangeToken _changeToken;
 
-    internal StaticAssetsEndpointDataSource(IServiceProvider serviceProvider, StaticAssetsManifest manifest, StaticAssetEndpointFactory endpointFactory, string manifestName, List<StaticAssetDescriptor> descriptors)
+    internal StaticAssetsEndpointDataSource(
+        IServiceProvider serviceProvider,
+        StaticAssetEndpointFactory endpointFactory,
+        string manifestName,
+        bool isBuildManifest,
+        List<StaticAssetDescriptor> descriptors)
     {
         ServiceProvider = serviceProvider;
-        _manifest = manifest;
+        _descriptors = descriptors;
         ManifestPath = manifestName;
         _endpointFactory = endpointFactory;
         _cancellationTokenSource = new CancellationTokenSource();
         _changeToken = new CancellationChangeToken(_cancellationTokenSource.Token);
 
+        if (isBuildManifest)
+        {
+            _conventions.Add(c => c.Metadata.Add(new BuildAssetMetadata()));
+        }
+
         DefaultBuilder = new StaticAssetsEndpointConventionBuilder(
             _lock,
+            isBuildManifest,
             descriptors,
             _conventions,
             _finallyConventions);
@@ -44,6 +55,8 @@ internal class StaticAssetsEndpointDataSource : EndpointDataSource
     /// Gets the manifest name associated with this static asset endpoint data source.
     /// </summary>
     public string ManifestPath { get; }
+
+    internal IReadOnlyList<StaticAssetDescriptor> Descriptors => _descriptors;
 
     /// <inheritdoc />
     internal StaticAssetsEndpointConventionBuilder DefaultBuilder { get; set; }
@@ -89,9 +102,11 @@ internal class StaticAssetsEndpointDataSource : EndpointDataSource
         {
             var endpoints = new List<Endpoint>();
 
-            foreach (var resource in _manifest.Endpoints)
+            foreach (var asset in _descriptors)
             {
-                endpoints.Add(_endpointFactory.Create(resource, _conventions, _finallyConventions));
+                // At this point the descriptor becomes immutable.
+                asset.Freeze();
+                endpoints.Add(_endpointFactory.Create(asset, _conventions, _finallyConventions));
             }
 
             var oldCancellationTokenSource = _cancellationTokenSource;

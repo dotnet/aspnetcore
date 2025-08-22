@@ -85,12 +85,11 @@ public class ComponentEndpointRouteBuilderExtensionsTest
         Assert.True(called);
         // Final conventions are applied to each of the builders
         // in the Blazor component hub
-        Assert.Equal(5, buildersAffected.Count);
+        Assert.Equal(4, buildersAffected.Count);
         Assert.Contains("/_blazor/negotiate", buildersAffected);
         Assert.Contains("/_blazor", buildersAffected);
         Assert.Contains("Blazor disconnect", buildersAffected);
         Assert.Contains("Blazor initializers", buildersAffected);
-        Assert.Contains("Blazor static files", buildersAffected);
     }
 
     [Fact]

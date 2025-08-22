@@ -1,6 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AuthenticationStateDeserializationOptions
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AuthenticationStateDeserializationOptions.AuthenticationStateDeserializationOptions() -> void
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AuthenticationStateDeserializationOptions.DeserializationCallback.get -> System.Func<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData?, System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!>!
-Microsoft.AspNetCore.Components.WebAssembly.Authentication.AuthenticationStateDeserializationOptions.DeserializationCallback.set -> void
-static Microsoft.Extensions.DependencyInjection.WebAssemblyAuthenticationServiceCollectionExtensions.AddAuthenticationStateDeserialization(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.WebAssembly.Authentication.AuthenticationStateDeserializationOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!

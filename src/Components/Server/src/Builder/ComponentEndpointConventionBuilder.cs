@@ -11,18 +11,15 @@ public sealed class ComponentEndpointConventionBuilder : IHubEndpointConventionB
     private readonly IEndpointConventionBuilder _hubEndpoint;
     private readonly IEndpointConventionBuilder _disconnectEndpoint;
     private readonly IEndpointConventionBuilder _jsInitializersEndpoint;
-    private readonly IEndpointConventionBuilder _blazorEndpoint;
 
     internal ComponentEndpointConventionBuilder(
         IEndpointConventionBuilder hubEndpoint,
         IEndpointConventionBuilder disconnectEndpoint,
-        IEndpointConventionBuilder jsInitializersEndpoint,
-        IEndpointConventionBuilder blazorEndpoint)
+        IEndpointConventionBuilder jsInitializersEndpoint)
     {
         _hubEndpoint = hubEndpoint;
         _disconnectEndpoint = disconnectEndpoint;
         _jsInitializersEndpoint = jsInitializersEndpoint;
-        _blazorEndpoint = blazorEndpoint;
     }
 
     /// <summary>
@@ -34,7 +31,6 @@ public sealed class ComponentEndpointConventionBuilder : IHubEndpointConventionB
         _hubEndpoint.Add(convention);
         _disconnectEndpoint.Add(convention);
         _jsInitializersEndpoint.Add(convention);
-        _blazorEndpoint.Add(convention);
     }
 
     /// <inheritdoc/>
@@ -43,6 +39,5 @@ public sealed class ComponentEndpointConventionBuilder : IHubEndpointConventionB
         _hubEndpoint.Finally(finalConvention);
         _disconnectEndpoint.Finally(finalConvention);
         _jsInitializersEndpoint.Finally(finalConvention);
-        _blazorEndpoint.Finally(finalConvention);
     }
 }

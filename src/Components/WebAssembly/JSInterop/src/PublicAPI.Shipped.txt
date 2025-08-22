@@ -1,15 +1,7 @@
 #nullable enable
-~Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string identifier, T0 arg0, T1 arg1, T2 arg2) -> TResult
-~Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, T1, TResult>(string identifier, T0 arg0, T1 arg1) -> TResult
-~Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, TResult>(string identifier, T0 arg0) -> TResult
-~Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<TResult>(string identifier) -> TResult
 ~override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.BeginInvokeJS(long asyncHandle, string identifier, string argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> void
 ~override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeJS(string identifier, string argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> string
 Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime
-Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, T1, T2, TResult>(string! identifier, T0 arg0, T1 arg1, T2 arg2) -> TResult
-Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, T1, TResult>(string! identifier, T0 arg0, T1 arg1) -> TResult
-Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<T0, TResult>(string! identifier, T0 arg0) -> TResult
-Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.InvokeUnmarshalled<TResult>(string! identifier) -> TResult
 Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.WebAssemblyJSRuntime() -> void
 override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.BeginInvokeJS(long asyncHandle, string! identifier, string? argsJson, Microsoft.JSInterop.JSCallResultType resultType, long targetInstanceId) -> void
 override Microsoft.JSInterop.WebAssembly.WebAssemblyJSRuntime.EndInvokeDotNet(Microsoft.JSInterop.Infrastructure.DotNetInvocationInfo callInfo, in Microsoft.JSInterop.Infrastructure.DotNetInvocationResult dispatchResult) -> void

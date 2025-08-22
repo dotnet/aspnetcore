@@ -4,7 +4,9 @@
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -221,6 +223,8 @@ public class UrlResolutionTagHelper : TagHelper
             return false;
         }
 
+        trimmedUrl = GetVersionedResourceUrl(trimmedUrl);
+
         var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
         resolvedUrl = urlHelper.Content(trimmedUrl);
 
@@ -243,6 +247,8 @@ public class UrlResolutionTagHelper : TagHelper
         {
             return false;
         }
+
+        trimmedUrl = GetVersionedResourceUrl(trimmedUrl);
 
         var urlHelper = UrlHelperFactory.GetUrlHelper(ViewContext);
         var appRelativeUrl = urlHelper.Content(trimmedUrl);
@@ -297,6 +303,41 @@ public class UrlResolutionTagHelper : TagHelper
         // Substring returns same string if start == 0 && len == Length
         trimmed = input.Substring(start, remainingLength);
         return true;
+    }
+
+    private string GetVersionedResourceUrl(string value)
+    {
+        var assetCollection = GetAssetCollection();
+        if (assetCollection != null)
+        {
+            var (key, remainder) = ExtractKeyAndRest(value);
+
+            var src = assetCollection[key];
+            if (!string.Equals(src, key, StringComparison.Ordinal))
+            {
+                return $"~/{src}{value[remainder..]}";
+            }
+        }
+
+        return value;
+
+        static (string key, int rest) ExtractKeyAndRest(string value)
+        {
+            var lastNonWhitespaceChar = value.AsSpan().TrimEnd().LastIndexOfAnyExcept(ValidAttributeWhitespaceChars);
+            var keyEnd = lastNonWhitespaceChar > -1 ? lastNonWhitespaceChar + 1 : value.Length;
+            var key = value.AsSpan();
+            if (key.StartsWith("~/", StringComparison.Ordinal))
+            {
+                key = value.AsSpan()[2..keyEnd].Trim();
+            }
+
+            return (key.ToString(), keyEnd);
+        }
+    }
+
+    private ResourceAssetCollection? GetAssetCollection()
+    {
+        return ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ResourceAssetCollection>();
     }
 
     private sealed class EncodeFirstSegmentContent : IHtmlContent

@@ -16,23 +16,18 @@ namespace Company.WebApplication1.Pages;
 #if (GenerateApiOrGraph)
 [AuthorizeForScopes(ScopeKeySection = "DownstreamApi:Scopes")]
 #endif
-public class IndexModel : PageModel
-{
-    private readonly ILogger<IndexModel> _logger;
-
 #if (GenerateApi)
-    private readonly IDownstreamApi _downstreamApi;
-
-    public IndexModel(ILogger<IndexModel> logger,
-                        IDownstreamApi downstreamApi)
-    {
-            _logger = logger;
-        _downstreamApi = downstreamApi;
-    }
-
+public class IndexModel(IDownstreamApi downstreamApi) : PageModel
+#elseif (GenerateGraph)
+public class IndexModel(GraphServiceClient graphServiceClient) : PageModel
+#else
+public class IndexModel : PageModel
+#endif
+{
+#if (GenerateApi)
     public async Task OnGet()
     {
-        using var response = await _downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
+        using var response = await downstreamApi.CallApiForUserAsync("DownstreamApi").ConfigureAwait(false);
         if (response.StatusCode == System.Net.HttpStatusCode.OK)
         {
             var apiResult = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -45,27 +40,13 @@ public class IndexModel : PageModel
         }
     }
 #elseif (GenerateGraph)
-    private readonly GraphServiceClient _graphServiceClient;
-
-    public IndexModel(ILogger<IndexModel> logger,
-                        GraphServiceClient graphServiceClient)
-    {
-        _logger = logger;
-        _graphServiceClient = graphServiceClient;
-    }
-
     public async Task OnGet()
     {
-        var user = await _graphServiceClient.Me.GetAsync();
+        var user = await graphServiceClient.Me.GetAsync();
 
         ViewData["ApiResult"] = user?.DisplayName;
     }
 #else
-    public IndexModel(ILogger<IndexModel> logger)
-    {
-        _logger = logger;
-    }
-
     public void OnGet()
     {
 

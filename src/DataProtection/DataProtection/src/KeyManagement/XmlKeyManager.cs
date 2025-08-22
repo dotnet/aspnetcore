@@ -164,19 +164,38 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
     public IReadOnlyCollection<IKey> GetAllKeys()
     {
         var allElements = KeyRepository.GetAllElements();
+        var processed = ProcessAllElements(allElements, out _);
+        return processed.OfType<IKey>().ToList().AsReadOnly();
+    }
 
-        // We aggregate all the information we read into three buckets
-        Dictionary<Guid, Key> keyIdToKeyMap = new Dictionary<Guid, Key>();
+    /// <summary>
+    /// Returns an array paralleling <paramref name="allElements"/> but:
+    ///  1. Key elements become IKeys (with revocation data)
+    ///  2. KeyId-based revocations become Guids
+    ///  3. Date-based revocations become DateTimeOffsets
+    ///  4. Unknown elements become null
+    /// </summary>
+    private object?[] ProcessAllElements(IReadOnlyCollection<XElement> allElements, out DateTimeOffset? mostRecentMassRevocationDate)
+    {
+        var elementCount = allElements.Count;
+
+        var results = new object?[elementCount];
+
+        Dictionary<Guid, Key> keyIdToKeyMap = [];
         HashSet<Guid>? revokedKeyIds = null;
-        DateTimeOffset? mostRecentMassRevocationDate = null;
 
+        mostRecentMassRevocationDate = null;
+
+        var pos = 0;
         foreach (var element in allElements)
         {
+            object? result;
             if (element.Name == KeyElementName)
             {
                 // ProcessKeyElement can return null in the case of failure, and if this happens we'll move on.
                 // Still need to throw if we see duplicate keys with the same id.
                 var key = ProcessKeyElement(element);
+                result = key;
                 if (key != null)
                 {
                     if (keyIdToKeyMap.ContainsKey(key.KeyId))
@@ -189,19 +208,20 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             else if (element.Name == RevocationElementName)
             {
                 var revocationInfo = ProcessRevocationElement(element);
-                if (revocationInfo is Guid)
+                result = revocationInfo;
+                if (revocationInfo is Guid revocationGuid)
                 {
                     // a single key was revoked
-                    if (revokedKeyIds == null)
+                    revokedKeyIds ??= [];
+                    if (!revokedKeyIds.Add(revocationGuid))
                     {
-                        revokedKeyIds = new HashSet<Guid>();
+                        _logger.KeyRevokedMultipleTimes(revocationGuid);
                     }
-                    revokedKeyIds.Add((Guid)revocationInfo);
                 }
                 else
                 {
                     // all keys as of a certain date were revoked
-                    DateTimeOffset thisMassRevocationDate = (DateTimeOffset)revocationInfo;
+                    var thisMassRevocationDate = (DateTimeOffset)revocationInfo;
                     if (!mostRecentMassRevocationDate.HasValue || mostRecentMassRevocationDate < thisMassRevocationDate)
                     {
                         mostRecentMassRevocationDate = thisMassRevocationDate;
@@ -212,16 +232,18 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             {
                 // Skip unknown elements.
                 _logger.UnknownElementWithNameFoundInKeyringSkipping(element.Name);
+                result = null;
             }
+
+            results[pos++] = result;
         }
 
         // Apply individual revocations
-        if (revokedKeyIds != null)
+        if (revokedKeyIds is not null)
         {
-            foreach (Guid revokedKeyId in revokedKeyIds)
+            foreach (var revokedKeyId in revokedKeyIds)
             {
-                keyIdToKeyMap.TryGetValue(revokedKeyId, out var key);
-                if (key != null)
+                if (keyIdToKeyMap.TryGetValue(revokedKeyId, out var key))
                 {
                     key.SetRevoked();
                     _logger.MarkedKeyAsRevokedInTheKeyring(revokedKeyId);
@@ -252,7 +274,7 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
         }
 
         // And we're finished!
-        return keyIdToKeyMap.Values.ToList().AsReadOnly();
+        return results;
     }
 
     /// <inheritdoc/>
@@ -383,6 +405,76 @@ public sealed class XmlKeyManager : IKeyManager, IInternalXmlKeyManager
             keyId: keyId,
             revocationDate: GetUtcNow(),
             reason: reason);
+    }
+
+    /// <inheritdoc/>
+    public bool CanDeleteKeys => KeyRepository is IDeletableXmlRepository;
+
+    /// <inheritdoc/>
+    public bool DeleteKeys(Func<IKey, bool> shouldDelete)
+    {
+        if (KeyRepository is not IDeletableXmlRepository xmlRepositoryWithDeletion)
+        {
+            throw Error.XmlKeyManager_DoesNotSupportKeyDeletion();
+        }
+
+        return xmlRepositoryWithDeletion.DeleteElements((deletableElements) =>
+        {
+            // It is important to delete key elements before the corresponding revocation elements,
+            // in case the deletion fails part way - we don't want to accidentally unrevoke a key
+            // and then not delete it.
+            // Start at a non-zero value just to make it a little clearer in the debugger that it
+            // was set explicitly.
+            const int deletionOrderKey = 1;
+            const int deletionOrderRevocation = 2;
+            const int deletionOrderMassRevocation = 3;
+
+            var deletableElementsArray = deletableElements.ToArray();
+
+            var allElements = deletableElements.Select(d => d.Element).ToArray();
+            var processed = ProcessAllElements(allElements, out var mostRecentMassRevocationDate);
+
+            var allKeyIds = new HashSet<Guid>();
+            var deletedKeyIds = new HashSet<Guid>();
+
+            for (var i = 0; i < deletableElementsArray.Length; i++)
+            {
+                var obj = processed[i];
+                if (obj is IKey key)
+                {
+                    var keyId = key.KeyId;
+                    allKeyIds.Add(keyId);
+
+                    if (shouldDelete(key))
+                    {
+                        _logger.DeletingKey(keyId);
+                        deletedKeyIds.Add(keyId);
+                        deletableElementsArray[i].DeletionOrder = deletionOrderKey;
+                    }
+                }
+                else if (obj is DateTimeOffset massRevocationDate)
+                {
+                    if (massRevocationDate < mostRecentMassRevocationDate)
+                    {
+                        // Delete superceded mass revocation elements
+                        deletableElementsArray[i].DeletionOrder = deletionOrderMassRevocation;
+                    }
+                }
+            }
+
+            // Separate loop since deletedKeyIds and allKeyIds need to have been populated.
+            for (var i = 0; i < deletableElementsArray.Length; i++)
+            {
+                if (processed[i] is Guid revocationId)
+                {
+                    // Delete individual revocations of keys that don't (still) exist
+                    if (deletedKeyIds.Contains(revocationId) || !allKeyIds.Contains(revocationId))
+                    {
+                        deletableElementsArray[i].DeletionOrder = deletionOrderRevocation;
+                    }
+                }
+            }
+        });
     }
 
     private void TriggerAndResetCacheExpirationToken([CallerMemberName] string? opName = null, bool suppressLogging = false)

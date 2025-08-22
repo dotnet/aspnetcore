@@ -104,6 +104,8 @@ is changing to `Microsoft.AspNetCore.BetterThanOrange`, you would need to make t
 
 `darc` is a command-line tool that is used for dependency management in the dotnet ecosystem of repos. `darc` can be installed using the `darc-init` scripts located inside the `eng/common` directory. Once `darc` is installed, you'll need to set up the appropriate access tokens as outlined [in the official Darc docs](https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md#setting-up-your-darc-client).
 
+> :warning: Much of the functionality described below can now be done via the [web UI](https://maestro.dot.net/) - it's recommended to try that out first.
+
 Once `darc` is installed and set-up, it can be used to modify the subscriptions and dependencies in a project.
 
 ### Getting the list of subscriptions in a repo

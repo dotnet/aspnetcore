@@ -5,24 +5,36 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Reflection;
 using System.Text;
 using FormatterWebSite.Controllers;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public abstract class JsonInputFormatterTestBase<TStartup> : IClassFixture<MvcTestFixture<TStartup>> where TStartup : class
+public abstract class JsonInputFormatterTestBase<TStartup> : LoggedTest where TStartup : class
 {
-    protected JsonInputFormatterTestBase(MvcTestFixture<TStartup> fixture)
-    {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-        Client = factory.CreateDefaultClient();
-    }
-
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<TStartup>();
 
-    public HttpClient Client { get; }
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
+    {
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<TStartup>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+    }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<TStartup> Factory { get; private set; }
+    public HttpClient Client { get; private set; }
 
     [Theory]
     [InlineData("application/json")]

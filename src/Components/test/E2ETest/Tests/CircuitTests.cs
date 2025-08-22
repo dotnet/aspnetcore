@@ -43,8 +43,7 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
         var targetButton = Browser.Exists(By.Id(id));
         targetButton.Click();
 
-        // Triggering an error will show the exception UI
-        Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
+        DismissBlazorErrorUI();
 
         // Clicking the button again will trigger a server disconnect
         targetButton.Click();
@@ -65,7 +64,8 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
         targetButton.Click();
         // Clicking it again hides the component and invokes the rethrow which triggers the exception
         targetButton.Click();
-        Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
+
+        DismissBlazorErrorUI();
 
         // Clicking it again causes the circuit to disconnect
         targetButton.Click();
@@ -92,5 +92,18 @@ public class CircuitTests : ServerTestBase<BasicTestAppServerSiteFixture<ServerS
         {
             Assert.Contains(log, entry => entry.Message.Contains(message));
         }
+    }
+
+    void DismissBlazorErrorUI()
+    {
+        // Triggering an error will show the exception UI
+        Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: block;']"));
+
+        // Dismiss the error UI by clicking the dismiss button
+        var dismissButton = Browser.Exists(By.CssSelector("#blazor-error-ui .dismiss"));
+        dismissButton.Click();
+
+        // Wait for error UI to be hidden
+        Browser.Exists(By.CssSelector("#blazor-error-ui[style='display: none;']"));
     }
 }

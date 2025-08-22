@@ -14,4 +14,10 @@
     <ProjectReference Include="..\src\dotnet-user-jwts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <Reference Include="Microsoft.AspNetCore.TestHost" />
+  </ItemGroup>
+
 </Project>

@@ -260,6 +260,8 @@ Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.HandleEndpoint(ul
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.Load() -> void
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.LocalhostEndpoint(int port) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.LocalhostEndpoint(int port, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
+Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.NamedPipeEndpoint(string! pipeName) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
+Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.NamedPipeEndpoint(string! pipeName, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.Options.get -> Microsoft.AspNetCore.Server.Kestrel.Core.KestrelServerOptions!
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.UnixSocketEndpoint(string! socketPath) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!
 Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader.UnixSocketEndpoint(string! socketPath, System.Action<Microsoft.AspNetCore.Server.Kestrel.Core.ListenOptions!>! configure) -> Microsoft.AspNetCore.Server.Kestrel.KestrelConfigurationLoader!

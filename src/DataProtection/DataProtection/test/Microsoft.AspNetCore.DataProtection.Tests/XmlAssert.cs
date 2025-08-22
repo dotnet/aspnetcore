@@ -33,7 +33,7 @@ public static class XmlAssert
 
         if (!Core.AreEqual(expected, actual))
         {
-            Assert.True(false,
+            Assert.Fail(
                    "Expected element:" + Environment.NewLine
                    + expected.ToString() + Environment.NewLine
                    + "Actual element:" + Environment.NewLine

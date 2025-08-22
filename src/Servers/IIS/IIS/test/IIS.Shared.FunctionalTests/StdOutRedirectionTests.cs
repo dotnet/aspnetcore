@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class StdOutRedirectionTests : IISFunctionalTestBase
 {
     public StdOutRedirectionTests(PublishedSitesFixture fixture) : base(fixture)
@@ -47,9 +46,9 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             "To install missing framework, download:", Logger);
     }
 
@@ -73,9 +72,9 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
 
         var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, LogFolderPath), Logger);
         var missingFrameworkString = "To install missing framework, download:";
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             @"Framework: 'Microsoft.NETCore.App', version '2.9.9' \(x64\)", Logger);
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult,
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult,
             missingFrameworkString, Logger);
         Assert.Contains(@"Framework: 'Microsoft.NETCore.App', version '2.9.9' (x64)", contents);
         Assert.Contains(missingFrameworkString, contents);
@@ -103,7 +102,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
 
         var fileInDirectory = Directory.GetFiles(LogFolderPath).Single();
         var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, "Invoked hostfxr", Logger);
         Assert.Contains("Invoked hostfxr", contents);
     }
 
@@ -128,7 +127,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
 
         StopServer();
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, "Invoked hostfxr", Logger);
     }
 
     [ConditionalTheory]
@@ -157,7 +156,7 @@ public class StdOutRedirectionTests : IISFunctionalTestBase
         var fileInDirectory = Directory.GetFiles(LogFolderPath).First();
         var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
 
-        EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
+        await EventLogHelpers.VerifyEventLogEventAsync(deploymentResult, "Invoked hostfxr", Logger);
         Assert.Contains("Invoked hostfxr", contents);
     }
 }

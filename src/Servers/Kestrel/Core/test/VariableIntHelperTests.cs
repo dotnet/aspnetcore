@@ -14,7 +14,8 @@ public class VariableIntHelperTests
     [MemberData(nameof(IntegerData))]
     public void CheckDecoding(long expected, byte[] input)
     {
-        var decoded = VariableLengthIntegerHelper.GetInteger(new ReadOnlySequence<byte>(input), out _, out _);
+        var result = VariableLengthIntegerHelper.TryGetInteger(new ReadOnlySequence<byte>(input), out _, out var decoded);
+        Assert.True(result);
         Assert.Equal(expected, decoded);
     }
 

@@ -94,6 +94,75 @@ public class Http2WebSocketInteropTests : LoggedTest
         await wsClient.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closed", default);
     }
 
+    [Fact]
+    public async Task PingTimeoutCancelsReceiveAsync()
+    {
+        var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var hostBuilder = new HostBuilder()
+            .ConfigureWebHost(webHostBuilder =>
+            {
+                ConfigureKestrel(webHostBuilder, "https", HttpProtocols.Http2);
+                webHostBuilder.ConfigureServices(AddTestLogging)
+                .Configure(app =>
+                {
+                    app.UseWebSockets(new WebSocketOptions()
+                    {
+                        KeepAliveInterval = TimeSpan.FromMilliseconds(1),
+                        KeepAliveTimeout = TimeSpan.FromMilliseconds(1),
+                    });
+                    app.Run(async context =>
+                    {
+                        Assert.True(context.WebSockets.IsWebSocketRequest);
+                        var ws = await context.WebSockets.AcceptWebSocketAsync();
+                        var bytes = new byte[1024];
+
+                        try
+                        {
+                            var result = await ws.ReceiveAsync(bytes, default);
+                        }
+                        catch (Exception ex)
+                        {
+                            tcs.SetException(ex);
+                        }
+                        finally
+                        {
+                            tcs.TrySetResult();
+                        }
+                    });
+                });
+            });
+        using var host = await hostBuilder.StartAsync().DefaultTimeout();
+
+        var url = host.MakeUrl("wss");
+
+        var handler = new HttpClientHandler();
+        handler.ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator;
+        var pauseSendHandler = new PauseSendHandler(handler);
+        using var client = new HttpClient(pauseSendHandler);
+
+        var wsClient = new ClientWebSocket();
+        wsClient.Options.HttpVersion = Version.Parse("2.0");
+        wsClient.Options.HttpVersionPolicy = HttpVersionPolicy.RequestVersionExact;
+        wsClient.Options.CollectHttpResponseDetails = true;
+        await wsClient.ConnectAsync(new Uri(url), client, default);
+        Assert.Equal(HttpStatusCode.OK, wsClient.HttpStatusCode);
+
+        // Prevent Pong replies so we can test the server timing out
+        // It's fine if some Pongs were already sent before this is set
+        pauseSendHandler.PauseSend = true;
+
+        var ex = await Assert.ThrowsAnyAsync<Exception>(() => tcs.Task);
+        Assert.True(ex is WebSocketException || ex is TaskCanceledException, ex.GetType().FullName);
+
+        // Unblock Send
+        pauseSendHandler.PauseSend = false;
+
+        // Call any websocket method that tries networking so we have something to await to check that the client connection closed.
+        await Assert.ThrowsAnyAsync<Exception>(() => wsClient.ReceiveAsync(new byte[1], default));
+
+        Assert.Equal(WebSocketState.Aborted, wsClient.State);
+    }
+
     private static HttpClient CreateClient()
     {
         var handler = new HttpClientHandler();
@@ -115,5 +184,23 @@ public class Http2WebSocketInteropTests : LoggedTest
                 }
             });
         });
+    }
+
+    public sealed class PauseSendHandler : DelegatingHandler
+    {
+        public bool PauseSend { get; set; }
+
+        public PauseSendHandler(HttpClientHandler handler) : base(handler)
+        {
+        }
+
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            while (PauseSend)
+            {
+                await Task.Delay(1);
+            }
+            return await base.SendAsync(request, cancellationToken);
+        }
     }
 }

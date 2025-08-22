@@ -40,7 +40,7 @@ public class XmlCommentsDocumentFilterTests
 
         Subject().Apply(document, filterContext);
 
-        Assert.Equal(1, document.Tags.Count);
+        Assert.Single(document.Tags);
         Assert.Equal(expectedDescription, document.Tags[0].Description);
 
         static ApiDescription CreateApiDescription(Type serviceType)

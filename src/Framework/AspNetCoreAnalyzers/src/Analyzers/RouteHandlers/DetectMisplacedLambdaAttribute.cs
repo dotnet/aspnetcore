@@ -70,7 +70,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
         static IMethodSymbol? GetReturnedInvocation(IBlockOperation blockOperation)
         {
-            foreach (var op in blockOperation.ChildOperations.Reverse())
+            foreach (var op in Enumerable.Reverse(blockOperation.ChildOperations))
             {
                 if (op is IReturnOperation returnStatement)
                 {

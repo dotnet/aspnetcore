@@ -72,19 +72,19 @@ public class FormFeature : IFormFeature
     {
         get
         {
-			MediaTypeHeaderValue? mt = null;
+            MediaTypeHeaderValue? mt = null;
 
-			if (_request is not null)
-			{
-				_ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
-			}
+            if (_request is not null)
+            {
+                _ = MediaTypeHeaderValue.TryParse(_request.ContentType, out mt);
+            }
 
-			if (_form is not null && mt is null)
-			{
-				mt = _formContentType;
-			}
+            if (_form is not null && mt is null)
+            {
+                mt = _formContentType;
+            }
 
-			return mt;
+            return mt;
         }
     }
 
@@ -127,9 +127,9 @@ public class FormFeature : IFormFeature
             {
                 _formContentType = null;
             }
-			else
+            else
             {
-				_formContentType ??= new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+                _formContentType ??= new MediaTypeHeaderValue("application/x-www-form-urlencoded");
             }
         }
     }

@@ -3,10 +3,13 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
@@ -15,23 +18,22 @@ namespace Microsoft.AspNetCore.StaticAssets;
 internal class StaticAssetsInvoker
 {
     private readonly StaticAssetDescriptor _resource;
-
+    private readonly IFileProvider _fileProvider;
     private readonly ILogger _logger;
     private readonly string? _contentType;
-
-    private readonly IFileInfo _fileInfo;
 
     private readonly EntityTagHeaderValue _etag;
     private readonly long _length;
     private readonly DateTimeOffset _lastModified;
-    private readonly List<ResponseHeader> _remainingHeaders;
+    private readonly List<StaticAssetResponseHeader> _remainingHeaders;
 
-    public StaticAssetsInvoker(StaticAssetDescriptor resource, IFileInfo fileInfo, ILogger<StaticAssetsInvoker> logger)
+    private IFileInfo? _fileInfo;
+
+    public StaticAssetsInvoker(StaticAssetDescriptor resource, IFileProvider fileProvider, ILogger<StaticAssetsInvoker> logger)
     {
         _resource = resource;
-        _fileInfo = fileInfo;
+        _fileProvider = fileProvider;
         _logger = logger;
-        _fileInfo = fileInfo;
         _remainingHeaders ??= [];
 
         foreach (var responseHeader in resource.ResponseHeaders)
@@ -46,7 +48,7 @@ internal class StaticAssetsInvoker
                     {
                         if (_etag != null)
                         {
-                            _remainingHeaders.Add(new ResponseHeader("ETag", _etag.ToString()));
+                            _remainingHeaders.Add(new StaticAssetResponseHeader("ETag", _etag.ToString()));
                         }
 
                         _etag = EntityTagHeaderValue.Parse(etag);
@@ -77,7 +79,12 @@ internal class StaticAssetsInvoker
 
     public string Route => _resource.Route;
 
-    public string PhysicalPath => _fileInfo.PhysicalPath ?? string.Empty;
+    public string PhysicalPath => FileInfo.PhysicalPath ?? string.Empty;
+
+    public IFileInfo FileInfo => _fileInfo ??=
+        _fileProvider.GetFileInfo(_resource.AssetPath) is IFileInfo file and { Exists: true } ?
+        file :
+        throw new FileNotFoundException($"The file '{_resource.AssetPath}' could not be found.");
 
     private Task ApplyResponseHeadersAsync(StaticAssetInvocationContext context, int statusCode)
     {
@@ -153,6 +160,14 @@ internal class StaticAssetsInvoker
                 }
                 catch (FileNotFoundException)
                 {
+                    if (context.GetEndpoint() is Endpoint { Metadata: { } metadata } && metadata.GetMetadata<BuildAssetMetadata>() != null)
+                    {
+                        var environment = context.RequestServices.GetRequiredService<IWebHostEnvironment>();
+                        if (!environment.IsDevelopment() && environment.WebRootFileProvider is not CompositeFileProvider)
+                        {
+                            _logger.EnsureStaticWebAssetsEnabled();
+                        }
+                    }
                     context.Response.Clear();
                 }
                 return;
@@ -176,7 +191,7 @@ internal class StaticAssetsInvoker
         await ApplyResponseHeadersAsync(context, StatusCodes.Status200OK);
         try
         {
-            await context.Response.SendFileAsync(_fileInfo, 0, _length, context.CancellationToken);
+            await context.Response.SendFileAsync(FileInfo, 0, _length, context.CancellationToken);
         }
         catch (OperationCanceledException ex)
         {
@@ -208,15 +223,15 @@ internal class StaticAssetsInvoker
 
         if (requestContext.Response.StatusCode == StatusCodes.Status200OK)
         {
-            requestContext.Response.StatusCode = StatusCodes.Status416RangeNotSatisfiable;
+            requestContext.Response.StatusCode = StatusCodes.Status206PartialContent;
         }
         await ApplyResponseHeadersAsync(requestContext, StatusCodes.Status206PartialContent);
 
         try
         {
-            var logPath = !string.IsNullOrEmpty(_fileInfo.PhysicalPath) ? _fileInfo.PhysicalPath : Route;
+            var logPath = !string.IsNullOrEmpty(FileInfo.PhysicalPath) ? FileInfo.PhysicalPath : Route;
             _logger.SendingFileRange(requestContext.Response.Headers.ContentRange, logPath);
-            await requestContext.Response.SendFileAsync(_fileInfo, start, length, requestContext.CancellationToken);
+            await requestContext.Response.SendFileAsync(FileInfo, start, length, requestContext.CancellationToken);
         }
         catch (OperationCanceledException ex)
         {
@@ -238,13 +253,11 @@ internal class StaticAssetsInvoker
     {
         private readonly HttpContext _context = null!;
         private readonly HttpRequest _request = null!;
-        private readonly HttpResponse _response = null!;
         private readonly EntityTagHeaderValue _etag;
         private readonly DateTimeOffset _lastModified;
         private readonly long _length;
         private readonly ILogger _logger;
         private readonly RequestHeaders _requestHeaders;
-        private readonly ResponseHeaders _responseHeaders;
 
         public StaticAssetInvocationContext(
             HttpContext context,
@@ -255,9 +268,9 @@ internal class StaticAssetsInvoker
         {
             _context = context;
             _request = context.Request;
-            _responseHeaders = context.Response.GetTypedHeaders();
+            ResponseHeaders = context.Response.GetTypedHeaders();
             _requestHeaders = _request.GetTypedHeaders();
-            _response = context.Response;
+            Response = context.Response;
             _etag = entityTag;
             _lastModified = lastModified;
             _length = length;
@@ -266,9 +279,9 @@ internal class StaticAssetsInvoker
 
         public CancellationToken CancellationToken => _context.RequestAborted;
 
-        public ResponseHeaders ResponseHeaders => _responseHeaders;
+        public ResponseHeaders ResponseHeaders { get; }
 
-        public HttpResponse Response => _response;
+        public HttpResponse Response { get; }
 
         public (PreconditionState, bool isRange, RangeItemHeaderValue? range) ComprehendRequestHeaders()
         {
@@ -395,11 +408,9 @@ internal class StaticAssetsInvoker
             PreconditionState ifMatchState,
             PreconditionState ifNoneMatchState,
             PreconditionState ifModifiedSinceState,
-            PreconditionState ifUnmodifiedSinceState) =>
-            GetMaxPreconditionState(ifMatchState, ifNoneMatchState, ifModifiedSinceState, ifUnmodifiedSinceState);
-
-        private static PreconditionState GetMaxPreconditionState(params Span<PreconditionState> states)
+            PreconditionState ifUnmodifiedSinceState)
         {
+            Span<PreconditionState> states = [ifMatchState, ifNoneMatchState, ifModifiedSinceState, ifUnmodifiedSinceState];
             var max = PreconditionState.Unspecified;
             for (var i = 0; i < states.Length; i++)
             {

@@ -1,6 +1,6 @@
 ﻿{
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects" : [
       "src\\Security\\test\\AuthSamples.FunctionalTests\\AuthSamples.FunctionalTests.csproj",
       "src\\Security\\samples\\Cookies\\Cookies.csproj",

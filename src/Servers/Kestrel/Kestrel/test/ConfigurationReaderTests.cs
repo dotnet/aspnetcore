@@ -82,7 +82,7 @@ public class ConfigurationReaderTests
         var reader = new ConfigurationReader(config);
         var certificates = reader.Certificates;
         Assert.NotNull(certificates);
-        Assert.Equal(1, certificates.Count);
+        Assert.Single(certificates);
 
         var fileCert = certificates["FiLeCeRt"];
         Assert.True(fileCert.IsFileCert);

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authorization;
 [DebuggerDisplay("{ToString(),nq}")]
 public class AllowAnonymousAttribute : Attribute, IAllowAnonymous
 {
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return "AllowAnonymous";

@@ -2,7 +2,7 @@
 <Project>
 
   <PropertyGroup>
-    <SignOutput Condition=" '$(SignType)' != '' ">true</SignOutput>
+    <SignOutput>false</SignOutput>
     <IsPackable>false</IsPackable>
 
     <!-- This maps the common MSBuild property name to equivalent C++ project properties.  -->
@@ -25,8 +25,4 @@
     <!-- If the following line is updated ensure that the /eng/scripts/vs.17.*.json files are updated to include the same version component too. -->
     <WindowsTargetPlatformVersion Condition=" '$(WindowsTargetPlatformVersion)' == '' ">10.0.19041.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
-
-  <Import Project="MicroBuild.Plugin.props" Condition="'$(MicroBuildSentinelFile)' == ''" />
-  <Import Project="$(MicroBuildPluginDirectory)\MicroBuild.Plugins.*\**\build\MicroBuild.Plugins.*.props" Condition=" '$(MicroBuildPluginDirectory)' != ''" />
-
 </Project>

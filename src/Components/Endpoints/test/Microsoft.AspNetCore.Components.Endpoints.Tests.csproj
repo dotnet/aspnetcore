@@ -14,4 +14,9 @@
     <Reference Include="Microsoft.AspNetCore.Components.Endpoints" />
     <Reference Include="Microsoft.AspNetCore.Http" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="TestApplication.staticwebassets.endpoints.json" CopyToOutputDirectory="Always" />
+    <Content Update="TestManifests\Test.staticwebassets.endpoints.json" CopyToOutputDirectory="Always" />
+  </ItemGroup>
 </Project>

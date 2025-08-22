@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 #endif
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class ApplicationInitializationTests : IISFunctionalTestBase
 {
     public ApplicationInitializationTests(PublishedSitesFixture fixture) : base(fixture)
@@ -57,11 +56,11 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
 
             await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.Started(result), Logger);
 
             if (delayShutdown)
             {
-                EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.ShutdownMessage(result), Logger);
+                await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.ShutdownMessage(result), Logger);
             }
             else
             {
@@ -101,8 +100,8 @@ public class ApplicationInitializationTests : IISFunctionalTestBase
 
             await Helpers.Retry(async () => await File.ReadAllTextAsync(Path.Combine(result.ContentRoot, "Started.txt")), TimeoutExtensions.DefaultTimeoutValue);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.Started(result), Logger);
-            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.ShutdownMessage(result), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.Started(result), Logger);
+            await EventLogHelpers.VerifyEventLogEventAsync(result, EventLogHelpers.ShutdownMessage(result), Logger);
         }
     }
 

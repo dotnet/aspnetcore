@@ -20,10 +20,12 @@ public static class AuthenticationCoreServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.TryAddScoped<IAuthenticationService, AuthenticationService>();
+        services.AddMetrics();
+        services.TryAddScoped<IAuthenticationService, AuthenticationServiceImpl>();
         services.TryAddSingleton<IClaimsTransformation, NoopClaimsTransformation>(); // Can be replaced with scoped ones that use DbContext
         services.TryAddScoped<IAuthenticationHandlerProvider, AuthenticationHandlerProvider>();
         services.TryAddSingleton<IAuthenticationSchemeProvider, AuthenticationSchemeProvider>();
+        services.TryAddSingleton<AuthenticationMetrics>();
         return services;
     }
 

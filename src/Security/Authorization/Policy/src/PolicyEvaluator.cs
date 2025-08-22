@@ -54,7 +54,7 @@ public class PolicyEvaluator : IPolicyEvaluator
             if (newPrincipal != null)
             {
                 context.User = newPrincipal;
-                var ticket = new AuthenticationTicket(newPrincipal, string.Join(";", policy.AuthenticationSchemes));
+                var ticket = new AuthenticationTicket(newPrincipal, string.Join(';', policy.AuthenticationSchemes));
                 // ExpiresUtc is the easiest property to reason about when dealing with multiple schemes
                 // SignalR will use this property to evaluate auth expiration for long running connections
                 ticket.Properties.ExpiresUtc = minExpiresUtc;

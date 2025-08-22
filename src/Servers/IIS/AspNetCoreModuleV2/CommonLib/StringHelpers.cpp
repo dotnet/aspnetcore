@@ -41,7 +41,7 @@ std::wstring to_wide_string(const std::string& source, const int length, const u
 
     std::wstring destination;
 
-    int nChars = MultiByteToWideChar(codePage, 0, source.data(), length, NULL, 0);
+    int nChars = MultiByteToWideChar(codePage, 0, source.data(), length, nullptr, 0);
     THROW_LAST_ERROR_IF(nChars == 0);
 
     destination.resize(nChars);

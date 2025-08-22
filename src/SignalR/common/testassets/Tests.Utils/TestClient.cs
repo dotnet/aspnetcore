@@ -99,6 +99,12 @@ internal
         return await ListenAllAsync(invocationId);
     }
 
+    public async Task<IList<HubMessage>> StreamAsync(string methodName, string[] streamIds, IDictionary<string, string> headers, params object[] args)
+    {
+        var invocationId = await SendStreamInvocationAsync(methodName, streamIds, headers, args);
+        return await ListenAllAsync(invocationId);
+    }
+
     public async Task<IList<HubMessage>> ListenAllAsync(string invocationId)
     {
         var result = new List<HubMessage>();
@@ -185,10 +191,20 @@ internal
         return SendInvocationAsync(methodName, nonBlocking: false, args: args);
     }
 
+    public Task<string> SendInvocationAsync(string methodName, IDictionary<string, string> headers, params object[] args)
+    {
+        return SendInvocationAsync(methodName, nonBlocking: false, headers: headers, args: args);
+    }
+
     public Task<string> SendInvocationAsync(string methodName, bool nonBlocking, params object[] args)
     {
+        return SendInvocationAsync(methodName, nonBlocking: nonBlocking, headers: null, args: args);
+    }
+
+    public Task<string> SendInvocationAsync(string methodName, bool nonBlocking, IDictionary<string, string> headers, params object[] args)
+    {
         var invocationId = nonBlocking ? null : GetInvocationId();
-        return SendHubMessageAsync(new InvocationMessage(invocationId, methodName, args));
+        return SendHubMessageAsync(new InvocationMessage(invocationId, methodName, args) { Headers = headers });
     }
 
     public Task<string> SendStreamInvocationAsync(string methodName, params object[] args)
@@ -198,8 +214,13 @@ internal
 
     public Task<string> SendStreamInvocationAsync(string methodName, string[] streamIds, params object[] args)
     {
+        return SendStreamInvocationAsync(methodName, streamIds: streamIds, headers: null, args);
+    }
+
+    public Task<string> SendStreamInvocationAsync(string methodName, string[] streamIds, IDictionary<string, string> headers, params object[] args)
+    {
         var invocationId = GetInvocationId();
-        return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args, streamIds));
+        return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName, args, streamIds) { Headers = headers });
     }
 
     public Task<string> BeginUploadStreamAsync(string invocationId, string methodName, string[] streamIds, params object[] args)

@@ -29,7 +29,7 @@ public sealed class EndpointDescriptionAttribute : Attribute, IEndpointDescripti
     /// <inheritdoc />
     public string Description { get; }
 
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return $"Description: {Description ?? "(null)"}";

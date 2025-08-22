@@ -6,6 +6,14 @@ Microsoft.AspNetCore.Components.Authorization.AuthenticationState
 Microsoft.AspNetCore.Components.Authorization.AuthenticationState.AuthenticationState(System.Security.Claims.ClaimsPrincipal! user) -> void
 Microsoft.AspNetCore.Components.Authorization.AuthenticationState.User.get -> System.Security.Claims.ClaimsPrincipal!
 Microsoft.AspNetCore.Components.Authorization.AuthenticationStateChangedHandler
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.AuthenticationStateData() -> void
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.Claims.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Components.Authorization.ClaimData>!
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.Claims.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.NameClaimType.get -> string!
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.NameClaimType.set -> void
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.RoleClaimType.get -> string!
+Microsoft.AspNetCore.Components.Authorization.AuthenticationStateData.RoleClaimType.set -> void
 Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider
 Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider.AuthenticationStateChanged -> Microsoft.AspNetCore.Components.Authorization.AuthenticationStateChangedHandler?
 Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider.AuthenticationStateProvider() -> void
@@ -40,6 +48,12 @@ Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState
 Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.CascadingAuthenticationState() -> void
 Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
 Microsoft.AspNetCore.Components.Authorization.CascadingAuthenticationState.ChildContent.set -> void
+Microsoft.AspNetCore.Components.Authorization.ClaimData
+Microsoft.AspNetCore.Components.Authorization.ClaimData.ClaimData() -> void
+Microsoft.AspNetCore.Components.Authorization.ClaimData.ClaimData(string! type, string! value) -> void
+Microsoft.AspNetCore.Components.Authorization.ClaimData.ClaimData(System.Security.Claims.Claim! claim) -> void
+Microsoft.AspNetCore.Components.Authorization.ClaimData.Type.get -> string!
+Microsoft.AspNetCore.Components.Authorization.ClaimData.Value.get -> string!
 Microsoft.AspNetCore.Components.Authorization.IHostEnvironmentAuthenticationStateProvider
 Microsoft.AspNetCore.Components.Authorization.IHostEnvironmentAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void
 Microsoft.Extensions.DependencyInjection.CascadingAuthenticationStateServiceCollectionExtensions

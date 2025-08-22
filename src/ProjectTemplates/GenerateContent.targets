@@ -4,12 +4,6 @@
 
     <!-- Use for incremental builds. When versions or dependencies of templates change, this file is updated and causes a re-build. -->
     <_GenerateContentPropertiesHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).content.g.cache</_GenerateContentPropertiesHashFile>
-
-    <!-- The version of the shared framework. This is used in tests to ensure they run against the shared framework version we just built. -->
-    <GeneratedContentProperties>
-      $(GeneratedContentProperties);
-      MicrosoftAspNetCoreAppVersion=$(SharedFxVersion);
-    </GeneratedContentProperties>
   </PropertyGroup>
 
   <ItemGroup>

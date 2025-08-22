@@ -31,6 +31,5 @@ internal enum RequestRejectionReason
     ConnectMethodRequired,
     MissingHostHeader,
     MultipleHostHeaders,
-    InvalidHostHeader,
-    RequestBodyExceedsContentLength
+    InvalidHostHeader
 }

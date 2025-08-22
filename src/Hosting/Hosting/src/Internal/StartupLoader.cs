@@ -222,7 +222,7 @@ internal sealed class StartupLoader
 #pragma warning restore CS0612 // Type or member is obsolete
 
                 Action<TContainerBuilder> pipeline = InvokeConfigureContainer;
-                foreach (var filter in filters.Reverse())
+                foreach (var filter in Enumerable.Reverse(filters))
                 {
                     pipeline = filter.ConfigureContainer(pipeline);
                 }

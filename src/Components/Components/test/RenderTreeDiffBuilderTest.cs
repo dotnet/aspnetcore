@@ -1736,6 +1736,9 @@ public class RenderTreeDiffBuilderTest : IDisposable
         // Arrange: Populate old and new with equivalent content
         RenderFragment fragmentWillNotChange = builder => throw new NotImplementedException();
         var dateTimeWillNotChange = DateTime.Now;
+        var dateOnlyWillNotChange = DateOnly.FromDateTime(dateTimeWillNotChange);
+        var timeOnlyWillNotChange = TimeOnly.FromDateTime(dateTimeWillNotChange);
+
         foreach (var tree in new[] { oldTree, newTree })
         {
             tree.OpenComponent<CaptureSetParametersComponent>(0);
@@ -1758,6 +1761,8 @@ public class RenderTreeDiffBuilderTest : IDisposable
             tree.AddComponentParameter(1, "MyEnum", StringComparison.OrdinalIgnoreCase);
             tree.AddComponentParameter(1, "MyEventCallback", EventCallback.Empty);
             tree.AddComponentParameter(1, "MyEventCallbackOfT", EventCallback<int>.Empty);
+            tree.AddComponentParameter(1, "MyDateOnly", dateOnlyWillNotChange);
+            tree.AddComponentParameter(1, "MyTimeOnly", timeOnlyWillNotChange);
             tree.CloseComponent();
         }
 

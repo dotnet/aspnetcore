@@ -8,11 +8,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
 public class ConsumesAttributeEndpointRoutingTests : ConsumesAttributeTestsBase<BasicWebSite.Startup>
 {
-    public ConsumesAttributeEndpointRoutingTests(MvcTestFixture<BasicWebSite.Startup> fixture)
-        : base(fixture)
-    {
-    }
-
     [Fact]
     public override async Task HasEndpointMatch()
     {

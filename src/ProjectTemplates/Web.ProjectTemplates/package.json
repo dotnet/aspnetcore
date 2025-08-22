@@ -1,0 +1,43 @@
+{
+  "name": "@microsoft/project-templates",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Project templates dependencies",
+  "main": "index.js",
+  "scripts": {
+    "copy-dependency": "node copyDependency.mjs",
+    "copy-dependencies": "npm run copy-bootstrap && npm run copy-jquery && npm run copy-jquery-validation && npm run copy-jquery-validation-unobtrusive",
+    "copy-bootstrap": "npm run copy-bootstrap-blazor && npm run copy-bootstrap-razor-pages && npm run copy-bootstrap-starter-web",
+    "copy-bootstrap-blazor": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/BlazorWeb-CSharp/BlazorWeb-CSharp/wwwroot/lib/bootstrap/dist",
+    "copy-bootstrap-razor-pages": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/RazorPagesWeb-CSharp/wwwroot/lib/bootstrap/dist",
+    "copy-bootstrap-starter-web": "npm run copy-bootstrap-starter-web-csharp && npm run copy-bootstrap-starter-web-fsharp",
+    "copy-bootstrap-starter-web-csharp": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/StarterWeb-CSharp/wwwroot/lib/bootstrap/dist",
+    "copy-bootstrap-starter-web-fsharp": "npm run copy-dependency -- ./node_modules/bootstrap/dist/ ./content/StarterWeb-FSharp/wwwroot/lib/bootstrap/dist",
+    "copy-jquery": "npm run copy-jquery-razor-pages && npm run copy-jquery-starter-web",
+    "copy-jquery-razor-pages": "npm run copy-dependency -- ./node_modules/jquery/dist/ ./content/RazorPagesWeb-CSharp/wwwroot/lib/jquery/dist",
+    "copy-jquery-starter-web": "npm run copy-jquery-starter-web-csharp && npm run copy-jquery-starter-web-fsharp",
+    "copy-jquery-starter-web-csharp": "npm run copy-dependency -- ./node_modules/jquery/dist/ ./content/StarterWeb-CSharp/wwwroot/lib/jquery/dist",
+    "copy-jquery-starter-web-fsharp": "npm run copy-dependency -- ./node_modules/jquery/dist/ ./content/StarterWeb-FSharp/wwwroot/lib/jquery/dist",
+    "copy-jquery-validation": "npm run copy-jquery-validation-razor-pages && npm run copy-jquery-validation-starter-web",
+    "copy-jquery-validation-razor-pages": "npm run copy-dependency -- ./node_modules/jquery-validation/dist/ ./content/RazorPagesWeb-CSharp/wwwroot/lib/jquery-validation/dist",
+    "copy-jquery-validation-starter-web": "npm run copy-jquery-validation-starter-web-csharp && npm run copy-jquery-validation-starter-web-fsharp",
+    "copy-jquery-validation-starter-web-csharp": "npm run copy-dependency -- ./node_modules/jquery-validation/dist/ ./content/StarterWeb-CSharp/wwwroot/lib/jquery-validation/dist",
+    "copy-jquery-validation-starter-web-fsharp": "npm run copy-dependency -- ./node_modules/jquery-validation/dist/ ./content/StarterWeb-FSharp/wwwroot/lib/jquery-validation/dist",
+    "copy-jquery-validation-unobtrusive": "npm run copy-jquery-validation-unobtrusive-razor-pages && npm run copy-jquery-validation-unobtrusive-starter-web",
+    "copy-jquery-validation-unobtrusive-razor-pages": "npm run copy-dependency -- ./node_modules/jquery-validation-unobtrusive/dist/ ./content/RazorPagesWeb-CSharp/wwwroot/lib/jquery-validation-unobtrusive/dist",
+    "copy-jquery-validation-unobtrusive-starter-web": "npm run copy-jquery-validation-unobtrusive-starter-web-csharp && npm run copy-jquery-validation-unobtrusive-starter-web-fsharp",
+    "copy-jquery-validation-unobtrusive-starter-web-csharp": "npm run copy-dependency -- ./node_modules/jquery-validation-unobtrusive/dist/ ./content/StarterWeb-CSharp/wwwroot/lib/jquery-validation-unobtrusive/dist",
+    "copy-jquery-validation-unobtrusive-starter-web-fsharp": "npm run copy-dependency -- ./node_modules/jquery-validation-unobtrusive/dist/ ./content/StarterWeb-FSharp/wwwroot/lib/jquery-validation-unobtrusive/dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dotnet/aspnetcore.git"
+  },
+  "homepage": "https://github.com/dotnet/aspnetcore#readme",
+  "dependencies": {
+    "bootstrap": "^5.3.3",
+    "jquery": "3.7",
+    "jquery-validation": "^1.21.0",
+    "jquery-validation-unobtrusive": "^4.0.0"
+  }
+}

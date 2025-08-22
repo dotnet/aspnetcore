@@ -44,6 +44,8 @@ internal sealed class DefaultCoreConfig : ManualConfig
                 .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net8.0", null, ".NET Core 8.0")))
 #elif NET9_0
                 .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net9.0", null, ".NET Core 9.0")))
+#elif NET10_0
+                .WithToolchain(CsProjCoreToolchain.From(new NetCoreAppSettings("net10.0", null, ".NET Core 10.0")))
 #else
 #error Target frameworks need to be updated.
 #endif

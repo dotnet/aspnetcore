@@ -14,7 +14,7 @@
 #include "Environment.h"
 #include "HostFxr.h"
 
-IN_PROCESS_APPLICATION* IN_PROCESS_APPLICATION::s_Application = NULL;
+IN_PROCESS_APPLICATION* IN_PROCESS_APPLICATION::s_Application = nullptr;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
@@ -327,11 +327,11 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         if (m_pConfig->QueryCallStartupHook())
         {
-            PWSTR startupHookValue = NULL;
+            PWSTR startupHookValue = nullptr;
             // Will get property not found if the environment variable isn't set.
             context->m_hostFxr.GetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, &startupHookValue);
 
-            if (startupHookValue == NULL)
+            if (startupHookValue == nullptr)
             {
                 RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
             }
@@ -351,7 +351,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(APP_CONTEXT_BASE_DIRECTORY, Environment::GetCurrentDirectoryValue().c_str()));
         }
 
-        bool clrThreadExited;
+        bool clrThreadExited = false;
         {
             //Start CLR thread
             m_clrThread = std::thread(ClrThreadEntryPoint, context);

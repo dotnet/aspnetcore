@@ -46,6 +46,8 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnAuthoriz
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnAuthorizationCodeReceived.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnMessageReceived.get -> System.Func<Microsoft.AspNetCore.Authentication.OpenIdConnect.MessageReceivedContext!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnMessageReceived.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnPushAuthorization.get -> System.Func<Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext!, System.Threading.Tasks.Task!>!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnPushAuthorization.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnRedirectToIdentityProvider.get -> System.Func<Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext!, System.Threading.Tasks.Task!>!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnRedirectToIdentityProvider.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.OnRedirectToIdentityProviderForSignOut.get -> System.Func<Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext!, System.Threading.Tasks.Task!>!
@@ -69,6 +71,7 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.HtmlEncod
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.OpenIdConnectHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, System.Text.Encodings.Web.UrlEncoder! encoder) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectHandler.OpenIdConnectHandler(Microsoft.Extensions.Options.IOptionsMonitor<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! logger, System.Text.Encodings.Web.HtmlEncoder! htmlEncoder, System.Text.Encodings.Web.UrlEncoder! encoder, Microsoft.AspNetCore.Authentication.ISystemClock! clock) -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.AdditionalAuthorizationParameters.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.AuthenticationMethod.get -> Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.AuthenticationMethod.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.Authority.get -> string?
@@ -103,6 +106,8 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.Prompt.ge
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.Prompt.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.ProtocolValidator.get -> Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectProtocolValidator!
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.ProtocolValidator.set -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.PushedAuthorizationBehavior.get -> Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.PushedAuthorizationBehavior.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.RefreshInterval.get -> System.TimeSpan
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.RefreshInterval.set -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions.RefreshOnIssuerKeyNotFound.get -> bool
@@ -148,6 +153,20 @@ Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectPostConfigureOpti
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior.FormPost = 1 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior
 Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior.RedirectGet = 0 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectRedirectBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior.Disable = 1 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior.Require = 2 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior.UseIfAvailable = 0 -> Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationBehavior
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.HandleClientAuthentication() -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.HandledClientAuthentication.get -> bool
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.HandledPush.get -> bool
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.HandlePush(string! requestUri) -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.ProtocolMessage.get -> Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage!
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.PushedAuthorizationContext(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.AspNetCore.Authentication.AuthenticationScheme! scheme, Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions! options, Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage! parRequest, Microsoft.AspNetCore.Authentication.AuthenticationProperties! properties) -> void
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.RequestUri.get -> string?
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.SkippedPush.get -> bool
+Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext.SkipPush() -> void
 Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext
 Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext.Handled.get -> bool
 Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext.HandleResponse() -> void
@@ -203,6 +222,7 @@ static readonly Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectD
 virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.AuthenticationFailed(Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthenticationFailedContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.AuthorizationCodeReceived(Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthorizationCodeReceivedContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.MessageReceived(Microsoft.AspNetCore.Authentication.OpenIdConnect.MessageReceivedContext! context) -> System.Threading.Tasks.Task!
+virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.PushAuthorization(Microsoft.AspNetCore.Authentication.OpenIdConnect.PushedAuthorizationContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.RedirectToIdentityProvider(Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.RedirectToIdentityProviderForSignOut(Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext! context) -> System.Threading.Tasks.Task!
 virtual Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectEvents.RemoteSignOut(Microsoft.AspNetCore.Authentication.OpenIdConnect.RemoteSignOutContext! context) -> System.Threading.Tasks.Task!

@@ -17,11 +17,15 @@
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="RenderTree" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\JsonSerializerOptionsProvider.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\RootTypeCache.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)LinkerFlags.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)PooledArrayBufferWriter.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)QueryStringEnumerable.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryItemDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)Debugger\DictionaryDebugView.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)UrlDecoder\UrlDecoder.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Metrics\MetricsConstants.cs" LinkBase="Shared" />
+    <Compile Include="$(SharedSourceRoot)Components\ComponentsActivityLinkStore.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <Import Project="Microsoft.AspNetCore.Components.Routing.targets" />
@@ -85,6 +89,7 @@
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Endpoints.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.Web.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.QuickGrid.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Components.ProtectedBrowserStorage.Tests" />
     <InternalsVisibleTo Include="Components.TestServer" />
     <InternalsVisibleTo Include="DynamicProxyGenAssembly2" Key="$(MoqPublicKey)" />

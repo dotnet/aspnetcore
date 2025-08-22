@@ -81,9 +81,12 @@ namespace Microsoft.AspNetCore.Http.Generated
                     if (!serviceProviderIsService.IsService(type))
                     {
                         options.EndpointBuilder.Metadata.Add(new AcceptsMetadata(type: type, isOptional: isOptional, contentTypes: GeneratedMetadataConstants.JsonContentType));
+                        options.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
                         break;
                     }
                 }
+                var parameters = methodInfo.GetParameters();
+                options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("x", parameters[0], hasTryParse: false, hasBindAsync: false, isOptional: false));
                 var parameterInfos = methodInfo.GetParameters();
                 var x_ParameterInfo = parameterInfos[0];
                 PopulateMetadataForParameter<global::Microsoft.AspNetCore.Http.Generators.Tests.CustomMetadataEmitter>(x_ParameterInfo, options.EndpointBuilder);
@@ -331,6 +334,22 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
+    file sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
+    {
+        public static readonly DisableCookieRedirectMetadata Instance = new();
+
+        private DisableCookieRedirectMetadata()
+        {
+        }
+
+        public static void AddMetadataIfMissing(EndpointBuilder builder)
+        {
+            if (!builder.Metadata.Any(m => m is IDisableCookieRedirectMetadata))
+            {
+                builder.Metadata.Add(Instance);
+            }
+        }
+    }
     %GENERATEDCODEATTRIBUTE%
     file static class GeneratedMetadataConstants
     {
@@ -340,6 +359,33 @@ namespace Microsoft.AspNetCore.Http.Generated
         public static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     }
 
+    %GENERATEDCODEATTRIBUTE%
+    file sealed class ParameterBindingMetadata: IParameterBindingMetadata
+    {
+        internal ParameterBindingMetadata(
+            string name,
+            ParameterInfo parameterInfo,
+            bool hasTryParse = false,
+            bool hasBindAsync = false,
+            bool isOptional = false)
+        {
+            Name = name;
+            ParameterInfo = parameterInfo;
+            HasTryParse = hasTryParse;
+            HasBindAsync = hasBindAsync;
+            IsOptional = isOptional;
+        }
+
+        public string Name { get; }
+
+        public bool HasTryParse { get; }
+
+        public bool HasBindAsync { get; }
+
+        public ParameterInfo ParameterInfo { get; }
+
+        public bool IsOptional { get; }
+    }
 
     %GENERATEDCODEATTRIBUTE%
     file sealed class LogOrThrowExceptionHelper

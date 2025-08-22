@@ -18,7 +18,7 @@ std::optional<DWORD> RegistryKey::TryGetDWORD(HKEY section, const std::wstring& 
 
 std::optional<std::wstring> RegistryKey::TryGetString(HKEY section, const std::wstring& subSectionName, const std::wstring& valueName)
 {
-    DWORD cbData;
+    DWORD cbData{};
 
     if (!CheckReturnValue(RegGetValue(section, subSectionName.c_str(), valueName.c_str(), RRF_RT_REG_SZ, nullptr, nullptr, &cbData)))
     {

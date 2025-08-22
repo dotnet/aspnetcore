@@ -6,17 +6,7 @@ using BenchmarkDotNet.Running;
 using Microsoft.Extensions.Caching.Benchmarks;
 
 #if DEBUG
-// validation
-using (var hc = new HybridCacheBenchmarks())
-{
-    for (int i = 0; i < 10; i++)
-    {
-        Console.WriteLine((await hc.HitDistributedCache()).Name);
-        Console.WriteLine((await hc.HitHybridCache()).Name);
-        Console.WriteLine((await hc.HitHybridCacheImmutable()).Name);
-    }
-}
-
+Console.WriteLine("Release mode only");
 /*
 using (var obj = new DistributedCacheBenchmarks { PayloadSize = 11512, Sliding = true })
 {

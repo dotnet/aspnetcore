@@ -7,6 +7,8 @@ Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.FormFieldName.get -> string!
 Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.FormFieldName.set -> void
 Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.HeaderName.get -> string?
 Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.HeaderName.set -> void
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.SuppressReadingTokenFromFormBody.get -> bool
+Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.SuppressReadingTokenFromFormBody.set -> void
 Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.SuppressXFrameOptionsHeader.get -> bool
 Microsoft.AspNetCore.Antiforgery.AntiforgeryOptions.SuppressXFrameOptionsHeader.set -> void
 Microsoft.AspNetCore.Antiforgery.AntiforgeryTokenSet

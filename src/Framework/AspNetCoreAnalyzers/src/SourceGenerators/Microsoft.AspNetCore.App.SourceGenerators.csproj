@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+    <IsPackable>false</IsPackable>
+    <IsAnalyzersProject>true</IsAnalyzersProject>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
+    <WarnOnNullable>true</WarnOnNullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="All" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
+  </ItemGroup>
+
+</Project>

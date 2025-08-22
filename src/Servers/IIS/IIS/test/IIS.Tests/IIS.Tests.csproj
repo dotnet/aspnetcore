@@ -21,7 +21,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.Diagnostics.EventLog" />
-    <Reference Include="System.Private.Uri" />
   </ItemGroup>
 
   <ItemGroup>

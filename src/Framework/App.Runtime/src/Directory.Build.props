@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <OutDirName Condition="'$(MSBuildProjectName)' == 'Microsoft.AspNetCore.App.Runtime'">aspnetcore-sfx</OutDirName>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+</Project>

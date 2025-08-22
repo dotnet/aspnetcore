@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Http;
 
 public class HeaderDictionaryTests
 {
-    public static TheoryData HeaderSegmentData => new TheoryData<IEnumerable<string>>
+    public static TheoryData<IEnumerable<string>> HeaderSegmentData => new()
         {
           new[] { "Value1", "Value2", "Value3", "Value4" },
           new[] { "Value1", "", "Value3", "Value4" },

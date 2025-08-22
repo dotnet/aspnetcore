@@ -1,4 +1,4 @@
-param($RootDirectory = (Get-Location), $Framework = "net9.0", $Runtime = "win-x64", $CommitHash, $BranchName, $BuildNumber)
+param($RootDirectory = (Get-Location), $Framework = "net10.0", $Runtime = "win-x64", $CommitHash, $BranchName, $BuildNumber)
 
 # De-Powershell the path
 $RootDirectory = (Convert-Path $RootDirectory)

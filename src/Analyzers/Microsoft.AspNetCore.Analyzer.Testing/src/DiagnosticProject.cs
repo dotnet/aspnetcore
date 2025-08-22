@@ -28,7 +28,7 @@ public class DiagnosticProject
     private static readonly ICompilationAssemblyResolver _assemblyResolver = new AppBaseCompilationAssemblyResolver();
     private static readonly Dictionary<Assembly, Solution> _solutionCache = new Dictionary<Assembly, Solution>();
 
-    public static Project Create(Assembly testAssembly, string[] sources, Func<Workspace> workspaceFactory = null, Type analyzerReference = null)
+    public static Project Create(Assembly testAssembly, string[] sources, Func<Workspace> workspaceFactory = null, Type[] analyzerReferences = null)
     {
         Solution solution;
         lock (_solutionCache)
@@ -50,11 +50,14 @@ public class DiagnosticProject
                     }
                 }
 
-                if (analyzerReference != null)
+                if (analyzerReferences != null)
                 {
-                    solution = solution.AddAnalyzerReference(
-                        projectId,
-                        new AnalyzerFileReference(analyzerReference.Assembly.Location, AssemblyLoader.Instance));
+                    foreach (var analyzerReference in analyzerReferences)
+                    {
+                        solution = solution.AddAnalyzerReference(
+                            projectId,
+                            new AnalyzerFileReference(analyzerReference.Assembly.Location, AssemblyLoader.Instance));
+                    }
                 }
 
                 _solutionCache.Add(testAssembly, solution);

@@ -373,6 +373,126 @@ public class ComponentBaseTest
     }
 
     [Fact]
+    public async Task ErrorBoundaryHandlesOnInitializedAsyncReturnFaultedTask()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+
+        // Create root component that wraps the TestComponentErrorBuildRenderTree in an TestErrorBoundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
+                childBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.FaultedTaskOnInitializedAsync), true);
+                childBuilder.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(2, inst => capturedBoundary = (TestErrorBoundary)inst);
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary!.ReceivedException);
+        Assert.Equal(typeof(InvalidTimeZoneException), capturedBoundary!.ReceivedException.GetType());
+    }
+
+    [Fact]
+    public async Task ErrorBoundaryHandlesCallOnParametersSetAsyncReturnFaultedTask()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        TestErrorBoundary capturedBoundary = null;
+
+        // Create root component that wraps the TestComponentErrorBuildRenderTree in an TestErrorBoundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestErrorBoundary>(0);
+            builder.AddComponentParameter(1, nameof(TestErrorBoundary.ChildContent), (RenderFragment)(childBuilder =>
+            {
+                childBuilder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
+                childBuilder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.FaultedTaskOnParametersSetAsync), true);
+                childBuilder.CloseComponent();
+            }));
+            builder.AddComponentReferenceCapture(2, inst => capturedBoundary = (TestErrorBoundary)inst);
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        Assert.NotNull(capturedBoundary);
+        Assert.NotNull(capturedBoundary!.ReceivedException);
+        Assert.Equal(typeof(InvalidTimeZoneException), capturedBoundary!.ReceivedException.GetType());
+    }
+
+    [Fact]
+    public async Task ComponentBaseDoesntRenderWhenOnInitializedAsyncFaultedTask()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        renderer.ShouldHandleExceptions = true;
+        TestComponentErrorBuildRenderTree testComponentErrorBuildRenderTree = null;
+
+        // Create root component that wraps the TestComponentErrorBuildRenderTree in an TestErrorBoundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
+            builder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.FaultedTaskOnInitializedAsync), true);
+            builder.AddComponentReferenceCapture(2, inst => testComponentErrorBuildRenderTree = (TestComponentErrorBuildRenderTree)inst);
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        Assert.IsType<InvalidTimeZoneException>(renderer.HandledExceptions[0]);
+        Assert.NotNull(testComponentErrorBuildRenderTree);
+        Assert.Equal(0, testComponentErrorBuildRenderTree.StateHasChangedCalled);
+    }
+
+    [Fact]
+    public async Task ComponentBaseDoesntRenderWhenOnSetParametersSetAsyncFaultedTask()
+    {
+        // Arrange
+        var renderer = new TestRenderer();
+        renderer.ShouldHandleExceptions = true;
+        TestComponentErrorBuildRenderTree testComponentErrorBuildRenderTree = null;
+
+        // Create root component that wraps the TestComponentErrorBuildRenderTree in an TestErrorBoundary
+        var rootComponent = new TestComponent();
+        rootComponent.ChildContent = builder =>
+        {
+            builder.OpenComponent<TestComponentErrorBuildRenderTree>(0);
+            builder.AddComponentParameter(1, nameof(TestComponentErrorBuildRenderTree.FaultedTaskOnParametersSetAsync), true);
+            builder.AddComponentReferenceCapture(2, inst => testComponentErrorBuildRenderTree = (TestComponentErrorBuildRenderTree)inst);
+            builder.CloseComponent();
+        };
+
+        // Act
+        var rootComponentId = renderer.AssignRootComponentId(rootComponent);
+        await renderer.RenderRootComponentAsync(rootComponentId);
+
+        // Assert
+        Assert.IsType<InvalidTimeZoneException>(renderer.HandledExceptions[0]);
+        Assert.NotNull(testComponentErrorBuildRenderTree);
+        Assert.Equal(0, testComponentErrorBuildRenderTree.StateHasChangedCalled);
+    }
+
+    [Fact]
     public async Task DoesNotRenderAfterOnParametersSetAsyncTaskIsCanceled()
     {
         // Arrange
@@ -491,11 +611,20 @@ public class ComponentBaseTest
 
         public int Counter { get; set; }
 
+        public RenderFragment ChildContent { get; set; }
+
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            builder.OpenElement(0, "p");
-            builder.AddContent(1, Counter);
-            builder.CloseElement();
+            if (ChildContent != null)
+            {
+                builder.AddContent(0, ChildContent);
+            }
+            else
+            {
+                builder.OpenElement(0, "p");
+                builder.AddContent(1, Counter);
+                builder.CloseElement();
+            }
         }
 
         protected override void OnInitialized()
@@ -568,6 +697,67 @@ public class ComponentBaseTest
             {
                 await OnAfterRenderAsyncLogic(this, firstRender);
             }
+        }
+    }
+
+    private class TestErrorBoundary : ErrorBoundaryBase
+    {
+        public Exception ReceivedException => CurrentException;
+
+        protected override Task OnErrorAsync(Exception exception)
+        {
+            return Task.CompletedTask;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            if (CurrentException == null)
+            {
+                builder.AddContent(0, ChildContent);
+            }
+            else
+            {
+                builder.OpenElement(2, "div");
+                builder.AddAttribute(3, "class", "blazor-error-boundary");
+                builder.CloseElement();
+            }
+        }
+    }
+
+    private class TestComponentErrorBuildRenderTree : ComponentBase
+    {
+        [Parameter] public bool FaultedTaskOnInitializedAsync { get; set; } = false;
+        [Parameter] public bool FaultedTaskOnParametersSetAsync { get; set; } = false;
+
+        public int StateHasChangedCalled { get; set; } = 0;
+
+        protected new void StateHasChanged()
+        {
+            StateHasChangedCalled++;
+            base.StateHasChanged();
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            throw new InvalidOperationException("Error in BuildRenderTree");
+        }
+
+        protected override Task OnInitializedAsync()
+        {
+            if (FaultedTaskOnInitializedAsync)
+            {
+                return Task.FromException(new InvalidTimeZoneException());
+            }
+            return Task.CompletedTask;
+        }
+
+        protected override Task OnParametersSetAsync()
+        {
+            if (FaultedTaskOnParametersSetAsync)
+            {
+                return Task.FromException(new InvalidTimeZoneException());
+            }
+            return Task.CompletedTask;
         }
     }
 }

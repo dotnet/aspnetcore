@@ -27,6 +27,8 @@ public abstract class InProcessTestServer : IAsyncDisposable
 
     public abstract string Url { get; }
 
+    public abstract IServiceProvider Services { get; }
+
     public abstract ValueTask DisposeAsync();
 }
 
@@ -53,6 +55,8 @@ public class InProcessTestServer<TStartup> : InProcessTestServer
     public override string WebSocketsUrl => Url.Replace("http", "ws");
 
     public override string Url => _url;
+
+    public override IServiceProvider Services => _host.Services;
 
     public static async Task<InProcessTestServer<TStartup>> StartServer(ILoggerFactory loggerFactory, Action<KestrelServerOptions> configureKestrelServerOptions = null, IDisposable disposable = null)
     {

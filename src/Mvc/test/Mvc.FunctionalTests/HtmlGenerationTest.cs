@@ -10,33 +10,38 @@ using AngleSharp.Dom;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class HtmlGenerationTest :
-    IClassFixture<MvcTestFixture<HtmlGenerationWebSite.Startup>>,
-    IClassFixture<MvcEncodedTestFixture<HtmlGenerationWebSite.Startup>>
+public class HtmlGenerationTest : LoggedTest
 {
     private static readonly Assembly _resourcesAssembly = typeof(HtmlGenerationTest).GetTypeInfo().Assembly;
 
-    public HtmlGenerationTest(
-        MvcTestFixture<HtmlGenerationWebSite.Startup> fixture,
-        MvcEncodedTestFixture<HtmlGenerationWebSite.Startup> encodedFixture)
+    protected override void Initialize(TestContext context, MethodInfo methodInfo, object[] testMethodArguments, ITestOutputHelper testOutputHelper)
     {
-        Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-
-        Client = fixture.CreateDefaultClient();
-        EncodedClient = encodedFixture.CreateDefaultClient();
+        base.Initialize(context, methodInfo, testMethodArguments, testOutputHelper);
+        Factory = new MvcTestFixture<HtmlGenerationWebSite.Startup>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        EncodedFactory = new MvcEncodedTestFixture<HtmlGenerationWebSite.Startup>(LoggerFactory).WithWebHostBuilder(ConfigureWebHostBuilder);
+        Client = Factory.CreateDefaultClient();
+        EncodedClient = EncodedFactory.CreateDefaultClient();
     }
+
+    public override void Dispose()
+    {
+        Factory.Dispose();
+        EncodedFactory.Dispose();
+        base.Dispose();
+    }
+
+    public WebApplicationFactory<HtmlGenerationWebSite.Startup> Factory { get; private set; }
+    public WebApplicationFactory<HtmlGenerationWebSite.Startup> EncodedFactory { get; private set; }
+    public HttpClient Client { get; private set; }
+    public HttpClient EncodedClient { get; private set; }
 
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<HtmlGenerationWebSite.Startup>();
-
-    public HttpClient Client { get; }
-
-    public HttpClient EncodedClient { get; }
-
-    public WebApplicationFactory<HtmlGenerationWebSite.Startup> Factory { get; }
 
     public static TheoryData<string, string> WebPagesData
     {

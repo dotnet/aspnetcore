@@ -1,0 +1,14 @@
+name: Inter-branch merge workflow
+on:
+  push:
+    branches:
+      - release/**
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  Merge:
+    uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@f2cdf946c00a12a2c283835bb41ddc2255832055 # 2024-06-24

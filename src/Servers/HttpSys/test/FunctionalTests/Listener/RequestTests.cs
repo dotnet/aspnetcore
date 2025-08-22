@@ -1,15 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.IO;
-using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.Extensions.Logging;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener;
 
@@ -142,6 +136,7 @@ public class RequestTests
     [InlineData("/", "/", "", "/")]
     [InlineData("/base", "/base", "/base", "")]
     [InlineData("/base", "/baSe", "/baSe", "")]
+    [InlineData("/base", "/baSe/", "/baSe", "/")]
     [InlineData("/base", "/base/path", "/base", "/path")]
     [InlineData("/base", "///base/path1/path2", "///base", "/path1/path2")]
     [InlineData("/base/ball", @"/baSe\ball//path1//path2", @"/baSe\ball", "//path1//path2")]

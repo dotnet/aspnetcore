@@ -19,6 +19,10 @@ The process is visualized in the below diagram:
 1. The owner of the issue is now free to work on the implementation of the proposed API.
 1. In case during implementation changes to the original proposal are required, the review should become obsolete and the process should start from the beginning.
 
+## Learnings and growth
+
+Over time the team will build up certain conventions and principles, that will be useful to establish for future API reviews too. To help with this, the [API Review Principles document](/docs/APIReviewPrinciples.md) document will be used to store such principles and conventions, making them persistent over time. Eventually, it will grow into a good knowledge base that will also help newcomers to learn and be better prepared with designing their APIs.
+
 ## What Makes an issue/PR "ready-for-review"?
 
 Before marking an issue as `api-ready-for-review`, make sure that the issue has the following:

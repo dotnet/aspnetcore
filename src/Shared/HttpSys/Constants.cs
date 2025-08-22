@@ -9,6 +9,7 @@ internal static class Constants
     internal const string HttpsScheme = "https";
     internal const string Chunked = "chunked";
     internal const string Close = "close";
+    internal const string KeepAlive = "keep-alive";
     internal const string Zero = "0";
     internal const string SchemeDelimiter = "://";
     internal const string DefaultServerAddress = "http://localhost:5000";

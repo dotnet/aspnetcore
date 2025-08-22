@@ -13,8 +13,8 @@
     "type": "item"
   },
   "groupIdentity": "Microsoft.AspNetCore.Components.RazorComponent",
-  "precedence": "9900",
-  "identity": "Microsoft.AspNetCore.Components.RazorComponent.9.0",
+  "precedence": "10000",
+  "identity": "Microsoft.AspNetCore.Components.RazorComponent.10.0",
   "shortname": "razorcomponent",
   "sourceName": "Component1",
   "primaryOutputs": [

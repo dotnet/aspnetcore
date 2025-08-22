@@ -24,7 +24,6 @@
     <Reference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <Reference Include="Microsoft.Extensions.TimeProvider.Testing" />
     <Reference Include="AngleSharp" />
-    <Reference Include="System.Net.Http" />
 
     <None Update="Testing.DefaultWebSite.StaticWebAssets.V4.xml" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Testing.DefaultWebSite.StaticWebAssets.V5.xml" CopyToOutputDirectory="PreserveNewest" />

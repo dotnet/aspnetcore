@@ -1,9 +1,57 @@
-#!/usr/bin/env powershell
+#!/usr/bin/env pwsh
 #requires -version 4
 
+# This script packages, installs and creates a template to help with rapid iteration in the templating area.
 [CmdletBinding(PositionalBinding = $false)]
-param()
+param(
+    [Parameter(Mandatory = $false, Position = 0)]
+    [ValidateSet("net9.0", "net10.0")]
+    [string] $Framework = "net10.0",
+    [Parameter(Mandatory = $false)]
+    [switch] $ExcludeLaunchSettings,
+    [Parameter(Mandatory = $false)]
+    [ValidateSet("None", "Individual")]
+    [string] $Auth = "None",
+    [Parameter(Mandatory = $false)]
+    [switch] $UseLocalDb,
+    [Parameter(Mandatory = $false)]
+    [switch] $NoHttps,
+    [Parameter(Mandatory = $false)]
+    [switch] $UseProgramMain,
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]] $Args
+)
 
-. $PSScriptRoot\Test-Template.ps1
+Set-StrictMode -Version 2
+$ErrorActionPreference = 'Stop'
 
-Test-Template "webapp" "webapp -au Individual" "Microsoft.DotNet.Web.ProjectTemplates.9.0.9.0.0-dev.nupkg" $false
+$templateArguments = @("webapp");
+
+if ($ExcludeLaunchSettings) {
+    $templateArguments += "--exclude-launch-settings"
+}
+
+if ($Auth) {
+    $templateArguments += "--auth";
+    $templateArguments += $Auth;
+}
+
+if ($UseLocalDb) {
+    $templateArguments += "-uld"
+}
+
+if ($NoHttps) {
+    $templateArguments += "--no-https"
+}
+
+if ($UseProgramMain) {
+    $templateArguments += "--use-program-main"
+}
+
+Import-Module -Name "$PSScriptRoot/Test-Template.psm1";
+
+Test-Template `
+    -TemplateName "MyWebApp" `
+    -TemplateArguments $templateArguments `
+    -TargetFramework $Framework `
+    -Verbose:$VerbosePreference;

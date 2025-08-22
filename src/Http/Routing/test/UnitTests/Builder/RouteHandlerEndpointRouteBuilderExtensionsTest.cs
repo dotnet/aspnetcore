@@ -980,7 +980,7 @@ public class RouteHandlerEndpointRouteBuilderExtensionsTest : LoggedTest
         var httpResponse = httpContext.Response;
         httpResponse.Body.Seek(0, SeekOrigin.Begin);
         var streamReader = new StreamReader(httpResponse.Body);
-        var body = streamReader.ReadToEndAsync().Result;
+        var body = await streamReader.ReadToEndAsync();
         Assert.Equal("loggerErrorIsEnabled: True, parentName: RouteHandlerEndpointRouteBuilderExtensionsTest", body);
     }
 

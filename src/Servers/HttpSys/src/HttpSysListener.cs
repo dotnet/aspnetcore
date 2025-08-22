@@ -3,8 +3,10 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
 using Windows.Win32.Foundation;
@@ -32,7 +34,7 @@ internal sealed partial class HttpSysListener : IDisposable
     // 0.5 seconds per request.  Respond with a 400 Bad Request.
     private const int UnknownHeaderLimit = 1000;
 
-    internal MemoryPool<byte> MemoryPool { get; } = PinnedBlockMemoryPoolFactory.Create();
+    internal MemoryPool<byte> MemoryPool { get; }
 
     private volatile State _state; // m_State is set only within lock blocks, but often read outside locks.
 
@@ -43,7 +45,7 @@ internal sealed partial class HttpSysListener : IDisposable
 
     private readonly object _internalLock;
 
-    public HttpSysListener(HttpSysOptions options, ILoggerFactory loggerFactory)
+    public HttpSysListener(HttpSysOptions options, IMemoryPoolFactory<byte> memoryPoolFactory, ILoggerFactory loggerFactory)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
@@ -52,6 +54,8 @@ internal sealed partial class HttpSysListener : IDisposable
         {
             throw new PlatformNotSupportedException();
         }
+
+        MemoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "httpsys" });
 
         Options = options;
 
@@ -70,11 +74,9 @@ internal sealed partial class HttpSysListener : IDisposable
         try
         {
             _serverSession = new ServerSession();
-
-            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode, Logger);
-
+            _requestQueue = new RequestQueue(options.RequestQueueName, options.RequestQueueMode,
+                options.RequestQueueSecurityDescriptor, Logger);
             _urlGroup = new UrlGroup(_serverSession, _requestQueue, Logger);
-
             _disconnectListener = new DisconnectListener(_requestQueue, Logger);
         }
         catch (Exception exception)
@@ -97,20 +99,9 @@ internal sealed partial class HttpSysListener : IDisposable
 
     internal ILogger Logger { get; private set; }
 
-    internal UrlGroup UrlGroup
-    {
-        get { return _urlGroup; }
-    }
-
-    internal RequestQueue RequestQueue
-    {
-        get { return _requestQueue; }
-    }
-
-    internal DisconnectListener DisconnectListener
-    {
-        get { return _disconnectListener; }
-    }
+    internal UrlGroup UrlGroup => _urlGroup;
+    internal RequestQueue RequestQueue => _requestQueue;
+    internal DisconnectListener DisconnectListener => _disconnectListener;
 
     public HttpSysOptions Options { get; }
 
@@ -352,7 +343,7 @@ internal sealed partial class HttpSysListener : IDisposable
         }
 
         httpResponse.Base.StatusCode = checked((ushort)httpStatusCode);
-        var statusDescription = HttpReasonPhrase.Get(httpStatusCode) ?? string.Empty;
+        var statusDescription = ReasonPhrases.GetReasonPhrase(httpStatusCode);
         uint dataWritten = 0;
         uint statusCode;
 

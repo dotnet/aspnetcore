@@ -13,6 +13,11 @@ internal enum KeepAliveState
     Timeout
 }
 
+/// <summary>
+/// Used by a <see cref="Http2Connection"/> to determine whether the connection is still alive.
+/// If no frames have been received within a given period of time, triggers a ping that should
+/// draw a response. After a further timeout, signals that the connection should be dropped.
+/// </summary>
 internal sealed class Http2KeepAlive
 {
     // An empty ping payload

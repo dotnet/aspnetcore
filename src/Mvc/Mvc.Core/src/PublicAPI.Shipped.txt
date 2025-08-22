@@ -953,6 +953,8 @@ Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor
 Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor.ContentResultExecutor(Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Mvc.Infrastructure.ContentResultExecutor!>! logger, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory! httpResponseStreamWriterFactory) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.DefaultOutputFormatterSelector
 Microsoft.AspNetCore.Mvc.Infrastructure.DefaultOutputFormatterSelector.DefaultOutputFormatterSelector(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcOptions!>! options, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.Mvc.Infrastructure.DefaultProblemDetailsFactory
+Microsoft.AspNetCore.Mvc.Infrastructure.DefaultProblemDetailsFactory.DefaultProblemDetailsFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.ApiBehaviorOptions!>! options, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.ProblemDetailsOptions!>? problemDetailsOptions = null) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute
 Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute.DefaultStatusCodeAttribute(int statusCode) -> void
 Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute.StatusCode.get -> int
@@ -1999,6 +2001,8 @@ override Microsoft.AspNetCore.Mvc.Formatters.StringOutputFormatter.WriteResponse
 override Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter.ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext! context) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult!>!
 override Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter.WriteAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext! context) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Mvc.Infrastructure.DefaultOutputFormatterSelector.SelectFormatter(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext! context, System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter!>! formatters, Microsoft.AspNetCore.Mvc.Formatters.MediaTypeCollection! contentTypes) -> Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter?
+override Microsoft.AspNetCore.Mvc.Infrastructure.DefaultProblemDetailsFactory.CreateProblemDetails(Microsoft.AspNetCore.Http.HttpContext! httpContext, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null) -> Microsoft.AspNetCore.Mvc.ProblemDetails!
+override Microsoft.AspNetCore.Mvc.Infrastructure.DefaultProblemDetailsFactory.CreateValidationProblemDetails(Microsoft.AspNetCore.Http.HttpContext! httpContext, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelStateDictionary, int? statusCode = null, string? title = null, string? type = null, string? detail = null, string? instance = null) -> Microsoft.AspNetCore.Mvc.ValidationProblemDetails!
 override Microsoft.AspNetCore.Mvc.JsonResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Mvc.LocalRedirectResult.ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext! context) -> System.Threading.Tasks.Task!
 override Microsoft.AspNetCore.Mvc.ModelBinding.Binders.ArrayModelBinder<TElement>.CanCreateInstance(System.Type! targetType) -> bool
@@ -2357,7 +2361,8 @@ virtual Microsoft.AspNetCore.Mvc.ControllerBase.PhysicalFile(string! physicalPat
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.PhysicalFile(string! physicalPath, string! contentType, string? fileDownloadName, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag, bool enableRangeProcessing) -> Microsoft.AspNetCore.Mvc.PhysicalFileResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.PhysicalFile(string! physicalPath, string! contentType, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag) -> Microsoft.AspNetCore.Mvc.PhysicalFileResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.PhysicalFile(string! physicalPath, string! contentType, System.DateTimeOffset? lastModified, Microsoft.Net.Http.Headers.EntityTagHeaderValue! entityTag, bool enableRangeProcessing) -> Microsoft.AspNetCore.Mvc.PhysicalFileResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Mvc.ObjectResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.Problem(string? detail, string? instance, int? statusCode, string? title, string? type) -> Microsoft.AspNetCore.Mvc.ObjectResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.Redirect(string! url) -> Microsoft.AspNetCore.Mvc.RedirectResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectPermanent(string! url) -> Microsoft.AspNetCore.Mvc.RedirectResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.RedirectPermanentPreserveMethod(string! url) -> Microsoft.AspNetCore.Mvc.RedirectResult!
@@ -2426,7 +2431,8 @@ virtual Microsoft.AspNetCore.Mvc.ControllerBase.UnprocessableEntity(object? erro
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem() -> Microsoft.AspNetCore.Mvc.ActionResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary! modelStateDictionary) -> Microsoft.AspNetCore.Mvc.ActionResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(Microsoft.AspNetCore.Mvc.ValidationProblemDetails! descriptor) -> Microsoft.AspNetCore.Mvc.ActionResult!
-virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary = null) -> Microsoft.AspNetCore.Mvc.ActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail = null, string? instance = null, int? statusCode = null, string? title = null, string? type = null, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary = null, System.Collections.Generic.IDictionary<string!, object?>? extensions = null) -> Microsoft.AspNetCore.Mvc.ActionResult!
+virtual Microsoft.AspNetCore.Mvc.ControllerBase.ValidationProblem(string? detail, string? instance, int? statusCode, string? title, string? type, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary? modelStateDictionary) -> Microsoft.AspNetCore.Mvc.ActionResult!
 virtual Microsoft.AspNetCore.Mvc.ControllerContext.ValueProviderFactories.get -> System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory!>!
 virtual Microsoft.AspNetCore.Mvc.ControllerContext.ValueProviderFactories.set -> void
 virtual Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor.ActionName.get -> string!

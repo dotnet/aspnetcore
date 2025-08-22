@@ -95,7 +95,7 @@ public class ListenOptions : IConnectionBuilder, IMultiplexedConnectionBuilder
     /// <summary>
     /// The protocols enabled on this endpoint.
     /// </summary>
-    /// <remarks>Defaults to HTTP/1.x, HTTP/2, and HTTP/3.</remarks>
+    /// <remarks>Defaults to HTTP/1.x and HTTP/2</remarks>
     public HttpProtocols Protocols
     {
         get => _protocols;

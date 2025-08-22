@@ -95,6 +95,7 @@ internal sealed class ApiResponseTypeProvider
             type,
             defaultErrorType,
             contentTypes,
+            out var _,
             responseTypeMetadataProviders);
 
         foreach (var responseType in responseTypesFromProvider)
@@ -134,11 +135,13 @@ internal sealed class ApiResponseTypeProvider
     internal static Dictionary<int, ApiResponseType> ReadResponseMetadata(
         IReadOnlyList<IApiResponseMetadataProvider> responseMetadataAttributes,
         Type? type,
-        Type defaultErrorType,
+        Type? defaultErrorType,
         MediaTypeCollection contentTypes,
+        out bool errorSetByDefault,
         IEnumerable<IApiResponseTypeMetadataProvider>? responseTypeMetadataProviders = null,
         IModelMetadataProvider? modelMetadataProvider = null)
     {
+        errorSetByDefault = false;
         var results = new Dictionary<int, ApiResponseType>();
 
         // Get the content type that the action explicitly set to support.
@@ -163,11 +166,14 @@ internal sealed class ApiResponseTypeProvider
 
                 var statusCode = metadataAttribute.StatusCode;
 
+                var description = metadataAttribute.Description;
+
                 var apiResponseType = new ApiResponseType
                 {
                     Type = metadataAttribute.Type,
                     StatusCode = statusCode,
                     IsDefaultResponse = metadataAttribute is IApiDefaultResponseMetadataProvider,
+                    Description = description
                 };
 
                 if (apiResponseType.Type == typeof(void))
@@ -184,8 +190,8 @@ internal sealed class ApiResponseTypeProvider
                     {
                         // Determine whether or not the type was provided by the user. If so, favor it over the default
                         // error type for 4xx client errors if no response type is specified..
-                        var setByDefault = metadataAttribute is ProducesResponseTypeAttribute { IsResponseTypeSetByDefault: true };
-                        apiResponseType.Type = setByDefault ? defaultErrorType : apiResponseType.Type;
+                        errorSetByDefault = metadataAttribute is ProducesResponseTypeAttribute { IsResponseTypeSetByDefault: true };
+                        apiResponseType.Type = errorSetByDefault ? defaultErrorType : apiResponseType.Type;
                     }
                     else if (apiResponseType.IsDefaultResponse)
                     {
@@ -225,6 +231,14 @@ internal sealed class ApiResponseTypeProvider
 
         foreach (var metadata in responseMetadata)
         {
+            // Skip IResult types that implement IEndpointMetadataProvider (built-in framework types like TypedResults)
+            // since they handle their own metadata population. Custom IResult implementations that don't implement
+            // IEndpointMetadataProvider should be included in response metadata for API documentation.
+            if (typeof(IResult).IsAssignableFrom(metadata.Type) && typeof(IEndpointMetadataProvider).IsAssignableFrom(metadata.Type))
+            {
+                continue;
+            }
+
             var statusCode = metadata.StatusCode;
 
             var apiResponseType = new ApiResponseType
@@ -233,7 +247,7 @@ internal sealed class ApiResponseTypeProvider
                 StatusCode = statusCode,
             };
 
-            if (apiResponseType.Type == typeof(void))
+            if (apiResponseType.Type == null)
             {
                 if (type != null && (statusCode == StatusCodes.Status200OK || statusCode == StatusCodes.Status201Created))
                 {

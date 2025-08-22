@@ -108,11 +108,7 @@ public static class HttpClientSlim
 
     private static async Task<string> RetryRequest(Func<Task<string>> retryBlock)
     {
-        var retryCount = 1;
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-            retryCount = 3;
-        }
+        var retryCount = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 1 : 3;
 
         for (var retry = 0; retry < retryCount; retry++)
         {
@@ -190,7 +186,12 @@ public static class HttpClientSlim
 
         if (socket == null)
         {
+#if NETCOREAPP
+            // Include the host and port explicitly in case there's a parsing issue
+            throw new SocketException((int)socketArgs.SocketError, $"Failed to connect to server {requestUri.Host} on port {requestUri.Port}");
+#else
             throw new SocketException((int)socketArgs.SocketError);
+#endif
         }
         else
         {

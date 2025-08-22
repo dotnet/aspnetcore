@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests;
 
 [Collection(PublishedSitesCollection.Name)]
-[SkipOnHelix("Unsupported queue", Queues = "Windows.Amd64.VS2022.Pre.Open;")]
 public class ShadowCopyTests : IISFunctionalTestBase
 {
     public ShadowCopyTests(PublishedSitesFixture fixture) : base(fixture)
@@ -235,6 +234,7 @@ public class ShadowCopyTests : IISFunctionalTestBase
     }
 
     [ConditionalFact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/58106")]
     public async Task ShadowCopyCleansUpOlderFolders()
     {
         using var directory = TempDirectory.Create();

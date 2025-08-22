@@ -20,7 +20,7 @@ internal class HtmlFieldPrefix(LambdaExpression initial)
         var restLength = _rest?.Length ?? 0;
         var length = restLength + 1;
         var expressions = new LambdaExpression[length];
-        for (var i = 0; i < restLength - 1; i++)
+        for (var i = 0; i < restLength; i++)
         {
             expressions[i] = _rest![i];
         }

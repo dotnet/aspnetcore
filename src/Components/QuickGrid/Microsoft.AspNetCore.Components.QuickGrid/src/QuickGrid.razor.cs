@@ -104,6 +104,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
 
+    /// <summary>
+    /// Optional. A callback to be invoked for each rendered row to specify a CSS class.
+    /// </summary>
+    [Parameter] public Func<TGridItem, string?>? RowClass { get; set; }
+
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -146,6 +151,9 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
 
     // If the PaginationState mutates, it raises this event. We use it to trigger a re-render.
     private readonly EventCallbackSubscriber<PaginationState> _currentPageItemsChanged;
+
+    // If the QuickGrid is disposed while the JS module is being loaded, we need to avoid calling JS methods
+    private bool _wasDisposed;
 
     /// <summary>
     /// Constructs an instance of <see cref="QuickGrid{TGridItem}"/>.
@@ -201,6 +209,12 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         if (firstRender)
         {
             _jsModule = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Microsoft.AspNetCore.Components.QuickGrid/QuickGrid.razor.js");
+            if (_wasDisposed)
+            {
+                // If the component has been disposed while JS module was being loaded, we don't need to continue
+                await _jsModule.DisposeAsync();
+                return;
+            }
             _jsEventDisposable = await _jsModule.InvokeAsync<IJSObjectReference>("init", _tableReference);
         }
 
@@ -268,6 +282,16 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     {
         _displayOptionsForColumn = column;
         _checkColumnOptionsPosition = true; // Triggers a call to JS to position the options element, apply autofocus, and any other setup
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Closes the <see cref="ColumnBase{TGridItem}.ColumnOptions"/> UI that was previously displayed.
+    /// </summary>
+    public Task HideColumnOptionsAsync()
+    {
+        _displayOptionsForColumn = null;
         StateHasChanged();
         return Task.CompletedTask;
     }
@@ -419,6 +443,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
     {
+        _wasDisposed = true;
         _currentPageItemsChanged.Dispose();
 
         try
@@ -439,10 +464,5 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
             // The JS side may routinely be gone already if the reason we're disposing is that
             // the client disconnected. This is not an error.
         }
-    }
-
-    private void CloseColumnOptions()
-    {
-        _displayOptionsForColumn = null;
     }
 }

@@ -1,30 +1,19 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
-internal readonly struct ConnectionMetricsContext
+internal sealed class ConnectionMetricsContext
 {
-    public BaseConnectionContext ConnectionContext { get; }
-    public bool CurrentConnectionsCounterEnabled { get; }
-    public bool ConnectionDurationEnabled { get; }
-    public bool QueuedConnectionsCounterEnabled { get; }
-    public bool QueuedRequestsCounterEnabled { get; }
-    public bool CurrentUpgradedRequestsCounterEnabled { get; }
-    public bool CurrentTlsHandshakesCounterEnabled { get; }
+    public required BaseConnectionContext ConnectionContext { get; init; }
+    public bool CurrentConnectionsCounterEnabled { get; init; }
+    public bool ConnectionDurationEnabled { get; init; }
+    public bool QueuedConnectionsCounterEnabled { get; init; }
+    public bool QueuedRequestsCounterEnabled { get; init; }
+    public bool CurrentUpgradedRequestsCounterEnabled { get; init; }
+    public bool CurrentTlsHandshakesCounterEnabled { get; init; }
 
-    public ConnectionMetricsContext(BaseConnectionContext connectionContext, bool currentConnectionsCounterEnabled,
-        bool connectionDurationEnabled, bool queuedConnectionsCounterEnabled, bool queuedRequestsCounterEnabled,
-        bool currentUpgradedRequestsCounterEnabled, bool currentTlsHandshakesCounterEnabled)
-    {
-        ConnectionContext = connectionContext;
-        CurrentConnectionsCounterEnabled = currentConnectionsCounterEnabled;
-        ConnectionDurationEnabled = connectionDurationEnabled;
-        QueuedConnectionsCounterEnabled = queuedConnectionsCounterEnabled;
-        QueuedRequestsCounterEnabled = queuedRequestsCounterEnabled;
-        CurrentUpgradedRequestsCounterEnabled = currentUpgradedRequestsCounterEnabled;
-        CurrentTlsHandshakesCounterEnabled = currentTlsHandshakesCounterEnabled;
-    }
+    public ConnectionEndReason? ConnectionEndReason { get; set; }
 }

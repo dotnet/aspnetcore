@@ -22,7 +22,7 @@ public class ConditionalTheoryTest : IClassFixture<ConditionalTheoryTest.Conditi
     [InlineData(0)]
     public void ConditionalTheorySkip(int arg)
     {
-        Assert.True(false, "This test should always be skipped.");
+        Assert.Fail("This test should always be skipped.");
     }
 
     private static int _conditionalTheoryRuns = 0;
@@ -48,7 +48,7 @@ public class ConditionalTheoryTest : IClassFixture<ConditionalTheoryTest.Conditi
     [MemberData(nameof(GetInts))]
     public void ConditionalTheoriesWithSkippedMemberData(int arg)
     {
-        Assert.True(false, "This should never run");
+        Assert.Fail("This should never run");
     }
 
     private static int _conditionalMemberDataRuns = 0;
@@ -72,7 +72,7 @@ public class ConditionalTheoryTest : IClassFixture<ConditionalTheoryTest.Conditi
     [MemberData(nameof(GetActionTestData))]
     public void ConditionalTheoryWithFuncs(Func<int, int> func)
     {
-        Assert.True(false, "This should never run");
+        Assert.Fail("This should never run");
     }
 
     [Fact]

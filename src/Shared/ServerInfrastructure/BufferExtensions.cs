@@ -129,52 +129,41 @@ internal static class BufferExtensions
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static unsafe void WriteNumeric(ref this BufferWriter<PipeWriter> buffer, ulong number)
+    internal static void WriteNumeric(ref this BufferWriter<PipeWriter> bufferWriter, ulong number)
     {
         const byte AsciiDigitStart = (byte)'0';
 
-        var span = buffer.Span;
-        var bytesLeftInBlock = span.Length;
+        var buffer = bufferWriter.Span;
 
         // Fast path, try copying to the available memory directly
-        var simpleWrite = true;
-        fixed (byte* output = span)
+        if (number < 10 && buffer.Length >= 1)
         {
-            var start = output;
-            if (number < 10 && bytesLeftInBlock >= 1)
-            {
-                *(start) = (byte)(((uint)number) + AsciiDigitStart);
-                buffer.Advance(1);
-            }
-            else if (number < 100 && bytesLeftInBlock >= 2)
-            {
-                var val = (uint)number;
-                var tens = (byte)((val * 205u) >> 11); // div10, valid to 1028
-
-                *(start) = (byte)(tens + AsciiDigitStart);
-                *(start + 1) = (byte)(val - (tens * 10) + AsciiDigitStart);
-                buffer.Advance(2);
-            }
-            else if (number < 1000 && bytesLeftInBlock >= 3)
-            {
-                var val = (uint)number;
-                var digit0 = (byte)((val * 41u) >> 12); // div100, valid to 1098
-                var digits01 = (byte)((val * 205u) >> 11); // div10, valid to 1028
-
-                *(start) = (byte)(digit0 + AsciiDigitStart);
-                *(start + 1) = (byte)(digits01 - (digit0 * 10) + AsciiDigitStart);
-                *(start + 2) = (byte)(val - (digits01 * 10) + AsciiDigitStart);
-                buffer.Advance(3);
-            }
-            else
-            {
-                simpleWrite = false;
-            }
+            buffer[0] = (byte)(((uint)number) + AsciiDigitStart);
+            bufferWriter.Advance(1);
         }
-
-        if (!simpleWrite)
+        else if (number < 100 && buffer.Length >= 2)
         {
-            WriteNumericMultiWrite(ref buffer, number);
+            var val = (uint)number;
+            var tens = (uint)(byte)((val * 205u) >> 11); // div10, valid to 1028
+
+            buffer[0] = (byte)(tens + AsciiDigitStart);
+            buffer[1] = (byte)(val - (tens * 10) + AsciiDigitStart);
+            bufferWriter.Advance(2);
+        }
+        else if (number < 1000 && buffer.Length >= 3)
+        {
+            var val = (uint)number;
+            var digit0 = (uint)(byte)((val * 41u) >> 12); // div100, valid to 1098
+            var digits01 = (uint)(byte)((val * 205u) >> 11); // div10, valid to 1028
+
+            buffer[0] = (byte)(digit0 + AsciiDigitStart);
+            buffer[1] = (byte)(digits01 - (digit0 * 10) + AsciiDigitStart);
+            buffer[2] = (byte)(val - (digits01 * 10) + AsciiDigitStart);
+            bufferWriter.Advance(3);
+        }
+        else
+        {
+            WriteNumericMultiWrite(ref bufferWriter, number);
         }
     }
 

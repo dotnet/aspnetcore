@@ -1014,7 +1014,7 @@ public class SessionTests
         Assert.Contains("Session stored", sessionLogMessages[1].State.ToString());
         Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
 
-        Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
+        Assert.DoesNotContain(sink.Writes, message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -1078,7 +1078,7 @@ public class SessionTests
         Assert.Contains("Session stored", sessionLogMessages[1].State.ToString());
         Assert.Equal(LogLevel.Debug, sessionLogMessages[1].LogLevel);
 
-        Assert.Empty(sink.Writes.Where(message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal)));
+        Assert.DoesNotContain(sink.Writes, message => message.LoggerName.Equals(typeof(SessionMiddleware).FullName, StringComparison.Ordinal));
     }
 
     [Fact]

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using System.IO.Pipelines;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http;
@@ -68,11 +69,10 @@ internal abstract class Http1MessageBody : MessageBody
         }
         catch (InvalidOperationException ex)
         {
-            var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
-            _context.ReportApplicationError(connectionAbortedException);
+            Log.RequestBodyDrainBodyReaderInvalidState(_context.ConnectionIdFeature, _context.TraceIdentifier, ex);
 
             // Have to abort the connection because we can't finish draining the request
-            _context.StopProcessingNextRequest();
+            _context.StopProcessingNextRequest(ConnectionEndReason.InvalidBodyReaderState);
             return Task.CompletedTask;
         }
 
@@ -104,16 +104,21 @@ internal abstract class Http1MessageBody : MessageBody
         }
         catch (InvalidOperationException ex)
         {
-            var connectionAbortedException = new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication, ex);
-            _context.ReportApplicationError(connectionAbortedException);
+            Log.RequestBodyDrainBodyReaderInvalidState(_context.ConnectionIdFeature, _context.TraceIdentifier, ex);
 
             // Have to abort the connection because we can't finish draining the request
-            _context.StopProcessingNextRequest();
+            _context.StopProcessingNextRequest(ConnectionEndReason.InvalidBodyReaderState);
         }
         finally
         {
             _context.TimeoutControl.CancelTimeout();
         }
+    }
+
+    protected override void OnObservedBytesExceedMaxRequestBodySize(long maxRequestBodySize)
+    {
+        _context.DisableKeepAlive(ConnectionEndReason.MaxRequestBodySizeExceeded);
+        KestrelBadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge, maxRequestBodySize.ToString(CultureInfo.InvariantCulture));
     }
 
     public static MessageBody For(
@@ -202,6 +207,7 @@ internal abstract class Http1MessageBody : MessageBody
         // Reject with Length Required for HTTP 1.0.
         if (httpVersion == HttpVersion.Http10 && (context.Method == HttpMethod.Post || context.Method == HttpMethod.Put))
         {
+            KestrelMetrics.AddConnectionEndReason(context.MetricsContext, ConnectionEndReason.InvalidRequestHeaders);
             KestrelBadHttpRequestException.Throw(RequestRejectionReason.LengthRequiredHttp10, context.Method);
         }
 
@@ -221,6 +227,9 @@ internal abstract class Http1MessageBody : MessageBody
     [StackTraceHidden]
     protected void ThrowUnexpectedEndOfRequestContent()
     {
+        // Set before calling OnInputOrOutputCompleted.
+        KestrelMetrics.AddConnectionEndReason(_context.MetricsContext, ConnectionEndReason.UnexpectedEndOfRequestContent);
+
         // OnInputOrOutputCompleted() is an idempotent method that closes the connection. Sometimes
         // input completion is observed here before the Input.OnWriterCompleted() callback is fired,
         // so we call OnInputOrOutputCompleted() now to prevent a race in our tests where a 400

@@ -9,9 +9,4 @@
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.Extensions.Configuration.CommandLine" />
   </ItemGroup>
-
-  <!-- Benchmarks server uses shared Fx but needs refs to OOB packages. -->
-  <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore.ConcurrencyLimiter" Version="$(MicrosoftAspNetCoreAppVersion)" />
-  </ItemGroup>
 </Project>

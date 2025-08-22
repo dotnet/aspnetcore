@@ -48,19 +48,53 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
-            if (!env.IsDevelopment())
+            app.Map("/reexecution", reexecutionApp =>
             {
-                app.UseExceptionHandler("/Error", createScopeForErrors: true);
-            }
+                app.Map("/trigger-404", trigger404App =>
+                {
+                    trigger404App.Run(async context =>
+                    {
+                        context.Response.StatusCode = 404;
+                        await context.Response.WriteAsync("Triggered a 404 status code.");
+                    });
+                });
 
-            app.UseStaticFiles();
-            app.UseRouting();
-            RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(app);
-            app.UseAntiforgery();
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorComponents<TRootComponent>();
+                if (!env.IsDevelopment())
+                {
+                    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+                }
+
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
+                reexecutionApp.UseStaticFiles();
+                reexecutionApp.UseRouting();
+                RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(reexecutionApp);
+                reexecutionApp.UseAntiforgery();
+                reexecutionApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorComponents<TRootComponent>()
+                        .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
+                });
             });
+
+            ConfigureSubdirPipeline(app, env);
+        });
+    }
+
+    private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        if (!env.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Error", createScopeForErrors: true);
+        }
+
+        app.UseStaticFiles();
+        app.UseRouting();
+        RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(app);
+        app.UseAntiforgery();
+        app.UseEndpoints(endpoints =>
+        {
+            endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
         });
     }
 }

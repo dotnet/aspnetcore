@@ -1,7 +1,1 @@
-Microsoft.AspNetCore.Builder.StaticAssetsEndpointRouteBuilderExtensions
-Microsoft.AspNetCore.StaticAssets.Infrastructure.StaticAssetsEndpointDataSourceHelper
-Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder
-Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder.Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
-Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder.Finally(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder!>! convention) -> void
-static Microsoft.AspNetCore.Builder.StaticAssetsEndpointRouteBuilderExtensions.MapStaticAssets(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string? staticAssetsManifestPath = null) -> Microsoft.AspNetCore.StaticAssets.StaticAssetsEndpointConventionBuilder!
-static Microsoft.AspNetCore.StaticAssets.Infrastructure.StaticAssetsEndpointDataSourceHelper.IsStaticAssetsDataSource(Microsoft.AspNetCore.Routing.EndpointDataSource! dataSource, string? staticAssetsManifestPath = null) -> bool
+#nullable enable

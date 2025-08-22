@@ -141,6 +141,7 @@ public partial class WebSocketMiddleware
             bool serverContextTakeover = true;
             int serverMaxWindowBits = 15;
             TimeSpan keepAliveInterval = _options.KeepAliveInterval;
+            TimeSpan keepAliveTimeout = _options.KeepAliveTimeout;
             if (acceptContext != null)
             {
                 subProtocol = acceptContext.SubProtocol;
@@ -148,6 +149,7 @@ public partial class WebSocketMiddleware
                 serverContextTakeover = !acceptContext.DisableServerContextTakeover;
                 serverMaxWindowBits = acceptContext.ServerMaxWindowBits;
                 keepAliveInterval = acceptContext.KeepAliveInterval ?? keepAliveInterval;
+                keepAliveTimeout = acceptContext.KeepAliveTimeout ?? keepAliveTimeout;
             }
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -208,15 +210,18 @@ public partial class WebSocketMiddleware
             // Disable request timeout, if there is one, after the websocket has been accepted
             _context.Features.Get<IHttpRequestTimeoutFeature>()?.DisableTimeout();
 
-            var wrappedSocket = WebSocket.CreateFromStream(opaqueTransport, new WebSocketCreationOptions()
+            var abortStream = new AbortStream(_context, opaqueTransport);
+            var wrappedSocket = WebSocket.CreateFromStream(abortStream, new WebSocketCreationOptions()
             {
                 IsServer = true,
                 KeepAliveInterval = keepAliveInterval,
+                KeepAliveTimeout = keepAliveTimeout,
                 SubProtocol = subProtocol,
                 DangerousDeflateOptions = deflateOptions
             });
 
-            return new ServerWebSocket(wrappedSocket, _context);
+            abortStream.WebSocket = wrappedSocket;
+            return wrappedSocket;
         }
 
         public static bool CheckSupportedWebSocketRequest(string method, IHeaderDictionary requestHeaders)

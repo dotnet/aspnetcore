@@ -8,9 +8,13 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
 using Microsoft.AspNetCore.Mvc;
+using TestContentPackage;
+using TestContentPackage.Services;
 
 namespace TestServer;
 
@@ -26,19 +30,44 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
     {
+        services.AddValidation();
+
         services.AddRazorComponents(options =>
         {
             options.MaxFormMappingErrorCount = 10;
             options.MaxFormMappingRecursionDepth = 5;
             options.MaxFormMappingCollectionSize = 100;
         })
+            .RegisterPersistentService<InteractiveServerService>(RenderMode.InteractiveServer)
+            .RegisterPersistentService<InteractiveAutoService>(RenderMode.InteractiveAuto)
+            .RegisterPersistentService<InteractiveWebAssemblyService>(RenderMode.InteractiveWebAssembly)
             .AddInteractiveWebAssemblyComponents()
-            .AddInteractiveServerComponents()
+            .AddInteractiveServerComponents(options =>
+            {
+                if (Configuration.GetValue<bool>("DisableReconnectionCache"))
+                {
+                    // This disables the reconnection cache, which forces the server to persist the circuit state.
+                    options.DisconnectedCircuitMaxRetained = 0;
+                    options.DetailedErrors = true;
+                }
+            })
             .AddAuthenticationStateSerialization(options =>
             {
                 bool.TryParse(Configuration["SerializeAllClaims"], out var serializeAllClaims);
                 options.SerializeAllClaims = serializeAllClaims;
             });
+
+        if (Configuration.GetValue<bool>("UseHybridCache"))
+        {
+            services.AddHybridCache();
+        }
+
+        services.AddScoped<InteractiveWebAssemblyService>();
+        services.AddScoped<InteractiveServerService>();
+        services.AddScoped<InteractiveAutoService>();
+
+        // Register custom serializer for E2E testing of persistent component state serialization extensibility
+        services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
 
         services.AddHttpContextAccessor();
         services.AddSingleton<AsyncOperationService>();
@@ -64,48 +93,84 @@ public class RazorComponentEndpointsStartup<TRootComponent>
 
         app.Map("/subdir", app =>
         {
-            WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
-
-            if (!env.IsDevelopment())
+            app.Map("/reexecution", reexecutionApp =>
             {
-                app.UseExceptionHandler("/Error", createScopeForErrors: true);
-            }
-
-            app.UseRouting();
-            UseFakeAuthState(app);
-            app.UseAntiforgery();
-
-            app.Use((ctx, nxt) =>
-            {
-                if (ctx.Request.Query.ContainsKey("add-csp"))
+                app.Map("/trigger-404", app =>
                 {
-                    ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
-                }
-                return nxt();
+                    app.Run(async context =>
+                    {
+                        context.Response.StatusCode = 404;
+                        await context.Response.WriteAsync("Triggered a 404 status code.");
+                    });
+                });
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
+                reexecutionApp.UseRouting();
+
+                reexecutionApp.UseAntiforgery();
+                ConfigureEndpoints(reexecutionApp, env);
             });
 
-            _ = app.UseEndpoints(endpoints =>
+            ConfigureSubdirPipeline(app, env);
+        });
+    }
+
+    private void ConfigureSubdirPipeline(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        WebAssemblyTestHelper.ServeCoopHeadersIfWebAssemblyThreadingEnabled(app);
+
+        if (!env.IsDevelopment())
+        {
+            app.UseExceptionHandler("/Error", createScopeForErrors: true);
+        }
+
+        app.UseRouting();
+        UseFakeAuthState(app);
+        app.UseAntiforgery();
+
+        app.Use((ctx, nxt) =>
+        {
+            if (ctx.Request.Query.ContainsKey("add-csp"))
+            {
+                ctx.Response.Headers.Add("Content-Security-Policy", "script-src 'self' 'unsafe-inline'");
+            }
+            return nxt();
+        });
+        ConfigureEndpoints(app, env);
+    }
+
+    private void ConfigureEndpoints(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        _ = app.UseEndpoints(endpoints =>
+        {
+            var contentRootStaticAssetsPath = Path.Combine(env.ContentRootPath, "Components.TestServer.staticwebassets.endpoints.json");
+            if (File.Exists(contentRootStaticAssetsPath))
+            {
+                endpoints.MapStaticAssets(contentRootStaticAssetsPath);
+            }
+            else
             {
                 endpoints.MapStaticAssets();
-                _ = endpoints.MapRazorComponents<TRootComponent>()
-                    .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
-                    .AddInteractiveServerRenderMode(options =>
-                    {
-                        var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
-                        options.DisableWebSocketCompression = config.IsCompressionDisabled;
+            }
 
-                        options.ContentSecurityFrameAncestorsPolicy = config.CspPolicy;
+            _ = endpoints.MapRazorComponents<TRootComponent>()
+                .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"))
+                .AddAdditionalAssemblies(Assembly.Load("Components.WasmMinimal"))
+                .AddInteractiveServerRenderMode(options =>
+                {
+                    var config = app.ApplicationServices.GetRequiredService<WebSocketCompressionConfiguration>();
+                    options.DisableWebSocketCompression = config.IsCompressionDisabled;
 
-                        options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
-                    })
-                    .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
+                    options.ContentSecurityFrameAncestorsPolicy = config.CspPolicy;
 
-                NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
-                StreamingRenderingForm.MapEndpoints(endpoints);
-                InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
+                    options.ConfigureWebSocketAcceptContext = config.ConfigureWebSocketAcceptContext;
+                })
+                .AddInteractiveWebAssemblyRenderMode(options => options.PathPrefix = "/WasmMinimal");
 
-                MapEnhancedNavigationEndpoints(endpoints);
-            });
+            NotEnabledStreamingRenderingComponent.MapEndpoints(endpoints);
+            StreamingRenderingForm.MapEndpoints(endpoints);
+            InteractiveStreamingRenderingComponent.MapEndpoints(endpoints);
+
+            MapEnhancedNavigationEndpoints(endpoints);
         });
     }
 

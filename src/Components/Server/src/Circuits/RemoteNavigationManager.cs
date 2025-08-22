@@ -17,6 +17,12 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     private readonly ILogger<RemoteNavigationManager> _logger;
     private IJSRuntime _jsRuntime;
     private bool? _navigationLockStateBeforeJsRuntimeAttached;
+    private const string _disableThrowNavigationException = "Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException";
+
+    [FeatureSwitchDefinition(_disableThrowNavigationException)]
+    private static bool _throwNavigationException =>
+        !AppContext.TryGetSwitch(_disableThrowNavigationException, out var switchValue) || !switchValue;
+    private Func<string, Task>? _onNavigateTo;
 
     public event EventHandler<Exception>? UnhandledException;
 
@@ -41,6 +47,19 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     /// <param name="uri">The absolute URI.</param>
     public new void Initialize(string baseUri, string uri)
     {
+        base.Initialize(baseUri, uri);
+        NotifyLocationChanged(isInterceptedLink: false);
+    }
+
+    /// <summary>
+    /// Initializes the <see cref="NavigationManager" />.
+    /// </summary>
+    /// <param name="baseUri">The base URI.</param>
+    /// <param name="uri">The absolute URI.</param>
+    /// <param name="onNavigateTo">A delegate that points to a method handling navigation events. </param>
+    public void Initialize(string baseUri, string uri, Func<string, Task> onNavigateTo)
+    {
+        _onNavigateTo += onNavigateTo;
         base.Initialize(baseUri, uri);
         NotifyLocationChanged(isInterceptedLink: false);
     }
@@ -88,7 +107,16 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         if (_jsRuntime == null)
         {
             var absoluteUriString = ToAbsoluteUri(uri).AbsoluteUri;
-            throw new NavigationException(absoluteUriString);
+            if (_throwNavigationException)
+            {
+                throw new NavigationException(absoluteUriString);
+            }
+            if (_onNavigateTo == null)
+            {
+                throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
+            }
+            _ = _onNavigateTo(absoluteUriString);
+            return;
         }
 
         _ = PerformNavigationAsync();
@@ -129,7 +157,16 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
         if (_jsRuntime == null)
         {
             var absoluteUriString = ToAbsoluteUri(Uri).AbsoluteUri;
-            throw new NavigationException(absoluteUriString);
+            if (_throwNavigationException)
+            {
+                throw new NavigationException(absoluteUriString);
+            }
+            if (_onNavigateTo == null)
+            {
+                throw new InvalidOperationException($"'{GetType().Name}' method for endpoint-based navigation has not been initialized.");
+            }
+            _ = _onNavigateTo(absoluteUriString);
+            return;
         }
 
         _ = RefreshAsync();
@@ -196,6 +233,9 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
 
         [LoggerMessage(5, LogLevel.Error, "Failed to refresh", EventName = "RefreshFailed")]
         public static partial void RefreshFailed(ILogger logger, Exception exception);
+
+        [LoggerMessage(1, LogLevel.Debug, "Requesting not found", EventName = "RequestingNotFound")]
+        public static partial void RequestingNotFound(ILogger logger);
 
         [LoggerMessage(6, LogLevel.Debug, "Navigation completed when changing the location to {Uri}", EventName = "NavigationCompleted")]
         public static partial void NavigationCompleted(ILogger logger, string uri);

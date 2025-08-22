@@ -4,8 +4,9 @@
 using System;
 using System.Text;
 using Xunit;
+using Microsoft.AspNetCore.Internal;
 
-namespace Microsoft.AspNetCore.HttpSys.Internal;
+namespace Microsoft.AspNetCore.Internal.Tests;
 
 public class PathNormalizerTests
 {
@@ -53,6 +54,29 @@ public class PathNormalizerTests
     [InlineData("/", "/")]
     [InlineData("/no/segments", "/no/segments")]
     [InlineData("/no/segments/", "/no/segments/")]
+    [InlineData("/././", "/")]
+    [InlineData("/./.", "/")]
+    [InlineData("/../..", "/")]
+    [InlineData("/../../", "/")]
+    [InlineData("/../.", "/")]
+    [InlineData("/./..", "/")]
+    [InlineData("/.././", "/")]
+    [InlineData("/./../", "/")]
+    [InlineData("/..", "/")]
+    [InlineData("/.", "/")]
+    [InlineData("/a/abc/../abc/../b", "/a/b")]
+    [InlineData("/a/abc/.a", "/a/abc/.a")]
+    [InlineData("/a/abc/..a", "/a/abc/..a")]
+    [InlineData("/a/.b/c", "/a/.b/c")]
+    [InlineData("/a/.b/../c", "/a/c")]
+    [InlineData("/a/../.b/./c", "/.b/c")]
+    [InlineData("/a/.b/./c", "/a/.b/c")]
+    [InlineData("/a/./.b/./c", "/a/.b/c")]
+    [InlineData("/a/..b/c", "/a/..b/c")]
+    [InlineData("/a/..b/../c", "/a/c")]
+    [InlineData("/a/../..b/./c", "/..b/c")]
+    [InlineData("/a/..b/./c", "/a/..b/c")]
+    [InlineData("/a/./..b/./c", "/a/..b/c")]
     public void RemovesDotSegments(string input, string expected)
     {
         var data = Encoding.ASCII.GetBytes(input);

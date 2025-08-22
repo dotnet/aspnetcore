@@ -26,7 +26,7 @@ public sealed class EndpointSummaryAttribute : Attribute, IEndpointSummaryMetada
     /// <inheritdoc />
     public string Summary { get; }
 
-    /// <inheritdoc/>>
+    /// <inheritdoc/>
     public override string ToString()
     {
         return DebuggerHelpers.GetDebugText(nameof(Summary), Summary);

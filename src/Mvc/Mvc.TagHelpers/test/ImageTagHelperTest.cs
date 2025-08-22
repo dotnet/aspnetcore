@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -160,6 +161,69 @@ public class ImageTagHelperTest
         Assert.Equal("/images/test-image.png?v=f4OxZX_x_FO5LcGBSKHWXfwtSx-j1ncoSt3SABJtkGk", srcAttribute.Value);
     }
 
+    [Theory]
+    [InlineData("~/images/test-image.png", "/bar", "/bar/images/test-image.fingerprint.png")]
+    [InlineData("/images/test-image.png", null, "/images/test-image.fingerprint.png")]
+    [InlineData("images/test-image.png", null, "images/test-image.fingerprint.png")]
+    public void RendersImageTag_AddsFileVersion_WithStaticAssets(string src, string pathBase, string expectedValue)
+    {
+        // Arrange
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                    { "alt", new HtmlString("Alt image text") },
+                    { "src", src },
+                    { "asp-append-version", "true" }
+            });
+        var output = MakeImageTagHelperOutput(attributes: new TagHelperAttributeList
+            {
+                { "alt", new HtmlString("Alt image text") },
+            });
+        var hostingEnvironment = MakeHostingEnvironment();
+        var viewContext = MakeViewContext();
+
+        var urlHelperFactory = MakeUrlHelperFactory(value =>
+        {
+            if (value.StartsWith("~/", StringComparison.Ordinal))
+            {
+                return pathBase == null ? value.Replace("~/", string.Empty) : value.Replace("~/", pathBase + "/");
+            }
+            return value;
+        });
+
+        var helper = GetHelper(urlHelperFactory: urlHelperFactory);
+        helper.ViewContext = viewContext;
+        helper.ViewContext.HttpContext = new DefaultHttpContext();
+        helper.ViewContext.HttpContext.SetEndpoint(CreateEndpoint());
+        if (pathBase != null)
+        {
+            helper.ViewContext.HttpContext.Request.PathBase = new PathString(pathBase);
+        }
+        helper.Src = src;
+        helper.AppendVersion = true;
+
+        // Act
+        helper.Process(context, output);
+
+        // Assert
+        Assert.True(output.Content.GetContent().Length == 0);
+        Assert.Equal("img", output.TagName);
+        Assert.Equal(2, output.Attributes.Count);
+        var srcAttribute = Assert.Single(output.Attributes, attr => attr.Name.Equals("src"));
+        Assert.Equal(expectedValue, srcAttribute.Value);
+    }
+
+    private Endpoint CreateEndpoint()
+    {
+        return new Endpoint(
+            (context) => Task.CompletedTask,
+            new EndpointMetadataCollection(
+                [new ResourceAssetCollection([
+                    new("images/test-image.fingerprint.png", [new ResourceAssetProperty("label", "images/test-image.png")]),
+                ])]),
+            "Test");
+    }
+
     [Fact]
     public void RendersImageTag_DoesNotAddFileVersion()
     {
@@ -226,7 +290,7 @@ public class ImageTagHelperTest
 
     private static ViewContext MakeViewContext(string requestPathBase = null)
     {
-        var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+        var actionContext = new ActionContext(new DefaultHttpContext(), new AspNetCore.Routing.RouteData(), new ActionDescriptor());
         if (requestPathBase != null)
         {
             actionContext.HttpContext.Request.PathBase = new Http.PathString(requestPathBase);
@@ -314,13 +378,13 @@ public class ImageTagHelperTest
         return hostingEnvironment.Object;
     }
 
-    private static IUrlHelperFactory MakeUrlHelperFactory()
+    private static IUrlHelperFactory MakeUrlHelperFactory(Func<string, string> contentAction = null)
     {
         var urlHelper = new Mock<IUrlHelper>();
-
+        contentAction ??= (url) => url;
         urlHelper
             .Setup(helper => helper.Content(It.IsAny<string>()))
-            .Returns(new Func<string, string>(url => url));
+            .Returns(new Func<string, string>(contentAction));
 
         var urlHelperFactory = new Mock<IUrlHelperFactory>();
         urlHelperFactory

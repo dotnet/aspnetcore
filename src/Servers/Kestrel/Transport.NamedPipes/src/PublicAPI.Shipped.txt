@@ -1,6 +1,16 @@
 #nullable enable
 Microsoft.AspNetCore.Hosting.WebHostBuilderNamedPipeExtensions
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext.CreateNamedPipeServerStreamContext() -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext.NamedPipeEndPoint.get -> Microsoft.AspNetCore.Connections.NamedPipeEndPoint!
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext.NamedPipeEndPoint.init -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext.PipeOptions.get -> System.IO.Pipes.PipeOptions
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext.PipeOptions.init -> void
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext.PipeSecurity.get -> System.IO.Pipes.PipeSecurity?
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext.PipeSecurity.init -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.CreateNamedPipeServerStream.get -> System.Func<Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext!, System.IO.Pipes.NamedPipeServerStream!>!
+Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.CreateNamedPipeServerStream.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.CurrentUserOnly.get -> bool
 Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.CurrentUserOnly.set -> void
 Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.ListenerQueueCount.get -> int
@@ -14,3 +24,4 @@ Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptio
 Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.PipeSecurity.set -> void
 static Microsoft.AspNetCore.Hosting.WebHostBuilderNamedPipeExtensions.UseNamedPipes(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
 static Microsoft.AspNetCore.Hosting.WebHostBuilderNamedPipeExtensions.UseNamedPipes(this Microsoft.AspNetCore.Hosting.IWebHostBuilder! hostBuilder, System.Action<Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions!>! configureOptions) -> Microsoft.AspNetCore.Hosting.IWebHostBuilder!
+static Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.NamedPipeTransportOptions.CreateDefaultNamedPipeServerStream(Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.CreateNamedPipeServerStreamContext! context) -> System.IO.Pipes.NamedPipeServerStream!

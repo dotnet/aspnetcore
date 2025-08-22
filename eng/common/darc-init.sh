@@ -2,7 +2,7 @@
 
 source="${BASH_SOURCE[0]}"
 darcVersion=''
-versionEndpoint='https://maestro.dot.net/api/assets/darc-version?api-version=2019-01-16'
+versionEndpoint='https://maestro.dot.net/api/assets/darc-version?api-version=2020-02-20'
 verbosity='minimal'
 
 while [[ $# > 0 ]]; do
@@ -68,7 +68,7 @@ function InstallDarcCli {
     fi
   fi
 
-  local arcadeServicesSource="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json"
+  local arcadeServicesSource="https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"
 
   echo "Installing Darc CLI version $darcVersion..."
   echo "You may need to restart your command shell if this is the first dotnet tool you have installed."

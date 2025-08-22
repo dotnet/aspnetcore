@@ -184,9 +184,11 @@ public class Startup
                 {
                     cookieOptions.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
                     cookieOptions.Secure = true;
+                    cookieOptions.Extensions.Add("partitioned"); // Required by Chromium
 
                     expiredCookieOptions.SameSite = Microsoft.AspNetCore.Http.SameSiteMode.None;
                     expiredCookieOptions.Secure = true;
+                    expiredCookieOptions.Extensions.Add("partitioned"); // Required by Chromium
                 }
                 context.Response.Cookies.Append("testCookie", "testValue", cookieOptions);
                 context.Response.Cookies.Append("testCookie2", "testValue2", cookieOptions);

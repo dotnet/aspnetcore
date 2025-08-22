@@ -197,8 +197,10 @@ public class BufferWriterTests : IDisposable
         writer.Commit();
         Assert.Equal(13, writer.BytesCommitted);
 
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Pipe.Writer.FlushAsync().GetAwaiter().GetResult();
         var readResult = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         // Consuming the buffer does not change BytesCommitted
         Assert.Equal(13, readResult.Buffer.Length);

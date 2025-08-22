@@ -65,7 +65,7 @@ public class TargetingPackTests
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppPackageVersion().Split('-', 2)[0];
+        var versionStringWithoutPrereleaseTag = TestData.GetMicrosoftNETCoreAppVersion().Split('-', 2)[0];
         var version = Version.Parse(versionStringWithoutPrereleaseTag);
         var aspnetcoreVersionString = TestData.GetSharedFxVersion().Split('-', 2)[0];
         var aspnetcoreVersion = Version.Parse(aspnetcoreVersionString);
@@ -144,10 +144,11 @@ public class TargetingPackTests
             .Split(';', StringSplitOptions.RemoveEmptyEntries)
             .ToHashSet();
 
-        Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count);
+        // PackageOverrides will contain all Aspnetcore/Runtime ref pack libs, plus an entry for Microsoft.AspNetCore.App
+        Assert.Equal(packageOverrideFileLines.Length, runtimeDependencies.Count + aspnetcoreDependencies.Count + 1);
 
         // PackageOverrides versions should remain at Major.Minor.0 while servicing.
-        var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppPackageVersion();
+        var netCoreAppPackageVersion = TestData.GetMicrosoftNETCoreAppVersion();
         Assert.True(
             NuGetVersion.TryParse(netCoreAppPackageVersion, out var parsedVersion),
             "MicrosoftNETCoreAppPackageVersion must be convertable to a NuGetVersion.");
@@ -177,13 +178,13 @@ public class TargetingPackTests
             {
                 Assert.Equal(netCoreAppPackageVersion, packageVersion);
             }
-            else if (aspnetcoreDependencies.Contains(packageName))
+            else if (packageName.Equals("Microsoft.AspNetCore.App", StringComparison.Ordinal) || aspnetcoreDependencies.Contains(packageName))
             {
                 Assert.Equal(aspNetCoreAppPackageVersion, packageVersion);
             }
             else
             {
-                Assert.True(false, $"{packageName} is not a recognized aspNetCore or runtime dependency");
+                Assert.Fail($"{packageName} is not a recognized aspNetCore or runtime dependency");
             }
         });
     }

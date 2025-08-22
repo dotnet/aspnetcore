@@ -15,6 +15,8 @@ using Xunit.Abstractions;
 
 namespace Templates.Test;
 
+#pragma warning disable xUnit1041 // Fixture arguments to test classes must have fixture sources
+
 public class BaselineTest : LoggedTest
 {
     private static readonly string BaselineDefinitionFileResourceName = "Templates.Tests.template-baselines.json";

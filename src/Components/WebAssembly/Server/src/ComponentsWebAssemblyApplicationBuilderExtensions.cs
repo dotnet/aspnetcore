@@ -94,6 +94,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
         AddMapping(contentTypeProvider, ".br", MediaTypeNames.Application.Octet);
         AddMapping(contentTypeProvider, ".dat", MediaTypeNames.Application.Octet);
         AddMapping(contentTypeProvider, ".blat", MediaTypeNames.Application.Octet);
+        AddMapping(contentTypeProvider, ".mjs", MediaTypeNames.Text.JavaScript);
 
         options.ContentTypeProvider = contentTypeProvider;
 
@@ -109,7 +110,7 @@ public static class ComponentsWebAssemblyApplicationBuilderExtensions
             var fileExtension = Path.GetExtension(requestPath.Value);
             if (string.Equals(fileExtension, ".gz") || string.Equals(fileExtension, ".br"))
             {
-                // When we are serving framework files (under _framework/ we perform content negotiation
+                // When we are serving framework files (under _framework/) we perform content negotiation
                 // on the accept encoding and replace the path with <<original>>.gz|br if we can serve gzip or brotli content
                 // respectively.
                 // Here we simply calculate the original content type by removing the extension and apply it

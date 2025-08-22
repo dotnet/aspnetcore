@@ -517,7 +517,7 @@ public class DefaultHealthCheckServiceTest
         await checkHealthTask;
 
         // Assert
-        Assert.Collection(checkHealthTask.Result.Entries,
+        Assert.Collection((await checkHealthTask).Entries,
             entry =>
             {
                 Assert.Equal("test1", entry.Key);

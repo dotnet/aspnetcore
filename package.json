@@ -1,5 +1,5 @@
 {
-  "name": "aspnetcore",
+  "name": "@microsoft/aspnetcore",
   "version": "1.0.0",
   "private": true,
   "workspaces": [

@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -21,14 +22,14 @@ internal sealed class IISHttpServer : IServer
     private const string WebSocketVersionString = "WEBSOCKET_VERSION";
 
     private IISContextFactory? _iisContextFactory;
-    private readonly MemoryPool<byte> _memoryPool = new PinnedBlockMemoryPool();
+    private readonly MemoryPool<byte> _memoryPool;
     private GCHandle _httpServerHandle;
     private readonly IHostApplicationLifetime _applicationLifetime;
     private readonly ILogger<IISHttpServer> _logger;
     private readonly IISServerOptions _options;
     private readonly IISNativeApplication _nativeApplication;
     private readonly ServerAddressesFeature _serverAddressesFeature;
-    private readonly string? _virtualPath;
+    private string? _virtualPath;
 
     private readonly TaskCompletionSource _shutdownSignal = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     private bool? _websocketAvailable;
@@ -60,17 +61,17 @@ internal sealed class IISHttpServer : IServer
         IHostApplicationLifetime applicationLifetime,
         IAuthenticationSchemeProvider authentication,
         IConfiguration configuration,
+        IMemoryPoolFactory<byte> memoryPoolFactory,
         IOptions<IISServerOptions> options,
         ILogger<IISHttpServer> logger
         )
     {
+        _memoryPool = memoryPoolFactory.Create(new MemoryPoolOptions { Owner = "iis" });
         _nativeApplication = nativeApplication;
         _applicationLifetime = applicationLifetime;
         _logger = logger;
         _options = options.Value;
         _serverAddressesFeature = new ServerAddressesFeature();
-        var iisConfigData = NativeMethods.HttpGetApplicationProperties();
-        _virtualPath = iisConfigData.pwzVirtualApplicationPath;
 
         if (_options.ForwardWindowsAuthentication)
         {
@@ -106,6 +107,9 @@ internal sealed class IISHttpServer : IServer
             (IntPtr)_httpServerHandle,
             (IntPtr)_httpServerHandle);
 
+        var iisConfigData = NativeMethods.HttpGetApplicationProperties();
+        _virtualPath = iisConfigData.pwzVirtualApplicationPath;
+
         _serverAddressesFeature.Addresses = _options.ServerAddresses;
 
         return Task.CompletedTask;
@@ -132,7 +136,7 @@ internal sealed class IISHttpServer : IServer
         _disposed = true;
 
         // Block any more calls into managed from native as we are unloading.
-        _nativeApplication.StopCallsIntoManaged();
+        _nativeApplication.Stop();
         _shutdownSignal.TrySetResult();
 
         if (_httpServerHandle.IsAllocated)
@@ -141,7 +145,6 @@ internal sealed class IISHttpServer : IServer
         }
 
         _memoryPool.Dispose();
-        _nativeApplication.Dispose();
     }
 
     [UnmanagedCallersOnly]
@@ -261,7 +264,7 @@ internal sealed class IISHttpServer : IServer
                 return;
             }
 
-            server._nativeApplication.StopCallsIntoManaged();
+            server._nativeApplication.Stop();
             server._shutdownSignal.TrySetResult();
             server._cancellationTokenRegistration.Dispose();
         }

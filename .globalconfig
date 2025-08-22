@@ -12,3 +12,20 @@ dotnet_diagnostic.CA1310.severity = error
 
 # TODO: remove this - https://github.com/dotnet/aspnetcore/issues/47912
 dotnet_diagnostic.EnableGenerateDocumentationFile.severity = none
+
+# Referencing types that are defined in M.CA.Workspaces is not appropriate
+# for analyzers or source generators that might be invoked from a command
+# line build because editor-specific types in M.CA.Workspaces are not
+# available in the command line. By default, Roslyn enables RS1038
+# which does a strict check and throws if a reference to M.CA.Workspaces
+# is included in the assembly. Here, we opt for a more relaxed check that
+# validates if M.CA.Workspace type references are included in the specific
+# Roslyn components that might be loaded in command line builds. We do this
+# because we ship editor-specific components, like the routing completion
+# providers, in the shared framework and want to avoid the analyzers warning
+# on the M.CA.Workspaces reference required for their components even though
+# they are never loaded in command line builds. Note: the "relaxed" check that is
+# enabled here will actually examine the types loaded by each individually analyzer
+# to see if they are from a Workspaces assembly so it will take longer than the
+# greedier (and stricter) check for references overall.
+roslyn_correctness.assembly_reference_validation = relaxed

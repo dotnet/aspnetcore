@@ -1,8 +1,5 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions
-Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider
-Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerAuthenticationStateProvider() -> void
-Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void
-override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!
-static Microsoft.AspNetCore.Components.Endpoints.Infrastructure.ComponentEndpointConventionBuilderHelper.GetEndpointRouteBuilder(Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Routing.IEndpointRouteBuilder!
-static Microsoft.AspNetCore.Components.Routing.RazorComponentsEndpointHttpContextExtensions.AcceptsInteractiveRouting(this Microsoft.AspNetCore.Http.HttpContext! context) -> bool
+Microsoft.AspNetCore.Components.ResourcePreloader
+Microsoft.AspNetCore.Components.ResourcePreloader.ResourcePreloader() -> void
+Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions
+static Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions.RegisterPersistentService<TPersistentService>(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, Microsoft.AspNetCore.Components.IComponentRenderMode! renderMode) -> Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder!

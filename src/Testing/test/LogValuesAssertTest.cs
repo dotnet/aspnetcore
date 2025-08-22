@@ -119,8 +119,8 @@ public class LogValuesAssertTest
         var equalException = Assert.Throws<EqualException>(
             () => LogValuesAssert.Contains(expectedValues, actualValues));
 
-        Assert.Equal(GetString(expectedValues), equalException.Expected);
-        Assert.Equal(GetString(actualValues), equalException.Actual);
+        Assert.Contains(GetString(expectedValues), equalException.Message);
+        Assert.Contains(GetString(actualValues), equalException.Message);
     }
 
     [Fact]
@@ -207,8 +207,8 @@ public class LogValuesAssertTest
         var equalException = Assert.Throws<EqualException>(
             () => LogValuesAssert.Contains(expectedValues, actualValues));
 
-        Assert.Equal(GetString(expectedValues), equalException.Expected);
-        Assert.Equal(GetString(actualValues), equalException.Actual);
+        Assert.Contains(GetString(expectedValues), equalException.Message);
+        Assert.Contains(GetString(actualValues), equalException.Message);
     }
 
     private string GetString(IEnumerable<KeyValuePair<string, object>> logValues)

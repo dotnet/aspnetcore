@@ -67,7 +67,7 @@ public class ParametersTests
         Assert.Equal("parameterThree", operation.Parameters[2].Name);
         // body with one parameter
         Assert.NotNull(operation.RequestBody);
-        Assert.Equal(1, swagger.Components.Schemas["RequestBody"].Properties.Count);
+        Assert.Single(swagger.Components.Schemas["RequestBody"].Properties);
     }
 
     [Fact]
@@ -79,7 +79,7 @@ public class ParametersTests
         // Assert
         var path = swagger.Paths["/v1/parameters4/{parameterTwo}"];
         Assert.True(path.Operations.TryGetValue(OperationType.Post, out var operation));
-        Assert.Equal(1, operation.Parameters.Count);
+        Assert.Single(operation.Parameters);
         Assert.Equal(ParameterLocation.Path, operation.Parameters[0].In);
         Assert.Equal("parameterTwo", operation.Parameters[0].Name);
         // body with four parameters
@@ -110,7 +110,7 @@ public class ParametersTests
         // Assert
         var path = swagger.Paths["/v1/parameters6"];
         Assert.True(path.Operations.TryGetValue(OperationType.Get, out var operation));
-        Assert.Equal(1, operation.Parameters.Count);
+        Assert.Single(operation.Parameters);
         Assert.Equal(ParameterLocation.Query, operation.Parameters[0].In);
         Assert.Equal("parameterOne", operation.Parameters[0].Name);
         Assert.Equal("array", operation.Parameters[0].Schema.Type);

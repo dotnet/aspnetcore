@@ -28,5 +28,7 @@ internal class RazorComponentDataSourceOptions
                 _ => throw new InvalidOperationException($"Unknown render mode: {obj}"),
             });
 
+    public string? ManifestPath { get; set; }
+
     internal ISet<IComponentRenderMode> ConfiguredRenderModes { get; } = new HashSet<IComponentRenderMode>(RenderModeComparer);
 }

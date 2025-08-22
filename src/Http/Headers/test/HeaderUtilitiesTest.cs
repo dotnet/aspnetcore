@@ -90,10 +90,10 @@ public class HeaderUtilitiesTest
     [InlineData("directive1, directive2=80", "directive")]
     [InlineData("directive1=;, directive2=10", "directive1")]
     [InlineData("directive1;directive2=10", "directive2")]
-    public void TryParseSeconds_Fails(string headerValues, string targetValue)
+    public void TryParseSeconds_Fails(string? headerValues, string? targetValue)
     {
         TimeSpan? value;
-        Assert.False(HeaderUtilities.TryParseSeconds(new StringValues(headerValues), targetValue, out value));
+        Assert.False(HeaderUtilities.TryParseSeconds(new StringValues(headerValues), targetValue!, out value));
     }
 
     [Theory]
@@ -168,9 +168,9 @@ public class HeaderUtilitiesTest
     [InlineData("directive1, directive2=80", "directive", false)]
     [InlineData("directive1;, directive2=80", "directive", false)]
     [InlineData("directive1=value;q=0.6;directive2 = 42 ", "directive2", false)]
-    public void ContainsCacheDirective_MatchesExactValue(string headerValues, string targetValue, bool contains)
+    public void ContainsCacheDirective_MatchesExactValue(string? headerValues, string? targetValue, bool contains)
     {
-        Assert.Equal(contains, HeaderUtilities.ContainsCacheDirective(new StringValues(headerValues), targetValue));
+        Assert.Equal(contains, HeaderUtilities.ContainsCacheDirective(new StringValues(headerValues), targetValue!));
     }
 
     [Theory]
@@ -180,7 +180,7 @@ public class HeaderUtilitiesTest
     [InlineData("a")]
     [InlineData("1.1")]
     [InlineData("9223372036854775808")] // long.MaxValue + 1
-    public void TryParseNonNegativeInt64_Fails(string valueString)
+    public void TryParseNonNegativeInt64_Fails(string? valueString)
     {
         long value = 1;
         Assert.False(HeaderUtilities.TryParseNonNegativeInt64(valueString, out value));
@@ -205,7 +205,7 @@ public class HeaderUtilitiesTest
     [InlineData("1.1")]
     [InlineData("1,000")]
     [InlineData("2147483648")] // int.MaxValue + 1
-    public void TryParseNonNegativeInt32_Fails(string valueString)
+    public void TryParseNonNegativeInt32_Fails(string? valueString)
     {
         int value = 1;
         Assert.False(HeaderUtilities.TryParseNonNegativeInt32(valueString, out value));
@@ -231,7 +231,7 @@ public class HeaderUtilitiesTest
     {
         var actual = HeaderUtilities.RemoveQuotes(input);
 
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.AsSpan(), actual);
     }
     [Theory]
     [InlineData("\"hello\"", true)]
@@ -258,7 +258,7 @@ public class HeaderUtilitiesTest
     {
         var actual = HeaderUtilities.UnescapeAsQuotedString(input);
 
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.AsSpan(), actual);
     }
 
     [Theory]
@@ -275,7 +275,7 @@ public class HeaderUtilitiesTest
     {
         var actual = HeaderUtilities.EscapeAsQuotedString(input);
 
-        Assert.Equal(expected, actual);
+        Assert.Equal(expected.AsSpan(), actual);
     }
 
     [Theory]

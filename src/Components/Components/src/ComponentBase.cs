@@ -43,9 +43,14 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     }
 
     /// <summary>
-    /// Gets the <see cref="ComponentPlatform"/> the component is running on.
+    /// Gets the <see cref="Components.RendererInfo"/> the component is running on.
     /// </summary>
-    protected ComponentPlatform Platform => _renderHandle.Platform;
+    protected RendererInfo RendererInfo => _renderHandle.RendererInfo;
+
+    /// <summary>
+    /// Gets the <see cref="ResourceAssetCollection"/> for the application.
+    /// </summary>
+    protected ResourceAssetCollection Assets => _renderHandle.Assets;
 
     /// <summary>
     /// Gets the <see cref="IComponentRenderMode"/> assigned to this component.
@@ -278,7 +283,10 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
             // to defer calling StateHasChanged up until the first bit of async code happens or until
             // the end. Additionally, we want to avoid calling StateHasChanged if no
             // async work is to be performed.
-            StateHasChanged();
+            if (task.Status != TaskStatus.Faulted)
+            {
+                StateHasChanged();
+            }
 
             try
             {
@@ -314,7 +322,10 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
 
         // We always call StateHasChanged here as we want to trigger a rerender after OnParametersSet and
         // the synchronous part of OnParametersSetAsync has run.
-        StateHasChanged();
+        if (task.Status != TaskStatus.Faulted)
+        {
+            StateHasChanged();
+        }
 
         return shouldAwaitTask ?
             CallStateHasChangedOnAsyncCompletion(task) :

@@ -197,7 +197,7 @@ HostFxrResolver::TryGetHostFxrPath(
     size_t size = MAX_PATH * 2;
     hostfxrPath.resize(size);
 
-    get_hostfxr_parameters params;
+    get_hostfxr_parameters params{};
     params.size = sizeof(get_hostfxr_parameters);
     params.assembly_path = applicationPath.c_str();
     params.dotnet_root = dotnetRoot.c_str();
@@ -393,37 +393,36 @@ HostFxrResolver::GetAbsolutePathToDotnetFromHostfxr(const fs::path& hostfxrPath)
 // Tries to call where.exe to find the location of dotnet.exe.
 // Will check that the bitness of dotnet matches the current
 // worker process bitness.
-// Returns true if a valid dotnet was found, else false.R
+// Returns true if a valid dotnet was found, else false.
 //
 std::optional<fs::path>
 HostFxrResolver::InvokeWhereToFindDotnet()
 {
     HRESULT             hr = S_OK;
     // Arguments to call where.exe
-    STARTUPINFOW        startupInfo = { 0 };
-    PROCESS_INFORMATION processInformation = { 0 };
-    SECURITY_ATTRIBUTES securityAttributes;
+    STARTUPINFOW        startupInfo{};
+    PROCESS_INFORMATION processInformation{};
+    SECURITY_ATTRIBUTES securityAttributes{};
 
-    CHAR                pzFileContents[READ_BUFFER_SIZE];
+    CHAR                pzFileContents[READ_BUFFER_SIZE]{0};
     HandleWrapper<InvalidHandleTraits>     hStdOutReadPipe;
     HandleWrapper<InvalidHandleTraits>     hStdOutWritePipe;
     HandleWrapper<InvalidHandleTraits>     hProcess;
     HandleWrapper<InvalidHandleTraits>     hThread;
-    CComBSTR            pwzDotnetName = NULL;
-    DWORD               dwFilePointer;
-    BOOL                fIsCurrentProcess64Bit;
-    DWORD               dwExitCode;
+    CComBSTR            pwzDotnetName = nullptr;
+    DWORD               dwFilePointer = 0;
+    BOOL                fIsCurrentProcess64Bit = FALSE;
+    DWORD               dwExitCode = 0;
     STRU                struDotnetSubstring;
     STRU                struDotnetLocationsString;
-    DWORD               dwNumBytesRead;
-    DWORD               dwBinaryType;
+    DWORD               dwNumBytesRead = 0;
     INT                 index = 0;
     INT                 prevIndex = 0;
     std::optional<fs::path> result;
 
     // Set the security attributes for the read/write pipe
     securityAttributes.nLength = sizeof(securityAttributes);
-    securityAttributes.lpSecurityDescriptor = NULL;
+    securityAttributes.lpSecurityDescriptor = nullptr;
     securityAttributes.bInheritHandle = TRUE;
 
     LOG_INFO(L"Invoking where.exe to find dotnet.exe");
@@ -443,14 +442,14 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     pwzDotnetName = L"\"where.exe\" dotnet.exe";
 
     // Create a process to invoke where.exe
-    FINISHED_LAST_ERROR_IF(!CreateProcessW(NULL,
+    FINISHED_LAST_ERROR_IF(!CreateProcessW(nullptr,
         pwzDotnetName,
-        NULL,
-        NULL,
+        nullptr,
+        nullptr,
         TRUE,
         CREATE_NO_WINDOW,
-        NULL,
-        NULL,
+        nullptr,
+        nullptr,
         &startupInfo,
         &processInformation
     ));
@@ -480,7 +479,7 @@ HostFxrResolver::InvokeWhereToFindDotnet()
 
     // Where succeeded.
     // Reset file pointer to the beginning of the file.
-    dwFilePointer = SetFilePointer(hStdOutReadPipe, 0, NULL, FILE_BEGIN);
+    dwFilePointer = SetFilePointer(hStdOutReadPipe, 0, nullptr, FILE_BEGIN);
     if (dwFilePointer == INVALID_SET_FILE_POINTER)
     {
         FINISHED_IF_FAILED(E_FAIL);
@@ -490,7 +489,7 @@ HostFxrResolver::InvokeWhereToFindDotnet()
     // As the call to where.exe succeeded (dotnet.exe was found), ReadFile should not hang.
     // TODO consider putting ReadFile in a separate thread with a timeout to guarantee it doesn't block.
     //
-    FINISHED_LAST_ERROR_IF (!ReadFile(hStdOutReadPipe, pzFileContents, READ_BUFFER_SIZE, &dwNumBytesRead, NULL));
+    FINISHED_LAST_ERROR_IF (!ReadFile(hStdOutReadPipe, pzFileContents, READ_BUFFER_SIZE, &dwNumBytesRead, nullptr));
 
     if (dwNumBytesRead >= READ_BUFFER_SIZE)
     {
@@ -521,14 +520,7 @@ HostFxrResolver::InvokeWhereToFindDotnet()
 
         LOG_INFOF(L"Processing entry '%ls'", struDotnetSubstring.QueryStr());
 
-        if (LOG_LAST_ERROR_IF(!GetBinaryTypeW(struDotnetSubstring.QueryStr(), &dwBinaryType)))
-        {
-            continue;
-        }
-
-        LOG_INFOF(L"Binary type %d", dwBinaryType);
-
-        if (fIsCurrentProcess64Bit == (dwBinaryType == SCS_64BIT_BINARY))
+        if (fIsCurrentProcess64Bit == IsX64(struDotnetSubstring.QueryStr()))
         {
             // The bitness of dotnet matched with the current worker process bitness.
             return std::make_optional(struDotnetSubstring.QueryStr());
@@ -537,6 +529,62 @@ HostFxrResolver::InvokeWhereToFindDotnet()
 
     Finished:
     return result;
+}
+
+BOOL HostFxrResolver::IsX64(const WCHAR* dotnetPath)
+{
+    // Errors while reading from the file shouldn't throw unless
+    // file.exception(bits) is set
+    std::ifstream file(dotnetPath, std::ios::binary);
+    if (!file.is_open())
+    {
+        LOG_TRACEF(L"Failed to open file %ls", dotnetPath);
+        return false;
+    }
+
+    // Read the DOS header
+    IMAGE_DOS_HEADER dosHeader{};
+    file.read(reinterpret_cast<char*>(&dosHeader), sizeof(dosHeader));
+    if (dosHeader.e_magic != IMAGE_DOS_SIGNATURE) // 'MZ'
+    {
+        LOG_TRACEF(L"%ls is not a valid executable file (missing MZ header).", dotnetPath);
+        return false;
+    }
+
+    // Seek to the PE header
+    file.seekg(dosHeader.e_lfanew, std::ios::beg);
+
+    // Read the PE header
+    DWORD peSignature{};
+    file.read(reinterpret_cast<char*>(&peSignature), sizeof(peSignature));
+    if (peSignature != IMAGE_NT_SIGNATURE) // 'PE\0\0'
+    {
+        LOG_TRACEF(L"%ls is not a valid PE file (missing PE header).", dotnetPath);
+        return false;
+    }
+
+    // Read the file header
+    IMAGE_FILE_HEADER fileHeader{};
+    file.read(reinterpret_cast<char*>(&fileHeader), sizeof(fileHeader));
+
+    // Read the optional header magic field
+    WORD magic{};
+    file.read(reinterpret_cast<char*>(&magic), sizeof(magic));
+
+    // Determine the architecture based on the magic value
+    if (magic == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+    {
+        LOG_INFOF(L"%ls is 32-bit", dotnetPath);
+        return false;
+    }
+    else if (magic == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+    {
+        LOG_INFOF(L"%ls is 64-bit", dotnetPath);
+        return true;
+    }
+
+    LOG_INFOF(L"%ls is unknown architecture %i", dotnetPath, fileHeader.Machine);
+    return false;
 }
 
 std::optional<fs::path>

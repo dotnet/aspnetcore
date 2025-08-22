@@ -137,7 +137,7 @@ public class RemoteRendererTest
         var secondBatchTCS = new TaskCompletionSource();
         var thirdBatchTCS = new TaskCompletionSource();
 
-        var initialClient = new Mock<IClientProxy>();
+        var initialClient = new Mock<ISingleClientProxy>();
         initialClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[0]))
             .Returns(firstBatchTCS.Task);
@@ -150,7 +150,7 @@ public class RemoteRendererTest
             builder.CloseElement();
         });
 
-        var client = new Mock<IClientProxy>();
+        var client = new Mock<ISingleClientProxy>();
         client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[0]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[0] == 3 ? secondBatchTCS.Task : thirdBatchTCS.Task);
@@ -183,7 +183,9 @@ public class RemoteRendererTest
 
         // Assert
         Assert.Equal(new long[] { 2, 3, 4 }, renderIds);
+#pragma warning disable xUnit1031 // Do not use blocking task operations in test method
         Assert.True(task.Wait(3000), "One or more render batches weren't acknowledged");
+#pragma warning restore xUnit1031 // Do not use blocking task operations in test method
 
         await task;
     }
@@ -195,7 +197,7 @@ public class RemoteRendererTest
         var serviceProvider = CreateServiceProvider();
         var firstBatchTCS = new TaskCompletionSource();
         var secondBatchTCS = new TaskCompletionSource();
-        var offlineClient = new CircuitClientProxy(new Mock<IClientProxy>(MockBehavior.Strict).Object, "offline-client");
+        var offlineClient = new CircuitClientProxy(new Mock<ISingleClientProxy>(MockBehavior.Strict).Object, "offline-client");
         offlineClient.SetDisconnected();
         var renderer = GetRemoteRenderer(serviceProvider, offlineClient);
         RenderFragment initialContent = (builder) =>
@@ -206,7 +208,7 @@ public class RemoteRendererTest
         };
         var trigger = new Trigger();
         var renderIds = new List<long>();
-        var onlineClient = new Mock<IClientProxy>();
+        var onlineClient = new Mock<ISingleClientProxy>();
         onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
@@ -258,7 +260,7 @@ public class RemoteRendererTest
         var serviceProvider = CreateServiceProvider();
         var firstBatchTCS = new TaskCompletionSource();
         var secondBatchTCS = new TaskCompletionSource();
-        var offlineClient = new CircuitClientProxy(new Mock<IClientProxy>(MockBehavior.Strict).Object, "offline-client");
+        var offlineClient = new CircuitClientProxy(new Mock<ISingleClientProxy>(MockBehavior.Strict).Object, "offline-client");
         offlineClient.SetDisconnected();
         var renderer = GetRemoteRenderer(serviceProvider, offlineClient);
         RenderFragment initialContent = (builder) =>
@@ -269,7 +271,7 @@ public class RemoteRendererTest
         };
         var trigger = new Trigger();
         var renderIds = new List<long>();
-        var onlineClient = new Mock<IClientProxy>();
+        var onlineClient = new Mock<ISingleClientProxy>();
         onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
@@ -323,7 +325,7 @@ public class RemoteRendererTest
         var secondBatchTCS = new TaskCompletionSource();
         var renderIds = new List<long>();
 
-        var onlineClient = new Mock<IClientProxy>();
+        var onlineClient = new Mock<ISingleClientProxy>();
         onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
@@ -380,7 +382,7 @@ public class RemoteRendererTest
         var secondBatchTCS = new TaskCompletionSource();
         var renderIds = new List<long>();
 
-        var onlineClient = new Mock<IClientProxy>();
+        var onlineClient = new Mock<ISingleClientProxy>();
         onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
@@ -644,7 +646,7 @@ public class RemoteRendererTest
         var serverComponentDeserializer = new ServerComponentDeserializer(
             _ephemeralDataProtectionProvider,
             NullLogger<ServerComponentDeserializer>.Instance,
-            new RootComponentTypeCache(),
+            new RootTypeCache(),
             new ComponentParameterDeserializer(
                 NullLogger<ComponentParameterDeserializer>.Instance,
                 new ComponentParametersTypeCache()));

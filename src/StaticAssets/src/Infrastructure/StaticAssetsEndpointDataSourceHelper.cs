@@ -15,22 +15,51 @@ public static class StaticAssetsEndpointDataSourceHelper
     /// <summary>
     /// For internal framework use only.
     /// </summary>
-    public static bool IsStaticAssetsDataSource(EndpointDataSource dataSource, string? staticAssetsManifestPath = null)
+    public static bool HasStaticAssetsDataSource(IEndpointRouteBuilder builder, string? staticAssetsManifestPath = null)
     {
-        if (dataSource is StaticAssetsEndpointDataSource staticAssetsDataSource)
+        staticAssetsManifestPath = ApplyStaticAssetManifestPathConventions(staticAssetsManifestPath, builder.ServiceProvider);
+        foreach (var dataSource in builder.DataSources)
         {
-            if (staticAssetsManifestPath is null)
+            if (dataSource is StaticAssetsEndpointDataSource staticAssetsDataSource)
             {
-                var serviceProvider = staticAssetsDataSource.ServiceProvider;
-                var environment = serviceProvider.GetRequiredService<IWebHostEnvironment>();
-                staticAssetsManifestPath = Path.Combine(AppContext.BaseDirectory, $"{environment.ApplicationName}.staticwebassets.endpoints.json");
+                if (string.Equals(staticAssetsDataSource.ManifestPath, staticAssetsManifestPath, StringComparison.Ordinal))
+                {
+                    return true;
+                }
             }
-
-            staticAssetsManifestPath = Path.IsPathRooted(staticAssetsManifestPath) ? staticAssetsManifestPath : Path.Combine(AppContext.BaseDirectory, staticAssetsManifestPath);
-
-            return string.Equals(staticAssetsDataSource.ManifestPath, staticAssetsManifestPath, StringComparison.Ordinal);
         }
 
         return false;
+    }
+
+    /// <summary>
+    /// For internal framework use only.
+    /// </summary>
+    public static IReadOnlyList<StaticAssetDescriptor> ResolveStaticAssetDescriptors(
+        IEndpointRouteBuilder endpointRouteBuilder,
+        string? manifestPath)
+    {
+        manifestPath = ApplyStaticAssetManifestPathConventions(manifestPath, endpointRouteBuilder.ServiceProvider);
+        foreach (var dataSource in endpointRouteBuilder.DataSources)
+        {
+            if (dataSource is StaticAssetsEndpointDataSource staticAssetsDataSource &&
+                string.Equals(staticAssetsDataSource.ManifestPath, manifestPath, StringComparison.Ordinal))
+            {
+                return staticAssetsDataSource.Descriptors;
+            }
+        }
+
+        return [];
+    }
+
+    internal static string ApplyStaticAssetManifestPathConventions(string? staticAssetsManifestPath, IServiceProvider services)
+    {
+        if (staticAssetsManifestPath is null)
+        {
+            var environment = services.GetRequiredService<IWebHostEnvironment>();
+            return Path.Combine(AppContext.BaseDirectory, $"{environment.ApplicationName}.staticwebassets.endpoints.json");
+        }
+
+        return Path.IsPathRooted(staticAssetsManifestPath) ? staticAssetsManifestPath : Path.Combine(AppContext.BaseDirectory, staticAssetsManifestPath);
     }
 }

@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-    <Reference Include="System.Net.Http.Json" />
   </ItemGroup>
 
 </Project>

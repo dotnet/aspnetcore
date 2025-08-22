@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -125,5 +125,14 @@
   </data>
   <data name="MissingDepsFile" xml:space="preserve">
     <value>Can't find '{0}'. This file is required for functional tests to run properly. There should be a copy of the file on your source project bin folder. If that is not the case, make sure that the property PreserveCompilationContext is set to true on your project file. E.g '&lt;PreserveCompilationContext&gt;true&lt;/PreserveCompilationContext&gt;'. For functional tests to work they need to either run from the build output folder or the {1} file from your application's output directory must be copied to the folder where the tests are running on. A common cause for this error is having shadow copying enabled when the tests run.</value>
+  </data>
+  <data name="ServerNotInitialized" xml:space="preserve">
+    <value>Server hasn't been initialized yet. Please initialize the server first before trying to create a client.</value>
+  </data>
+  <data name="TestServerNotSupportedWhenUsingKestrel" xml:space="preserve">
+    <value>Accessing the `Server` property isn't supported when using Kestrel server.</value>
+  </data>
+  <data name="UseKestrelCanBeCalledBeforeInitialization" xml:space="preserve">
+    <value>UseKestrel should be called before server initialization. Calling UseKestrel after the server was initialized will have no effect.</value>
   </data>
 </root>

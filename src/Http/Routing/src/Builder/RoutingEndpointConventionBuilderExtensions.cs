@@ -112,10 +112,9 @@ public static class RoutingEndpointConventionBuilderExtensions
     }
 
     /// <summary>
-    /// Sets the <see cref="EndpointGroupNameAttribute"/> for all endpoints produced
-    /// on the target <see cref="IEndpointConventionBuilder"/> given the <paramref name="endpointGroupName" />.
-    /// The <see cref="IEndpointGroupNameMetadata" /> on the endpoint is used to set the endpoint's
-    /// GroupName in the OpenAPI specification.
+    /// Sets the <see cref="IEndpointGroupNameMetadata"/> with the given <paramref name="endpointGroupName"/>
+    /// in the endpoint <see cref="Http.Endpoint.Metadata"/> for all endpoints produced on the target
+    /// <see cref="IEndpointConventionBuilder"/>.
     /// </summary>
     /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
     /// <param name="endpointGroupName">The endpoint group name.</param>

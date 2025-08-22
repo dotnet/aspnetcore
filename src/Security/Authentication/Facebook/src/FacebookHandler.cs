@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
 using System.Net.Http;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -70,12 +69,7 @@ public class FacebookHandler : OAuthHandler<FacebookOptions>
         var key = Encoding.ASCII.GetBytes(Options.AppSecret);
         var tokenBytes = Encoding.ASCII.GetBytes(accessToken);
         var hash = HMACSHA256.HashData(key, tokenBytes);
-        var builder = new StringBuilder();
-        for (int i = 0; i < hash.Length; i++)
-        {
-            builder.Append(CultureInfo.InvariantCulture, $"{hash[i]:x2}");
-        }
-        return builder.ToString();
+        return Convert.ToHexStringLower(hash);
     }
 
     /// <inheritdoc />

@@ -10,6 +10,14 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
+/// <summary>
+/// Exposes the bytes of an incoming request.
+/// </summary>
+/// <remarks>
+/// Owned by an <see cref="Http2Stream"/>.
+/// <para/>
+/// Reusable after calling <see cref="Reset"/>.
+/// </remarks>
 internal sealed class Http2MessageBody : MessageBody
 {
     private readonly Http2Stream _context;

@@ -186,6 +186,66 @@ public class ApiResponseTypeProviderTest
            });
     }
 
+    [Fact]
+    public void GetApiResponseTypes_ReturnsDescriptionFromProducesResponseType()
+    {
+        // Arrange
+
+        const string expectedOkDescription = "All is well";
+        const string expectedBadRequestDescription = "Invalid request";
+        const string expectedNotFoundDescription = "Something was not found";
+
+        var actionDescriptor = GetControllerActionDescriptor(
+            typeof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController),
+            nameof(GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController.DeleteBase));
+
+        actionDescriptor.Properties[typeof(ApiConventionResult)] = new ApiConventionResult(new[]
+        {
+                new ProducesResponseTypeAttribute(200) { Description = expectedOkDescription},
+                new ProducesResponseTypeAttribute(400) { Description = expectedBadRequestDescription },
+                new ProducesResponseTypeAttribute(404) { Description = expectedNotFoundDescription },
+            });
+
+        var provider = GetProvider();
+
+        // Act
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        Assert.Collection(
+           result.OrderBy(r => r.StatusCode),
+           responseType =>
+           {
+               Assert.Equal(200, responseType.StatusCode);
+               Assert.Equal(typeof(BaseModel), responseType.Type);
+               Assert.False(responseType.IsDefaultResponse);
+               Assert.Equal(expectedOkDescription, responseType.Description);
+               Assert.Collection(
+                    responseType.ApiResponseFormats,
+                    format =>
+                    {
+                        Assert.Equal("application/json", format.MediaType);
+                        Assert.IsType<TestOutputFormatter>(format.Formatter);
+                    });
+           },
+           responseType =>
+           {
+               Assert.Equal(400, responseType.StatusCode);
+               Assert.Equal(typeof(void), responseType.Type);
+               Assert.False(responseType.IsDefaultResponse);
+               Assert.Empty(responseType.ApiResponseFormats);
+               Assert.Equal(expectedBadRequestDescription, responseType.Description);
+           },
+           responseType =>
+           {
+               Assert.Equal(404, responseType.StatusCode);
+               Assert.Equal(typeof(void), responseType.Type);
+               Assert.False(responseType.IsDefaultResponse);
+               Assert.Empty(responseType.ApiResponseFormats);
+               Assert.Equal(expectedNotFoundDescription, responseType.Description);
+           });
+    }
+
     [ApiConventionType(typeof(DefaultApiConventions))]
     public class GetApiResponseTypes_ReturnsResponseTypesFromDefaultConventionsController : ControllerBase
     {
@@ -751,7 +811,7 @@ public class ApiResponseTypeProviderTest
     }
 
     [Fact]
-    public void GetApiResponseTypes_ReturnNoResponseTypes_IfActionWithIResultReturnType()
+    public void GetApiResponseTypes_ReturnNoResponseTypes_IfActionWithBuiltIResultReturnType()
     {
         // Arrange
         var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetIResult));
@@ -762,6 +822,23 @@ public class ApiResponseTypeProviderTest
 
         // Assert
         Assert.False(result.Any());
+    }
+
+    [Fact]
+    public void GetApiResponseTypes_ReturnResponseType_IfActionHasCustomIResultReturnTypeInMetadata()
+    {
+        // Arrange
+        var actionDescriptor = GetControllerActionDescriptor(typeof(TestController), nameof(TestController.GetCustomIResult));
+        actionDescriptor.EndpointMetadata = [new ProducesResponseTypeMetadata(200, typeof(MyResponse))];
+        var provider = new ApiResponseTypeProvider(new EmptyModelMetadataProvider(), new ActionResultTypeMapper(), new MvcOptions());
+
+        // Act
+        var result = provider.GetApiResponseTypes(actionDescriptor);
+
+        // Assert
+        var response = Assert.Single(result);
+        Assert.Equal(typeof(MyResponse), response.Type);
+        Assert.Equal(200, response.StatusCode);
     }
 
     private static ApiResponseTypeProvider GetProvider()
@@ -811,6 +888,18 @@ public class ApiResponseTypeProviderTest
         public ActionResult<DerivedModel> PutModel(string userId, DerivedModel model) => null;
 
         public IResult GetIResult(int id) => null;
+
+        public MyResponse GetCustomIResult() => new MyResponse { Content = "Test Content" };
+    }
+
+    public class MyResponse : IResult
+    {
+        public required string Content { get; set; }
+
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return httpContext.Response.WriteAsJsonAsync(this);
+        }
     }
 
     private class TestOutputFormatter : OutputFormatter

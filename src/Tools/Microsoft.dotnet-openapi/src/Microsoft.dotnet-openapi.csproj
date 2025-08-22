@@ -17,7 +17,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
     <Reference Include="Microsoft.Build.Locator" />
-    <Reference Include="System.Private.Uri" />
   </ItemGroup>
 
   <ItemGroup>

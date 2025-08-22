@@ -1,0 +1,1284 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="arm64" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/eng/" />
+  <Folder Name="/eng/tools/">
+    <Project Path="eng/tools/BaselineGenerator/BaselineGenerator.csproj" />
+    <Project Path="eng/tools/RepoTasks/RepoTasks.csproj" />
+  </Folder>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Analyzers/" />
+  <Folder Name="/src/Analyzers/Analyzers/">
+    <Project Path="src/Analyzers/Analyzers/src/Microsoft.AspNetCore.Analyzers.csproj" />
+    <Project Path="src/Analyzers/Analyzers/test/Microsoft.AspNetCore.Analyzers.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Antiforgery/">
+    <Project Path="src/Antiforgery/src/Microsoft.AspNetCore.Antiforgery.csproj" />
+    <Project Path="src/Antiforgery/test/Microsoft.AspNetCore.Antiforgery.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Azure/" />
+  <Folder Name="/src/Azure/AzureAppServices.HostingStartup/">
+    <Project Path="src/Azure/AzureAppServices.HostingStartup/src/Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />
+  </Folder>
+  <Folder Name="/src/Azure/AzureAppServicesIntegration/">
+    <Project Path="src/Azure/AzureAppServicesIntegration/src/Microsoft.AspNetCore.AzureAppServicesIntegration.csproj" />
+    <Project Path="src/Azure/AzureAppServicesIntegration/test/Microsoft.AspNetCore.AzureAppServicesIntegration.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Azure/samples/">
+    <Project Path="src/Azure/samples/AzureAppServicesHostingStartupSample/AzureAppServicesHostingStartupSample.csproj" />
+    <Project Path="src/Azure/samples/AzureAppServicesSample/AzureAppServicesSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Caching/" />
+  <Folder Name="/src/Caching/SqlServer/">
+    <Project Path="src/Caching/SqlServer/src/Microsoft.Extensions.Caching.SqlServer.csproj" />
+    <Project Path="src/Caching/SqlServer/test/Microsoft.Extensions.Caching.SqlServer.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Caching/StackExchangeRedis/">
+    <Project Path="src/Caching/StackExchangeRedis/src/Microsoft.Extensions.Caching.StackExchangeRedis.csproj" />
+    <Project Path="src/Caching/StackExchangeRedis/test/Microsoft.Extensions.Caching.StackExchangeRedis.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/" />
+  <Folder Name="/src/Components/Analyzers/">
+    <Project Path="src/Components/Analyzers/src/Microsoft.AspNetCore.Components.Analyzers.csproj" />
+    <Project Path="src/Components/Analyzers/test/Microsoft.AspNetCore.Components.Analyzers.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/Authorization/">
+    <Project Path="src/Components/Authorization/src/Microsoft.AspNetCore.Components.Authorization.csproj" />
+    <Project Path="src/Components/Authorization/test/Microsoft.AspNetCore.Components.Authorization.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/benchmarkapps/">
+    <Project Path="src/Components/benchmarkapps/BlazingPizza.Server/BlazingPizza.Server.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/benchmarkapps/Wasm.Performance/">
+    <Project Path="src/Components/benchmarkapps/Wasm.Performance/ConsoleHost/Wasm.Performance.ConsoleHost.csproj" />
+    <Project Path="src/Components/benchmarkapps/Wasm.Performance/Driver/Wasm.Performance.Driver.csproj" />
+    <Project Path="src/Components/benchmarkapps/Wasm.Performance/TestApp/Wasm.Performance.TestApp.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/Components/">
+    <Project Path="src/Components/Components/perf/Microsoft.AspNetCore.Components.Performance.csproj" />
+    <Project Path="src/Components/Components/src/Microsoft.AspNetCore.Components.csproj" />
+    <Project Path="src/Components/Components/test/Microsoft.AspNetCore.Components.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/CustomElements/">
+    <Project Path="src/Components/CustomElements/src/Microsoft.AspNetCore.Components.CustomElements.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/Endpoints/">
+    <Project Path="src/Components/Endpoints/src/Microsoft.AspNetCore.Components.Endpoints.csproj" />
+    <Project Path="src/Components/Endpoints/test/Microsoft.AspNetCore.Components.Endpoints.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/Forms/">
+    <Project Path="src/Components/Forms/src/Microsoft.AspNetCore.Components.Forms.csproj" />
+    <Project Path="src/Components/Forms/test/Microsoft.AspNetCore.Components.Forms.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/Samples/">
+    <Project Path="src/Components/Samples/BlazorServerApp/BlazorServerApp.csproj" />
+    <Project Path="src/Components/Samples/BlazorUnitedApp.Client/BlazorUnitedApp.Client.csproj" />
+    <Project Path="src/Components/Samples/BlazorUnitedApp/BlazorUnitedApp.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/Server/">
+    <Project Path="src/Components/Server/src/Microsoft.AspNetCore.Components.Server.csproj" />
+    <Project Path="src/Components/Server/test/Microsoft.AspNetCore.Components.Server.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/test/">
+    <Project Path="src/Components/test/E2ETest/Microsoft.AspNetCore.Components.E2ETests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/test/testassets/">
+    <Project Path="src/Components/test/testassets/BasicTestApp/BasicTestApp.csproj" />
+    <Project Path="src/Components/test/testassets/Components.TestServer/Components.TestServer.csproj" />
+    <Project Path="src/Components/test/testassets/Components.WasmMinimal/Components.WasmMinimal.csproj" />
+    <Project Path="src/Components/test/testassets/Components.WasmRemoteAuthentication/Components.WasmRemoteAuthentication.csproj" />
+    <Project Path="src/Components/test/testassets/ComponentsApp.App/ComponentsApp.App.csproj" />
+    <Project Path="src/Components/test/testassets/ComponentsApp.Server/ComponentsApp.Server.csproj" />
+    <Project Path="src/Components/test/testassets/GlobalizationWasmApp/GlobalizationWasmApp.csproj" />
+    <Project Path="src/Components/test/testassets/LazyTestContentPackage/LazyTestContentPackage.csproj" />
+    <Project Path="src/Components/test/testassets/NotReferencedInWasmCodePackage/NotReferencedInWasmCodePackage.csproj" />
+    <Project Path="src/Components/test/testassets/TestContentPackage/TestContentPackage.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/Web/">
+    <Project Path="src/Components/Web/src/Microsoft.AspNetCore.Components.Web.csproj" />
+    <Project Path="src/Components/Web/test/Microsoft.AspNetCore.Components.Web.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebAssembly/" />
+  <Folder Name="/src/Components/WebAssembly/Authentication.Msal/">
+    <Project Path="src/Components/WebAssembly/Authentication.Msal/src/Microsoft.Authentication.WebAssembly.Msal.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebAssembly/DevServer/">
+    <Project Path="src/Components/WebAssembly/DevServer/src/Microsoft.AspNetCore.Components.WebAssembly.DevServer.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebAssembly/JSInterop/">
+    <Project Path="src/Components/WebAssembly/JSInterop/src/Microsoft.JSInterop.WebAssembly.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebAssembly/Samples/" />
+  <Folder Name="/src/Components/WebAssembly/Samples/HostedBlazorWebassemblyApp/">
+    <Project Path="src/Components/WebAssembly/Samples/HostedBlazorWebassemblyApp/Client/HostedBlazorWebassemblyApp.Client.csproj" />
+    <Project Path="src/Components/WebAssembly/Samples/HostedBlazorWebassemblyApp/Server/HostedBlazorWebassemblyApp.Server.csproj" />
+    <Project Path="src/Components/WebAssembly/Samples/HostedBlazorWebassemblyApp/Shared/HostedBlazorWebassemblyApp.Shared.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebAssembly/Server/">
+    <Project Path="src/Components/WebAssembly/Server/src/Microsoft.AspNetCore.Components.WebAssembly.Server.csproj" />
+    <Project Path="src/Components/WebAssembly/Server/test/Microsoft.AspNetCore.Components.WebAssembly.Server.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebAssembly/testassets/">
+    <Project Path="src/Components/WebAssembly/testassets/CustomBasePathApp/CustomBasePathApp.csproj" />
+    <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Client/HostedInAspNet.Client.csproj" />
+    <Project Path="src/Components/WebAssembly/testassets/HostedInAspNet.Server/HostedInAspNet.Server.csproj" />
+    <Project Path="src/Components/WebAssembly/testassets/StandaloneApp/StandaloneApp.csproj" />
+    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp.Server/ThreadingApp.Server.csproj" />
+    <Project Path="src/Components/WebAssembly/testassets/ThreadingApp/ThreadingApp.csproj" />
+    <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Client/Wasm.Prerendered.Client.csproj" />
+    <Project Path="src/Components/WebAssembly/testassets/Wasm.Prerendered.Server/Wasm.Prerendered.Server.csproj" />
+    <Project Path="src/Components/WebAssembly/testassets/WasmLinkerTest/WasmLinkerTest.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebAssembly/WebAssembly.Authentication/">
+    <Project Path="src/Components/WebAssembly/WebAssembly.Authentication/src/Microsoft.AspNetCore.Components.WebAssembly.Authentication.csproj" />
+    <Project Path="src/Components/WebAssembly/WebAssembly.Authentication/test/Microsoft.AspNetCore.Components.WebAssembly.Authentication.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebAssembly/WebAssembly/">
+    <Project Path="src/Components/WebAssembly/WebAssembly/src/Microsoft.AspNetCore.Components.WebAssembly.csproj" />
+    <Project Path="src/Components/WebAssembly/WebAssembly/test/Microsoft.AspNetCore.Components.WebAssembly.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebView/">
+    <Project Path="src/Components/WebView/WebView/src/Microsoft.AspNetCore.Components.WebView.csproj" />
+    <Project Path="src/Components/WebView/WebView/test/Microsoft.AspNetCore.Components.WebView.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebView/Samples/" />
+  <Folder Name="/src/Components/WebView/Samples/PhotinoPlatform/">
+    <Project Path="src/Components/WebView/Samples/PhotinoPlatform/src/Microsoft.AspNetCore.Components.WebView.Photino.csproj" />
+  </Folder>
+  <Folder Name="/src/Components/WebView/Samples/PhotinoPlatform/testassets/">
+    <Project Path="src/Components/WebView/Samples/PhotinoPlatform/testassets/PhotinoTestApp/PhotinoTestApp.csproj" />
+  </Folder>
+  <Folder Name="/src/Configuration.KeyPerFile/">
+    <Project Path="src/Configuration.KeyPerFile/src/Microsoft.Extensions.Configuration.KeyPerFile.csproj" />
+    <Project Path="src/Configuration.KeyPerFile/test/Microsoft.Extensions.Configuration.KeyPerFile.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/DataProtection/" />
+  <Folder Name="/src/DataProtection/Abstractions/">
+    <Project Path="src/DataProtection/Abstractions/src/Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
+    <Project Path="src/DataProtection/Abstractions/test/Microsoft.AspNetCore.DataProtection.Abstractions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/DataProtection/Cryptography.Internal/">
+    <Project Path="src/DataProtection/Cryptography.Internal/src/Microsoft.AspNetCore.Cryptography.Internal.csproj" />
+    <Project Path="src/DataProtection/Cryptography.Internal/test/Microsoft.AspNetCore.Cryptography.Internal.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/DataProtection/Cryptography.KeyDerivation/">
+    <Project Path="src/DataProtection/Cryptography.KeyDerivation/src/Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj" />
+    <Project Path="src/DataProtection/Cryptography.KeyDerivation/test/Microsoft.AspNetCore.Cryptography.KeyDerivation.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/DataProtection/DataProtection/">
+    <Project Path="src/DataProtection/DataProtection/src/Microsoft.AspNetCore.DataProtection.csproj" />
+    <Project Path="src/DataProtection/DataProtection/test/Microsoft.AspNetCore.DataProtection.Tests/Microsoft.AspNetCore.DataProtection.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/DataProtection/EntityFrameworkCore/">
+    <Project Path="src/DataProtection/EntityFrameworkCore/src/Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj" />
+    <Project Path="src/DataProtection/EntityFrameworkCore/test/Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/DataProtection/Extensions/">
+    <Project Path="src/DataProtection/Extensions/src/Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
+    <Project Path="src/DataProtection/Extensions/test/Microsoft.AspNetCore.DataProtection.Extensions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/DataProtection/samples/">
+    <Project Path="src/DataProtection/samples/CustomEncryptorSample/CustomEncryptorSample.csproj" />
+    <Project Path="src/DataProtection/samples/EntityFrameworkCoreSample/EntityFrameworkCoreSample.csproj" />
+    <Project Path="src/DataProtection/samples/KeyManagementSample/KeyManagementSample.csproj" />
+    <Project Path="src/DataProtection/samples/NonDISample/NonDISample.csproj" />
+    <Project Path="src/DataProtection/samples/Redis/Redis.csproj" />
+  </Folder>
+  <Folder Name="/src/DataProtection/StackExchangeRedis/">
+    <Project Path="src/DataProtection/StackExchangeRedis/src/Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj" />
+    <Project Path="src/DataProtection/StackExchangeRedis/test/Microsoft.AspNetCore.DataProtection.StackExchangeRedis.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/DefaultBuilder/">
+    <Project Path="src/DefaultBuilder/src/Microsoft.AspNetCore.csproj" />
+  </Folder>
+  <Folder Name="/src/DefaultBuilder/samples/">
+    <Project Path="src/DefaultBuilder/samples/SampleApp/DefaultBuilder.SampleApp.csproj" />
+  </Folder>
+  <Folder Name="/src/DefaultBuilder/test/">
+    <Project Path="src/DefaultBuilder/test/Microsoft.AspNetCore.FunctionalTests/Microsoft.AspNetCore.FunctionalTests.csproj" />
+    <Project Path="src/DefaultBuilder/test/Microsoft.AspNetCore.Tests/Microsoft.AspNetCore.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Features/" />
+  <Folder Name="/src/Features/JsonPatch.SystemTextJson/" Id="02ea681e-c7d8-13c7-8484-4ac65e1b71e8">
+    <Project Path="src/Features/JsonPatch.SystemTextJson/src/Microsoft.AspNetCore.JsonPatch.SystemTextJson.csproj" />
+    <Project Path="src/Features/JsonPatch.SystemTextJson/test/Microsoft.AspNetCore.JsonPatch.SystemTextJson.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Features/JsonPatch/">
+    <Project Path="src/Features/JsonPatch/src/Microsoft.AspNetCore.JsonPatch.csproj" />
+    <Project Path="src/Features/JsonPatch/test/Microsoft.AspNetCore.JsonPatch.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/FileProviders/" />
+  <Folder Name="/src/FileProviders/Embedded/">
+    <Project Path="src/FileProviders/Embedded/src/Microsoft.Extensions.FileProviders.Embedded.csproj" />
+    <Project Path="src/FileProviders/Embedded/test/Microsoft.Extensions.FileProviders.Embedded.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/FileProviders/Manifest.MSBuildTask/">
+    <Project Path="src/FileProviders/Manifest.MSBuildTask/src/Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.csproj" />
+    <Project Path="src/FileProviders/Manifest.MSBuildTask/test/Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Framework/">
+    <Project Path="src/Framework/App.Ref/src/Microsoft.AspNetCore.App.Ref.sfxproj" Type="C#" />
+    <Project Path="src/Framework/test/Microsoft.AspNetCore.App.UnitTests.csproj" />
+  </Folder>
+  <Folder Name="/src/Framework/App.Runtime/">
+    <Project Path="src/Framework/App.Runtime/src/Microsoft.AspNetCore.App.Runtime.sfxproj" Type="C#" />
+  </Folder>
+  <Folder Name="/src/Framework/AspNetCoreAnalyzers/" />
+  <Folder Name="/src/Framework/AspNetCoreAnalyzers/src/">
+    <Project Path="src/Framework/AspNetCoreAnalyzers/src/Analyzers/Microsoft.AspNetCore.App.Analyzers.csproj">
+      <Build Solution="*|arm64" Project="false" />
+    </Project>
+    <Project Path="src/Framework/AspNetCoreAnalyzers/src/CodeFixes/Microsoft.AspNetCore.App.CodeFixes.csproj">
+      <Build Solution="*|arm64" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/Grpc/" />
+  <Folder Name="/src/Grpc/Interop/" />
+  <Folder Name="/src/Grpc/Interop/test/">
+    <Project Path="src/Grpc/Interop/test/InteropTests/InteropTests.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/Interop/test/testassets/">
+    <Project Path="src/Grpc/Interop/test/testassets/InteropClient/InteropClient.csproj" />
+    <Project Path="src/Grpc/Interop/test/testassets/InteropWebsite/InteropWebsite.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/JsonTranscoding/" />
+  <Folder Name="/src/Grpc/JsonTranscoding/perf/">
+    <Project Path="src/Grpc/JsonTranscoding/perf/Microsoft.AspNetCore.Grpc.Microbenchmarks/Microsoft.AspNetCore.Grpc.Microbenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/JsonTranscoding/src/">
+    <Project Path="src/Grpc/JsonTranscoding/src/Microsoft.AspNetCore.Grpc.JsonTranscoding/Microsoft.AspNetCore.Grpc.JsonTranscoding.csproj" />
+    <Project Path="src/Grpc/JsonTranscoding/src/Microsoft.AspNetCore.Grpc.Swagger/Microsoft.AspNetCore.Grpc.Swagger.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/JsonTranscoding/test/">
+    <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests/Microsoft.AspNetCore.Grpc.JsonTranscoding.IntegrationTests.csproj" />
+    <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests/Microsoft.AspNetCore.Grpc.JsonTranscoding.Tests.csproj" />
+    <Project Path="src/Grpc/JsonTranscoding/test/Microsoft.AspNetCore.Grpc.Swagger.Tests/Microsoft.AspNetCore.Grpc.Swagger.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Grpc/JsonTranscoding/test/testassets/">
+    <Project Path="src/Grpc/JsonTranscoding/test/testassets/IntegrationTestsWebsite/IntegrationTestsWebsite.csproj" />
+    <Project Path="src/Grpc/JsonTranscoding/test/testassets/Sandbox/Sandbox.csproj" />
+  </Folder>
+  <Folder Name="/src/HealthChecks/" />
+  <Folder Name="/src/HealthChecks/src/">
+    <Project Path="src/HealthChecks/HealthChecks/src/Microsoft.Extensions.Diagnostics.HealthChecks.csproj" />
+  </Folder>
+  <Folder Name="/src/HealthChecks/src/Abstractions/">
+    <Project Path="src/HealthChecks/Abstractions/src/Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/HealthChecks/test/">
+    <Project Path="src/HealthChecks/HealthChecks/test/Microsoft.Extensions.Diagnostics.HealthChecks.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosting/" />
+  <Folder Name="/src/Hosting/Abstractions/">
+    <Project Path="src/Hosting/Abstractions/src/Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosting/Hosting/">
+    <Project Path="src/Hosting/Hosting/src/Microsoft.AspNetCore.Hosting.csproj" />
+    <Project Path="src/Hosting/Hosting/test/Microsoft.AspNetCore.Hosting.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosting/samples/">
+    <Project Path="src/Hosting/samples/GenericWebHost/GenericWebHost.csproj" />
+    <Project Path="src/Hosting/samples/SampleStartups/SampleStartups.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosting/Server.Abstractions/">
+    <Project Path="src/Hosting/Server.Abstractions/src/Microsoft.AspNetCore.Hosting.Server.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosting/Server.IntegrationTesting/">
+    <Project Path="src/Hosting/Server.IntegrationTesting/src/Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosting/test/">
+    <Project Path="src/Hosting/test/FunctionalTests/Microsoft.AspNetCore.Hosting.FunctionalTests.csproj" />
+    <Project Path="src/Hosting/test/testassets/IStartupInjectionAssemblyName/IStartupInjectionAssemblyName.csproj" />
+    <Project Path="src/Hosting/test/testassets/TestStartupAssembly1/TestStartupAssembly1.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosting/TestHost/">
+    <Project Path="src/Hosting/TestHost/src/Microsoft.AspNetCore.TestHost.csproj" />
+    <Project Path="src/Hosting/TestHost/test/Microsoft.AspNetCore.TestHost.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Hosting/WindowsServices/">
+    <Project Path="src/Hosting/WindowsServices/src/Microsoft.AspNetCore.Hosting.WindowsServices.csproj" />
+    <Project Path="src/Hosting/WindowsServices/test/Microsoft.AspNetCore.Hosting.WindowsServices.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Html/" />
+  <Folder Name="/src/Html/Abstractions/">
+    <Project Path="src/Html.Abstractions/src/Microsoft.AspNetCore.Html.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/" />
+  <Folder Name="/src/Http/Authentication.Abstractions/">
+    <Project Path="src/Http/Authentication.Abstractions/src/Microsoft.AspNetCore.Authentication.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Authentication.Core/">
+    <Project Path="src/Http/Authentication.Core/src/Microsoft.AspNetCore.Authentication.Core.csproj" />
+    <Project Path="src/Http/Authentication.Core/test/Microsoft.AspNetCore.Authentication.Core.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Features/">
+    <Project Path="src/Extensions/Features/src/Microsoft.Extensions.Features.csproj" />
+    <Project Path="src/Extensions/Features/test/Microsoft.Extensions.Features.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Headers/">
+    <Project Path="src/Http/Headers/src/Microsoft.Net.Http.Headers.csproj" />
+    <Project Path="src/Http/Headers/test/Microsoft.Net.Http.Headers.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Http.Abstractions/">
+    <Project Path="src/Http/Http.Abstractions/perf/Microbenchmarks/Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks.csproj" />
+    <Project Path="src/Http/Http.Abstractions/src/Microsoft.AspNetCore.Http.Abstractions.csproj" />
+    <Project Path="src/Http/Http.Abstractions/test/Microsoft.AspNetCore.Http.Abstractions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Http.Extensions/">
+    <Project Path="src/Http/Http.Extensions/src/Microsoft.AspNetCore.Http.Extensions.csproj" />
+    <Project Path="src/Http/Http.Extensions/test/Microsoft.AspNetCore.Http.Extensions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Http.Extensions/gen/">
+    <Project Path="src/Http/Http.Extensions/gen/Microsoft.AspNetCore.Http.RequestDelegateGenerator/Microsoft.AspNetCore.Http.RequestDelegateGenerator.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Http.Features/">
+    <Project Path="src/Http/Http.Features/src/Microsoft.AspNetCore.Http.Features.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Http.Results/">
+    <Project Path="src/Http/Http.Results/src/Microsoft.AspNetCore.Http.Results.csproj" />
+    <Project Path="src/Http/Http.Results/test/Microsoft.AspNetCore.Http.Results.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Http/">
+    <Project Path="src/Http/Http/perf/Microbenchmarks/Microsoft.AspNetCore.Http.Microbenchmarks.csproj" />
+    <Project Path="src/Http/Http/src/Microsoft.AspNetCore.Http.csproj" />
+    <Project Path="src/Http/Http/test/Microsoft.AspNetCore.Http.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Metadata/">
+    <Project Path="src/Http/Metadata/src/Microsoft.AspNetCore.Metadata.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Owin/">
+    <Project Path="src/Http/Owin/benchmarks/Microsoft.AspNetCore.Owin.Microbenchmarks/Microsoft.AspNetCore.Owin.Microbenchmarks.csproj" />
+    <Project Path="src/Http/Owin/src/Microsoft.AspNetCore.Owin.csproj" />
+    <Project Path="src/Http/Owin/test/Microsoft.AspNetCore.Owin.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Routing.Abstractions/">
+    <Project Path="src/Http/Routing.Abstractions/src/Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <Project Path="src/Http/Routing.Abstractions/test/Microsoft.AspNetCore.Mvc.Routing.Abstractions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Routing/">
+    <Project Path="src/Http/Routing/perf/Microbenchmarks/Microsoft.AspNetCore.Routing.Microbenchmarks.csproj" />
+    <Project Path="src/Http/Routing/src/Microsoft.AspNetCore.Routing.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Routing/test/">
+    <Project Path="src/Http/Routing/test/FunctionalTests/Microsoft.AspNetCore.Routing.FunctionalTests.csproj" />
+    <Project Path="src/Http/Routing/test/UnitTests/Microsoft.AspNetCore.Routing.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/Routing/test/testassets/">
+    <Project Path="src/Http/Routing/test/testassets/Benchmarks/Benchmarks.csproj" />
+    <Project Path="src/Http/Routing/test/testassets/RoutingSandbox/RoutingSandbox.csproj" />
+    <Project Path="src/Http/Routing/test/testassets/RoutingWebSite/RoutingWebSite.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/samples/">
+    <Project Path="src/Http/samples/MinimalSample/MinimalSample.csproj" />
+    <Project Path="src/Http/samples/MinimalSampleFSharp/MinimalSampleFSharp.fsproj" />
+    <Project Path="src/Http/samples/MinimalSampleOwin/MinimalSampleOwin.csproj" />
+    <Project Path="src/Http/samples/SampleApp/HttpAbstractions.SampleApp.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/WebUtilities/">
+    <Project Path="src/Http/WebUtilities/src/Microsoft.AspNetCore.WebUtilities.csproj" />
+    <Project Path="src/Http/WebUtilities/test/Microsoft.AspNetCore.WebUtilities.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Http/WebUtilities/perf/">
+    <Project Path="src/Http/WebUtilities/perf/Microbenchmarks/Microsoft.AspNetCore.WebUtilities.Microbenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/HttpClientFactory/">
+    <Project Path="src/HttpClientFactory/Polly/src/Microsoft.Extensions.Http.Polly.csproj" />
+    <Project Path="src/HttpClientFactory/Polly/test/Microsoft.Extensions.Http.Polly.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/" />
+  <Folder Name="/src/Identity/Core/">
+    <Project Path="src/Identity/Core/src/Microsoft.AspNetCore.Identity.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/EntityFrameworkCore/">
+    <Project Path="src/Identity/EntityFrameworkCore/src/Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/EntityFrameworkCore/test/">
+    <Project Path="src/Identity/EntityFrameworkCore/test/EF.InMemory.Test/Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test.csproj" />
+    <Project Path="src/Identity/EntityFrameworkCore/test/EF.Test/Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/Extensions.Core/">
+    <Project Path="src/Identity/Extensions.Core/src/Microsoft.Extensions.Identity.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/Extensions.Stores/">
+    <Project Path="src/Identity/Extensions.Stores/src/Microsoft.Extensions.Identity.Stores.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/samples/">
+    <Project Path="src/Identity/samples/IdentitySample.DefaultUI/IdentitySample.DefaultUI.csproj" />
+    <Project Path="src/Identity/samples/IdentitySample.Mvc/IdentitySample.Mvc.csproj" />
+    <Project Path="src/Identity/samples/IdentitySample.PasskeyConformance/IdentitySample.PasskeyConformance.csproj" />
+    <Project Path="src/Identity/samples/IdentitySample.PasskeyUI/IdentitySample.PasskeyUI.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/Specification.Tests/">
+    <Project Path="src/Identity/Specification.Tests/src/Microsoft.AspNetCore.Identity.Specification.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/test/">
+    <Project Path="src/Identity/test/Identity.FunctionalTests/Microsoft.AspNetCore.Identity.FunctionalTests.csproj" />
+    <Project Path="src/Identity/test/Identity.Test/Microsoft.AspNetCore.Identity.Test.csproj" />
+    <Project Path="src/Identity/test/InMemory.Test/Microsoft.AspNetCore.Identity.InMemory.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/testassets/">
+    <Project Path="src/Identity/testassets/Identity.DefaultUI.WebSite/Identity.DefaultUI.WebSite.csproj" />
+  </Folder>
+  <Folder Name="/src/Identity/UI/">
+    <Project Path="src/Identity/UI/src/Microsoft.AspNetCore.Identity.UI.csproj" />
+  </Folder>
+  <Folder Name="/src/Installers/" />
+  <Folder Name="/src/Installers/AspNetCoreModule-Setup/">
+    <Project Path="src/Installers/Windows/AspNetCoreModule-Setup/CustomAction/aspnetcoreCA.vcxproj" Id="7c27e72f-54d0-4820-8cfa-5e4be640974b">
+      <Platform Solution="*|Any CPU" Project="Win32" />
+      <Platform Solution="Debug|arm64" Project="Win32" />
+      <Platform Solution="Release|arm64" Project="ARM64" />
+      <Build Solution="*|Any CPU" Project="false" />
+      <Build Solution="Debug|arm64" Project="false" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Installers/Windows/AspNetCoreModule-Setup/IIS-Setup/IIS-Common/lib/IISSetup.CommonLib.vcxproj" Id="b54a8f61-60de-4ad9-87ca-d102f230678e">
+      <Platform Solution="*|Any CPU" Project="Win32" />
+      <Platform Solution="Debug|arm64" Project="Win32" />
+      <Platform Solution="Release|arm64" Project="ARM64" />
+      <Build Solution="*|Any CPU" Project="false" />
+      <Build Solution="Debug|arm64" Project="false" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Installers/Windows/AspNetCoreModule-Setup/IIS-Setup/iisca/lib/iisca.vcxproj" Id="7324770c-0871-4d73-be3d-5e2f3e9e1b1e">
+      <Platform Solution="*|Any CPU" Project="Win32" />
+      <Platform Solution="Debug|arm64" Project="Win32" />
+      <Platform Solution="Release|arm64" Project="ARM64" />
+      <Build Solution="*|Any CPU" Project="false" />
+      <Build Solution="Debug|arm64" Project="false" />
+      <Deploy Solution="*|x86" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/JSInterop/" />
+  <Folder Name="/src/JSInterop/Microsoft.JSInterop/">
+    <Project Path="src/JSInterop/Microsoft.JSInterop/src/Microsoft.JSInterop.csproj" />
+    <Project Path="src/JSInterop/Microsoft.JSInterop/test/Microsoft.JSInterop.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Localization/">
+    <Project Path="src/Localization/Abstractions/src/Microsoft.Extensions.Localization.Abstractions.csproj" />
+    <Project Path="src/Localization/Localization/src/Microsoft.Extensions.Localization.csproj" />
+    <Project Path="src/Localization/Localization/test/Microsoft.Extensions.Localization.RootNamespace.Tests/Microsoft.Extensions.Localization.RootNamespace.Tests.csproj" />
+    <Project Path="src/Localization/Localization/test/Microsoft.Extensions.Localization.Tests/Microsoft.Extensions.Localization.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Logging.AzureAppServices/">
+    <Project Path="src/Logging.AzureAppServices/src/Microsoft.Extensions.Logging.AzureAppServices.csproj" />
+    <Project Path="src/Logging.AzureAppServices/test/Microsoft.Extensions.Logging.AzureAppServices.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/" />
+  <Folder Name="/src/Middleware/ConcurrencyLimiter/">
+    <Project Path="src/Middleware/ConcurrencyLimiter/sample/ConcurrencyLimiterSample.csproj" />
+    <Project Path="src/Middleware/ConcurrencyLimiter/src/Microsoft.AspNetCore.ConcurrencyLimiter.csproj" />
+    <Project Path="src/Middleware/ConcurrencyLimiter/test/Microsoft.AspNetCore.ConcurrencyLimiter.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/ConcurrencyLimiter/perf/">
+    <Project Path="src/Middleware/ConcurrencyLimiter/perf/Microbenchmarks/Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/CORS/">
+    <Project Path="src/Middleware/CORS/src/Microsoft.AspNetCore.Cors.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/CORS/test/">
+    <Project Path="src/Middleware/CORS/test/UnitTests/Microsoft.AspNetCore.Cors.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/CORS/test/testassets/">
+    <Project Path="src/Middleware/CORS/test/testassets/CorsMiddlewareWebSite/CorsMiddlewareWebSite.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Diagnostics.Abstractions/">
+    <Project Path="src/Middleware/Diagnostics.Abstractions/src/Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Diagnostics.EntityFrameworkCore/">
+    <Project Path="src/Middleware/Diagnostics.EntityFrameworkCore/src/Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Diagnostics.EntityFrameworkCore/test/">
+    <Project Path="src/Middleware/Diagnostics.EntityFrameworkCore/test/FunctionalTests/Diagnostics.EFCore.FunctionalTests.csproj" />
+    <Project Path="src/Middleware/Diagnostics.EntityFrameworkCore/test/UnitTests/Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Diagnostics/">
+    <Project Path="src/Middleware/Diagnostics/src/Microsoft.AspNetCore.Diagnostics.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Diagnostics/test/">
+    <Project Path="src/Middleware/Diagnostics/test/FunctionalTests/Diagnostics.FunctionalTests.csproj" />
+    <Project Path="src/Middleware/Diagnostics/test/UnitTests/Microsoft.AspNetCore.Diagnostics.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Diagnostics/test/testassets/">
+    <Project Path="src/Middleware/Diagnostics/test/testassets/ClassLibraryWithPortablePdbs/ClassLibraryWithPortablePdbs.csproj" />
+    <Project Path="src/Middleware/Diagnostics/test/testassets/DatabaseErrorPageSample/DatabaseErrorPageSample.csproj" />
+    <Project Path="src/Middleware/Diagnostics/test/testassets/DeveloperExceptionPageSample/DeveloperExceptionPageSample.csproj" />
+    <Project Path="src/Middleware/Diagnostics/test/testassets/ExceptionHandlerSample/ExceptionHandlerSample.csproj" />
+    <Project Path="src/Middleware/Diagnostics/test/testassets/StatusCodePagesSample/StatusCodePagesSample.csproj" />
+    <Project Path="src/Middleware/Diagnostics/test/testassets/WelcomePageSample/WelcomePageSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HeaderPropagation/">
+    <Project Path="src/Middleware/HeaderPropagation/src/Microsoft.AspNetCore.HeaderPropagation.csproj" />
+    <Project Path="src/Middleware/HeaderPropagation/test/Microsoft.AspNetCore.HeaderPropagation.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HeaderPropagation/samples/">
+    <Project Path="src/Middleware/HeaderPropagation/samples/HeaderPropagationSample/HeaderPropagationSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HealthChecks.EntityFrameworkCore/">
+    <Project Path="src/Middleware/HealthChecks.EntityFrameworkCore/src/Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.csproj" />
+    <Project Path="src/Middleware/HealthChecks.EntityFrameworkCore/test/Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HealthChecks/">
+    <Project Path="src/Middleware/HealthChecks/src/Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HealthChecks/test/">
+    <Project Path="src/Middleware/HealthChecks/test/UnitTests/Microsoft.AspNetCore.Diagnostics.HealthChecks.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HealthChecks/test/testassets/">
+    <Project Path="src/Middleware/HealthChecks/test/testassets/HealthChecksSample/HealthChecksSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HostFiltering/">
+    <Project Path="src/Middleware/HostFiltering/sample/HostFilteringSample.csproj" />
+    <Project Path="src/Middleware/HostFiltering/src/Microsoft.AspNetCore.HostFiltering.csproj" />
+    <Project Path="src/Middleware/HostFiltering/test/Microsoft.AspNetCore.HostFiltering.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HttpLogging/">
+    <Project Path="src/Middleware/HttpLogging/samples/HttpLogging.Sample/HttpLogging.Sample.csproj" />
+    <Project Path="src/Middleware/HttpLogging/samples/Logging.W3C.Sample/Logging.W3C.Sample.csproj" />
+    <Project Path="src/Middleware/HttpLogging/src/Microsoft.AspNetCore.HttpLogging.csproj" />
+    <Project Path="src/Middleware/HttpLogging/test/Microsoft.AspNetCore.HttpLogging.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HttpOverrides/">
+    <Project Path="src/Middleware/HttpOverrides/sample/HttpOverridesSample.csproj" />
+    <Project Path="src/Middleware/HttpOverrides/src/Microsoft.AspNetCore.HttpOverrides.csproj" />
+    <Project Path="src/Middleware/HttpOverrides/test/Microsoft.AspNetCore.HttpOverrides.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/HttpsPolicy/">
+    <Project Path="src/Middleware/HttpsPolicy/sample/HttpsPolicySample.csproj" />
+    <Project Path="src/Middleware/HttpsPolicy/src/Microsoft.AspNetCore.HttpsPolicy.csproj" />
+    <Project Path="src/Middleware/HttpsPolicy/test/Microsoft.AspNetCore.HttpsPolicy.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Localization.Routing/">
+    <Project Path="src/Middleware/Localization.Routing/src/Microsoft.AspNetCore.Localization.Routing.csproj" />
+    <Project Path="src/Middleware/Localization.Routing/test/Microsoft.AspNetCore.Localization.Routing.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Localization/">
+    <Project Path="src/Middleware/Localization/sample/LocalizationSample.csproj" />
+    <Project Path="src/Middleware/Localization/src/Microsoft.AspNetCore.Localization.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Localization/test/">
+    <Project Path="src/Middleware/Localization/test/FunctionalTests/Microsoft.AspNetCore.Localization.FunctionalTests.csproj" />
+    <Project Path="src/Middleware/Localization/test/UnitTests/Microsoft.AspNetCore.Localization.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Localization/test/testassets/">
+    <Project Path="src/Middleware/Localization/testassets/LocalizationWebsite/LocalizationWebsite.csproj" />
+    <Project Path="src/Middleware/Localization/testassets/ResourcesClassLibraryNoAttribute/ResourcesClassLibraryNoAttribute.csproj" />
+    <Project Path="src/Middleware/Localization/testassets/ResourcesClassLibraryWithAttribute/ResourcesClassLibraryWithAttribute.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/MiddlewareAnalysis/">
+    <Project Path="src/Middleware/MiddlewareAnalysis/src/Microsoft.AspNetCore.MiddlewareAnalysis.csproj" />
+    <Project Path="src/Middleware/MiddlewareAnalysis/test/Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/MiddlewareAnalysis/samples/">
+    <Project Path="src/Middleware/MiddlewareAnalysis/samples/MiddlewareAnalysisSample/MiddlewareAnalysisSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/perf/">
+    <Project Path="src/Middleware/perf/Microbenchmarks/Microsoft.AspNetCore.WebSockets.Microbenchmarks.csproj" />
+    <Project Path="src/Middleware/perf/ResponseCaching.Microbenchmarks/Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/ResponseCaching.Abstractions/">
+    <Project Path="src/Middleware/ResponseCaching.Abstractions/src/Microsoft.AspNetCore.ResponseCaching.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/ResponseCaching/">
+    <Project Path="src/Middleware/ResponseCaching/src/Microsoft.AspNetCore.ResponseCaching.csproj" />
+    <Project Path="src/Middleware/ResponseCaching/test/Microsoft.AspNetCore.ResponseCaching.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/ResponseCaching/samples/">
+    <Project Path="src/Middleware/ResponseCaching/samples/ResponseCachingSample/ResponseCachingSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/ResponseCompression/">
+    <Project Path="src/Middleware/ResponseCompression/perf/Microbenchmarks/Microsoft.AspNetCore.ResponseCompression.Microbenchmarks.csproj" />
+    <Project Path="src/Middleware/ResponseCompression/sample/ResponseCompressionSample.csproj" />
+    <Project Path="src/Middleware/ResponseCompression/src/Microsoft.AspNetCore.ResponseCompression.csproj" />
+    <Project Path="src/Middleware/ResponseCompression/test/Microsoft.AspNetCore.ResponseCompression.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Rewrite/">
+    <Project Path="src/Middleware/Rewrite/sample/RewriteSample.csproj" />
+    <Project Path="src/Middleware/Rewrite/src/Microsoft.AspNetCore.Rewrite.csproj" />
+    <Project Path="src/Middleware/Rewrite/test/Microsoft.AspNetCore.Rewrite.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Session/">
+    <Project Path="src/Middleware/Session/samples/SessionSample.csproj" />
+    <Project Path="src/Middleware/Session/src/Microsoft.AspNetCore.Session.csproj" />
+    <Project Path="src/Middleware/Session/test/Microsoft.AspNetCore.Session.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Spa/" />
+  <Folder Name="/src/Middleware/Spa/SpaProxy/">
+    <Project Path="src/Middleware/Spa/SpaProxy/src/Microsoft.AspNetCore.SpaProxy.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/Spa/SpaServices.Extensions/">
+    <Project Path="src/Middleware/Spa/SpaServices.Extensions/src/Microsoft.AspNetCore.SpaServices.Extensions.csproj" />
+    <Project Path="src/Middleware/Spa/SpaServices.Extensions/test/Microsoft.AspNetCore.SpaServices.Extensions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/StaticFiles/">
+    <Project Path="src/Middleware/StaticFiles/src/Microsoft.AspNetCore.StaticFiles.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/StaticFiles/samples/">
+    <Project Path="src/Middleware/StaticFiles/samples/StaticFileSample/StaticFileSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/StaticFiles/test/">
+    <Project Path="src/Middleware/StaticFiles/test/FunctionalTests/Microsoft.AspNetCore.StaticFiles.FunctionalTests.csproj" />
+    <Project Path="src/Middleware/StaticFiles/test/UnitTests/Microsoft.AspNetCore.StaticFiles.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/WebSockets/">
+    <Project Path="src/Middleware/WebSockets/src/Microsoft.AspNetCore.WebSockets.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/WebSockets/samples/">
+    <Project Path="src/Middleware/WebSockets/samples/EchoApp/EchoApp.csproj" />
+    <Project Path="src/Middleware/WebSockets/samples/TestServer/WebSockets.TestServer.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/WebSockets/test/">
+    <Project Path="src/Middleware/WebSockets/test/ConformanceTests/Microsoft.AspNetCore.WebSockets.ConformanceTests.csproj" />
+    <Project Path="src/Middleware/WebSockets/test/UnitTests/Microsoft.AspNetCore.WebSockets.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Middleware/WebSockets/test/ConformanceTests/">
+    <Project Path="src/Middleware/WebSockets/test/ConformanceTests/AutobahnTestApp/AutobahnTestApp.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/" />
+  <Folder Name="/src/Mvc/benchmarks/">
+    <Project Path="src/Mvc/perf/Microbenchmarks/Microsoft.AspNetCore.Mvc.Views/Microsoft.AspNetCore.Mvc.Views.Microbenchmarks.csproj" />
+    <Project Path="src/Mvc/perf/Microbenchmarks/Microsoft.AspNetCore.Mvc/Microsoft.AspNetCore.Mvc.Microbenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Abstractions/">
+    <Project Path="src/Mvc/Mvc.Abstractions/src/Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
+    <Project Path="src/Mvc/Mvc.Abstractions/test/Microsoft.AspNetCore.Mvc.Abstractions.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Analyzers/">
+    <Project Path="src/Mvc/Mvc.Analyzers/src/Microsoft.AspNetCore.Mvc.Analyzers.csproj" />
+    <Project Path="src/Mvc/Mvc.Analyzers/test/Mvc.Analyzers.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Api.Analyzers/">
+    <Project Path="src/Mvc/Mvc.Api.Analyzers/src/Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj" />
+    <Project Path="src/Mvc/Mvc.Api.Analyzers/test/Mvc.Api.Analyzers.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.ApiExplorer/">
+    <Project Path="src/Mvc/Mvc.ApiExplorer/src/Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
+    <Project Path="src/Mvc/Mvc.ApiExplorer/test/Microsoft.AspNetCore.Mvc.ApiExplorer.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Core/">
+    <Project Path="src/Mvc/Mvc.Core/src/Microsoft.AspNetCore.Mvc.Core.csproj" />
+    <Project Path="src/Mvc/Mvc.Core/test/Microsoft.AspNetCore.Mvc.Core.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Cors/">
+    <Project Path="src/Mvc/Mvc.Cors/src/Microsoft.AspNetCore.Mvc.Cors.csproj" />
+    <Project Path="src/Mvc/Mvc.Cors/test/Microsoft.AspNetCore.Mvc.Cors.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.DataAnnotations/">
+    <Project Path="src/Mvc/Mvc.DataAnnotations/src/Microsoft.AspNetCore.Mvc.DataAnnotations.csproj" />
+    <Project Path="src/Mvc/Mvc.DataAnnotations/test/Microsoft.AspNetCore.Mvc.DataAnnotations.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Formatters.Json/">
+    <Project Path="src/Mvc/Mvc.Formatters.Json/src/Microsoft.AspNetCore.Mvc.Formatters.Json.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Formatters.Xml/">
+    <Project Path="src/Mvc/Mvc.Formatters.Xml/src/Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
+    <Project Path="src/Mvc/Mvc.Formatters.Xml/test/Microsoft.AspNetCore.Mvc.Formatters.Xml.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Localization/">
+    <Project Path="src/Mvc/Mvc.Localization/src/Microsoft.AspNetCore.Mvc.Localization.csproj" />
+    <Project Path="src/Mvc/Mvc.Localization/test/Microsoft.AspNetCore.Mvc.Localization.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.NewtonsoftJson/">
+    <Project Path="src/Mvc/Mvc.NewtonsoftJson/src/Microsoft.AspNetCore.Mvc.NewtonsoftJson.csproj" />
+    <Project Path="src/Mvc/Mvc.NewtonsoftJson/test/Microsoft.AspNetCore.Mvc.NewtonsoftJson.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Razor.RuntimeCompilation/">
+    <Project Path="src/Mvc/Mvc.Razor.RuntimeCompilation/src/Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.csproj" />
+    <Project Path="src/Mvc/Mvc.Razor.RuntimeCompilation/test/Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Razor/">
+    <Project Path="src/Mvc/Mvc.Razor/src/Microsoft.AspNetCore.Mvc.Razor.csproj" />
+    <Project Path="src/Mvc/Mvc.Razor/test/Microsoft.AspNetCore.Mvc.Razor.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.RazorPages/">
+    <Project Path="src/Mvc/Mvc.RazorPages/src/Microsoft.AspNetCore.Mvc.RazorPages.csproj" />
+    <Project Path="src/Mvc/Mvc.RazorPages/test/Microsoft.AspNetCore.Mvc.RazorPages.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.TagHelpers/">
+    <Project Path="src/Mvc/Mvc.TagHelpers/src/Microsoft.AspNetCore.Mvc.TagHelpers.csproj" />
+    <Project Path="src/Mvc/Mvc.TagHelpers/test/Microsoft.AspNetCore.Mvc.TagHelpers.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Testing.Tasks/">
+    <Project Path="src/Mvc/Mvc.Testing.Tasks/src/Microsoft.AspNetCore.Mvc.Testing.Tasks.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.Testing/">
+    <Project Path="src/Mvc/Mvc.Testing/src/Microsoft.AspNetCore.Mvc.Testing.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc.ViewFeatures/">
+    <Project Path="src/Mvc/Mvc.ViewFeatures/src/Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
+    <Project Path="src/Mvc/Mvc.ViewFeatures/test/Microsoft.AspNetCore.Mvc.ViewFeatures.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/Mvc/">
+    <Project Path="src/Mvc/Mvc/src/Microsoft.AspNetCore.Mvc.csproj" />
+    <Project Path="src/Mvc/Mvc/test/Microsoft.AspNetCore.Mvc.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/samples/">
+    <Project Path="src/Mvc/samples/MvcSandbox/MvcSandbox.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/shared/">
+    <Project Path="src/Mvc/shared/Mvc.Core.TestCommon/Microsoft.AspNetCore.Mvc.Core.TestCommon.csproj" />
+    <Project Path="src/Mvc/shared/Mvc.TestDiagnosticListener/Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
+    <Project Path="src/Mvc/shared/Mvc.Views.TestCommon/Microsoft.AspNetCore.Mvc.Views.TestCommon.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/test/">
+    <Project Path="src/Mvc/test/Mvc.FunctionalTests/Microsoft.AspNetCore.Mvc.FunctionalTests.csproj" />
+    <Project Path="src/Mvc/test/Mvc.IntegrationTests/Microsoft.AspNetCore.Mvc.IntegrationTests.csproj" />
+  </Folder>
+  <Folder Name="/src/Mvc/test/WebSites/">
+    <Project Path="src/Mvc/test/WebSites/ApiExplorerWebSite/ApiExplorerWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/ApplicationModelWebSite/ApplicationModelWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/BasicWebSite/BasicWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/ControllersFromServicesClassLibrary/ControllersFromServicesClassLibrary.csproj" />
+    <Project Path="src/Mvc/test/WebSites/ControllersFromServicesWebSite/ControllersFromServicesWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/CorsWebSite/CorsWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/ErrorPageMiddlewareWebSite/ErrorPageMiddlewareWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/FilesWebSite/FilesWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/FormatterWebSite/FormatterWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/GenericHostWebSite/GenericHostWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/HtmlGenerationWebSite/HtmlGenerationWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/RazorBuildWebSite.PrecompiledViews/RazorBuildWebSite.PrecompiledViews.csproj" />
+    <Project Path="src/Mvc/test/WebSites/RazorBuildWebSite.Views/RazorBuildWebSite.Views.csproj" />
+    <Project Path="src/Mvc/test/WebSites/RazorBuildWebSite/RazorBuildWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/RazorPagesClassLibrary/RazorPagesClassLibrary.csproj" />
+    <Project Path="src/Mvc/test/WebSites/RazorPagesWebSite/RazorPagesWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/RazorWebSite/RazorWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/RoutingWebSite/Mvc.RoutingWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/SecurityWebSite/SecurityWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/SimpleWebSite/SimpleWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/SimpleWebSiteWithWebApplicationBuilder/SimpleWebSiteWithWebApplicationBuilder.csproj" />
+    <Project Path="src/Mvc/test/WebSites/SimpleWebSiteWithWebApplicationBuilderException/SimpleWebSiteWithWebApplicationBuilderException.csproj" />
+    <Project Path="src/Mvc/test/WebSites/TagHelpersWebSite/TagHelpersWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/VersioningWebSite/VersioningWebSite.csproj" />
+    <Project Path="src/Mvc/test/WebSites/XmlFormattersWebSite/XmlFormattersWebSite.csproj" />
+  </Folder>
+  <Folder Name="/src/ObjectPool/">
+    <Project Path="src/ObjectPool/src/Microsoft.Extensions.ObjectPool.csproj" />
+  </Folder>
+  <Folder Name="/src/OpenApi/" />
+  <Folder Name="/src/OpenApi/gen/">
+    <Project Path="src/OpenApi/gen/Microsoft.AspNetCore.OpenApi.SourceGenerators.csproj" />
+  </Folder>
+  <Folder Name="/src/OpenApi/test/">
+    <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Build.Tests/Microsoft.AspNetCore.OpenApi.Build.Tests.csproj" />
+    <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests/Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/ProjectTemplates/">
+    <Project Path="src/ProjectTemplates/test/Templates.Blazor.Tests/Templates.Blazor.Tests.csproj" />
+    <Project Path="src/ProjectTemplates/test/Templates.Tests/Templates.Tests.csproj" />
+    <Project Path="src/ProjectTemplates/Web.Client.ItemTemplates/Microsoft.DotNet.Web.Client.ItemTemplates.csproj" />
+    <Project Path="src/ProjectTemplates/Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" />
+    <Project Path="src/ProjectTemplates/Web.ProjectTemplates/Microsoft.DotNet.Web.ProjectTemplates.csproj" />
+  </Folder>
+  <Folder Name="/src/Razor/" />
+  <Folder Name="/src/Razor/Razor.Runtime/">
+    <Project Path="src/Razor/Razor.Runtime/src/Microsoft.AspNetCore.Razor.Runtime.csproj" />
+    <Project Path="src/Razor/Razor.Runtime/test/Microsoft.AspNetCore.Razor.Runtime.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Razor/Razor/">
+    <Project Path="src/Razor/Razor/src/Microsoft.AspNetCore.Razor.csproj" />
+    <Project Path="src/Razor/Razor/test/Microsoft.AspNetCore.Razor.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/" />
+  <Folder Name="/src/Security/Authentication/">
+    <Project Path="src/Security/Authentication/test/Microsoft.AspNetCore.Authentication.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Certificate/">
+    <Project Path="src/Security/Authentication/Certificate/src/Microsoft.AspNetCore.Authentication.Certificate.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Certificate/samples/">
+    <Project Path="src/Security/Authentication/Certificate/samples/Certificate.Optional.Sample/Certificate.Optional.Sample.csproj" />
+    <Project Path="src/Security/Authentication/Certificate/samples/Certificate.Sample/Certificate.Sample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Cookies/">
+    <Project Path="src/Security/Authentication/Cookies/src/Microsoft.AspNetCore.Authentication.Cookies.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Cookies/samples/">
+    <Project Path="src/Security/Authentication/Cookies/samples/CookieSample/CookieSample.csproj" />
+    <Project Path="src/Security/Authentication/Cookies/samples/CookieSessionSample/CookieSessionSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Core/">
+    <Project Path="src/Security/Authentication/Core/src/Microsoft.AspNetCore.Authentication.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Facebook/">
+    <Project Path="src/Security/Authentication/Facebook/src/Microsoft.AspNetCore.Authentication.Facebook.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Google/">
+    <Project Path="src/Security/Authentication/Google/src/Microsoft.AspNetCore.Authentication.Google.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/JwtBearer/">
+    <Project Path="src/Security/Authentication/JwtBearer/src/Microsoft.AspNetCore.Authentication.JwtBearer.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/JwtBearer/samples/">
+    <Project Path="src/Security/Authentication/JwtBearer/samples/JwtBearerSample/JwtBearerSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/MicrosoftAccount/">
+    <Project Path="src/Security/Authentication/MicrosoftAccount/src/Microsoft.AspNetCore.Authentication.MicrosoftAccount.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Negotiate/">
+    <Project Path="src/Security/Authentication/Negotiate/src/Microsoft.AspNetCore.Authentication.Negotiate.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Negotiate/samples/">
+    <Project Path="src/Security/Authentication/Negotiate/samples/NegotiateAuthSample/NegotiateAuthSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Negotiate/test/">
+    <Project Path="src/Security/Authentication/Negotiate/test/Negotiate.FunctionalTest/Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest.csproj" />
+    <Project Path="src/Security/Authentication/Negotiate/test/Negotiate.Test/Microsoft.AspNetCore.Authentication.Negotiate.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/OAuth/">
+    <Project Path="src/Security/Authentication/OAuth/src/Microsoft.AspNetCore.Authentication.OAuth.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/OpenIdConnect/">
+    <Project Path="src/Security/Authentication/OpenIdConnect/src/Microsoft.AspNetCore.Authentication.OpenIdConnect.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/OpenIdConnect/samples/">
+    <Project Path="src/Security/Authentication/OpenIdConnect/samples/OpenIdConnectSample/OpenIdConnectSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/samples/">
+    <Project Path="src/Security/Authentication/samples/SocialSample/SocialSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/Twitter/">
+    <Project Path="src/Security/Authentication/Twitter/src/Microsoft.AspNetCore.Authentication.Twitter.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/WsFederation/">
+    <Project Path="src/Security/Authentication/WsFederation/src/Microsoft.AspNetCore.Authentication.WsFederation.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authentication/WsFederation/samples/">
+    <Project Path="src/Security/Authentication/WsFederation/samples/WsFedSample/WsFedSample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authorization/">
+    <Project Path="src/Security/Authorization/test/Microsoft.AspNetCore.Authorization.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authorization/Core/">
+    <Project Path="src/Security/Authorization/Core/src/Microsoft.AspNetCore.Authorization.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/Authorization/Policy/">
+    <Project Path="src/Security/Authorization/Policy/src/Microsoft.AspNetCore.Authorization.Policy.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/benchmarks/">
+    <Project Path="src/Security/perf/Microbenchmarks/Microsoft.AspNetCore.Security.Microbenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/CookiePolicy/">
+    <Project Path="src/Security/CookiePolicy/src/Microsoft.AspNetCore.CookiePolicy.csproj" />
+    <Project Path="src/Security/CookiePolicy/test/Microsoft.AspNetCore.CookiePolicy.Test.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/CookiePolicy/samples/">
+    <Project Path="src/Security/CookiePolicy/samples/CookiePolicySample/CookiePolicySample.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/samples/">
+    <Project Path="src/Security/samples/ClaimsTransformation/ClaimsTransformation.csproj" />
+    <Project Path="src/Security/samples/Cookies/Cookies.csproj" />
+    <Project Path="src/Security/samples/CustomAuthorizationFailureResponse/CustomAuthorizationFailureResponse.csproj" />
+    <Project Path="src/Security/samples/CustomPolicyProvider/CustomPolicyProvider.csproj" />
+    <Project Path="src/Security/samples/DynamicSchemes/DynamicSchemes.csproj" />
+    <Project Path="src/Security/samples/Identity.ExternalClaims/Identity.ExternalClaims.csproj" />
+    <Project Path="src/Security/samples/PathSchemeSelection/PathSchemeSelection.csproj" />
+    <Project Path="src/Security/samples/StaticFilesAuth/StaticFilesAuth.csproj" />
+  </Folder>
+  <Folder Name="/src/Security/test/">
+    <Project Path="src/Security/test/AuthSamples.FunctionalTests/AuthSamples.FunctionalTests.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/" />
+  <Folder Name="/src/Servers/Connections.Abstractions/">
+    <Project Path="src/Servers/Connections.Abstractions/src/Microsoft.AspNetCore.Connections.Abstractions.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/HttpSys/">
+    <Project Path="src/Servers/HttpSys/src/Microsoft.AspNetCore.Server.HttpSys.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/HttpSys/samples/">
+    <Project Path="src/Servers/HttpSys/samples/HotAddSample/HotAddSample.csproj" />
+    <Project Path="src/Servers/HttpSys/samples/QueueSharing/QueueSharing.csproj" />
+    <Project Path="src/Servers/HttpSys/samples/SelfHostServer/SelfHostServer.csproj" />
+    <Project Path="src/Servers/HttpSys/samples/TestClient/TestClient.csproj" />
+    <Project Path="src/Servers/HttpSys/samples/TlsFeaturesObserve/TlsFeaturesObserve.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/HttpSys/test/">
+    <Project Path="src/Servers/HttpSys/test/FunctionalTests/Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj" />
+    <Project Path="src/Servers/HttpSys/test/Tests/Microsoft.AspNetCore.Server.HttpSys.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/IIS/" />
+  <Folder Name="/src/Servers/IIS/ANCM/">
+    <Project Path="src/Servers/IIS/AspNetCoreModuleV2/AspNetCore/AspNetCore.vcxproj" Id="ec82302f-d2f0-4727-99d1-eabc0dd9dc3b">
+      <Platform Solution="*|arm64" Project="ARM64" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Servers/IIS/AspNetCoreModuleV2/CommonLib/CommonLib.vcxproj" Id="55494e58-e061-4c4c-a0a8-837008e72f85">
+      <Platform Solution="Debug|arm64" Project="ARM64" />
+      <Platform Solution="Release|arm64" Project="Any CPU" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Servers/IIS/AspNetCoreModuleV2/CommonLibTests/CommonLibTests.vcxproj" Id="1eac8125-1765-4e2d-8cbe-56dc98a1c8c1">
+      <Platform Solution="*|arm64" Project="ARM64" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Servers/IIS/AspNetCoreModuleV2/gtest/gtest.vcxproj" Id="cac1267b-8778-4257-aac6-caf481723b01">
+      <Platform Solution="*|arm64" Project="ARM64" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Servers/IIS/AspNetCoreModuleV2/IISLib/IISLib.vcxproj" Id="09d9d1d6-2951-4e14-bc35-76a23cf9391a">
+      <Platform Solution="Debug|arm64" Project="ARM64" />
+      <Platform Solution="Release|arm64" Project="Any CPU" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Servers/IIS/AspNetCoreModuleV2/InProcessRequestHandler/InProcessRequestHandler.vcxproj" Id="d57ea297-6dc2-4bc0-8c91-334863327863">
+      <Platform Solution="Debug|arm64" Project="ARM64" />
+      <Platform Solution="Release|arm64" Project="Any CPU" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Servers/IIS/AspNetCoreModuleV2/OutOfProcessRequestHandler/OutOfProcessRequestHandler.vcxproj" Id="7f87406c-a3c8-4139-a68d-e4c344294a67">
+      <Platform Solution="Debug|arm64" Project="ARM64" />
+      <Platform Solution="Release|arm64" Project="Any CPU" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Servers/IIS/AspNetCoreModuleV2/RequestHandlerLib/RequestHandlerLib.vcxproj" Id="1533e271-f61b-441b-8b74-59fb61df0552">
+      <Platform Solution="Debug|arm64" Project="ARM64" />
+      <Platform Solution="Release|arm64" Project="Any CPU" />
+      <Deploy Solution="*|x86" />
+    </Project>
+    <Project Path="src/Servers/IIS/AspNetCoreModuleV2/Symbols/Microsoft.AspNetCore.ANCMSymbols.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/IIS/IIS/">
+    <Project Path="src/Servers/IIS/IIS/src/Microsoft.AspNetCore.Server.IIS.csproj">
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/AspNetCore/AspNetCore.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/CommonLib/CommonLib.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/IISLib/IISLib.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/InProcessRequestHandler/InProcessRequestHandler.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/OutOfProcessRequestHandler/OutOfProcessRequestHandler.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/RequestHandlerLib/RequestHandlerLib.vcxproj" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/Servers/IIS/IIS/benchmarks/">
+    <Project Path="src/Servers/IIS/IIS/perf/Microbenchmarks/IIS.Microbenchmarks.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|arm64" Project="ARM64" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+      <Build Solution="Release|arm64" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/Servers/IIS/IIS/samples/">
+    <Project Path="src/Servers/IIS/IIS/samples/NativeIISSample/NativeIISSample.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|arm64" Project="x86" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+      <Build Solution="*|arm64" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/Servers/IIS/IIS/test/">
+    <Project Path="src/Servers/IIS/IIS/test/IIS.FunctionalTests/IIS.FunctionalTests.csproj" />
+    <Project Path="src/Servers/IIS/IIS/test/IIS.NewHandler.FunctionalTests/IIS.NewHandler.FunctionalTests.csproj" />
+    <Project Path="src/Servers/IIS/IIS/test/IIS.NewShim.FunctionalTests/IIS.NewShim.FunctionalTests.csproj" />
+    <Project Path="src/Servers/IIS/IIS/test/IIS.Tests/IIS.Tests.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|arm64" Project="x86" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+      <Build Solution="*|arm64" Project="false" />
+    </Project>
+    <Project Path="src/Servers/IIS/IIS/test/IISExpress.FunctionalTests/IISExpress.FunctionalTests.csproj" />
+    <Project Path="src/Servers/IIS/IIS/test/testassets/IIS.Common.TestLib/IIS.Common.TestLib.csproj" />
+    <Project Path="src/Servers/IIS/IIS/test/testassets/InProcessNewShimWebSite/InProcessNewShimWebSite.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|arm64" Project="x86" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+      <Build Solution="*|arm64" Project="false" />
+    </Project>
+    <Project Path="src/Servers/IIS/IIS/test/testassets/InProcessWebSite/InProcessWebSite.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+      <Platform Solution="*|arm64" Project="x86" />
+      <Platform Solution="*|x64" Project="x64" />
+      <Platform Solution="*|x86" Project="x86" />
+      <Build Solution="*|arm64" Project="false" />
+    </Project>
+    <Project Path="src/Servers/IIS/IIS/test/testassets/TestTasks/TestTasks.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/IIS/IISIntegration/">
+    <Project Path="src/Servers/IIS/IISIntegration/src/Microsoft.AspNetCore.Server.IISIntegration.csproj">
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/AspNetCore/AspNetCore.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/CommonLib/CommonLib.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/IISLib/IISLib.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/InProcessRequestHandler/InProcessRequestHandler.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/OutOfProcessRequestHandler/OutOfProcessRequestHandler.vcxproj" />
+      <BuildDependency Project="src/Servers/IIS/AspNetCoreModuleV2/RequestHandlerLib/RequestHandlerLib.vcxproj" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/Servers/IIS/IISIntegration/samples/">
+    <Project Path="src/Servers/IIS/IISIntegration/samples/IISSample/IISSample.csproj">
+      <Build Solution="*|Any CPU" Project="false" />
+      <Build Solution="Release|x64" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/Servers/IIS/IISIntegration/test/">
+    <Project Path="src/Servers/IIS/IISIntegration/test/Tests/Microsoft.AspNetCore.Server.IISIntegration.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/IIS/IntegrationTesting.IIS/">
+    <Project Path="src/Servers/IIS/IntegrationTesting.IIS/src/Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj">
+      <BuildDependency Project="src/Servers/IIS/IIS/src/Microsoft.AspNetCore.Server.IIS.csproj" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/Servers/Kestrel/" />
+  <Folder Name="/src/Servers/Kestrel/Core/">
+    <Project Path="src/Servers/Kestrel/Core/src/Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <Project Path="src/Servers/Kestrel/Core/test/Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/Kestrel/Kestrel/">
+    <Project Path="src/Servers/Kestrel/Kestrel/src/Microsoft.AspNetCore.Server.Kestrel.csproj" />
+    <Project Path="src/Servers/Kestrel/Kestrel/test/Microsoft.AspNetCore.Server.Kestrel.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/Kestrel/perf/">
+    <Project Path="src/Servers/Kestrel/perf/Microbenchmarks/Microsoft.AspNetCore.Server.Kestrel.Microbenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/Kestrel/samples/">
+    <Project Path="src/Servers/Kestrel/samples/http2cat/http2cat.csproj" />
+    <Project Path="src/Servers/Kestrel/samples/Http2SampleApp/Http2SampleApp.csproj" />
+    <Project Path="src/Servers/Kestrel/samples/Http3SampleApp/Http3SampleApp.csproj" />
+    <Project Path="src/Servers/Kestrel/samples/HttpClientApp/HttpClientApp.csproj" />
+    <Project Path="src/Servers/Kestrel/samples/LargeResponseApp/LargeResponseApp.csproj" />
+    <Project Path="src/Servers/Kestrel/samples/PlaintextApp/PlaintextApp.csproj" />
+    <Project Path="src/Servers/Kestrel/samples/SampleApp/Kestrel.SampleApp.csproj" />
+    <Project Path="src/Servers/Kestrel/samples/SystemdTestApp/SystemdTestApp.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/Kestrel/test/">
+    <Project Path="src/Servers/Kestrel/test/InMemory.FunctionalTests/InMemory.FunctionalTests.csproj" />
+    <Project Path="src/Servers/Kestrel/test/Interop.FunctionalTests/Interop.FunctionalTests.csproj" />
+    <Project Path="src/Servers/Kestrel/test/Sockets.BindTests/Sockets.BindTests.csproj" />
+    <Project Path="src/Servers/Kestrel/test/Sockets.FunctionalTests/Sockets.FunctionalTests.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/Kestrel/tools/">
+    <Project Path="src/Servers/Kestrel/tools/CodeGenerator/CodeGenerator.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/Kestrel/Transport.Quic/">
+    <Project Path="src/Servers/Kestrel/Transport.Quic/src/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.csproj" />
+    <Project Path="src/Servers/Kestrel/Transport.Quic/test/Microsoft.AspNetCore.Server.Kestrel.Transport.Quic.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/Kestrel/Transport.Sockets/">
+    <Project Path="src/Servers/Kestrel/Transport.Sockets/src/Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj" />
+  </Folder>
+  <Folder Name="/src/Servers/test/">
+    <Project Path="src/Servers/test/FunctionalTests/ServerComparison.FunctionalTests.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/" />
+  <Folder Name="/src/Shared/BrowserTesting/">
+    <Project Path="src/Shared/BrowserTesting/src/Microsoft.AspNetCore.BrowserTesting.csproj" />
+  </Folder>
+  <Folder Name="/src/Shared/test/">
+    <Project Path="src/Shared/test/Shared.Tests/Microsoft.AspNetCore.Shared.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/" />
+  <Folder Name="/src/SignalR/clients/" />
+  <Folder Name="/src/SignalR/clients/csharp/" />
+  <Folder Name="/src/SignalR/clients/csharp/Client.Core/">
+    <Project Path="src/SignalR/clients/csharp/Client.Core/src/Microsoft.AspNetCore.SignalR.Client.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/clients/csharp/Client.SourceGenerator/">
+    <Project Path="src/SignalR/clients/csharp/Client.SourceGenerator/src/Microsoft.AspNetCore.SignalR.Client.SourceGenerator.csproj">
+      <Build Solution="*|arm64" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/src/SignalR/clients/csharp/Client/">
+    <Project Path="src/SignalR/clients/csharp/Client/src/Microsoft.AspNetCore.SignalR.Client.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/clients/csharp/Client/test/">
+    <Project Path="src/SignalR/clients/csharp/Client/test/FunctionalTests/Microsoft.AspNetCore.SignalR.Client.FunctionalTests.csproj" />
+    <Project Path="src/SignalR/clients/csharp/Client/test/UnitTests/Microsoft.AspNetCore.SignalR.Client.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/clients/csharp/Http.Connections.Client/">
+    <Project Path="src/SignalR/clients/csharp/Http.Connections.Client/src/Microsoft.AspNetCore.Http.Connections.Client.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/clients/ts/">
+    <Project Path="src/SignalR/clients/ts/FunctionalTests/SignalR.Client.FunctionalTestApp.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/common/" />
+  <Folder Name="/src/SignalR/common/Http.Connections.Common/">
+    <Project Path="src/SignalR/common/Http.Connections.Common/src/Microsoft.AspNetCore.Http.Connections.Common.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/common/Http.Connections/">
+    <Project Path="src/SignalR/common/Http.Connections/src/Microsoft.AspNetCore.Http.Connections.csproj" />
+    <Project Path="src/SignalR/common/Http.Connections/test/Microsoft.AspNetCore.Http.Connections.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/common/Protocols.Json/">
+    <Project Path="src/SignalR/common/Protocols.Json/src/Microsoft.AspNetCore.SignalR.Protocols.Json.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/common/Protocols.MessagePack/">
+    <Project Path="src/SignalR/common/Protocols.MessagePack/src/Microsoft.AspNetCore.SignalR.Protocols.MessagePack.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/common/Protocols.NewtonsoftJson/">
+    <Project Path="src/SignalR/common/Protocols.NewtonsoftJson/src/Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/common/SignalR.Common/">
+    <Project Path="src/SignalR/common/SignalR.Common/src/Microsoft.AspNetCore.SignalR.Common.csproj" />
+    <Project Path="src/SignalR/common/SignalR.Common/test/Microsoft.AspNetCore.SignalR.Common.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/common/testassets/">
+    <Project Path="src/SignalR/common/testassets/Tests.Utils/Microsoft.AspNetCore.SignalR.Tests.Utils.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/perf/">
+    <Project Path="src/SignalR/perf/Microbenchmarks/Microsoft.AspNetCore.SignalR.Microbenchmarks.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/samples/">
+    <Project Path="src/SignalR/samples/ClientSample/ClientSample.csproj" />
+    <Project Path="src/SignalR/samples/JwtClientSample/JwtClientSample.csproj" />
+    <Project Path="src/SignalR/samples/JwtSample/JwtSample.csproj" />
+    <Project Path="src/SignalR/samples/SignalRSamples/SignalRSamples.csproj" />
+    <Project Path="src/SignalR/samples/SocialWeather/SocialWeather.csproj" />
+    <Project Path="src/SignalR/samples/WebSocketSample/WebSocketSample.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/server/" />
+  <Folder Name="/src/SignalR/server/Core/">
+    <Project Path="src/SignalR/server/Core/src/Microsoft.AspNetCore.SignalR.Core.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/server/SignalR/">
+    <Project Path="src/SignalR/server/SignalR/src/Microsoft.AspNetCore.SignalR.csproj" />
+    <Project Path="src/SignalR/server/SignalR/test/Microsoft.AspNetCore.SignalR.Tests/Microsoft.AspNetCore.SignalR.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/server/Specification.Tests/">
+    <Project Path="src/SignalR/server/Specification.Tests/src/Microsoft.AspNetCore.SignalR.Specification.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/SignalR/server/StackExchangeRedis/">
+    <Project Path="src/SignalR/server/StackExchangeRedis/src/Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
+    <Project Path="src/SignalR/server/StackExchangeRedis/test/Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/SiteExtensions/Microsoft.Web.Xdt.Extensions/">
+    <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/src/Microsoft.Web.Xdt.Extensions.csproj" />
+    <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/tests/Microsoft.Web.Xdt.Extensions.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Testing/">
+    <Project Path="src/Analyzers/Microsoft.AspNetCore.Analyzer.Testing/src/Microsoft.AspNetCore.Analyzer.Testing.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/" />
+  <Folder Name="/src/Tools/dotnet-dev-certs/">
+    <Project Path="src/Tools/dotnet-dev-certs/src/dotnet-dev-certs.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/dotnet-getdocument/">
+    <Project Path="src/Tools/dotnet-getdocument/src/dotnet-getdocument.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/dotnet-sql-cache/">
+    <Project Path="src/Tools/dotnet-sql-cache/src/dotnet-sql-cache.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/dotnet-user-secrets/">
+    <Project Path="src/Tools/dotnet-user-secrets/src/dotnet-user-secrets.csproj" />
+    <Project Path="src/Tools/dotnet-user-secrets/test/dotnet-user-secrets.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/Extensions.ApiDescription.Client/">
+    <Project Path="src/Tools/Extensions.ApiDescription.Client/src/Microsoft.Extensions.ApiDescription.Client.csproj" />
+    <Project Path="src/Tools/Extensions.ApiDescription.Client/test/Microsoft.Extensions.ApiDescription.Client.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/Extensions.ApiDescription.Server/">
+    <Project Path="src/Tools/Extensions.ApiDescription.Server/src/Microsoft.Extensions.ApiDescription.Server.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/FirstRunCertGenerator/">
+    <Project Path="src/Tools/FirstRunCertGenerator/src/Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj" />
+    <Project Path="src/Tools/FirstRunCertGenerator/test/Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/GetDocumentInsider/">
+    <Project Path="src/Tools/GetDocumentInsider/src/GetDocument.Insider.csproj" />
+  </Folder>
+  <Folder Name="/src/Tools/Microsoft.dotnet-openapi/">
+    <Project Path="src/Tools/Microsoft.dotnet-openapi/src/Microsoft.dotnet-openapi.csproj" />
+    <Project Path="src/Tools/Microsoft.dotnet-openapi/test/dotnet-microsoft.openapi.Tests.csproj" />
+  </Folder>
+  <Folder Name="/src/Validation/" />
+  <Folder Name="/src/Validation/gen/">
+    <Project Path="src/Validation/gen/Microsoft.Extensions.Validation.ValidationsGenerator.csproj" />
+  </Folder>
+  <Folder Name="/src/Validation/src/">
+    <Project Path="src/Validation/src/Microsoft.Extensions.Validation.csproj" />
+  </Folder>
+  <Folder Name="/src/Validation/test/">
+    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
+    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
+  </Folder>
+  <Folder Name="/src/WebEncoders/">
+    <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
+  </Folder>
+  <Folder Name="/stress/">
+    <Project Path="src/Servers/Kestrel/stress/HttpStress.csproj" />
+  </Folder>
+  <Folder Name="/test/">
+    <Project Path="src/Framework/AspNetCoreAnalyzers/test/Microsoft.AspNetCore.App.Analyzers.Test.csproj">
+      <Build Solution="*|arm64" Project="false" />
+    </Project>
+  </Folder>
+  <Folder Name="/TestInfrastructure/">
+    <File Path="src/ProjectTemplates/TestInfrastructure/Directory.Build.props.in" />
+    <File Path="src/ProjectTemplates/TestInfrastructure/Directory.Build.targets.in" />
+    <File Path="src/ProjectTemplates/TestInfrastructure/PrepareForTest.targets" />
+    <File Path="src/ProjectTemplates/TestInfrastructure/runtimeconfig.norollforward.json" />
+  </Folder>
+  <Project Path="eng/tools/HelixTestRunner/HelixTestRunner.csproj" />
+  <Project Path="src/Antiforgery/samples/MinimalFormSample/MinimalFormSample.csproj" />
+  <Project Path="src/Assets/Microsoft.AspNetCore.App.Internal.Assets.csproj" />
+  <Project Path="src/BuildAfterTargetingPack/BuildAfterTargetingPack.csproj" />
+  <Project Path="src/Caching/perf/MicroBenchmarks/Microsoft.Extensions.Caching.MicroBenchmarks/Microsoft.Extensions.Caching.MicroBenchmarks.csproj" />
+  <Project Path="src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter/src/Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter.csproj" />
+  <Project Path="src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/src/Microsoft.AspNetCore.Components.QuickGrid.csproj" />
+  <Project Path="src/Components/QuickGrid/Microsoft.AspNetCore.Components.QuickGrid/test/Microsoft.AspNetCore.Components.QuickGrid.Tests.csproj" />
+  <Project Path="src/Components/WebView/test/E2ETest/Microsoft.AspNetCore.Components.WebViewE2E.Test.csproj" />
+  <Project Path="src/DataProtection/samples/KeyManagementSimulator/KeyManagementSimulator.csproj" />
+  <Project Path="src/Framework/AspNetCoreAnalyzers/samples/WebAppSample/WebAppSample.csproj" />
+  <Project Path="src/Framework/AspNetCoreAnalyzers/src/SourceGenerators/Microsoft.AspNetCore.App.SourceGenerators.csproj" />
+  <Project Path="src/Html.Abstractions/test/Microsoft.AspNetCore.Html.Abstractions.Tests.csproj" />
+  <Project Path="src/Http/Http.Results/tools/ResultsOfTGenerator/ResultsOfTGenerator.csproj" />
+  <Project Path="src/Identity/samples/IdentitySample.ApiEndpoints/IdentitySample.ApiEndpoints.csproj" />
+  <Project Path="src/Installers/Windows/WindowsHostingBundle/WindowsHostingBundle.wixproj">
+    <Platform Project="arm64" />
+    <Build Solution="*|arm64" />
+  </Project>
+  <Project Path="src/Middleware/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis/src/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.csproj" />
+  <Project Path="src/Middleware/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis/test/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests.csproj" />
+  <Project Path="src/Middleware/OutputCaching/perf/Microbenchmarks/Microsoft.AspNetCore.OutputCaching.Microbenchmarks.csproj" />
+  <Project Path="src/Middleware/OutputCaching/samples/OutputCachingSample/OutputCachingSample.csproj" />
+  <Project Path="src/Middleware/OutputCaching/src/Microsoft.AspNetCore.OutputCaching.csproj" />
+  <Project Path="src/Middleware/OutputCaching/test/Microsoft.AspNetCore.OutputCaching.Tests.csproj" />
+  <Project Path="src/Middleware/RateLimiting/samples/RateLimitingSample/RateLimitingSample.csproj" />
+  <Project Path="src/Middleware/RateLimiting/src/Microsoft.AspNetCore.RateLimiting.csproj" />
+  <Project Path="src/Middleware/RateLimiting/test/Microsoft.AspNetCore.RateLimiting.Tests.csproj" />
+  <Project Path="src/Middleware/RequestDecompression/perf/Microbenchmarks/Microsoft.AspNetCore.RequestDecompression.Microbenchmarks.csproj" />
+  <Project Path="src/Middleware/RequestDecompression/sample/RequestDecompressionSample.csproj" />
+  <Project Path="src/Middleware/RequestDecompression/src/Microsoft.AspNetCore.RequestDecompression.csproj" />
+  <Project Path="src/Middleware/RequestDecompression/test/Microsoft.AspNetCore.RequestDecompression.Tests.csproj" />
+  <Project Path="src/Mvc/samples/MvcFormSample/MvcFormSample.csproj" />
+  <Project Path="src/OpenApi/perf/Microbenchmarks/Microsoft.AspNetCore.OpenApi.Microbenchmarks.csproj" />
+  <Project Path="src/OpenApi/sample/Sample.csproj" />
+  <Project Path="src/OpenApi/src/Microsoft.AspNetCore.OpenApi.csproj" />
+  <Project Path="src/OpenApi/test/Microsoft.AspNetCore.OpenApi.Tests/Microsoft.AspNetCore.OpenApi.Tests.csproj" />
+  <Project Path="src/ProjectTemplates/test/Templates.Blazor.WebAssembly.Auth.Tests/Templates.Blazor.WebAssembly.Auth.Tests.csproj" />
+  <Project Path="src/ProjectTemplates/test/Templates.Blazor.WebAssembly.Tests/Templates.Blazor.WebAssembly.Tests.csproj" />
+  <Project Path="src/ProjectTemplates/test/Templates.Mvc.Tests/Templates.Mvc.Tests.csproj" />
+  <Project Path="src/Security/Authentication/BearerToken/src/Microsoft.AspNetCore.Authentication.BearerToken.csproj" />
+  <Project Path="src/Security/Authentication/JwtBearer/samples/MinimalJwtBearerSample/MinimalJwtBearerSample.csproj" />
+  <Project Path="src/Security/Authentication/OpenIdConnect/samples/MinimalOpenIdConnectSample/MinimalOpenIdConnectSample.csproj" />
+  <Project Path="src/Servers/HttpSys/perf/Microbenchmarks/Microsoft.AspNetCore.Server.HttpSys.Microbenchmarks.csproj" />
+  <Project Path="src/Servers/HttpSys/test/NonHelixTests/Microsoft.AspNetCore.Server.HttpSys.NonHelixTests.csproj" />
+  <Project Path="src/Servers/HttpSys/test/testassets/DelegationSite/DelegationSite.csproj" />
+  <Project Path="src/Servers/IIS/IIS/test/IIS.LongTests/IIS.LongTests.csproj" />
+  <Project Path="src/Servers/IIS/IIS/test/IIS.ShadowCopy.Tests/IIS.ShadowCopy.Tests.csproj" />
+  <Project Path="src/Servers/Kestrel/samples/WebTransportInteractiveSampleApp/WebTransportInteractiveSampleApp.csproj" />
+  <Project Path="src/Servers/Kestrel/samples/WebTransportSampleApp/WebTransportSampleApp.csproj" />
+  <Project Path="src/Servers/Kestrel/Transport.NamedPipes/src/Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.csproj" />
+  <Project Path="src/Servers/Kestrel/Transport.NamedPipes/test/Microsoft.AspNetCore.Server.Kestrel.Transport.NamedPipes.Tests.csproj" />
+  <Project Path="src/Servers/testassets/ServerComparison.TestSites/ServerComparison.TestSites.csproj">
+    <Platform Solution="*|Any CPU" Project="x86" />
+    <Platform Solution="*|arm64" Project="x86" />
+    <Platform Solution="*|x64" Project="x64" />
+    <Platform Solution="*|x86" Project="x86" />
+    <Build Solution="*|Any CPU" Project="false" />
+    <Build Solution="*|arm64" Project="false" />
+  </Project>
+  <Project Path="src/StaticAssets/src/Microsoft.AspNetCore.StaticAssets.csproj" />
+  <Project Path="src/StaticAssets/test/Microsoft.AspNetCore.StaticAssets.Tests.csproj" />
+  <Project Path="src/Testing/src/Microsoft.AspNetCore.InternalTesting.csproj" />
+  <Project Path="src/Testing/test/Microsoft.AspNetCore.InternalTesting.Tests.csproj" />
+  <Project Path="src/Tools/dotnet-user-jwts/src/dotnet-user-jwts.csproj" />
+  <Project Path="src/Tools/dotnet-user-jwts/test/dotnet-user-jwts.Tests.csproj" />
+  <Project Path="src/Tools/GetDocumentInsider/sample/GetDocumentSample.csproj" />
+  <Project Path="src/Tools/GetDocumentInsider/tests/GetDocumentInsider.Tests.csproj" />
+  <Project Path="src/Tools/LinkabilityChecker/LinkabilityChecker.csproj" />
+  <Project Path="src/Tools/SDK-Analyzers/Components/src/Microsoft.AspNetCore.Components.SdkAnalyzers.csproj" />
+  <Project Path="src/Tools/SDK-Analyzers/Components/test/Microsoft.AspNetCore.Components.SdkAnalyzers.Tests.csproj" />
+</Solution>

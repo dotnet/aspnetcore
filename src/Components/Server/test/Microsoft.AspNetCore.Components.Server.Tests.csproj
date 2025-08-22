@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -7,6 +7,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
+    <Reference Include="Microsoft.Extensions.Diagnostics.Testing" />
+    <Reference Include="Microsoft.Extensions.Caching.Hybrid" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -14,13 +16,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Metrics\TestMeterFactory.cs" LinkBase="shared" />
+
     <Compile Include="$(SignalRTestBase)HubMessageHelpers.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)MessagePackHubProtocolTestBase.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)TestBinder.cs" LinkBase="BlazorPack" />
     <Compile Include="$(SignalRTestBase)TestHubMessageEqualityComparer.cs" LinkBase="BlazorPack" />
 
-    <Compile Include="$(RepoRoot)src\Components\Endpoints\src\DependencyInjection\ServerComponentSerializer.cs" LinkBase="Endpoints" />
-    <Compile Include="$(RepoRoot)src\Components\Endpoints\src\DependencyInjection\ServerComponentInvocationSequence.cs" LinkBase="Endpoints" />
   </ItemGroup>
 
 </Project>

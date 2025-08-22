@@ -1,5 +1,5 @@
 {
-  "name": "microsoft.msal.components.webassembly",
+  "name": "@microsoft/microsoft.msal.components.webassembly",
   "private": true,
   "scripts": {
     "clean": "rimraf ./dist/Debug ./dist/Release",

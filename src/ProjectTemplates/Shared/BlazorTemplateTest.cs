@@ -62,10 +62,10 @@ public abstract class BlazorTemplateTest : LoggedTest
                                 || (!serverProject && auth is not null);
             var noHttps = args?.Contains(ArgConstants.NoHttps) ?? false;
             var expectedLaunchProfileNames = requiresHttps
-                ? new[] { "https", "IIS Express" }
+                ? new[] { "https" }
                 : noHttps
-                    ? new[] { "http", "IIS Express" }
-                    : new[] { "http", "https", "IIS Express" };
+                    ? new[] { "http" }
+                    : new[] { "http", "https" };
             await project.VerifyLaunchSettings(expectedLaunchProfileNames);
         }
 

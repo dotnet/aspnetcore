@@ -93,6 +93,9 @@ internal sealed class HttpResponsePipeWriter : PipeWriter
         }
     }
 
+    public override bool CanGetUnflushedBytes => true;
+    public override long UnflushedBytes => _pipeControl.UnflushedBytes;
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ValidateState(CancellationToken cancellationToken = default)
     {

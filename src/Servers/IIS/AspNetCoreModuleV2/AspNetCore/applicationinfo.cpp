@@ -301,7 +301,7 @@ APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHt
         auto shadowCopyBaseDirectory = std::filesystem::directory_entry(shadowCopyPath);
         if (!shadowCopyBaseDirectory.exists())
         {
-            CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), NULL);
+            CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), nullptr);
         }
 
         for (auto& entry : std::filesystem::directory_iterator(shadowCopyPath))

@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.Http;
 
 internal static partial class HttpResultsHelper
 {
-    internal const string DefaultContentType = "text/plain; charset=utf-8";
     private static readonly Encoding DefaultEncoding = Encoding.UTF8;
 
     [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode",
@@ -71,7 +70,7 @@ internal static partial class HttpResultsHelper
         ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
             contentType,
             response.ContentType,
-            (DefaultContentType, DefaultEncoding),
+            (ContentTypeConstants.DefaultContentType, DefaultEncoding),
             ResponseContentTypeHelper.GetEncoding,
             out var resolvedContentType,
             out var resolvedContentTypeEncoding);

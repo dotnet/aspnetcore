@@ -22,8 +22,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <Compile Include="$(SharedSourceRoot)NonCapturingTimer\*.cs" />
     <Compile Include="$(SharedSourceRoot)ValueStopwatch\*.cs" />
 
-    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared"
-      Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+    <Compile Include="$(SharedSourceRoot)TrimmingAttributes.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)ThrowHelpers\ArgumentNullThrowHelper.cs" LinkBase="Shared" />
     <Compile Include="$(SharedSourceRoot)CallerArgument\CallerArgumentExpressionAttribute.cs" LinkBase="Shared" />
   </ItemGroup>

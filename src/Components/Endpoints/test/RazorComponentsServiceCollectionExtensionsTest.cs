@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Forms.Mapping;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Hosting;
@@ -92,7 +93,12 @@ public class RazorComponentsServiceCollectionExtensionsTest
                 {
                     typeof(SupplyParameterFromFormValueProvider),
                     typeof(SupplyParameterFromQueryValueProvider),
-                }
+                },
+                [typeof(IPersistentServiceRegistration)] = new[]
+                {
+                    typeof(ResourceCollectionProvider),
+                    typeof(AntiforgeryStateProvider),
+                },
             };
         }
     }
@@ -128,15 +134,11 @@ public class RazorComponentsServiceCollectionExtensionsTest
 
         if (implementationTypes.Length == 0)
         {
-            Assert.True(
-                false,
-                $"Could not find an implementation type for {serviceType}");
+            Assert.Fail($"Could not find an implementation type for {serviceType}");
         }
         else if (implementationTypes.Length != implementationTypes.Distinct().Count())
         {
-            Assert.True(
-                false,
-                $"Found duplicate implementation types for {serviceType}. Implementation types: {string.Join(", ", implementationTypes.Select(x => x.ToString()))}");
+            Assert.Fail($"Found duplicate implementation types for {serviceType}. Implementation types: {string.Join(", ", implementationTypes.Select(x => x.ToString()))}");
         }
     }
 

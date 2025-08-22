@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
@@ -14,19 +15,14 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests;
 
-public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
+public class TempDataInCookiesTest : TempDataTestBase<BasicWebSite.StartupWithoutEndpointRouting>
 {
     private IServiceCollection _serviceCollection;
 
-    public TempDataInCookiesTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+    protected override void ConfigureWebHostBuilder(IWebHostBuilder builder)
     {
-        var factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(b => b.UseStartup<BasicWebSite.StartupWithoutEndpointRouting>());
-        factory = factory.WithWebHostBuilder(b => b.ConfigureTestServices(serviceCollection => _serviceCollection = serviceCollection));
-
-        Client = factory.CreateDefaultClient();
+        builder.ConfigureTestServices(serviceCollection => _serviceCollection = serviceCollection);
     }
-
-    protected override HttpClient Client { get; }
 
     [Fact]
     public void VerifyNewtonsoftJsonTempDataSerializer()
@@ -84,7 +80,7 @@ public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixt
         foreach (var cookieTempDataProviderCookie in cookieTempDataProviderCookies)
         {
             Assert.NotNull(cookieTempDataProviderCookie.Value.Value);
-            Assert.Equal("/", cookieTempDataProviderCookie.Path);
+            Assert.Equal("/", cookieTempDataProviderCookie.Path.AsSpan());
             Assert.Null(cookieTempDataProviderCookie.Domain.Value);
             Assert.False(cookieTempDataProviderCookie.Secure);
         }
@@ -101,8 +97,8 @@ public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixt
             .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
             .FirstOrDefault(setCookieHeader => setCookieHeader.Name == CookieTempDataProvider.CookieName);
         Assert.NotNull(setCookieHeaderValue);
-        Assert.Equal(string.Empty, setCookieHeaderValue.Value);
-        Assert.Equal("/", setCookieHeaderValue.Path);
+        Assert.Equal(string.Empty, setCookieHeaderValue.Value.AsSpan());
+        Assert.Equal("/", setCookieHeaderValue.Path.AsSpan());
         Assert.Null(setCookieHeaderValue.Domain.Value);
         Assert.NotNull(setCookieHeaderValue.Expires);
         Assert.True(setCookieHeaderValue.Expires < DateTimeOffset.Now); // expired cookie
@@ -134,7 +130,7 @@ public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixt
             .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
             .FirstOrDefault(setCookieHeaderValue => setCookieHeaderValue.Name == CookieTempDataProvider.CookieName);
         Assert.NotNull(setCookieHeader);
-        Assert.Equal("/", setCookieHeader.Path);
+        Assert.Equal("/", setCookieHeader.Path.AsSpan());
         Assert.Null(setCookieHeader.Domain.Value);
         Assert.False(setCookieHeader.Secure);
         Assert.Null(setCookieHeader.Expires);
@@ -157,8 +153,8 @@ public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixt
             .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
             .FirstOrDefault(setCookieHeaderValue => setCookieHeaderValue.Name == CookieTempDataProvider.CookieName);
         Assert.NotNull(setCookieHeader);
-        Assert.Equal(string.Empty, setCookieHeader.Value);
-        Assert.Equal("/", setCookieHeader.Path);
+        Assert.Equal(string.Empty, setCookieHeader.Value.AsSpan());
+        Assert.Equal("/", setCookieHeader.Path.AsSpan());
         Assert.Null(setCookieHeader.Domain.Value);
         Assert.NotNull(setCookieHeader.Expires);
         Assert.True(setCookieHeader.Expires < DateTimeOffset.Now); // expired cookie
@@ -187,7 +183,7 @@ public class TempDataInCookiesTest : TempDataTestBase, IClassFixture<MvcTestFixt
             .Select(setCookieValue => SetCookieHeaderValue.Parse(setCookieValue))
             .FirstOrDefault(setCookieHeaderValue => setCookieHeaderValue.Name == CookieTempDataProvider.CookieName);
         Assert.NotNull(setCookieHeader);
-        Assert.Equal("/", setCookieHeader.Path);
+        Assert.Equal("/", setCookieHeader.Path.AsSpan());
         Assert.Null(setCookieHeader.Domain.Value);
         Assert.False(setCookieHeader.Secure);
         Assert.Null(setCookieHeader.Expires);

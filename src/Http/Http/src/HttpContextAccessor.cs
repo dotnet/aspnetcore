@@ -22,12 +22,8 @@ public class HttpContextAccessor : IHttpContextAccessor
         }
         set
         {
-            var holder = _httpContextCurrent.Value;
-            if (holder != null)
-            {
-                // Clear current HttpContext trapped in the AsyncLocals, as its done.
-                holder.Context = null;
-            }
+            // Clear current HttpContext trapped in the AsyncLocals, as its done.
+            _httpContextCurrent.Value?.Context = null;
 
             if (value != null)
             {

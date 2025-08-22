@@ -1,7 +1,7 @@
 parameters:
   # See schema documentation in /Documentation/AzureDevOps/TemplateSchema.md
   continueOnError: false
-  # Required: A collection of jobs to run - https://learn.microsoft.com/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
+  # Required: A collection of jobs to run - https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=vsts&tabs=schema#job
   jobs: []
   # Optional: if specified, restore and use this version of Guardian instead of the default.
   overrideGuardianVersion: ''
@@ -15,7 +15,6 @@ jobs:
     enablePublishBuildArtifacts: false
     enablePublishTestResults: false
     enablePublishBuildAssets: false
-    enablePublishUsingPipelines: false
     enableTelemetry: true
 
     variables:
@@ -25,7 +24,7 @@ jobs:
       - name: DefaultGuardianVersion
         value: 0.109.0
       - name: GuardianPackagesConfigFile
-        value: $(Build.SourcesDirectory)\eng\common\sdl\packages.config
+        value: $(System.DefaultWorkingDirectory)\eng\common\sdl\packages.config
       - name: GuardianVersion
         value: ${{ coalesce(parameters.overrideGuardianVersion, '$(DefaultGuardianVersion)') }}
   

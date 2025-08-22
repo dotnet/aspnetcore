@@ -9,6 +9,8 @@ Microsoft.AspNetCore.Builder.WebSocketOptions
 Microsoft.AspNetCore.Builder.WebSocketOptions.AllowedOrigins.get -> System.Collections.Generic.IList<string!>!
 Microsoft.AspNetCore.Builder.WebSocketOptions.KeepAliveInterval.get -> System.TimeSpan
 Microsoft.AspNetCore.Builder.WebSocketOptions.KeepAliveInterval.set -> void
+Microsoft.AspNetCore.Builder.WebSocketOptions.KeepAliveTimeout.get -> System.TimeSpan
+Microsoft.AspNetCore.Builder.WebSocketOptions.KeepAliveTimeout.set -> void
 Microsoft.AspNetCore.Builder.WebSocketOptions.ReceiveBufferSize.get -> int
 Microsoft.AspNetCore.Builder.WebSocketOptions.ReceiveBufferSize.set -> void
 Microsoft.AspNetCore.Builder.WebSocketOptions.WebSocketOptions() -> void

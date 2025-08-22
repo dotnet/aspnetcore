@@ -233,7 +233,7 @@ public class FileLoggerProcessorTests
                 await WaitForFile(lastFilePath, _messageOne.Length).DefaultTimeout();
 
                 // directory is full, no warnings yet
-                Assert.Equal(0, testSink.Writes.Count);
+                Assert.Empty(testSink.Writes);
 
                 logger.EnqueueMessage(_messageOne);
                 await WaitForCondition(() => testSink.Writes.FirstOrDefault()?.EventId.Name == "MaxFilesReached").DefaultTimeout();
@@ -248,7 +248,7 @@ public class FileLoggerProcessorTests
             var testLogger2 = new TestLoggerFactory(testSink2, enabled:true);
             await using (var logger = new FileLoggerProcessor(new OptionsWrapperMonitor<W3CLoggerOptions>(options), new HostingEnvironment(), testLogger2))
             {
-                Assert.Equal(0, testSink2.Writes.Count);
+                Assert.Empty(testSink2.Writes);
 
                 logger.SystemDateTime = mockSystemDateTime;
                 logger.EnqueueMessage(_messageOne);

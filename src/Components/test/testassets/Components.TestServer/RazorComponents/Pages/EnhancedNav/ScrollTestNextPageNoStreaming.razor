@@ -1,0 +1,24 @@
+﻿@page "/nav/scroll-test-next-no-streaming"
+@inject NavigationManager NavigationManager
+@rendermode RenderMode.InteractiveServer
+@* This is a copy of ScrollTestNextPage, without StreamRendering *@
+
+<PageTitle>Next page for testing scroll position</PageTitle>
+
+<h1 id="test-info-2">Scroll tests next page</h1>
+
+<div style="height: 1000px; border: 2px dashed red;">top spacer</div>
+
+<h2 id="some-content">Some content</h2>
+<NavLink id="do-navigation" href="@(scrollPagePath)">
+    Navigation to another page
+</NavLink>
+<button id="do-programmatic-navigation" @onclick="@(() => NavigationManager.NavigateTo(scrollPagePath))">
+    Programmatic navigation to another page
+</button>
+
+<div style="height: 2000px; border: 2px dashed red;">bottom spacer</div>
+
+@code {
+    string scrollPagePath = "nav/scroll-test-no-streaming";
+}

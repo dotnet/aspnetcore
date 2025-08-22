@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -349,7 +350,39 @@ internal class DefaultApplicationModelProvider : IApplicationModelProvider
         applicableAttributes.AddRange(routeAttributes);
         AddRange(actionModel.Selectors, CreateSelectors(applicableAttributes));
 
+        AddReturnTypeMetadata(actionModel.Selectors, methodInfo);
+
         return actionModel;
+    }
+
+    internal static void AddReturnTypeMetadata(IList<SelectorModel> selectors, MethodInfo methodInfo)
+    {
+        // Get metadata from return type
+        var returnType = methodInfo.ReturnType;
+        if (CoercedAwaitableInfo.IsTypeAwaitable(returnType, out var coercedAwaitableInfo))
+        {
+            returnType = coercedAwaitableInfo.AwaitableInfo.ResultType;
+        }
+
+        if (returnType is not null && typeof(IEndpointMetadataProvider).IsAssignableFrom(returnType))
+        {
+            // Return type implements IEndpointMetadataProvider
+            var builder = new InertEndpointBuilder();
+            var invokeArgs = new object[2];
+            invokeArgs[0] = methodInfo;
+            invokeArgs[1] = builder;
+            EndpointMetadataPopulator.PopulateMetadataForEndpointMethod.MakeGenericMethod(returnType).Invoke(null, invokeArgs);
+
+            // The metadata is added to the builder's metadata collection.
+            // We need to populate the selectors with that metadata.
+            foreach (var metadata in builder.Metadata)
+            {
+                foreach (var selector in selectors)
+                {
+                    selector.EndpointMetadata.Add(metadata);
+                }
+            }
+        }
     }
 
     private string CanonicalizeActionName(string actionName)

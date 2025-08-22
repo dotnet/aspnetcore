@@ -737,4 +737,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="NeedHttpsConfigurationToBindHttpsAddresses" xml:space="preserve">
     <value>Call UseKestrelHttpsConfiguration() on IWebHostBuilder to automatically enable HTTPS when an https:// address is used.</value>
   </data>
+  <data name="Http3ControlStreamFrameTooLarge" xml:space="preserve">
+    <value>The client sent a {frameType} frame to a control stream that was too large.</value>
+  </data>
 </root>

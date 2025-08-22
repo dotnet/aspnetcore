@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\AspNetCore.sln",
+    "path": "..\\..\\AspNetCore.slnx",
     "projects": [
       "eng\\tools\\BaselineGenerator\\BaselineGenerator.csproj",
       "eng\\tools\\RepoTasks\\RepoTasks.csproj",

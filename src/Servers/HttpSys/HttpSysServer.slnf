@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\..\\AspNetCore.sln",
+    "path": "..\\..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Antiforgery\\src\\Microsoft.AspNetCore.Antiforgery.csproj",
       "src\\DataProtection\\Abstractions\\src\\Microsoft.AspNetCore.DataProtection.Abstractions.csproj",
@@ -38,6 +38,7 @@
       "src\\Servers\\HttpSys\\samples\\QueueSharing\\QueueSharing.csproj",
       "src\\Servers\\HttpSys\\samples\\SelfHostServer\\SelfHostServer.csproj",
       "src\\Servers\\HttpSys\\samples\\TestClient\\TestClient.csproj",
+      "src\\Servers\\HttpSys\\samples\\TlsFeaturesObserve\\TlsFeaturesObserve.csproj",
       "src\\Servers\\HttpSys\\src\\Microsoft.AspNetCore.Server.HttpSys.csproj",
       "src\\Servers\\HttpSys\\test\\FunctionalTests\\Microsoft.AspNetCore.Server.HttpSys.FunctionalTests.csproj",
       "src\\Servers\\HttpSys\\test\\NonHelixTests\\Microsoft.AspNetCore.Server.HttpSys.NonHelixTests.csproj",

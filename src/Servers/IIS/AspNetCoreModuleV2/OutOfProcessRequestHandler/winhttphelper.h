@@ -7,7 +7,7 @@ typedef
 HINTERNET
 (WINAPI * PFN_WINHTTP_WEBSOCKET_COMPLETE_UPGRADE)(
     _In_ HINTERNET hRequest,
-    _In_opt_ DWORD_PTR pContext
+    DWORD_PTR pContext
 );
 
 

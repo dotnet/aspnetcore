@@ -4,10 +4,21 @@
 using System.Runtime.InteropServices.JavaScript;
 using System.Security.Claims;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using TestContentPackage;
+using TestContentPackage.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.Services.AddSingleton<AsyncOperationService>();
+builder.Services.AddSingleton<InteractiveWebAssemblyService>();
+builder.Services.AddSingleton<InteractiveAutoService>();
+builder.Services.AddSingleton<InteractiveServerService>();
+
+// Register custom serializer for persistent component state
+builder.Services.AddSingleton<PersistentComponentStateSerializer<int>, CustomIntSerializer>();
+
 builder.Services.AddCascadingAuthenticationState();
 
 builder.Services.AddAuthenticationStateDeserialization(options =>

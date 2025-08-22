@@ -133,7 +133,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
                 }
             }
         }
-        Assert.False(true, "Didn't find user");
+        Assert.Fail("Didn't find user");
         return false;
     }
 

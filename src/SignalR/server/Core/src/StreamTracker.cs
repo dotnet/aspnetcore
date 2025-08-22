@@ -2,9 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
@@ -24,8 +26,14 @@ internal sealed class StreamTracker
     /// <summary>
     /// Creates a new stream and returns the ChannelReader for it as an object.
     /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2060:MakeGenericMethod",
+        Justification = "BuildStream doesn't have trimming annotations.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode",
+        Justification = "HubMethodDescriptor checks for ValueType streaming item types when PublishAot=true. Developers will get an exception in this situation before publishing.")]
     public object AddStream(string streamId, Type itemType, Type targetType)
     {
+        Debug.Assert(RuntimeFeature.IsDynamicCodeSupported || !itemType.IsValueType, "HubMethodDescriptor ensures itemType is not a ValueType when PublishAot=true.");
+
         var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamConverterArgs)!;
         _lookup[streamId] = newConverter;
         return newConverter.GetReaderAsObject(targetType);

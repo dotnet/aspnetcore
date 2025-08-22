@@ -151,10 +151,12 @@ public static class TestData
                 "Microsoft.Extensions.Options.DataAnnotations",
                 "Microsoft.Extensions.Primitives",
                 "Microsoft.Extensions.WebEncoders",
+                "Microsoft.Extensions.Validation",
                 "Microsoft.JSInterop",
                 "Microsoft.Net.Http.Headers",
                 "System.Diagnostics.EventLog",
                 "System.Diagnostics.EventLog.Messages",
+                "System.Formats.Cbor",
                 "System.Security.Cryptography.Pkcs",
                 "System.Security.Cryptography.Xml",
                 "System.Threading.RateLimiting",
@@ -302,9 +304,11 @@ public static class TestData
                 { "Microsoft.Extensions.Options" },
                 { "Microsoft.Extensions.Primitives" },
                 { "Microsoft.Extensions.WebEncoders" },
+                { "Microsoft.Extensions.Validation" },
                 { "Microsoft.JSInterop" },
                 { "Microsoft.Net.Http.Headers" },
                 { "System.Diagnostics.EventLog" },
+                { "System.Formats.Cbor" },
                 { "System.Security.Cryptography.Xml" },
                 { "System.Threading.RateLimiting" },
             };
@@ -319,7 +323,7 @@ public static class TestData
 
     public static string GetDefaultNetCoreTargetFramework() => GetTestDataValue("DefaultNetCoreTargetFramework");
 
-    public static string GetMicrosoftNETCoreAppPackageVersion() => GetTestDataValue("MicrosoftNETCoreAppRuntimeVersion");
+    public static string GetMicrosoftNETCoreAppVersion() => GetTestDataValue("MicrosoftNETCoreAppRefVersion");
 
     public static string GetReferencePackSharedFxVersion() => GetTestDataValue("ReferencePackSharedFxVersion");
 

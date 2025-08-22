@@ -1,5 +1,5 @@
 $RepoRoot = Resolve-Path "$PSScriptRoot\..\..\.."
-$ToolPath = Join-Path "$RepoRoot" "artifacts\bin\RazorPageGenerator\Debug\net9.0\dotnet-razorpagegenerator.exe"
+$ToolPath = Join-Path "$RepoRoot" "artifacts\bin\RazorPageGenerator\Debug\net10.0\dotnet-razorpagegenerator.exe"
 
 if (!(Test-Path "$ToolPath")) {
     throw "Unable to find razor page generator tool at $ToolPath"

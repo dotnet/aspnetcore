@@ -813,7 +813,7 @@ public class CommandLineApplicationTests
 
         Assert.Throws<CommandParsingException>(() => app.Execute("subcmd", "-b", "B"));
 
-        Assert.Contains("-a|--option-a", subcmd.GetHelpText());
+        Assert.Contains("-a, --option-a", subcmd.GetHelpText());
     }
 
     [Fact]
@@ -907,7 +907,7 @@ public class CommandLineApplicationTests
     [InlineData(new[] { "-t", "val", "--", "a", "--", "b" }, new[] { "a", "--", "b" }, "val")]
     [InlineData(new[] { "--", "--help" }, new[] { "--help" }, null)]
     [InlineData(new[] { "--", "--version" }, new[] { "--version" }, null)]
-    public void ArgumentSeparator(string[] input, string[] expectedRemaining, string topLevelValue)
+    public void ArgumentSeparator(string[] input, string[] expectedRemaining, string? topLevelValue)
     {
         var app = new CommandLineApplication(throwOnUnexpectedArg: false)
         {
@@ -936,7 +936,7 @@ public class CommandLineApplicationTests
     public void ArgumentSeparator_TreatedAsUexpected(
         string[] input,
         string[] expectedRemaining,
-        string topLevelValue,
+        string? topLevelValue,
         bool isShowingInformation)
     {
         var app = new CommandLineApplication(throwOnUnexpectedArg: false);
@@ -963,7 +963,7 @@ public class CommandLineApplicationTests
     public void ArgumentSeparator_TreatedAsUexpected_Default(
         string[] input,
         string[] expectedRemaining,
-        string topLevelValue,
+        string? topLevelValue,
         bool isShowingInformation)
     {
         var app = new CommandLineApplication(throwOnUnexpectedArg: false);
@@ -990,7 +990,7 @@ public class CommandLineApplicationTests
     public void ArgumentSeparator_TreatedAsUexpected_Continue(
         string[] input,
         string[] expectedRemaining,
-        string topLevelValue,
+        string? topLevelValue,
         bool isShowingInformation)
     {
         var app = new CommandLineApplication(throwOnUnexpectedArg: false, continueAfterUnexpectedArg: true);
@@ -1219,5 +1219,19 @@ Examples:
         var exception = Assert.Throws<CommandParsingException>(() => app.Execute("test", firstOption));
 
         Assert.Equal($"Unrecognized option '{firstOption}'", exception.Message);
+    }
+
+    [Fact]
+    public void GetHelpTextFormatsAllOptionTypes()
+    {
+        var app = new CommandLineApplication();
+        
+        // Add an option with symbol, short, long, and value name components
+        app.Option("-?|-h|--help <VALUE>", "Show help information", CommandOptionType.SingleValue);
+        
+        var helpText = app.GetHelpText();
+        
+        // Verify the option is formatted with comma-space separators
+        Assert.Contains("-?, -h, --help <VALUE>", helpText);
     }
 }

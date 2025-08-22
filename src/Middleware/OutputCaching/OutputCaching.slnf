@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\..\\AspNetCore.sln",
+    "path": "..\\..\\..\\AspNetCore.slnx",
     "projects": [
       "src\\Middleware\\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis\\src\\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.csproj",
       "src\\Middleware\\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis\\test\\Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests.csproj",

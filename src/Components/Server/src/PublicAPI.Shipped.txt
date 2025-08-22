@@ -46,20 +46,29 @@ Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedSessionS
 Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage.ProtectedSessionStorage.ProtectedSessionStorage(Microsoft.JSInterop.IJSRuntime! jsRuntime, Microsoft.AspNetCore.DataProtection.IDataProtectionProvider! dataProtectionProvider) -> void
 Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthenticationStateProvider
 Microsoft.AspNetCore.Components.Server.RevalidatingServerAuthenticationStateProvider.RevalidatingServerAuthenticationStateProvider(Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
-Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider
-Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerAuthenticationStateProvider() -> void
-Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void
+Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
+Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.ServerAuthenticationStateProvider() -> void (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
+Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.SetAuthenticationState(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! authenticationStateTask) -> void (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.get -> System.Func<Microsoft.AspNetCore.Http.HttpContext!, Microsoft.AspNetCore.Http.WebSocketAcceptContext!, System.Threading.Tasks.Task!>?
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureWebSocketAcceptContext.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorsPolicy.get -> string?
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ContentSecurityFrameAncestorsPolicy.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.DisableWebSocketCompression.get -> bool
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.DisableWebSocketCompression.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ServerComponentsEndpointOptions() -> void
 Microsoft.Extensions.DependencyInjection.ComponentServiceCollectionExtensions
 Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder
 Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder.Services.get -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 Microsoft.Extensions.DependencyInjection.ServerRazorComponentsBuilderExtensions
 Microsoft.Extensions.DependencyInjection.ServerSideBlazorBuilderExtensions
-override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>!
+override Microsoft.AspNetCore.Components.Server.ServerAuthenticationStateProvider.GetAuthenticationStateAsync() -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.Authorization.AuthenticationState!>! (forwarded, contained in Microsoft.AspNetCore.Components.Endpoints)
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! path) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string! path, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions.MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>! configureOptions) -> Microsoft.AspNetCore.Builder.ComponentEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
+static Microsoft.AspNetCore.Builder.ServerRazorComponentsEndpointConventionBuilderExtensions.AddInteractiveServerRenderMode(this Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions!>! configure) -> Microsoft.AspNetCore.Builder.RazorComponentsEndpointConventionBuilder!
 static Microsoft.Extensions.DependencyInjection.ComponentServiceCollectionExtensions.AddServerSideBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!
 static Microsoft.Extensions.DependencyInjection.ServerRazorComponentsBuilderExtensions.AddInteractiveServerComponents(this Microsoft.Extensions.DependencyInjection.IRazorComponentsBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions!>? configure = null) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!
 static Microsoft.Extensions.DependencyInjection.ServerSideBlazorBuilderExtensions.AddCircuitOptions(this Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder! builder, System.Action<Microsoft.AspNetCore.Components.Server.CircuitOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder!

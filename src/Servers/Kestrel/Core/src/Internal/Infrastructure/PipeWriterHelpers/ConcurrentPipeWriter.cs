@@ -21,7 +21,7 @@ internal sealed class ConcurrentPipeWriter : PipeWriter
 
     private static readonly Exception _successfullyCompletedSentinel = new UnreachableException();
 
-    private readonly object _sync;
+    private readonly Lock _sync;
     private readonly PipeWriter _innerPipeWriter;
     private readonly MemoryPool<byte> _pool;
     private readonly BufferSegmentStack _bufferSegmentPool = new BufferSegmentStack(InitialSegmentPoolSize);
@@ -50,7 +50,7 @@ internal sealed class ConcurrentPipeWriter : PipeWriter
     // If an Complete() is called while a flush is in progress, we clean up after the flush loop completes, and call Complete() on the inner PipeWriter.
     private Exception? _completeException;
 
-    public ConcurrentPipeWriter(PipeWriter innerPipeWriter, MemoryPool<byte> pool, object sync)
+    public ConcurrentPipeWriter(PipeWriter innerPipeWriter, MemoryPool<byte> pool, Lock sync)
     {
         _innerPipeWriter = innerPipeWriter;
         _pool = pool;
@@ -206,6 +206,15 @@ internal sealed class ConcurrentPipeWriter : PipeWriter
             CleanupSegmentsUnsynchronized();
 
             _innerPipeWriter.Complete(exception);
+        }
+    }
+
+    public override bool CanGetUnflushedBytes => _innerPipeWriter.CanGetUnflushedBytes;
+    public override long UnflushedBytes
+    {
+        get
+        {
+            return _innerPipeWriter.UnflushedBytes + _bytesBuffered;
         }
     }
 

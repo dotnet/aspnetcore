@@ -115,6 +115,9 @@ Microsoft.AspNetCore.DataProtection.IPersistedDataProtector.DangerousUnprotect(b
 Microsoft.AspNetCore.DataProtection.ISecret
 Microsoft.AspNetCore.DataProtection.ISecret.Length.get -> int
 Microsoft.AspNetCore.DataProtection.ISecret.WriteSecretIntoBuffer(System.ArraySegment<byte> buffer) -> void
+Microsoft.AspNetCore.DataProtection.KeyManagement.IDeletableKeyManager
+Microsoft.AspNetCore.DataProtection.KeyManagement.IDeletableKeyManager.CanDeleteKeys.get -> bool
+Microsoft.AspNetCore.DataProtection.KeyManagement.IDeletableKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete) -> bool
 Microsoft.AspNetCore.DataProtection.KeyManagement.IKey
 Microsoft.AspNetCore.DataProtection.KeyManagement.IKey.ActivationDate.get -> System.DateTimeOffset
 Microsoft.AspNetCore.DataProtection.KeyManagement.IKey.CreateEncryptor() -> Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.IAuthenticatedEncryptor?
@@ -166,7 +169,9 @@ Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.XmlEncryp
 Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.XmlRepository.get -> Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository?
 Microsoft.AspNetCore.DataProtection.KeyManagement.KeyManagementOptions.XmlRepository.set -> void
 Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.CanDeleteKeys.get -> bool
 Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.CreateNewKey(System.DateTimeOffset activationDate, System.DateTimeOffset expirationDate) -> Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!
+Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.DeleteKeys(System.Func<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!, bool>! shouldDelete) -> bool
 Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.GetAllKeys() -> System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.KeyManagement.IKey!>!
 Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.GetCacheExpirationToken() -> System.Threading.CancellationToken
 Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.RevokeAllKeys(System.DateTimeOffset revocationDate, string? reason = null) -> void
@@ -176,6 +181,12 @@ Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager.XmlKeyManager(Mi
 Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository
 Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.Directory.get -> System.IO.DirectoryInfo!
 Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.FileSystemXmlRepository(System.IO.DirectoryInfo! directory, Microsoft.Extensions.Logging.ILoggerFactory! loggerFactory) -> void
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.DeletionOrder.get -> int?
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.DeletionOrder.set -> void
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement.Element.get -> System.Xml.Linq.XElement!
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableXmlRepository
+Microsoft.AspNetCore.DataProtection.Repositories.IDeletableXmlRepository.DeleteElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.GetAllElements() -> System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!
 Microsoft.AspNetCore.DataProtection.Repositories.IXmlRepository.StoreElement(System.Xml.Linq.XElement! element, string! friendlyName) -> void
@@ -269,8 +280,10 @@ static Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.De
 static Microsoft.AspNetCore.DataProtection.Secret.Random(int numBytes) -> Microsoft.AspNetCore.DataProtection.Secret!
 static Microsoft.Extensions.DependencyInjection.DataProtectionServiceCollectionExtensions.AddDataProtection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
 static Microsoft.Extensions.DependencyInjection.DataProtectionServiceCollectionExtensions.AddDataProtection(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.DataProtection.DataProtectionOptions!>! setupAction) -> Microsoft.AspNetCore.DataProtection.IDataProtectionBuilder!
+virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.DeleteElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
 virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.GetAllElements() -> System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!
 virtual Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository.StoreElement(System.Xml.Linq.XElement! element, string! friendlyName) -> void
+virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.DeleteElements(System.Action<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.DataProtection.Repositories.IDeletableElement!>!>! chooseElements) -> bool
 virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.GetAllElements() -> System.Collections.Generic.IReadOnlyCollection<System.Xml.Linq.XElement!>!
 virtual Microsoft.AspNetCore.DataProtection.Repositories.RegistryXmlRepository.StoreElement(System.Xml.Linq.XElement! element, string! friendlyName) -> void
 virtual Microsoft.AspNetCore.DataProtection.XmlEncryption.CertificateResolver.ResolveCertificate(string! thumbprint) -> System.Security.Cryptography.X509Certificates.X509Certificate2?

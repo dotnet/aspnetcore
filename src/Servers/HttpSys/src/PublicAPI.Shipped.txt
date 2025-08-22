@@ -8,6 +8,10 @@ Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AuthenticationDisplayN
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AuthenticationDisplayName.set -> void
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AutomaticAuthentication.get -> bool
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.AutomaticAuthentication.set -> void
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.CaptureCredentials.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.CaptureCredentials.set -> void
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.EnableKerberosCredentialCaching.get -> bool
+Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.EnableKerberosCredentialCaching.set -> void
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.Schemes.get -> Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationManager.Schemes.set -> void
 Microsoft.AspNetCore.Server.HttpSys.AuthenticationSchemes

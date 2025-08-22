@@ -25,6 +25,8 @@ import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel } from './Platform/Logging/Logger';
 import { resolveOptions } from './Platform/Circuits/CircuitStartOptions';
 import { JSInitializer } from './JSInitializers/JSInitializers';
+import { enableFocusOnNavigate } from './Rendering/FocusOnNavigate';
+import { WebAssemblyStartOptions } from './Platform/WebAssemblyStartOptions';
 
 let started = false;
 let rootComponentManager: WebRootComponentManager;
@@ -50,12 +52,16 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   const jsEventRegistry = JSEventRegistry.create(Blazor);
 
   const navigationEnhancementCallbacks: NavigationEnhancementCallbacks = {
+    enhancedNavigationStarted: () => {
+      jsEventRegistry.dispatchEvent('enhancednavigationstart', {});
+    },
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
       jsEventRegistry.dispatchEvent('enhancedload', {});
     },
     enhancedNavigationCompleted() {
       rootComponentManager.onEnhancedNavigationCompleted();
+      jsEventRegistry.dispatchEvent('enhancednavigationend', {});
     },
   };
 
@@ -65,6 +71,8 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
   if (!options?.ssr?.disableDomPreservation) {
     attachProgressivelyEnhancedNavigationListener(navigationEnhancementCallbacks);
   }
+
+  enableFocusOnNavigate(jsEventRegistry);
 
   // Wait until the initial page response completes before activating interactive components.
   // If stream rendering is used, this helps to ensure that only the final set of interactive
@@ -79,16 +87,16 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
 }
 
 function onInitialDomContentLoaded(options: Partial<WebStartOptions>) {
-
   // Retrieve and start invoking the initializers.
   // Blazor server options get defaults that are configured before we invoke the initializers
   // so we do the same here.
   const initialCircuitOptions = resolveOptions(options?.circuit || {});
   options.circuit = initialCircuitOptions;
+  options.webAssembly = options.webAssembly || ({} as WebAssemblyStartOptions);
   const logger = new ConsoleLogger(initialCircuitOptions.logLevel);
   const initializersPromise = fetchAndInvokeInitializers(options, logger);
   setCircuitOptions(resolveConfiguredOptions(initializersPromise, initialCircuitOptions));
-  setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options?.webAssembly || {}));
+  setWebAssemblyOptions(resolveConfiguredOptions(initializersPromise, options.webAssembly));
 
   registerAllComponentDescriptors(document);
   rootComponentManager.onDocumentUpdated();

@@ -126,10 +126,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
                 Logger.Reauthenticating();
                 _negotiateState.Dispose();
                 _negotiateState = null;
-                if (persistence != null)
-                {
-                    persistence.State = null;
-                }
+                persistence?.State = null;
             }
 
             _negotiateState ??= Options.StateFactory.CreateInstance();

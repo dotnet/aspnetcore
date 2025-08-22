@@ -19,21 +19,32 @@ internal sealed class ClearCommand
                 Resources.ClearCommand_ForceOption_Description,
                 CommandOptionType.NoValue);
 
+            var appsettingsFileOption = cmd.Option(
+                "--appsettings-file",
+                Resources.CreateCommand_appsettingsFileOption_Description,
+                CommandOptionType.SingleValue);
+
             cmd.HelpOption("-h|--help");
 
             cmd.OnExecute(() =>
             {
-                return Execute(cmd.Reporter, cmd.ProjectOption.Value(), forceOption.HasValue());
+                if (!DevJwtCliHelpers.GetProjectAndSecretsId(cmd.ProjectOption.Value(), cmd.Reporter, out var project, out var userSecretsId))
+                {
+                    return 1;
+                }
+
+                if (!DevJwtCliHelpers.GetAppSettingsFile(project, appsettingsFileOption.Value(), cmd.Reporter, out var appsettingsFile))
+                {
+                    return 1;
+                }
+
+                return Execute(cmd.Reporter, project, userSecretsId, forceOption.HasValue(), appsettingsFile);
             });
         });
     }
 
-    private static int Execute(IReporter reporter, string projectPath, bool force)
+    private static int Execute(IReporter reporter, string project, string userSecretsId, bool force, string appsettingsFile)
     {
-        if (!DevJwtCliHelpers.GetProjectAndSecretsId(projectPath, reporter, out var project, out var userSecretsId))
-        {
-            return 1;
-        }
         var jwtStore = new JwtStore(userSecretsId);
         var count = jwtStore.Jwts.Count;
 
@@ -54,7 +65,7 @@ internal sealed class ClearCommand
             }
         }
 
-        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), "appsettings.Development.json");
+        var appsettingsFilePath = Path.Combine(Path.GetDirectoryName(project), appsettingsFile);
         foreach (var jwt in jwtStore.Jwts)
         {
             JwtAuthenticationSchemeSettings.RemoveScheme(appsettingsFilePath, jwt.Value.Scheme);

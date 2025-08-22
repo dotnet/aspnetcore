@@ -3,16 +3,18 @@
 
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer;
 
 /// <inheritdoc />
-public class ApiDescriptionGroupCollectionProvider : IApiDescriptionGroupCollectionProvider
+public partial class ApiDescriptionGroupCollectionProvider : IApiDescriptionGroupCollectionProvider
 {
     private readonly IActionDescriptorCollectionProvider _actionDescriptorCollectionProvider;
     private readonly IApiDescriptionProvider[] _apiDescriptionProviders;
 
     private ApiDescriptionGroupCollection? _apiDescriptionGroups;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// Creates a new instance of <see cref="ApiDescriptionGroupCollectionProvider"/>.
@@ -28,7 +30,15 @@ public class ApiDescriptionGroupCollectionProvider : IApiDescriptionGroupCollect
         IEnumerable<IApiDescriptionProvider> apiDescriptionProviders)
     {
         _actionDescriptorCollectionProvider = actionDescriptorCollectionProvider;
-        _apiDescriptionProviders = apiDescriptionProviders.OrderBy(item => item.Order).ToArray();
+        _apiDescriptionProviders = [.. apiDescriptionProviders.OrderBy(item => item.Order)];
+    }
+
+    internal ApiDescriptionGroupCollectionProvider(
+        IActionDescriptorCollectionProvider actionDescriptorCollectionProvider,
+        IEnumerable<IApiDescriptionProvider> apiDescriptionProviders,
+        ILoggerFactory loggerFactory) : this(actionDescriptorCollectionProvider, apiDescriptionProviders)
+    {
+        _logger = loggerFactory.CreateLogger<ApiDescriptionGroupCollectionProvider>();
     }
 
     /// <inheritdoc />
@@ -52,6 +62,10 @@ public class ApiDescriptionGroupCollectionProvider : IApiDescriptionGroupCollect
 
         foreach (var provider in _apiDescriptionProviders)
         {
+            if (_logger is not null)
+            {
+                Log.ApiDescriptionProviderExecuting(_logger, provider.GetType().Name, provider.GetType().Assembly.GetName().Name, provider.GetType().Assembly.GetName().Version?.ToString());
+            }
             provider.OnProvidersExecuting(context);
         }
 
@@ -66,5 +80,11 @@ public class ApiDescriptionGroupCollectionProvider : IApiDescriptionGroupCollect
             .ToArray();
 
         return new ApiDescriptionGroupCollection(groups, actionDescriptors.Version);
+    }
+
+    private static partial class Log
+    {
+        [LoggerMessage(2, LogLevel.Debug, "Executing API description provider '{ProviderName}' from assembly {ProviderAssembly} v{AssemblyVersion}.", EventName = "ApiDescriptionProviderExecuting")]
+        public static partial void ApiDescriptionProviderExecuting(ILogger logger, string providerName, string? providerAssembly, string? assemblyVersion);
     }
 }
