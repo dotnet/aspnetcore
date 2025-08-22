@@ -284,7 +284,7 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         appElement.FindElement(By.Id("form-2-button")).Click();
 
         // The URL should change because the submit event is not prevented
-        Browser.WaitForUrlToContain("about:blank");
+        Browser.Contains("about:blank", () => Browser.Url);
     }
 
     [Fact]
