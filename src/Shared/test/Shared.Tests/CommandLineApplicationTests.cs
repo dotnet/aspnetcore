@@ -1220,4 +1220,18 @@ Examples:
 
         Assert.Equal($"Unrecognized option '{firstOption}'", exception.Message);
     }
+
+    [Fact]
+    public void GetHelpTextFormatsAllOptionTypes()
+    {
+        var app = new CommandLineApplication();
+        
+        // Add an option with symbol, short, long, and value name components
+        app.Option("-?|-h|--help <VALUE>", "Show help information", CommandOptionType.SingleValue);
+        
+        var helpText = app.GetHelpText();
+        
+        // Verify the option is formatted with comma-space separators
+        Assert.Contains("-?, -h, --help <VALUE>", helpText);
+    }
 }
