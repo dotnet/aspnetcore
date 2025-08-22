@@ -43,6 +43,16 @@ internal static class WebDriverExtensions
         });
     }
 
+    public static void WaitForUrlToContain(this IWebDriver browser, string expectedUrlSubstring, int timeoutInSeconds = 5)
+    {
+        var wait = new DefaultWait<IWebDriver>(browser)
+        {
+            Timeout = TimeSpan.FromSeconds(timeoutInSeconds),
+            PollingInterval = TimeSpan.FromMilliseconds(100)
+        };
+        wait.Until(driver => driver.Url.Contains(expectedUrlSubstring, StringComparison.Ordinal));
+    }
+
     public static long GetElementPositionWithRetry(this IWebDriver browser, string elementId, int retryCount = 3, int delayBetweenRetriesMs = 100)
     {
         var jsExecutor = (IJavaScriptExecutor)browser;
