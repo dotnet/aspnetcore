@@ -310,6 +310,156 @@ export class BinaryMedia {
     element.addEventListener('error', onError, { once: true });
   }
 
+  // Added: trigger a download using BinaryMedia pipeline (formerly BinaryFileDownload)
+  public static async downloadAsync(
+    element: HTMLElement,
+    streamRef: { stream: () => Promise<ReadableStream<Uint8Array>> } | null,
+    mimeType: string,
+    cacheKey: string,
+    totalBytes: number | null,
+    fileName?: string | null,
+    attemptNativePicker = true,
+  ): Promise<MediaLoadResult> {
+    if (!element || !cacheKey) {
+      return { success: false, fromCache: false, objectUrl: null, error: 'Invalid parameters' };
+    }
+
+    const nativePickerAvailable = attemptNativePicker && typeof (window as unknown as { showSaveFilePicker?: unknown }).showSaveFilePicker === 'function';
+
+    // Try cache first
+    let cacheHitBlob: Blob | null = null;
+    let _fromCache = false;
+    try {
+      const cache = await this.getCache();
+      if (cache) {
+        const cached = await cache.match(encodeURIComponent(cacheKey));
+        if (cached) {
+          cacheHitBlob = await cached.blob();
+          _fromCache = true;
+        }
+      }
+    } catch (err) {
+      this.logger.log(LogLevel.Debug, `Cache lookup failed (download): ${err}`);
+    }
+
+    // If we have a cache hit and native picker is available, stream blob to file directly
+    if (cacheHitBlob && nativePickerAvailable) {
+      try {
+        const handle = await (window as unknown as { showSaveFilePicker: (opts: any) => Promise<any> }).showSaveFilePicker({ suggestedName: fileName || cacheKey }); // eslint-disable-line @typescript-eslint/no-explicit-any
+        const writer = await handle.createWritable();
+        const stream = cacheHitBlob.stream();
+        const result = await this.writeStreamToFile(element, stream as ReadableStream<Uint8Array>, writer, totalBytes);
+        if (result === 'success') {
+          return { success: true, fromCache: true, objectUrl: null };
+        }
+        // aborted treated as failure
+        return { success: false, fromCache: true, objectUrl: null, error: 'Aborted' };
+      } catch (pickerErr) {
+        // User might have cancelled; fall back to anchor download if we still have blob
+        this.logger.log(LogLevel.Debug, `Native picker path failed or cancelled: ${pickerErr}`);
+      }
+    }
+
+    if (cacheHitBlob && !nativePickerAvailable) {
+      // Fallback anchor path using cached blob
+      const url = URL.createObjectURL(cacheHitBlob);
+      this.triggerDownload(url, (fileName || cacheKey));
+      return { success: true, fromCache: true, objectUrl: url };
+    }
+
+    if (!streamRef) {
+      return { success: false, fromCache: false, objectUrl: null, error: 'No stream provided' };
+    }
+
+    // Stream and optionally cache (dup logic from streamAndCreateUrl, without setting element attributes)
+    this.loadingElements.add(element);
+    const controller = new AbortController();
+    this.controllers.set(element, controller);
+
+    try {
+      const readable = await streamRef.stream();
+
+      // If native picker available, we can stream directly to file, optionally tee for cache
+      if (nativePickerAvailable) {
+        try {
+          const handle = await (window as unknown as { showSaveFilePicker: (opts: any) => Promise<any> }).showSaveFilePicker({ suggestedName: fileName || cacheKey }); // eslint-disable-line @typescript-eslint/no-explicit-any
+          const writer = await handle.createWritable();
+
+          let workingStream: ReadableStream<Uint8Array> = readable;
+          let cacheStream: ReadableStream<Uint8Array> | null = null;
+          if (cacheKey) {
+            const cache = await this.getCache();
+            if (cache) {
+              const tees = readable.tee();
+              workingStream = tees[0];
+              cacheStream = tees[1];
+              cache.put(encodeURIComponent(cacheKey), new Response(cacheStream)).catch(err => {
+                this.logger.log(LogLevel.Debug, `Failed to put cache entry (download/native): ${err}`);
+              });
+            }
+          }
+
+          const writeResult = await this.writeStreamToFile(element, workingStream, writer, totalBytes, controller);
+          if (writeResult === 'success') {
+            return { success: true, fromCache: false, objectUrl: null };
+          }
+          if (writeResult === 'aborted') {
+            return { success: false, fromCache: false, objectUrl: null, error: 'Aborted' };
+          }
+        } catch (pickerErr) {
+          this.logger.log(LogLevel.Debug, `Native picker streaming path failed or cancelled after selection: ${pickerErr}`);
+          // Fall through to in-memory blob fallback
+        }
+      }
+
+      // In-memory path (existing logic)
+      let displayStream: ReadableStream<Uint8Array> = readable;
+      if (cacheKey) {
+        const cache = await this.getCache();
+        if (cache) {
+          const [display, cacheStream] = readable.tee();
+          displayStream = display;
+          cache.put(encodeURIComponent(cacheKey), new Response(cacheStream)).catch(err => {
+            this.logger.log(LogLevel.Debug, `Failed to put cache entry (download): ${err}`);
+          });
+        }
+      }
+
+      const chunks: Uint8Array[] = [];
+      let bytesRead = 0;
+      for await (const chunk of this.iterateStream(displayStream, controller.signal)) {
+        if (controller.signal.aborted) {
+          return { success: false, fromCache: false, objectUrl: null, error: 'Aborted' };
+        }
+        chunks.push(chunk);
+        bytesRead += chunk.byteLength;
+        if (totalBytes) {
+          const progress = Math.min(1, bytesRead / totalBytes);
+          element.style.setProperty('--blazor-media-progress', progress.toString());
+        }
+      }
+
+      if (bytesRead === 0) {
+        return { success: false, fromCache: false, objectUrl: null, error: 'Empty stream' };
+      }
+
+      const combined = this.combineChunks(chunks);
+      const blob = new Blob([combined], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      this.triggerDownload(url, fileName || cacheKey);
+      return { success: true, fromCache: false, objectUrl: url };
+    } catch (error) {
+      this.logger.log(LogLevel.Debug, `Error in downloadAsync: ${error}`);
+      return { success: false, fromCache: false, objectUrl: null, error: String(error) };
+    } finally {
+      if (this.controllers.get(element) === controller) {
+        this.controllers.delete(element);
+      }
+      this.loadingElements.delete(element);
+      element.style.removeProperty('--blazor-media-progress');
+    }
+  }
+
   private static async getCache(): Promise<Cache | null> {
     if (!('caches' in window)) {
       this.logger.log(LogLevel.Warning, 'Cache API not supported in this browser');
@@ -369,6 +519,79 @@ export class BinaryMedia {
         reader.releaseLock?.();
       } catch {
         // ignore
+      }
+    }
+  }
+
+  private static triggerDownload(url: string, fileName: string): void {
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => {
+        try {
+          document.body.removeChild(a);
+        } catch {
+          // ignore
+        }
+      }, 0);
+    } catch {
+      // ignore
+    }
+  }
+
+  // Helper to stream data directly to a FileSystemWritableFileStream with progress & abort handling
+  private static async writeStreamToFile(
+    element: HTMLElement,
+    stream: ReadableStream<Uint8Array>,
+    writer: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    totalBytes: number | null,
+    controller?: AbortController
+  ): Promise<'success' | 'aborted' | 'error'> {
+    const reader = stream.getReader();
+    let written = 0;
+    try {
+      for (;;) {
+        if (controller?.signal.aborted) {
+          try {
+            await writer.abort();
+          } catch {
+            /* ignore */
+          }
+          element.style.removeProperty('--blazor-media-progress');
+          return 'aborted';
+        }
+        const { done, value } = await reader.read();
+        if (done) {
+          break;
+        }
+        if (value) {
+          await writer.write(value);
+          written += value.byteLength;
+          if (totalBytes) {
+            const progress = Math.min(1, written / totalBytes);
+            element.style.setProperty('--blazor-media-progress', progress.toString());
+          }
+        }
+      }
+      await writer.close();
+      return 'success';
+    } catch (e) {
+      try {
+        await writer.abort();
+      } catch {
+        /* ignore */
+      }
+      return controller?.signal.aborted ? 'aborted' : 'error';
+    } finally {
+      element.style.removeProperty('--blazor-media-progress');
+      try {
+        reader.releaseLock?.();
+      } catch {
+        /* ignore */
       }
     }
   }

@@ -15,13 +15,32 @@ namespace Microsoft.AspNetCore.Components.Web.Media;
 public abstract partial class MediaComponentBase : IComponent, IHandleAfterRender, IAsyncDisposable
 {
     private RenderHandle _renderHandle;
-    private string? _currentObjectUrl;
-    private bool _hasError;
+
+    /// <summary>
+    /// The current object URL (blob URL) assigned to the underlying element, or <c>null</c> if not yet loaded
+    /// or if a previous load failed/was cancelled.
+    /// </summary>
+    protected string? _currentObjectUrl; // Made protected for manual trigger derived components.
+
+    /// <summary>
+    /// Indicates whether the last load attempt ended in an error state for the active cache key.
+    /// </summary>
+    protected bool _hasError;            // Made protected for manual trigger derived components.
+
     private bool _isDisposed;
     private bool _initialized;
     private bool _hasPendingRender;
-    private string? _activeCacheKey;
-    private MediaSource? _currentSource;
+
+    /// <summary>
+    /// The cache key associated with the currently active/most recent load operation. Used to ignore
+    /// out-of-order JS interop responses belonging to stale operations.
+    /// </summary>
+    protected string? _activeCacheKey;   // Made protected for manual trigger derived components.
+
+    /// <summary>
+    /// The <see cref="MediaSource"/> instance currently being processed (or <c>null</c> if none).
+    /// </summary>
+    protected MediaSource? _currentSource; // Made protected so manual trigger components can set loading state.
     private CancellationTokenSource? _loadCts;
 
     /// <summary>
@@ -156,6 +175,11 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
     }
 
     /// <summary>
+    /// Allows a derived component to explicitly request a re-render (for manual load workflows).
+    /// </summary>
+    protected void RequestRender() => Render();
+
+    /// <summary>
     /// Builds the component render tree for the underlying media element and common attributes.
     /// Derived components can override to extend the markup.
     /// </summary>
@@ -188,7 +212,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         builder.CloseElement();
     }
 
-    private sealed class MediaLoadResult
+    protected sealed class MediaLoadResult
     {
         public bool Success { get; set; }
         public bool FromCache { get; set; }
@@ -276,7 +300,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         return new ValueTask();
     }
 
-    private void CancelPreviousLoad()
+    protected void CancelPreviousLoad()
     {
         try
         {
@@ -289,7 +313,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         _loadCts = null;
     }
 
-    private CancellationToken ResetCancellationToken()
+    protected CancellationToken ResetCancellationToken()
     {
         _loadCts = new CancellationTokenSource();
         return _loadCts.Token;

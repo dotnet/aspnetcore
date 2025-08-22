@@ -7,9 +7,17 @@ Microsoft.AspNetCore.Components.Forms.InputHidden.Element.get -> Microsoft.AspNe
 Microsoft.AspNetCore.Components.Forms.InputHidden.Element.set -> void
 Microsoft.AspNetCore.Components.Forms.InputHidden.InputHidden() -> void
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
+Microsoft.AspNetCore.Components.Web.Media.FileDownload
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.FileDownload() -> void
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.FileName.get -> string?
+Microsoft.AspNetCore.Components.Web.Media.FileDownload.FileName.set -> void
 Microsoft.AspNetCore.Components.Web.Media.Image
 Microsoft.AspNetCore.Components.Web.Media.Image.Image() -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.Source.get -> Microsoft.AspNetCore.Components.Web.Media.MediaSource!
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase._activeCacheKey -> string?
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase._currentObjectUrl -> string?
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase._currentSource -> Microsoft.AspNetCore.Components.Web.Media.MediaSource?
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase._hasError -> bool
 Microsoft.AspNetCore.Components.Web.Media.Video
 Microsoft.AspNetCore.Components.Web.Media.Video.Video() -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase
