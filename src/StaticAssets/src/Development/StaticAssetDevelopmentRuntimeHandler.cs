@@ -24,6 +24,36 @@ namespace Microsoft.AspNetCore.Builder;
 // Handles changes during development to support common scenarios where for example, a developer changes a file in the wwwroot folder.
 internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> descriptors)
 {
+    private readonly Dictionary<(string Route, string ETag), StaticAssetDescriptor> _descriptorsMap;
+
+    public StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> descriptors)
+    {
+        _descriptorsMap = new();
+        for (var i = 0; i < descriptors.Count; i++)
+        {
+            var descriptor = descriptors[i];
+            var etag = GetDescriptorETagResponseHeader(descriptor);
+            if (!_descriptorsMap.TryGetValue((descriptor.Route, etag), out var existing))
+            {
+                _descriptorsMap[(descriptor.Route, etag)] = descriptor;
+            }
+        }
+    }
+
+    private static string? GetDescriptorETagResponseHeader(StaticAssetDescriptor descriptor)
+    {
+        for (var i = 0; i < descriptor.ResponseHeaders.Count; i++)
+        {
+            var header = descriptor.ResponseHeaders[i];
+            if (string.Equals(header.Name, HeaderNames.ETag, StringComparison.OrdinalIgnoreCase))
+            {
+                return header.Value;
+            }
+        }
+
+        return null;
+    }
+
     internal const string ReloadStaticAssetsAtRuntimeKey = "ReloadStaticAssetsAtRuntime";
 
     public void AttachRuntimePatching(EndpointBuilder builder)
@@ -32,10 +62,11 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         var asset = builder.Metadata.OfType<StaticAssetDescriptor>().Single();
         if (asset.HasContentEncoding())
         {
-            // This is a compressed asset, which might get out of "sync" with the original uncompressed version.
-            // We are going to find the original by using the weak etag from this compressed asset and locating an asset with the same etag.
-            var eTag = asset.GetWeakETag();
-            asset = FindOriginalAsset(eTag.Tag.Value!, descriptors);
+            var originalETag = GetDescriptorOriginalResourceProperty(asset);
+            if (originalETag is not null && _descriptorsMap.TryGetValue((descriptors.Route, originalETag), out var originalAsset))
+            {
+                asset = originalAsset;
+            }
         }
 
         builder.RequestDelegate = async context =>
@@ -55,6 +86,20 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
             await original(context);
             context.Features.Set(originalFeature);
         };
+    }
+
+    private static string? GetDescriptorOriginalResourceProperty(StaticAssetDescriptor descriptor)
+    {
+        for (var i = 0; i < descriptor.Properties.Count; i++)
+        {
+            var property = descriptor.Properties[i];
+            if (string.Equals(property.Name, "original-resource", StringComparison.OrdinalIgnoreCase))
+            {
+                return property.Value;
+            }
+        }
+
+        return null;
     }
 
     internal static string GetETag(IFileInfo fileInfo)
@@ -114,10 +159,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
                 _context.Response.Headers.ContentLength = stream.Length;
 
                 var eTag = Convert.ToBase64String(SHA256.HashData(stream));
-                var weakETag = $"W/{GetETag(fileInfo)}";
-
-                // Here we add the ETag for the Gzip stream as well as the weak ETag for the original asset.
-                _context.Response.Headers.ETag = new StringValues([$"\"{eTag}\"", weakETag]);
+                _context.Response.Headers.ETag = new StringValues($"\"{eTag}\"");
 
                 stream.Seek(0, SeekOrigin.Begin);
                 return stream.CopyToAsync(_context.Response.Body, cancellationToken);
@@ -140,19 +182,6 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         {
             return _original.StartAsync(cancellationToken);
         }
-    }
-
-    private static StaticAssetDescriptor FindOriginalAsset(string tag, List<StaticAssetDescriptor> descriptors)
-    {
-        for (var i = 0; i < descriptors.Count; i++)
-        {
-            if (descriptors[i].HasETag(tag))
-            {
-                return descriptors[i];
-            }
-        }
-
-        throw new InvalidOperationException("The original asset was not found.");
     }
 
     internal static bool IsEnabled(bool isBuildManifest, IServiceProvider serviceProvider)
