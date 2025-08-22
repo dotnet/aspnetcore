@@ -222,49 +222,50 @@ export class BinaryImageComponent {
 
     const chunks: Uint8Array[] = [];
     let bytesRead = 0;
+    let aborted = false;
+    let resultUrl: string | null = null;
 
-    for await (const chunk of this.iterateStream(displayStream, controller.signal)) {
-      if (controller.signal.aborted) { // Stream aborted in a new setImageAsync call due to cache key change
-        if (this.controllers.get(imgElement) === controller) {
-          this.controllers.delete(imgElement);
+    try {
+      for await (const chunk of this.iterateStream(displayStream, controller.signal)) {
+        if (controller.signal.aborted) { // Stream aborted due to a new setImageAsync call with a key change
+          aborted = true;
+          break;
         }
-        this.loadingImages.delete(imgElement);
-        imgElement.style.removeProperty('--blazor-image-progress');
-        return null;
+
+        chunks.push(chunk);
+        bytesRead += chunk.byteLength;
+
+        if (totalBytes) {
+          const progress = Math.min(1, bytesRead / totalBytes);
+          imgElement.style.setProperty('--blazor-image-progress', progress.toString());
+        }
       }
 
-      chunks.push(chunk);
-      bytesRead += chunk.byteLength;
-
-      if (totalBytes) {
-        const progress = Math.min(1, bytesRead / totalBytes);
-        imgElement.style.setProperty('--blazor-image-progress', progress.toString());
+      if (!aborted) {
+        if (bytesRead === 0) {
+          if (typeof totalBytes === 'number' && totalBytes > 0) {
+            throw new Error('Stream was already consumed or at end position');
+          }
+          resultUrl = null;
+        } else {
+          const combined = this.combineChunks(chunks);
+          const blob = new Blob([combined], { type: mimeType });
+          const url = URL.createObjectURL(blob);
+          this.setImageUrl(imgElement, url, cacheKey);
+          resultUrl = url;
+        }
+      } else {
+        resultUrl = null;
       }
-    }
-
-    if (bytesRead === 0) {
-      if (typeof totalBytes === 'number' && totalBytes > 0) {
-        throw new Error('Stream was already consumed or at end position');
-      }
+    } finally {
       if (this.controllers.get(imgElement) === controller) {
         this.controllers.delete(imgElement);
       }
       this.loadingImages.delete(imgElement);
       imgElement.style.removeProperty('--blazor-image-progress');
-      return null;
     }
 
-    const combined = this.combineChunks(chunks);
-    const blob = new Blob([combined], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-
-    this.setImageUrl(imgElement, url, cacheKey);
-
-    if (this.controllers.get(imgElement) === controller) {
-      this.controllers.delete(imgElement);
-    }
-
-    return url;
+    return resultUrl;
   }
 
   private static combineChunks(chunks: Uint8Array[]): Uint8Array {

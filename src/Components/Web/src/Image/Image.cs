@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
 using Microsoft.Extensions.Logging;
@@ -35,7 +34,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     private bool IsInteractive => _renderHandle.IsInitialized &&
                                 _renderHandle.RendererInfo.IsInteractive;
 
-    [DisallowNull] private ElementReference? Element { get; set; }
+    private ElementReference? Element { get; set; }
 
     [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
 
@@ -44,7 +43,7 @@ public partial class Image : IComponent, IHandleAfterRender, IAsyncDisposable
     /// <summary>
     /// Gets or sets the source for the image.
     /// </summary>
-    [Parameter, EditorRequired] public ImageSource? Source { get; set; }
+    [Parameter, EditorRequired] public required ImageSource Source { get; set; }
 
     /// <summary>
     /// Gets or sets the attributes for the image.
