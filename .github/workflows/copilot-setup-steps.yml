@@ -40,4 +40,4 @@ jobs:
 
       # Diagnostics in the log
       - name: dotnet --info
-        run: dotnet --info        
+        run: dotnet --info
