@@ -348,12 +348,6 @@ public class ValidatableParameterInfoTests
         protected override ValidationAttribute[] GetValidationAttributes() => _validationAttributes;
     }
 
-    private class TestValidatableTypeInfo(
-        Type type,
-        ValidatablePropertyInfo[] members) : ValidatableTypeInfo(type, members)
-    {
-    }
-
     private class TestValidationOptions : ValidationOptions
     {
         public TestValidationOptions(Dictionary<Type, ValidatableTypeInfo> typeInfoMappings)

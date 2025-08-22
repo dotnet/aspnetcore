@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Runtime.InteropServices.JavaScript;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -62,7 +63,7 @@ internal partial class WebAssemblyCultureProvider
             throw new PlatformNotSupportedException("This method is only supported in the browser.");
         }
 
-        var culturesToLoad = GetCultures(CultureInfo.CurrentCulture);
+        var culturesToLoad = GetCultures(CultureInfo.CurrentCulture, CultureInfo.CurrentUICulture);
 
         if (culturesToLoad.Length == 0)
         {
@@ -72,28 +73,45 @@ internal partial class WebAssemblyCultureProvider
         await WebAssemblyCultureProviderInterop.LoadSatelliteAssemblies(culturesToLoad);
     }
 
-    internal static string[] GetCultures(CultureInfo cultureInfo)
+    internal static string[] GetCultures(CultureInfo cultureInfo, CultureInfo? uiCultureInfo = null)
     {
-        var culturesToLoad = new List<string>();
-
         // Once WASM is ready, we have to use .NET's assembly loading to load additional assemblies.
         // First calculate all possible cultures that the application might want to load. We do this by
         // starting from the current culture and walking up the graph of parents.
         // At the end of the the walk, we'll have a list of culture names that look like
         // [ "fr-FR", "fr" ]
-        while (cultureInfo != null && cultureInfo != CultureInfo.InvariantCulture)
+
+        var culturesToLoad = GetCultureHierarchy(cultureInfo);
+        if (cultureInfo != uiCultureInfo)
         {
-            culturesToLoad.Add(cultureInfo.Name);
-
-            if (cultureInfo.Parent == cultureInfo)
+            foreach (var culture in GetCultureHierarchy(uiCultureInfo))
             {
-                break;
+                if (!culturesToLoad.Contains(culture))
+                {
+                    culturesToLoad = culturesToLoad.Append(culture);
+                }
+                // If the culture is in the list, we can break because we found the common parent.
+                else
+                {
+                    break;
+                }
             }
-
-            cultureInfo = cultureInfo.Parent;
         }
 
         return culturesToLoad.ToArray();
+    }
+
+    private static IEnumerable<string> GetCultureHierarchy(CultureInfo? culture)
+    {
+        while (culture != CultureInfo.InvariantCulture && culture != null)
+        {
+            yield return culture.Name;
+            if (culture == culture.Parent)
+            {
+                break;
+            }
+            culture = culture.Parent;
+        }
     }
 
     private partial class WebAssemblyCultureProviderInterop

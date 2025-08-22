@@ -1365,61 +1365,18 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
         Assert.Equal($"Profile Picture: {profilePicture.Name}", Browser.Exists(By.Id("profile-picture")).Text);
         Assert.Equal("Documents: 2", Browser.Exists(By.Id("documents")).Text);
         Assert.Equal("Images: 3", Browser.Exists(By.Id("images")).Text);
-        Assert.Equal("Header Photo: Model.HeaderPhoto", Browser.Exists(By.Id("header-photo")).Text);
+        Assert.Equal($"Header Photo: {headerPhoto.Name}", Browser.Exists(By.Id("header-photo")).Text);
         Assert.Equal("Total: 7", Browser.Exists(By.Id("form-collection")).Text);
     }
 
-    [Theory]
-    // [InlineData(true)] QuarantinedTest: https://github.com/dotnet/aspnetcore/issues/61882
-    [InlineData(false)]
-    public void CanUseFormWithMethodGet(bool suppressEnhancedNavigation)
+    [Fact]
+    public void EditFormRecursiveBinding()
     {
-        SuppressEnhancedNavigation(suppressEnhancedNavigation);
-        GoTo("forms/method-get");
-        Browser.Equal("Form with method=get", () => Browser.FindElement(By.TagName("h2")).Text);
-
-        // Validate initial state
-        var stringInput = Browser.FindElement(By.Id("mystring"));
-        var boolInput = Browser.FindElement(By.Id("mybool"));
-        Browser.Equal("Initial value", () => stringInput.GetDomProperty("value"));
-        Browser.Equal("False", () => boolInput.GetDomProperty("checked"));
-
-        // Edit and submit the form; check it worked
-        stringInput.Clear();
-        stringInput.SendKeys("Edited value");
-        boolInput.Click();
-        Browser.FindElement(By.Id("submit-get-form")).Click();
-        AssertUiState("Edited value", true);
-        Browser.Contains($"MyString=Edited+value", () => Browser.Url);
-        Browser.Contains($"MyBool=True", () => Browser.Url);
-
-        // Check 'back' correctly gets us to the previous state
-        Browser.Navigate().Back();
-        AssertUiState("Initial value", false);
-        Browser.False(() => Browser.Url.Contains("MyString"));
-        Browser.False(() => Browser.Url.Contains("MyBool"));
-
-        // Check 'forward' correctly recreates the edited state
-        Browser.Navigate().Forward();
-        AssertUiState("Edited value", true);
-        Browser.Contains($"MyString=Edited+value", () => Browser.Url);
-        Browser.Contains($"MyBool=True", () => Browser.Url);
-
-        void AssertUiState(string expectedStringValue, bool expectedBoolValue)
-        {
-            Browser.Equal(expectedStringValue, () => Browser.FindElement(By.Id("mystring-value")).Text);
-            Browser.Equal(expectedBoolValue.ToString(), () => Browser.FindElement(By.Id("mybool-value")).Text);
-
-            // If we're not suppressing, we'll keep referencing the same elements to show they were preserved
-            if (suppressEnhancedNavigation)
-            {
-                stringInput = Browser.FindElement(By.Id("mystring"));
-                boolInput = Browser.FindElement(By.Id("mybool"));
-            }
-
-            Browser.Equal(expectedStringValue, () => stringInput.GetDomProperty("value"));
-            Browser.Equal(expectedBoolValue.ToString(), () => boolInput.GetDomProperty("checked"));
-        }
+        GoTo("forms/recursive-edit-form");
+        Browser.Equal("", () => Browser.Exists(By.Id("result-form")).Text);
+        Browser.Exists(By.Id("text-input")).SendKeys("John");
+        Browser.Exists(By.Id("submit-button")).Click();
+        Browser.Equal("John", () => Browser.Exists(By.Id("result-form")).Text);
     }
 
     [Fact]
@@ -1443,7 +1400,6 @@ public class FormWithParentBindingContextTest : ServerTestBase<BasicTestAppServe
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60067")]
     public void SubmitButtonFormactionAttributeOverridesEnhancedFormAction()
     {
         GoTo("forms/form-submit-button-with-formaction");

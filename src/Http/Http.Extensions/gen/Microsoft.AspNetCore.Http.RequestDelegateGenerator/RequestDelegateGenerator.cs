@@ -248,7 +248,12 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
                 if (hasFormBody)
                 {
-                    codeWriter.WriteLine(RequestDelegateGeneratorSources.AntiforgeryMetadataType);
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.AntiforgeryMetadataClass);
+                }
+
+                if (hasJsonBody || hasResponseMetadata)
+                {
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.DisableCookieRedirectMetadataClass);
                 }
 
                 if (hasFormBody || hasJsonBody || hasResponseMetadata)

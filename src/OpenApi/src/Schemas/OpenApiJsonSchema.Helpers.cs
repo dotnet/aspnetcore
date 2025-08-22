@@ -260,10 +260,20 @@ internal sealed partial class OpenApiJsonSchema
                 var minimum = reader.GetDecimal();
                 schema.Minimum = minimum.ToString(CultureInfo.InvariantCulture);
                 break;
+            case OpenApiSchemaKeywords.ExclusiveMinimum:
+                reader.Read();
+                var exclusiveMinimum = reader.GetDecimal();
+                schema.ExclusiveMinimum = exclusiveMinimum.ToString(CultureInfo.InvariantCulture);
+                break;
             case OpenApiSchemaKeywords.MaximumKeyword:
                 reader.Read();
                 var maximum = reader.GetDecimal();
                 schema.Maximum = maximum.ToString(CultureInfo.InvariantCulture);
+                break;
+            case OpenApiSchemaKeywords.ExclusiveMaximum:
+                reader.Read();
+                var exclusiveMaximum = reader.GetDecimal();
+                schema.ExclusiveMaximum = exclusiveMaximum.ToString(CultureInfo.InvariantCulture);
                 break;
             case OpenApiSchemaKeywords.PatternKeyword:
                 reader.Read();
@@ -288,8 +298,14 @@ internal sealed partial class OpenApiJsonSchema
             case OpenApiSchemaKeywords.AnyOfKeyword:
                 reader.Read();
                 schema.Type = JsonSchemaType.Object;
-                var schemas = ReadList<OpenApiJsonSchema>(ref reader);
-                schema.AnyOf = schemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
+                var anyOfSchemas = ReadList<OpenApiJsonSchema>(ref reader);
+                schema.AnyOf = anyOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
+                break;
+            case OpenApiSchemaKeywords.OneOfKeyword:
+                reader.Read();
+                schema.Type = JsonSchemaType.Object;
+                var oneOfSchemas = ReadList<OpenApiJsonSchema>(ref reader);
+                schema.OneOf = oneOfSchemas?.Select(s => s.Schema as IOpenApiSchema).ToList();
                 break;
             case OpenApiSchemaKeywords.DiscriminatorKeyword:
                 reader.Read();
@@ -317,6 +333,11 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata.Add(OpenApiConstants.SchemaId, reader.GetString() ?? string.Empty);
                 break;
+            case OpenApiConstants.NullableProperty:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata.Add(OpenApiConstants.NullableProperty, reader.GetBoolean());
+                break;
             // OpenAPI does not support the `const` keyword in its schema implementation, so
             // we map it to its closest approximation, an enum with a single value, here.
             case OpenApiSchemaKeywords.ConstKeyword:
@@ -329,6 +350,12 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Metadata ??= new Dictionary<string, object>();
                 schema.Metadata[OpenApiConstants.RefId] = reader.GetString() ?? string.Empty;
                 break;
+            case OpenApiConstants.RefDescriptionAnnotation:
+                reader.Read();
+                schema.Metadata ??= new Dictionary<string, object>();
+                schema.Metadata[OpenApiConstants.RefDescriptionAnnotation] = reader.GetString() ?? string.Empty;
+                break;
+
             default:
                 reader.Skip();
                 break;

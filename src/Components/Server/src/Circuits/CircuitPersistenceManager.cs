@@ -21,26 +21,29 @@ internal partial class CircuitPersistenceManager(
 {
     public async Task PauseCircuitAsync(CircuitHost circuit, bool saveStateToClient = false, CancellationToken cancellation = default)
     {
-        var renderer = circuit.Renderer;
-        var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
-        var collector = new CircuitPersistenceManagerCollector(circuitOptions, serverComponentSerializer, circuit.Renderer);
-        using var subscription = persistenceManager.State.RegisterOnPersisting(
-            collector.PersistRootComponents,
-            RenderMode.InteractiveServer);
-
-        await persistenceManager.PersistStateAsync(collector, renderer);
-
-        if (saveStateToClient)
+        await circuit.Renderer.Dispatcher.InvokeAsync(async () =>
         {
-            await SaveStateToClient(circuit, collector.PersistedCircuitState, cancellation);
-        }
-        else
-        {
-            await circuitPersistenceProvider.PersistCircuitAsync(
-                circuit.CircuitId,
-                collector.PersistedCircuitState,
-                cancellation);
-        }
+            var renderer = circuit.Renderer;
+            var persistenceManager = circuit.Services.GetRequiredService<ComponentStatePersistenceManager>();
+            var collector = new CircuitPersistenceManagerCollector(circuitOptions, serverComponentSerializer, circuit.Renderer);
+            using var subscription = persistenceManager.State.RegisterOnPersisting(
+                collector.PersistRootComponents,
+                RenderMode.InteractiveServer);
+
+            await persistenceManager.PersistStateAsync(collector, renderer);
+
+            if (saveStateToClient)
+            {
+                await SaveStateToClient(circuit, collector.PersistedCircuitState, cancellation);
+            }
+            else
+            {
+                await circuitPersistenceProvider.PersistCircuitAsync(
+                    circuit.CircuitId,
+                    collector.PersistedCircuitState,
+                    cancellation);
+            }
+        });
     }
 
     internal async Task SaveStateToClient(CircuitHost circuit, PersistedCircuitState state, CancellationToken cancellation = default)

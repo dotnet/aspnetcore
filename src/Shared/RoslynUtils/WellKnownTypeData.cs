@@ -119,10 +119,12 @@ internal static class WellKnownTypeData
         Microsoft_AspNetCore_Authorization_IAuthorizeData,
         System_AttributeUsageAttribute,
         System_Text_Json_Serialization_JsonDerivedTypeAttribute,
+        System_Text_Json_Serialization_JsonIgnoreAttribute,
         System_ComponentModel_DataAnnotations_DisplayAttribute,
         System_ComponentModel_DataAnnotations_ValidationAttribute,
         System_ComponentModel_DataAnnotations_RequiredAttribute,
         System_ComponentModel_DataAnnotations_CustomValidationAttribute,
+        Microsoft_Extensions_Validation_SkipValidationAttribute,
         System_Type,
     }
 
@@ -240,10 +242,12 @@ internal static class WellKnownTypeData
         "Microsoft.AspNetCore.Authorization.IAuthorizeData",
         "System.AttributeUsageAttribute",
         "System.Text.Json.Serialization.JsonDerivedTypeAttribute",
+        "System.Text.Json.Serialization.JsonIgnoreAttribute",
         "System.ComponentModel.DataAnnotations.DisplayAttribute",
         "System.ComponentModel.DataAnnotations.ValidationAttribute",
         "System.ComponentModel.DataAnnotations.RequiredAttribute",
         "System.ComponentModel.DataAnnotations.CustomValidationAttribute",
+        "Microsoft.Extensions.Validation.SkipValidationAttribute",
         "System.Type",
     ];
 }

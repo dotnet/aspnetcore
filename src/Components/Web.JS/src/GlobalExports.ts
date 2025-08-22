@@ -61,7 +61,7 @@ export interface IBlazor {
     receiveByteArray?: (id: number, data: Uint8Array) => void;
     getPersistedState?: () => string;
     getInitialComponentsUpdate?: () => Promise<string>;
-    updateRootComponents?: (operations: string) => void;
+    updateRootComponents?: (operations: string, webAssemblyState: string) => void;
     endUpdateRootComponents?: (batchId: number) => void;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
@@ -89,7 +89,7 @@ export interface IBlazor {
       EndInvokeJS: (argsJson: string) => void;
       BeginInvokeDotNet: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
       ReceiveByteArrayFromJS: (id: number, data: Uint8Array) => void;
-      UpdateRootComponentsCore: (operationsJson: string) => void;
+      UpdateRootComponentsCore: (operationsJson: string, appState: string) => void;
     }
 
     // APIs invoked by hot reload

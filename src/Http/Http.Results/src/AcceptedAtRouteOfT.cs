@@ -123,5 +123,6 @@ public sealed class AcceptedAtRoute<TValue> : IResult, IEndpointMetadataProvider
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(ProducesResponseTypeMetadata.CreateUnvalidated(typeof(TValue), StatusCodes.Status202Accepted, ContentTypeConstants.ApplicationJsonContentTypes));
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

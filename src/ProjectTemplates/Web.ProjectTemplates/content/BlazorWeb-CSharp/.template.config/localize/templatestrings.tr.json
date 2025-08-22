@@ -39,8 +39,8 @@
   "symbols/NoHttps/description": "HTTPS'nin kapatılıp kapatılmayacağı. Bu seçenek yalnızca Bireysel --auth için kullanılmadığında geçerlidir.",
   "symbols/UseProgramMain/displayName": "_Üst düzey deyimler kullanmayın",
   "symbols/UseProgramMain/description": "Üst düzey deyimler yerine açık bir Program sınıfı ve Ana yöntem oluşturup oluşturulmayacağını belirtir.",
-  "symbols/LocalhostTld/displayName": "Use the .dev.localhost TLD in the application URL",
-  "symbols/LocalhostTld/description": "Whether to combine the project name with the .dev.localhost TLD in the application URL for local development, e.g. https://myapp.dev.localhost:12345.",
+  "symbols/LocalhostTld/displayName": "Uygulama URL'sinde .dev.localhost TLD'sini kullanın",
+  "symbols/LocalhostTld/description": "Yerel geliştirme için uygulama URL'sinde proje adını .dev.localhost TLD ile birleştirip birleştirmeyeceğinizi seçin, örneğin https://myapp.dev.localhost:12345.",
   "postActions/restore/description": "Bu projenin gerektirdiği NuGet paketlerini geri yükleyin.",
   "postActions/restore/manualInstructions/default/text": "'dotnet restore' çalıştır"
 }

@@ -1,11 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Unicode;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -309,6 +314,24 @@ public class JsonResultTests
         Assert.IsType<string>(result.Value);
         Assert.Equal(value, result.Value);
     }
+
+    [Fact]
+    public void PopulateMetadata_AddsNonBrowserEndpointMetadata()
+    {
+        // Arrange
+        JsonHttpResult<Todo> MyApi() { throw new NotImplementedException(); }
+        var metadata = new List<object>();
+        var builder = new RouteEndpointBuilder(requestDelegate: null, RoutePatternFactory.Parse("/"), order: 0);
+
+        // Act
+        PopulateMetadata<JsonHttpResult<Todo>>(((Delegate)MyApi).GetMethodInfo(), builder);
+
+        // Assert
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
+    }
+
+    private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)
+        where TResult : IEndpointMetadataProvider => TResult.PopulateMetadata(method, builder);
 
     private static IServiceProvider CreateServices()
     {

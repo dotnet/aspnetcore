@@ -507,6 +507,290 @@
           }
         }
       }
+    },
+    "/schemas-by-ref/json-patch": {
+      "patch": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonPatchDocument"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/json-patch-generic": {
+      "patch": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json-patch+json": {
+              "schema": {
+                "$ref": "#/components/schemas/JsonPatchDocument"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/custom-iresult": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomIResultImplementor"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/config-with-generic-lists": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Config"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/project-response": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectResponse"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/subscription": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Subscription"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/nullable-response": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NullableResponseModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/nullable-return-type": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "type": "null"
+                    },
+                    {
+                      "$ref": "#/components/schemas/NullableResponseModel"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/nullable-request": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "$ref": "#/components/schemas/NullableRequestModel"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/complex-nullable-hierarchy": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ComplexHierarchyModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/nullable-array-elements": {
+      "post": {
+        "tags": [
+          "Sample"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NullableArrayModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/optional-with-default": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ModelWithDefaults"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/schemas-by-ref/nullable-enum-response": {
+      "get": {
+        "tags": [
+          "Sample"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnumNullableModel"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -548,7 +832,10 @@
             "$ref": "#/components/schemas/Category"
           },
           "tags": {
-            "$ref": "#/components/schemas/Category/properties/parent/properties/tags"
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
           }
         }
       },
@@ -567,6 +854,122 @@
           }
         }
       },
+      "CityResponse": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ComplexHierarchyModel": {
+        "required": [
+          "id",
+          "requiredNested"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "optionalNested": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/NestedModel"
+              }
+            ]
+          },
+          "requiredNested": {
+            "$ref": "#/components/schemas/NestedModel"
+          },
+          "nullableListWithNullableItems": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "$ref": "#/components/schemas/NestedModel"
+            }
+          }
+        }
+      },
+      "ComplexType": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "timestamp": {
+            "type": [
+              "null",
+              "string"
+            ],
+            "format": "date-time"
+          }
+        }
+      },
+      "Config": {
+        "type": "object",
+        "properties": {
+          "items1": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfigItem"
+            }
+          },
+          "items2": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ConfigItem"
+            }
+          }
+        }
+      },
+      "ConfigItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "lang": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "words": {
+            "type": [
+              "null",
+              "object"
+            ]
+          },
+          "break": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "willBeGood": {
+            "type": [
+              "null",
+              "string"
+            ]
+          }
+        }
+      },
       "ContainerType": {
         "type": "object",
         "properties": {
@@ -582,7 +985,48 @@
           "seq2": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ContainerType/properties/seq1/items"
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "CustomIResultImplementor": {
+        "required": [
+          "content"
+        ],
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string"
+          }
+        }
+      },
+      "EnumNullableModel": {
+        "required": [
+          "requiredEnum"
+        ],
+        "type": "object",
+        "properties": {
+          "requiredEnum": {
+            "$ref": "#/components/schemas/TestEnum"
+          },
+          "nullableEnum": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/TestEnum"
+              }
+            ]
+          },
+          "listOfNullableEnums": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TestEnum"
             }
           }
         }
@@ -591,12 +1035,89 @@
         "type": "object",
         "properties": {
           "name": {
-            "$ref": "#/components/schemas/Root/properties/item1/properties/name"
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           },
           "value": {
             "type": "integer",
             "format": "int32"
           }
+        }
+      },
+      "JsonPatchDocument": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "oneOf": [
+            {
+              "required": [
+                "op",
+                "path",
+                "value"
+              ],
+              "type": "object",
+              "properties": {
+                "op": {
+                  "enum": [
+                    "add",
+                    "replace",
+                    "test"
+                  ],
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "value": { }
+              },
+              "additionalProperties": false
+            },
+            {
+              "required": [
+                "op",
+                "path",
+                "from"
+              ],
+              "type": "object",
+              "properties": {
+                "op": {
+                  "enum": [
+                    "move",
+                    "copy"
+                  ],
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "from": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            },
+            {
+              "required": [
+                "op",
+                "path"
+              ],
+              "type": "object",
+              "properties": {
+                "op": {
+                  "enum": [
+                    "remove"
+                  ],
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                }
+              },
+              "additionalProperties": false
+            }
+          ]
         }
       },
       "LocationContainer": {
@@ -618,6 +1139,146 @@
         "properties": {
           "address": {
             "$ref": "#/components/schemas/AddressDto"
+          }
+        }
+      },
+      "ModelWithDefaults": {
+        "type": "object",
+        "properties": {
+          "propertyWithDefault": {
+            "type": "string"
+          },
+          "nullableWithNull": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "numberWithDefault": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "boolWithDefault": {
+            "type": "boolean"
+          }
+        }
+      },
+      "NestedModel": {
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "optionalValue": {
+            "type": [
+              "null",
+              "integer"
+            ],
+            "format": "int32"
+          },
+          "deepNested": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ComplexType"
+              }
+            ]
+          }
+        }
+      },
+      "NullableArrayModel": {
+        "type": "object",
+        "properties": {
+          "nullableArray": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "listWithNullableElements": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "nullableDictionaryWithNullableValues": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "NullableRequestModel": {
+        "required": [
+          "requiredField"
+        ],
+        "type": "object",
+        "properties": {
+          "requiredField": {
+            "type": "string"
+          },
+          "optionalField": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nullableList": {
+            "type": [
+              "null",
+              "array"
+            ],
+            "items": {
+              "type": "string"
+            }
+          },
+          "nullableDictionary": {
+            "type": [
+              "null",
+              "object"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "NullableResponseModel": {
+        "required": [
+          "requiredProperty"
+        ],
+        "type": "object",
+        "properties": {
+          "requiredProperty": {
+            "type": "string"
+          },
+          "nullableProperty": {
+            "type": [
+              "null",
+              "string"
+            ]
+          },
+          "nullableComplexProperty": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/ComplexType"
+              }
+            ]
           }
         }
       },
@@ -699,6 +1360,65 @@
           }
         }
       },
+      "ProjectAddressResponse": {
+        "required": [
+          "city"
+        ],
+        "type": "object",
+        "properties": {
+          "city": {
+            "$ref": "#/components/schemas/CityResponse"
+          }
+        }
+      },
+      "ProjectBuilderResponse": {
+        "required": [
+          "city"
+        ],
+        "type": "object",
+        "properties": {
+          "city": {
+            "$ref": "#/components/schemas/CityResponse"
+          }
+        }
+      },
+      "ProjectResponse": {
+        "required": [
+          "address",
+          "builder"
+        ],
+        "type": "object",
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/ProjectAddressResponse"
+          },
+          "builder": {
+            "$ref": "#/components/schemas/ProjectBuilderResponse"
+          }
+        }
+      },
+      "RefProfile": {
+        "required": [
+          "user"
+        ],
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/RefUser"
+          }
+        }
+      },
+      "RefUser": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      },
       "Root": {
         "type": "object",
         "properties": {
@@ -773,6 +1493,31 @@
           }
         }
       },
+      "Subscription": {
+        "required": [
+          "id",
+          "primaryUser"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "primaryUser": {
+            "$ref": "#/components/schemas/RefProfile"
+          },
+          "secondaryUser": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/RefProfile"
+              }
+            ]
+          }
+        }
+      },
       "Tag": {
         "required": [
           "name"
@@ -783,6 +1528,9 @@
             "type": "string"
           }
         }
+      },
+      "TestEnum": {
+        "type": "integer"
       },
       "Triangle": {
         "type": "object",

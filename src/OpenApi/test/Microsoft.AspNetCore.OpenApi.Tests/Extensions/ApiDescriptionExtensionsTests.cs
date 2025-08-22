@@ -63,20 +63,4 @@ public class ApiDescriptionExtensionsTests
         // Assert
         Assert.Equal(expectedHttpMethod, result);
     }
-
-    [Theory]
-    [InlineData("UNKNOWN")]
-    [InlineData("unknown")]
-    public void GetHttpMethod_ThrowsForUnknownHttpMethod(string methodName)
-    {
-        // Arrange
-        var apiDescription = new ApiDescription
-        {
-            HttpMethod = methodName
-        };
-
-        // Act & Assert
-        var exception = Assert.Throws<InvalidOperationException>(() => apiDescription.GetHttpMethod());
-        Assert.Equal($"Unsupported HTTP method: {methodName}", exception.Message);
-    }
 }

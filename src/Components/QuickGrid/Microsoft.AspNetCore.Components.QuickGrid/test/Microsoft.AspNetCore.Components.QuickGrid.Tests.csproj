@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
@@ -8,8 +8,10 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.QuickGrid" />
   </ItemGroup>
-
-
+  
+  <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Helpers" />
+  </ItemGroup>
 
   <ItemGroup>
     <Using Include="Xunit" />
