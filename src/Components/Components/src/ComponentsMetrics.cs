@@ -200,7 +200,8 @@ internal sealed class ComponentsMetrics : IDisposable
 
     private static void AddErrorTag(ref TagList tags, Exception? exception)
     {
-        if (exception?.GetType().FullName is { } errorType)
+        var errorType = exception?.GetType().FullName;
+        if (errorType is not null)
         {
             tags.Add("error.type", errorType);
         }
