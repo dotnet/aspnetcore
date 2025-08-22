@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using BasicTestApp;
-using BasicTestApp.ImageTest;
+using BasicTestApp.MediaTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;

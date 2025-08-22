@@ -1,0 +1,96 @@
+@using System.IO
+@using Microsoft.AspNetCore.Components.Web.Media
+@using Microsoft.AspNetCore.Components.Web
+@implements IAsyncDisposable
+
+<h3>Video Component Tests</h3>
+
+<div>
+    <h4>Test Controls</h4>
+    <button id="load-mp4" @onclick="LoadMp4">Load MP4</button>
+    <button id="change-video" @onclick="ChangeDynamicVideoSource">Change Dynamic Video Source</button>
+    <button id="load-error-video" @onclick="LoadErrorVideo">Load Error Video</button>
+</div>
+
+@if (_mp4Visible)
+{
+    <h4>MP4 basic</h4>
+    <Video @ref="@_mp4Ref" id="mp4-basic" Source="@_mp4Source" controls />
+}
+@if (_dynamicVideoVisible)
+{
+    <h4>Dynamic Video</h4>
+    <Video @ref="@_dynamicVideoRef" id="dynamic-video" Source="@_dynamicVideoSource" controls muted loop />
+}
+@if (_errorVideoVisible)
+{
+    <h4>Error Video</h4>
+    <Video @ref="_errorVideoRef" id="error-video" Source="@_errorVideoSource" />
+}
+
+@code {
+    private Video _mp4Ref;
+    private Video _dynamicVideoRef;
+    private Video _errorVideoRef;
+
+    private MediaSource _mp4Source = new MediaSource(new byte[0], string.Empty, string.Empty);
+    private MediaSource _dynamicVideoSource = new MediaSource(new byte[0], string.Empty, string.Empty);
+    private MediaSource _errorVideoSource = new MediaSource(new byte[0], string.Empty, string.Empty);
+
+    private bool _mp4Visible;
+    private bool _dynamicVideoVisible;
+    private bool _errorVideoVisible;
+    private bool _isShowingFirst = true;
+
+    // Small synthetic MP4 header (not a playable file, but enough to exercise logic). Replace with proper test data if available.
+    private static readonly byte[] TestMp4Data = new byte[] { 0,0,0,24, 102,116,121,112,105,115,111,109,0,0,0,0,105,115,111,109,105,115,111,50,0,0,0,8,102,114,101,101,0,0,2,0 };
+
+    protected override void OnInitialized() { }
+
+    private async Task LoadMp4()
+    {
+        _mp4Source = new MediaSource(TestMp4Data, "video/mp4", "test-mp4-basic");
+        _mp4Visible = true;
+        await Task.Delay(10);
+    }
+
+    private async Task ChangeDynamicVideoSource()
+    {
+        if (!_dynamicVideoVisible)
+        {
+            _dynamicVideoSource = new MediaSource(TestMp4Data, "video/mp4", "dynamic-mp4-a");
+            _dynamicVideoVisible = true;
+            _isShowingFirst = true;
+            await Task.Delay(10);
+        }
+        else
+        {
+            if (_isShowingFirst)
+            {
+                _dynamicVideoSource = new MediaSource(TestMp4Data, "video/mp4", "dynamic-mp4-b");
+            }
+            else
+            {
+                _dynamicVideoSource = new MediaSource(TestMp4Data, "video/mp4", "dynamic-mp4-a");
+            }
+            _isShowingFirst = !_isShowingFirst;
+            await Task.Delay(10);
+        }
+    }
+
+    private async Task LoadErrorVideo()
+    {
+        var ms = new MemoryStream(new byte[] { 1,2,3 });
+        ms.Seek(ms.Length, SeekOrigin.Begin);
+        _errorVideoSource = new MediaSource(ms, "video/mp4", "error-video-key");
+        _errorVideoVisible = true;
+        await Task.Delay(10);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_mp4Ref != null) await _mp4Ref.DisposeAsync();
+        if (_dynamicVideoRef != null) await _dynamicVideoRef.DisposeAsync();
+        if (_errorVideoRef != null) await _errorVideoRef.DisposeAsync();
+    }
+}
