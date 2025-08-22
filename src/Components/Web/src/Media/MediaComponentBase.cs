@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -38,7 +38,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
     /// <summary>
     /// Gets the reference to the rendered HTML element for this media component.
     /// </summary>
-    [DisallowNull] protected ElementReference? Element { get; set; }
+    protected ElementReference? Element { get; set; }
 
     /// <summary>
     /// Gets or sets the JS runtime used for interop with the browser to materialize media object URLs.
@@ -75,7 +75,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
     /// <summary>
     /// Gets or sets the media source.
     /// </summary>
-    [Parameter] public MediaSource? Source { get; set; }
+    [Parameter, EditorRequired] public required MediaSource Source { get; set; }
 
     /// <summary>
     /// Unmatched attributes applied to the rendered element.
@@ -97,6 +97,11 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
 
         parameters.SetParameterProperties(this);
 
+        if (Source is null)
+        {
+            throw new InvalidOperationException("Image.Source is required.");
+        }
+
         if (!_initialized)
         {
             Render();
@@ -104,7 +109,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
             return Task.CompletedTask;
         }
 
-        if (Source != null && !string.Equals(previousSource?.CacheKey, Source.CacheKey, StringComparison.Ordinal))
+        if (!HasSameKey(previousSource, Source))
         {
             Render();
         }
@@ -114,26 +119,24 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
 
     async Task IHandleAfterRender.OnAfterRenderAsync()
     {
-        if (!IsInteractive || Source == null)
+        var source = Source;
+        if (!IsInteractive || source is null)
         {
             return;
         }
 
-        if (_currentSource != null && string.Equals(_currentSource.CacheKey, Source.CacheKey, StringComparison.Ordinal))
+        if (_currentSource != null && HasSameKey(_currentSource, source))
         {
             return;
         }
 
-        try { _loadCts?.Cancel(); } catch { }
-        _loadCts?.Dispose();
-        _loadCts = new CancellationTokenSource();
-        var token = _loadCts.Token;
+        CancelPreviousLoad();
+        var token = ResetCancellationToken();
 
-        _currentSource = Source;
-
+        _currentSource = source;
         try
         {
-            await LoadMediaAsync(Source, token);
+            await LoadMediaAsync(source, token);
         }
         catch (OperationCanceledException)
         {
@@ -142,7 +145,9 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
 
     private void Render()
     {
-        if (!_hasPendingRender && _renderHandle.IsInitialized)
+        Debug.Assert(_renderHandle.IsInitialized);
+
+        if (!_hasPendingRender)
         {
             _hasPendingRender = true;
             _renderHandle.Render(BuildRenderTree);
@@ -247,8 +252,6 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         }
         catch (OperationCanceledException)
         {
-            // bubble up to caller
-            throw;
         }
         catch (Exception ex)
         {
@@ -268,14 +271,33 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         if (!_isDisposed)
         {
             _isDisposed = true;
-
-            // Cancel any pending operations
-            try { _loadCts?.Cancel(); } catch { }
-            _loadCts?.Dispose();
-            _loadCts = null;
+            CancelPreviousLoad();
         }
-
         return new ValueTask();
+    }
+
+    private void CancelPreviousLoad()
+    {
+        try
+        {
+            _loadCts?.Cancel();
+        }
+        catch
+        {
+        }
+        _loadCts?.Dispose();
+        _loadCts = null;
+    }
+
+    private CancellationToken ResetCancellationToken()
+    {
+        _loadCts = new CancellationTokenSource();
+        return _loadCts.Token;
+    }
+
+    private static bool HasSameKey(MediaSource? a, MediaSource? b)
+    {
+        return a is not null && b is not null && string.Equals(a.CacheKey, b.CacheKey, StringComparison.Ordinal);
     }
 
     private static partial class Log

@@ -23,6 +23,7 @@ Microsoft.AspNetCore.Components.Web.Image.ImageSource.Stream.get -> System.IO.St
 Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
 Microsoft.AspNetCore.Components.Web.Media.Image
 Microsoft.AspNetCore.Components.Web.Media.Image.Image() -> void
+Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.Source.get -> Microsoft.AspNetCore.Components.Web.Media.MediaSource!
 Microsoft.AspNetCore.Components.Web.Media.Video
 Microsoft.AspNetCore.Components.Web.Media.Video.Video() -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase
@@ -39,7 +40,6 @@ Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.Logger.get -> Micro
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.LoggerFactory.get -> Microsoft.Extensions.Logging.ILoggerFactory!
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.LoggerFactory.set -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.MediaComponentBase() -> void
-Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.Source.get -> Microsoft.AspNetCore.Components.Web.Media.MediaSource?
 Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.Source.set -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaSource
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.CacheKey.get -> string!
@@ -50,4 +50,5 @@ Microsoft.AspNetCore.Components.Web.Media.MediaSource.MimeType.get -> string!
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.Stream.get -> System.IO.Stream!
 override Microsoft.AspNetCore.Components.Forms.InputHidden.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
 override Microsoft.AspNetCore.Components.Forms.InputHidden.TryParseValueFromString(string? value, out string? result, out string? validationErrorMessage) -> bool
+virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool
 virtual Microsoft.AspNetCore.Components.Web.Media.MediaComponentBase.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void

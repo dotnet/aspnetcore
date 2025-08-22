@@ -29,6 +29,8 @@ export class BinaryMedia {
 
   private static observer: MutationObserver | null = null;
 
+  private static controllers: WeakMap<HTMLElement, AbortController> = new WeakMap();
+
   private static initializeObserver(): void {
     if (this.observer) {
       return;
@@ -96,6 +98,16 @@ export class BinaryMedia {
       this.loadingElements.delete(el);
       this.activeCacheKey.delete(el);
     }
+    // Abort any in-flight stream tied to this element
+    const controller = this.controllers.get(el);
+    if (controller) {
+      try {
+        controller.abort();
+      } catch {
+        // ignore
+      }
+      this.controllers.delete(el);
+    }
   }
 
   /**
@@ -114,6 +126,20 @@ export class BinaryMedia {
     }
 
     this.initializeObserver();
+
+    // If there was a previous different key for this element, abort its in-flight operation
+    const previousKey = this.activeCacheKey.get(element);
+    if (previousKey && previousKey !== cacheKey) {
+      const prevController = this.controllers.get(element);
+      if (prevController) {
+        try {
+          prevController.abort();
+        } catch {
+          // ignore
+        }
+        this.controllers.delete(element);
+      }
+    }
 
     this.activeCacheKey.set(element, cacheKey);
 
@@ -180,6 +206,10 @@ export class BinaryMedia {
   ): Promise<string | null> {
     this.loadingElements.add(element);
 
+    // Create and track an AbortController for this element
+    const controller = new AbortController();
+    this.controllers.set(element, controller);
+
     const readable = await streamRef.stream();
     let displayStream = readable;
 
@@ -196,35 +226,49 @@ export class BinaryMedia {
 
     const chunks: Uint8Array[] = [];
     let bytesRead = 0;
+    let aborted = false;
+    let resultUrl: string | null = null;
 
-    for await (const chunk of this.iterateStream(displayStream)) {
-      if (this.activeCacheKey.get(element) !== cacheKey) {
-        return null;
+    try {
+      for await (const chunk of this.iterateStream(displayStream, controller.signal)) {
+        if (controller.signal.aborted) { // Stream aborted due to a new setImageAsync call with a key change
+          aborted = true;
+          break;
+        }
+        chunks.push(chunk);
+        bytesRead += chunk.byteLength;
+
+        if (totalBytes) {
+          const progress = Math.min(1, bytesRead / totalBytes);
+          element.style.setProperty('--blazor-media-progress', progress.toString());
+        }
       }
 
-      chunks.push(chunk);
-      bytesRead += chunk.byteLength;
-
-      if (totalBytes) {
-        const progress = Math.min(1, bytesRead / totalBytes);
-        element.style.setProperty('--blazor-media-progress', progress.toString());
+      if (!aborted) {
+        if (bytesRead === 0) {
+          if (typeof totalBytes === 'number' && totalBytes > 0) {
+            throw new Error('Stream was already consumed or at end position');
+          }
+          resultUrl = null;
+        } else {
+          const combined = this.combineChunks(chunks);
+          const blob = new Blob([combined], { type: mimeType });
+          const url = URL.createObjectURL(blob);
+          this.setUrl(element, url, cacheKey, targetAttr);
+          resultUrl = url;
+        }
+      } else {
+        resultUrl = null;
       }
+    } finally {
+      if (this.controllers.get(element) === controller) {
+        this.controllers.delete(element);
+      }
+      this.loadingElements.delete(element);
+      element.style.removeProperty('--blazor-media-progress');
     }
 
-    if (bytesRead === 0) {
-      if (typeof totalBytes === 'number' && totalBytes > 0) {
-        throw new Error('Stream was already consumed or at end position');
-      }
-      return null;
-    }
-
-    const combined = this.combineChunks(chunks);
-    const blob = new Blob([combined], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-
-    this.setUrl(element, url, cacheKey, targetAttr);
-
-    return url;
+    return resultUrl;
   }
 
   private static combineChunks(chunks: Uint8Array[]): Uint8Array {
@@ -291,12 +335,22 @@ export class BinaryMedia {
     return cache;
   }
 
-  private static async *iterateStream(stream: ReadableStream<Uint8Array>): AsyncGenerator<Uint8Array, void, unknown> {
+  private static async *iterateStream(stream: ReadableStream<Uint8Array>, signal?: AbortSignal): AsyncGenerator<Uint8Array, void, unknown> {
     const reader = stream.getReader();
+    let finished = false;
     try {
       while (true) {
+        if (signal?.aborted) {
+          try {
+            await reader.cancel();
+          } catch {
+            // ignore
+          }
+          return;
+        }
         const { done, value } = await reader.read();
         if (done) {
+          finished = true;
           return;
         }
         if (value) {
@@ -304,10 +358,12 @@ export class BinaryMedia {
         }
       }
     } finally {
-      try {
-        await reader.cancel();
-      } catch {
-        // ignore
+      if (!finished) {
+        try {
+          await reader.cancel();
+        } catch {
+          // ignore
+        }
       }
       try {
         reader.releaseLock?.();
