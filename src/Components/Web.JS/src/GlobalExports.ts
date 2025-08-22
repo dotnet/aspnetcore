@@ -19,7 +19,6 @@ import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods'
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { RuntimeAPI } from '@microsoft/dotnet-runtime';
 import { JSEventRegistry } from './Services/JSEventRegistry';
-import { BinaryImageComponent } from './Rendering/BinaryImageComponent';
 import { BinaryMedia } from './Rendering/BinaryMedia';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
@@ -52,7 +51,6 @@ export interface IBlazor {
     navigationManager: typeof navigationManagerInternalFunctions | any;
     domWrapper: typeof domFunctions;
     Virtualize: typeof Virtualize;
-    BinaryImageComponent: typeof BinaryImageComponent;
     BinaryMedia: typeof BinaryMedia;
     PageTitle: typeof PageTitle;
     forceCloseConnection?: () => Promise<void>;
@@ -115,7 +113,6 @@ export const Blazor: IBlazor = {
     NavigationLock,
     getJSDataStreamChunk: getNextChunk,
     attachWebRendererInterop,
-    BinaryImageComponent,
     BinaryMedia,
   },
 };
