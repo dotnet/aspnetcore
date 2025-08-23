@@ -18,6 +18,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -98,7 +99,7 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Fact]
-    public async Task ApiEndpointChallengeReturns401WithLocationHeader()
+    public async Task CanConfigure401ChallengeInsteadOfRedirectWithMetadata()
     {
         using var host = await CreateHost(s => { });
         using var server = host.GetTestServer();
@@ -110,12 +111,36 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
     }
 
     [Fact]
-    public async Task ApiEndpointForbidReturns403WithLocationHeader()
+    public async Task CanConfigure403ForbiddenInsteadOfRedirectWithMetadata()
     {
         using var host = await CreateHost(s => { });
         using var server = host.GetTestServer();
         var transaction = await SendAsync(server, "http://example.com/api/forbid");
         Assert.Equal(HttpStatusCode.Forbidden, transaction.Response.StatusCode);
+        var responded = transaction.Response.Headers.GetValues("Location");
+        Assert.Single(responded);
+        Assert.StartsWith("http://example.com/Account/AccessDenied", responded.Single());
+    }
+
+    [Fact]
+    public async Task CanReenableLoginRedirectWithMetadata()
+    {
+        using var host = await CreateHost(s => { });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/api/jk/challenge");
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+        var responded = transaction.Response.Headers.GetValues("Location");
+        Assert.Single(responded);
+        Assert.StartsWith("http://example.com/Account/Login", responded.Single());
+    }
+
+    [Fact]
+    public async Task CanReenableAccessDeniedRedirectWithMetadata()
+    {
+        using var host = await CreateHost(s => { });
+        using var server = host.GetTestServer();
+        var transaction = await SendAsync(server, "http://example.com/api/jk/forbid");
+        Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
         var responded = transaction.Response.Headers.GetValues("Location");
         Assert.Single(responded);
         Assert.StartsWith("http://example.com/Account/AccessDenied", responded.Single());
@@ -1908,17 +1933,25 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
                         app.UseRouting();
                         app.UseEndpoints(endpoints =>
                         {
-                            var apiRouteGroup = endpoints.MapGroup("/api").WithMetadata(new TestApiEndpointMetadata());
-                            // Add endpoints with IApiEndpointMetadata
-                            apiRouteGroup.MapGet("/challenge", async context =>
+                            void AddChallengeAndForbidEndpoints(IEndpointRouteBuilder routeGroup)
                             {
-                                await context.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                            });
+                                routeGroup.MapGet("/challenge", async context =>
+                                {
+                                    await context.ChallengeAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                                });
 
-                            apiRouteGroup.MapGet("/forbid", async context =>
-                            {
-                                await context.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                            });
+                                routeGroup.MapGet("/forbid", async context =>
+                                {
+                                    await context.ForbidAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                                });
+                            }
+
+                            var apiRouteGroup = endpoints.MapGroup("/api").DisableCookieRedirect();
+                            AddChallengeAndForbidEndpoints(apiRouteGroup);
+
+                            // IAllowCookieRedirect always wins if present. Adding IDisableCookieRedirect before and afterwards does not override it.
+                            var overriddenRouteGroup = apiRouteGroup.MapGroup("/jk").AllowCookieRedirect().DisableCookieRedirect();
+                            AddChallengeAndForbidEndpoints(overriddenRouteGroup);
                         });
                     })
                     .ConfigureServices(services =>
@@ -1993,9 +2026,5 @@ public class CookieTests : SharedAuthenticationTests<CookieAuthenticationOptions
 
         public string ResponseText { get; set; }
         public XElement ResponseElement { get; set; }
-    }
-
-    private class TestApiEndpointMetadata : IApiEndpointMetadata
-    {
     }
 }

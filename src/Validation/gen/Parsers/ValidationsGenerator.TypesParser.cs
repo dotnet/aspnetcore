@@ -82,6 +82,8 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         visitedTypes.Add(typeSymbol);
 
+        var hasValidationAttributes = HasValidationAttributes(typeSymbol, wellKnownTypes);
+
         // Extract validatable types discovered in base types of this type and add them to the top-level list.
         var current = typeSymbol.BaseType;
         var hasValidatableBaseType = false;
@@ -107,7 +109,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // No validatable members or derived types found, so we don't need to add this type.
-        if (members.IsDefaultOrEmpty && !hasValidatableBaseType && !hasValidatableDerivedTypes)
+        if (members.IsDefaultOrEmpty && !hasValidationAttributes && !hasValidatableBaseType && !hasValidatableDerivedTypes)
         {
             return false;
         }
@@ -282,5 +284,21 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
                 Arguments: [.. attribute.ConstructorArguments.Select(a => a.ToCSharpString())],
                 NamedArguments: attribute.NamedArguments.ToDictionary(namedArgument => namedArgument.Key, namedArgument => namedArgument.Value.ToCSharpString()),
                 IsCustomValidationAttribute: SymbolEqualityComparer.Default.Equals(attribute.AttributeClass, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_CustomValidationAttribute))))];
+    }
+
+    internal static bool HasValidationAttributes(ISymbol symbol, WellKnownTypes wellKnownTypes)
+    {
+        var validationAttributeSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_ValidationAttribute);
+
+        foreach (var attribute in symbol.GetAttributes())
+        {
+            if (attribute.AttributeClass is not null &&
+                attribute.AttributeClass.ImplementsValidationAttribute(validationAttributeSymbol))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

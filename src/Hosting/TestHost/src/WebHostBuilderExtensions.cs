@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.TestHost;
 /// </summary>
 public static class WebHostBuilderExtensions
 {
+    private static readonly string[] _defaultSolutionNames = ["*.sln", "*.slnx"];
+
     /// <summary>
     /// Enables the <see cref="TestServer" /> service.
     /// </summary>
@@ -51,6 +53,7 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="host"></param>
     /// <returns></returns>
+    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
     public static TestServer GetTestServer(this IWebHost host)
     {
         return (TestServer)host.Services.GetRequiredService<IServer>();
@@ -61,6 +64,7 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="host"></param>
     /// <returns></returns>
+    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
     public static HttpClient GetTestClient(this IWebHost host)
     {
         return host.GetTestServer().CreateClient();
@@ -120,15 +124,27 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
     /// <param name="solutionRelativePath">The directory of the solution file.</param>
+    /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+    public static IWebHostBuilder UseSolutionRelativeContentRoot(
+        this IWebHostBuilder builder,
+        string solutionRelativePath)
+    {
+        return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, _defaultSolutionNames);
+    }
+
+    /// <summary>
+    /// Sets the content root of relative to the <paramref name="solutionRelativePath" />.
+    /// </summary>
+    /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
+    /// <param name="solutionRelativePath">The directory of the solution file.</param>
     /// <param name="solutionName">The name of the solution file to make the content root relative to.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IWebHostBuilder UseSolutionRelativeContentRoot(
         this IWebHostBuilder builder,
         string solutionRelativePath,
-        string solutionName = "*.sln")
+        string solutionName)
     {
-        return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, solutionName);
+        return builder.UseSolutionRelativeContentRoot(solutionRelativePath, AppContext.BaseDirectory, [solutionName]);
     }
 
     /// <summary>
@@ -139,24 +155,49 @@ public static class WebHostBuilderExtensions
     /// <param name="applicationBasePath">The root of the app's directory.</param>
     /// <param name="solutionName">The name of the solution file to make the content root relative to.</param>
     /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
-    [SuppressMessage("ApiDesign", "RS0026:Do not add multiple public overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IWebHostBuilder UseSolutionRelativeContentRoot(
         this IWebHostBuilder builder,
         string solutionRelativePath,
         string applicationBasePath,
-        string solutionName = "*.sln")
+        string solutionName)
+    {
+        return builder.UseSolutionRelativeContentRoot(solutionRelativePath, applicationBasePath, [solutionName]);
+    }
+
+    /// <summary>
+    /// Sets the content root of relative to the <paramref name="solutionRelativePath" />.
+    /// </summary>
+    /// <param name="builder">The <see cref="IWebHostBuilder"/>.</param>
+    /// <param name="solutionRelativePath">The directory of the solution file.</param>
+    /// <param name="applicationBasePath">The root of the app's directory.</param>
+    /// <param name="solutionNames">The names of the solution files to make the content root relative to. If empty, defaults to *.sln and *.slnx.</param>
+    /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+    [SuppressMessage("ApiDesign", "RS0027:Public API with optional parameter(s) should have the most parameters amongst its public overloads", Justification = "Required to maintain compatibility")]
+    public static IWebHostBuilder UseSolutionRelativeContentRoot(
+        this IWebHostBuilder builder,
+        string solutionRelativePath,
+        string applicationBasePath,
+        ReadOnlySpan<string> solutionNames = default)
     {
         ArgumentNullException.ThrowIfNull(solutionRelativePath);
         ArgumentNullException.ThrowIfNull(applicationBasePath);
 
+        if (solutionNames.IsEmpty)
+        {
+            solutionNames = _defaultSolutionNames;
+        }
+
         var directoryInfo = new DirectoryInfo(applicationBasePath);
         do
         {
-            var solutionPath = Directory.EnumerateFiles(directoryInfo.FullName, solutionName).FirstOrDefault();
-            if (solutionPath != null)
+            foreach (var solutionName in solutionNames)
             {
-                builder.UseContentRoot(Path.GetFullPath(Path.Combine(directoryInfo.FullName, solutionRelativePath)));
-                return builder;
+                var solutionPath = Directory.EnumerateFiles(directoryInfo.FullName, solutionName).FirstOrDefault();
+                if (solutionPath != null)
+                {
+                    builder.UseContentRoot(Path.GetFullPath(Path.Combine(directoryInfo.FullName, solutionRelativePath)));
+                    return builder;
+                }
             }
 
             directoryInfo = directoryInfo.Parent;

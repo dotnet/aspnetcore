@@ -256,14 +256,14 @@ public class PersistentValueProviderComponentSubscriptionTests
 
         // Pre-populate the state with serialized data
         var key = PersistentStateValueProviderKeyResolver.ComputeKey(componentState, nameof(TestComponent.State));
-        appState[key] = JsonSerializer.SerializeToUtf8Bytes("first-restored-value", JsonSerializerOptions.Web);
+        appState[key] = JsonSerializer.SerializeToUtf8Bytes("first-persisted-value", JsonSerializerOptions.Web);
         await manager.RestoreStateAsync(new TestStore(appState), RestoreContext.InitialValue);
 
         await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId, ParameterView.Empty));
         var cascadingParameterInfo = CreateCascadingParameterInfo(nameof(TestComponent.State), typeof(string));
 
         // Act & Assert - First call: Returns restored value from state
-        Assert.Equal("first-restored-value", component.State);
+        Assert.Equal("first-persisted-value", provider.GetCurrentValue(componentState, cascadingParameterInfo));
 
         // Change the component's property value
         component.State = "updated-property-value";
@@ -279,7 +279,7 @@ public class PersistentValueProviderComponentSubscriptionTests
         };
         // Simulate invoking the callback with a value update.
         await renderer.Dispatcher.InvokeAsync(() => manager.RestoreStateAsync(new TestStore(newState), RestoreContext.ValueUpdate));
-        Assert.Equal("second-restored-value", component.State);
+        Assert.Equal("second-restored-value", provider.GetCurrentValue(componentState, cascadingParameterInfo));
 
         component.State = "another-updated-value";
         // Other calls: Returns the updated value from state

@@ -129,6 +129,7 @@ public static partial class RequestDelegateFactory
     private static readonly string[] FormFileContentType = new[] { "multipart/form-data" };
     private static readonly string[] FormContentType = new[] { "multipart/form-data", "application/x-www-form-urlencoded" };
     private static readonly string[] PlaintextContentType = new[] { "text/plain" };
+    private static readonly Type[] StringTypes = new[] {typeof(string), typeof(StringValues), typeof(StringValues?) };
 
     /// <summary>
     /// Returns metadata inferred automatically for the <see cref="RequestDelegate"/> created by <see cref="Create(Delegate, RequestDelegateFactoryOptions?, RequestDelegateMetadataResult?)"/>.
@@ -405,7 +406,7 @@ public static partial class RequestDelegateFactory
             // When present, authentication handlers should prefer returning status codes over browser redirects.
             if (factoryContext.JsonRequestBodyParameter is not null)
             {
-                factoryContext.EndpointBuilder.Metadata.Add(ApiEndpointMetadata.Instance);
+                factoryContext.EndpointBuilder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
             }
 
             PopulateBuiltInResponseTypeMetadata(methodInfo.ReturnType, factoryContext);
@@ -791,11 +792,11 @@ public static partial class RequestDelegateFactory
             // For complex types, leverage the shared form binding infrastructure. For example,
             // shared form binding does not currently only supports types that implement IParsable
             // while RDF's binding implementation supports all TryParse implementations.
-            var useSimpleBinding = parameter.ParameterType == typeof(string) ||
-                parameter.ParameterType == typeof(StringValues) ||
-                parameter.ParameterType == typeof(StringValues?) ||
+            var useSimpleBinding = StringTypes.Contains(parameter.ParameterType) ||
                 ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType) ||
-                (parameter.ParameterType.IsArray && ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!));
+                (parameter.ParameterType.IsArray &&
+                (StringTypes.Contains(parameter.ParameterType.GetElementType()) ||
+                ParameterBindingMethodCache.Instance.HasTryParseMethod(parameter.ParameterType.GetElementType()!)));
             hasTryParse = useSimpleBinding;
             return useSimpleBinding
                 ? BindParameterFromFormItem(parameter, formAttribute.Name ?? parameter.Name, factoryContext)
@@ -1062,7 +1063,7 @@ public static partial class RequestDelegateFactory
             {
                 // Since this endpoint responds with JSON, we assume its an API endpoint not intended for browser navigation,
                 // but we don't want to bother adding this metadata twice if we've already inferred it based on the expected JSON request body.
-                builder.Metadata.Add(ApiEndpointMetadata.Instance);
+                builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
             }
         }
     }
