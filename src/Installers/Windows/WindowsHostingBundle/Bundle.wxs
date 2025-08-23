@@ -1,9 +1,9 @@
 ﻿<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util" xmlns:bal="http://wixtoolset.org/schemas/v4/wxs/bal">
     <Bundle Name="$(var.BundleName)" Version="$(var.BundleVersion)" Manufacturer="Microsoft Corporation" UpgradeCode="$(var.BundleUpgradeCode)">
         <BootstrapperApplication>
-          <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770" LogoFile="DotNetLogo.bmp" SuppressDowngradeFailure="yes" SuppressOptionsUI="yes" ThemeFile="thm.xml" LocalizationFile="LCID\1033\thm.wxl" Theme="hyperlinkLicense" />
+          <bal:WixStandardBootstrapperApplication LicenseUrl="https://go.microsoft.com/fwlink/?LinkId=329770" LogoFile="DotNetLogo.bmp" SuppressDowngradeFailure="yes" SuppressOptionsUI="yes" ThemeFile="bundle.thm" LocalizationFile="LCID\1033\thm.wxl" Theme="hyperlinkLicense" />
           <?foreach lcid in 2052;1028;1029;1031;3082;1033;1036;1040;1041;1042;1045;1046;1049;1055?>
-          <Payload Id="PL_thm_$(var.lcid)" SourceFile="LCID\$(var.lcid)\thm.wxl" Name="$(var.lcid)\thm.wxl" Compressed="yes" />
+          <Payload Id="PL_thm_$(lcid)" SourceFile="LCID\$(lcid)\thm.wxl" Name="$(lcid)\thm.wxl" Compressed="yes" />
           <?endforeach?>
           <Payload Name="DotNetLogo.bmp" Compressed="yes" SourceFile="DotNetLogo.bmp" />
         </BootstrapperApplication>
