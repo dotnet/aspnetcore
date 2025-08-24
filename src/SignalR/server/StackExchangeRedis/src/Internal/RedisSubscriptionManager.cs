@@ -63,4 +63,14 @@ internal sealed class RedisSubscriptionManager
             _lock.Release();
         }
     }
+
+    public HubConnectionStore? GetStore(string id)
+    {
+        if (_subscriptions.TryGetValue(id, out var store))
+        {
+            return store;
+        }
+
+        return null;
+    }
 }
