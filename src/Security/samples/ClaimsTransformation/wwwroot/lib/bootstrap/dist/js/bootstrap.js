@@ -1265,7 +1265,8 @@ if (typeof jQuery === 'undefined') {
     var $this = $(this)
     var href = $this.attr('href')
     var target = $this.attr('data-target') ||
-      (href && href.replace(/.*(?=#[^\s]+$)/, '')) // strip for ie7
+      //(href && href.replace(/.*(?=#[^\s]+$)/, '')) // strip for ie7
+      (href && href.replace(/^[^#]*(?=#\S+$)/, '')) // strip for ie7 - safe
 
     var $target = $(document).find(target)
     var option = $target.data('bs.modal') ? 'toggle' : $.extend({ remote: !/#/.test(href) && href }, $target.data(), $this.data())
