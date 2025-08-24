@@ -373,7 +373,7 @@ public class DefaultHtmlGenerator : IHtmlGenerator
         if (resolvedLabelText == null && expression != null)
         {
             var index = expression.LastIndexOf('.');
-            if (index == -1)
+            if (index < 0)
             {
                 // Expression does not contain a dot separator.
                 resolvedLabelText = expression;
