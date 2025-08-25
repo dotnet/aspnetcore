@@ -14,28 +14,31 @@ public static class EnhancedNavigationTestUtil
     public static void SuppressEnhancedNavigation<TServerFixture>(ServerTestBase<TServerFixture> fixture, bool shouldSuppress, bool skipNavigation = false)
         where TServerFixture : ServerFixture
     {
+        var browser = fixture.Browser;
+
+        if (!skipNavigation)
+        {
+            // Navigate here first to ensure the browser is on the correct origin to access sessionStorage
+            fixture.Navigate($"{fixture.ServerPathBase}/");
+            browser.Equal("Hello", () => browser.Exists(By.TagName("h1")).Text);
+        }
+
+        try
+        {
+            ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.", ex);
+        }
+
+        // This prevents test interference where suppression state from previous tests persists
+        CleanEnhancedNavigationSuppression(fixture);
+
         if (shouldSuppress)
         {
-            var browser = fixture.Browser;
-
-            if (!skipNavigation)
-            {
-                // Normally we need to navigate here first otherwise the browser isn't on the correct origin to access
-                // sessionStorage. But some tests are already in the right place and need to avoid extra navigation.
-                fixture.Navigate($"{fixture.ServerPathBase}/");
-                browser.Equal("Hello", () => browser.Exists(By.TagName("h1")).Text);
-            }
-
-            try
-            {
-                ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.", ex);
-            }
             var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
-            if (testId == null)
+            if (testId is null || string.IsNullOrEmpty(testId as string))
             {
                 testId = GrantTestId(browser);
             }
@@ -55,7 +58,7 @@ public static class EnhancedNavigationTestUtil
 
         // only tests that suppress enhanced navigation will have these items set, so it can throw
         var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
-        if (testId == null)
+        if (testId is null || string.IsNullOrEmpty(testId as string))
         {
             return;
         }
