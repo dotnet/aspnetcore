@@ -92,6 +92,13 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
     protected abstract string MarkerAttributeName { get; }
 
     /// <summary>
+    /// Determines whether the component should automatically invoke a media load after the first render
+    /// and whenever the <see cref="Source"/> changes. Override and return <c>false</c> for components
+    /// (such as download buttons) that defer loading until an explicit user action.
+    /// </summary>
+    protected virtual bool ShouldAutoLoad => true;
+
+    /// <summary>
     /// Gets or sets the media source.
     /// </summary>
     [Parameter, EditorRequired] public required MediaSource Source { get; set; }
@@ -144,6 +151,11 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
             return;
         }
 
+        if (!ShouldAutoLoad)
+        {
+            return; // Manual-load component (e.g., FileDownload) opts out of automatic loading
+        }
+
         if (_currentSource != null && HasSameKey(_currentSource, source))
         {
             return;
@@ -162,7 +174,11 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         }
     }
 
-    private void Render()
+    /// <summary>
+    /// Triggers a render of the component by invoking the <see cref="BuildRenderTree"/> method.
+    /// Ensures that only one render operation is pending at a time to prevent redundant renders.
+    /// </summary>
+    protected void Render()
     {
         Debug.Assert(_renderHandle.IsInitialized);
 
@@ -173,11 +189,6 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
             _hasPendingRender = false;
         }
     }
-
-    /// <summary>
-    /// Allows a derived component to explicitly request a re-render (for manual load workflows).
-    /// </summary>
-    protected void RequestRender() => Render();
 
     /// <summary>
     /// Builds the component render tree for the underlying media element and common attributes.
@@ -212,7 +223,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         builder.CloseElement();
     }
 
-    protected sealed class MediaLoadResult
+    private sealed class MediaLoadResult
     {
         public bool Success { get; set; }
         public bool FromCache { get; set; }
@@ -300,6 +311,9 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         return new ValueTask();
     }
 
+    /// <summary>
+    /// Cancels any in-flight media load operation, if one is active, by signalling its <see cref="CancellationTokenSource"/>.
+    /// </summary>
     protected void CancelPreviousLoad()
     {
         try
@@ -313,6 +327,9 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         _loadCts = null;
     }
 
+    /// <summary>
+    /// Creates a new <see cref="CancellationTokenSource"/> for an upcoming load operation and returns its token.
+    /// </summary>
     protected CancellationToken ResetCancellationToken()
     {
         _loadCts = new CancellationTokenSource();

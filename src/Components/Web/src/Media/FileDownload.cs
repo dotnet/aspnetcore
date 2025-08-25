@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Media;
 
@@ -17,9 +18,9 @@ namespace Microsoft.AspNetCore.Components.Web.Media;
 public sealed class FileDownload : MediaComponentBase
 {
     /// <summary>
-    /// Optional file name to suggest to the browser for the download.
+    /// File name to suggest to the browser for the download. Must be provided.
     /// </summary>
-    [Parameter] public string? FileName { get; set; }
+    [Parameter, EditorRequired] public string FileName { get; set; } = default!;
 
     /// <summary>
     /// Provides custom button text. Defaults to "Download".
@@ -27,16 +28,16 @@ public sealed class FileDownload : MediaComponentBase
     [Parameter] public string? ButtonText { get; set; }
 
     /// <inheritdoc />
-    protected override string TagName => "button"; // Render a button element
+    protected override string TagName => "button";
 
     /// <inheritdoc />
-    protected override string TargetAttributeName => "data-download-object-url"; // Not an actual browser attribute; used for diagnostics.
+    protected override string TargetAttributeName => string.Empty; // Not used – object URL not tracked for downloads.
 
     /// <inheritdoc />
     protected override string MarkerAttributeName => "data-blazor-file-download";
 
     /// <inheritdoc />
-    protected override bool ShouldAutoLoad => false; // Manual trigger via click.
+    protected override bool ShouldAutoLoad => false;
 
     /// <summary>
     /// Builds the button element with click handler wiring.
@@ -45,68 +46,61 @@ public sealed class FileDownload : MediaComponentBase
     {
         builder.OpenElement(0, TagName);
 
-        if (!string.IsNullOrEmpty(_currentObjectUrl))
-        {
-            builder.AddAttribute(1, TargetAttributeName, _currentObjectUrl);
-        }
-
-        builder.AddAttribute(2, MarkerAttributeName, "");
+        // Removed object URL attribute emission; not needed for downloads.
+        builder.AddAttribute(1, MarkerAttributeName, "");
 
         if (IsLoading)
         {
-            builder.AddAttribute(3, "data-state", "loading");
+            builder.AddAttribute(2, "data-state", "loading");
         }
         else if (_hasError)
         {
-            builder.AddAttribute(3, "data-state", "error");
+            builder.AddAttribute(2, "data-state", "error");
         }
 
-        builder.AddAttribute(4, "type", "button");
-        builder.AddAttribute(5, "onclick", EventCallback.Factory.Create(this, OnClickAsync));
-        builder.AddMultipleAttributes(6, AdditionalAttributes);
-        builder.AddElementReferenceCapture(7, er => Element = er);
+        builder.AddAttribute(3, "type", "button");
+        builder.AddAttribute(4, "onclick", EventCallback.Factory.Create(this, OnClickAsync));
+        builder.AddMultipleAttributes(5, AdditionalAttributes);
+        builder.AddElementReferenceCapture(6, elementReference => Element = elementReference);
 
-        builder.AddContent(8, ButtonText ?? "Download");
+        builder.AddContent(7, ButtonText ?? "Download");
 
         builder.CloseElement();
     }
 
     private async Task OnClickAsync()
     {
-        if (Source is null || !IsInteractive)
+        if (Source is null || !IsInteractive || string.IsNullOrWhiteSpace(FileName))
         {
             return;
         }
 
-        // Cancel any existing load
         CancelPreviousLoad();
         var token = ResetCancellationToken();
-        _currentSource = Source;
         _hasError = false;
-        _currentObjectUrl = null; // Always recreate for downloads
-        RequestRender();
 
         var source = Source;
 
+        using var streamRef = new DotNetStreamReference(source.Stream, leaveOpen: true);
+
         try
         {
-            var result = await InvokeBinaryMediaAsync(
-                "Blazor._internal.BinaryMedia", // JS method we will add
-                source,
+            var result = await JSRuntime.InvokeAsync<Boolean>(
+                "Blazor._internal.BinaryMedia.downloadAsync",
                 token,
+                Element,
+                streamRef,
+                source.MimeType,
+                source.Length,
                 FileName);
 
-            if (result is not null && _activeCacheKey == source.CacheKey && !token.IsCancellationRequested)
+            if (result && !token.IsCancellationRequested)
             {
-                if (result.Success)
-                {
-                    _currentObjectUrl = result.ObjectUrl; // store created object URL for potential diagnostics
-                }
-                else
+                if (!result)
                 {
                     _hasError = true;
                 }
-                RequestRender();
+                Render();
             }
         }
         catch (OperationCanceledException)
@@ -115,7 +109,7 @@ public sealed class FileDownload : MediaComponentBase
         catch
         {
             _hasError = true;
-            RequestRender();
+            Render();
         }
     }
 }
