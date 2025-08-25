@@ -1,5 +1,10 @@
 Change log contains changes for both @microsoft/signalr and @microsoft/signalr-protocol-msgpack.
 
+## v10.0.0-rc.1
+
+- Implemented fix for correctly reporting retries in the SignalR TS client. [#62812](https://github.com/dotnet/aspnetcore/pull/62812)
+- Send Keep-Alive Ping Immediately When Previous Ping Is Overdue [#63195](https://github.com/dotnet/aspnetcore/pull/63195)
+
 ## v10.0.0-preview.1.25120.3
 - Replaced deprecated `substr` usage with `substring` [#58732](https://github.com/dotnet/aspnetcore/pull/58732)
 - Bumped `ws` dependency to fix component vulnerability [#57536](https://github.com/dotnet/aspnetcore/pull/57536)
