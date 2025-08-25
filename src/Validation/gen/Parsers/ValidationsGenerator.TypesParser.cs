@@ -82,7 +82,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
 
         visitedTypes.Add(typeSymbol);
 
-        var hasValidationAttributes = HasValidationAttributes(typeSymbol, wellKnownTypes);
+        var hasTypeLevelValidation = HasValidationAttributes(typeSymbol, wellKnownTypes) || HasIValidatableObjectInterface(typeSymbol, wellKnownTypes);
 
         // Extract validatable types discovered in base types of this type and add them to the top-level list.
         var current = typeSymbol.BaseType;
@@ -109,7 +109,7 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         }
 
         // No validatable members or derived types found, so we don't need to add this type.
-        if (members.IsDefaultOrEmpty && !hasValidationAttributes && !hasValidatableBaseType && !hasValidatableDerivedTypes)
+        if (members.IsDefaultOrEmpty && !hasTypeLevelValidation && !hasValidatableBaseType && !hasValidatableDerivedTypes)
         {
             return false;
         }
@@ -294,6 +294,21 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
         {
             if (attribute.AttributeClass is not null &&
                 attribute.AttributeClass.ImplementsValidationAttribute(validationAttributeSymbol))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal static bool HasIValidatableObjectInterface(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
+    {
+        var validatableObjectSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_IValidatableObject);
+
+        foreach (var inter in typeSymbol.AllInterfaces)
+        {
+            if (SymbolEqualityComparer.Default.Equals(inter, validatableObjectSymbol))
             {
                 return true;
             }
