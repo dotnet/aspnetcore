@@ -1,0 +1,52 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="Caption" Value="[WixBundleName]安裝程式" />
+  <String Id="Title" Value="[BundleNameShort]" />
+  <String Id="SubTitle" Value="[BundleNameSub]" />
+  <String Id="InstallVersion" Value="版本 [WixBundleVersion]" />
+  <String Id="ConfirmCancelMessage" Value="您確定要取消嗎?" />
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="前一版" />
+  <String Id="HelpHeader" Value="安裝說明" />
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]目錄[\]] - 在目錄中安裝、修復、解除安裝或 建立搭售方案的完整本機複本。預設為安裝。 /passive | /quiet - 顯示最少 UI 且不含提示，或者不顯示 UI，也 不顯示提示。預設會顯示 UI 和所有提示。 /norestart - 隱藏任何重新啟動嘗試。根據預設，UI 會在重新啟動之前提示。 /log log.txt - 記錄至特定檔案。預設會在 %TEMP% 建立記錄檔。" />
+  <String Id="HelpCloseButton" Value="關閉(&amp;C)" />
+  <String Id="InstallAcceptCheckbox" Value="我同意授權條款及條件(&amp;A)" />
+  <String Id="InstallInstallButton" Value="安裝(&amp;I)" />
+  <String Id="InstallCloseButton" Value="關閉(&amp;C)" />
+  <String Id="ProgressHeader" Value="安裝進度" />
+  <String Id="ProgressLabel" Value="處理中:" />
+  <String Id="OverallProgressPackageText" Value="正在初始化..." />
+  <String Id="ProgressCancelButton" Value="取消(&amp;C)" />
+  <String Id="ModifyHeader" Value="修改安裝" />
+  <String Id="ModifyRepairButton" Value="修復(&amp;R)" />
+  <String Id="ModifyUninstallButton" Value="解除安裝(&amp;U)" />
+  <String Id="ModifyCloseButton" Value="關閉(&amp;C)" />
+  <String Id="SuccessRepairHeader" Value="修復已成功完成" />
+  <String Id="SuccessUninstallHeader" Value="解除安裝已成功完成" />
+  <String Id="SuccessInstallHeader" Value="安裝已成功完成" />
+  <String Id="SuccessHeader" Value="設定成功" />
+  <String Id="SuccessLaunchButton" Value="啟動(&amp;L)" />
+  <String Id="SuccessRestartText" Value="必須重新啟動電腦，才能使用此軟體。" />
+  <String Id="SuccessRestartButton" Value="重新啟動(&amp;R)" />
+  <String Id="SuccessCloseButton" Value="關閉(&amp;C)" />
+  <String Id="FailureHeader" Value="安裝失敗" />
+  <String Id="FailureInstallHeader" Value="設定失敗" />
+  <String Id="FailureUninstallHeader" Value="解除安裝失敗" />
+  <String Id="FailureRepairHeader" Value="修復失敗" />
+  <String Id="FailureHyperlinkLogText" Value="有一個或多個問題導致安裝程式失敗。請解決問題，然後重試一次安裝。如需詳細資訊，請參閱&lt;a href=&quot;#&quot;&gt;記錄檔&lt;/a&gt;。" />
+  <String Id="FailureRestartText" Value="必須重新啟動電腦，才能完成軟體的復原。" />
+  <String Id="FailureRestartButton" Value="重新啟動(&amp;R)" />
+  <String Id="FailureCloseButton" Value="關閉(&amp;C)" />
+  <String Id="FilesInUseHeader" Value="使用中的檔案" />
+  <String Id="FilesInUseLabel" Value="以下應用程式正在使用需要進行更新的檔案:" />
+  <String Id="FilesInUseCloseRadioButton" Value="關閉應用程式並嘗試重新啟動(&amp;A)" />
+  <String Id="FilesInUseDontCloseRadioButton" Value="不關閉應用程式，需要重新啟動(&amp;D)" />
+  <String Id="FilesInUseOkButton" Value="確定(&amp;O)" />
+  <String Id="FilesInUseCancelButton" Value="取消(&amp;C)" />
+
+  <!-- Custom UI strings -->
+  <String Id="Welcome" Value="歡迎使用 [WixBundleName] 安裝程式。" />
+  <String Id="InstallResetIIS" Value="請在安裝完成後重新啟動 IIS。如需其他資訊，請參閱&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;此處&lt;/a&gt;." />
+  <String Id="InstallNoIIS" Value="這部電腦上未啟用 IIS。如果您要使用 IIS 執行 ASP.NET Core 應用程式，就必須先安裝 IIS 才能執行此安裝程式。如需其他資訊，請參閱&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;此處&lt;/a&gt;." />
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;授權條款&lt;/a&gt;和&lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;隱私權聲明&lt;/a&gt;。" />
+  <String Id="ModifyResetIIS" Value="請在安裝完成後重新啟動 IIS。如需其他資訊，請參閱&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;此處&lt;/a&gt;." />
+  <String Id="ModifyNoIIS" Value="這部電腦上未啟用 IIS。如果您要使用 IIS 執行 ASP.NET Core 應用程式，就必須先安裝 IIS 才能執行此安裝程式。如需其他資訊，請參閱&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;此處&lt;/a&gt;." />
+</WixLocalization>
