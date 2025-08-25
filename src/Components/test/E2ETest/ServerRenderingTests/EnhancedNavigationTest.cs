@@ -834,6 +834,7 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     {
         bool enhancedNavigationDetected = false;
         string logging = "";
+        string isNavigationSuppressed = "";
         for (int i = 0; i < retryCount; i++)
         {
             try
@@ -856,10 +857,10 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
                 var suppressKey = $"suppress-enhanced-navigation-{testId}";
 
                 var enhancedNavAttached = ((IJavaScriptExecutor)Browser).ExecuteScript("return sessionStorage.getItem('blazor-enhanced-nav-attached');");
-                var suppressEnhancedNavigation = ((IJavaScriptExecutor)Browser).ExecuteScript($"return sessionStorage.getItem('{suppressKey}');");
+                isNavigationSuppressed = (string)((IJavaScriptExecutor)Browser).ExecuteScript($"return sessionStorage.getItem('{suppressKey}');");
 
                 logging += $"  suppressKey: {suppressKey}\n";
-                logging += $"  {suppressKey}: {suppressEnhancedNavigation}\n";
+                logging += $"  {suppressKey}: {isNavigationSuppressed}\n";
                 // Maybe the check was done too early to change the DOM ref, retry
             }
 
@@ -867,7 +868,6 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
         }
         string expectedNavigation = useEnhancedNavigation ? "enhanced navigation" : "full page load";
         string isStale = enhancedNavigationDetected ? "is not stale" : "is stale";
-        var isNavigationSuppressed = (string)((IJavaScriptExecutor)Browser).ExecuteScript("return sessionStorage.getItem('suppress-enhanced-navigation');");
         throw new Exception($"Expected to use {expectedNavigation} because 'suppress-enhanced-navigation' is set to {isNavigationSuppressed} but the element from previous path {isStale}. logging={logging}");
     }
 
