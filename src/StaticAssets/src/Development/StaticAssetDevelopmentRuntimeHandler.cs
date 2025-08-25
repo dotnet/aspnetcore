@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using System.IO.Compression;
 using System.IO.Pipelines;
@@ -22,9 +23,16 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Builder;
 
 // Handles changes during development to support common scenarios where for example, a developer changes a file in the wwwroot folder.
-internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> descriptors)
+internal sealed partial class StaticAssetDevelopmentRuntimeHandler
 {
     internal const string ReloadStaticAssetsAtRuntimeKey = "ReloadStaticAssetsAtRuntime";
+
+    private readonly Dictionary<(string Route, string ETag), StaticAssetDescriptor> _descriptorsMap = [];
+
+    public StaticAssetDevelopmentRuntimeHandler(List<StaticAssetDescriptor> descriptors)
+    {
+        CreateDescriptorMap(descriptors);
+    }
 
     public void AttachRuntimePatching(EndpointBuilder builder)
     {
@@ -32,10 +40,17 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         var asset = builder.Metadata.OfType<StaticAssetDescriptor>().Single();
         if (asset.HasContentEncoding())
         {
-            // This is a compressed asset, which might get out of "sync" with the original uncompressed version.
-            // We are going to find the original by using the weak etag from this compressed asset and locating an asset with the same etag.
-            var eTag = asset.GetWeakETag();
-            asset = FindOriginalAsset(eTag.Tag.Value!, descriptors);
+            var originalETag = GetDescriptorOriginalResourceProperty(asset);
+            StaticAssetDescriptor? originalAsset = null;
+            if (originalETag is not null && _descriptorsMap.TryGetValue((asset.Route, originalETag), out originalAsset))
+            {
+                asset = originalAsset;
+            }
+            else
+            {
+                Debug.Assert(originalETag != null, $"The static asset descriptor {asset.Route} - {asset.AssetPath} does not have an original-resource property.");
+                Debug.Assert(originalAsset != null, $"The static asset descriptor {asset.Route} - {asset.AssetPath} has an original-resource property that does not match any known static asset descriptor.");
+            }
         }
 
         builder.RequestDelegate = async context =>
@@ -55,6 +70,57 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
             await original(context);
             context.Features.Set(originalFeature);
         };
+    }
+
+    private static string? GetDescriptorOriginalResourceProperty(StaticAssetDescriptor descriptor)
+    {
+        for (var i = 0; i < descriptor.Properties.Count; i++)
+        {
+            var property = descriptor.Properties[i];
+            if (string.Equals(property.Name, "original-resource", StringComparison.OrdinalIgnoreCase))
+            {
+                return property.Value;
+            }
+        }
+
+        return null;
+    }
+
+    private static string? GetDescriptorETagResponseHeader(StaticAssetDescriptor descriptor)
+    {
+        for (var i = 0; i < descriptor.ResponseHeaders.Count; i++)
+        {
+            var header = descriptor.ResponseHeaders[i];
+            if (string.Equals(header.Name, HeaderNames.ETag, StringComparison.OrdinalIgnoreCase))
+            {
+                return header.Value;
+            }
+        }
+
+        return null;
+    }
+
+    private void CreateDescriptorMap(List<StaticAssetDescriptor> descriptors)
+    {
+        for (var i = 0; i < descriptors.Count; i++)
+        {
+            var descriptor = descriptors[i];
+            if (descriptor.HasContentEncoding())
+            {
+                continue;
+            }
+            var etag = GetDescriptorETagResponseHeader(descriptor);
+            if (etag != null && !_descriptorsMap.ContainsKey((descriptor.Route, etag)))
+            {
+                _descriptorsMap[(descriptor.Route, etag)] = descriptor;
+            }
+            else
+            {
+                Debug.Assert(etag != null, $"The static asset descriptor {descriptor.Route} - {descriptor.AssetPath} does not have an ETag response header.");
+                Debug.Assert(_descriptorsMap.ContainsKey((descriptor.Route, etag)),
+                    $"The static asset descriptor {descriptor.Route} - {descriptor.AssetPath} has an ETag response header that is already registered in the map. This should not happen, as the ETag should be unique for each static asset.");
+            }
+        }
     }
 
     internal static string GetETag(IFileInfo fileInfo)
@@ -114,10 +180,7 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
                 _context.Response.Headers.ContentLength = stream.Length;
 
                 var eTag = Convert.ToBase64String(SHA256.HashData(stream));
-                var weakETag = $"W/{GetETag(fileInfo)}";
-
-                // Here we add the ETag for the Gzip stream as well as the weak ETag for the original asset.
-                _context.Response.Headers.ETag = new StringValues([$"\"{eTag}\"", weakETag]);
+                _context.Response.Headers.ETag = new StringValues($"\"{eTag}\"");
 
                 stream.Seek(0, SeekOrigin.Begin);
                 return stream.CopyToAsync(_context.Response.Body, cancellationToken);
@@ -140,19 +203,6 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler(List<StaticAs
         {
             return _original.StartAsync(cancellationToken);
         }
-    }
-
-    private static StaticAssetDescriptor FindOriginalAsset(string tag, List<StaticAssetDescriptor> descriptors)
-    {
-        for (var i = 0; i < descriptors.Count; i++)
-        {
-            if (descriptors[i].HasETag(tag))
-            {
-                return descriptors[i];
-            }
-        }
-
-        throw new InvalidOperationException("The original asset was not found.");
     }
 
     internal static bool IsEnabled(bool isBuildManifest, IServiceProvider serviceProvider)
