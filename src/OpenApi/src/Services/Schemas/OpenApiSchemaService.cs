@@ -13,6 +13,7 @@ using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Json;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -58,15 +59,15 @@ internal sealed class OpenApiSchemaService(
         TransformSchemaNode = (context, schema) =>
         {
             var type = context.TypeInfo.Type;
-            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, and PipeReader
+            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader, and FileContentResult
             // that appear as properties within complex types.
-            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader))
+            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader) || type == typeof(FileContentResult))
             {
                 schema = new JsonObject
                 {
                     [OpenApiSchemaKeywords.TypeKeyword] = "string",
                     [OpenApiSchemaKeywords.FormatKeyword] = "binary",
-                    [OpenApiConstants.SchemaId] = "IFormFile"
+                    [OpenApiConstants.SchemaId] = GetBinarySchemaId(type)
                 };
             }
             else if (type == typeof(IFormFileCollection))
@@ -136,6 +137,28 @@ internal sealed class OpenApiSchemaService(
             return schema;
         }
     };
+
+    private static string GetBinarySchemaId(Type type)
+    {
+        if (type == typeof(IFormFile))
+        {
+            return "IFormFile";
+        }
+        else if (type == typeof(Stream))
+        {
+            return "Stream";
+        }
+        else if (type == typeof(PipeReader))
+        {
+            return "PipeReader";
+        }
+        else if (type == typeof(FileContentResult))
+        {
+            return "FileContentResult";
+        }
+
+        return type.Name;
+    }
 
     private static JsonObject CreateSchemaForJsonPatch()
     {
