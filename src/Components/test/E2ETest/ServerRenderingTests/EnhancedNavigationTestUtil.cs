@@ -14,29 +14,24 @@ public static class EnhancedNavigationTestUtil
     public static void SuppressEnhancedNavigation<TServerFixture>(ServerTestBase<TServerFixture> fixture, bool shouldSuppress, bool skipNavigation = false)
         where TServerFixture : ServerFixture
     {
-        var browser = fixture.Browser;
-
-        if (!skipNavigation)
-        {
-            // Navigate here first to ensure the browser is on the correct origin to access sessionStorage
-            fixture.Navigate($"{fixture.ServerPathBase}/");
-            browser.Equal("Hello", () => browser.Exists(By.TagName("h1")).Text);
-        }
-
-        try
-        {
-            ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
-        }
-        catch (Exception ex)
-        {
-            throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.", ex);
-        }
-
-        // This prevents test interference where suppression state from previous tests persists
-        CleanEnhancedNavigationSuppression(fixture);
-
         if (shouldSuppress)
         {
+            var browser = fixture.Browser;
+
+            if (!skipNavigation)
+            {
+                NavigateToOrigin(fixture);
+            }
+
+            try
+            {
+                ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.", ex);
+            }
+
             var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
             if (testId is null || string.IsNullOrEmpty(testId as string))
             {
@@ -51,12 +46,26 @@ public static class EnhancedNavigationTestUtil
         }
     }
 
-    public static void CleanEnhancedNavigationSuppression<TServerFixture>(ServerTestBase<TServerFixture> fixture)
+    public static void CleanEnhancedNavigationSuppression<TServerFixture>(ServerTestBase<TServerFixture> fixture, bool skipNavigation = false)
         where TServerFixture : ServerFixture
     {
         var browser = fixture.Browser;
 
-        // only tests that suppress enhanced navigation will have these items set, so it can throw
+        // First, ensure we're on the correct origin to access sessionStorage
+        try
+        {
+            // Check if we can access sessionStorage from current location
+            ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
+        }
+        catch
+        {
+            if (skipNavigation)
+            {
+                throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.");
+            }
+            NavigateToOrigin(fixture);
+        }
+
         var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
         if (testId is null || string.IsNullOrEmpty(testId as string))
         {
@@ -65,6 +74,14 @@ public static class EnhancedNavigationTestUtil
 
         ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('test-id')");
         ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('suppress-enhanced-navigation-{testId}')");
+    }
+
+    private static void NavigateToOrigin<TServerFixture>(ServerTestBase<TServerFixture> fixture)
+        where TServerFixture : ServerFixture
+    {
+        // Navigate to the test origin to ensure the browser is on the correct state to access sessionStorage
+        fixture.Navigate($"{fixture.ServerPathBase}/");
+        fixture.Browser.Equal("Hello", () => fixture.Browser.Exists(By.TagName("h1")).Text);
     }
 
     private static string GrantTestId(IWebDriver browser)
