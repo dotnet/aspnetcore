@@ -34,8 +34,7 @@ public abstract class ServerTestBase<TServerFixture>
 
     public override async Task DisposeAsync()
     {
-        TryCleanSessionStorage();
-
+        EnhancedNavigationTestUtil.CleanEnhancedNavigationSuppression(this);
         await base.DisposeAsync();
     }
 
@@ -44,18 +43,5 @@ public abstract class ServerTestBase<TServerFixture>
         // Clear logs - we check these during tests in some cases.
         // Make sure each test starts clean.
         ((IJavaScriptExecutor)Browser).ExecuteScript("console.clear()");
-    }
-
-    private void TryCleanSessionStorage()
-    {
-        try
-        {
-            EnhancedNavigationTestUtil.CleanEnhancedNavigationSuppression(this);
-        }
-        catch (Exception ex)
-        {
-            // exception here most probably means session storage is not available - no cleanup needed
-            Output?.WriteLine("Error when removing test id from session storage: " + ex.Message);
-        }
     }
 }
