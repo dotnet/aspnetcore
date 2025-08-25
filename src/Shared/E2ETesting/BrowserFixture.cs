@@ -42,7 +42,7 @@ public class BrowserFixture : IAsyncLifetime
 
     public static bool IsHostAutomationSupported()
     {
-        // We emit an assemblymetadata attribute that reflects the value of SeleniumE2ETestsSupported at build
+        // We emit an AssemblyMetadata attribute that reflects the value of SeleniumE2ETestsSupported at build
         // time and we use that to conditionally skip Selenium tests parts.
         var attribute = typeof(BrowserFixture).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
             .SingleOrDefault(a => a.Key == "Microsoft.AspNetCore.InternalTesting.Selenium.Supported");
@@ -66,20 +66,21 @@ public class BrowserFixture : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        try
+        var browsers = _browsers.Values;
+        foreach (var (browser, _) in browsers)
         {
-            var browsers = _browsers.Values;
-            foreach (var (browser, _) in browsers)
+            try
             {
                 browser?.Quit();
                 browser?.Dispose();
             }
-
-            await DeleteBrowserUserProfileDirectoriesAsync();
+            catch
+            {
+                // Continue disposing other browsers
+            }
         }
-        catch
-        {
-        }
+        
+        await DeleteBrowserUserProfileDirectoriesAsync();
     }
 
     private async Task DeleteBrowserUserProfileDirectoriesAsync()
@@ -121,6 +122,11 @@ public class BrowserFixture : IAsyncLifetime
         {
             output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
             return default;
+        }
+
+        if (isolationContext == null)
+        {
+            return CreateBrowser(null, output);
         }
 
         return _browsers.GetOrAdd(isolationContext, CreateBrowser, output);

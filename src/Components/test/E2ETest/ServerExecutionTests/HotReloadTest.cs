@@ -24,7 +24,7 @@ public class HotReloadTest : ServerTestBase<BasicTestAppServerSiteFixture<HotRel
 
     public override async Task InitializeAsync()
     {
-        await base.InitializeAsync(Guid.NewGuid().ToString());
+        await base.InitializeAsync(null);
     }
 
     protected override void InitializeAsyncCore()

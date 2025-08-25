@@ -16,6 +16,7 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
 
     private ExceptionDispatchInfo _exceptionDispatchInfo;
     private IWebDriver _browser;
+    protected string _isolationContext;
 
     public BrowserTestBase(BrowserFixture browserFixture, ITestOutputHelper output)
     {
@@ -51,6 +52,11 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
 
     public Task DisposeAsync()
     {
+        if (_isolationContext == null)
+        {
+            Browser.Dispose();
+        }
+
         return Task.CompletedTask;
     }
 
@@ -61,6 +67,8 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
 
     public virtual Task InitializeAsync(string isolationContext)
     {
+        // If isolationContext is null then the Browser is not cached
+
         InitializeBrowser(isolationContext);
         InitializeAsyncCore();
         return Task.CompletedTask;
@@ -74,11 +82,14 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
     {
         try
         {
+            Browser?.Dispose();
+
             var (browser, logs) = BrowserFixture.GetOrCreateBrowser(Output, isolationContext);
             _asyncBrowser.Value = browser;
             _logs.Value = logs;
 
             Browser = browser;
+            _isolationContext = isolationContext;
         }
         catch (Exception ex)
         {
