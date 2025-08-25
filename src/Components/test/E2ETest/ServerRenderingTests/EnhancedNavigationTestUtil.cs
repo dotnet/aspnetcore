@@ -51,29 +51,39 @@ public static class EnhancedNavigationTestUtil
     {
         var browser = fixture.Browser;
 
-        // First, ensure we're on the correct origin to access sessionStorage
         try
         {
-            // Check if we can access sessionStorage from current location
-            ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
-        }
-        catch
-        {
-            if (skipNavigation)
+            // First, ensure we're on the correct origin to access sessionStorage
+            try
             {
-                throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.");
+                // Check if we can access sessionStorage from current location
+                ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
             }
-            NavigateToOrigin(fixture);
-        }
+            catch
+            {
+                if (skipNavigation)
+                {
+                    throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.");
+                }
+                NavigateToOrigin(fixture);
+            }
 
-        var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
-        if (testId is null || string.IsNullOrEmpty(testId as string))
+            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
+            if (testId is null || string.IsNullOrEmpty(testId as string))
+            {
+                return;
+            }
+
+            ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('test-id')");
+            ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('suppress-enhanced-navigation-{testId}')");
+        }
+        catch (WebDriverException ex) when (ex.Message.Contains("invalid session id"))
         {
+            // Browser session is no longer valid (e.g., browser was closed)
+            // Session storage is automatically cleared when browser closes, so cleanup is already done
+            // This is expected in some tests, so we silently return
             return;
         }
-
-        ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('test-id')");
-        ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('suppress-enhanced-navigation-{testId}')");
     }
 
     private static void NavigateToOrigin<TServerFixture>(ServerTestBase<TServerFixture> fixture)
