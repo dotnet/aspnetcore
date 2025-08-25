@@ -48,6 +48,8 @@ internal static class WebDriverExtensions
         var jsExecutor = (IJavaScriptExecutor)browser;
         string script = GetFindPositionScript(elementId);
         browser.WaitForElementToBeVisible(By.Id(elementId));
+        string log = "";
+
         for (int i = 0; i < retryCount; i++)
         {
             try
@@ -57,15 +59,18 @@ internal static class WebDriverExtensions
                 {
                     return (long)result;
                 }
+
+                log += $"Attempt {i + 1}: Script returned null. ";
             }
-            catch (OpenQA.Selenium.JavaScriptException)
+            catch (OpenQA.Selenium.JavaScriptException ex)
             {
                 // JavaScript execution failed, retry
+                log += $"Attempt {i + 1}: JavaScriptException - {ex.Message}. ";
             }
 
             Thread.Sleep(delayBetweenRetriesMs);
         }
 
-        throw new Exception($"Failed to execute script after {retryCount} retries.");
+        throw new Exception($"Failed to execute script to get position for element '{elementId}' after {retryCount} retries. Debug log: {log}");
     }
 }
