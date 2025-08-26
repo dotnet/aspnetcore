@@ -5,7 +5,7 @@
           <?foreach lcid in 2052;1028;1029;1031;3082;1033;1036;1040;1041;1042;1045;1046;1049;1055?>
           <Payload Id="PL_thm_$(lcid)" SourceFile="LCID\$(lcid)\thm.wxl" Name="$(lcid)\thm.wxl" Compressed="yes" />
           <?endforeach?>
-          <Payload Name="DotNetLogo.bmp" Compressed="yes" SourceFile="DotNetLogo.bmp" />
+          <Payload Name="DotNetLogo_256x.png" Compressed="yes" SourceFile="DotNetLogo_256x.png" />
         </BootstrapperApplication>
 
         <!-- Search references for upgrade policy keys -->
