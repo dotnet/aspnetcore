@@ -87,6 +87,29 @@ namespace Microsoft.Extensions.Validation.Generated
                 );
                 return true;
             }
+            if (type == typeof(global::NestedClass))
+            {
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::NestedClass),
+                    members: []
+                );
+                return true;
+            }
+            if (type == typeof(global::ComplexClass))
+            {
+                validatableInfo = new GeneratedValidatableTypeInfo(
+                    type: typeof(global::ComplexClass),
+                    members: [
+                        new GeneratedValidatablePropertyInfo(
+                            containingType: typeof(global::ComplexClass),
+                            propertyType: typeof(global::NestedClass),
+                            name: "NestedObject",
+                            displayName: "NestedObject"
+                        ),
+                    ]
+                );
+                return true;
+            }
 
             return false;
         }
