@@ -305,15 +305,6 @@ public sealed partial class ValidationsGenerator : IIncrementalGenerator
     internal static bool HasIValidatableObjectInterface(ITypeSymbol typeSymbol, WellKnownTypes wellKnownTypes)
     {
         var validatableObjectSymbol = wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_ComponentModel_DataAnnotations_IValidatableObject);
-
-        foreach (var inter in typeSymbol.AllInterfaces)
-        {
-            if (SymbolEqualityComparer.Default.Equals(inter, validatableObjectSymbol))
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return typeSymbol.ImplementsInterface(validatableObjectSymbol);
     }
 }
