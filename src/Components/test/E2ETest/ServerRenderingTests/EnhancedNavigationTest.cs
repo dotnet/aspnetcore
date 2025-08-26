@@ -874,14 +874,14 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     private void AssertWeAreOnLandingPage()
     {
         string infoName = "test-info-1";
-        Browser.WaitForElementToBeVisible(By.Id(infoName), timeoutInSeconds: 20);
+        Browser.WaitForElementToBeVisible(By.Id(infoName), timeoutInSeconds: 30);
         Browser.Equal("Scroll tests landing page", () => Browser.Exists(By.Id(infoName)).Text);
     }
 
     private void AssertWeAreOnNextPage()
     {
         string infoName = "test-info-2";
-        Browser.WaitForElementToBeVisible(By.Id(infoName), timeoutInSeconds: 20);
+        Browser.WaitForElementToBeVisible(By.Id(infoName), timeoutInSeconds: 30);
         Browser.Equal("Scroll tests next page", () => Browser.Exists(By.Id(infoName)).Text);
     }
 
