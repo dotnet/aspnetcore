@@ -7,13 +7,13 @@ using Microsoft.JSInterop;
 namespace Microsoft.AspNetCore.Components.Web.Media;
 
 /// <summary>
-/// A component that provides a button which, when clicked, downloads the provided media source
+/// A component that provides a link which, when activated (clicked), downloads the provided media source
 /// either via a save-as dialog or directly, using the same BinaryMedia pipeline as <see cref="Image"/> and <see cref="Video"/>.
 /// </summary>
 /// <remarks>
 /// Unlike <see cref="Image"/> and <see cref="Video"/>, this component does not automatically load the media.
-/// It defers loading until the user clicks the button. The stream is then materialized, optionally cached,
-/// and a client-side download is triggered.
+/// It defers loading until the user activates the link. The stream is then materialized (no caching is performed for downloads)
+/// and a client-side download is triggered. Developers can style the link as a button via CSS (e.g., with a framework class).
 /// </remarks>
 public sealed class FileDownload : MediaComponentBase
 {
@@ -23,12 +23,12 @@ public sealed class FileDownload : MediaComponentBase
     [Parameter, EditorRequired] public string FileName { get; set; } = default!;
 
     /// <summary>
-    /// Provides custom button text. Defaults to "Download".
+    /// Provides custom link text. Defaults to "Download".
     /// </summary>
-    [Parameter] public string? ButtonText { get; set; }
+    [Parameter] public string? Text { get; set; }
 
     /// <inheritdoc />
-    protected override string TagName => "button";
+    protected override string TagName => "a";
 
     /// <inheritdoc />
     protected override string TargetAttributeName => string.Empty; // Not used – object URL not tracked for downloads.
@@ -40,13 +40,13 @@ public sealed class FileDownload : MediaComponentBase
     protected override bool ShouldAutoLoad => false;
 
     /// <summary>
-    /// Builds the button element with click handler wiring.
+    /// Builds the anchor element with click handler wiring. The anchor is given an inert href (if one is not supplied)
+    /// and the click default action is prevented so navigation does not occur. Styling into a button shape is left to the user.
     /// </summary>
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, TagName);
 
-        // Removed object URL attribute emission; not needed for downloads.
         builder.AddAttribute(1, MarkerAttributeName, "");
 
         if (IsLoading)
@@ -58,12 +58,19 @@ public sealed class FileDownload : MediaComponentBase
             builder.AddAttribute(2, "data-state", "error");
         }
 
-        builder.AddAttribute(3, "type", "button");
-        builder.AddAttribute(4, "onclick", EventCallback.Factory.Create(this, OnClickAsync));
-        builder.AddMultipleAttributes(5, AdditionalAttributes);
-        builder.AddElementReferenceCapture(6, elementReference => Element = elementReference);
+        builder.AddAttribute(3, "href", "javascript:void(0)");
 
-        builder.AddContent(7, ButtonText ?? "Download");
+        builder.AddAttribute(4, "onclick", EventCallback.Factory.Create(this, OnClickAsync));
+
+        if (AdditionalAttributes?.ContainsKey("href") == true)
+        {
+            AdditionalAttributes.Remove("href");
+        }
+        builder.AddMultipleAttributes(6, AdditionalAttributes);
+
+        builder.AddElementReferenceCapture(7, elementReference => Element = elementReference);
+
+        builder.AddContent(8, Text ?? "Download");
 
         builder.CloseElement();
     }

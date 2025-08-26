@@ -362,10 +362,6 @@ export class BinaryMedia {
         }
       }
 
-      if (bytesRead === 0) {
-        return false;
-      }
-
       const combined = this.combineChunks(chunks);
       const blob = new Blob([combined], { type: mimeType });
       const url = URL.createObjectURL(blob);
