@@ -310,7 +310,6 @@ export class BinaryMedia {
     element.addEventListener('error', onError, { once: true });
   }
 
-  // Added: trigger a download using BinaryMedia pipeline (formerly BinaryFileDownload)
   public static async downloadAsync(
     element: HTMLElement,
     streamRef: { stream: () => Promise<ReadableStream<Uint8Array>> } | null,

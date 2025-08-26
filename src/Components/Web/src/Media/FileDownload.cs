@@ -85,6 +85,8 @@ public sealed class FileDownload : MediaComponentBase
         CancelPreviousLoad();
         var token = ResetCancellationToken();
         _hasError = false;
+        _currentSource = Source;
+        Render();
 
         var source = Source;
 
@@ -92,7 +94,7 @@ public sealed class FileDownload : MediaComponentBase
 
         try
         {
-            var result = await JSRuntime.InvokeAsync<Boolean>(
+            var result = await JSRuntime.InvokeAsync<bool>(
                 "Blazor._internal.BinaryMedia.downloadAsync",
                 token,
                 Element,
@@ -101,8 +103,9 @@ public sealed class FileDownload : MediaComponentBase
                 source.Length,
                 FileName);
 
-            if (result && !token.IsCancellationRequested)
+            if (!token.IsCancellationRequested)
             {
+                _currentSource = null;
                 if (!result)
                 {
                     _hasError = true;
@@ -112,9 +115,12 @@ public sealed class FileDownload : MediaComponentBase
         }
         catch (OperationCanceledException)
         {
+            _currentSource = null;
+            Render();
         }
         catch
         {
+            _currentSource = null;
             _hasError = true;
             Render();
         }

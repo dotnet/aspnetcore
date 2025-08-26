@@ -4,78 +4,68 @@
 #nullable enable
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Media;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Web.Media.Tests;
 
 /// <summary>
-/// Unit tests for the FileDownload component covering behaviors unique to manual-download semantics.
-/// (Auto-load, cache key reuse, etc. are already covered by Image/Video tests.)
+/// Unit tests for <see cref="FileDownload"/> focusing only on behaviors not covered by Image/Video tests.
 /// </summary>
 public class FileDownloadTest
 {
     private static readonly byte[] SampleBytes = new byte[] { 1, 2, 3, 4, 5 };
 
     [Fact]
-    public async Task DoesNotAutoLoad_OnInitialRender()
+    public async Task InitialRender_DoesNotInvokeJs()
     {
         var js = new FakeDownloadJsRuntime();
         using var renderer = CreateRenderer(js);
         var comp = (FileDownload)renderer.InstantiateComponent<FileDownload>();
         var id = renderer.AssignRootComponentId(comp);
 
-        var source = new MediaSource(SampleBytes, "application/octet-stream", cacheKey: "file-1");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
-            [nameof(FileDownload.Source)] = source,
-            [nameof(FileDownload.FileName)] = "test.bin"
+            [nameof(FileDownload.Source)] = new MediaSource(SampleBytes, "application/octet-stream", "file-init"),
+            [nameof(FileDownload.FileName)] = "first.bin"
         }));
 
         Assert.Equal(0, js.Count("Blazor._internal.BinaryMedia.downloadAsync"));
-
-        // Verify initial markup contains inert href and marker, no data-state
-        var frames = renderer.GetCurrentRenderTreeFrames(id);
-        MediaTestUtil.CurrentFrames = frames;
-        var a = FindElement(frames, "a");
-        Assert.True(a.HasValue);
-        MediaTestUtil.CurrentFrames = frames;
-        AssertAttribute(a.Value, "href", "javascript:void(0)");
-        AssertAttribute(a.Value, "data-blazor-file-download", string.Empty);
-        Assert.False(HasAttribute(a.Value, "data-state"));
     }
 
     [Fact]
-    public async Task ClickInvokesDownload_Success_NoErrorState()
+    public async Task Click_InvokesDownloadOnce()
     {
         var js = new FakeDownloadJsRuntime { Result = true };
         using var renderer = CreateRenderer(js);
         var comp = (FileDownload)renderer.InstantiateComponent<FileDownload>();
         var id = renderer.AssignRootComponentId(comp);
-        var source = new MediaSource(SampleBytes, "application/octet-stream", cacheKey: "file-2");
-        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(FileDownload.Source)] = source,
-            [nameof(FileDownload.FileName)] = "ok.bin",
-            [nameof(FileDownload.Text)] = "Get it"
-        }));
+        await renderer.RenderRootComponentAsync(id, Params("file-click", "ok.bin"));
 
         await ClickAnchorAsync(renderer, id);
 
         Assert.Equal(1, js.Count("Blazor._internal.BinaryMedia.downloadAsync"));
+        Assert.False(HasDataState(renderer, id, "error"));
+    }
 
-        var frames = renderer.GetCurrentRenderTreeFrames(id);
-        MediaTestUtil.CurrentFrames = frames;
-        var a = FindElement(frames, "a");
-        Assert.True(a.HasValue);
-        Assert.False(HasAttribute(a.Value, "data-state"));
-        Assert.Equal("Get it", ReadInnerText(frames));
+    [Fact]
+    public async Task BlankFileName_SuppressesDownload()
+    {
+        var js = new FakeDownloadJsRuntime { Result = true };
+        using var renderer = CreateRenderer(js);
+        var comp = (FileDownload)renderer.InstantiateComponent<FileDownload>();
+        var id = renderer.AssignRootComponentId(comp);
+        await renderer.RenderRootComponentAsync(id, Params("file-noname", "   "));
+
+        await ClickAnchorAsync(renderer, id);
+
+        Assert.Equal(0, js.Count("Blazor._internal.BinaryMedia.downloadAsync"));
     }
 
     [Fact]
@@ -85,21 +75,12 @@ public class FileDownloadTest
         using var renderer = CreateRenderer(js);
         var comp = (FileDownload)renderer.InstantiateComponent<FileDownload>();
         var id = renderer.AssignRootComponentId(comp);
-        var source = new MediaSource(SampleBytes, "application/octet-stream", cacheKey: "file-3");
-        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(FileDownload.Source)] = source,
-            [nameof(FileDownload.FileName)] = "fail.bin"
-        }));
+        await renderer.RenderRootComponentAsync(id, Params("file-false", "fail.bin"));
 
         await ClickAnchorAsync(renderer, id);
 
         Assert.Equal(1, js.Count("Blazor._internal.BinaryMedia.downloadAsync"));
-
-        var a = FindElement(renderer.GetCurrentRenderTreeFrames(id), "a");
-        MediaTestUtil.CurrentFrames = renderer.GetCurrentRenderTreeFrames(id);
-        Assert.True(a.HasValue);
-        AssertAttribute(a.Value, "data-state", "error");
+        Assert.True(HasDataState(renderer, id, "error"));
     }
 
     [Fact]
@@ -109,67 +90,12 @@ public class FileDownloadTest
         using var renderer = CreateRenderer(js);
         var comp = (FileDownload)renderer.InstantiateComponent<FileDownload>();
         var id = renderer.AssignRootComponentId(comp);
-        var source = new MediaSource(SampleBytes, "application/octet-stream", cacheKey: "file-4");
-        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(FileDownload.Source)] = source,
-            [nameof(FileDownload.FileName)] = "throw.bin"
-        }));
+        await renderer.RenderRootComponentAsync(id, Params("file-throw", "throws.bin"));
 
         await ClickAnchorAsync(renderer, id);
 
-        var a = FindElement(renderer.GetCurrentRenderTreeFrames(id), "a");
-        MediaTestUtil.CurrentFrames = renderer.GetCurrentRenderTreeFrames(id);
-        Assert.True(a.HasValue);
-        AssertAttribute(a.Value, "data-state", "error");
-    }
-
-    [Fact]
-    public async Task AdditionalHref_IsIgnored_InertHrefUsed()
-    {
-        var js = new FakeDownloadJsRuntime();
-        using var renderer = CreateRenderer(js);
-        var comp = (FileDownload)renderer.InstantiateComponent<FileDownload>();
-        var id = renderer.AssignRootComponentId(comp);
-        var source = new MediaSource(SampleBytes, "application/octet-stream", cacheKey: "file-5");
-        var additional = new Dictionary<string, object?>
-        {
-            ["href"] = "https://example.com/should-not-navigate",
-            ["class"] = "btn"
-        };
-        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(FileDownload.Source)] = source,
-            [nameof(FileDownload.FileName)] = "test.bin",
-            [nameof(FileDownload.AdditionalAttributes)] = additional
-        }));
-
-        var frames = renderer.GetCurrentRenderTreeFrames(id);
-        MediaTestUtil.CurrentFrames = frames;
-        var a = FindElement(frames, "a");
-        Assert.True(a.HasValue);
-        AssertAttribute(a.Value, "href", "javascript:void(0)");
-        AssertAttribute(a.Value, "class", "btn");
-    }
-
-    [Fact]
-    public async Task MissingFileName_SuppressesDownload()
-    {
-        var js = new FakeDownloadJsRuntime();
-        using var renderer = CreateRenderer(js);
-        var comp = (FileDownload)renderer.InstantiateComponent<FileDownload>();
-        var id = renderer.AssignRootComponentId(comp);
-        var source = new MediaSource(SampleBytes, "application/octet-stream", cacheKey: "file-6");
-        // Purposely give whitespace filename
-        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(FileDownload.Source)] = source,
-            [nameof(FileDownload.FileName)] = "  "
-        }));
-
-        await ClickAnchorAsync(renderer, id);
-
-        Assert.Equal(0, js.Count("Blazor._internal.BinaryMedia.downloadAsync"));
+        Assert.Equal(1, js.Count("Blazor._internal.BinaryMedia.downloadAsync"));
+        Assert.True(HasDataState(renderer, id, "error"));
     }
 
     [Fact]
@@ -179,32 +105,56 @@ public class FileDownloadTest
         using var renderer = CreateRenderer(js);
         var comp = (FileDownload)renderer.InstantiateComponent<FileDownload>();
         var id = renderer.AssignRootComponentId(comp);
-        var source = new MediaSource(SampleBytes, "application/octet-stream", cacheKey: "file-7");
-        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(FileDownload.Source)] = source,
-            [nameof(FileDownload.FileName)] = "cancel.bin"
-        }));
+        await renderer.RenderRootComponentAsync(id, Params("file-cancel", "cancel.bin"));
 
-        var click1 = ClickAnchorAsync(renderer, id);
-        // Immediately second click
-        await ClickAnchorAsync(renderer, id);
-        await click1; // Ensure first completes after cancellation attempt
+        var first = ClickAnchorAsync(renderer, id); // starts first (will delay)
+        await ClickAnchorAsync(renderer, id);       // second click immediately
+        await first;                                // allow completion
 
         Assert.Equal(2, js.Count("Blazor._internal.BinaryMedia.downloadAsync"));
-        // First token should be cancelled
         Assert.True(js.CapturedTokens.First().IsCancellationRequested);
         Assert.False(js.CapturedTokens.Last().IsCancellationRequested);
     }
 
+    [Fact]
+    public async Task ProvidedHref_IsRemoved_InertHrefUsed()
+    {
+        var js = new FakeDownloadJsRuntime();
+        using var renderer = CreateRenderer(js);
+        var comp = (FileDownload)renderer.InstantiateComponent<FileDownload>();
+        var id = renderer.AssignRootComponentId(comp);
+
+        var attrs = new Dictionary<string, object?> { ["href"] = "https://example.org/real", ["class"] = "btn" };
+        await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
+        {
+            [nameof(FileDownload.Source)] = new MediaSource(SampleBytes, "application/octet-stream", "file-href"),
+            [nameof(FileDownload.FileName)] = "href.bin",
+            [nameof(FileDownload.AdditionalAttributes)] = attrs
+        }));
+
+        var frames = renderer.GetCurrentRenderTreeFrames(id);
+        var anchorIndex = FindAnchorIndex(frames);
+        Assert.True(anchorIndex >= 0, "anchor not found");
+        var href = GetAttributeValue(frames, anchorIndex, "href");
+        var @class = GetAttributeValue(frames, anchorIndex, "class");
+        Assert.Equal("javascript:void(0)", href);
+        Assert.Equal("btn", @class);
+    }
+
+    // Helpers
+    private static ParameterView Params(string key, string fileName) => ParameterView.FromDictionary(new Dictionary<string, object?>
+    {
+        [nameof(FileDownload.Source)] = new MediaSource(SampleBytes, "application/octet-stream", key),
+        [nameof(FileDownload.FileName)] = fileName
+    });
+
     private static async Task ClickAnchorAsync(TestRenderer renderer, int componentId)
     {
         var frames = renderer.GetCurrentRenderTreeFrames(componentId);
-        var a = FindElement(frames, "a");
-        Assert.True(a.HasValue, "Anchor element not found");
+        var anchorIndex = FindAnchorIndex(frames);
+        Assert.True(anchorIndex >= 0, "anchor not found");
         ulong? handlerId = null;
-        // Attributes immediately follow the element frame at index a.Value.Index
-        for (var i = a.Value.Index + 1; i < frames.Count; i++)
+        for (var i = anchorIndex + 1; i < frames.Count; i++)
         {
             ref readonly var frame = ref frames.Array[i];
             if (frame.FrameType == RenderTreeFrameType.Attribute)
@@ -213,85 +163,65 @@ public class FileDownloadTest
                 {
                     handlerId = frame.AttributeEventHandlerId;
                 }
+
                 continue;
             }
-            break; // stop after attributes block
+            break;
         }
         Assert.True(handlerId.HasValue, "onclick handler not found");
         await renderer.DispatchEventAsync(handlerId.Value, new MouseEventArgs());
     }
 
-    private static (int Index, int SequenceIndex, RenderTreeFrame Frame)? FindElement(ArrayRange<RenderTreeFrame> frames, string elementName)
+    private static bool HasDataState(TestRenderer renderer, int componentId, string state)
+    {
+        var frames = renderer.GetCurrentRenderTreeFrames(componentId);
+        var anchorIndex = FindAnchorIndex(frames);
+        if (anchorIndex < 0)
+        {
+            return false;
+        }
+
+        var value = GetAttributeValue(frames, anchorIndex, "data-state");
+        return string.Equals(value, state, StringComparison.Ordinal);
+    }
+
+    private static int FindAnchorIndex(ArrayRange<RenderTreeFrame> frames)
     {
         for (var i = 0; i < frames.Count; i++)
         {
+            ref readonly var f = ref frames.Array[i];
+            if (f.FrameType == RenderTreeFrameType.Element && string.Equals(f.ElementName, "a", StringComparison.OrdinalIgnoreCase))
+            {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static string? GetAttributeValue(ArrayRange<RenderTreeFrame> frames, int elementIndex, string name)
+    {
+        for (var i = elementIndex + 1; i < frames.Count; i++)
+        {
             ref readonly var frame = ref frames.Array[i];
-            if (frame.FrameType == RenderTreeFrameType.Element && string.Equals(frame.ElementName, elementName, StringComparison.OrdinalIgnoreCase))
-            {
-                return (i, frame.Sequence, frame);
-            }
-        }
-        return null;
-    }
-
-    private static void AssertAttribute((int Index, int SequenceIndex, RenderTreeFrame Frame) element, string name, string? expectedValue)
-    {
-        var framesRange = MediaTestUtil.CurrentFrames ?? throw new InvalidOperationException("Current frames not set");
-        for (var i = element.Index + 1; i < framesRange.Count; i++)
-        {
-            ref readonly var frame = ref framesRange.Array[i];
             if (frame.FrameType == RenderTreeFrameType.Attribute)
             {
                 if (string.Equals(frame.AttributeName, name, StringComparison.Ordinal))
                 {
-                    Assert.Equal(expectedValue, frame.AttributeValue?.ToString());
-                    return;
-                }
-                continue;
-            }
-            break; // end of attributes
-        }
-        Assert.Fail($"Attribute '{name}' not found on element '{element.Frame.ElementName}'.");
-    }
-
-    private static bool HasAttribute((int Index, int SequenceIndex, RenderTreeFrame Frame) element, string name)
-    {
-        var framesRange = MediaTestUtil.CurrentFrames ?? throw new InvalidOperationException("Current frames not set");
-        for (var i = element.Index + 1; i < framesRange.Count; i++)
-        {
-            ref readonly var frame = ref framesRange.Array[i];
-            if (frame.FrameType == RenderTreeFrameType.Attribute)
-            {
-                if (string.Equals(frame.AttributeName, name, StringComparison.Ordinal))
-                {
-                    return true;
+                    return frame.AttributeValue?.ToString();
                 }
                 continue;
             }
             break;
         }
-        return false;
-    }
-
-    private static string ReadInnerText(ArrayRange<RenderTreeFrame> frames)
-    {
-        for (var i = 0; i < frames.Count; i++)
-        {
-            ref readonly var frame = ref frames.Array[i];
-            if (frame.FrameType == RenderTreeFrameType.Text)
-            {
-                return frame.TextContent;
-            }
-        }
-        return string.Empty;
+        return null;
     }
 
     private static TestRenderer CreateRenderer(IJSRuntime js)
     {
-        var services = new TestServiceProvider();
-        services.AddService<IJSRuntime>(js);
-        var renderer = new InteractiveTestRenderer(services);
-        return renderer;
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddSingleton(js);
+        return new InteractiveTestRenderer(services.BuildServiceProvider());
     }
 
     private sealed class InteractiveTestRenderer : TestRenderer
@@ -309,24 +239,19 @@ public class FileDownloadTest
         private int _calls;
 
         public IReadOnlyList<CancellationToken> CapturedTokens => _invocations.Select(i => i.Token).ToList();
+        public int Count(string id) => _invocations.Count(i => i.Identifier == id);
 
-        public int Count(string identifier) => _invocations.Count(i => i.Identifier == identifier);
-
-        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args)
-            => InvokeAsync<TValue>(identifier, CancellationToken.None, args ?? Array.Empty<object?>());
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => InvokeAsync<TValue>(identifier, CancellationToken.None, args ?? Array.Empty<object?>());
 
         public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
         {
-            var invocation = new Invocation(identifier, cancellationToken, args ?? Array.Empty<object?>());
-            _invocations.Enqueue(invocation);
-
+            _invocations.Enqueue(new Invocation(identifier, cancellationToken));
             if (identifier == "Blazor._internal.BinaryMedia.downloadAsync")
             {
                 if (Throw)
                 {
                     return ValueTask.FromException<TValue>(new InvalidOperationException("Download failed"));
                 }
-
                 if (DelayOnFirst && _calls == 0)
                 {
                     _calls++;
@@ -336,31 +261,16 @@ public class FileDownloadTest
                 object boxed = Result;
                 return new ValueTask<TValue>((TValue)boxed);
             }
-
             return ValueTask.FromException<TValue>(new InvalidOperationException("Unexpected identifier: " + identifier));
         }
 
         private async Task<TValue> DelayAsync<TValue>(CancellationToken token)
         {
-            try
-            {
-                await Task.Delay(50, token);
-            }
-            catch
-            {
-                // ignore cancellation
-            }
+            try { await Task.Delay(50, token); } catch { }
             object boxed = Result;
             return (TValue)boxed;
         }
 
-        private record struct Invocation(string Identifier, CancellationToken Token, object?[] Args);
-    }
-
-    // Utility to capture current frames for attribute search (simplified approach replaced after implementation refinement)
-    private static class MediaTestUtil
-    {
-        [ThreadStatic]
-        public static ArrayRange<RenderTreeFrame>? CurrentFrames;
+        private record struct Invocation(string Identifier, CancellationToken Token);
     }
 }
