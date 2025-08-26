@@ -3,15 +3,11 @@
 
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
 
 namespace Microsoft.AspNetCore.Components.E2ETest;
 
 internal static class WebDriverExtensions
 {
-    private static string GetFindPositionScript(string elementId) =>
-        $"return Math.round(document.getElementById('{elementId}').getBoundingClientRect().top + window.scrollY);";
-
     public static void Navigate(this IWebDriver browser, Uri baseUri, string relativeUrl)
     {
         var absoluteUrl = new Uri(baseUri, relativeUrl);
@@ -45,32 +41,33 @@ internal static class WebDriverExtensions
 
     public static long GetElementPositionWithRetry(this IWebDriver browser, string elementId, int retryCount = 3, int delayBetweenRetriesMs = 100)
     {
-        var jsExecutor = (IJavaScriptExecutor)browser;
-        string script = GetFindPositionScript(elementId);
-        browser.WaitForElementToBeVisible(By.Id(elementId));
         string log = "";
 
         for (int i = 0; i < retryCount; i++)
         {
             try
             {
-                var result = jsExecutor.ExecuteScript(script);
-                if (result != null)
-                {
-                    return (long)result;
-                }
+                browser.WaitForElementToBeVisible(By.Id(elementId));
+                var element = browser.FindElement(By.Id(elementId));
+                var elementLocation = element.Location.Y;
 
-                log += $"Attempt {i + 1}: Script returned null. ";
+                // Get scroll position using JavaScript (this is less likely to fail than element positioning)
+                var jsExecutor = (IJavaScriptExecutor)browser;
+                var scrollY = (long)jsExecutor.ExecuteScript("return window.scrollY");
+
+                return elementLocation + scrollY;
             }
-            catch (OpenQA.Selenium.JavaScriptException ex)
+            catch (Exception ex)
             {
-                // JavaScript execution failed, retry
-                log += $"Attempt {i + 1}: JavaScriptException - {ex.Message}. ";
+                log += $"Attempt {i + 1}: - {ex.Message}. ";
             }
 
-            Thread.Sleep(delayBetweenRetriesMs);
+            if (i < retryCount - 1)
+            {
+                Thread.Sleep(delayBetweenRetriesMs);
+            }
         }
 
-        throw new Exception($"Failed to execute script to get position for element '{elementId}' after {retryCount} retries. Debug log: {log}");
+        throw new Exception($"Failed to get position for element '{elementId}' after {retryCount} retries. Debug log: {log}");
     }
 }
