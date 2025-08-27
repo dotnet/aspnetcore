@@ -62,11 +62,16 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
     public virtual Task InitializeAsync(string isolationContext)
     {
         InitializeBrowser(isolationContext);
+        GrantTestId();
         InitializeAsyncCore();
         return Task.CompletedTask;
     }
 
     protected virtual void InitializeAsyncCore()
+    {
+    }
+
+    protected virtual void GrantTestId()
     {
     }
 

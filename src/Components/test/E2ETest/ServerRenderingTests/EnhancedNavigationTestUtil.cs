@@ -22,20 +22,12 @@ public static class EnhancedNavigationTestUtil
             {
                 NavigateToOrigin(fixture);
             }
-
-            try
-            {
-                ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
-            }
-            catch (Exception ex)
-            {
-                throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.", ex);
-            }
+            AssertSessionStorageAvailable(browser);
 
             var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
             if (testId is null || string.IsNullOrEmpty(testId as string))
             {
-                testId = GrantTestId(browser);
+                throw new InvalidOperationException("Test ID not found in sessionStorage. Make sure your test class grants it in InitializeAsync.");
             }
 
             ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('suppress-enhanced-navigation-{testId}', 'true')");
@@ -44,6 +36,27 @@ public static class EnhancedNavigationTestUtil
             Assert.True(suppressEnhancedNavigation is not null && (string)suppressEnhancedNavigation == "true",
                 "Expected 'suppress-enhanced-navigation' to be set in sessionStorage.");
         }
+    }
+
+    public static void AssertSessionStorageAvailable(IWebDriver browser)
+    {
+        try
+        {
+            ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.", ex);
+        }
+
+    }
+
+    public static void GrantTestId<TServerFixture>(ServerTestBase<TServerFixture> fixture)
+        where TServerFixture : ServerFixture
+    {
+        NavigateToOrigin(fixture);
+        AssertSessionStorageAvailable(fixture.Browser);
+        GrantTestIdCore(fixture.Browser);
     }
 
     public static void CleanEnhancedNavigationSuppression<TServerFixture>(ServerTestBase<TServerFixture> fixture, bool skipNavigation = false)
@@ -94,7 +107,7 @@ public static class EnhancedNavigationTestUtil
         fixture.Browser.Equal("Hello", () => fixture.Browser.Exists(By.TagName("h1")).Text);
     }
 
-    private static string GrantTestId(IWebDriver browser)
+    private static string GrantTestIdCore(IWebDriver browser)
     {
         var testId = Guid.NewGuid().ToString("N")[..8];
         ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
