@@ -713,7 +713,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [MaxLength(10)]
         public string? NullableMaxLengthStringValue { get; set; }
         [MaxLength(5)]
-        public int[] MaxLengthArrayValue { get; set; } = Array.Empty<int>();
+        public int[] MaxLengthArrayValue { get; set; } = [];
         [MaxLength(5)]
         public int[]? NullableMaxLengthArrayValue { get; set; }
 
@@ -723,7 +723,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [MinLength(3)]
         public string? NullableMinLengthStringValue { get; set; }
         [MinLength(2)]
-        public int[] MinLengthArrayValue { get; set; } = Array.Empty<int>();
+        public int[] MinLengthArrayValue { get; set; } = [];
         [MinLength(2)]
         public int[]? NullableMinLengthArrayValue { get; set; }
 
@@ -733,7 +733,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         [Length(2, 8)]
         public string? NullableLengthStringValue { get; set; }
         [Length(1, 4)]
-        public int[] LengthArrayValue { get; set; } = Array.Empty<int>();
+        public int[] LengthArrayValue { get; set; } = [];
         [Length(1, 4)]
         public int[]? NullableLengthArrayValue { get; set; }
 
