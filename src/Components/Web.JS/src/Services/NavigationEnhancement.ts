@@ -120,7 +120,7 @@ function onPopState(state: PopStateEvent) {
     return;
   }
 
-  if (isHashOnlyChange(currentContentUrl, location.href)){
+  if (isHashOnlyChange(currentContentUrl, location.href)) {
     return;
   }
 
