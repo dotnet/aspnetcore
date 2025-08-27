@@ -52,6 +52,17 @@ export function isSamePageWithHash(absoluteHref: string): boolean {
   return url.hash !== '' && location.origin === url.origin && location.pathname === url.pathname && location.search === url.search;
 }
 
+export function isHashOnlyChange(oldUrl: string, newUrl: string): boolean {
+  try {
+    const a = new URL(oldUrl);
+    const b = new URL(newUrl);
+    return a.origin === b.origin && a.pathname === b.pathname
+      && a.search === b.search && a.hash !== b.hash;
+  } catch {
+    return false;
+  }
+}
+
 export function isForSamePath(url1: string, url2: string) {
   // We are going to use the scheme, host, port and path to determine if the two URLs are compatible.
   // We do not account for the query string as we want to allow for the query string to change.
