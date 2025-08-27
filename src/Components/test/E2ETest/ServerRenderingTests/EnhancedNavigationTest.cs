@@ -197,31 +197,37 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
     }
 
     [Fact]
-    public void NonEnhancedNavCanScrollToHashWithoutFetchingPage()
+    public void NonEnhancedNavCanScrollToHashWithoutFetchingPageAnchor()
     {
         Navigate($"{ServerPathBase}/nav/scroll-to-hash");
-        Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
+        var originalTextElem = Browser.Exists(By.CssSelector("#anchor #text"));
+        Browser.Equal("Text", () => originalTextElem.Text);
 
-        var javascript = (IJavaScriptExecutor)Browser;
-        javascript.ExecuteScript(@"
-            window.testFetchCalls = [];
-            const originalFetch = window.fetch;
-            window.fetch = function(...args) {
-                window.testFetchCalls.push(args[0]);
-                return originalFetch.apply(this, args);
-                };");
-
-        Browser.Exists(By.Id("scroll-anchor-enhance-nav-false")).Click();
+        Browser.Exists(By.CssSelector("#anchor #scroll-anchor")).Click();
         Browser.True(() => Browser.GetScrollY() > 500);
         Browser.True(() => Browser
-            .Exists(By.Id("uri-on-page-load-enhance-nav-false"))
+            .Exists(By.CssSelector("#anchor #uri-on-page-load"))
             .GetDomAttribute("data-value")
             .EndsWith("scroll-to-hash", StringComparison.Ordinal));
 
-        var fetchCalls = javascript.ExecuteScript("return window.testFetchCalls;") as IEnumerable<object>;
-        var relevantCalls = fetchCalls?.Where(call => call.ToString().Contains("scroll-to-hash")) ?? Enumerable.Empty<object>();
+        Browser.Equal("Text", () => originalTextElem.Text);
+    }
 
-        Assert.Empty(relevantCalls);
+    [Fact]
+    public void NonEnhancedNavCanScrollToHashWithoutFetchingPageNavLink()
+    {
+        Navigate($"{ServerPathBase}/nav/scroll-to-hash");
+        var originalTextElem = Browser.Exists(By.CssSelector("#navlink #text"));
+        Browser.Equal("Text", () => originalTextElem.Text);
+
+        Browser.Exists(By.CssSelector("#navlink #scroll-anchor")).Click();
+        Browser.True(() => Browser.GetScrollY() > 500);
+        Browser.True(() => Browser
+            .Exists(By.CssSelector("#navlink #uri-on-page-load"))
+            .GetDomAttribute("data-value")
+            .EndsWith("scroll-to-hash", StringComparison.Ordinal));
+
+        Browser.Equal("Text", () => originalTextElem.Text);
     }
 
     [Theory]

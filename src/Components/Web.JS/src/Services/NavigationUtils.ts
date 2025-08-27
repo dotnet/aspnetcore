@@ -47,17 +47,12 @@ export function isWithinBaseUriSpace(href: string) {
   && (nextChar === '' || nextChar === '/' || nextChar === '?' || nextChar === '#');
 }
 
-export function isSamePageWithHash(absoluteHref: string): boolean {
-  const url = new URL(absoluteHref);
-  return url.hash !== '' && location.origin === url.origin && location.pathname === url.pathname && location.search === url.search;
-}
-
-export function isHashOnlyChange(oldUrl: string, newUrl: string): boolean {
+export function isSameUrlWithDifferentHash(oldUrl: string, newUrl: string): boolean {
   try {
     const a = new URL(oldUrl);
     const b = new URL(newUrl);
     return a.origin === b.origin && a.pathname === b.pathname
-      && a.search === b.search && a.hash !== b.hash;
+      && a.search === b.search && b.hash !== '';
   } catch {
     return false;
   }
