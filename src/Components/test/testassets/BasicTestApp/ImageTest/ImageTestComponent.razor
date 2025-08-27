@@ -113,18 +113,17 @@
         _currentStatus = "Component initialized";
     }
 
-    private async Task LoadJpgFromStream()
+    private void LoadJpgFromStream()
     {
         _currentStatus = "Loading JPG from stream...";
         var stream = new MemoryStream(TestJpgData);
         _jpgStreamSource = new ImageSource(stream, "image/jpeg", "test-jpg-stream");
-        await Task.Delay(10);
         _jpgStream = true;
         _currentStatus = "JPG from stream loaded";
 
     }
 
-    private async Task ChangeDynamicImageSource()
+    private void ChangeDynamicImageSource()
     {
         if (!_dynamicSource)
         {
@@ -133,7 +132,6 @@
             _dynamicImageSource = new ImageSource(TestPngData, "image/png", "dynamic-png");
             _dynamicSource = true;
             _isCurrentlyShowingPng = true;
-            await Task.Delay(10);
             _currentStatus = "Dynamic source initialized with PNG";
         }
         else
@@ -144,7 +142,6 @@
                 _currentStatus = "Changing to JPG...";
                 _dynamicImageSource = new ImageSource(TestJpgData, "image/jpeg", "dynamic-jpg");
                 _isCurrentlyShowingPng = false;
-                await Task.Delay(10);
                 _currentStatus = "Dynamic source changed to JPG";
             }
             else
@@ -152,29 +149,25 @@
                 _currentStatus = "Changing to PNG...";
                 _dynamicImageSource = new ImageSource(TestPngData, "image/png", "dynamic-png");
                 _isCurrentlyShowingPng = true;
-                await Task.Delay(10);
                 _currentStatus = "Dynamic source changed to PNG";
             }
         }
     }
-    private async Task LoadPairSequence()
+    private void LoadPairSequence()
     {
         _currentStatus = "Loading pair sequence...";
         _pairSource = new ImageSource(TestJpgData, "image/jpeg", "pair-cache");
         _pair1Visible = true;
-        await Task.Delay(50);
         _pair2Visible = true;
-        await Task.Delay(10);
         _currentStatus = "Pair second loaded";
     }
 
-    private async Task ReloadPng()
+    private void ReloadPng()
     {
         if (_pngBasic)
         {
             _currentStatus = "Reloading PNG...";
             _pngBasic = false;
-            await Task.Delay(10);
         }
         else
         {
@@ -183,11 +176,10 @@
 
         _basicImageSource = new ImageSource(TestPngData, "image/png", "test-png-basic");
         _pngBasic = true;
-        await Task.Delay(10);
         _currentStatus = "PNG basic loaded";
     }
 
-    private async Task LoadErrorImage()
+    private void LoadErrorImage()
     {
         _currentStatus = "Loading error image...";
         // Create a stream then seek to end so component throws when validating position
@@ -195,16 +187,14 @@
         ms.Seek(ms.Length, SeekOrigin.Begin);
         _errorSource = new ImageSource(ms, "image/png", "error-key");
         _errorImage = true;
-        await Task.Delay(10);
         _currentStatus = "Error image loaded";
     }
 
-    private async Task LoadCachedJpg()
+    private void LoadCachedJpg()
     {
         _currentStatus = "Loading cached JPG...";
         _cachedJpgSource = new ImageSource(TestJpgData, "image/jpeg", "single-cached-jpg");
         _cachedJpgVisible = true;
-        await Task.Delay(10);
         _currentStatus = "Cached JPG loaded";
     }
 

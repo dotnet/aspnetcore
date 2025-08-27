@@ -73,7 +73,6 @@ export class BinaryImageComponent {
 
     observer.observe(parent, {
       childList: true,
-      subtree: true,
       attributes: true,
       attributeFilter: ['src'],
     });
@@ -292,7 +291,6 @@ export class BinaryImageComponent {
         BinaryImageComponent.loadingImages.delete(imgElement);
         imgElement.style.removeProperty('--blazor-image-progress');
       }
-      imgElement.removeEventListener('error', onError);
     };
 
     const onError = (_e: Event) => {
@@ -300,7 +298,6 @@ export class BinaryImageComponent {
         BinaryImageComponent.loadingImages.delete(imgElement);
         imgElement.style.removeProperty('--blazor-image-progress');
       }
-      imgElement.removeEventListener('load', onLoad);
     };
 
     imgElement.addEventListener('load', onLoad, { once: true });

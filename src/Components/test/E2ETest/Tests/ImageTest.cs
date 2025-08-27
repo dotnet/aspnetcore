@@ -166,7 +166,6 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void Image_CompletesLoad_AfterArtificialDelay()
     {
-        // Patch setImageAsync to introduce a delay before delegating to original
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
               const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
@@ -174,7 +173,15 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
               if (!window.__origSetImageAsync) {
                 window.__origSetImageAsync = root.setImageAsync;
                 root.setImageAsync = async function(...args){
-                  await new Promise(r => setTimeout(r, 500));
+                  const getResolvers = () => {
+                    if (Promise.fromResolvers) return Promise.fromResolvers();
+                    let resolve, reject;
+                    const promise = new Promise((r,j)=>{ resolve=r; reject=j; });
+                    return { promise, resolve, reject };
+                  };
+                  const resolvers = getResolvers();
+                  window.__imagePromiseResolvers = resolvers;
+                  await resolvers.promise;
                   return window.__origSetImageAsync.apply(this, args);
                 };
               }
@@ -183,14 +190,17 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.FindElement(By.Id("load-png")).Click();
 
         var imageElement = Browser.FindElement(By.Id("png-basic"));
-        Browser.True(() =>
-        {
+        Assert.NotNull(imageElement);
+
+        ((IJavaScriptExecutor)Browser).ExecuteScript("if (window.__imagePromiseResolvers) { window.__imagePromiseResolvers.resolve(); }");
+
+        Browser.True(() => {
             var src = imageElement.GetAttribute("src");
             return !string.IsNullOrEmpty(src) && src.StartsWith("blob:", StringComparison.Ordinal);
         });
         Browser.Equal("PNG basic loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
-        // Restore
+        // Restore original function and clean up instrumentation
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
               const root = Blazor && Blazor._internal && Blazor._internal.BinaryImageComponent;
@@ -198,6 +208,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
                 root.setImageAsync = window.__origSetImageAsync;
                 delete window.__origSetImageAsync;
               }
+              delete window.__imagePromiseResolvers;
             })();");
     }
 
