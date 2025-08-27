@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.AspNetCore.InternalTesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.BiDi.Communication;
+using OpenQA.Selenium.DevTools;
 using OpenQA.Selenium.Support.Extensions;
 using TestServer;
 using Xunit.Abstractions;
@@ -193,6 +194,34 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
             .Exists(By.Id("uri-on-page-load"))
             .GetDomAttribute("data-value")
             .EndsWith("scroll-to-hash", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void NonEnhancedNavCanScrollToHashWithoutFetchingPage()
+    {
+        Navigate($"{ServerPathBase}/nav/scroll-to-hash");
+        Browser.Equal("Scroll to hash", () => Browser.Exists(By.TagName("h1")).Text);
+
+        var javascript = (IJavaScriptExecutor)Browser;
+        javascript.ExecuteScript(@"
+            window.testFetchCalls = [];
+            const originalFetch = window.fetch;
+            window.fetch = function(...args) {
+                window.testFetchCalls.push(args[0]);
+                return originalFetch.apply(this, args);
+                };");
+
+        Browser.Exists(By.Id("scroll-anchor-enhance-nav-false")).Click();
+        Browser.True(() => Browser.GetScrollY() > 500);
+        Browser.True(() => Browser
+            .Exists(By.Id("uri-on-page-load-enhance-nav-false"))
+            .GetDomAttribute("data-value")
+            .EndsWith("scroll-to-hash", StringComparison.Ordinal));
+
+        var fetchCalls = javascript.ExecuteScript("return window.testFetchCalls;") as IEnumerable<object>;
+        var relevantCalls = fetchCalls?.Where(call => call.ToString().Contains("scroll-to-hash")) ?? Enumerable.Empty<object>();
+
+        Assert.Empty(relevantCalls);
     }
 
     [Theory]

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isHashOnlyChange } from './NavigationUtils';
 import { resetScrollAfterNextBatch, resetScrollIfNeeded } from '../Rendering/Renderer';
 
 /*
@@ -117,6 +117,10 @@ function onDocumentClick(event: MouseEvent) {
 
 function onPopState(state: PopStateEvent) {
   if (hasInteractiveRouter()) {
+    return;
+  }
+
+  if (isHashOnlyChange(currentContentUrl, location.href)){
     return;
   }
 
