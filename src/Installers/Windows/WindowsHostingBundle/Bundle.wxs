@@ -46,13 +46,6 @@
         <Variable Name="ModifyNoIISState" Value="disable" Type="formatted" />
 
         <Chain ParallelCache="yes">
-            <MsiPackage SourceFile="$(var.HostOptions.TargetPath)">
-                <MsiProperty Name="OPT_NO_ANCM" Value="[OPT_NO_ANCM]" />
-                <MsiProperty Name="OPT_NO_SHAREDFX" Value="[OPT_NO_SHAREDFX]" />
-                <MsiProperty Name="OPT_NO_RUNTIME" Value="[OPT_NO_RUNTIME]" />
-                <MsiProperty Name="OPT_NO_X86" Value="[OPT_NO_X86]" />
-                <MsiProperty Name="OPT_NO_SHARED_CONFIG_CHECK" Value="[OPT_NO_SHARED_CONFIG_CHECK]" />
-            </MsiPackage>
             <PackageGroupRef Id="PG_ANCM" />
             <PackageGroupRef Id="PG_DOTNET_REDIST_LTS_BUNDLE" />
             <!--<PackageGroupRef Id="PG_DOTNET_REDIST_FTS_BUNDLE" />-->
