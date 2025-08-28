@@ -15,6 +15,7 @@
     <button id="load-pair-sequence" @onclick="LoadPairSequence">Load Two Images (Same Key)</button>
     <button id="load-error" @onclick="LoadErrorImage">Load Error</button>
     <button id="load-cached-jpg" @onclick="LoadCachedJpg">Load Cached JPG</button>
+    <button id="load-invalid-mime" @onclick="LoadInvalidMimeImage">Load Invalid MIME</button>
 
     <div id="test-status">
         Status: <span id="current-status">@_currentStatus</span>
@@ -76,6 +77,14 @@
            Source="@_cachedJpgSource" />
 }
 
+@if (_invalidMimeImage)
+{
+    <h4>Invalid MIME Image</h4>
+    <Image @ref="@_invalidMimeRef"
+           id="invalid-mime-image"
+           Source="@_invalidMimeSource" />
+}
+
 @code {
     private Image _pngBasicRef;
     private Image _jpgStreamRef;
@@ -84,6 +93,7 @@
     private Image _pair2Ref;
     private Image _errorRef;
     private Image _cachedJpgRef;
+    private Image _invalidMimeRef;
 
     private ImageSource _basicImageSource = new ImageSource(new byte[0], "", "");
     private ImageSource _jpgStreamSource = new ImageSource(new byte[0], "", "");
@@ -91,6 +101,7 @@
     private ImageSource _pairSource = new ImageSource(new byte[0], "", "");
     private ImageSource _errorSource = new ImageSource(new byte[0], "", "");
     private ImageSource _cachedJpgSource = new ImageSource(new byte[0], "", "");
+    private ImageSource _invalidMimeSource = new ImageSource(new byte[0], "", "");
 
     private bool _pngBasic = false;
     private bool _jpgStream = false;
@@ -99,6 +110,7 @@
     private bool _pair2Visible = false;
     private bool _errorImage = false;
     private bool _cachedJpgVisible = false;
+    private bool _invalidMimeImage = false;
 
     private string _currentStatus = "Ready";
     private bool _isCurrentlyShowingPng = true; // Track which image is currently shown in dynamic test
@@ -198,6 +210,16 @@
         _currentStatus = "Cached JPG loaded";
     }
 
+    private void LoadInvalidMimeImage()
+    {
+        _currentStatus = "Loading invalid mime image...";
+        var bytes = new byte[] { 97 };
+
+        _invalidMimeSource = new ImageSource(bytes, "text/plain", Guid.NewGuid().ToString());
+        _invalidMimeImage = true;
+        _currentStatus = "Invalid mime image loaded";
+    }
+
     public async ValueTask DisposeAsync()
     {
         _currentStatus = "Disposing component...";
@@ -212,5 +234,7 @@
             await _pair1Ref.DisposeAsync();
         if (_pair2Ref != null)
             await _pair2Ref.DisposeAsync();
+        if (_invalidMimeRef != null)
+            await _invalidMimeRef.DisposeAsync();
     }
 }

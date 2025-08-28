@@ -297,6 +297,7 @@ export class BinaryImageComponent {
       if (!cacheKey || BinaryImageComponent.activeCacheKey.get(imgElement) === cacheKey) {
         BinaryImageComponent.loadingImages.delete(imgElement);
         imgElement.style.removeProperty('--blazor-image-progress');
+        imgElement.setAttribute('data-state', 'error');
       }
     };
 

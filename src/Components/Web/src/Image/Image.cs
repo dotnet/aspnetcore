@@ -10,9 +10,11 @@ namespace Microsoft.AspNetCore.Components.Web.Image;
 
 /* This is equivalent to a .razor file containing:
  *
- * <img class="blazor-image @GetCssClass()"
- *      data-state=@(_isLoading ? "loading" : _hasError ? "error" : null)
- *      @ref="Element" @attributes="AdditionalAttributes" />
+ * <img data-blazor-image
+ *      src="@(_currentObjectUrl)"
+ *      data-state=@(IsLoading ? "loading" : _hasError ? "error" : null)
+ *      @attributes="AdditionalAttributes"
+ *      @ref="Element"/>
  *
  */
 /// <summary>

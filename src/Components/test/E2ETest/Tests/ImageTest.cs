@@ -352,4 +352,19 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
             }
         });
     }
+
+    [Fact]
+    public void InvalidMimeImage_SetsErrorState()
+    {
+        Browser.FindElement(By.Id("load-invalid-mime")).Click();
+        Browser.Equal("Invalid mime image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+
+        var img = Browser.FindElement(By.Id("invalid-mime-image"));
+        Assert.NotNull(img);
+
+        Browser.Equal("error", () => img.GetAttribute("data-state"));
+
+        var src = img.GetAttribute("src");
+        Assert.True(string.IsNullOrEmpty(src) || src.StartsWith("blob:", StringComparison.Ordinal));
+    }
 }
