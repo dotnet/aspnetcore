@@ -104,7 +104,7 @@ public static class EnhancedNavigationTestUtil
     {
         // Navigate to the test origin to ensure the browser is on the correct state to access sessionStorage
         fixture.Navigate($"{fixture.ServerPathBase}/");
-        fixture.Browser.Equal("Hello", () => fixture.Browser.Exists(By.TagName("h1")).Text);
+        fixture.Browser.Exists(By.Id("session-storage-anchor"));
     }
 
     private static string GrantTestIdCore(IWebDriver browser)
