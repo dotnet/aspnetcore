@@ -88,7 +88,7 @@ internal sealed class HubMethodDescriptor
                         markedParameter = true;
                         MarkServiceParameter(index);
                     }
-                    else if (typeof(FromKeyedServicesAttribute).IsAssignableFrom(attribute.GetType()) && attribute is FromKeyedServicesAttribute keyedServicesAttribute)
+                    else if (attribute is FromKeyedServicesAttribute keyedServicesAttribute)
                     {
                         ThrowIfMarked(markedParameter);
                         markedParameter = true;

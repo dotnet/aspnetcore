@@ -129,17 +129,7 @@ internal static class SymbolExtensions
 
     public static bool TryGetAttributeInheritingFrom(this ISymbol symbol, INamedTypeSymbol baseType, [NotNullWhen(true)] out AttributeData? matchedAttribute)
     {
-        foreach (var attributeData in symbol.GetAttributes())
-        {
-            if (attributeData.AttributeClass is not null && attributeData.AttributeClass.InheritsFrom(baseType))
-            {
-                matchedAttribute = attributeData;
-                return true;
-            }
-        }
-
-        matchedAttribute = null;
-        return false;
+        return symbol.GetAttributes().TryGetAttributeInheritingFrom(baseType, out matchedAttribute);
     }
 
     public static bool HasAttributeInheritingFrom(this ImmutableArray<AttributeData> attributes, INamedTypeSymbol baseType)
