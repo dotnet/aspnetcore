@@ -42,4 +42,8 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.HttpOverrides;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.3.6' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

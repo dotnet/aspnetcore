@@ -2,7 +2,7 @@
   <PropertyGroup>
     <AspNetCoreMajorVersion>2</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>3</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>5</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>6</AspNetCorePatchVersion>
     <ValidateBaseline>true</ValidateBaseline>
 
     <PreReleaseLabel>servicing</PreReleaseLabel>
