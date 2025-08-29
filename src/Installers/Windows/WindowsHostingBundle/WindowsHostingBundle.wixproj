@@ -93,7 +93,6 @@
 
   <PropertyGroup>
     <PackageFileName>dotnet-hosting-$(PackageVersion)-win$(TargetExt)</PackageFileName>
-    <DupePackageFileName>dotnet-hosting-unsigned-$(PackageVersion)-win$(TargetExt)</DupePackageFileName>
 
     <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
     <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
@@ -167,10 +166,5 @@
       <DefineConstants>$(DefineConstants);SharedFxRedistInstallerx86=$(SharedFxRedistInstallerx86)</DefineConstants>
       <DefineConstants>$(DefineConstants);SharedFxRedistInstallerarm64=$(SharedFxRedistInstallerarm64)</DefineConstants>
     </PropertyGroup>
-  </Target>
-
-  <Target Name="CopyDupeToArtifactsDirectory"
-          BeforeTargets="Build">
-    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(ArtifactsDir)DontSignMe/$(DupePackageFileName)" />
   </Target>
 </Project>
