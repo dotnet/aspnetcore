@@ -15,7 +15,7 @@ public class WebAssemblyPrerenderedTest : ServerTestBase<TrimmingServerFixture<W
         BrowserFixture browserFixture,
         TrimmingServerFixture<Wasm.Prerendered.Server.Startup> serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output)
+        : base(browserFixture, serverFixture, output, serverPathBase: "")
     {
         serverFixture.Environment = AspNetEnvironment.Development;
     }

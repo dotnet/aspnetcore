@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -15,7 +15,7 @@ public class MultipleHostedAppTest : ServerTestBase<AspNetSiteServerFixture>
         BrowserFixture browserFixture,
         AspNetSiteServerFixture serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output)
+        : base(browserFixture, serverFixture, output, serverPathBase: "")
     {
         serverFixture.AdditionalArguments.AddRange(new[] { "--MapAllApps", "true" });
         serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;

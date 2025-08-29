@@ -20,7 +20,7 @@ public class MultipleComponentsTest : ServerTestBase<BasicTestAppServerSiteFixtu
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<MultipleComponents> serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output)
+        : base(browserFixture, serverFixture, output, serverPathBase: "/multiple-components")
     {
     }
 

@@ -20,7 +20,7 @@ public class ClientSideHostingTest :
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<TestServer.StartupWithMapFallbackToClientSideBlazor> serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output)
+        : base(browserFixture, serverFixture, output, serverPathBase: "/subdir/filepath")
     {
     }
 

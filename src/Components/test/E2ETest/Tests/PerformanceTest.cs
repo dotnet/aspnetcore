@@ -16,7 +16,7 @@ public class PerformanceTest
         BrowserFixture browserFixture,
         BlazorWasmTestAppFixture<Wasm.Performance.TestApp.Program> serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output)
+        : base(browserFixture, serverFixture, output, serverPathBase: "")
     {
     }
 

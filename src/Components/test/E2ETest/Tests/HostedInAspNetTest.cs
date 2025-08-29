@@ -15,7 +15,7 @@ public class HostedInAspNetTest : ServerTestBase<AspNetSiteServerFixture>
         BrowserFixture browserFixture,
         AspNetSiteServerFixture serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output)
+        : base(browserFixture, serverFixture, output, serverPathBase: "")
     {
         serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;
         serverFixture.Environment = AspNetEnvironment.Development;
