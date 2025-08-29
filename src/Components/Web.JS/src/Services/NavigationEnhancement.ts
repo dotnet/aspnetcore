@@ -120,7 +120,8 @@ function onPopState(state: PopStateEvent) {
     return;
   }
 
-  if (isSameUrlWithDifferentHash(currentContentUrl, location.href)) {
+  if (state.state == null && isSameUrlWithDifferentHash(currentContentUrl, location.href)) {
+    currentContentUrl = location.href;
     return;
   }
 
