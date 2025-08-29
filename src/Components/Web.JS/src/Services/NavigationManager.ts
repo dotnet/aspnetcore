@@ -4,7 +4,7 @@
 import '@microsoft/dotnet-js-interop';
 import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
-import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSameUrlWithDifferentHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
+import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
 import { isRendererAttached } from '../Rendering/WebRendererInteropMethods';
 
@@ -150,7 +150,7 @@ function performExternalNavigation(uri: string, replace: boolean) {
 async function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined, skipLocationChangingCallback = false) {
   ignorePendingNavigation();
 
-  if (isSameUrlWithDifferentHash(location.href, absoluteInternalHref)) {
+  if (isSamePageWithHash(location.href, absoluteInternalHref)) {
     saveToBrowserHistory(absoluteInternalHref, replace, state);
     performScrollToElementOnTheSamePage(absoluteInternalHref);
     return;
