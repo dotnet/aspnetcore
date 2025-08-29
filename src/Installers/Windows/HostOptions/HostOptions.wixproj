@@ -20,9 +20,12 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <PackageFileName>dotnet-hosting-options-$(PackageVersion)-win$(TargetExt)</PackageFileName>
+    <TargetName>dotnet-hosting-options-$(PackageVersion)-win</TargetName>
+    <PackageFileName>$(TargetName)$(TargetExt)</PackageFileName>
     <Name>$(PackageFileName)</Name>
     <OutputName>$(PackageFileName)</OutputName>
+    <TargetFileName>$(PackageFileName)</TargetFileName>
+    <TargetPdbFileName>$(TargetName).wixpdb</TargetPdbFileName>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Hosting Bundle Options</ProductName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
   </PropertyGroup>
