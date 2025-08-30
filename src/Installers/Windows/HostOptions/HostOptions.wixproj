@@ -2,8 +2,9 @@
 <Project>
   <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
-    <Name>$(HostOptionsName)</Name>
-    <OutputName>$(HostOptionsName)</OutputName>
+    <Name>dotnet-hosting-options-$(_ShippingProductVersion)-win.msi</Name>
+    <OutputName>$(Name)</OutputName>
+    <PackageFileName>$(Name)</PackageFileName>
     <OutputType>Package</OutputType>
     <ProductNameFolder>Microsoft ASP.NET Core Hosting Bundle Options</ProductNameFolder>
     <ProductNameShort>AspNetCore.HostOptions</ProductNameShort>
@@ -22,7 +23,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <PackageFileName>dotnet-hosting-options-$(PackageVersion)-win$(TargetExt)</PackageFileName>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Hosting Bundle Options</ProductName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
   </PropertyGroup>
