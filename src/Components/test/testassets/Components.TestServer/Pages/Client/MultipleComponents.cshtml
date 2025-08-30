@@ -5,7 +5,6 @@
     Layout = "./MultipleComponentsLayout.cshtml";
 }
 
-<p id="session-storage-anchor"></p>
 
 @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.WebAssemblyPrerendered))
 @(await Html.RenderComponentAsync<GreeterComponent>(RenderMode.WebAssembly))

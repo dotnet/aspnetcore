@@ -15,7 +15,7 @@ public class HostedInAlternativeBasePathTest : ServerTestBase<AspNetSiteServerFi
         BrowserFixture browserFixture,
         AspNetSiteServerFixture serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output, serverPathBase: "/app")
+        : base(browserFixture, serverFixture, output)
     {
         serverFixture.AdditionalArguments.AddRange(new[] { "--UseAlternativeBasePath", "true" });
         serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;

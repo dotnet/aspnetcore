@@ -19,7 +19,7 @@ public class ClientRenderingMultpleComponentsTest : E2ETest.Infrastructure.Serve
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<MultipleComponents> serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output, serverPathBase: "/Client/multiple-components")
+        : base(browserFixture, serverFixture, output)
     {
     }
 

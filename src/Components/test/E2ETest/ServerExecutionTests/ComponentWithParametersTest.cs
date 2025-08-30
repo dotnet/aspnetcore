@@ -16,7 +16,7 @@ public class ComponentWithParametersTest : ServerTestBase<BasicTestAppServerSite
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<PrerenderedStartup> serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output, serverPathBase: "/prerendered")
+        : base(browserFixture, serverFixture, output)
     {
     }
 

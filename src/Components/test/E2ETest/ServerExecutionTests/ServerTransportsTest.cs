@@ -16,7 +16,7 @@ public class ServerTransportsTest : ServerTestBase<BasicTestAppServerSiteFixture
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<TransportsServerStartup> serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output, serverPathBase: "/defaultTransport")
+        : base(browserFixture, serverFixture, output)
     {
     }
 
