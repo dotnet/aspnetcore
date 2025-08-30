@@ -11,10 +11,6 @@
   -->
   <Import Project="RequiresDelayedBuildProjects.props" Condition="'$(OnlyTestProjectTemplates)' != 'true'" />
 
-  <PropertyGroup>
-    <ShippingProductVersion>42.42</ShippingProductVersion>
-  </PropertyGroup>
-
   <Target Name="GetStableProductVersion" BeforeTargets="ExecuteBuildTargets">
     <MSBuild Projects="$(RepoRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj"
         Properties="ExcludeFromBuild=false"
