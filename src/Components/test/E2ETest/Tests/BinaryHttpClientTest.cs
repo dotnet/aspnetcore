@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using BasicTestApp.HttpClientTest;
-using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
-using Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using TestServer;
@@ -12,7 +10,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
 
-public class BinaryHttpClientTest : ServerTestBase<AspNetSiteServerFixture>,
+public class BinaryHttpClientTest : BrowserTestBase,
     IClassFixture<BasicTestAppServerSiteFixture<CorsStartup>>,
     IClassFixture<BlazorWasmTestAppFixture<BasicTestApp.Program>>
 {
@@ -25,13 +23,11 @@ public class BinaryHttpClientTest : ServerTestBase<AspNetSiteServerFixture>,
 
     public BinaryHttpClientTest(
         BrowserFixture browserFixture,
-        AspNetSiteServerFixture serverFixture,
         BlazorWasmTestAppFixture<BasicTestApp.Program> devHostServerFixture,
         BasicTestAppServerSiteFixture<CorsStartup> apiServerFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output)
+        : base(browserFixture, output)
     {
-        serverFixture.BuildWebHostMethod = Program.BuildWebHost<CorsStartup>;
         _devHostServerFixture = devHostServerFixture;
         _devHostServerFixture.PathBase = "/subdir";
         _apiServerFixture = apiServerFixture;
