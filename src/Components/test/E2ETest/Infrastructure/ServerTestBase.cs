@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
-using OpenQA.Selenium.BiDi.Communication;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -15,20 +14,17 @@ public abstract class ServerTestBase<TServerFixture>
     IClassFixture<TServerFixture>
     where TServerFixture : ServerFixture
 {
-    private string _serverPathBase;
-    public string ServerPathBase => _serverPathBase;
+    public string ServerPathBase => "/subdir";
 
     protected readonly TServerFixture _serverFixture;
 
     public ServerTestBase(
         BrowserFixture browserFixture,
         TServerFixture serverFixture,
-        ITestOutputHelper output,
-        string serverPathBase = "/subdir")
+        ITestOutputHelper output)
         : base(browserFixture, output)
     {
         _serverFixture = serverFixture;
-        _serverPathBase = serverPathBase;
     }
 
     public void Navigate(string relativeUrl)
