@@ -2,6 +2,8 @@
 <Project>
   <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
+    <Name>WindowsServerHostingBundle</Name>
+    <OutputName>WindowsServerHostingBundle</OutputName>
     <IsShipping>true</IsShipping>
     <ProjectGuid>6F1B115C-1903-40CB-837D-7961AB610F4E</ProjectGuid>
     <OutputType>Bundle</OutputType>
@@ -91,8 +93,6 @@
 
   <PropertyGroup>
     <PackageFileName>dotnet-hosting-$(PackageVersion)-win$(TargetExt)</PackageFileName>
-    <Name>$(PackageFileName)</Name>
-    <OutputName>$(PackageFileName)</OutputName>
 
     <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
     <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
