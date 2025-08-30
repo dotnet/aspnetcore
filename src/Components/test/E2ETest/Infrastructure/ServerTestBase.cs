@@ -44,9 +44,4 @@ public abstract class ServerTestBase<TServerFixture>
         // Make sure each test starts clean.
         ((IJavaScriptExecutor)Browser).ExecuteScript("console.clear()");
     }
-
-    protected override void GrantTestId()
-    {
-        EnhancedNavigationTestUtil.GrantTestId(this);
-    }
 }
