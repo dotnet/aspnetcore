@@ -95,7 +95,6 @@
     <Name>$(PackageFileName)</Name>
     <OutputName>$(PackageFileName)</OutputName>
     <TargetFileName>$(PackageFileName)</TargetFileName>
-    <AssemblyName>$(PackageFileName)</AssemblyName>
     <TargetPdbFileName>$(TargetName).wixpdb</TargetPdbFileName>
 
     <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>

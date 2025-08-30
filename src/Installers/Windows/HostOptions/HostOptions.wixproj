@@ -25,7 +25,6 @@
     <Name>$(PackageFileName)</Name>
     <OutputName>$(PackageFileName)</OutputName>
     <TargetFileName>$(PackageFileName)</TargetFileName>
-    <AssemblyName>$(PackageFileName)</AssemblyName>
     <TargetPdbFileName>$(TargetName).wixpdb</TargetPdbFileName>
     <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Hosting Bundle Options</ProductName>
     <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
