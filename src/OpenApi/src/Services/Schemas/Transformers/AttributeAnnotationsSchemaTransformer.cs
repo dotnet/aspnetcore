@@ -9,7 +9,7 @@ using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.AspNetCore.OpenApi.Services.Schemas.Transformers;
 
-internal class DescriptionDataAnnotationsSchemaTransformer : IOpenApiSchemaTransformer
+internal class AttributeAnnotationsSchemaTransformer : IOpenApiSchemaTransformer
 {
     public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
     {

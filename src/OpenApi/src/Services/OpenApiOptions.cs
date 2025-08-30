@@ -15,7 +15,7 @@ public sealed class OpenApiOptions
 {
     internal readonly List<IOpenApiDocumentTransformer> DocumentTransformers = [];
     internal readonly List<IOpenApiOperationTransformer> OperationTransformers = [];
-    internal readonly List<IOpenApiSchemaTransformer> SchemaTransformers = [new DescriptionDataAnnotationsSchemaTransformer()];
+    internal readonly List<IOpenApiSchemaTransformer> SchemaTransformers = [new AttributeAnnotationsSchemaTransformer()];
 
     /// <summary>
     /// A default implementation for creating a schema reference ID for a given <see cref="JsonTypeInfo"/>.
