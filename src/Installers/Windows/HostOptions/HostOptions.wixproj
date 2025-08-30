@@ -2,9 +2,9 @@
 <Project>
   <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
-    <Name>dotnet-hosting-options-$(_ProductVersionForInstallers)-win.msi</Name>
+    <Name>dotnet-hosting-options-$(_ProductVersionForInstallers)-win</Name>
     <OutputName>$(Name)</OutputName>
-    <PackageFileName>$(Name)</PackageFileName>
+    <PackageFileName>$(Name).msi</PackageFileName>
     <OutputType>Package</OutputType>
     <ProductNameFolder>Microsoft ASP.NET Core Hosting Bundle Options</ProductNameFolder>
     <ProductNameShort>AspNetCore.HostOptions</ProductNameShort>

@@ -2,9 +2,9 @@
 <Project>
   <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
-    <Name>dotnet-hosting-$(_ProductVersionForInstallers)-win.exe</Name>
+    <Name>dotnet-hosting-$(_ProductVersionForInstallers)-win</Name>
     <OutputName>$(Name)</OutputName>
-    <PackageFileName>$(Name)</PackageFileName>
+    <PackageFileName>$(Name).exe</PackageFileName>
     <IsShipping>true</IsShipping>
     <ProjectGuid>6F1B115C-1903-40CB-837D-7961AB610F4E</ProjectGuid>
     <OutputType>Bundle</OutputType>
