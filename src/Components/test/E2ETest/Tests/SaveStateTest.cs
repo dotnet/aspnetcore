@@ -18,7 +18,7 @@ public class SaveStateTest : ServerTestBase<AspNetSiteServerFixture>
         BrowserFixture browserFixture,
         AspNetSiteServerFixture serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output, "save-state")
+        : base(browserFixture, serverFixture, output)
     {
         serverFixture.BuildWebHostMethod = Program.BuildWebHost<SaveState>;
         serverFixture.Environment = AspNetEnvironment.Development;

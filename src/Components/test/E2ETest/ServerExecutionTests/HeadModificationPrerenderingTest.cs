@@ -16,7 +16,7 @@ public class HeadModificationPrerenderingTest : ServerTestBase<BasicTestAppServe
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<DeferredComponentContentStartup> serverFixture,
         ITestOutputHelper output)
-        : base(browserFixture, serverFixture, output, serverPathBase: "/deferred-component-content")
+        : base(browserFixture, serverFixture, output)
     {
     }
 
