@@ -141,6 +141,8 @@ internal class RouteOptions
         AddConstraint<FileNameRouteConstraint>(defaults, "file");
         AddConstraint<NonFileNameRouteConstraint>(defaults, "nonfile");
 
+        // Not constraint
+        AddConstraint<NotRouteConstraint>(defaults, "not");
         return defaults;
     }
 
