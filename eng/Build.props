@@ -11,18 +11,6 @@
   -->
   <Import Project="RequiresDelayedBuildProjects.props" Condition="'$(OnlyTestProjectTemplates)' != 'true'" />
 
-  <Target Name="GetStableProductVersion" BeforeTargets="ExecuteBuildTargets">
-    <MSBuild Projects="$(RepoRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj"
-        Properties="ExcludeFromBuild=false"
-        Targets="_GetPackageVersionInfo">
-      <Output TaskParameter="TargetOutputs" ItemName="_ResolvedPackageVersionInfo" />
-    </MSBuild>
-
-    <PropertyGroup>
-      <ShippingProductVersion>%(_ResolvedPackageVersionInfo.PackageVersion)</ShippingProductVersion>
-    </PropertyGroup>
-  </Target>
-
   <!-- These projects are always excluded, even when -projects is specified on command line. -->
   <ItemGroup>
     <!-- Explicitly excluded projects -->
@@ -100,7 +88,7 @@
       <ItemGroup Condition=" '$(DotNetBuild)' == 'true' AND '$(TargetOsName)' == 'win' AND '$(TargetArchitecture)' == 'x64' ">
         <!-- Build Hosting Bundle -->
         <ProjectToBuild Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj">
-          <AdditionalProperties>Platform=x86;_ShippingProductVersion=$(ShippingProductVersion)</AdditionalProperties>
+          <AdditionalProperties>Platform=x86</AdditionalProperties>
           <DotNetBuildPass>$(DotNetBuildPass)</DotNetBuildPass>
         </ProjectToBuild>
         <ProjectToBuild Include="$(RepoRoot)src\Servers\IIS/IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" >
@@ -325,7 +313,7 @@
         <InstallerProject Include="$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj" AdditionalProperties="Platform=arm64" />
 
         <!-- Windows hosting bundle -->
-        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86;_ShippingProductVersion=$(ShippingProductVersion)" />
+        <InstallerProject Include="$(RepoRoot)src\Installers\Windows\WindowsHostingBundle\WindowsHostingBundle.wixproj" AdditionalProperties="Platform=x86" />
       </ItemGroup>
 
       <ItemGroup>

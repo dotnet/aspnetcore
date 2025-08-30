@@ -4,5 +4,6 @@
     <ArtifactsShippingPackagesDir>${ArtifactsShippingPackagesDir}</ArtifactsShippingPackagesDir>
     <TreatWarningsAsErrors Condition="'$(BuildingInsideVisualStudio)' != 'true'">true</TreatWarningsAsErrors>
     <LibNetHostAppPackVersion Condition=" '$(LibNetHostAppPackVersion)' == '' ">${LibNetHostAppPackVersion}</LibNetHostAppPackVersion>
+    <_ProductVersionForInstallers>${SharedFxVersion}</_ProductVersionForInstallers>
   </PropertyGroup>
 </Project>

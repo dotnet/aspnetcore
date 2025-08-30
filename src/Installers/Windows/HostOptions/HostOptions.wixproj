@@ -2,7 +2,7 @@
 <Project>
   <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
-    <Name>dotnet-hosting-options-$(_ShippingProductVersion)-win.msi</Name>
+    <Name>dotnet-hosting-options-$(_ProductVersionForInstallers)-win.msi</Name>
     <OutputName>$(Name)</OutputName>
     <PackageFileName>$(Name)</PackageFileName>
     <OutputType>Package</OutputType>
