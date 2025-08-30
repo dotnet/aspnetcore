@@ -20,14 +20,85 @@ public static class EnhancedNavigationTestUtil
 
             if (!skipNavigation)
             {
-                // Normally we need to navigate here first otherwise the browser isn't on the correct origin to access
-                // localStorage. But some tests are already in the right place and need to avoid extra navigation.
-                fixture.Navigate($"{fixture.ServerPathBase}/");
-                browser.Equal("Hello", () => browser.Exists(By.TagName("h1")).Text);
+                NavigateToOrigin(fixture);
             }
 
-            ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.setItem('suppress-enhanced-navigation', 'true')");
+            try
+            {
+                ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.", ex);
+            }
+
+            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
+            if (testId is null || string.IsNullOrEmpty(testId as string))
+            {
+                testId = GrantTestId(browser);
+            }
+
+            ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('suppress-enhanced-navigation-{testId}', 'true')");
+
+            var suppressEnhancedNavigation = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('suppress-enhanced-navigation-{testId}');");
+            Assert.True(suppressEnhancedNavigation is not null && (string)suppressEnhancedNavigation == "true",
+                "Expected 'suppress-enhanced-navigation' to be set in sessionStorage.");
         }
+    }
+
+    public static void CleanEnhancedNavigationSuppression<TServerFixture>(ServerTestBase<TServerFixture> fixture, bool skipNavigation = false)
+        where TServerFixture : ServerFixture
+    {
+        var browser = fixture.Browser;
+
+        try
+        {
+            // First, ensure we're on the correct origin to access sessionStorage
+            try
+            {
+                // Check if we can access sessionStorage from current location
+                ((IJavaScriptExecutor)browser).ExecuteScript("sessionStorage.length");
+            }
+            catch
+            {
+                if (skipNavigation)
+                {
+                    throw new InvalidOperationException("Session storage not found. Ensure that the browser is on the correct origin by navigating to a page or by setting skipNavigation to false.");
+                }
+                NavigateToOrigin(fixture);
+            }
+
+            var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
+            if (testId is null || string.IsNullOrEmpty(testId as string))
+            {
+                return;
+            }
+
+            ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('test-id')");
+            ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.removeItem('suppress-enhanced-navigation-{testId}')");
+        }
+        catch (WebDriverException ex) when (ex.Message.Contains("invalid session id"))
+        {
+            // Browser session is no longer valid (e.g., browser was closed)
+            // Session storage is automatically cleared when browser closes, so cleanup is already done
+            // This is expected in some tests, so we silently return
+            return;
+        }
+    }
+
+    private static void NavigateToOrigin<TServerFixture>(ServerTestBase<TServerFixture> fixture)
+        where TServerFixture : ServerFixture
+    {
+        // Navigate to the test origin to ensure the browser is on the correct state to access sessionStorage
+        fixture.Navigate($"{fixture.ServerPathBase}/");
+        fixture.Browser.Equal("Hello", () => fixture.Browser.Exists(By.TagName("h1")).Text);
+    }
+
+    private static string GrantTestId(IWebDriver browser)
+    {
+        var testId = Guid.NewGuid().ToString("N")[..8];
+        ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
+        return testId;
     }
 
     public static long GetScrollY(this IWebDriver browser)
