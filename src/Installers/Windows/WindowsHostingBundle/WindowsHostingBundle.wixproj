@@ -90,12 +90,9 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <TargetName>dotnet-hosting-$(PackageVersion)-win</TargetName>
-    <PackageFileName>$(TargetName)$(TargetExt)</PackageFileName>
+    <PackageFileName>dotnet-hosting-$(PackageVersion)-win$(TargetExt)</PackageFileName>
     <Name>$(PackageFileName)</Name>
     <OutputName>$(PackageFileName)</OutputName>
-    <TargetFileName>$(PackageFileName)</TargetFileName>
-    <TargetPdbFileName>$(TargetName).wixpdb</TargetPdbFileName>
 
     <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
     <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
