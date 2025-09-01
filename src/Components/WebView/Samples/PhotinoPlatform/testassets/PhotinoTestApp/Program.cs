@@ -22,7 +22,7 @@ class Program
         }
         else
         {
-            throw new ArgumentException($"Scenario {testScenario} is unknown.", nameof(testScenario));
+            throw new ArgumentException($"Scenario {testScenario} is unknown.", nameof(args));
         }
     }
 }
