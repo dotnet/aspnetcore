@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Components.WebView.Photino;
 using Microsoft.Extensions.DependencyInjection;
 using PhotinoNET;
 
-namespace Microsoft.AspNetCore.Components.WebViewE2E.Test;
-
-public class BasicBlazorHybridTest
+public class BasicTest : IExecutionMode
 {
     private string _latestControlDivValue;
+    const int MaxWaitTimes = 30;
+    const int WaitTimeInMS = 250;
 
     public void Run()
     {
@@ -19,8 +19,8 @@ public class BasicBlazorHybridTest
         // that is necessary for the functioning of this test is the "Test passed" at the end of this method.
 
         Console.WriteLine($"Current directory: {Environment.CurrentDirectory}");
-        Console.WriteLine($"Current assembly: {typeof(Program).Assembly.Location}");
-        var thisProgramDir = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+        Console.WriteLine($"Current assembly: {typeof(BasicTest).Assembly.Location}");
+        var thisProgramDir = Path.GetDirectoryName(typeof(BasicTest).Assembly.Location);
 
         // Add correct runtime sub-folder to PATH to ensure native files are discovered (this is supposed to happen automatically, but somehow it doesn't...)
         var newNativePath = Path.Combine(thisProgramDir, "runtimes", RuntimeInformation.RuntimeIdentifier, "native");
@@ -66,7 +66,7 @@ public class BasicBlazorHybridTest
         };
 
         Console.WriteLine($"Setting up root components...");
-        mainWindow.RootComponents.Add<Pages.TestPage>("root");
+        mainWindow.RootComponents.Add<PhotinoTestApp.Pages.TestPage>("root");
 
         Console.WriteLine($"Running window...");
 
@@ -161,10 +161,7 @@ public class BasicBlazorHybridTest
         Console.WriteLine($"Test passed? {testPassed}");
     }
 
-    const int MaxWaitTimes = 30;
-    const int WaitTimeInMS = 250;
-
-    public async Task<bool> WaitForControlDiv(PhotinoWindow photinoWindow, string controlValueToWaitFor)
+    private async Task<bool> WaitForControlDiv(PhotinoWindow photinoWindow, string controlValueToWaitFor)
     {
 
         for (var i = 0; i < MaxWaitTimes; i++)

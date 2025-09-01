@@ -18,22 +18,33 @@ public class WebViewManagerE2ETests
     [ConditionalFact]
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX,
         SkipReason = "On Helix/Ubuntu the native Photino assemblies can't be found, and on macOS it can't detect when the WebView is ready")]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/50802")]
     public async Task CanLaunchPhotinoWebViewAndClickButton()
     {
-        var photinoTestProgramExePath = typeof(WebViewManagerE2ETests).Assembly.Location;
+        // Get the path to the PhotinoTestApp instead of the current test assembly
+        var currentAssemblyPath = typeof(WebViewManagerE2ETests).Assembly.Location;
 
-        // This test launches this very test assembly as an executable so that the Photino UI window
-        // can launch and be automated. See the comment in Program.Main() for more info.
+        // Extract the current assembly name from the path (without .dll extension)
+        var currentAssemblyName = Path.GetFileNameWithoutExtension(currentAssemblyPath);
+
+        // Replace the current assembly name with "PhotinoTestApp" in the entire path
+        var photinoTestAppPath = currentAssemblyPath.Replace(currentAssemblyName, "PhotinoTestApp");
+
+        if (!File.Exists(photinoTestAppPath))
+        {
+            throw new FileNotFoundException($"Could not find PhotinoTestApp.dll at: {photinoTestAppPath}");
+        }
+
+        // This test launches the PhotinoTestApp sample as an executable so that the Photino UI window
+        // can launch and be automated.
         var photinoProcess = new Process()
         {
-            StartInfo = new ProcessStartInfo
-            {
-                WorkingDirectory = Path.GetDirectoryName(photinoTestProgramExePath),
-                FileName = "dotnet",
-                Arguments = $"\"{photinoTestProgramExePath}\"",
-                RedirectStandardOutput = true,
-            },
+           StartInfo = new ProcessStartInfo
+           {
+               WorkingDirectory = Path.GetDirectoryName(photinoTestAppPath),
+               FileName = "dotnet",
+               Arguments = $"\"{photinoTestAppPath}\" --basic-test",
+               RedirectStandardOutput = true,
+           },
         };
 
         photinoProcess.Start();

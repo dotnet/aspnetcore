@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <IsShippingPackage>false</IsShippingPackage>
     <SignAssembly>false</SignAssembly>
-    <_WebViewAssetsBasePath>..\..\..\..\..\Web.JS\dist\Release\</_WebViewAssetsBasePath>
+    <_WebViewAssetsBasePath>..\..\..\..\..\Web.JS\dist\$(Configuration)\</_WebViewAssetsBasePath>
     <_BlazorModulesFilePath>..\..\..\..\WebView\src\blazor.modules.json</_BlazorModulesFilePath>
   </PropertyGroup>
 
