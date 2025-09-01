@@ -35,7 +35,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     private TestServer? _server;
     private IHost? _host;
     private Action<IWebHostBuilder> _configuration;
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private IWebHost? _webHost;
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
     private Uri? _webHostAddress;
     private readonly List<HttpClient> _clients = new();
     private readonly List<WebApplicationFactory<TEntryPoint>> _derivedFactories = new();
@@ -106,7 +108,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
                 return _webHost?.Services ?? _host!.Services;
             }
 
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
             return _host?.Services ?? _server!.Host.Services;
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
         }
     }
 
@@ -142,7 +146,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     {
         var factory = new DelegatedWebApplicationFactory(
             ClientOptions,
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
             CreateServer,
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
             CreateServer,
             CreateHost,
             CreateWebHostBuilder,
@@ -201,6 +207,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         this._configureKestrelOptions = configureKestrelOptions;
     }
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private IWebHost CreateKestrelServer(IWebHostBuilder builder)
     {
         ConfigureBuilderToUseKestrel(builder);
@@ -212,6 +219,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
         host.Start();
         return host;
     }
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
 
     private void TryConfigureServerPort(Func<IServerAddressesFeature?> serverAddressFeatureAccessor)
     {
@@ -311,7 +319,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             }
             else
             {
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
                 _server = CreateServer(builder);
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
             }
         }
     }
@@ -567,6 +577,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
     /// create the server.</param>
     /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the overloads that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
     protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
 
     /// <summary>
@@ -595,7 +606,9 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
 
     private static IServerAddressesFeature? GetServerAddressFeature(IHost host) => host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>();
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
     private static IServerAddressesFeature? GetServerAddressFeature(IWebHost webHost) => webHost.ServerFeatures.Get<IServerAddressesFeature>();
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
 
     /// <summary>
     /// Gives a fixture an opportunity to configure the application before it gets built.
@@ -843,6 +856,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             _configuration = configureWebHost;
         }
 
+        [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.", DiagnosticId = "ASPDEPR008")]
         protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
 
         protected override TestServer CreateServer(IServiceProvider serviceProvider) => _createServerFromServiceProvider(serviceProvider);

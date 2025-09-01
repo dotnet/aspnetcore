@@ -19,6 +19,7 @@ import { attachWebRendererInterop } from './Rendering/WebRendererInteropMethods'
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { RuntimeAPI } from '@microsoft/dotnet-runtime';
 import { JSEventRegistry } from './Services/JSEventRegistry';
+import { BinaryImageComponent } from './Rendering/BinaryImageComponent';
 
 // TODO: It's kind of hard to tell which .NET platform(s) some of these APIs are relevant to.
 // It's important to know this information when dealing with the possibility of mulitple .NET platforms being available.
@@ -50,6 +51,7 @@ export interface IBlazor {
     navigationManager: typeof navigationManagerInternalFunctions | any;
     domWrapper: typeof domFunctions;
     Virtualize: typeof Virtualize;
+    BinaryImageComponent: typeof BinaryImageComponent;
     PageTitle: typeof PageTitle;
     forceCloseConnection?: () => Promise<void>;
     InputFile?: typeof InputFile;
@@ -59,7 +61,7 @@ export interface IBlazor {
     receiveByteArray?: (id: number, data: Uint8Array) => void;
     getPersistedState?: () => string;
     getInitialComponentsUpdate?: () => Promise<string>;
-    updateRootComponents?: (operations: string) => void;
+    updateRootComponents?: (operations: string, webAssemblyState: string) => void;
     endUpdateRootComponents?: (batchId: number) => void;
     attachRootComponentToElement?: (arg0: any, arg1: any, arg2: any, arg3: any) => void;
     registeredComponents?: {
@@ -87,7 +89,7 @@ export interface IBlazor {
       EndInvokeJS: (argsJson: string) => void;
       BeginInvokeDotNet: (callId: string | null, assemblyNameOrDotNetObjectId: string, methodIdentifier: string, argsJson: string) => void;
       ReceiveByteArrayFromJS: (id: number, data: Uint8Array) => void;
-      UpdateRootComponentsCore: (operationsJson: string) => void;
+      UpdateRootComponentsCore: (operationsJson: string, appState: string) => void;
     }
 
     // APIs invoked by hot reload
@@ -111,6 +113,7 @@ export const Blazor: IBlazor = {
     NavigationLock,
     getJSDataStreamChunk: getNextChunk,
     attachWebRendererInterop,
+    BinaryImageComponent,
   },
 };
 

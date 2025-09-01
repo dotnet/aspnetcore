@@ -142,7 +142,6 @@ public class RevalidatingServerAuthenticationStateProviderTest
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/60472")]
     public async Task SuppliesCancellationTokenThatSignalsWhenRevalidationLoopIsBeingDiscarded()
     {
         // Arrange

@@ -49,10 +49,9 @@ export class JSInitializer {
     await Promise.all(initializerFiles.map(f => importAndInvokeInitializer(this, f)));
 
     function adjustPath(path: string): string {
-      // This is the same we do in JS interop with the import callback
-      const base = document.baseURI;
-      path = base.endsWith('/') ? `${base}${path}` : `${base}/${path}`;
-      return path;
+      // Use URL constructor to properly resolve relative paths, avoiding issues with query parameters
+      // This is the same mechanism as for import dotnet.js in MonoPlatform.ts
+      return new URL(path, document.baseURI).toString();
     }
 
     async function importAndInvokeInitializer(jsInitializer: JSInitializer, asset: JSAsset): Promise<void> {

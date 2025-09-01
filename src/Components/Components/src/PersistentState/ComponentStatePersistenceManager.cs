@@ -12,9 +12,11 @@ namespace Microsoft.AspNetCore.Components.Infrastructure;
 public class ComponentStatePersistenceManager
 {
     private readonly List<PersistComponentStateRegistration> _registeredCallbacks = new();
+    private readonly List<RestoreComponentStateRegistration> _registeredRestoringCallbacks = new();
     private readonly ILogger<ComponentStatePersistenceManager> _logger;
 
     private bool _stateIsPersisted;
+    private bool _stateIsInitialized;
     private readonly PersistentServicesRegistry? _servicesRegistry;
     private readonly Dictionary<string, byte[]> _currentState = new(StringComparer.Ordinal);
 
@@ -24,7 +26,7 @@ public class ComponentStatePersistenceManager
     /// <param name="logger"></param>
     public ComponentStatePersistenceManager(ILogger<ComponentStatePersistenceManager> logger)
     {
-        State = new PersistentComponentState(_currentState, _registeredCallbacks);
+        State = new PersistentComponentState(_currentState, _registeredCallbacks, _registeredRestoringCallbacks);
         _logger = logger;
     }
 
@@ -56,9 +58,37 @@ public class ComponentStatePersistenceManager
     /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
     public async Task RestoreStateAsync(IPersistentComponentStateStore store)
     {
+        await RestoreStateAsync(store, RestoreContext.InitialValue);
+    }
+
+    /// <summary>
+    /// Restores the application state.
+    /// </summary>
+    /// <param name="store"> The <see cref="IPersistentComponentStateStore"/> to restore the application state from.</param>
+    /// <param name="context">The <see cref="RestoreContext"/> that provides additional context for the restoration.</param>
+    /// <returns>A <see cref="Task"/> that will complete when the state has been restored.</returns>
+    public async Task RestoreStateAsync(IPersistentComponentStateStore store, RestoreContext context)
+    {
         var data = await store.GetPersistedStateAsync();
-        State.InitializeExistingState(data);
-        _servicesRegistry?.Restore(State);
+
+        if (_stateIsInitialized)
+        {
+            if (context != RestoreContext.ValueUpdate)
+            {
+                throw new InvalidOperationException("State already initialized.");
+            }
+            State.UpdateExistingState(data, context);
+            foreach (var registration in _registeredRestoringCallbacks)
+            {
+                registration.Callback();
+            }
+        }
+        else
+        {
+            State.InitializeExistingState(data, context);
+            _servicesRegistry?.RegisterForPersistence(State);
+            _stateIsInitialized = true;
+        }
     }
 
     /// <summary>
@@ -78,9 +108,6 @@ public class ComponentStatePersistenceManager
 
         async Task PauseAndPersistState()
         {
-            // Ensure that we register the services before we start persisting the state.
-            _servicesRegistry?.RegisterForPersistence(State);
-
             State.PersistingState = true;
 
             if (store is IEnumerable<IPersistentComponentStateStore> compositeStore)
@@ -271,4 +298,5 @@ public class ComponentStatePersistenceManager
             return true;
         }
     }
+
 }

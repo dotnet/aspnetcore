@@ -501,10 +501,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             serializedSchema = writer.ToString();
             Assert.Equal("""
             {
-                "type": [
-                    "null",
-                    "object"
-                ],
+                "type": "object",
                 "properties": {
                     "address": {
                         "$ref": "#/components/schemas/AddressDto"
@@ -519,10 +516,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             serializedSchema = writer.ToString();
             Assert.Equal("""
             {
-                "type": [
-                    "null",
-                    "object"
-                ],
+                "type": "object",
                 "properties": {
                     "relatedLocation": {
                         "$ref": "#/components/schemas/LocationDto"
@@ -740,8 +734,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
             Assert.Equal("Category", ((OpenApiSchemaReference)requestSchema).Reference.Id);
 
             // Assert that $ref is used for nested Tags
-            // Todo: See https://github.com/microsoft/OpenAPI.NET/issues/2062
-            // Assert.Equal("Tag", ((OpenApiSchemaReference)requestSchema.Properties["tags"].Items).Reference.Id);
+            Assert.Equal("Tag", ((OpenApiSchemaReference)requestSchema.Properties["tags"].Items).Reference.Id);
 
             // Assert that $ref is used for nested Parent
             Assert.Equal("Category", ((OpenApiSchemaReference)requestSchema.Properties["parent"]).Reference.Id);
@@ -870,6 +863,202 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
     {
         public int Id { get; set; }
         public required ParentObject Parent { get; set; }
+    }
+
+    // Test for: https://github.com/dotnet/aspnetcore/issues/61194
+    [Fact]
+    public async Task ResolveGenericTypesInListProperties()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (Config config) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/"]?.Operations?[HttpMethod.Post];
+            var requestSchema = operation?.RequestBody?.Content?["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.NotNull(requestSchema);
+            Assert.Equal("Config", ((OpenApiSchemaReference)requestSchema).Reference.Id);
+
+            // Get effective schema for Config
+            Assert.Equal(2, requestSchema.Properties!.Count);
+
+            // Check Items1 and Items2 properties
+            var items1Schema = requestSchema.Properties!["items1"];
+            var items2Schema = requestSchema.Properties!["items2"];
+
+            // Assert both are array types
+            Assert.Equal(JsonSchemaType.Array, items1Schema.Type);
+            Assert.Equal(JsonSchemaType.Array, items2Schema.Type);
+
+            // Assert items reference the same ConfigItem schema
+            Assert.Equal("ConfigItem", ((OpenApiSchemaReference)items1Schema.Items!).Reference.Id);
+            Assert.Equal("ConfigItem", ((OpenApiSchemaReference)items2Schema.Items!).Reference.Id);
+
+            // Verify the ConfigItem schema has proper content, not empty
+            var itemSchema = items1Schema.Items!;
+            Assert.True(itemSchema.Properties?.Count > 0, "ConfigItem schema should not be empty");
+            Assert.Contains("id", itemSchema.Properties?.Keys ?? []);
+            Assert.Contains("lang", itemSchema.Properties?.Keys ?? []);
+            Assert.Contains("words", itemSchema.Properties?.Keys ?? []);
+            Assert.Contains("break", itemSchema.Properties?.Keys ?? []);
+            Assert.Contains("willBeGood", itemSchema.Properties?.Keys ?? []);
+
+            Assert.Equal(["Config", "ConfigItem"], document.Components!.Schemas!.Keys.OrderBy(x => x));
+        });
+    }
+
+    // Test for: https://github.com/dotnet/aspnetcore/issues/63054
+    [Fact]
+    public async Task ResolveReusedTypesAcrossDifferentHierarchies()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (ProjectResponse project) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths?["/"].Operations?[HttpMethod.Post];
+            var requestSchema = operation?.RequestBody?.Content?["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.NotNull(requestSchema);
+            Assert.Equal("ProjectResponse", ((OpenApiSchemaReference)requestSchema).Reference.Id);
+
+            // Check Address property
+            var addressSchema = requestSchema.Properties!["address"];
+            Assert.Equal("AddressResponse", ((OpenApiSchemaReference)addressSchema).Reference.Id);
+
+            // Check Builder property
+            var builderSchema = requestSchema.Properties!["builder"];
+            Assert.Equal("BuilderResponse", ((OpenApiSchemaReference)builderSchema).Reference.Id);
+
+            // Verify CityResponse is properly referenced in Address
+            var cityInAddressSchema = addressSchema.Properties!["city"];
+            Assert.Equal("CityResponse", ((OpenApiSchemaReference)cityInAddressSchema).Reference.Id);
+
+            // Verify CityResponse is properly referenced in Builder
+            var cityInBuilderSchema = builderSchema.Properties!["city"];
+            Assert.Equal("CityResponse", ((OpenApiSchemaReference)cityInBuilderSchema).Reference.Id);
+
+            // Verify the CityResponse schema has proper content, not empty
+            var citySchema = cityInAddressSchema;
+            Assert.True(citySchema.Properties?.Count > 0, "CityResponse schema should not be empty");
+            Assert.Contains("name", citySchema.Properties?.Keys ?? []);
+
+            Assert.Equal(["AddressResponse", "BuilderResponse", "CityResponse", "ProjectResponse"],
+                        document.Components!.Schemas!.Keys.OrderBy(x => x));
+        });
+    }
+
+    // Test for: https://github.com/dotnet/aspnetcore/issues/63211
+    [Fact]
+    public async Task ResolveNullableReferenceTypes()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        builder.MapPost("/", (Subscription subscription) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths?["/"].Operations?[HttpMethod.Post];
+            var requestSchema = operation?.RequestBody?.Content?["application/json"].Schema;
+
+            // Assert $ref used for top-level
+            Assert.NotNull(requestSchema);
+            Assert.Equal("Subscription", ((OpenApiSchemaReference)requestSchema).Reference.Id);
+
+            // Check primaryUser property (required RefProfile)
+            var primaryUserSchema = requestSchema.Properties!["primaryUser"];
+            Assert.Equal("RefProfile", ((OpenApiSchemaReference)primaryUserSchema).Reference.Id);
+
+            // Check secondaryUser property (nullable RefProfile)
+            var secondaryUserSchema = requestSchema.Properties!["secondaryUser"];
+            Assert.NotNull(secondaryUserSchema.OneOf);
+            Assert.Collection(secondaryUserSchema.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal("RefProfile", ((OpenApiSchemaReference)item).Reference.Id));
+
+            // Verify the RefProfile schema has a User property that references RefUser
+            var userPropertySchema = primaryUserSchema.Properties!["user"];
+            Assert.Equal("RefUser", ((OpenApiSchemaReference)userPropertySchema).Reference.Id);
+
+            // Verify the RefUser schema has proper content, not empty
+            var userSchemaContent = userPropertySchema;
+            Assert.True(userSchemaContent.Properties?.Count > 0, "RefUser schema should not be empty");
+            Assert.Contains("name", userSchemaContent.Properties?.Keys ?? []);
+            Assert.Contains("email", userSchemaContent.Properties?.Keys ?? []);
+
+            // Both properties should reference the same RefProfile schema
+            var secondaryUserSchemaRef = secondaryUserSchema.OneOf.Last();
+            Assert.Equal(((OpenApiSchemaReference)primaryUserSchema).Reference.Id,
+                        ((OpenApiSchemaReference)secondaryUserSchemaRef).Reference.Id);
+
+            Assert.Equal(["RefProfile", "RefUser", "Subscription"], document.Components!.Schemas!.Keys.OrderBy(x => x));
+            Assert.All(document.Components.Schemas.Values, item => Assert.False(item.Type?.HasFlag(JsonSchemaType.Null)));
+        });
+    }
+
+    // Test models for issue 61194
+    private class Config
+    {
+        public List<ConfigItem> Items1 { get; set; } = [];
+        public List<ConfigItem> Items2 { get; set; } = [];
+    }
+
+    private class ConfigItem
+    {
+        public int? Id { get; set; }
+        public string? Lang { get; set; }
+        public Dictionary<string, object?>? Words { get; set; }
+        public List<string>? Break { get; set; }
+        public string? WillBeGood { get; set; }
+    }
+
+    // Test models for issue 63054
+    private class ProjectResponse
+    {
+        public AddressResponse Address { get; init; } = new();
+        public BuilderResponse Builder { get; init; } = new();
+    }
+
+    private class AddressResponse
+    {
+        public CityResponse City { get; init; } = new();
+    }
+
+    private class BuilderResponse
+    {
+        public CityResponse City { get; init; } = new();
+    }
+
+    private class CityResponse
+    {
+        public string Name { get; set; } = "";
+    }
+
+    // Test models for issue 63211
+    public sealed class Subscription
+    {
+        public required string Id { get; set; }
+        public required RefProfile PrimaryUser { get; set; }
+        public RefProfile? SecondaryUser { get; set; }
+    }
+
+    public sealed class RefProfile
+    {
+        public required RefUser User { get; init; }
+    }
+
+    public sealed class RefUser
+    {
+        public string Name { get; set; } = "";
+        public string Email { get; set; } = "";
     }
 }
 #nullable restore

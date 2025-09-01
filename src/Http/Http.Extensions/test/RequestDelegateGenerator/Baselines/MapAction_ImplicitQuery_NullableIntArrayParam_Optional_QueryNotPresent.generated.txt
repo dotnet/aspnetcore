@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Http.Generated
                 var parameters = methodInfo.GetParameters();
                 options.EndpointBuilder.Metadata.Add(new ParameterBindingMetadata("p", parameters[0], hasTryParse: true, hasBindAsync: false, isOptional: true));
                 options.EndpointBuilder.Metadata.Add(new ProducesResponseTypeMetadata(statusCode: StatusCodes.Status200OK, type: typeof(global::System.Int32?[]), contentTypes: GeneratedMetadataConstants.JsonContentType));
-                ApiEndpointMetadata.AddApiEndpointMetadataIfMissing(options.EndpointBuilder);
+                DisableCookieRedirectMetadata.AddMetadataIfMissing(options.EndpointBuilder);
                 return new RequestDelegateMetadataResult { EndpointMetadata = options.EndpointBuilder.Metadata.AsReadOnly() };
             };
             RequestDelegateFactoryFunc createRequestDelegate = (del, options, inferredMetadataResult) =>
@@ -267,17 +267,17 @@ namespace Microsoft.AspNetCore.Http.Generated
 
     }
 
-    file sealed class ApiEndpointMetadata : IApiEndpointMetadata
+    file sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
     {
-        public static readonly ApiEndpointMetadata Instance = new();
+        public static readonly DisableCookieRedirectMetadata Instance = new();
 
-        private ApiEndpointMetadata()
+        private DisableCookieRedirectMetadata()
         {
         }
 
-        public static void AddApiEndpointMetadataIfMissing(EndpointBuilder builder)
+        public static void AddMetadataIfMissing(EndpointBuilder builder)
         {
-            if (!builder.Metadata.Any(m => m is IApiEndpointMetadata))
+            if (!builder.Metadata.Any(m => m is IDisableCookieRedirectMetadata))
             {
                 builder.Metadata.Add(Instance);
             }
