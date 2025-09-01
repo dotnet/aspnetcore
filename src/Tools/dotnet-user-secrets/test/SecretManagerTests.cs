@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.Tools;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.Configuration.UserSecrets.Tests;
 using Microsoft.Extensions.Tools.Internal;
@@ -64,7 +65,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         var secretManager = CreateProgram();
 
         secretManager.RunInternal("list", "--project", projectPath);
-        Assert.Contains(Resources.FormatError_ProjectPath_NotFound(projectPath), _console.GetOutput());
+        Assert.Contains(SecretsHelpersResources.FormatError_ProjectPath_NotFound(projectPath), _console.GetOutput());
     }
 
     [Fact]

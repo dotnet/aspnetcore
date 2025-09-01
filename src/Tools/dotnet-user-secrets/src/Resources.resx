@@ -133,14 +133,8 @@ Use the '--help' flag to see info.</value>
   <data name="Error_No_Secrets_Found" xml:space="preserve">
     <value>No secrets configured for this application.</value>
   </data>
-  <data name="Error_NoProjectsFound" xml:space="preserve">
-    <value>Could not find a MSBuild project file in '{projectPath}'. Specify which project to use with the --project option. Use --file option for file-based apps.</value>
-  </data>
   <data name="Error_ProjectMissingId" xml:space="preserve">
     <value>Could not find the global property 'UserSecretsId' in MSBuild project '{project}'. Ensure this property is set in the project or use the '--id' command line option.</value>
-  </data>
-  <data name="Error_ProjectPath_NotFound" xml:space="preserve">
-    <value>The file '{path}' does not exist.</value>
   </data>
   <data name="Error_ProjectFailedToLoad" xml:space="preserve">
     <value>Could not load the MSBuild project '{project}'.</value>
