@@ -59,9 +59,8 @@ internal sealed class ProjectIdResolver
                 UseShellExecute = false,
                 ArgumentList =
                     {
-                        "msbuild",
+                        "build",
                         projectFile,
-                        "/nologo",
                         "/t:_ExtractUserSecretsMetadata", // defined in SecretManager.targets
                         "/p:_UserSecretsMetadataFile=" + outputFile,
                         "/p:Configuration=" + configuration,
@@ -72,7 +71,7 @@ internal sealed class ProjectIdResolver
             };
 
 #if DEBUG
-            _reporter.Verbose($"Invoking '{psi.FileName} {psi.Arguments}'");
+            _reporter.Verbose($"Invoking '{psi.FileName} {string.Join(' ', psi.ArgumentList)}'");
 #endif
 
             using var process = new Process()
