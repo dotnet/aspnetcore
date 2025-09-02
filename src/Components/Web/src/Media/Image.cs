@@ -6,9 +6,10 @@ namespace Microsoft.AspNetCore.Components.Web.Media;
 /* This is equivalent to a .razor file containing:
  *
  * <img data-blazor-image
+ *      src="@(_currentObjectUrl)"
  *      data-state=@(IsLoading ? "loading" : _hasError ? "error" : null)
- *      @ref="Element"
- *      @attributes="AdditionalAttributes" />
+ *      @attributes="AdditionalAttributes"
+ *      @ref="Element"></img>
  *
  */
 /// <summary>

@@ -47,37 +47,33 @@
     private static readonly byte[] TestPngData = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
     private static readonly byte[] TestTxtData = System.Text.Encoding.UTF8.GetBytes("Hello file download");
 
-    private async Task ShowDownload()
+    private void ShowDownload()
     {
         _downloadSource = new MediaSource(TestPngData, "image/png", "download-png-basic");
         _downloadFileName = "test.png";
         _showDownload = true;
-        await Task.Delay(10);
     }
 
-    private async Task ShowErrorDownload()
+    private void ShowErrorDownload()
     {
         var ms = new MemoryStream(TestTxtData);
         ms.Seek(ms.Length, SeekOrigin.Begin); // Force immediate EOF / error in JS pipeline when reading
         _errorSource = new MediaSource(ms, "text/plain", "error-file-key");
         _errorFileName = "error.txt";
         _showError = true;
-        await Task.Delay(10);
     }
 
-    private async Task ShowBlankFilename()
+    private void ShowBlankFilename()
     {
         _blankSource = new MediaSource(TestTxtData, "text/plain", "blank-file-key");
         _blankFileName = "";
         _showBlank = true;
-        await Task.Delay(10);
     }
 
-    private async Task ShowCustomHref()
+    private void ShowCustomHref()
     {
         _customHrefSource = new MediaSource(TestTxtData, "text/plain", "custom-href-file-key");
         _customHrefFileName = "custom.bin";
         _showCustomHref = true;
-        await Task.Delay(10);
     }
 }

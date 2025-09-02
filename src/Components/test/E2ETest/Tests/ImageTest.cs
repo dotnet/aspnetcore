@@ -166,7 +166,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void Image_CompletesLoad_AfterArtificialDelay()
     {
-        // Patch setContentAsync to introduce a delay before delegating to original
+        // Instrument setContentAsync to pause before fulfilling first image load until explicitly resolved.
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
               const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
@@ -174,7 +174,16 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
               if (!window.__origSetContentAsync) {
                 window.__origSetContentAsync = root.setContentAsync;
                 root.setContentAsync = async function(...args){
-                  await new Promise(r => setTimeout(r, 500));
+                  const getResolvers = () => {
+                    if (Promise.fromResolvers) return Promise.fromResolvers();
+                    let resolve, reject; const promise = new Promise((r,j)=>{ resolve=r; reject=j; });
+                    return { promise, resolve, reject };
+                  };
+                  if (!window.__imageContentDelay){
+                    const resolvers = getResolvers();
+                    window.__imageContentDelay = resolvers; // first invocation delayed
+                    await resolvers.promise;
+                  }
                   return window.__origSetContentAsync.apply(this, args);
                 };
               }
@@ -183,14 +192,18 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         Browser.FindElement(By.Id("load-png")).Click();
 
         var imageElement = Browser.FindElement(By.Id("png-basic"));
-        Browser.True(() =>
-        {
+        Assert.NotNull(imageElement);
+
+        // Release the delayed promise so load can complete.
+        ((IJavaScriptExecutor)Browser).ExecuteScript("if (window.__imageContentDelay) { window.__imageContentDelay.resolve(); }");
+
+        Browser.True(() => {
             var src = imageElement.GetAttribute("src");
             return !string.IsNullOrEmpty(src) && src.StartsWith("blob:", StringComparison.Ordinal);
         });
         Browser.Equal("PNG basic loaded", () => Browser.FindElement(By.Id("current-status")).Text);
 
-        // Restore
+        // Restore original function and clean up instrumentation
         ((IJavaScriptExecutor)Browser).ExecuteScript(@"
             (function(){
               const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
@@ -198,6 +211,7 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
                 root.setContentAsync = window.__origSetContentAsync;
                 delete window.__origSetContentAsync;
               }
+              delete window.__imageContentDelay;
             })();");
     }
 
@@ -340,5 +354,20 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
                 return false;
             }
         });
+    }
+
+    [Fact]
+    public void InvalidMimeImage_SetsErrorState()
+    {
+        Browser.FindElement(By.Id("load-invalid-mime")).Click();
+        Browser.Equal("Invalid mime image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+
+        var img = Browser.FindElement(By.Id("invalid-mime-image"));
+        Assert.NotNull(img);
+
+        Browser.Equal("error", () => img.GetAttribute("data-state"));
+
+        var src = img.GetAttribute("src");
+        Assert.True(string.IsNullOrEmpty(src) || src.StartsWith("blob:", StringComparison.Ordinal));
     }
 }

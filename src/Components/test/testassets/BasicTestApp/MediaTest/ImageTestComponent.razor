@@ -12,6 +12,7 @@
     <button id="load-pair-sequence" @onclick="LoadPairSequence">Load Two Images (Same Key)</button>
     <button id="load-error" @onclick="LoadErrorImage">Load Error</button>
     <button id="load-cached-jpg" @onclick="LoadCachedJpg">Load Cached JPG</button>
+    <button id="load-invalid-mime" @onclick="LoadInvalidMimeImage">Load Invalid MIME</button>
 
     <div id="test-status">
         Status: <span id="current-status">@_currentStatus</span>
@@ -53,6 +54,11 @@
     <h4>Cached JPG</h4>
     <Image @ref="@_cachedJpgRef" id="cached-jpg" Source="@_cachedJpgSource" />
 }
+@if (_invalidMimeImage)
+{
+    <h4>Invalid MIME Image</h4>
+    <Image @ref="@_invalidMimeRef" id="invalid-mime-image" Source="@_invalidMimeSource" />
+}
 
 @code {
     private Image _pngBasicRef;
@@ -62,6 +68,7 @@
     private Image _pair2Ref;
     private Image _errorRef;
     private Image _cachedJpgRef;
+    private Image _invalidMimeRef;
 
     private MediaSource _basicImageSource = new MediaSource(new byte[0], string.Empty, string.Empty);
     private MediaSource _jpgStreamSource = new MediaSource(new byte[0], string.Empty, string.Empty);
@@ -69,6 +76,7 @@
     private MediaSource _pairSource = new MediaSource(new byte[0], string.Empty, string.Empty);
     private MediaSource _errorSource = new MediaSource(new byte[0], string.Empty, string.Empty);
     private MediaSource _cachedJpgSource = new MediaSource(new byte[0], string.Empty, string.Empty);
+    private MediaSource _invalidMimeSource = new MediaSource(new byte[0], string.Empty, string.Empty);
 
     private bool _pngBasic;
     private bool _jpgStream;
@@ -77,6 +85,7 @@
     private bool _pair2Visible;
     private bool _errorImage;
     private bool _cachedJpgVisible;
+    private bool _invalidMimeImage;
 
     private string _currentStatus = "Ready";
     private bool _isCurrentlyShowingPng = true;
@@ -89,25 +98,23 @@
         _currentStatus = "Component initialized";
     }
 
-    private async Task ReloadPng()
+    private void ReloadPng()
     {
         _basicImageSource = new MediaSource(TestPngData, "image/png", "test-png-basic");
         _pngBasic = true;
-        await Task.Delay(10);
         _currentStatus = "PNG basic loaded";
     }
 
-    private async Task LoadJpgFromStream()
+    private void LoadJpgFromStream()
     {
         _currentStatus = "Loading JPG from stream...";
         var stream = new MemoryStream(TestJpgData);
         _jpgStreamSource = new MediaSource(stream, "image/jpeg", "test-jpg-stream");
-        await Task.Delay(10);
         _jpgStream = true;
         _currentStatus = "JPG from stream loaded";
     }
 
-    private async Task ChangeDynamicImageSource()
+    private void ChangeDynamicImageSource()
     {
         if (!_dynamicSource)
         {
@@ -115,7 +122,6 @@
             _dynamicImageSource = new MediaSource(TestPngData, "image/png", "dynamic-png");
             _dynamicSource = true;
             _isCurrentlyShowingPng = true;
-            await Task.Delay(10);
         }
         else
         {
@@ -130,39 +136,43 @@
                 _dynamicImageSource = new MediaSource(TestPngData, "image/png", "dynamic-png");
             }
             _isCurrentlyShowingPng = !_isCurrentlyShowingPng;
-            await Task.Delay(10);
         }
     }
 
-    private async Task LoadPairSequence()
+    private void LoadPairSequence()
     {
         _currentStatus = "Loading pair sequence...";
         _pairSource = new MediaSource(TestJpgData, "image/jpeg", "pair-cache");
         _pair1Visible = true;
-        await Task.Delay(50);
         _pair2Visible = true;
-        await Task.Delay(10);
         _currentStatus = "Pair second loaded";
     }
 
-    private async Task LoadErrorImage()
+    private void LoadErrorImage()
     {
         _currentStatus = "Loading error image...";
         var ms = new MemoryStream(new byte[] { 1, 2, 3, 4 });
         ms.Seek(ms.Length, SeekOrigin.Begin);
         _errorSource = new MediaSource(ms, "image/png", "error-key");
         _errorImage = true;
-        await Task.Delay(10);
         _currentStatus = "Error image loaded";
     }
 
-    private async Task LoadCachedJpg()
+    private void LoadCachedJpg()
     {
         _currentStatus = "Loading cached JPG...";
         _cachedJpgSource = new MediaSource(TestJpgData, "image/jpeg", "single-cached-jpg");
         _cachedJpgVisible = true;
-        await Task.Delay(10);
         _currentStatus = "Cached JPG loaded";
+    }
+
+    private void LoadInvalidMimeImage()
+    {
+        _currentStatus = "Loading invalid mime image...";
+        var bytes = new byte[] { 97 }; // 'a'
+        _invalidMimeSource = new MediaSource(bytes, "text/plain", "invalid-mime-key");
+        _invalidMimeImage = true;
+        _currentStatus = "Invalid mime image loaded";
     }
 
     public async ValueTask DisposeAsync()
@@ -172,5 +182,6 @@
         if (_pngBasicRef != null) await _pngBasicRef.DisposeAsync();
         if (_pair1Ref != null) await _pair1Ref.DisposeAsync();
         if (_pair2Ref != null) await _pair2Ref.DisposeAsync();
+        if (_invalidMimeRef != null) await _invalidMimeRef.DisposeAsync();
     }
 }

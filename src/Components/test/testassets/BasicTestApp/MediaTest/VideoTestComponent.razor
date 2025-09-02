@@ -47,21 +47,19 @@
 
     protected override void OnInitialized() { }
 
-    private async Task LoadMp4()
+    private void LoadMp4()
     {
         _mp4Source = new MediaSource(TestMp4Data, "video/mp4", "test-mp4-basic");
         _mp4Visible = true;
-        await Task.Delay(10);
     }
 
-    private async Task ChangeDynamicVideoSource()
+    private void ChangeDynamicVideoSource()
     {
         if (!_dynamicVideoVisible)
         {
             _dynamicVideoSource = new MediaSource(TestMp4Data, "video/mp4", "dynamic-mp4-a");
             _dynamicVideoVisible = true;
             _isShowingFirst = true;
-            await Task.Delay(10);
         }
         else
         {
@@ -74,17 +72,15 @@
                 _dynamicVideoSource = new MediaSource(TestMp4Data, "video/mp4", "dynamic-mp4-a");
             }
             _isShowingFirst = !_isShowingFirst;
-            await Task.Delay(10);
         }
     }
 
-    private async Task LoadErrorVideo()
+    private void LoadErrorVideo()
     {
         var ms = new MemoryStream(new byte[] { 1,2,3 });
         ms.Seek(ms.Length, SeekOrigin.Begin);
         _errorVideoSource = new MediaSource(ms, "video/mp4", "error-video-key");
         _errorVideoVisible = true;
-        await Task.Delay(10);
     }
 
     public async ValueTask DisposeAsync()

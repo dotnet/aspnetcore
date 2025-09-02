@@ -6,15 +6,19 @@ using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Components.Web.Media;
 
+/* This is equivalent to a .razor file containing:
+ *
+ * <a data-blazor-file-download
+ *    href="javascript:void(0)"
+ *    data-state=@(IsLoading ? "loading" : _hasError ? "error" : null)
+ *    @attributes="AdditionalAttributes"
+ *    @ref="Element"
+ *    @onclick="OnClickAsync">@(Text ?? "Download")</a>
+ *
+ */
 /// <summary>
-/// A component that provides a link which, when activated (clicked), downloads the provided media source
-/// either via a save-as dialog or directly, using the same BinaryMedia pipeline as <see cref="Image"/> and <see cref="Video"/>.
+/// A component that provides an anchor element to download the provided media source.
 /// </summary>
-/// <remarks>
-/// Unlike <see cref="Image"/> and <see cref="Video"/>, this component does not automatically load the media.
-/// It defers loading until the user activates the link. The stream is then materialized (no caching is performed for downloads)
-/// and a client-side download is triggered. Developers can style the link as a button via CSS (e.g., with a framework class).
-/// </remarks>
 public sealed class FileDownload : MediaComponentBase
 {
     /// <summary>

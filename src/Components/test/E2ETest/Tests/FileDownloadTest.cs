@@ -130,7 +130,7 @@ public class FileDownloadTest : ServerTestBase<ToggleExecutionModeServerFixture<
     [Fact]
     public void RapidClicks_CancelsFirstAndStartsSecond()
     {
-        // Instrument with delay on first call for cancellation scenario
+        // Instrument with controllable delay on first call for cancellation scenario (no setTimeout)
         var success = ((IJavaScriptExecutor)Browser).ExecuteAsyncScript(@"
             var callback = arguments[arguments.length - 1];
             (function(){
@@ -140,10 +140,19 @@ public class FileDownloadTest : ServerTestBase<ToggleExecutionModeServerFixture<
                     if (!window.__origDownloadAsyncDelay){
                         window.__origDownloadAsyncDelay = root.downloadAsync;
                         window.__downloadCalls = 0;
+                        window.__downloadDelayResolvers = null;
                         root.downloadAsync = async function(...a){
                             window.__downloadCalls++;
                             if (window.__downloadCalls === 1){
-                                await new Promise(r => setTimeout(r, 500));
+                                const getResolvers = () => {
+                                    if (Promise.fromResolvers) return Promise.fromResolvers();
+                                    let resolve, reject; const p = new Promise((r,j)=>{ resolve=r; reject=j; });
+                                    return { promise: p, resolve, reject };
+                                };
+                                if (!window.__downloadDelayResolvers){
+                                    window.__downloadDelayResolvers = getResolvers();
+                                }
+                                await window.__downloadDelayResolvers.promise;
                             }
                             return window.__origDownloadAsyncDelay.apply(this, a);
                         };
@@ -160,7 +169,17 @@ public class FileDownloadTest : ServerTestBase<ToggleExecutionModeServerFixture<
         link.Click(); // first (delayed)
         link.Click(); // second should cancel first
 
+        ((IJavaScriptExecutor)Browser).ExecuteScript("if (window.__downloadDelayResolvers) { window.__downloadDelayResolvers.resolve(); }");
+
         Browser.True(() => Convert.ToInt32(((IJavaScriptExecutor)Browser).ExecuteScript("return window.__downloadCalls || 0;"), CultureInfo.InvariantCulture) >= 2);
         Browser.True(() => string.IsNullOrEmpty(link.GetAttribute("data-state")) || link.GetAttribute("data-state") == null);
+
+        // Cleanup instrumentation
+        ((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            (function(){
+              const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
+              if (root && window.__origDownloadAsyncDelay){ root.downloadAsync = window.__origDownloadAsyncDelay; delete window.__origDownloadAsyncDelay; }
+              delete window.__downloadDelayResolvers;
+            })();");
     }
 }

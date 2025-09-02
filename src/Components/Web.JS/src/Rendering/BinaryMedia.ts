@@ -80,7 +80,6 @@ export class BinaryMedia {
 
     this.observer.observe(document.body, {
       childList: true,
-      subtree: true,
       attributes: true,
       attributeFilter: ['src', 'href'],
     });
@@ -295,15 +294,14 @@ export class BinaryMedia {
         BinaryMedia.loadingElements.delete(element);
         element.style.removeProperty('--blazor-media-progress');
       }
-      element.removeEventListener('error', onError);
     };
 
     const onError = (_e: Event) => {
       if (!cacheKey || BinaryMedia.activeCacheKey.get(element) === cacheKey) {
         BinaryMedia.loadingElements.delete(element);
         element.style.removeProperty('--blazor-media-progress');
+        element.setAttribute('data-state', 'error');
       }
-      element.removeEventListener('load', onLoad);
     };
 
     element.addEventListener('load', onLoad, { once: true });
