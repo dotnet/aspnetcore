@@ -61,6 +61,7 @@ internal sealed class ProjectIdResolver
                     {
                         "build",
                         projectFile,
+                        "--no-restore",
                         "/t:_ExtractUserSecretsMetadata", // defined in SecretManager.targets
                         "/p:_UserSecretsMetadataFile=" + outputFile,
                         "/p:Configuration=" + configuration,
