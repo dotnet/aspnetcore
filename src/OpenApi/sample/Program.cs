@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Text.Json.Serialization;
+using Sample.Endpoints;
 using Sample.Transformers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,6 +36,8 @@ builder.Services.AddOpenApi("v2", options =>
         return Task.CompletedTask;
     });
 });
+builder.Services.AddOpenApi("circular1");
+builder.Services.AddOpenApi("circular2");
 builder.Services.AddOpenApi("controllers");
 builder.Services.AddOpenApi("responses");
 builder.Services.AddOpenApi("forms");
@@ -59,6 +62,8 @@ if (app.Environment.IsDevelopment())
     app.MapSwaggerUi();
 }
 
+app.MapCircularEndpoints1();
+app.MapCircularEndpoints2();
 app.MapFormEndpoints();
 app.MapV1Endpoints();
 app.MapV2Endpoints();
