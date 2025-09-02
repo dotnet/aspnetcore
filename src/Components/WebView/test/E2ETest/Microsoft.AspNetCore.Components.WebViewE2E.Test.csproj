@@ -4,4 +4,9 @@
     <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Add project reference to ensure PhotinoTestApp is built and copied to our output directory -->
+    <ProjectReference Include="..\..\Samples\PhotinoPlatform\testassets\PhotinoTestApp\PhotinoTestApp.csproj" />
+  </ItemGroup>
+
 </Project>

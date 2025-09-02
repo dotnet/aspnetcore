@@ -20,18 +20,14 @@ public class WebViewManagerE2ETests
         SkipReason = "On Helix/Ubuntu the native Photino assemblies can't be found, and on macOS it can't detect when the WebView is ready")]
     public async Task CanLaunchPhotinoWebViewAndClickButton()
     {
-        // Get the path to the PhotinoTestApp instead of the current test assembly
-        var currentAssemblyPath = typeof(WebViewManagerE2ETests).Assembly.Location;
-
-        // Extract the current assembly name from the path (without .dll extension)
-        var currentAssemblyName = Path.GetFileNameWithoutExtension(currentAssemblyPath);
-
-        // Replace the current assembly name with "PhotinoTestApp" in the entire path
-        var photinoTestAppPath = currentAssemblyPath.Replace(currentAssemblyName, "PhotinoTestApp");
+        // With the project reference, PhotinoTestApp.dll should be copied to the same directory as this test assembly
+        var testAssemblyDirectory = Path.GetDirectoryName(typeof(WebViewManagerE2ETests).Assembly.Location)!;
+        var photinoTestAppPath = Path.Combine(testAssemblyDirectory, "PhotinoTestApp.dll");
 
         if (!File.Exists(photinoTestAppPath))
         {
-            throw new FileNotFoundException($"Could not find PhotinoTestApp.dll at: {photinoTestAppPath}");
+            throw new FileNotFoundException($"Could not find PhotinoTestApp.dll at: {photinoTestAppPath}. " +
+                "Ensure the PhotinoTestApp project reference is properly configured.");
         }
 
         // This test launches the PhotinoTestApp sample as an executable so that the Photino UI window
