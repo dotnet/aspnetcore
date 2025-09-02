@@ -11,6 +11,8 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerRenderingTests;
 
 public static class EnhancedNavigationTestUtil
 {
+    private static bool _isSuppressed;
+
     public static void SuppressEnhancedNavigation<TServerFixture>(ServerTestBase<TServerFixture> fixture, bool shouldSuppress, bool skipNavigation = false)
         where TServerFixture : ServerFixture
     {
@@ -43,12 +45,18 @@ public static class EnhancedNavigationTestUtil
             var suppressEnhancedNavigation = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('suppress-enhanced-navigation-{testId}');");
             Assert.True(suppressEnhancedNavigation is not null && (string)suppressEnhancedNavigation == "true",
                 "Expected 'suppress-enhanced-navigation' to be set in sessionStorage.");
+            _isSuppressed = true;
         }
     }
 
     public static void CleanEnhancedNavigationSuppression<TServerFixture>(ServerTestBase<TServerFixture> fixture, bool skipNavigation = false)
         where TServerFixture : ServerFixture
     {
+        if (!_isSuppressed)
+        {
+            return;
+        }
+
         var browser = fixture.Browser;
 
         try
@@ -83,6 +91,10 @@ public static class EnhancedNavigationTestUtil
             // Session storage is automatically cleared when browser closes, so cleanup is already done
             // This is expected in some tests, so we silently return
             return;
+        }
+        finally
+        {
+            _isSuppressed = false;
         }
     }
 
