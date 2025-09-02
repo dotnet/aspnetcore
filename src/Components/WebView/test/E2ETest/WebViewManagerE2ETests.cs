@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.InternalTesting;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.WebViewE2E.Test;
 
@@ -40,17 +41,37 @@ public class WebViewManagerE2ETests
                FileName = "dotnet",
                Arguments = $"\"{photinoTestAppPath}\" --basic-test",
                RedirectStandardOutput = true,
+               RedirectStandardError = true,
+               UseShellExecute = false,
            },
         };
 
         photinoProcess.Start();
 
         var testProgramOutput = photinoProcess.StandardOutput.ReadToEnd();
+        var testProgramError = photinoProcess.StandardError.ReadToEnd();
 
         await photinoProcess.WaitForExitAsync().TimeoutAfter(TimeSpan.FromSeconds(30));
 
-        // The test app reports its own results by calling Console.WriteLine(), so here we only need to verify that
-        // the test internally believes it passed (and we trust it!).
-        Assert.Contains($"Test passed? {true}", testProgramOutput);
+        // Use Assert.True with a custom message to include the full output in the failure message
+        var expectedMessage = $"Test passed? {true}";
+        var testPassed = testProgramOutput.Contains(expectedMessage);
+
+        if (!testPassed)
+        {
+            var errorInfo = $"Process exit code: {photinoProcess.ExitCode}\n" +
+                           $"Working directory: {photinoProcess.StartInfo.WorkingDirectory}\n" +
+                           $"Command: {photinoProcess.StartInfo.FileName} {photinoProcess.StartInfo.Arguments}\n" +
+                           $"PhotinoTestApp path: {photinoTestAppPath}\n\n" +
+                           $"=== Full Standard Output ===\n{testProgramOutput}\n" +
+                           $"=== End of Standard Output ===\n";
+
+            if (!string.IsNullOrEmpty(testProgramError))
+            {
+                errorInfo += $"\n=== Standard Error ===\n{testProgramError}\n=== End of Standard Error ===";
+            }
+
+            Assert.True(testPassed, $"Expected to find '{expectedMessage}' in PhotinoTestApp output.\n\n{errorInfo}");
+        }
     }
 }
