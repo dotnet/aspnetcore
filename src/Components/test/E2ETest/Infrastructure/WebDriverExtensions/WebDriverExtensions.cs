@@ -49,13 +49,7 @@ internal static class WebDriverExtensions
             {
                 browser.WaitForElementToBeVisible(By.Id(elementId));
                 var element = browser.FindElement(By.Id(elementId));
-                var elementLocation = element.Location.Y;
-
-                // Get scroll position using JavaScript (this is less likely to fail than element positioning)
-                var jsExecutor = (IJavaScriptExecutor)browser;
-                var scrollY = (long)jsExecutor.ExecuteScript("return window.scrollY");
-
-                return elementLocation + scrollY;
+                return element.Location.Y;
             }
             catch (Exception ex)
             {
