@@ -37,7 +37,7 @@ public static class EnhancedNavigationTestUtil
             var testId = ((IJavaScriptExecutor)browser).ExecuteScript($"return sessionStorage.getItem('test-id')");
             if (testId is null || string.IsNullOrEmpty(testId as string))
             {
-                testId = GrantTestId(browser);
+                testId = GenerateTestId(browser);
             }
 
             ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('suppress-enhanced-navigation-{testId}', 'true')");
@@ -103,10 +103,10 @@ public static class EnhancedNavigationTestUtil
     {
         // Navigate to the test origin to ensure the browser is on the correct state to access sessionStorage
         fixture.Navigate($"{fixture.ServerPathBase}/");
-        fixture.Browser.Equal("Hello", () => fixture.Browser.Exists(By.TagName("h1")).Text);
+        fixture.Browser.Exists(By.Id("session-storage-anchor"));
     }
 
-    private static string GrantTestId(IWebDriver browser)
+    private static string GenerateTestId(IWebDriver browser)
     {
         var testId = Guid.NewGuid().ToString("N")[..8];
         ((IJavaScriptExecutor)browser).ExecuteScript($"sessionStorage.setItem('test-id', '{testId}')");
