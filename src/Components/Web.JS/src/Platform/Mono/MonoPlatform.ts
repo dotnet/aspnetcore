@@ -154,7 +154,7 @@ function prepareRuntimeConfig(options: Partial<WebAssemblyStartOptions>, onConfi
     }
 
     Blazor._internal.getApplicationEnvironment = () => loadedConfig.applicationEnvironment!;
-    Blazor._internal.getApplicationCulture = () => loadedConfig.applicationCulture!;  
+    Blazor._internal.getApplicationCulture = () => loadedConfig.applicationCulture!;
 
     onConfigLoadedCallback?.(loadedConfig);
 
