@@ -847,20 +847,9 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
             {
                 var logs = Browser.GetBrowserLogs(LogLevel.Warning);
                 logging += $"{string.Join(", ", logs.Select(l => l.Message))}\n";
+                isNavigationSuppressed = (string)((IJavaScriptExecutor)Browser).ExecuteScript("return sessionStorage.getItem('suppress-enhanced-navigation');");
 
-                var testId = ((IJavaScriptExecutor)Browser).ExecuteScript("return sessionStorage.getItem('test-id');");
-                logging += $"  testId: {testId}\n";
-                if (testId is null)
-                {
-                    continue;
-                }
-                var suppressKey = $"suppress-enhanced-navigation-{testId}";
-
-                var enhancedNavAttached = ((IJavaScriptExecutor)Browser).ExecuteScript("return sessionStorage.getItem('blazor-enhanced-nav-attached');");
-                isNavigationSuppressed = (string)((IJavaScriptExecutor)Browser).ExecuteScript($"return sessionStorage.getItem('{suppressKey}');");
-
-                logging += $"  suppressKey: {suppressKey}\n";
-                logging += $"  {suppressKey}: {isNavigationSuppressed}\n";
+                logging += $" isNavigationSuppressed: {isNavigationSuppressed}\n";
                 // Maybe the check was done too early to change the DOM ref, retry
             }
 
