@@ -32,7 +32,7 @@ internal partial class WebAssemblyCultureProvider
     internal static void Initialize()
     {
         Instance = new WebAssemblyCultureProvider(
-            initialCulture: CultureInfo.CurrentCulture,
+            initialCulture: CultureInfo.GetCultureInfo(WebAssemblyCultureProviderInterop.GetApplicationCulture() ?? CultureInfo.InvariantCulture.Name),
             initialUICulture: CultureInfo.CurrentUICulture);
     }
 
@@ -48,8 +48,7 @@ internal partial class WebAssemblyCultureProvider
         // The current method is invoked as part of WebAssemblyHost.RunAsync i.e. after user code in Program.MainAsync has run
         // thus allows us to detect if the culture was changed by user code.
         if (Environment.GetEnvironmentVariable("__BLAZOR_SHARDED_ICU") == "1" &&
-            ((!CultureInfo.CurrentCulture.Name.Equals(InitialCulture.Name, StringComparison.Ordinal) ||
-              !CultureInfo.CurrentUICulture.Name.Equals(InitialUICulture.Name, StringComparison.Ordinal))))
+            (!CultureInfo.CurrentCulture.Name.Equals(InitialCulture.Name, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException("Blazor detected a change in the application's culture that is not supported with the current project configuration. " +
                 "To change culture dynamically during startup, set <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData> in the application's project file.");
@@ -118,5 +117,8 @@ internal partial class WebAssemblyCultureProvider
     {
         [JSImport("INTERNAL.loadSatelliteAssemblies")]
         public static partial Task LoadSatelliteAssemblies(string[] culturesToLoad);
+
+        [JSImport("Blazor._internal.getApplicationCulture", "blazor-internal")]
+        public static partial string GetApplicationCulture();
     }
 }

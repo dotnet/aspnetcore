@@ -74,6 +74,7 @@ export interface IBlazor {
     renderBatch?: (browserRendererId: number, batchAddress: Pointer) => void;
     getConfig?: (fileName: string) => Uint8Array | undefined;
     getApplicationEnvironment?: () => string;
+    getApplicationCulture?: () => string;
     dotNetCriticalError?: any;
     loadLazyAssembly?: any;
     loadSatelliteAssemblies?: any;
