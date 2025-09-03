@@ -40,73 +40,23 @@
             }
         }
 
-        // Wait for Blazor to be fully ready
-        function waitForBlazorAndSignal() {
-            function checkBlazorReady() {
-                // Check if Blazor has finished loading by looking for the root content
-                var root = document.querySelector('root');
-                var controlDiv = document.getElementById('controlDiv');
+        window.chrome.webview.addEventListener('message', event => {
+            // console.log("ALL: Received message: " + event.data);
+            if (!event.data.startsWith('__bwv')) {
+                console.log("FILTER: Received message: " + event.data);
 
-                // Send diagnostic information about what we found
-                var rootText = root ? root.innerText : 'ROOT_NOT_FOUND';
-                var controlDivExists = controlDiv ? 'EXISTS' : 'NOT_FOUND';
-                PostMessageToDotNet('wvt:ConsoleLog:Blazor readiness check: root=' + rootText + ', controlDiv=' + controlDivExists);
-
-                // Blazor is ready when:
-                // 1. The root element no longer shows "Loading..."
-                // 2. The controlDiv element exists (indicating the component has rendered)
-                if (root && root.innerText !== 'Loading...' && controlDiv) {
-                    PostMessageToDotNet('wvt:Started');
-                    return true;
+                if (event.data === "wvt:GetControlDivValue") {
+                    var controlDivValue = document.getElementById('controlDiv').innerText;
+                    PostMessageToDotNet('wvt:NewControlDivValue:' + controlDivValue);
                 }
-                return false;
+                else if (event.data.startsWith("wvt:ClickButton:")) {
+                    var buttonToClick = event.data.substring(16);
+                    document.getElementById(buttonToClick).click();
+                }
             }
+        });
 
-            // Try immediately
-            if (checkBlazorReady()) {
-                return;
-            }
-
-            PostMessageToDotNet('wvt:ConsoleLog:Starting Blazor readiness polling (100ms intervals, max 10 seconds)');
-
-            // Poll every 100ms for up to 10 seconds
-            var attempts = 0;
-            var maxAttempts = 100; // 10 seconds
-            var interval = setInterval(function() {
-                attempts++;
-                if (checkBlazorReady() || attempts >= maxAttempts) {
-                    clearInterval(interval);
-                }
-            }, 100);
-        }
-
-        function initializeWebViewTest() {
-            window.chrome.webview.addEventListener('message', event => {
-                console.log("ALL: Received message: " + event.data);
-                if (!event.data.startsWith('__bwv')) {
-                    console.log("FILTER: Received message: " + event.data);
-
-                    if (event.data === "wvt:GetControlDivValue") {
-                        var controlDiv = document.getElementById('controlDiv');
-                        var controlDivValue = controlDiv ? controlDiv.innerText : 'ELEMENT_NOT_FOUND';
-                        PostMessageToDotNet('wvt:NewControlDivValue:' + controlDivValue);
-                    }
-                    else if (event.data.startsWith("wvt:ClickButton:")) {
-                        var buttonToClick = event.data.substring(16);
-                        var button = document.getElementById(buttonToClick);
-                        if (button) {
-                            button.click();
-                        }
-                    }
-                }
-            });
-
-            // Start waiting for Blazor
-            waitForBlazorAndSignal();
-        }
-
-        // Initialize when DOM is ready
-        document.addEventListener('DOMContentLoaded', initializeWebViewTest);
+        PostMessageToDotNet('wvt:Started');
 
     </script>
 </body>
