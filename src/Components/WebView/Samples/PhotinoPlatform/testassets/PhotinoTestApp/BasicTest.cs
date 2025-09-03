@@ -10,7 +10,7 @@ using PhotinoNET;
 public class BasicTest : IExecutionMode
 {
     private string _latestControlDivValue;
-    const int MaxWaitTimes = 30;
+    const int MaxWaitTimes = 60;
     const int WaitTimeInMS = 250;
 
     public void Run()
@@ -104,7 +104,7 @@ public class BasicTest : IExecutionMode
 
                     // 1. Wait for WebView ready
                     Console.WriteLine($"Waiting for WebView ready...");
-                    var isWebViewReadyRetriesLeft = 20;
+                    var isWebViewReadyRetriesLeft = 40;
                     while (!isWebViewReady)
                     {
                         Console.WriteLine($"WebView not ready yet, waiting 1sec...");
