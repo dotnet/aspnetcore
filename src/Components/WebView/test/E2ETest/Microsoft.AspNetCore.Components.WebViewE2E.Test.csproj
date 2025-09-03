@@ -9,4 +9,8 @@
     <ProjectReference Include="..\..\Samples\PhotinoPlatform\testassets\PhotinoTestApp\PhotinoTestApp.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="..\..\Samples\PhotinoPlatform\testassets\PhotinoTestApp\wwwroot\**" CopyToOutputDirectory="PreserveNewest" LinkBase="wwwroot/" />
+  </ItemGroup>
+
 </Project>
