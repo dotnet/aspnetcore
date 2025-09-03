@@ -16,6 +16,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
+
 [assembly: HostingStartup(typeof(WebHostBuilderTests.TestHostingStartup))]
 
 namespace Microsoft.AspNetCore.Hosting;

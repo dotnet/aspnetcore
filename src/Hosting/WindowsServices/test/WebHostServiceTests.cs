@@ -20,9 +20,13 @@ public class WebHostServiceTests
     public async Task StopBeforeServiceStarted()
     {
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
         var host = new WebHostBuilder().UseServer(new FakeServer()).Configure(x => { }).Build();
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR009 // Type or member is obsolete
         var webHostService = new WebHostService(host);
+#pragma warning restore ASPDEPR009 // Type or member is obsolete
         var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
         applicationLifetime.StopApplication();
@@ -36,9 +40,13 @@ public class WebHostServiceTests
     public async Task StopAfterServiceStarted()
     {
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
         var host = new WebHostBuilder().UseServer(new FakeServer()).Configure(x => { }).Build();
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR009 // Type or member is obsolete
         var webHostService = new WebHostService(host);
+#pragma warning restore ASPDEPR009 // Type or member is obsolete
         var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
         webHostService.Start();

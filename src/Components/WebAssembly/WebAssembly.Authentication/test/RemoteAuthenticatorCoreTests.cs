@@ -34,7 +34,7 @@ public class RemoteAuthenticatorCoreTests
         });
 
         // Act & assert
-        await Assert.ThrowsAsync<InvalidOperationException>(() => remoteAuthenticator.SetParametersAsync(parameters));
+        await Assert.ThrowsAsync<NullReferenceException>(() => remoteAuthenticator.SetParametersAsync(parameters));
     }
 
     [Fact]

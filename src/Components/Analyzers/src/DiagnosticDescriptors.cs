@@ -83,4 +83,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.SupplyParameterFromFormShouldNotHavePropertyInitializer_Description)));
+
+    public static readonly DiagnosticDescriptor PersistentStateShouldNotHavePropertyInitializer = new(
+        "BL0009",
+        CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Title)),
+        CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Description)));
 }

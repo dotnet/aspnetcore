@@ -970,7 +970,6 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61080")]
     public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
     {
         SetUrlViaPushState("/");
@@ -994,6 +993,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Navigate().Back();
 
         // The navigation lock has initiated its "location changing" handler and is displaying navigation controls
+        Browser.Equal(expectedStartingAbsoluteUri, () => app.FindElement(By.Id("test-info")).Text);
         Browser.Exists(By.CssSelector("#navigation-lock-0 > div.blocking-controls"));
 
         // The location was reverted to what it was before the navigation started

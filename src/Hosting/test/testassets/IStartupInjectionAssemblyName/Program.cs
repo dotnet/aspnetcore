@@ -11,7 +11,9 @@ public class Program
 {
     public static void Main(string[] args)
     {
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
         var webHost = CreateWebHostBuilder(args).Build();
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
         var applicationName = webHost.Services.GetRequiredService<IHostEnvironment>().ApplicationName;
         Console.WriteLine(applicationName);
     }

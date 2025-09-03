@@ -107,6 +107,26 @@ internal static class ComponentFacts
         return property.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.SupplyParameterFromFormAttribute));
     }
 
+    public static bool IsPersistentState(ComponentSymbols symbols, IPropertySymbol property)
+    {
+        if (symbols == null)
+        {
+            throw new ArgumentNullException(nameof(symbols));
+        }
+
+        if (property == null)
+        {
+            throw new ArgumentNullException(nameof(property));
+        }
+
+        if (symbols.PersistentStateAttribute == null)
+        {
+            return false;
+        }
+
+        return property.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.PersistentStateAttribute));
+    }
+
     public static bool IsComponentBase(ComponentSymbols symbols, INamedTypeSymbol type)
     {
         if (symbols is null)

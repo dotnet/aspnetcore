@@ -104,11 +104,10 @@ public class TestService
         await Verify(source, out var compilation);
         await VerifyEndpoint(compilation, "/validatable-object", async (endpoint, serviceProvider) =>
         {
-            await ValidateMethodCalledIfPropertyValidationsFail();
-            await ValidateForSubtypeInvokedFirst();
+            await ValidateMethodNotCalledIfPropertyValidationsFail();
             await ValidateForTopLevelInvoked();
 
-            async Task ValidateMethodCalledIfPropertyValidationsFail()
+            async Task ValidateMethodNotCalledIfPropertyValidationsFail()
             {
                 var httpContext = CreateHttpContextWithPayload("""
                 {
@@ -136,46 +135,6 @@ public class TestService
                     {
                         Assert.Equal("SubType.RequiredProperty", error.Key);
                         Assert.Equal("The RequiredProperty field is required.", error.Value.Single());
-                    },
-                    error =>
-                    {
-                        Assert.Equal("SubType.Value3", error.Key);
-                        Assert.Equal("The field ValidatableSubType must be 'some-value'.", error.Value.Single());
-                    },
-                    error =>
-                    {
-                        Assert.Equal("Value1", error.Key);
-                        Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
-                    });
-            }
-
-            async Task ValidateForSubtypeInvokedFirst()
-            {
-                var httpContext = CreateHttpContextWithPayload("""
-                {
-                    "Value1": 5,
-                    "Value2": "test@test.com",
-                    "SubType": {
-                        "Value3": "foo",
-                        "RequiredProperty": "some-value-2",
-                        "StringWithLength": "element"
-                    }
-                }
-                """, serviceProvider);
-
-                await endpoint.RequestDelegate(httpContext);
-
-                var problemDetails = await AssertBadRequest(httpContext);
-                Assert.Collection(problemDetails.Errors,
-                    error =>
-                    {
-                        Assert.Equal("SubType.Value3", error.Key);
-                        Assert.Equal("The field ValidatableSubType must be 'some-value'.", error.Value.Single());
-                    },
-                    error =>
-                    {
-                        Assert.Equal("Value1", error.Key);
-                        Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
                     });
             }
 
@@ -201,6 +160,147 @@ public class TestService
                     {
                         Assert.Equal("Value1", error.Key);
                         Assert.Equal("The field Value1 must be between 10 and 100.", error.Value.Single());
+                    });
+            }
+        });
+    }
+
+    [Fact]
+    public async Task CanValidateIValidatableObject_WithoutPropertyValidations()
+    {
+        var source = """
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Validation;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddValidation();
+
+WebApplication app = builder. Build();
+
+app.MapPost("/base", (BaseClass model) => Results.Ok(model));
+app.MapPost("/derived", (DerivedClass model) => Results.Ok(model));
+app.MapPost("/complex", (ComplexClass model) => Results.Ok(model));
+
+app.Run();
+
+public class BaseClass : IValidatableObject
+{
+    public string? Value { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrEmpty(Value))
+        {
+            yield return new ValidationResult("Value cannot be null or empty.", [nameof(Value)]);
+        }
+    }
+}
+
+public class DerivedClass : BaseClass
+{
+}
+
+public class ComplexClass
+{
+    public NestedClass? NestedObject { get; set; }
+}
+
+public class NestedClass : IValidatableObject
+{
+    public string? Value { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrEmpty(Value))
+        {
+            yield return new ValidationResult("Value cannot be null or empty.", [nameof(Value)]);
+        }
+    }
+}
+""";
+
+        await Verify(source, out var compilation);
+
+        await VerifyEndpoint(compilation, "/base", async (endpoint, serviceProvider) =>
+        {
+            await ValidateMethodCalled();
+
+            async Task ValidateMethodCalled()
+            {
+                var httpContext = CreateHttpContextWithPayload("""
+                {
+                    "Value": ""
+                }
+                """, serviceProvider);
+
+                await endpoint.RequestDelegate(httpContext);
+
+                var problemDetails = await AssertBadRequest(httpContext);
+                Assert.Collection(problemDetails.Errors,
+                    error =>
+                    {
+                        Assert.Equal("Value", error.Key);
+                        Assert.Collection(error.Value,
+                            msg => Assert.Equal("Value cannot be null or empty.", msg));
+                    });
+            }
+        });
+
+        await VerifyEndpoint(compilation, "/derived", async (endpoint, serviceProvider) =>
+        {
+            await ValidateMethodCalled();
+
+            async Task ValidateMethodCalled()
+            {
+                var httpContext = CreateHttpContextWithPayload("""
+                {
+                    "Value": ""
+                }
+                """, serviceProvider);
+
+                await endpoint.RequestDelegate(httpContext);
+
+                var problemDetails = await AssertBadRequest(httpContext);
+                Assert.Collection(problemDetails.Errors,
+                    error =>
+                    {
+                        Assert.Equal("Value", error.Key);
+                        Assert.Collection(error.Value,
+                            msg => Assert.Equal("Value cannot be null or empty.", msg));
+                    });
+            }
+        });
+
+        await VerifyEndpoint(compilation, "/complex", async (endpoint, serviceProvider) =>
+        {
+            await ValidateMethodCalled();
+
+            async Task ValidateMethodCalled()
+            {
+                var httpContext = CreateHttpContextWithPayload("""
+                {
+                    "NestedObject": {
+                        "Value": ""
+                    }
+                }
+                """, serviceProvider);
+
+                await endpoint.RequestDelegate(httpContext);
+
+                var problemDetails = await AssertBadRequest(httpContext);
+                Assert.Collection(problemDetails.Errors,
+                    error =>
+                    {
+                        Assert.Equal("NestedObject.Value", error.Key);
+                        Assert.Collection(error.Value,
+                            msg => Assert.Equal("Value cannot be null or empty.", msg));
                     });
             }
         });

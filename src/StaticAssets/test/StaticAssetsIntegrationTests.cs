@@ -519,13 +519,12 @@ public class StaticAssetsIntegrationTests
                     Route = resource.Path,
                     AssetPath = $"{resource.Path}.gz",
                     Selectors = [new StaticAssetSelector("Content-Encoding", "gzip", "1.0")],
-                    Properties = [],
+                    Properties = [new("original-resource", $"\"{GetEtag(resource.Content)}\"")],
                     ResponseHeaders = [
                         new ("Accept-Ranges", "bytes"),
                         new ("Content-Type", GetContentType(filePath)),
 
                         new ("Content-Length", length.ToString(CultureInfo.InvariantCulture)),
-                        new ("ETag", $"W/\"{GetEtag(resource.Content)}\""),
                         new ("ETag", $"\"{GetEtagForFile(compressedFilePath)}\""),
                         new ("Last-Modified", lastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture)),
 

@@ -57,10 +57,12 @@ public static class Program
             case "HangOnStop":
                 {
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                         .UseIIS()
                         .UseStartup<Startup>()
                         .Build();
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
                     host.Run();
 
@@ -70,11 +72,13 @@ public static class Program
             case "IncreaseShutdownLimit":
                 {
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                         .UseIIS()
                         .UseShutdownTimeout(TimeSpan.FromSeconds(120))
                         .UseStartup<Startup>()
                         .Build();
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
 
                     host.Run();
@@ -99,11 +103,13 @@ public static class Program
             case "OverriddenServer":
                 {
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                             .UseIIS()
                             .ConfigureServices(services => services.AddSingleton<IServer, DummyServer>())
                             .Configure(builder => builder.Run(async context => { await context.Response.WriteAsync("I shouldn't work"); }))
                             .Build();
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
                     host.Run();
                 }
@@ -118,6 +124,7 @@ public static class Program
             case "DecreaseRequestLimit":
                 {
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                         .ConfigureLogging((_, factory) =>
                         {
@@ -131,6 +138,7 @@ public static class Program
                         })
                         .UseStartup<Startup>()
                         .Build();
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
 
                     host.Run();
@@ -140,6 +148,7 @@ public static class Program
             case "ThrowInStartup":
                 {
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
                     var host = new WebHostBuilder()
                                     .ConfigureLogging((_, factory) =>
                                     {
@@ -149,6 +158,7 @@ public static class Program
                                     .UseIIS()
                                     .UseStartup<ThrowingStartup>()
                                     .Build();
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
 
                     host.Run();
@@ -200,6 +210,7 @@ public static class Program
     private static int StartServer()
     {
 #pragma warning disable ASPDEPR004 // Type or member is obsolete
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
         var host = new WebHostBuilder()
             .ConfigureLogging((_, factory) =>
             {
@@ -211,6 +222,7 @@ public static class Program
             .UseIISIntegration()
             .UseStartup<Startup>()
             .Build();
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 #pragma warning restore ASPDEPR004 // Type or member is obsolete
 
         host.Run();

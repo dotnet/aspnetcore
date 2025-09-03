@@ -147,7 +147,7 @@ public class HttpRequestJsonExtensionsTests
         cts.Cancel();
 
         // Assert
-        await Assert.ThrowsAsync<TaskCanceledException>(async () => await readTask);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await readTask);
     }
 
     [Fact]
