@@ -33,6 +33,8 @@
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
     <CblMarinerBaseName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)</CblMarinerBaseName>
     <CblMarinerExtension>-$(RpmArch).rpm</CblMarinerExtension>
+    <NewKeyBaseName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)</NewKeyBaseName>
+    <NewKeyExtension>-$(RpmArch).rpm</NewKeyExtension>
 
     <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
 
