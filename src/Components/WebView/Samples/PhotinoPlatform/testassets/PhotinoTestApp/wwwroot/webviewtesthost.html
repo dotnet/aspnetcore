@@ -56,7 +56,6 @@
                 // 1. The root element no longer shows "Loading..."
                 // 2. The controlDiv element exists (indicating the component has rendered)
                 if (root && root.innerText !== 'Loading...' && controlDiv) {
-                    PostMessageToDotNet('wvt:ConsoleLog:Blazor is ready! Sending wvt:Started');
                     PostMessageToDotNet('wvt:Started');
                     return true;
                 }
@@ -77,11 +76,6 @@
                 attempts++;
                 if (checkBlazorReady() || attempts >= maxAttempts) {
                     clearInterval(interval);
-                    if (attempts >= maxAttempts) {
-                        // Fallback - signal anyway after timeout
-                        PostMessageToDotNet('wvt:ConsoleLog:Blazor initialization timeout: Giving up after ' + attempts + ' attempts');
-                        PostMessageToDotNet('wvt:Started');
-                    }
                 }
             }, 100);
         }
@@ -111,22 +105,8 @@
             waitForBlazorAndSignal();
         }
 
-        // Try to initialize immediately (in case DOMContentLoaded already fired)
-        if (document.readyState === 'loading') {
-            // DOM is still loading, wait for DOMContentLoaded
-            document.addEventListener('DOMContentLoaded', initializeWebViewTest);
-        } else {
-            // DOM is already loaded (DOMContentLoaded already fired or we're in complete state)
-            initializeWebViewTest();
-        }
-
-        // Additional safety net - initialize after a short delay regardless
-        setTimeout(function() {
-            if (!window.webViewTestInitialized) {
-                window.webViewTestInitialized = true;
-                initializeWebViewTest();
-            }
-        }, 100);
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', initializeWebViewTest);
 
     </script>
 </body>
