@@ -17,23 +17,19 @@ internal partial class WebAssemblyCultureProvider
     internal const string ReadSatelliteAssemblies = "window.Blazor._internal.readSatelliteAssemblies";
 
     // For unit testing.
-    internal WebAssemblyCultureProvider(CultureInfo initialCulture, CultureInfo initialUICulture)
+    internal WebAssemblyCultureProvider(CultureInfo initialCulture)
     {
         InitialCulture = initialCulture;
-        InitialUICulture = initialUICulture;
     }
 
     public static WebAssemblyCultureProvider? Instance { get; private set; }
 
     public CultureInfo InitialCulture { get; }
 
-    public CultureInfo InitialUICulture { get; }
-
     internal static void Initialize()
     {
         Instance = new WebAssemblyCultureProvider(
-            initialCulture: CultureInfo.GetCultureInfo(WebAssemblyCultureProviderInterop.GetApplicationCulture() ?? CultureInfo.InvariantCulture.Name),
-            initialUICulture: CultureInfo.CurrentUICulture);
+            initialCulture: CultureInfo.GetCultureInfo(WebAssemblyCultureProviderInterop.GetApplicationCulture() ?? CultureInfo.InvariantCulture.Name));
     }
 
     public void ThrowIfCultureChangeIsUnsupported()
