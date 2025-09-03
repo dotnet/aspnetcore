@@ -4,6 +4,24 @@
 import { Logger, LogLevel } from '../Platform/Logging/Logger';
 import { ConsoleLogger } from '../Platform/Logging/Loggers';
 
+// Minimal File System Access API typings
+interface FileSystemWritableFileStream {
+  write(data: BufferSource | Blob | Uint8Array): Promise<void>;
+  close(): Promise<void>;
+  abort(): Promise<void>;
+}
+interface FileSystemFileHandle {
+  createWritable(): Promise<FileSystemWritableFileStream>;
+}
+interface SaveFilePickerOptions {
+  suggestedName?: string;
+}
+declare global {
+  interface Window {
+    showSaveFilePicker?: (options?: SaveFilePickerOptions) => Promise<FileSystemFileHandle>;
+  }
+}
+
 export interface MediaLoadResult {
   success: boolean;
   fromCache: boolean;
@@ -27,18 +45,18 @@ export class BinaryMedia {
 
   private static tracked: WeakMap<HTMLElement, { url: string; cacheKey: string; attr: 'src' | 'href' }> = new WeakMap();
 
-  private static observer: MutationObserver | null = null;
+  private static observersByParent: WeakMap<Element, MutationObserver> = new WeakMap();
 
   private static controllers: WeakMap<HTMLElement, AbortController> = new WeakMap();
 
-  private static initializeObserver(): void {
-    if (this.observer) {
+  private static initializeParentObserver(parent: Element): void {
+    if (this.observersByParent.has(parent)) {
       return;
     }
 
-    this.observer = new MutationObserver((mutations) => {
+    const observer = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
-        // Handle removed nodes
+        // Handle removed nodes within this parent subtree
         if (mutation.type === 'childList') {
           for (const node of Array.from(mutation.removedNodes)) {
             if (node.nodeType === Node.ELEMENT_NODE) {
@@ -60,14 +78,13 @@ export class BinaryMedia {
           }
         }
 
-        // Handle attribute changes on tracked elements
+        // Attribute changes in this subtree
         if (mutation.type === 'attributes') {
           const attrName = (mutation as MutationRecord).attributeName;
           if (attrName === 'src' || attrName === 'href') {
             const element = mutation.target as HTMLElement;
             const tracked = this.tracked.get(element);
             if (tracked && tracked.attr === attrName) {
-
               const current = element.getAttribute(attrName) || '';
               if (!current || current !== tracked.url) {
                 this.revokeTrackedUrl(element);
@@ -78,11 +95,13 @@ export class BinaryMedia {
       }
     });
 
-    this.observer.observe(document.body, {
+    observer.observe(parent, {
       childList: true,
       attributes: true,
       attributeFilter: ['src', 'href'],
     });
+
+    this.observersByParent.set(parent, observer);
   }
 
   private static revokeTrackedUrl(el: HTMLElement): void {
@@ -124,7 +143,11 @@ export class BinaryMedia {
       return { success: false, fromCache: false, objectUrl: null, error: 'Invalid parameters' };
     }
 
-    this.initializeObserver();
+    // Ensure we are observing this element's parent
+    const parent = element.parentElement;
+    if (parent) {
+      this.initializeParentObserver(parent);
+    }
 
     // If there was a previous different key for this element, abort its in-flight operation
     const previousKey = this.activeCacheKey.get(element);
@@ -327,9 +350,9 @@ export class BinaryMedia {
       const readable = await streamRef.stream();
 
       // Native picker direct-to-file streaming available
-      if (typeof (window as any).showSaveFilePicker === 'function') { // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (typeof window.showSaveFilePicker === 'function') {
         try {
-          const handle = await (window as any).showSaveFilePicker({ suggestedName: fileName}); // eslint-disable-line @typescript-eslint/no-explicit-any
+          const handle = await window.showSaveFilePicker({ suggestedName: fileName });
 
           const writer = await handle.createWritable();
           const writeResult = await this.writeStreamToFile(element, readable, writer, totalBytes, controller);
@@ -465,7 +488,7 @@ export class BinaryMedia {
   private static async writeStreamToFile(
     element: HTMLElement,
     stream: ReadableStream<Uint8Array>,
-    writer: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    writer: FileSystemWritableFileStream,
     totalBytes: number | null,
     controller?: AbortController
   ): Promise<'success' | 'aborted' | 'error'> {

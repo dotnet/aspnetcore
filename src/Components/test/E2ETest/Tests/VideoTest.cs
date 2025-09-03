@@ -57,6 +57,9 @@ public class VideoTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     {
         Browser.FindElement(By.Id("load-mp4")).Click();
 
+        // Wait for status update
+        Browser.Equal("MP4 basic loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+
         var video = Browser.FindElement(By.Id("mp4-basic"));
         Assert.NotNull(video);
 
@@ -78,11 +81,13 @@ public class VideoTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     public void CanChangeDynamicVideoSource()
     {
         Browser.FindElement(By.Id("change-video")).Click();
+        Browser.Equal("Dynamic video initialized (A)", () => Browser.FindElement(By.Id("current-status")).Text);
         var video = Browser.FindElement(By.Id("dynamic-video"));
         Browser.True(() => !string.IsNullOrEmpty(video.GetAttribute("src")) && video.GetAttribute("src").StartsWith("blob:", StringComparison.Ordinal));
         var firstSrc = video.GetAttribute("src");
 
         Browser.FindElement(By.Id("change-video")).Click();
+        Browser.Equal("Dynamic video changed to B", () => Browser.FindElement(By.Id("current-status")).Text);
         Browser.True(() =>
         {
             var s = video.GetAttribute("src");
@@ -91,6 +96,7 @@ public class VideoTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var secondSrc = video.GetAttribute("src");
 
         Browser.FindElement(By.Id("change-video")).Click();
+        Browser.Equal("Dynamic video changed to A", () => Browser.FindElement(By.Id("current-status")).Text);
         Browser.True(() =>
         {
             var s = video.GetAttribute("src");
@@ -102,10 +108,10 @@ public class VideoTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     public void ErrorVideo_SetsErrorState()
     {
         Browser.FindElement(By.Id("load-error-video")).Click();
+        Browser.Equal("Error video loaded", () => Browser.FindElement(By.Id("current-status")).Text);
         var video = Browser.FindElement(By.Id("error-video"));
         Browser.Equal("error", () => video.GetAttribute("data-state"));
         var src = video.GetAttribute("src");
-        // Should be empty or non-blob on failure
         Assert.True(string.IsNullOrEmpty(src) || !src.StartsWith("blob:", StringComparison.Ordinal));
     }
 
@@ -169,8 +175,8 @@ public class VideoTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     [Fact]
     public void RapidVideoSourceChanges_MaintainsConsistency()
     {
-        // Initialize dynamic video
         Browser.FindElement(By.Id("change-video")).Click();
+        Browser.Equal("Dynamic video initialized (A)", () => Browser.FindElement(By.Id("current-status")).Text);
         var video = Browser.FindElement(By.Id("dynamic-video"));
         Browser.True(() => !string.IsNullOrEmpty(video.GetAttribute("src")));
         var initialSrc = video.GetAttribute("src");
@@ -182,12 +188,26 @@ public class VideoTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         Browser.True(() =>
         {
-            var s = video.GetAttribute("src");
+            var status = Browser.FindElement(By.Id("current-status")).Text;
+            var src = video.GetAttribute("src");
             var state = video.GetAttribute("data-state");
-            return !string.IsNullOrEmpty(s) && s.StartsWith("blob:", StringComparison.Ordinal) && state != "loading" && state != "error";
+            if (string.IsNullOrEmpty(src) || !src.StartsWith("blob:", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (state == "loading" || state == "error")
+            {
+                return false;
+            }
+
+            return status.Contains("Dynamic video changed to B") || status.Contains("Dynamic video changed to A");
         });
 
         var finalSrc = video.GetAttribute("src");
+        Assert.False(string.IsNullOrEmpty(finalSrc));
+        Assert.StartsWith("blob:", finalSrc, StringComparison.Ordinal);
+
         Assert.NotEqual(initialSrc, finalSrc);
     }
 

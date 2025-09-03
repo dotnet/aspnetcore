@@ -170,7 +170,7 @@
     {
         _currentStatus = "Loading invalid mime image...";
         var bytes = new byte[] { 97 }; // 'a'
-        _invalidMimeSource = new MediaSource(bytes, "text/plain", "invalid-mime-key");
+        _invalidMimeSource = new MediaSource(bytes, "text/plain", Guid.NewGuid().ToString());
         _invalidMimeImage = true;
         _currentStatus = "Invalid mime image loaded";
     }
