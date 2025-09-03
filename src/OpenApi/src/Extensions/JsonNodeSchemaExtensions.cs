@@ -85,7 +85,6 @@ internal static class JsonNodeSchemaExtensions
         {
             if (attribute is Base64StringAttribute)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = "byte";
             }
             else if (attribute is RangeAttribute rangeAttribute)
@@ -153,7 +152,6 @@ internal static class JsonNodeSchemaExtensions
             }
             else if (attribute is UrlAttribute)
             {
-                schema[OpenApiSchemaKeywords.TypeKeyword] = JsonSchemaType.String.ToString();
                 schema[OpenApiSchemaKeywords.FormatKeyword] = "uri";
             }
             else if (attribute is StringLengthAttribute stringLengthAttribute)
