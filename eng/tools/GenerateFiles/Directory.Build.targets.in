@@ -56,10 +56,6 @@
       Condition=" (('$(ProjectTargetFrameworkIdentifier)' == '${DefaultNetCoreTargetFramework}') AND '${DefaultNetCoreTargetFramework}' == '$(ProjectTargetFrameworkVersion)') AND '$(TargetLatestDotNetRuntime)' != 'false' "
       RuntimeFrameworkVersion="${MicrosoftNETCoreAppRefVersion}"
       TargetingPackVersion="${MicrosoftNETCoreAppRefVersion}" />
-
-    <PackageReference Include="Microsoft.DotNet.ILCompiler"
-      Condition=" '$(PublishAot)' == 'true' "
-      Version="${MicrosoftNETCoreAppRefVersion}" />
   </ItemGroup>
 
   <ItemGroup>
@@ -117,6 +113,11 @@
       <ILLinkPackVersion
           Condition=" '%(TargetFramework)' == '${DefaultNetCoreTargetFramework}' ">${MicrosoftNETCoreAppRefVersion}</ILLinkPackVersion>
     </KnownILLinkPack>
+
+    <KnownILCompilerPack Update="Microsoft.DotNet.ILCompiler">
+      <ILCompilerPackVersion
+        Condition="'%(TargetFramework)' == '${DefaultNetCoreTargetFramework}'">${MicrosoftNETCoreAppRefVersion}</ILCompilerPackVersion>
+    </KnownILCompilerPack>
 
     <!-- Use the just-built ASP.NET Core shared framework if available except when building product code in servicing. -->
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App" Condition=" $(UpdateAspNetCoreKnownFramework) ">

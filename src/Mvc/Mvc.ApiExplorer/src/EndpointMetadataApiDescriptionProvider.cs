@@ -274,7 +274,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
         {
             return (BindingSource.FormFile, fromFormAttribute.Name ?? parameter.Name ?? string.Empty, false, parameterType);
         }
-        else if (parameter.ParameterInfo.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute) == a.AttributeType) ||
+        else if (parameter.ParameterInfo.CustomAttributes.Any(a => typeof(IFromServiceMetadata).IsAssignableFrom(a.AttributeType) || typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.AttributeType)) ||
                  parameterType == typeof(HttpContext) ||
                  parameterType == typeof(HttpRequest) ||
                  parameterType == typeof(HttpResponse) ||

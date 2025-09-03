@@ -127,8 +127,8 @@ public static class ConnectionEndpointRouteBuilderExtensions
                 e.Metadata.Add(data);
             }
 
-            // Add IApiEndpointMetadata to indicate this is a non-browser endpoint (SignalR)
-            e.Metadata.Add(ApiEndpointMetadata.Instance);
+            // Add IDisableCookieRedirectMetadata to indicate this is a non-browser endpoint (SignalR)
+            e.Metadata.Add(DisableCookieRedirectMetadata.Instance);
         });
 
         return new ConnectionEndpointRouteBuilder(compositeConventionBuilder);
@@ -160,8 +160,8 @@ public static class ConnectionEndpointRouteBuilderExtensions
         }
     }
 
-    private sealed class ApiEndpointMetadata : IApiEndpointMetadata
+    private sealed class DisableCookieRedirectMetadata : IDisableCookieRedirectMetadata
     {
-        public static ApiEndpointMetadata Instance { get; } = new();
+        public static DisableCookieRedirectMetadata Instance { get; } = new();
     }
 }

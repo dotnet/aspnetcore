@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 var builder = WebApplication.CreateBuilder();
 
@@ -44,6 +45,11 @@ app.MapGet("/14", RouteHandlerExtensionMethods.Get14);
 app.MapGet("/15", RouteHandlerExtensionMethods.Get15);
 app.MapPost("/16", RouteHandlerExtensionMethods.Post16);
 app.MapGet("/17", RouteHandlerExtensionMethods.Get17);
+app.MapPost("/18", RouteHandlerExtensionMethods.Post18);
+app.MapPost("/19", RouteHandlerExtensionMethods.Post19);
+app.MapGet("/20", RouteHandlerExtensionMethods.Get20);
+app.MapGet("/21", RouteHandlerExtensionMethods.Get21);
+app.MapGet("/22", RouteHandlerExtensionMethods.Get22);
 
 app.Run();
 
@@ -207,8 +213,88 @@ public static class RouteHandlerExtensionMethods
     public static int[][] Get17(int[] args)
     {
         return [[1, 2, 3], [4, 5, 6], [7, 8, 9], args];
-
     }
+
+    /// <summary>
+    /// A summary of Post18.
+    /// </summary>
+    public static int Post18([AsParameters] FirstParameters queryParameters, [AsParameters] SecondParameters bodyParameters)
+    {
+        return 0;
+    }
+
+    /// <summary>
+    /// Tests mixed regular and AsParameters with examples.
+    /// </summary>
+    /// <param name="regularParam">A regular parameter with documentation.</param>
+    /// <param name="mixedParams">Mixed parameter class with various types.</param>
+    public static IResult Post19(string regularParam, [AsParameters] MixedParametersClass mixedParams)
+    {
+        return TypedResults.Ok($"Regular: {regularParam}, Email: {mixedParams.Email}");
+    }
+
+    /// <summary>
+    /// Tests AsParameters with different binding sources.
+    /// </summary>
+    /// <param name="bindingParams">Parameters from different sources.</param>
+    public static IResult Get20([AsParameters] BindingSourceParametersClass bindingParams)
+    {
+        return TypedResults.Ok($"Query: {bindingParams.QueryParam}, Header: {bindingParams.HeaderParam}");
+    }
+
+    /// <summary>
+    /// Tests XML documentation priority order (value > returns > summary).
+    /// </summary>
+    /// <param name="priorityParams">Parameters demonstrating XML doc priority.</param>
+    public static IResult Get21([AsParameters] XmlDocPriorityParametersClass priorityParams)
+    {
+        return TypedResults.Ok($"Processed parameters");
+    }
+
+    /// <summary>
+    /// Tests summary and value documentation priority on AsParameters properties.
+    /// </summary>
+    /// <param name="summaryValueParams">Parameters testing summary vs value priority.</param>
+    public static IResult Get22([AsParameters] SummaryValueParametersClass summaryValueParams)
+    {
+        return TypedResults.Ok($"Summary: {summaryValueParams.SummaryProperty}, Value: {summaryValueParams.ValueProperty}");
+    }
+}
+
+public class FirstParameters
+{
+    /// <summary>
+    /// The name of the person.
+    /// </summary>
+    public string? Name { get; set; }
+    /// <summary>
+    /// The age of the person.
+    /// </summary>
+    /// <example>30</example>
+    public int? Age { get; set; }
+    /// <summary>
+    /// The user information.
+    /// </summary>
+    /// <example>
+    /// {
+    ///   "username": "johndoe",
+    ///   "email": "johndoe@example.com"
+    /// }
+    /// </example>
+    public User? User { get; set; }
+}
+
+public class SecondParameters
+{
+    /// <summary>
+    /// The description of the project.
+    /// </summary>
+    public string? Description { get; set; }
+    /// <summary>
+    /// The service used for testing.
+    /// </summary>
+    [FromServices]
+    public Example Service { get; set; }
 }
 
 public class User
@@ -231,6 +317,86 @@ public class Example : Task<int>
     public Example(Func<object?, int> function, object? state) : base(function, state)
     {
     }
+}
+
+public class MixedParametersClass
+{
+    /// <summary>
+    /// The user's email address.
+    /// </summary>
+    /// <example>"user@example.com"</example>
+    public string? Email { get; set; }
+
+    /// <summary>
+    /// The user's age in years.
+    /// </summary>
+    /// <example>25</example>
+    public int Age { get; set; }
+
+    /// <summary>
+    /// Whether the user is active.
+    /// </summary>
+    /// <example>true</example>
+    public bool IsActive { get; set; }
+}
+
+public class BindingSourceParametersClass
+{
+    /// <summary>
+    /// Query parameter from URL.
+    /// </summary>
+    [FromQuery]
+    public string? QueryParam { get; set; }
+
+    /// <summary>
+    /// Header value from request.
+    /// </summary>
+    [FromHeader]
+    public string? HeaderParam { get; set; }
+}
+
+public class XmlDocPriorityParametersClass
+{
+    /// <summary>
+    /// Property with only summary documentation.
+    /// </summary>
+    public string? SummaryOnlyProperty { get; set; }
+
+    /// <summary>
+    /// Property with summary documentation that should be overridden.
+    /// </summary>
+    /// <returns>Returns-based description that should take precedence over summary.</returns>
+    public string? SummaryAndReturnsProperty { get; set; }
+
+    /// <summary>
+    /// Property with all three types of documentation.
+    /// </summary>
+    /// <returns>Returns-based description that should be overridden by value.</returns>
+    /// <value>Value-based description that should take highest precedence.</value>
+    public string? AllThreeProperty { get; set; }
+
+    /// <returns>Returns-only description.</returns>
+    public string? ReturnsOnlyProperty { get; set; }
+
+    /// <value>Value-only description.</value>
+    public string? ValueOnlyProperty { get; set; }
+}
+
+public class SummaryValueParametersClass
+{
+    /// <summary>
+    /// Property with only summary documentation.
+    /// </summary>
+    public string? SummaryProperty { get; set; }
+
+    /// <summary>
+    /// Property with summary that should be overridden by value.
+    /// </summary>
+    /// <value>Value description that should take precedence over summary.</value>
+    public string? ValueProperty { get; set; }
+
+    /// <value>Property with only value documentation.</value>
+    public string? ValueOnlyProperty { get; set; }
 }
 """;
         var generator = new XmlCommentGenerator();
@@ -304,6 +470,64 @@ public class Example : Task<int>
 
             var path17 = document.Paths["/17"].Operations[HttpMethod.Get];
             Assert.Equal("A summary of Get17.", path17.Summary);
+
+            var path18 = document.Paths["/18"].Operations[HttpMethod.Post];
+            Assert.Equal("A summary of Post18.", path18.Summary);
+            Assert.Equal("The name of the person.", path18.Parameters[0].Description);
+            Assert.Equal("The age of the person.", path18.Parameters[1].Description);
+            Assert.Equal(30, path18.Parameters[1].Example.GetValue<int>());
+            Assert.Equal("The description of the project.", path18.Parameters[2].Description);
+            Assert.Equal("The user information.", path18.RequestBody.Description);
+            var path18RequestBody = path18.RequestBody.Content["application/json"];
+            var path18Example = Assert.IsAssignableFrom<JsonNode>(path18RequestBody.Example);
+            Assert.Equal("johndoe", path18Example["username"].GetValue<string>());
+            Assert.Equal("johndoe@example.com", path18Example["email"].GetValue<string>());
+
+            var path19 = document.Paths["/19"].Operations[HttpMethod.Post];
+            Assert.Equal("Tests mixed regular and AsParameters with examples.", path19.Summary);
+            Assert.Equal("A regular parameter with documentation.", path19.Parameters[0].Description);
+            Assert.Equal("The user's email address.", path19.Parameters[1].Description);
+            Assert.Equal("user@example.com", path19.Parameters[1].Example.GetValue<string>());
+            Assert.Equal("The user's age in years.", path19.Parameters[2].Description);
+            Assert.Equal(25, path19.Parameters[2].Example.GetValue<int>());
+            Assert.Equal("Whether the user is active.", path19.Parameters[3].Description);
+            Assert.True(path19.Parameters[3].Example.GetValue<bool>());
+
+            var path20 = document.Paths["/20"].Operations[HttpMethod.Get];
+            Assert.Equal("Tests AsParameters with different binding sources.", path20.Summary);
+            Assert.Equal("Query parameter from URL.", path20.Parameters[0].Description);
+            Assert.Equal("Header value from request.", path20.Parameters[1].Description);
+
+            // Test XML documentation priority order: value > returns > summary
+            var path22 = document.Paths["/21"].Operations[HttpMethod.Get];
+            // Find parameters by name for clearer assertions
+            var summaryOnlyParam = path22.Parameters.First(p => p.Name == "SummaryOnlyProperty");
+            Assert.Equal("Property with only summary documentation.", summaryOnlyParam.Description);
+
+            var summaryAndReturnsParam = path22.Parameters.First(p => p.Name == "SummaryAndReturnsProperty");
+            Assert.Equal("Property with summary documentation that should be overridden.", summaryAndReturnsParam.Description);
+
+            var allThreeParam = path22.Parameters.First(p => p.Name == "AllThreeProperty");
+            Assert.Equal($"Property with all three types of documentation.\nValue-based description that should take highest precedence.", allThreeParam.Description);
+
+            var returnsOnlyParam = path22.Parameters.First(p => p.Name == "ReturnsOnlyProperty");
+            Assert.Null(returnsOnlyParam.Description);
+
+            var valueOnlyParam = path22.Parameters.First(p => p.Name == "ValueOnlyProperty");
+            Assert.Equal("Value-only description.", valueOnlyParam.Description);
+
+            // Test summary and value documentation priority for AsParameters
+            var path23 = document.Paths["/22"].Operations[HttpMethod.Get];
+            Assert.Equal("Tests summary and value documentation priority on AsParameters properties.", path23.Summary);
+
+            var summaryParam = path23.Parameters.First(p => p.Name == "SummaryProperty");
+            Assert.Equal("Property with only summary documentation.", summaryParam.Description);
+
+            var valueParam = path23.Parameters.First(p => p.Name == "ValueProperty");
+            Assert.Equal($"Property with summary that should be overridden by value.\nValue description that should take precedence over summary.", valueParam.Description);
+
+            var valueOnlyParam2 = path23.Parameters.First(p => p.Name == "ValueOnlyProperty");
+            Assert.Equal("Property with only value documentation.", valueOnlyParam2.Description);
         });
     }
 }
