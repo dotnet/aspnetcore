@@ -49,7 +49,7 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
 
     public BrowserFixture BrowserFixture { get; }
 
-    public Task DisposeAsync()
+    public virtual Task DisposeAsync()
     {
         return Task.CompletedTask;
     }
