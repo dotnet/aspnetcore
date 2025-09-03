@@ -82,6 +82,10 @@ public class BasicTest : IExecutionMode
                 {
                     isWebViewReady = true;
                 }
+                else if (msg.StartsWith("wvt:ConsoleLog:", StringComparison.Ordinal))
+                {
+                    Console.WriteLine($"[WebView JS] {msg.Substring("wvt:ConsoleLog:".Length)}");
+                }
                 else if (msg.StartsWith(NewControlDivValueMessage, StringComparison.Ordinal))
                 {
                     _latestControlDivValue = msg.Substring(NewControlDivValueMessage.Length + 1);

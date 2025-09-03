@@ -40,23 +40,93 @@
             }
         }
 
-        window.chrome.webview.addEventListener('message', event => {
-            // console.log("ALL: Received message: " + event.data);
-            if (!event.data.startsWith('__bwv')) {
-                console.log("FILTER: Received message: " + event.data);
+        // Wait for Blazor to be fully ready
+        function waitForBlazorAndSignal() {
+            function checkBlazorReady() {
+                // Check if Blazor has finished loading by looking for the root content
+                var root = document.querySelector('root');
+                var controlDiv = document.getElementById('controlDiv');
 
-                if (event.data === "wvt:GetControlDivValue") {
-                    var controlDivValue = document.getElementById('controlDiv').innerText;
-                    PostMessageToDotNet('wvt:NewControlDivValue:' + controlDivValue);
+                // Send diagnostic information about what we found
+                var rootText = root ? root.innerText : 'ROOT_NOT_FOUND';
+                var controlDivExists = controlDiv ? 'EXISTS' : 'NOT_FOUND';
+                PostMessageToDotNet('wvt:ConsoleLog:Blazor readiness check: root=' + rootText + ', controlDiv=' + controlDivExists);
+
+                // Blazor is ready when:
+                // 1. The root element no longer shows "Loading..."
+                // 2. The controlDiv element exists (indicating the component has rendered)
+                if (root && root.innerText !== 'Loading...' && controlDiv) {
+                    PostMessageToDotNet('wvt:ConsoleLog:Blazor is ready! Sending wvt:Started');
+                    PostMessageToDotNet('wvt:Started');
+                    return true;
                 }
-                else if (event.data.startsWith("wvt:ClickButton:")) {
-                    var buttonToClick = event.data.substring(16);
-                    document.getElementById(buttonToClick).click();
-                }
+                return false;
             }
-        });
 
-        PostMessageToDotNet('wvt:Started');
+            // Try immediately
+            if (checkBlazorReady()) {
+                return;
+            }
+
+            PostMessageToDotNet('wvt:ConsoleLog:Starting Blazor readiness polling (100ms intervals, max 10 seconds)');
+
+            // Poll every 100ms for up to 10 seconds
+            var attempts = 0;
+            var maxAttempts = 100; // 10 seconds
+            var interval = setInterval(function() {
+                attempts++;
+                if (checkBlazorReady() || attempts >= maxAttempts) {
+                    clearInterval(interval);
+                    if (attempts >= maxAttempts) {
+                        // Fallback - signal anyway after timeout
+                        PostMessageToDotNet('wvt:ConsoleLog:Blazor initialization timeout: Giving up after ' + attempts + ' attempts');
+                        PostMessageToDotNet('wvt:Started');
+                    }
+                }
+            }, 100);
+        }
+
+        function initializeWebViewTest() {
+            window.chrome.webview.addEventListener('message', event => {
+                console.log("ALL: Received message: " + event.data);
+                if (!event.data.startsWith('__bwv')) {
+                    console.log("FILTER: Received message: " + event.data);
+
+                    if (event.data === "wvt:GetControlDivValue") {
+                        var controlDiv = document.getElementById('controlDiv');
+                        var controlDivValue = controlDiv ? controlDiv.innerText : 'ELEMENT_NOT_FOUND';
+                        PostMessageToDotNet('wvt:NewControlDivValue:' + controlDivValue);
+                    }
+                    else if (event.data.startsWith("wvt:ClickButton:")) {
+                        var buttonToClick = event.data.substring(16);
+                        var button = document.getElementById(buttonToClick);
+                        if (button) {
+                            button.click();
+                        }
+                    }
+                }
+            });
+
+            // Start waiting for Blazor
+            waitForBlazorAndSignal();
+        }
+
+        // Try to initialize immediately (in case DOMContentLoaded already fired)
+        if (document.readyState === 'loading') {
+            // DOM is still loading, wait for DOMContentLoaded
+            document.addEventListener('DOMContentLoaded', initializeWebViewTest);
+        } else {
+            // DOM is already loaded (DOMContentLoaded already fired or we're in complete state)
+            initializeWebViewTest();
+        }
+
+        // Additional safety net - initialize after a short delay regardless
+        setTimeout(function() {
+            if (!window.webViewTestInitialized) {
+                window.webViewTestInitialized = true;
+                initializeWebViewTest();
+            }
+        }, 100);
 
     </script>
 </body>
