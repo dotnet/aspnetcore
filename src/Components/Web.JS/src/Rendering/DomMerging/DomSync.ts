@@ -5,7 +5,7 @@ import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor
 import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
-import { attributeSetsAreIdentical, synchronizeAttributes } from './AttributeSync';
+import { synchronizeAttributes } from './AttributeSync';
 import { cannotMergeDueToDataPermanentAttributes, isDataPermanentElement } from './DataPermanentElementSync';
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
 
@@ -308,18 +308,6 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
         return UpdateCost.Infinite;
       }
 
-      // If both elements are the same preload (based on all attributes), we need to match them and do nothing;
-      // Otherwise, browser would trigger a new preload request.
-      // If attributes don't match, we can't simply update the element, because browser could trigger
-      // an invalid preload request based on attribute order.
-      const aIsPreload = isPreloadElement(a as Element);
-      const bIsPreload = isPreloadElement(b as Element);
-      if (aIsPreload && bIsPreload && attributeSetsAreIdentical((a as Element).attributes, (b as Element).attributes)) {
-        return UpdateCost.None;
-      } else if (aIsPreload || bIsPreload) {
-        return UpdateCost.Infinite;
-      }
-
       return UpdateCost.None;
     case Node.DOCUMENT_TYPE_NODE:
       // It's invalid to insert or delete doctype, and we have no use case for doing that. So just skip such
@@ -329,10 +317,6 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       // For anything else we know nothing, so the risk-averse choice is to say we can't retain or update the old value
       return UpdateCost.Infinite;
   }
-}
-
-function isPreloadElement(el: Element): boolean {
-  return el.tagName === 'LINK' && el.attributes.getNamedItem('rel')?.value === 'preload';
 }
 
 function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDescriptor[] {
