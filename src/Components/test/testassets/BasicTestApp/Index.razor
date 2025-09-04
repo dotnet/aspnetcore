@@ -1,6 +1,8 @@
 ﻿@using Microsoft.AspNetCore.Components.Rendering
 @using System.Web
 @inject NavigationManager NavigationManager
+
+<p id="session-storage-marker"></p>
 <div id="test-selector">
     Select test:
     <select id="test-selector-select" @bind=SelectedComponentTypeName>
@@ -46,6 +48,7 @@
         <option value="BasicTestApp.FormsTest.SimpleValidationComponentUsingExperimentalValidator">Simple validation using experimental validator</option>
         <option value="BasicTestApp.FormsTest.ModelLevelValidationComponent">Model-level validation</option>
         <option value="BasicTestApp.FormsTest.TypicalValidationComponent">Typical validation</option>
+        <option value="BasicTestApp.ImageTest.ImageTestComponent">Image component tests</option>
         <option value="BasicTestApp.FormsTest.TypicalValidationComponentUsingExperimentalValidator">Typical validation using experimental validator</option>
         <option value="BasicTestApp.FormsTest.ValidationComponentDI">Validation with Dependency Injection</option>
         <option value="BasicTestApp.FormsTest.InputFileComponent">Input file</option>
