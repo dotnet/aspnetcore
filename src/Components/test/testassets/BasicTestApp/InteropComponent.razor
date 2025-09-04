@@ -163,10 +163,6 @@
             var circularStructure = await JSRuntime.InvokeAsync<object>("eval", "window");
             ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = circularStructure is null ? "Failure: null" : "Failure: not null";
         }
-        catch (JSException)
-        {
-            ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = "Success";
-        }
         catch (Exception ex)
         {
             ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = $"Failure: {ex.Message}";
