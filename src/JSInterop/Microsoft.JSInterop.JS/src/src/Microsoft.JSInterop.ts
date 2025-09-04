@@ -6,6 +6,8 @@
 export module DotNet {
   export type JsonReviver = ((key: any, value: any) => any);
   const jsonRevivers: JsonReviver[] = [];
+  export type JsonReplacer = ((key: any, value: any) => any);
+  const jsonReplacers: JsonReplacer[] = [];
 
   const jsObjectIdKey = "__jsObjectId";
   const dotNetObjectRefKey = "__dotNetObject";
@@ -117,6 +119,14 @@ export module DotNet {
   export function attachReviver(reviver: JsonReviver) {
       jsonRevivers.push(reviver);
   }
+
+  /**
+   * Adds a JSON replacer callback that will be used when serializing arguments sent to .NET.
+   * @param replacer The replacer to add.
+   */
+  export function attachReplacer(replacer: JsonReplacer) {
+    jsonReplacers.push(replacer);
+}
 
   /**
    * Invokes the specified .NET public method synchronously. Not all hosting scenarios support
@@ -808,16 +818,21 @@ export module DotNet {
   }
 
   function argReplacer(key: string, value: any) {
-      if (value instanceof DotNetObject) {
-          return value.serializeAsArg();
-      } else if (value instanceof Uint8Array) {
+      const processedValue = jsonReplacers.reduce(
+          (currentValue, replacer) => replacer(key, currentValue),
+          value
+      );
+
+      if (processedValue instanceof DotNetObject) {
+          return processedValue.serializeAsArg();
+      } else if (processedValue instanceof Uint8Array) {
           const dotNetCallDispatcher = currentCallDispatcher!.getDotNetCallDispatcher();
-          dotNetCallDispatcher!.sendByteArray(nextByteArrayIndex, value);
+          dotNetCallDispatcher!.sendByteArray(nextByteArrayIndex, processedValue);
           const jsonValue = { [byteArrayRefKey]: nextByteArrayIndex };
           nextByteArrayIndex++;
           return jsonValue;
       }
 
-      return value;
+      return processedValue;
   }
 }
