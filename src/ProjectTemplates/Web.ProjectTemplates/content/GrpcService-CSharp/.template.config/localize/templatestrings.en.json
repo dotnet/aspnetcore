@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "ASP.NET Core gRPC Service",
-  "description": "A project template for creating a gRPC service using ASP.NET Core, with optional support for publishing as native AOT.",
+  "description": "A fast connection point for apps to exchange data and requests.",
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/choices/net10.0/description": "Target net10.0",
   "symbols/ExcludeLaunchSettings/description": "Whether to exclude launchSettings.json from the generated template.",
