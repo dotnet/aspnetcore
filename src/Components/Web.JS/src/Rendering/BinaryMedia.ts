@@ -197,27 +197,6 @@ export class BinaryMedia {
     }
   }
 
-  private static setUrl(element: HTMLElement, url: string, cacheKey: string, targetAttr: 'src' | 'href'): void {
-    const tracked = this.tracked.get(element);
-    if (tracked) {
-      try {
-        URL.revokeObjectURL(tracked.url);
-      } catch {
-        // ignore
-      }
-    }
-
-    this.tracked.set(element, { url, cacheKey, attr: targetAttr });
-
-    if (targetAttr === 'src') {
-      (element as HTMLImageElement | HTMLVideoElement).src = url;
-    } else {
-      (element as HTMLAnchorElement).href = url;
-    }
-
-    this.setupEventHandlers(element, cacheKey);
-  }
-
   private static async streamAndCreateUrl(
     element: HTMLElement,
     streamRef: { stream: () => Promise<ReadableStream<Uint8Array>> },
@@ -246,25 +225,9 @@ export class BinaryMedia {
       }
     }
 
-    const chunks: Uint8Array[] = [];
-    let bytesRead = 0;
-    let aborted = false;
     let resultUrl: string | null = null;
-
     try {
-      for await (const chunk of this.iterateStream(displayStream, controller.signal)) {
-        if (controller.signal.aborted) { // Stream aborted due to a new setImageAsync call with a key change
-          aborted = true;
-          break;
-        }
-        chunks.push(chunk);
-        bytesRead += chunk.byteLength;
-
-        if (totalBytes) {
-          const progress = Math.min(1, bytesRead / totalBytes);
-          element.style.setProperty('--blazor-media-progress', progress.toString());
-        }
-      }
+      const { aborted, chunks, bytesRead } = await this.readAllChunks(element, displayStream, controller, totalBytes);
 
       if (!aborted) {
         if (bytesRead === 0) {
@@ -293,6 +256,28 @@ export class BinaryMedia {
     return resultUrl;
   }
 
+  private static async readAllChunks(
+    element: HTMLElement,
+    stream: ReadableStream<Uint8Array>,
+    controller: AbortController,
+    totalBytes: number | null
+  ): Promise<{ aborted: boolean; chunks: Uint8Array[]; bytesRead: number }> {
+    const chunks: Uint8Array[] = [];
+    let bytesRead = 0;
+    for await (const chunk of this.iterateStream(stream, controller.signal)) {
+      if (controller.signal.aborted) {
+        return { aborted: true, chunks, bytesRead };
+      }
+      chunks.push(chunk);
+      bytesRead += chunk.byteLength;
+      if (totalBytes) {
+        const progress = Math.min(1, bytesRead / totalBytes);
+        element.style.setProperty('--blazor-media-progress', progress.toString());
+      }
+    }
+    return { aborted: controller.signal.aborted, chunks, bytesRead };
+  }
+
   private static combineChunks(chunks: Uint8Array[]): Uint8Array {
     if (chunks.length === 1) {
       return chunks[0];
@@ -308,29 +293,29 @@ export class BinaryMedia {
     return combined;
   }
 
-  private static setupEventHandlers(
-    element: HTMLElement,
-    cacheKey: string | null = null
-  ): void {
-    const onLoad = (_e: Event) => {
-      if (!cacheKey || BinaryMedia.activeCacheKey.get(element) === cacheKey) {
-        BinaryMedia.loadingElements.delete(element);
-        element.style.removeProperty('--blazor-media-progress');
+  private static setUrl(element: HTMLElement, url: string, cacheKey: string, targetAttr: 'src' | 'href'): void {
+    const tracked = this.tracked.get(element);
+    if (tracked) {
+      try {
+        URL.revokeObjectURL(tracked.url);
+      } catch {
+        // ignore
       }
-    };
+    }
 
-    const onError = (_e: Event) => {
-      if (!cacheKey || BinaryMedia.activeCacheKey.get(element) === cacheKey) {
-        BinaryMedia.loadingElements.delete(element);
-        element.style.removeProperty('--blazor-media-progress');
-        element.setAttribute('data-state', 'error');
-      }
-    };
+    this.tracked.set(element, { url, cacheKey, attr: targetAttr });
 
-    element.addEventListener('load', onLoad, { once: true });
-    element.addEventListener('error', onError, { once: true });
+    if (targetAttr === 'src') {
+      (element as HTMLImageElement | HTMLVideoElement).src = url;
+    } else {
+      (element as HTMLAnchorElement).href = url;
+    }
+
+    this.setupEventHandlers(element, cacheKey);
   }
 
+  // Streams binary content to a user-selected file when possible,
+  // otherwise falls back to buffering in memory and triggering a blob download via an anchor.
   public static async downloadAsync(
     element: HTMLElement,
     streamRef: { stream: () => Promise<ReadableStream<Uint8Array>> } | null,
@@ -368,21 +353,11 @@ export class BinaryMedia {
       }
 
       // In-memory fallback: read all bytes then trigger anchor download
-      const chunks: Uint8Array[] = [];
-      let bytesRead = 0;
-      for await (const chunk of this.iterateStream(readable, controller.signal)) {
-        if (controller.signal.aborted) {
-          return false;
-        }
-        chunks.push(chunk);
-        bytesRead += chunk.byteLength;
-        if (totalBytes) {
-          const progress = Math.min(1, bytesRead / totalBytes);
-          element.style.setProperty('--blazor-media-progress', progress.toString());
-        }
+      const readResult = await this.readAllChunks(element, readable, controller, totalBytes);
+      if (readResult.aborted) {
+        return false;
       }
-
-      const combined = this.combineChunks(chunks);
+      const combined = this.combineChunks(readResult.chunks);
       const blob = new Blob([combined], { type: mimeType });
       const url = URL.createObjectURL(blob);
       this.triggerDownload(url, fileName);
@@ -397,91 +372,6 @@ export class BinaryMedia {
       }
       this.loadingElements.delete(element);
       element.style.removeProperty('--blazor-media-progress');
-    }
-  }
-
-  private static async getCache(): Promise<Cache | null> {
-    if (!('caches' in window)) {
-      this.logger.log(LogLevel.Warning, 'Cache API not supported in this browser');
-      return null;
-    }
-
-    if (!this.cachePromise) {
-      this.cachePromise = (async () => {
-        try {
-          return await caches.open(this.CACHE_NAME);
-        } catch (error) {
-          this.logger.log(LogLevel.Debug, `Failed to open cache: ${error}`);
-          return null;
-        }
-      })();
-    }
-
-    const cache = await this.cachePromise;
-    // If opening failed previously, allow retry next time
-    if (!cache) {
-      this.cachePromise = undefined;
-    }
-    return cache;
-  }
-
-  private static async *iterateStream(stream: ReadableStream<Uint8Array>, signal?: AbortSignal): AsyncGenerator<Uint8Array, void, unknown> {
-    const reader = stream.getReader();
-    let finished = false;
-    try {
-      while (true) {
-        if (signal?.aborted) {
-          try {
-            await reader.cancel();
-          } catch {
-            // ignore
-          }
-          return;
-        }
-        const { done, value } = await reader.read();
-        if (done) {
-          finished = true;
-          return;
-        }
-        if (value) {
-          yield value;
-        }
-      }
-    } finally {
-      if (!finished) {
-        try {
-          await reader.cancel();
-        } catch {
-          // ignore
-        }
-      }
-      try {
-        reader.releaseLock?.();
-      } catch {
-        // ignore
-      }
-    }
-  }
-
-  private static triggerDownload(url: string, fileName: string): void {
-    try {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = fileName;
-      a.style.display = 'none';
-      document.body.appendChild(a);
-      a.click();
-
-      setTimeout(() => {
-        try {
-          a.remove();
-          URL.revokeObjectURL(url);
-        } catch {
-          // ignore
-        }
-      }, 0);
-    } catch {
-      // ignore
     }
   }
 
@@ -552,6 +442,114 @@ export class BinaryMedia {
       return controller?.signal.aborted ? 'aborted' : 'error';
     } finally {
       element.style.removeProperty('--blazor-media-progress');
+    }
+  }
+
+  private static triggerDownload(url: string, fileName: string): void {
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+
+      setTimeout(() => {
+        try {
+          a.remove();
+          URL.revokeObjectURL(url);
+        } catch {
+          // ignore
+        }
+      }, 0);
+    } catch {
+      // ignore
+    }
+  }
+
+  private static async getCache(): Promise<Cache | null> {
+    if (!('caches' in window)) {
+      this.logger.log(LogLevel.Warning, 'Cache API not supported in this browser');
+      return null;
+    }
+
+    if (!this.cachePromise) {
+      this.cachePromise = (async () => {
+        try {
+          return await caches.open(this.CACHE_NAME);
+        } catch (error) {
+          this.logger.log(LogLevel.Debug, `Failed to open cache: ${error}`);
+          return null;
+        }
+      })();
+    }
+
+    const cache = await this.cachePromise;
+    // If opening failed previously, allow retry next time
+    if (!cache) {
+      this.cachePromise = undefined;
+    }
+    return cache;
+  }
+
+  private static setupEventHandlers(
+    element: HTMLElement,
+    cacheKey: string | null = null
+  ): void {
+    const onLoad = (_e: Event) => {
+      if (!cacheKey || BinaryMedia.activeCacheKey.get(element) === cacheKey) {
+        BinaryMedia.loadingElements.delete(element);
+        element.style.removeProperty('--blazor-media-progress');
+      }
+    };
+
+    const onError = (_e: Event) => {
+      if (!cacheKey || BinaryMedia.activeCacheKey.get(element) === cacheKey) {
+        BinaryMedia.loadingElements.delete(element);
+        element.style.removeProperty('--blazor-media-progress');
+        element.setAttribute('data-state', 'error');
+      }
+    };
+
+    element.addEventListener('load', onLoad, { once: true });
+    element.addEventListener('error', onError, { once: true });
+  }
+
+  private static async *iterateStream(stream: ReadableStream<Uint8Array>, signal?: AbortSignal): AsyncGenerator<Uint8Array, void, unknown> {
+    const reader = stream.getReader();
+    let finished = false;
+    try {
+      while (true) {
+        if (signal?.aborted) {
+          try {
+            await reader.cancel();
+          } catch {
+            // ignore
+          }
+          return;
+        }
+        const { done, value } = await reader.read();
+        if (done) {
+          finished = true;
+          return;
+        }
+        if (value) {
+          yield value;
+        }
+      }
+    } finally {
+      if (!finished) {
+        try {
+          await reader.cancel();
+        } catch {
+          // ignore
+        }
+      }
+      try {
+        reader.releaseLock?.();
+      } catch {
+        // ignore
+      }
     }
   }
 }

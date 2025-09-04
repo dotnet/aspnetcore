@@ -130,13 +130,13 @@ public class FileDownloadTest : ServerTestBase<ToggleExecutionModeServerFixture<
     [Fact]
     public void RapidClicks_CancelsFirstAndStartsSecond()
     {
-        // Instrument with controllable delay on first call for cancellation scenario (no setTimeout)
+        // Instrument with controllable delay on first call for cancellation scenario
         var success = ((IJavaScriptExecutor)Browser).ExecuteAsyncScript(@"
             var callback = arguments[arguments.length - 1];
             (function(){
                 function patch(){
                     const root = Blazor && Blazor._internal && Blazor._internal.BinaryMedia;
-                    if (!root || !root.downloadAsync){ setTimeout(patch, 50); return; }
+                    if (!root || !root.downloadAsync){ requestAnimationFrame(patch); return; }
                     if (!window.__origDownloadAsyncDelay){
                         window.__origDownloadAsyncDelay = root.downloadAsync;
                         window.__downloadCalls = 0;
