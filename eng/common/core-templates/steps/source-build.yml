@@ -11,6 +11,10 @@ parameters:
   # for details. The entire object is described in the 'job' template for simplicity, even though
   # the usage of the properties on this object is split between the 'job' and 'steps' templates.
   platform: {}
+
+  # Optional list of directories to ignore for component governance scans.
+  componentGovernanceIgnoreDirectories: []
+
   is1ESPipeline: false
 
 steps:
@@ -97,7 +101,7 @@ steps:
 - task: CopyFiles@2
   displayName: Prepare BuildLogs staging directory
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)'
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
     Contents: |
       **/*.log
       **/*.binlog
@@ -126,5 +130,8 @@ steps:
   parameters:
     displayName: Component Detection (Exclude upstream cache)
     is1ESPipeline: ${{ parameters.is1ESPipeline }}
-    componentGovernanceIgnoreDirectories: '$(Build.SourcesDirectory)/artifacts/sb/src/artifacts/obj/source-built-upstream-cache'
+    ${{ if eq(length(parameters.componentGovernanceIgnoreDirectories), 0) }}:
+      componentGovernanceIgnoreDirectories: '$(System.DefaultWorkingDirectory)/artifacts/sb/src/artifacts/obj/source-built-upstream-cache'
+    ${{ else }}:
+      componentGovernanceIgnoreDirectories: ${{ join(',', parameters.componentGovernanceIgnoreDirectories) }}
     disableComponentGovernance: ${{ eq(variables['System.TeamProject'], 'public') }}
