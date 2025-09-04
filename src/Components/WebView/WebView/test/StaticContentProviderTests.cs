@@ -41,6 +41,38 @@ public class StaticContentProviderTests
         Assert.Equal("text/css", contentTypeValue);
     }
 
+    [Fact]
+    public void TryGetResponseContentCanHandleWhitespaceInFileName()
+    {
+        // Arrange
+        const string cssFilePath = "file with whitespace.css";
+        const string cssFileContent = "this is css";
+        var inMemoryFileProvider = new InMemoryFileProvider(
+            new Dictionary<string, string>
+            {
+                    { cssFilePath, cssFileContent },
+            });
+        var appBase = "fake://0.0.0.0/";
+        var scp = new StaticContentProvider(inMemoryFileProvider, new Uri(appBase), "fakehost.html");
+
+        // Act
+        Assert.True(scp.TryGetResponseContent(
+            requestUri: appBase + Uri.EscapeDataString(cssFilePath),
+            allowFallbackOnHostPage: false,
+            out var statusCode,
+            out var statusMessage,
+            out var content,
+            out var headers));
+
+        // Assert
+        var contentString = new StreamReader(content).ReadToEnd();
+        Assert.Equal(200, statusCode);
+        Assert.Equal("OK", statusMessage);
+        Assert.Equal("this is css", contentString);
+        Assert.True(headers.TryGetValue("Content-Type", out var contentTypeValue));
+        Assert.Equal("text/css", contentTypeValue);
+    }
+
     private sealed class InMemoryFileProvider : IFileProvider
     {
         public InMemoryFileProvider(IDictionary<string, string> filePathsAndContents)
