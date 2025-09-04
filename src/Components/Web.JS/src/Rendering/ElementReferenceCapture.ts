@@ -30,7 +30,6 @@ function getCaptureIdFromElement(element: Element): string | null {
 const elementRefKey = '__internalId'; // Keep in sync with ElementRef.cs
 DotNet.attachReviver((key, value) => {
   if (value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, elementRefKey) && typeof value[elementRefKey] === 'string') {
-    console.log("attachReviver: ", value);
     return getElementByCaptureId(value[elementRefKey]);
   } else {
     return value;
