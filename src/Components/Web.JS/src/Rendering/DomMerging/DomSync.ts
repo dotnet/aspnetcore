@@ -5,7 +5,7 @@ import { AutoComponentDescriptor, ComponentDescriptor, ServerComponentDescriptor
 import { isInteractiveRootComponentElement } from '../BrowserRenderer';
 import { applyAnyDeferredValue } from '../DomSpecialPropertyUtil';
 import { LogicalElement, getLogicalChildrenArray, getLogicalNextSibling, getLogicalParent, getLogicalRootDescriptor, insertLogicalChild, insertLogicalChildBefore, isLogicalElement, toLogicalElement, toLogicalRootCommentElement } from '../LogicalElements';
-import { synchronizeAttributes } from './AttributeSync';
+import { attributeSetsAreIdentical, synchronizeAttributes } from './AttributeSync';
 import { cannotMergeDueToDataPermanentAttributes, isDataPermanentElement } from './DataPermanentElementSync';
 import { UpdateCost, ItemList, Operation, computeEditScript } from './EditScript';
 
@@ -308,8 +308,15 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
         return UpdateCost.Infinite;
       }
 
-      // Always treat "preloads" as new elements.
-      if (isPreloadElement(a as Element) || isPreloadElement(b as Element)) {
+      // If both elements are the same preload (based on all attributes), we need to match them and do nothing;
+      // Otherwise, browser would trigger a new preload request.
+      // If attributes don't match, we can't simply update the element, because browser could trigger
+      // an invalid preload request based on attribute order.
+      const aIsPreload = isPreloadElement(a as Element);
+      const bIsPreload = isPreloadElement(b as Element);
+      if (aIsPreload && bIsPreload && attributeSetsAreIdentical((a as Element).attributes, (b as Element).attributes)) {
+        return UpdateCost.None;
+      } else if (aIsPreload || bIsPreload) {
         return UpdateCost.Infinite;
       }
 
