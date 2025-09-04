@@ -11,44 +11,6 @@
     }
   ],
   "paths": {
-    "/circular1/model": {
-      "get": {
-        "tags": [
-          "Sample"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CircularModel1"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/circular2/model": {
-      "get": {
-        "tags": [
-          "Sample"
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CircularModel2"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/forms/form-file": {
       "post": {
         "tags": [
@@ -1630,28 +1592,6 @@
           }
         }
       },
-      "CircularModel1": {
-        "type": "object",
-        "properties": {
-          "referenced": {
-            "$ref": "#/components/schemas/ReferencedModel"
-          },
-          "self": {
-            "$ref": "#/components/schemas/CircularModel1"
-          }
-        }
-      },
-      "CircularModel2": {
-        "type": "object",
-        "properties": {
-          "self": {
-            "$ref": "#/components/schemas/CircularModel2"
-          },
-          "referenced": {
-            "$ref": "#/components/schemas/ReferencedModel"
-          }
-        }
-      },
       "CityResponse": {
         "type": "object",
         "properties": {
@@ -2267,15 +2207,6 @@
           },
           "builder": {
             "$ref": "#/components/schemas/ProjectBuilderResponse"
-          }
-        }
-      },
-      "ReferencedModel": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "integer",
-            "format": "int32"
           }
         }
       },
