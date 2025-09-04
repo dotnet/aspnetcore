@@ -30,7 +30,7 @@
             <Hypertext X="12" Y="120" Width="-12" Height="44" FontId="DefaultFont" Name="InstallNoIIS" HideWhenDisabled="yes">#(loc.InstallNoIIS)</Hypertext>
             <Hypertext Name="EulaAndPrivacyHyperlink" X="12" Y="180" Width="-12" Height="52" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.EulaPrivacy)</Hypertext>
             <Checkbox Name="EulaAcceptCheckbox" X="-12" Y="-40" Width="260" Height="36" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
-            <Button Name="InstallButton" X="-92" Y="-12" Width="95" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.InstallInstallButton)</Button>
+            <Button Name="InstallButton" X="-92" Y="-12" Width="96" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.InstallInstallButton)</Button>
             <Button Name="WelcomeCancelButton" X="-12" Y="-12" Width="76" Height="24" TabStop="yes" FontId="DefaultFont">
                 <Text>#(loc.InstallCloseButton)</Text>
                 <CloseWindowAction/>
@@ -54,7 +54,7 @@
             <Text X="12" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" DisablePrefix="yes">#(loc.ProgressHeader)</Text>
             <Text X="12" Y="120" Width="90" Height="16" FontId="DefaultFont" DisablePrefix="yes">#(loc.ProgressLabel)</Text>
             <Text Name="OverallProgressPackageText" X="104" Y="120" Width="-12" Height="16" FontId="DefaultFont" DisablePrefix="yes">#(loc.OverallProgressPackageText)</Text>
-            <Progressbar Name="OverallCalculatedProgressbar" X="12" Y="143" Width="-12" Height="16" />
+            <Progressbar Name="OverallCalculatedProgressbar" X="12" Y="144" Width="-12" Height="16" />
             <Button Name="ProgressCancelButton" X="-12" Y="-12" Width="76" Height="24" TabStop="yes" FontId="DefaultFont">
                 <Text>#(loc.ProgressCancelButton)</Text>
                 <CloseWindowAction/>
@@ -90,7 +90,7 @@
             <Text Name="FailureUninstallHeader" X="12" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureUninstallHeader)</Text>
             <Text Name="FailureRepairHeader" X="12" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureRepairHeader)</Text>	
             <Hypertext Name="FailureLogFileLink" X="12" Y="120" Width="-12" Height="44" FontId="DefaultFont" TabStop="yes" HideWhenDisabled="yes">#(loc.FailureHyperlinkLogText)</Hypertext>
-            <Hypertext Name="FailureMessageText" X="20" Y="163" Width="-12" Height="52" FontId="ErrorFont" TabStop="yes" HideWhenDisabled="yes" />
+            <Hypertext Name="FailureMessageText" X="20" Y="164" Width="-12" Height="52" FontId="ErrorFont" TabStop="yes" HideWhenDisabled="yes" />
             <Text Name="FailureRestartText" X="-12" Y="-52" Width="400" Height="36" FontId="DefaultFont" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureRestartText)</Text>
             <Button Name="FailureRestartButton" X="-92" Y="-12" Width="76" Height="24" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.FailureRestartButton)</Button>
             <Button Name="FailureCloseButton" X="-12" Y="-12" Width="76" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.FailureCloseButton)</Button>
