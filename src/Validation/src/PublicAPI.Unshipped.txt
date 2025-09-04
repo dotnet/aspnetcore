@@ -1,10 +1,13 @@
 #nullable enable
+abstract Microsoft.Extensions.Validation.ValidatableTypeInfo.GetValidationAttributes() -> System.ComponentModel.DataAnnotations.ValidationAttribute![]!
 Microsoft.Extensions.DependencyInjection.ValidationServiceCollectionExtensions
 Microsoft.Extensions.Validation.IValidatableInfo
 Microsoft.Extensions.Validation.IValidatableInfo.ValidateAsync(object? value, Microsoft.Extensions.Validation.ValidateContext! context, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 Microsoft.Extensions.Validation.IValidatableInfoResolver
 Microsoft.Extensions.Validation.IValidatableInfoResolver.TryGetValidatableParameterInfo(System.Reflection.ParameterInfo! parameterInfo, out Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo) -> bool
 Microsoft.Extensions.Validation.IValidatableInfoResolver.TryGetValidatableTypeInfo(System.Type! type, out Microsoft.Extensions.Validation.IValidatableInfo? validatableInfo) -> bool
+Microsoft.Extensions.Validation.SkipValidationAttribute
+Microsoft.Extensions.Validation.SkipValidationAttribute.SkipValidationAttribute() -> void
 Microsoft.Extensions.Validation.ValidatableParameterInfo
 Microsoft.Extensions.Validation.ValidatableParameterInfo.ValidatableParameterInfo(System.Type! parameterType, string! name, string! displayName) -> void
 Microsoft.Extensions.Validation.ValidatablePropertyInfo
