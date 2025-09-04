@@ -6,3 +6,5 @@ static Microsoft.AspNetCore.Components.WebAssembly.Hosting.WebAssemblyHostBuilde
 *REMOVED*Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload
 *REMOVED*static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.ApplyHotReloadDelta(string! moduleIdString, byte[]! metadataDelta, byte[]! ilDelta, byte[]! pdbBytes, int[]? updatedTypes) -> void
 *REMOVED*static Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload.GetApplyUpdateCapabilities() -> string!
+*REMOVED*~static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string uri, bool isInterceptedLink) -> void
+*REMOVED*static Microsoft.AspNetCore.Components.WebAssembly.Infrastructure.JSInteropMethods.NotifyLocationChanged(string! uri, bool isInterceptedLink) -> void
