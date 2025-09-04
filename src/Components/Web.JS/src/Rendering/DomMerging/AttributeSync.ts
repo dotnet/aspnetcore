@@ -43,7 +43,7 @@ export function synchronizeAttributes(destination: Element, source: Element) {
   }
 }
 
-export function attributeSetsAreIdentical(destAttrs: NamedNodeMap, sourceAttrs: NamedNodeMap): boolean {
+function attributeSetsAreIdentical(destAttrs: NamedNodeMap, sourceAttrs: NamedNodeMap): boolean {
   const destAttrsLength = destAttrs.length;
   if (destAttrsLength !== sourceAttrs.length) {
     return false;
