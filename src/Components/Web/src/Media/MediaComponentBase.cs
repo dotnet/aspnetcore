@@ -125,7 +125,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
 
         if (Source is null)
         {
-            throw new InvalidOperationException("Image.Source is required.");
+            throw new InvalidOperationException($"{nameof(MediaComponentBase)}.{nameof(Source)} is required.");
         }
 
         if (!_initialized)
