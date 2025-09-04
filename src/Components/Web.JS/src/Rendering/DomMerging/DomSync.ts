@@ -308,11 +308,6 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
         return UpdateCost.Infinite;
       }
 
-      // Always treat "preloads" as new elements.
-      if (isPreloadElement(a as Element) || isPreloadElement(b as Element)) {
-        return UpdateCost.Infinite;
-      }
-
       return UpdateCost.None;
     case Node.DOCUMENT_TYPE_NODE:
       // It's invalid to insert or delete doctype, and we have no use case for doing that. So just skip such
@@ -322,10 +317,6 @@ function domNodeComparer(a: Node, b: Node): UpdateCost {
       // For anything else we know nothing, so the risk-averse choice is to say we can't retain or update the old value
       return UpdateCost.Infinite;
   }
-}
-
-function isPreloadElement(el: Element): boolean {
-  return el.tagName === 'LINK' && el.attributes.getNamedItem('rel')?.value === 'preload';
 }
 
 function upgradeComponentCommentsToLogicalRootComments(root: Node): ComponentDescriptor[] {
