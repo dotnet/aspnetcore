@@ -8,6 +8,7 @@
     <BaseIntermediateOutputPath Condition="'$(DotNetBuildPass)' == '2'">$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', '$(TargetArchitecture)'))</BaseIntermediateOutputPath>
     <IntermediateOutputPath Condition="'$(PlatformName)' == 'AnyCPU' AND '$(DotNetBuildPass)' == '2'">$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', '$(Configuration)'))</IntermediateOutputPath>
     <IntermediateOutputPath Condition="'$(PlatformName)' != 'AnyCPU' AND '$(DotNetBuildPass)' == '2'">$([MSBuild]::NormalizeDirectory('$(BaseIntermediateOutputPath)', '$(PlatformName)', '$(Configuration)'))</IntermediateOutputPath>
+    <NoWarn Condition="'$(_DevBuild)' == 'true'">$(NoWarn);NU3027</NoWarn>
   </PropertyGroup>
 
 </Project>
