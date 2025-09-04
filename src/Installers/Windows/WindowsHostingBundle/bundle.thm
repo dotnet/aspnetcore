@@ -26,8 +26,8 @@
         </Page>
         <Page Name="Install">
             <Hypertext X="12" Y="90" Width="-12" Height="16" FontId="DefaultFont">#(loc.Welcome)</Hypertext>
-            <Hypertext X="12" Y="119" Width="-12" Height="44" FontId="DefaultFont" Name="InstallResetIIS" HideWhenDisabled="yes">#(loc.InstallResetIIS)</Hypertext>
-            <Hypertext X="12" Y="119" Width="-12" Height="44" FontId="DefaultFont" Name="InstallNoIIS" HideWhenDisabled="yes">#(loc.InstallNoIIS)</Hypertext>
+            <Hypertext X="12" Y="120" Width="-12" Height="44" FontId="DefaultFont" Name="InstallResetIIS" HideWhenDisabled="yes">#(loc.InstallResetIIS)</Hypertext>
+            <Hypertext X="12" Y="120" Width="-12" Height="44" FontId="DefaultFont" Name="InstallNoIIS" HideWhenDisabled="yes">#(loc.InstallNoIIS)</Hypertext>
             <Hypertext Name="EulaAndPrivacyHyperlink" X="12" Y="180" Width="-12" Height="52" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.EulaPrivacy)</Hypertext>
             <Checkbox Name="EulaAcceptCheckbox" X="-12" Y="-40" Width="260" Height="36" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
             <Button Name="InstallButton" X="-92" Y="-12" Width="95" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.InstallInstallButton)</Button>
