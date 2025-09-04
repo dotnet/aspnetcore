@@ -4,6 +4,9 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+#if COMPONENTS
+using Microsoft.AspNetCore.Components.HotReload;
+#endif
 
 #if COMPONENTS
 namespace Microsoft.AspNetCore.Components.Infrastructure;
@@ -15,6 +18,16 @@ namespace Microsoft.AspNetCore.Components;
 internal sealed class RootTypeCache
 {
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
+
+#if COMPONENTS
+    static RootTypeCache()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
+#endif
 
     public Type? GetRootType(string assembly, string type)
     {
