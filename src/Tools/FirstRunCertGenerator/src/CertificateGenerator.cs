@@ -11,7 +11,7 @@ public static class CertificateGenerator
     public static void GenerateAspNetHttpsCertificate()
     {
         var manager = CertificateManager.Instance;
-        var now = DateTimeOffset.Now;
+        var now = DateTimeOffset.UtcNow;
         manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), isInteractive: false);
     }
 }
