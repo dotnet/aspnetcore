@@ -1014,8 +1014,10 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
+            Assert.NotNull(document.Components?.Schemas);
             var schema = document.Components.Schemas["DirectCircularModelSelfFirst"];
             Assert.Equal(JsonSchemaType.Object, schema.Type);
+            Assert.NotNull(schema.Properties);
             Assert.Collection(schema.Properties,
                 property =>
                 {
@@ -1031,6 +1033,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
             // Verify that it does not result in an empty schema for a referenced schema
             var referencedSchema = document.Components.Schemas["ReferencedModel"];
+            Assert.NotNull(referencedSchema.Properties);
             Assert.NotEmpty(referencedSchema.Properties);
             var idProperty = Assert.Single(referencedSchema.Properties);
             Assert.Equal("id", idProperty.Key);
@@ -1048,8 +1051,10 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
+            Assert.NotNull(document.Components?.Schemas);
             var schema = document.Components.Schemas["DirectCircularModelSelfLast"];
             Assert.Equal(JsonSchemaType.Object, schema.Type);
+            Assert.NotNull(schema.Properties);
             Assert.Collection(schema.Properties,
                 property =>
                 {
@@ -1065,6 +1070,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
             // Verify that it does not result in an empty schema for a referenced schema
             var referencedSchema = document.Components.Schemas["ReferencedModel"];
+            Assert.NotNull(referencedSchema.Properties);
             Assert.NotEmpty(referencedSchema.Properties);
             var idProperty = Assert.Single(referencedSchema.Properties);
             Assert.Equal("id", idProperty.Key);
@@ -1082,8 +1088,10 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
         await VerifyOpenApiDocument(builder, document =>
         {
+            Assert.NotNull(document.Components?.Schemas);
             var schema = document.Components.Schemas["DirectCircularModelMultiple"];
             Assert.Equal(JsonSchemaType.Object, schema.Type);
+            Assert.NotNull(schema.Properties);
             Assert.Collection(schema.Properties,
                 property =>
                 {
@@ -1105,6 +1113,7 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
 
             // Verify that it does not result in an empty schema for a referenced schema
             var referencedSchema = document.Components.Schemas["ReferencedModel"];
+            Assert.NotNull(referencedSchema.Properties);
             Assert.NotEmpty(referencedSchema.Properties);
             var idProperty = Assert.Single(referencedSchema.Properties);
             Assert.Equal("id", idProperty.Key);
