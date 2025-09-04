@@ -520,7 +520,7 @@ public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOpt
                     break;
             }
         }
-        catch(Exception exception)
+        catch (Exception exception)
         {
             var failContext = new PushedAuthorizationFailedContext(Context, Scheme, Options, properties, exception);
 
