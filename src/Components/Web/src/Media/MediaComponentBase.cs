@@ -9,8 +9,8 @@ using Microsoft.JSInterop;
 namespace Microsoft.AspNetCore.Components.Web.Media;
 
 /// <summary>
-/// Base component that handles turning a media stream into an object URL, caching and lifetime management.
-/// Derived components provide the element tag name (e.g., img, video) and target attribute (e.g., src, href).
+/// Base component that handles turning a media stream into an object URL plus caching and lifetime management.
+/// Subclasses implement their own rendering and provide the target attribute (e.g., <c>src</c> or <c>href</c>) used
 /// </summary>
 public abstract partial class MediaComponentBase : IComponent, IHandleAfterRender, IAsyncDisposable
 {
@@ -20,12 +20,12 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
     /// The current object URL (blob URL) assigned to the underlying element, or <c>null</c> if not yet loaded
     /// or if a previous load failed/was cancelled.
     /// </summary>
-    protected string? _currentObjectUrl;
+    internal string? _currentObjectUrl;
 
     /// <summary>
     /// Indicates whether the last load attempt ended in an error state for the active cache key.
     /// </summary>
-    protected bool _hasError;
+    internal bool _hasError;
 
     private bool _isDisposed;
     private bool _initialized;
@@ -35,68 +35,54 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
     /// The cache key associated with the currently active/most recent load operation. Used to ignore
     /// out-of-order JS interop responses belonging to stale operations.
     /// </summary>
-    protected string? _activeCacheKey;
+    internal string? _activeCacheKey;
 
     /// <summary>
     /// The <see cref="MediaSource"/> instance currently being processed (or <c>null</c> if none).
     /// </summary>
-    protected MediaSource? _currentSource;
+    internal MediaSource? _currentSource;
     private CancellationTokenSource? _loadCts;
 
     /// <summary>
     /// Gets a value indicating whether the component is currently loading the media content.
     /// True when a source has been provided, no object URL is available yet, and there is no error.
     /// </summary>
-    protected bool IsLoading => _currentSource != null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
+    internal bool IsLoading => _currentSource != null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
 
     /// <summary>
     /// Gets a value indicating whether the renderer is interactive so client-side JS interop can be performed.
     /// </summary>
-    protected bool IsInteractive => _renderHandle.IsInitialized && _renderHandle.RendererInfo.IsInteractive;
+    internal bool IsInteractive => _renderHandle.IsInitialized && _renderHandle.RendererInfo.IsInteractive;
 
     /// <summary>
     /// Gets the reference to the rendered HTML element for this media component.
     /// </summary>
-    protected ElementReference? Element { get; set; }
+    internal ElementReference? Element { get; set; }
 
     /// <summary>
     /// Gets or sets the JS runtime used for interop with the browser to materialize media object URLs.
     /// </summary>
-    [Inject] protected IJSRuntime JSRuntime { get; set; } = default!;
+    [Inject] internal IJSRuntime JSRuntime { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the logger factory used to create the <see cref="Logger"/> instance.
     /// </summary>
-    [Inject] protected ILoggerFactory LoggerFactory { get; set; } = default!;
+    [Inject] internal ILoggerFactory LoggerFactory { get; set; } = default!;
 
     /// <summary>
     /// Logger for media operations.
     /// </summary>
-    protected ILogger Logger => _logger ??= LoggerFactory.CreateLogger(GetType());
+    private ILogger Logger => _logger ??= LoggerFactory.CreateLogger(GetType());
     private ILogger? _logger;
 
-    /// <summary>
-    /// Gets the element tag name (e.g., "img", "video").
-    /// </summary>
-    protected abstract string TagName { get; }
-
-    /// <summary>
-    /// Gets the attribute name to assign the object URL to (e.g., "src" or "href").
-    /// </summary>
-    protected abstract string TargetAttributeName { get; }
-
-    /// <summary>
-    /// Gets the custom marker data-attribute name added to the rendered element for diagnostics and tests.
-    /// Derived components must override to provide a component-specific marker (e.g., "data-blazor-image").
-    /// </summary>
-    protected abstract string MarkerAttributeName { get; }
+    internal abstract string TargetAttributeName { get; }
 
     /// <summary>
     /// Determines whether the component should automatically invoke a media load after the first render
     /// and whenever the <see cref="Source"/> changes. Override and return <c>false</c> for components
     /// (such as download buttons) that defer loading until an explicit user action.
     /// </summary>
-    protected virtual bool ShouldAutoLoad => true;
+    internal virtual bool ShouldAutoLoad => true;
 
     /// <summary>
     /// Gets or sets the media source.
@@ -173,7 +159,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
     /// Triggers a render of the component by invoking the <see cref="BuildRenderTree"/> method.
     /// Ensures that only one render operation is pending at a time to prevent redundant renders.
     /// </summary>
-    protected void Render()
+    internal void Render()
     {
         Debug.Assert(_renderHandle.IsInitialized);
 
@@ -185,38 +171,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
         }
     }
 
-    /// <summary>
-    /// Builds the component render tree for the underlying media element and common attributes.
-    /// Derived components can override to extend the markup.
-    /// </summary>
-    /// <param name="builder">The <see cref="RenderTreeBuilder"/> used to construct the render tree.</param>
-    protected virtual void BuildRenderTree(RenderTreeBuilder builder)
-    {
-        builder.OpenElement(0, TagName);
-
-        if (!string.IsNullOrEmpty(_currentObjectUrl))
-        {
-            builder.AddAttribute(1, TargetAttributeName, _currentObjectUrl);
-        }
-
-        builder.AddAttribute(2, MarkerAttributeName, "");
-
-        var showInitial = Source != null && _currentSource == null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
-
-        if (IsLoading || showInitial)
-        {
-            builder.AddAttribute(3, "data-state", "loading");
-        }
-        else if (_hasError)
-        {
-            builder.AddAttribute(3, "data-state", "error");
-        }
-
-        builder.AddMultipleAttributes(4, AdditionalAttributes);
-        builder.AddElementReferenceCapture(5, elementReference => Element = elementReference);
-
-        builder.CloseElement();
-    }
+    private protected virtual void BuildRenderTree(RenderTreeBuilder builder) { }
 
     private sealed class MediaLoadResult
     {
@@ -309,7 +264,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
     /// <summary>
     /// Cancels any in-flight media load operation, if one is active, by signalling its <see cref="CancellationTokenSource"/>.
     /// </summary>
-    protected void CancelPreviousLoad()
+    internal void CancelPreviousLoad()
     {
         try
         {
@@ -325,7 +280,7 @@ public abstract partial class MediaComponentBase : IComponent, IHandleAfterRende
     /// <summary>
     /// Creates a new <see cref="CancellationTokenSource"/> for an upcoming load operation and returns its token.
     /// </summary>
-    protected CancellationToken ResetCancellationToken()
+    internal CancellationToken ResetCancellationToken()
     {
         _loadCts = new CancellationTokenSource();
         return _loadCts.Token;

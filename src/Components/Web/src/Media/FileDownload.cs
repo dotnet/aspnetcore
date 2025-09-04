@@ -31,27 +31,20 @@ public sealed class FileDownload : MediaComponentBase
     /// </summary>
     [Parameter] public string? Text { get; set; }
 
-    /// <inheritdoc />
-    protected override string TagName => "a";
+    internal override string TargetAttributeName => string.Empty; // Not used – object URL not tracked for downloads.
 
     /// <inheritdoc />
-    protected override string TargetAttributeName => string.Empty; // Not used – object URL not tracked for downloads.
-
-    /// <inheritdoc />
-    protected override string MarkerAttributeName => "data-blazor-file-download";
-
-    /// <inheritdoc />
-    protected override bool ShouldAutoLoad => false;
+    internal override bool ShouldAutoLoad => false;
 
     /// <summary>
     /// Builds the anchor element with click handler wiring. The anchor is given an inert href (if one is not supplied)
     /// and the click default action is prevented so navigation does not occur. Styling into a button shape is left to the user.
     /// </summary>
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    private protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-        builder.OpenElement(0, TagName);
+        builder.OpenElement(0, "a");
 
-        builder.AddAttribute(1, MarkerAttributeName, "");
+        builder.AddAttribute(1, "data-blazor-file-download", "");
 
         if (IsLoading)
         {
