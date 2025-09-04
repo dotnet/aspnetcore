@@ -6,11 +6,10 @@
 export module DotNet {
   export type JsonReviver = ((key: any, value: any) => any);
   const jsonRevivers: JsonReviver[] = [];
-  export type JsonReplacer = ((key: any, value: any) => any);
-  const jsonReplacers: JsonReplacer[] = [];
 
   const jsObjectIdKey = "__jsObjectId";
   const dotNetObjectRefKey = "__dotNetObject";
+  const dotNetElementRefKey = "__internalId";
   const byteArrayRefKey = "__byte[]";
   const dotNetStreamRefKey = "__dotNetStream";
   const jsStreamReferenceLengthKey = "__jsStreamReferenceLength";
@@ -119,14 +118,6 @@ export module DotNet {
   export function attachReviver(reviver: JsonReviver) {
       jsonRevivers.push(reviver);
   }
-
-  /**
-   * Adds a JSON replacer callback that will be used when serializing arguments sent to .NET.
-   * @param replacer The replacer to add.
-   */
-  export function attachReplacer(replacer: JsonReplacer) {
-    jsonReplacers.push(replacer);
-}
 
   /**
    * Invokes the specified .NET public method synchronously. Not all hosting scenarios support
@@ -817,22 +808,30 @@ export module DotNet {
       return result;
   }
 
-  function argReplacer(key: string, value: any) {
-      const processedValue = jsonReplacers.reduce(
-          (currentValue, replacer) => replacer(key, currentValue),
-          value
-      );
+  function getCaptureIdFromElement(element: Element): string | null {
+    for (let i = 0; i < element.attributes.length; i++) {
+      const attr = element.attributes[i];
+      if (attr.name.startsWith('_bl_')) {
+        return attr.name.substring(4);
+      }
+    }
+    return null;
+}
 
-      if (processedValue instanceof DotNetObject) {
-          return processedValue.serializeAsArg();
-      } else if (processedValue instanceof Uint8Array) {
+  function argReplacer(key: string, value: any) {
+      if (value instanceof Element) {
+          return { [dotNetElementRefKey]: getCaptureIdFromElement(value) };
+      }
+      if (value instanceof DotNetObject) {
+          return value.serializeAsArg();
+      } else if (value instanceof Uint8Array) {
           const dotNetCallDispatcher = currentCallDispatcher!.getDotNetCallDispatcher();
-          dotNetCallDispatcher!.sendByteArray(nextByteArrayIndex, processedValue);
+          dotNetCallDispatcher!.sendByteArray(nextByteArrayIndex, value);
           const jsonValue = { [byteArrayRefKey]: nextByteArrayIndex };
           nextByteArrayIndex++;
           return jsonValue;
       }
 
-      return processedValue;
+      return value;
   }
 }
