@@ -1155,8 +1155,8 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
         Browser.Equal("1", () => app.FindElement(By.Id("location-changed-count"))?.Text);
     }
 
-    [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/57153")]
+    // See https://github.com/dotnet/aspnetcore/issues/57153
+    [Fact(Skip = "BeforeUnload alert does not work with Selenium/ChromeDriver after update")]
     public void NavigationLock_CanBlockExternalNavigation()
     {
         SetUrlViaPushState("/");
