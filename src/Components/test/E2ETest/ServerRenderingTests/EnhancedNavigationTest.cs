@@ -526,13 +526,13 @@ public class EnhancedNavigationTest : ServerTestBase<BasicTestAppServerSiteFixtu
 
         Browser.Exists(By.TagName("nav")).FindElement(By.LinkText("LocationChanged/LocationChanging event (server-and-wasm)")).Click();
         Browser.Equal("Page with location changed components", () => Browser.Exists(By.TagName("h1")).Text);
-        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-server")).Text);
-        Assert.EndsWith("/nav/location-changed/server-and-wasm", Browser.Exists(By.Id("nav-uri-wasm")).Text);
+        Browser.True(() => Browser.Exists(By.Id("nav-uri-server")).Text.EndsWith("/nav/location-changed/server-and-wasm"));
+        Browser.True(() => Browser.Exists(By.Id("nav-uri-wasm")).Text.EndsWith("/nav/location-changed/server-and-wasm"));
 
         Browser.Exists(By.Id($"update-query-string-{runtimeThatInvokedNavigation}")).Click();
 
-        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-server")).Text);
-        Assert.EndsWith($"/nav/location-changed/server-and-wasm?query=1", Browser.Exists(By.Id($"nav-uri-wasm")).Text);
+        Browser.True(() => Browser.Exists(By.Id("nav-uri-server")).Text.EndsWith("/nav/location-changed/server-and-wasm?query=1"));
+        Browser.True(() => Browser.Exists(By.Id("nav-uri-wasm")).Text.EndsWith("/nav/location-changed/server-and-wasm?query=1"));
     }
 
     [Theory]
