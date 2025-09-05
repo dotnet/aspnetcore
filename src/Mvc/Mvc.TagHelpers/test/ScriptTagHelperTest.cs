@@ -798,18 +798,17 @@ public class ScriptTagHelperTest
     public async Task ScriptTagHelper_PreservesExplicitImportMapContent_WhenUserProvidesContent()
     {
         // Arrange - this simulates the user's scenario where they provide explicit importmap content
-        var context = MakeTagHelperContext(
-            attributes: new TagHelperAttributeList
-            {
-                new TagHelperAttribute("type", "importmap"),
-            });
-        
-        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+        var context = MakeTagHelperContext(attributes: [new TagHelperAttribute("type", "importmap")]);
+
         // Simulate user providing explicit content
-        output.Content.SetHtmlContent(@"{""imports"":{""jquery"":""https://code.jquery.com/jquery.js""}}");
+        var childContent = new DefaultTagHelperContent();
+        childContent.SetHtmlContent(@"{""imports"":{""jquery"":""https://code.jquery.com/jquery.js""}}");
+
+        var output = MakeTagHelperOutput("script", attributes: [], childContent: childContent);
 
         var helper = GetHelper();
         helper.Type = "importmap";
+
         // No endpoint with ImportMapDefinition - this should NOT suppress the output
         // since user provided explicit content
 
@@ -1175,15 +1174,15 @@ public class ScriptTagHelperTest
         return viewContext;
     }
 
-    private TagHelperOutput MakeTagHelperOutput(string tagName, TagHelperAttributeList attributes = null)
+    private TagHelperOutput MakeTagHelperOutput(string tagName, TagHelperAttributeList attributes = null, TagHelperContent childContent = null)
     {
-        attributes = attributes ?? new TagHelperAttributeList();
+        attributes ??= [];
+        childContent ??= new DefaultTagHelperContent();
 
         return new TagHelperOutput(
             tagName,
             attributes,
-            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
-                new DefaultTagHelperContent()));
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult(childContent));
     }
 
     private static IWebHostEnvironment MakeHostingEnvironment()
