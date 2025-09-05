@@ -804,7 +804,7 @@ public class ScriptTagHelperTest
         var childContent = new DefaultTagHelperContent();
         childContent.SetHtmlContent(@"{""imports"":{""jquery"":""https://code.jquery.com/jquery.js""}}");
 
-        var output = MakeTagHelperOutput("script", attributes: [], childContent: childContent);
+        var output = MakeTagHelperOutput("script", attributes: [new TagHelperAttribute("type", "importmap")], childContent: childContent);
 
         var helper = GetHelper();
         helper.Type = "importmap";
