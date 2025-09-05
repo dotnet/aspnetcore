@@ -105,7 +105,7 @@ public partial class CreatedAtRouteOfTResultTests
         Assert.Equal(typeof(Todo), producesResponseTypeMetadata.Type);
         Assert.Single(producesResponseTypeMetadata.ContentTypes, "application/json");
 
-        Assert.Contains(builder.Metadata, m => m is IApiEndpointMetadata);
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     [Fact]

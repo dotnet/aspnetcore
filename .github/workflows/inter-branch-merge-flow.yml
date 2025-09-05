@@ -7,7 +7,8 @@ on:
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   Merge:
-    uses: dotnet/arcade/.github/workflows/backport-base.yml@40693ae2ee51e447f6ca96d07bc1ba779dcb9b9c # 2024-06-24
+    uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@6aa173793e862e03b509406b2a554a2d8bedaf34 # 2024-06-24

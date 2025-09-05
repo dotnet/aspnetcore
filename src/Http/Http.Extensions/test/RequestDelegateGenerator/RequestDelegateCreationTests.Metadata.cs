@@ -506,10 +506,10 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
         // Act
         var endpoint = GetEndpointFromCompilation(compilation);
 
-        // IApiEndpointMetadata is tricky to order consistently because it depends on whether AddsCustomParameterMetadata is registered
-        // as a service at runtime. However, the order of IApiEndpointMetadata is not significant since there's no way to override it
+        // IDisableCookieRedirectMetadata is tricky to order consistently because it depends on whether AddsCustomParameterMetadata is registered
+        // as a service at runtime. However, the order of IDisableCookieRedirectMetadata is not significant since there's no way to override it
         // other than removing it.
-        Assert.Single(endpoint.Metadata, m => m is IApiEndpointMetadata);
+        Assert.Single(endpoint.Metadata, m => m is IDisableCookieRedirectMetadata);
 
         // Assert
         // NOTE: Depending on whether we are running under RDG or RDG, there are some generated types which
@@ -525,7 +525,7 @@ app.MapPost("/test/pattern", [Attribute1, Attribute2] (AddsCustomParameterMetada
             m is not Attribute1 &&
             m is not Attribute2 &&
             m is not IRouteDiagnosticsMetadata &&
-            m is not IApiEndpointMetadata);
+            m is not IDisableCookieRedirectMetadata);
 
         Assert.Collection(filteredMetadata,
             // Inferred AcceptsMetadata from RDF for complex type

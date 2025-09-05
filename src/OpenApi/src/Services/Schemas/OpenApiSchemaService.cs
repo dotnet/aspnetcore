@@ -101,22 +101,38 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
+            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
+            {
+                schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
+            }
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
-                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<ValidationAttribute>() is { } validationAttributes)
+                var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
+                if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
                 {
                     schema.ApplyValidationAttributes(validationAttributes);
                 }
-                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DefaultValueAttribute>().LastOrDefault() is DefaultValueAttribute defaultValueAttribute)
+                if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
                 {
                     schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
                 }
-                if (attributeProvider.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is DescriptionAttribute descriptionAttribute)
+                var isInlinedSchema = schema[OpenApiConstants.SchemaId] is null;
+                if (isInlinedSchema)
                 {
-                    schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    {
+                        schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
+                    }
+                }
+                else
+                {
+                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
+                    {
+                        schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
+                    }
                 }
             }
-
+            schema.PruneNullTypeForComponentizedTypes();
             return schema;
         }
     };
@@ -265,7 +281,17 @@ internal sealed class OpenApiSchemaService(
         {
             foreach (var property in schema.Properties)
             {
-                schema.Properties[property.Key] = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
+                var resolvedProperty = ResolveReferenceForSchema(document, property.Value, rootSchemaId);
+                if (property.Value is OpenApiSchema targetSchema &&
+                    targetSchema.Metadata?.TryGetValue(OpenApiConstants.NullableProperty, out var isNullableProperty) == true &&
+                    isNullableProperty is true)
+                {
+                    schema.Properties[property.Key] = resolvedProperty.CreateOneOfNullableWrapper();
+                }
+                else
+                {
+                    schema.Properties[property.Key] = resolvedProperty;
+                }
             }
         }
 
@@ -441,5 +467,126 @@ internal sealed class OpenApiSchemaService(
     }
 
     private JsonNode CreateSchema(OpenApiSchemaKey key)
-        => JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+    {
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+        return ResolveReferences(schema, schema);
+    }
+
+    private static JsonNode ResolveReferences(JsonNode node, JsonNode rootSchema)
+    {
+        return ResolveReferencesRecursive(node, rootSchema);
+    }
+
+    private static JsonNode ResolveReferencesRecursive(JsonNode node, JsonNode rootSchema)
+    {
+        if (node is JsonObject jsonObject)
+        {
+            if (jsonObject.TryGetPropertyValue(OpenApiConstants.RefKeyword, out var refNode) &&
+                refNode is JsonValue refValue &&
+                refValue.TryGetValue<string>(out var refString) &&
+                refString.StartsWith(OpenApiConstants.RefPrefix, StringComparison.Ordinal))
+            {
+                try
+                {
+                    // Resolve the reference path to the actual schema content
+                    // to avoid relative references
+                    var resolvedNode = ResolveReference(refString, rootSchema);
+                    if (resolvedNode != null)
+                    {
+                        return resolvedNode.DeepClone();
+                    }
+                }
+                catch (InvalidOperationException)
+                {
+                    // If resolution fails due to invalid path, return the original reference
+                    // This maintains backward compatibility while preventing crashes
+                }
+
+                // If resolution fails, return the original reference
+                return node;
+            }
+
+            // Process all properties recursively
+            var newObject = new JsonObject();
+            foreach (var property in jsonObject)
+            {
+                if (property.Value != null)
+                {
+                    var processedValue = ResolveReferencesRecursive(property.Value, rootSchema);
+                    newObject[property.Key] = processedValue?.DeepClone();
+                }
+                else
+                {
+                    newObject[property.Key] = null;
+                }
+            }
+            return newObject;
+        }
+        else if (node is JsonArray jsonArray)
+        {
+            var newArray = new JsonArray();
+            for (var i = 0; i < jsonArray.Count; i++)
+            {
+                if (jsonArray[i] != null)
+                {
+                    var processedValue = ResolveReferencesRecursive(jsonArray[i]!, rootSchema);
+                    newArray.Add(processedValue?.DeepClone());
+                }
+                else
+                {
+                    newArray.Add(null);
+                }
+            }
+            return newArray;
+        }
+
+        // Return non-$ref nodes as-is
+        return node;
+    }
+
+    private static JsonNode? ResolveReference(string refPath, JsonNode rootSchema)
+    {
+        if (string.IsNullOrWhiteSpace(refPath))
+        {
+            throw new InvalidOperationException("Reference path cannot be null or empty.");
+        }
+
+        if (!refPath.StartsWith(OpenApiConstants.RefPrefix, StringComparison.Ordinal))
+        {
+            throw new InvalidOperationException($"Only fragment references (starting with '{OpenApiConstants.RefPrefix}') are supported. Found: {refPath}");
+        }
+
+        var path = refPath.TrimStart('#', '/');
+        if (string.IsNullOrEmpty(path))
+        {
+            return rootSchema;
+        }
+
+        var segments = path.Split('/');
+        var current = rootSchema;
+
+        for (var i = 0; i < segments.Length; i++)
+        {
+            var segment = segments[i];
+            if (current is JsonObject currentObject)
+            {
+                if (currentObject.TryGetPropertyValue(segment, out var nextNode) && nextNode != null)
+                {
+                    current = nextNode;
+                }
+                else
+                {
+                    var partialPath = string.Join('/', segments.Take(i + 1));
+                    throw new InvalidOperationException($"Failed to resolve reference '{refPath}': path segment '{segment}' not found at '#{partialPath}'");
+                }
+            }
+            else
+            {
+                var partialPath = string.Join('/', segments.Take(i));
+                throw new InvalidOperationException($"Failed to resolve reference '{refPath}': cannot navigate beyond '#{partialPath}' - expected object but found {current?.GetType().Name ?? "null"}");
+            }
+        }
+
+        return current;
+    }
 }

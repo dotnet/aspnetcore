@@ -629,6 +629,32 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void ResponseProducesMetadataWithIResultImplementor()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(CustomIResultImplementor), StatusCodes.Status200OK)] () => new CustomIResultImplementor { Content = "Hello, World!" });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.Type);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.ModelMetadata?.ModelType);
+
+        var okResponseFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", okResponseFormat.MediaType);
+    }
+
+    public class CustomIResultImplementor : IResult
+    {
+        public required string Content { get; set; }
+
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return httpContext.Response.WriteAsJsonAsync(this);
+        }
+    }
+
+    [Fact]
     public void AddsFromRouteParameterAsPath()
     {
         static void AssertPathParameter(ApiDescription apiDescription)

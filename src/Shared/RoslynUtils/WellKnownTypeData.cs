@@ -124,6 +124,8 @@ internal static class WellKnownTypeData
         System_ComponentModel_DataAnnotations_ValidationAttribute,
         System_ComponentModel_DataAnnotations_RequiredAttribute,
         System_ComponentModel_DataAnnotations_CustomValidationAttribute,
+        System_ComponentModel_DataAnnotations_IValidatableObject,
+        Microsoft_Extensions_Validation_SkipValidationAttribute,
         System_Type,
     }
 
@@ -246,6 +248,8 @@ internal static class WellKnownTypeData
         "System.ComponentModel.DataAnnotations.ValidationAttribute",
         "System.ComponentModel.DataAnnotations.RequiredAttribute",
         "System.ComponentModel.DataAnnotations.CustomValidationAttribute",
+        "System.ComponentModel.DataAnnotations.IValidatableObject",
+        "Microsoft.Extensions.Validation.SkipValidationAttribute",
         "System.Type",
     ];
 }

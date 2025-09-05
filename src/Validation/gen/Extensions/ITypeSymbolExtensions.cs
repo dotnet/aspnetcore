@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Linq;
+using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 
@@ -136,7 +137,7 @@ internal static class ITypeSymbolExtensions
         return parameter.GetAttributes().Any(attr =>
             attr.AttributeClass is not null &&
             (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
-             SymbolEqualityComparer.Default.Equals(attr.AttributeClass, fromKeyedServiceAttributeSymbol)));
+             attr.AttributeClass.InheritsFrom(fromKeyedServiceAttributeSymbol)));
     }
 
     /// <summary>
@@ -163,5 +164,15 @@ internal static class ITypeSymbolExtensions
         return property.GetAttributes().Any(attr =>
             attr.AttributeClass is not null &&
             SymbolEqualityComparer.Default.Equals(attr.AttributeClass, jsonIgnoreAttributeSymbol));
+    }
+
+    internal static bool IsSkippedValidationProperty(this IPropertySymbol property, INamedTypeSymbol skipValidationAttributeSymbol)
+    {
+        return property.HasAttribute(skipValidationAttributeSymbol) || property.Type.HasAttribute(skipValidationAttributeSymbol);
+    }
+
+    internal static bool IsSkippedValidationParameter(this IParameterSymbol parameter, INamedTypeSymbol skipValidationAttributeSymbol)
+    {
+        return parameter.HasAttribute(skipValidationAttributeSymbol) || parameter.Type.HasAttribute(skipValidationAttributeSymbol);
     }
 }

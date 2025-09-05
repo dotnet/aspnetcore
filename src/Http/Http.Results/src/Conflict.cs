@@ -52,6 +52,6 @@ public sealed class Conflict : IResult, IEndpointMetadataProvider, IStatusCodeHt
         ArgumentNullException.ThrowIfNull(builder);
 
         builder.Metadata.Add(new ProducesResponseTypeMetadata(StatusCodes.Status409Conflict, typeof(void)));
-        builder.Metadata.Add(ApiEndpointMetadata.Instance);
+        builder.Metadata.Add(DisableCookieRedirectMetadata.Instance);
     }
 }

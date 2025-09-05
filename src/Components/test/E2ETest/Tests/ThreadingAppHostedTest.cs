@@ -32,15 +32,13 @@ public class ThreadingHostedAppTest
         WaitUntilLoaded();
     }
 
-    [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/63524")]
     public void HasHeading()
     {
         Assert.Equal("Hello, world!", Browser.Exists(By.TagName("h1")).Text);
     }
 
-    [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/63524")]
     public void NavMenuHighlightsCurrentLocation()
     {
         var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
@@ -66,8 +64,7 @@ public class ThreadingHostedAppTest
             item => Assert.Equal("Home", item.Text.Trim()));
     }
 
-    [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/63524")]
     public void CounterPageCanUseThreads()
     {
         // Navigate to "Counter"
@@ -84,8 +81,7 @@ public class ThreadingHostedAppTest
         Browser.NotEqual("Current count: 0", () => Browser.Exists(By.CssSelector("h1 + p")).Text);
     }
 
-    [Fact]
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/54761")]
+    [Fact(Skip = "https://github.com/dotnet/aspnetcore/issues/63524")]
     public void HasFetchDataPage()
     {
         // Navigate to "Fetch data"
