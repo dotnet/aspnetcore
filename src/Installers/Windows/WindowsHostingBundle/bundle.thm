@@ -31,7 +31,7 @@
             <Hypertext Name="EulaAndPrivacyHyperlink" X="12" Y="180" Width="-12" Height="52" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.EulaPrivacy)</Hypertext>
             <Checkbox Name="EulaAcceptCheckbox" X="-12" Y="-40" Width="260" Height="36" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
             <Button Name="InstallButton" X="-92" Y="-12" Width="96" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.InstallInstallButton)</Button>
-            <Button Name="WelcomeCancelButton" X="-12" Y="-12" Width="76" Height="24" TabStop="yes" FontId="DefaultFont">
+            <Button Name="InstallCancelButton" X="-12" Y="-12" Width="76" Height="24" TabStop="yes" FontId="DefaultFont">
                 <Text>#(loc.InstallCloseButton)</Text>
                 <CloseWindowAction/>
             </Button>
@@ -93,7 +93,10 @@
             <Hypertext Name="FailureMessageText" X="20" Y="164" Width="-12" Height="52" FontId="ErrorFont" TabStop="yes" HideWhenDisabled="yes" />
             <Text Name="FailureRestartText" X="-12" Y="-52" Width="400" Height="36" FontId="DefaultFont" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.FailureRestartText)</Text>
             <Button Name="FailureRestartButton" X="-92" Y="-12" Width="76" Height="24" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.FailureRestartButton)</Button>
-            <Button Name="FailureCloseButton" X="-12" Y="-12" Width="76" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.FailureCloseButton)</Button>
+            <Button Name="FailureCloseButton" X="-12" Y="-12" Width="76" Height="24" TabStop="yes" FontId="DefaultFont">
+                <Text>#(loc.FailureCloseButton)</Text>
+                <CloseWindowAction/>
+            </Button>
         </Page>
     </Window>
 </Theme>
