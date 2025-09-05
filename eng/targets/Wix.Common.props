@@ -6,7 +6,6 @@
     <ProductVersion>3.14</ProductVersion>
     <WixVersion>$(MicrosoftSignedWixVersion)</WixVersion>
     <Wix5Version>$(MicrosoftWixToolsetSdkVersion)</Wix5Version>
-    <UseWix5>true</UseWix5>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -20,11 +19,7 @@
     <NuGetRestoreTargets Condition="'$(NuGetRestoreTargets)'==''">$(MSBuildToolsPath)\NuGet.targets</NuGetRestoreTargets>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(UseWix5)' != 'true'">
-    <PackageReference Include="Microsoft.Signed.Wix" Version="$(WixVersion)" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(UseWix5)' == 'true'">
+  <ItemGroup>
     <!-- Microsoft.Wix is a dotnet tool package, so exlude its assets. -->
     <PackageReference Include="Microsoft.Wix" Version="$(MicrosoftWixToolsetSdkVersion)" ExcludeAssets="all" />
     <!-- Installers needs the $(PkgMicrosoftWixToolsetUIwixext) property to locate the extension. -->
