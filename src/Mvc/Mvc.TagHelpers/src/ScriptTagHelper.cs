@@ -235,15 +235,29 @@ public class ScriptTagHelper : UrlResolutionTagHelper
     }
 
     /// <inheritdoc />
-    public override void Process(TagHelperContext context, TagHelperOutput output)
+    public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(output);
 
         if (string.Equals(Type, "importmap", StringComparison.OrdinalIgnoreCase))
         {
-            // This is an importmap script, we'll write out the import map and
-            // stop processing.
+            // Do not update the content if another tag helper targeting this element has already done so.
+            if (output.IsContentModified)
+            {
+                return;
+            }
+
+            // This is an importmap script, check if there's existing content first.
+            var childContent = await output.GetChildContentAsync();
+            if (!childContent.IsEmptyOrWhiteSpace)
+            {
+                // User provided existing content; preserve it.
+                output.Content.SetHtmlContent(childContent);
+                return;
+            }
+
+            // No existing content, so we can apply import map logic.
             var importMap = ImportMap ?? ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ImportMapDefinition>();
             if (importMap == null)
             {
@@ -252,10 +266,10 @@ public class ScriptTagHelper : UrlResolutionTagHelper
                 return;
             }
 
+            output.Content.SetHtmlContent(importMap.ToString());
             output.TagName = "script";
             output.TagMode = TagMode.StartTagAndEndTag;
             output.Attributes.SetAttribute("type", "importmap");
-            output.Content.SetHtmlContent(importMap.ToString());
             return;
         }
 

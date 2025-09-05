@@ -794,6 +794,59 @@ public class ScriptTagHelperTest
         Assert.Equal(importMap.ToJson(), output.Content.GetContent());
     }
 
+    [Fact]
+    public async Task ScriptTagHelper_PreservesExplicitImportMapContent_WhenUserProvidesContent()
+    {
+        // Arrange - this simulates the user's scenario where they provide explicit importmap content
+        var context = MakeTagHelperContext(attributes: [new TagHelperAttribute("type", "importmap")]);
+
+        // Simulate user providing explicit content
+        var childContent = new DefaultTagHelperContent();
+        childContent.SetHtmlContent(@"{""imports"":{""jquery"":""https://code.jquery.com/jquery.js""}}");
+
+        var output = MakeTagHelperOutput("script", attributes: [new TagHelperAttribute("type", "importmap")], childContent: childContent);
+
+        var helper = GetHelper();
+        helper.Type = "importmap";
+
+        // No endpoint with ImportMapDefinition - this should NOT suppress the output
+        // since user provided explicit content
+
+        // Act
+        await helper.ProcessAsync(context, output);
+
+        // Assert
+        Assert.Equal("script", output.TagName); // Tag should not be suppressed
+        Assert.Equal("importmap", output.Attributes["type"].Value);
+        // The user's explicit content should be preserved
+        Assert.Equal(@"{""imports"":{""jquery"":""https://code.jquery.com/jquery.js""}}", output.Content.GetContent());
+    }
+
+    [Fact]
+    public async Task ScriptTagHelper_SuppressesOutput_WhenNoContentAndNoImportMapDefinition()
+    {
+        // Arrange - this simulates an empty importmap script with no definition
+        var context = MakeTagHelperContext(
+            attributes: new TagHelperAttributeList
+            {
+                new TagHelperAttribute("type", "importmap"),
+            });
+        
+        var output = MakeTagHelperOutput("script", attributes: new TagHelperAttributeList());
+        // No content provided
+
+        var helper = GetHelper();
+        helper.Type = "importmap";
+        // No endpoint with ImportMapDefinition and no explicit content
+        // This should suppress the output since there's nothing to render
+
+        // Act
+        await helper.ProcessAsync(context, output);
+
+        // Assert - output should be suppressed when no content and no definition
+        Assert.Null(output.TagName); // Tag should be suppressed
+    }
+
     private Endpoint CreateEndpoint(ImportMapDefinition importMap = null)
     {
         return new Endpoint(
@@ -1121,15 +1174,15 @@ public class ScriptTagHelperTest
         return viewContext;
     }
 
-    private TagHelperOutput MakeTagHelperOutput(string tagName, TagHelperAttributeList attributes = null)
+    private TagHelperOutput MakeTagHelperOutput(string tagName, TagHelperAttributeList attributes = null, TagHelperContent childContent = null)
     {
-        attributes = attributes ?? new TagHelperAttributeList();
+        attributes ??= [];
+        childContent ??= new DefaultTagHelperContent();
 
         return new TagHelperOutput(
             tagName,
             attributes,
-            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult<TagHelperContent>(
-                new DefaultTagHelperContent()));
+            getChildContentAsync: (useCachedResult, encoder) => Task.FromResult(childContent));
     }
 
     private static IWebHostEnvironment MakeHostingEnvironment()
