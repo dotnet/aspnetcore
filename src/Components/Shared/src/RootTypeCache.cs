@@ -26,7 +26,9 @@ internal sealed class RootTypeCache
         {
             HotReloadManager.Default.OnDeltaApplied += ClearCache;
         }
-    }
+    };
+
+    private static void ClearCache() => _typeToKeyLookUp.Clear();
 #endif
 
     public Type? GetRootType(string assembly, string type)
