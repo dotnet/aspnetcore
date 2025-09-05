@@ -337,7 +337,7 @@ internal sealed class OpenApiSchemaService(
             if (schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var schemaId) &&
                 schemaId is string schemaIdString)
             {
-                return document.AddOpenApiSchemaByReference(schemaIdString, schema);
+                return new OpenApiSchemaReference(schemaIdString, document);
             }
             var relativeSchemaId = $"#/components/schemas/{rootSchemaId}{refIdString.Replace("#", string.Empty)}";
             return new OpenApiSchemaReference(relativeSchemaId, document);
