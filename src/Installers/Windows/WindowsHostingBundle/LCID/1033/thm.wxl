@@ -24,16 +24,25 @@
   <String Id="ModifyRepairButton" Value="&amp;Repair" />
   <String Id="ModifyUninstallButton" Value="&amp;Uninstall" />
   <String Id="ModifyCloseButton" Value="&amp;Close" />
+  <String Id="SuccessCacheHeader" Value="Cache Successfully Completed" />
+  <String Id="SuccessModifyHeader" Value="Modify Successfully Completed" />
   <String Id="SuccessRepairHeader" Value="Repair Successfully Completed" />
   <String Id="SuccessUninstallHeader" Value="Uninstall Successfully Completed" />
+  <String Id="SuccessUnsafeUninstallHeader" Value="Uninstall Successfully Completed" />
   <String Id="SuccessInstallHeader" Value="Installation Successfully Completed" />
   <String Id="SuccessHeader" Value="Setup Successful" />
   <String Id="SuccessLaunchButton" Value="&amp;Launch" />
+  <String Id="SuccessLayoutHeader" Value="Layout Successfully Completed" />
   <String Id="SuccessRestartText" Value="You must restart your computer before you can use the software." />
+  <String Id="SuccessUninstallRestartText" Value="You must restart your computer to complete the removal of the software." />
   <String Id="SuccessRestartButton" Value="&amp;Restart" />
   <String Id="SuccessCloseButton" Value="&amp;Close" />
   <String Id="FailureHeader" Value="Setup Failed" />
+  <String Id="FailureCacheHeader" Value="Cache Failed" />
+  <String Id="FailureLayoutHeader" Value="Layout Failed" />
+  <String Id="FailureModifyHeader" Value="Modify Failed" />
   <String Id="FailureInstallHeader" Value="Setup Failed" />
+  <String Id="FailureUnsafeUninstallHeader" Value="Uninstall Failed" />
   <String Id="FailureUninstallHeader" Value="Uninstall Failed" />
   <String Id="FailureRepairHeader" Value="Repair Failed" />
   <String Id="FailureHyperlinkLogText" Value="One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href=&quot;#&quot;&gt;log file&lt;/a&gt;." />
@@ -46,6 +55,7 @@
   <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required." />
   <String Id="FilesInUseOkButton" Value="&amp;OK" />
   <String Id="FilesInUseCancelButton" Value="&amp;Cancel" />
+  <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:" />
 
   <!-- Custom UI strings -->
   <!--_locComment_text="{Locked='[WixBundleName]'}"-->
