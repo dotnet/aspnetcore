@@ -92,6 +92,7 @@ public class BaselineTest : LoggedTest
                 relativePath.EndsWith(".fsproj", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".props", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".sln", StringComparison.Ordinal) ||
+                relativePath.EndsWith(".slnx", StringComparison.Ordinal) ||
                 relativePath.EndsWith(".targets", StringComparison.Ordinal) ||
                 relativePath.StartsWith("bin/", StringComparison.Ordinal) ||
                 relativePath.StartsWith("obj/", StringComparison.Ordinal) ||
