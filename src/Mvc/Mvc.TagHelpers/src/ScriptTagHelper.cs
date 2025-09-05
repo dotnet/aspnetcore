@@ -235,12 +235,6 @@ public class ScriptTagHelper : UrlResolutionTagHelper
     }
 
     /// <inheritdoc />
-    public override void Process(TagHelperContext context, TagHelperOutput output)
-    {
-        ProcessAsync(context, output).GetAwaiter().GetResult();
-    }
-
-    /// <inheritdoc />
     public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -248,27 +242,30 @@ public class ScriptTagHelper : UrlResolutionTagHelper
 
         if (string.Equals(Type, "importmap", StringComparison.OrdinalIgnoreCase))
         {
-            // This is an importmap script, check if there's existing content first
+            // This is an importmap script, check if there's existing content first.
             var childContent = await output.GetChildContentAsync();
             if (!childContent.IsEmptyOrWhiteSpace)
             {
-                // User provided explicit content, preserve it
-                return;
+                // User provided existing content; preserve it.
+                output.Content.SetHtmlContent(childContent);
             }
-
-            // No existing content, so we can apply import map logic
-            var importMap = ImportMap ?? ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ImportMapDefinition>();
-            if (importMap == null)
+            else
             {
-                // No importmap found, nothing to do.
-                output.SuppressOutput();
-                return;
+                // No existing content, so we can apply import map logic.
+                var importMap = ImportMap ?? ViewContext.HttpContext.GetEndpoint()?.Metadata.GetMetadata<ImportMapDefinition>();
+                if (importMap == null)
+                {
+                    // No importmap found, nothing to do.
+                    output.SuppressOutput();
+                    return;
+                }
+
+                output.Content.SetHtmlContent(importMap.ToString());
             }
 
             output.TagName = "script";
             output.TagMode = TagMode.StartTagAndEndTag;
             output.Attributes.SetAttribute("type", "importmap");
-            output.Content.SetHtmlContent(importMap.ToString());
             return;
         }
 
