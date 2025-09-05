@@ -163,6 +163,10 @@
             var circularStructure = await JSRuntime.InvokeAsync<object>("eval", "window");
             ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = circularStructure is null ? "Failure: null" : "Failure: not null";
         }
+        catch (JSException)
+        {
+            ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = "Success";
+        }
         catch (Exception ex)
         {
             ReturnValues["invokeAsyncThrowsSerializingCircularStructure"] = $"Failure: {ex.Message}";
@@ -172,10 +176,6 @@
         {
             var elementReference = await JSRuntime.InvokeAsync<ElementReference>("returnElementReference", element);
             ReturnValues["elementReference"] = "Success";
-        }
-        catch (JSException ex)
-        {
-            ReturnValues["elementReference"] = $"Failure: {ex.Message}";
         }
         catch (Exception ex)
         {
