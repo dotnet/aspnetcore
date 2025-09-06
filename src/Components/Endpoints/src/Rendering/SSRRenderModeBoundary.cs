@@ -124,6 +124,11 @@ internal class SSRRenderModeBoundary : IComponent
 
     private void PreloadWebAssemblyAssets()
     {
+        if (EndpointHtmlRenderer.IsProgressivelyEnhancedNavigation(_httpContext.Request))
+        {
+            return;
+        }
+
         var preloads = _httpContext.GetEndpoint()?.Metadata.GetMetadata<ResourcePreloadCollection>();
         if (preloads != null && preloads.TryGetAssets("webassembly", out var preloadAssets))
         {
