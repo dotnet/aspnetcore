@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.IO.Pipelines;
@@ -101,35 +100,12 @@ internal sealed class OpenApiSchemaService(
             {
                 schema.ApplyNullabilityContextInfo(jsonPropertyInfo);
             }
-            if (context.TypeInfo.Type.GetCustomAttributes(inherit: false).OfType<DescriptionAttribute>().LastOrDefault() is { } typeDescriptionAttribute)
-            {
-                schema[OpenApiSchemaKeywords.DescriptionKeyword] = typeDescriptionAttribute.Description;
-            }
             if (context.PropertyInfo is { AttributeProvider: { } attributeProvider })
             {
                 var propertyAttributes = attributeProvider.GetCustomAttributes(inherit: false);
                 if (propertyAttributes.OfType<ValidationAttribute>() is { } validationAttributes)
                 {
                     schema.ApplyValidationAttributes(validationAttributes);
-                }
-                if (propertyAttributes.OfType<DefaultValueAttribute>().LastOrDefault() is { } defaultValueAttribute)
-                {
-                    schema.ApplyDefaultValue(defaultValueAttribute.Value, context.TypeInfo);
-                }
-                var isInlinedSchema = schema[OpenApiConstants.SchemaId] is null;
-                if (isInlinedSchema)
-                {
-                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
-                    {
-                        schema[OpenApiSchemaKeywords.DescriptionKeyword] = descriptionAttribute.Description;
-                    }
-                }
-                else
-                {
-                    if (propertyAttributes.OfType<DescriptionAttribute>().LastOrDefault() is { } descriptionAttribute)
-                    {
-                        schema[OpenApiConstants.RefDescriptionAnnotation] = descriptionAttribute.Description;
-                    }
                 }
             }
             schema.PruneNullTypeForComponentizedTypes();
