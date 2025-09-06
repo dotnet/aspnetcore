@@ -2419,7 +2419,7 @@ public partial class HubConnection : IAsyncDisposable
             if (!_hubConnection._handlers.TryGetValue(methodName, out var invocationHandlerList))
             {
                 Log.MissingHandler(_logger, methodName);
-                return Type.EmptyTypes;
+                throw new KeyNotFoundException($"Method with name '{methodName}' does not exist.");
             }
 
             // We use the parameter types of the first handler
