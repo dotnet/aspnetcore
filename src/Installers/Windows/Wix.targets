@@ -93,7 +93,7 @@
 
     <PropertyGroup>
       <DefineConstants>$(DefineConstants);DepProviderGuid=$(DepProviderGuid)</DefineConstants>
-    </PropertyGroup>    
+    </PropertyGroup>
   </Target>
 
   <Target Name="_CheckPackageFileNameIsSet" BeforeTargets="PrepareForBuild">
