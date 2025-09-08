@@ -65,7 +65,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         var secretManager = CreateProgram();
 
         secretManager.RunInternal("list", "--project", projectPath);
-        Assert.Contains(SecretsHelpersResources.FormatError_ProjectPath_NotFound(projectPath), _console.GetOutput());
+        Assert.Contains(SecretsHelpersResources.FormatError_File_NotFound(projectPath), _console.GetOutput());
     }
 
     [Fact]
@@ -123,17 +123,16 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         var dir = fromCurrentDirectory
             ? projectPath
             : Path.GetTempPath();
-        ReadOnlySpan<string> pathArgs = fileBasedApp
-            ? ["-f", Path.Join(projectPath, "app.cs")]
-            : ["-p", projectPath];
+        ReadOnlySpan<string> pathArgs = fromCurrentDirectory
+            ? []
+            : (fileBasedApp
+                ? ["-f", Path.Join(projectPath, "app.cs")]
+                : ["-p", projectPath]);
         var secretManager = new Program(_console, dir);
 
         foreach (var secret in secrets)
         {
-            var parameters = fromCurrentDirectory ?
-                new string[] { "set", secret.Key, secret.Value, "--verbose" } :
-                [ "set", secret.Key, secret.Value, .. pathArgs, "--verbose" ];
-            secretManager.RunInternal(parameters);
+            secretManager.RunInternal(["set", secret.Key, secret.Value, .. pathArgs, "--verbose"]);
         }
 
         foreach (var keyValue in secrets)
@@ -144,10 +143,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         }
 
         _console.ClearOutput();
-        var args = fromCurrentDirectory
-            ? new string[] { "list", "--verbose" }
-            : ["list", .. pathArgs, "--verbose"];
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["list", .. pathArgs, "--verbose"]);
         foreach (var keyValue in secrets)
         {
             Assert.Contains(
@@ -159,19 +155,22 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
         _console.ClearOutput();
         foreach (var secret in secrets)
         {
-            var parameters = fromCurrentDirectory ?
-                new string[] { "remove", secret.Key, "--verbose" } :
-                ["remove", secret.Key, .. pathArgs, "--verbose"];
-            secretManager.RunInternal(parameters);
+            secretManager.RunInternal(["remove", secret.Key, .. pathArgs, "--verbose"]);
         }
 
         // Verify secrets are removed.
         _console.ClearOutput();
-        args = fromCurrentDirectory
-            ? new string[] { "list", "--verbose" }
-            : ["list", .. pathArgs, "--verbose"];
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["list", .. pathArgs, "--verbose"]);
         Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
+    }
+
+    [Fact]
+    public void SetSecrets_FileBasedAppInCurrentDirectory()
+    {
+        var directoryPath = _fixture.GetTempFileBasedApp(out _);
+        var secretManager = new Program(_console, directoryPath);
+        secretManager.RunInternal("set", "key1", "value1", "--verbose");
+        Assert.Contains(SecretsHelpersResources.FormatError_NoProjectsFound(directoryPath), _console.GetOutput());
     }
 
     [Fact]
