@@ -93,4 +93,13 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <Target Name="_CopySymbolsToPublishDir" AfterTargets="Build" >
+    <ItemGroup>
+      <_BuiltPdbPath Include="$([System.IO.Path]::ChangeExtension($(TargetPath), '.pdb'))" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFiles="$(SymbolsOutputPath)$(TargetName)\$(TargetName).pdb" />
+    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFiles="$(SymbolsOutputPath)IISCustomActionDll\IISCustomActionDll.pdb" />
+  </Target>
 </Project>
