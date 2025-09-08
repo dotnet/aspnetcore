@@ -59,11 +59,21 @@ public sealed class FileDownload : MediaComponentBase
 
         builder.AddAttribute(4, "onclick", EventCallback.Factory.Create(this, OnClickAsync));
 
-        if (AdditionalAttributes?.ContainsKey("href") == true)
+        IEnumerable<KeyValuePair<string, object>>? attributesToRender = AdditionalAttributes;
+        if (AdditionalAttributes is not null && AdditionalAttributes.ContainsKey("href"))
         {
-            AdditionalAttributes.Remove("href");
+            var copy = new Dictionary<string, object>(AdditionalAttributes.Count);
+            foreach (var kvp in AdditionalAttributes)
+            {
+                if (kvp.Key == "href")
+                {
+                    continue;
+                }
+                copy.Add(kvp.Key, kvp.Value!);
+            }
+            attributesToRender = copy;
         }
-        builder.AddMultipleAttributes(6, AdditionalAttributes);
+        builder.AddMultipleAttributes(6, attributesToRender);
 
         builder.AddElementReferenceCapture(7, elementReference => Element = elementReference);
 

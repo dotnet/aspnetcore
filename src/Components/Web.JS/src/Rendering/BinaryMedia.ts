@@ -205,6 +205,24 @@ export class BinaryMedia {
     totalBytes: number | null,
     targetAttr: 'src' | 'href'
   ): Promise<string | null> {
+
+    if (targetAttr === 'src' && element instanceof HTMLVideoElement) {
+      try {
+        const mediaSourceUrl = await this.tryMediaSourceVideoStreaming(
+          element,
+          streamRef,
+          mimeType,
+          cacheKey,
+          totalBytes
+        );
+        if (mediaSourceUrl) {
+          return mediaSourceUrl;
+        }
+      } catch (msErr) {
+        this.logger.log(LogLevel.Debug, `MediaSource video streaming path failed, falling back. Error: ${msErr}`);
+      }
+    }
+
     this.loadingElements.add(element);
 
     // Create and track an AbortController for this element
@@ -237,7 +255,7 @@ export class BinaryMedia {
           resultUrl = null;
         } else {
           const combined = this.combineChunks(chunks);
-          const blob = new Blob([combined], { type: mimeType });
+          const blob = new Blob([combined.buffer as ArrayBuffer], { type: mimeType });
           const url = URL.createObjectURL(blob);
           this.setUrl(element, url, cacheKey, targetAttr);
           resultUrl = url;
@@ -358,7 +376,7 @@ export class BinaryMedia {
         return false;
       }
       const combined = this.combineChunks(readResult.chunks);
-      const blob = new Blob([combined], { type: mimeType });
+      const blob = new Blob([combined.buffer as ArrayBuffer], { type: mimeType });
       const url = URL.createObjectURL(blob);
       this.triggerDownload(url, fileName);
 
@@ -496,11 +514,15 @@ export class BinaryMedia {
     element: HTMLElement,
     cacheKey: string | null = null
   ): void {
-    const onLoad = (_e: Event) => {
+    const clearIfActive = () => {
       if (!cacheKey || BinaryMedia.activeCacheKey.get(element) === cacheKey) {
         BinaryMedia.loadingElements.delete(element);
         element.style.removeProperty('--blazor-media-progress');
       }
+    };
+
+    const onLoad = (_e: Event) => {
+      clearIfActive();
     };
 
     const onError = (_e: Event) => {
@@ -513,6 +535,11 @@ export class BinaryMedia {
 
     element.addEventListener('load', onLoad, { once: true });
     element.addEventListener('error', onError, { once: true });
+
+    if (element instanceof HTMLVideoElement) {
+      const onLoadedData = (_e: Event) => clearIfActive();
+      element.addEventListener('loadeddata', onLoadedData, { once: true });
+    }
   }
 
   private static async *iterateStream(stream: ReadableStream<Uint8Array>, signal?: AbortSignal): AsyncGenerator<Uint8Array, void, unknown> {
@@ -549,6 +576,148 @@ export class BinaryMedia {
         reader.releaseLock?.();
       } catch {
         // ignore
+      }
+    }
+  }
+
+  private static async tryMediaSourceVideoStreaming(
+    element: HTMLVideoElement,
+    streamRef: { stream: () => Promise<ReadableStream<Uint8Array>> },
+    mimeType: string,
+    cacheKey: string,
+    totalBytes: number | null
+  ): Promise<string | null> {
+    try {
+      if (!('MediaSource' in window) || !MediaSource.isTypeSupported(mimeType)) {
+        return null;
+      }
+    } catch {
+      return null;
+    }
+
+    this.loadingElements.add(element);
+    const controller = new AbortController();
+    this.controllers.set(element, controller);
+
+    const mediaSource = new MediaSource();
+    const objectUrl = URL.createObjectURL(mediaSource);
+
+    this.setUrl(element, objectUrl, cacheKey, 'src');
+
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const onOpen = () => resolve();
+        mediaSource.addEventListener('sourceopen', onOpen, { once: true });
+        mediaSource.addEventListener('error', () => reject(new Error('MediaSource error event')), { once: true });
+      });
+
+      if (controller.signal.aborted) {
+        return null;
+      }
+
+      const sourceBuffer: SourceBuffer = mediaSource.addSourceBuffer(mimeType);
+
+      const originalStream = await streamRef.stream();
+      let displayStream: ReadableStream<Uint8Array> = originalStream;
+
+      if (cacheKey) {
+        try {
+          const cache = await this.getCache();
+          if (cache) {
+            const [display, cacheStream] = originalStream.tee();
+            displayStream = display;
+            cache.put(encodeURIComponent(cacheKey), new Response(cacheStream))
+              .catch(err => this.logger.log(LogLevel.Debug, `Failed to put cache entry (MediaSource path): ${err}`));
+          }
+        } catch (cacheErr) {
+          this.logger.log(LogLevel.Debug, `Cache setup failed (MediaSource path): ${cacheErr}`);
+        }
+      }
+
+      let bytesRead = 0;
+
+      for await (const chunk of this.iterateStream(displayStream, controller.signal)) {
+        if (controller.signal.aborted) {
+          break;
+        }
+
+        // Wait until sourceBuffer ready
+        if (sourceBuffer.updating) {
+          await new Promise<void>((resolve) => {
+            const handler = () => resolve();
+            sourceBuffer.addEventListener('updateend', handler, { once: true });
+          });
+          if (controller.signal.aborted) {
+            break;
+          }
+        }
+
+        try {
+          const copy = new Uint8Array(chunk.byteLength);
+          copy.set(chunk);
+          sourceBuffer.appendBuffer(copy);
+        } catch (appendErr) {
+          this.logger.log(LogLevel.Debug, `SourceBuffer append failed: ${appendErr}`);
+          try {
+            mediaSource.endOfStream();
+          } catch {
+            // ignore
+          }
+          break;
+        }
+
+        bytesRead += chunk.byteLength;
+        if (totalBytes) {
+          const progress = Math.min(1, bytesRead / totalBytes);
+          element.style.setProperty('--blazor-media-progress', progress.toString());
+        }
+      }
+
+      if (controller.signal.aborted) {
+        try {
+          URL.revokeObjectURL(objectUrl);
+        } catch {
+          // ignore
+        }
+        return null;
+      }
+
+      // Wait for any pending update to finish before ending stream
+      if (sourceBuffer.updating) {
+        await new Promise<void>((resolve) => {
+          const handler = () => resolve();
+          sourceBuffer.addEventListener('updateend', handler, { once: true });
+        });
+      }
+      try {
+        mediaSource.endOfStream();
+      } catch {
+        // ignore
+      }
+
+      this.loadingElements.delete(element);
+      element.style.removeProperty('--blazor-media-progress');
+
+      return objectUrl;
+    } catch (err) {
+      try {
+        URL.revokeObjectURL(objectUrl);
+      } catch {
+        // ignore
+      }
+      // Remove tracking so fallback can safely set a new URL
+      this.revokeTrackedUrl(element);
+      if (controller.signal.aborted) {
+        return null;
+      }
+      return null;
+    } finally {
+      if (this.controllers.get(element) === controller) {
+        this.controllers.delete(element);
+      }
+      if (controller.signal.aborted) {
+        this.loadingElements.delete(element);
+        element.style.removeProperty('--blazor-media-progress');
       }
     }
   }

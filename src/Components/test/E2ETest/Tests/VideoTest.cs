@@ -121,4 +121,19 @@ public class VideoTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         Assert.NotEqual(initialSrc, finalSrc);
     }
+
+    [Fact]
+    public void VideoUsesMediaSourceWhenSupported()
+    {
+        Browser.FindElement(By.Id("load-mp4")).Click();
+        Browser.Equal("MP4 basic loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+
+        bool isUsingMediaSource = (bool)((IJavaScriptExecutor)Browser).ExecuteScript(@"
+            const video = document.getElementById('mp4-basic');
+            return video.src.startsWith('blob:') &&
+                !!window.activeSources?.find(ms => ms.readyState !== 'closed');
+        ");
+
+        Assert.True(isUsingMediaSource);
+    }
 }
