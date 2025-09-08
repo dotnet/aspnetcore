@@ -173,7 +173,7 @@
                   </RegistryKey>
               </Component>
               <Component Id="AspNetCoreModuleV2.arm64" Guid="22f16c6c-7c53-422c-8ad5-831e4870a44e" Bitness="$(Bitness)">
-                  <File Id="AspNetCoreModuleV2Dll.arm64" Name="aspnetcorev2_arm64.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" AspNetCoreModuleV2Dll.x64/>
+                  <File Id="AspNetCoreModuleV2Dll.arm64" Name="aspnetcorev2_arm64.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" KeyPath="yes" />
                   <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
                       <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.arm64]" />
                       <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
