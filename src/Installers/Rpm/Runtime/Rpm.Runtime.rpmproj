@@ -16,5 +16,7 @@
     <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
     <CblMarinerBaseName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)</CblMarinerBaseName>
     <CblMarinerExtension>-$(RpmArch).rpm</CblMarinerExtension>
+    <NewKeyBaseName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)</NewKeyBaseName>
+    <NewKeyExtension>-$(RpmArch).rpm</NewKeyExtension>
   </PropertyGroup>
 </Project>
