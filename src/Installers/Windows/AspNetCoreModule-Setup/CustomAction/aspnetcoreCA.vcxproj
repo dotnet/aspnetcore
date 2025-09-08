@@ -99,7 +99,7 @@
       <_BuiltPdbPath Include="$([System.IO.Path]::ChangeExtension($(TargetPath), '.pdb'))" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFolder="$(SymbolsOutputPath)$(TargetName)\$(TargetName).pdb" />
-    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFolder="$(SymbolsOutputPath)$(TargetName)\IISCustomActionDll.pdb" />
+    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFiles="$(SymbolsOutputPath)$(TargetName)\$(TargetName).pdb" />
+    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFiles="$(SymbolsOutputPath)$(TargetName)\IISCustomActionDll.pdb" />
   </Target>
 </Project>
