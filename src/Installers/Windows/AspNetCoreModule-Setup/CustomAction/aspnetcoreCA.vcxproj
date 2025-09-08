@@ -100,6 +100,6 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFiles="$(SymbolsOutputPath)$(TargetName)\$(TargetName).pdb" />
-    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFiles="$(SymbolsOutputPath)$(TargetName)\IISCustomActionDll.pdb" />
+    <Copy SourceFiles="@(_BuiltPdbPath)" DestinationFiles="$(SymbolsOutputPath)IISCustomActionDll\IISCustomActionDll.pdb" />
   </Target>
 </Project>
