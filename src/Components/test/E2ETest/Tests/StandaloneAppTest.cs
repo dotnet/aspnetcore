@@ -44,6 +44,12 @@ public class StandaloneAppTest
         var activeNavLinksSelector = By.CssSelector(".sidebar a.active");
         var mainHeaderSelector = By.TagName("h1");
 
+        // The sidebar is hidden if the screen is too narrow.
+        // Without setting the window size explicitly, visibility-sensitive properties
+        // such as IWebElement.Text can return empty strings, causing assertions to fail.
+        // In particular, this happens in the headless mode (used when running without debugger).
+        Browser.SetWindowSize(1920, 1080);
+
         // Verify we start at home, with the home link highlighted
         Assert.Equal("Hello, world!", Browser.Exists(mainHeaderSelector).Text);
         Assert.Collection(Browser.FindElements(activeNavLinksSelector),
