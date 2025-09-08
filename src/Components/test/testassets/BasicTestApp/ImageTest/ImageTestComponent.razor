@@ -1,0 +1,240 @@
+﻿@using System.IO
+@using Microsoft.AspNetCore.Components.Web.Image
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+
+@implements IAsyncDisposable
+
+<h3>Image Component Tests</h3>
+
+<div>
+    <h4>Test Controls</h4>
+    <button id="load-png" @onclick="ReloadPng">Load PNG</button>
+    <button id="load-jpg-stream" @onclick="LoadJpgFromStream">Load JPG (Stream)</button>
+    <button id="change-source" @onclick="ChangeDynamicImageSource">Change Dynamic Source</button>
+    <button id="load-pair-sequence" @onclick="LoadPairSequence">Load Two Images (Same Key)</button>
+    <button id="load-error" @onclick="LoadErrorImage">Load Error</button>
+    <button id="load-cached-jpg" @onclick="LoadCachedJpg">Load Cached JPG</button>
+    <button id="load-invalid-mime" @onclick="LoadInvalidMimeImage">Load Invalid MIME</button>
+
+    <div id="test-status">
+        Status: <span id="current-status">@_currentStatus</span>
+    </div>
+</div>
+
+@if (_pngBasic)
+{
+    <h4>PNG basic</h4>
+    <Image @ref="@_pngBasicRef"
+        id="png-basic"
+        Source="@_basicImageSource" />
+}
+
+@if (_jpgStream)
+{
+    <h4>JPG Stream</h4>
+    <Image @ref="@_jpgStreamRef"
+        id="jpg-stream"
+        Source="@_jpgStreamSource" />
+}
+
+@if (_dynamicSource)
+{
+    <h4>Dynamic Source Image</h4>
+    <Image @ref="@_dynamicSourceRef"
+        id="dynamic-source"
+        Source="@_dynamicImageSource" />
+}
+
+@if (_pair1Visible)
+{
+    <h4>Pair Image 1</h4>
+    <Image @ref="@_pair1Ref"
+           id="pair-image-1"
+           Source="@_pairSource" />
+}
+@if (_pair2Visible)
+{
+    <h4>Pair Image 2</h4>
+    <Image @ref="@_pair2Ref"
+           id="pair-image-2"
+           Source="@_pairSource" />
+}
+
+@if (_errorImage)
+{
+    <h4>Error Image</h4>
+    <Image @ref="_errorRef"
+            id="error-image"
+            Source="@_errorSource" />
+}
+
+@if (_cachedJpgVisible)
+{
+    <h4>Cached JPG</h4>
+    <Image @ref="@_cachedJpgRef"
+           id="cached-jpg"
+           Source="@_cachedJpgSource" />
+}
+
+@if (_invalidMimeImage)
+{
+    <h4>Invalid MIME Image</h4>
+    <Image @ref="@_invalidMimeRef"
+           id="invalid-mime-image"
+           Source="@_invalidMimeSource" />
+}
+
+@code {
+    private Image _pngBasicRef;
+    private Image _jpgStreamRef;
+    private Image _dynamicSourceRef;
+    private Image _pair1Ref;
+    private Image _pair2Ref;
+    private Image _errorRef;
+    private Image _cachedJpgRef;
+    private Image _invalidMimeRef;
+
+    private ImageSource _basicImageSource = new ImageSource(new byte[0], "", "");
+    private ImageSource _jpgStreamSource = new ImageSource(new byte[0], "", "");
+    private ImageSource _dynamicImageSource = new ImageSource(new byte[0], "", "");
+    private ImageSource _pairSource = new ImageSource(new byte[0], "", "");
+    private ImageSource _errorSource = new ImageSource(new byte[0], "", "");
+    private ImageSource _cachedJpgSource = new ImageSource(new byte[0], "", "");
+    private ImageSource _invalidMimeSource = new ImageSource(new byte[0], "", "");
+
+    private bool _pngBasic = false;
+    private bool _jpgStream = false;
+    private bool _dynamicSource = false;
+    private bool _pair1Visible = false;
+    private bool _pair2Visible = false;
+    private bool _errorImage = false;
+    private bool _cachedJpgVisible = false;
+    private bool _invalidMimeImage = false;
+
+    private string _currentStatus = "Ready";
+    private bool _isCurrentlyShowingPng = true; // Track which image is currently shown in dynamic test
+
+    // Test image data - 1x1 gray PNG and JPG byte arrays
+    private static readonly byte[] TestPngData = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
+
+    private static readonly byte[] TestJpgData = Convert.FromBase64String("/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/wAALCAABAAEBAREA/8QAFAABAAAAAAAAAAAAAAAAAAAAAP/EABQQAQAAAAAAAAAAAAAAAAAAAAD/2gAIAQEAAD8AN//Z");
+
+    protected override void OnInitialized()
+    {
+        _currentStatus = "Component initialized";
+    }
+
+    private void LoadJpgFromStream()
+    {
+        _currentStatus = "Loading JPG from stream...";
+        var stream = new MemoryStream(TestJpgData);
+        _jpgStreamSource = new ImageSource(stream, "image/jpeg", "test-jpg-stream");
+        _jpgStream = true;
+        _currentStatus = "JPG from stream loaded";
+
+    }
+
+    private void ChangeDynamicImageSource()
+    {
+        if (!_dynamicSource)
+        {
+            // First time - show the component with PNG
+            _currentStatus = "Loading dynamic source (PNG)...";
+            _dynamicImageSource = new ImageSource(TestPngData, "image/png", "dynamic-png");
+            _dynamicSource = true;
+            _isCurrentlyShowingPng = true;
+            _currentStatus = "Dynamic source initialized with PNG";
+        }
+        else
+        {
+            // Toggle between PNG and JPG
+            if (_isCurrentlyShowingPng)
+            {
+                _currentStatus = "Changing to JPG...";
+                _dynamicImageSource = new ImageSource(TestJpgData, "image/jpeg", "dynamic-jpg");
+                _isCurrentlyShowingPng = false;
+                _currentStatus = "Dynamic source changed to JPG";
+            }
+            else
+            {
+                _currentStatus = "Changing to PNG...";
+                _dynamicImageSource = new ImageSource(TestPngData, "image/png", "dynamic-png");
+                _isCurrentlyShowingPng = true;
+                _currentStatus = "Dynamic source changed to PNG";
+            }
+        }
+    }
+    private void LoadPairSequence()
+    {
+        _currentStatus = "Loading pair sequence...";
+        _pairSource = new ImageSource(TestJpgData, "image/jpeg", "pair-cache");
+        _pair1Visible = true;
+        _pair2Visible = true;
+        _currentStatus = "Pair second loaded";
+    }
+
+    private void ReloadPng()
+    {
+        if (_pngBasic)
+        {
+            _currentStatus = "Reloading PNG...";
+            _pngBasic = false;
+        }
+        else
+        {
+            _currentStatus = "Loading PNG...";
+        }
+
+        _basicImageSource = new ImageSource(TestPngData, "image/png", "test-png-basic");
+        _pngBasic = true;
+        _currentStatus = "PNG basic loaded";
+    }
+
+    private void LoadErrorImage()
+    {
+        _currentStatus = "Loading error image...";
+        // Create a stream then seek to end so component throws when validating position
+        var ms = new MemoryStream(new byte[] { 1, 2, 3, 4 });
+        ms.Seek(ms.Length, SeekOrigin.Begin);
+        _errorSource = new ImageSource(ms, "image/png", "error-key");
+        _errorImage = true;
+        _currentStatus = "Error image loaded";
+    }
+
+    private void LoadCachedJpg()
+    {
+        _currentStatus = "Loading cached JPG...";
+        _cachedJpgSource = new ImageSource(TestJpgData, "image/jpeg", "single-cached-jpg");
+        _cachedJpgVisible = true;
+        _currentStatus = "Cached JPG loaded";
+    }
+
+    private void LoadInvalidMimeImage()
+    {
+        _currentStatus = "Loading invalid mime image...";
+        var bytes = new byte[] { 97 };
+
+        _invalidMimeSource = new ImageSource(bytes, "text/plain", Guid.NewGuid().ToString());
+        _invalidMimeImage = true;
+        _currentStatus = "Invalid mime image loaded";
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _currentStatus = "Disposing component...";
+
+        if (_dynamicSourceRef != null)
+            await _dynamicSourceRef.DisposeAsync();
+        if (_jpgStreamRef != null)
+            await _jpgStreamRef.DisposeAsync();
+        if (_pngBasicRef != null)
+            await _pngBasicRef.DisposeAsync();
+        if (_pair1Ref != null)
+            await _pair1Ref.DisposeAsync();
+        if (_pair2Ref != null)
+            await _pair2Ref.DisposeAsync();
+        if (_invalidMimeRef != null)
+            await _invalidMimeRef.DisposeAsync();
+    }
+}

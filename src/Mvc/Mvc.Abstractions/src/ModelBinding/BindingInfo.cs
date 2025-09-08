@@ -177,7 +177,7 @@ public class BindingInfo
         }
 
         // Keyed services
-        if (attributes.OfType<FromKeyedServicesAttribute>().FirstOrDefault() is { } fromKeyedServicesAttribute)
+        if (attributes.FirstOrDefault(a => typeof(FromKeyedServicesAttribute).IsAssignableFrom(a.GetType())) is FromKeyedServicesAttribute fromKeyedServicesAttribute)
         {
             if (bindingInfo.BindingSource != null)
             {

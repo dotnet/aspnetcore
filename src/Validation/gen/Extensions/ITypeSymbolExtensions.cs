@@ -137,7 +137,7 @@ internal static class ITypeSymbolExtensions
         return parameter.GetAttributes().Any(attr =>
             attr.AttributeClass is not null &&
             (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
-             SymbolEqualityComparer.Default.Equals(attr.AttributeClass, fromKeyedServiceAttributeSymbol)));
+             attr.AttributeClass.InheritsFrom(fromKeyedServiceAttributeSymbol)));
     }
 
     /// <summary>
