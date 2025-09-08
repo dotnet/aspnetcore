@@ -16,7 +16,7 @@
     <ToolsetInstallerNuspecFile>$(MSBuildProjectDirectory)\$(MSBuildProjectName).nuspec</ToolsetInstallerNuspecFile>
     <!-- We import D.B.T ourselves in this file -->
     <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
-    <!-- False positive in aspnetcoremodulev2.wxs -->
+    <!-- False positive in ancm_iis_expressv2.wxs -->
     <SuppressSpecificWarnings>5437</SuppressSpecificWarnings>
   </PropertyGroup>
 

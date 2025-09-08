@@ -11,7 +11,7 @@
 
 To add this to your wxs file, add:
 
-    <?include $(var.PROJECT_ROOT)\setup\iisca\wix5\filename.wxi ?>
+    <?include $(PROJECT_ROOT)\setup\iisca\wix5\filename.wxi ?>
 
 -->
 
