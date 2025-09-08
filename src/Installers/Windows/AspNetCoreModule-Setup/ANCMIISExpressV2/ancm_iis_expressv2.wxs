@@ -137,9 +137,9 @@
             <Directory Id="VersionDir" Name="$(ProductVersionString)">
               <Component Id="AspNetCoreModule" Guid="84ed6ce6-c8a3-4fa8-a872-c98a1d15dd4f" Bitness="$(Bitness)">
                   <?if $(InstallerPlatform) = "arm64" ?>
-                  <File Id="AspNetCoreModuleDll" Name="aspnetcorev2.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll" DiskId="1" Vital="yes" />
+                  <File Id="AspNetCoreModuleDll" Name="aspnetcorev2.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll" DiskId="1" Vital="yes" KeyPath="yes"/>
                   <?else?>
-                  <File Id="AspNetCoreModuleDll" Name="aspnetcorev2.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" />
+                  <File Id="AspNetCoreModuleDll" Name="aspnetcorev2.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" KeyPath="yes"/>
                   <?endif?>
                 <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
                   <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll]" />
@@ -166,14 +166,14 @@
               </Directory>
               <?if $(InstallerPlatform) = "arm64" ?>
               <Component Id="AspNetCoreModuleV2.x64" Guid="1962b1b0-6345-4b37-97b3-a8f2c9e82bee" Bitness="$(Bitness)">
-                  <File Id="AspNetCoreModuleV2Dll.x64" Name="aspnetcorev2_x64.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes" />
+                  <File Id="AspNetCoreModuleV2Dll.x64" Name="aspnetcorev2_x64.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes" KeyPath="yes"/>
                   <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
                       <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.x64]" />
                       <RegistryValue Name="TypesSupported" Type="integer" Value="7" />
                   </RegistryKey>
               </Component>
               <Component Id="AspNetCoreModuleV2.arm64" Guid="22f16c6c-7c53-422c-8ad5-831e4870a44e" Bitness="$(Bitness)">
-                  <File Id="AspNetCoreModuleV2Dll.arm64" Name="aspnetcorev2_arm64.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" />
+                  <File Id="AspNetCoreModuleV2Dll.arm64" Name="aspnetcorev2_arm64.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" AspNetCoreModuleV2Dll.x64/>
                   <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
                       <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll.arm64]" />
                       <RegistryValue Name="TypesSupported" Type="integer" Value="7" />

@@ -4,8 +4,6 @@
   <PropertyGroup>
     <SchemaVersion>2.0</SchemaVersion>
     <ProductVersion>3.14</ProductVersion>
-    <WixVersion>$(MicrosoftSignedWixVersion)</WixVersion>
-    <Wix5Version>$(MicrosoftWixToolsetSdkVersion)</Wix5Version>
   </PropertyGroup>
 
   <PropertyGroup>

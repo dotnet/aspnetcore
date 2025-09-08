@@ -195,9 +195,9 @@
                        <Directory Id="VersionDir" Name="$(ProductVersionString)">
                            <Component Id="AspNetCoreModuleV2" Guid="3a692941-59be-43cf-98a8-6ed01b12a519" Bitness="$(Bitness)">
                              <?if $(InstallerPlatform) = "arm64" ?>
-                             <File Id="AspNetCoreModuleV2Dll" Name="aspnetcorev2.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll" DiskId="1" Vital="yes" />
+                             <File Id="AspNetCoreModuleV2Dll" Name="aspnetcorev2.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleForwarders\aspnetcorev2.dll" DiskId="1" Vital="yes" KeyPath="yes"/>
                              <?else?>
-                             <File Id="AspNetCoreModuleV2Dll" Name="aspnetcorev2.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" />
+                             <File Id="AspNetCoreModuleV2Dll" Name="aspnetcorev2.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" KeyPath="yes"/>
                              <?endif?>
                              <RemoveFile Id="AspNetCoreModuleV2Dll_Remove" Name="aspnetcorev2.dll" On="install" />
                              <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
@@ -226,7 +226,7 @@
                            </Directory>
                            <?if $(InstallerPlatform) = "arm64" ?>
                            <Component Id="AspNetCoreModuleV2.x64" Guid="325cf239-162d-4de8-97e7-642e6c66181c" Bitness="$(Bitness)">
-                                <File Id="AspNetCoreModuleV2Dll.x64" Name="aspnetcorev2_x64.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes">
+                                <File Id="AspNetCoreModuleV2Dll.x64" Name="aspnetcorev2_x64.dll" Source="$(ArtifactsDir)\bin\AspNetCoreModuleShim\x64\$(Configuration)\aspnetcorev2.dll" DiskId="1" Vital="yes" KeyPath="yes">
                                 </File>
                                <RemoveFile Id="AspNetCoreModuleV2Dll_Remove.x64" Name="aspnetcorev2_x64.dll" On="install" />
                                <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
@@ -235,7 +235,7 @@
                                </RegistryKey>
                            </Component>
                            <Component Id="AspNetCoreModuleV2.arm64" Guid="923f1be7-5a83-46b3-8be7-cd3eeb2d1c48" Bitness="$(Bitness)">
-                                <File Id="AspNetCoreModuleV2Dll.arm64" Name="aspnetcorev2_arm64.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes">
+                                <File Id="AspNetCoreModuleV2Dll.arm64" Name="aspnetcorev2_arm64.dll" Source="$(AspNetCoreV2ProgramFilesTargetPath)" DiskId="1" Vital="yes" KeyPath="yes">
                                 </File>
                                <RemoveFile Id="AspNetCoreModuleV2Dll_Remove.arm64" Name="aspnetcorev2_arm64.dll" On="install" />
                                <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(ProductShortName)">
