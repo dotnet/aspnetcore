@@ -8,7 +8,6 @@
   <?define NativeMachine_arm64=43620?>
 
   <?if $(InstallerPlatform)=x64?>
-    <?define IsWin64 = yes ?>
     <?define Bitness = always64 ?>
     <?define PlatformArchitecture = x64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>
@@ -18,7 +17,6 @@
     <?define PlatformValue = x64 ?>
     <?define ANCMInstallerVersion = 400 ?>
   <?elseif $(InstallerPlatform)=x86?>
-    <?define IsWin64 = no ?>
     <?define Bitness = always32 ?>
     <?define PlatformArchitecture = x86 ?>
     <?define ProgramFilesFolder = ProgramFilesFolder ?>
@@ -26,7 +24,6 @@
     <?define PlatformValue = Intel ?>
     <?define ANCMInstallerVersion = 400 ?>
   <?elseif $(InstallerPlatform)~=arm64?>
-    <?define IsWin64 = yes ?>
     <?define Bitness = always64 ?>
     <?define PlatformArchitecture = ARM64 ?>
     <?define ProgramFilesFolder = ProgramFiles64Folder ?>

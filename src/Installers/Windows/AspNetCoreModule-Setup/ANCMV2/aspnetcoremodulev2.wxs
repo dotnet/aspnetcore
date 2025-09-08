@@ -6,10 +6,10 @@
 <?include ..\IIS-Setup\include.wxi ?>
 
 <?define ProductCode = "*" ?>
-<?if $(var.IsWin64)=no ?>
-  <?define ANCMUpgradeCode = "d7168f76-9dd0-407d-bf22-0b450139e6a7" ?>
-<?else?>
+<?if $(InstallerPlatform)=x64?>
   <?define ANCMUpgradeCode = "8d50fde7-0b84-4900-b60d-bd952979ba0b" ?>
+<?else?>
+  <?define ANCMUpgradeCode = "d7168f76-9dd0-407d-bf22-0b450139e6a7" ?>
 <?endif?>
 <?define ProductShortName="IIS AspNetCore Module V2" ?>
 <?define ProductNameShort="IIS_ANCM_V2" ?>
