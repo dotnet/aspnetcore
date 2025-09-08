@@ -29,6 +29,7 @@
     "@types/node": "^6.0.42",
     "@types/webpack": "^2.2.0",
     "rimraf": "^2.5.4",
+    "sha.js": "^2.4.12",
     "typescript": "^2.0.0",
     "webpack": "^1.13.2"
   },
