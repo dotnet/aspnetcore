@@ -41,7 +41,7 @@ public class CircuitContextTest : ServerTestBase<BasicTestAppServerSiteFixture<S
     // Internal for reuse in Blazor Web tests
     internal static void TestCircuitContextCore(IWebDriver browser)
     {
-        browser.Equal("Circuit Context", () => browser.Exists(By.TagName("h1")).Text);
+        browser.Equal("Circuit Context", () => browser.Exists(By.Id("circuit-context-title")).Text);
 
         browser.Click(By.Id("trigger-click-event-button"));
 
