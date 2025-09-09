@@ -30,7 +30,7 @@ public class ScriptTagHelperTest
     [InlineData("abcd.js", "test.js", "test.js")]
     [InlineData(null, "~/test.js", "virtualRoot/test.js")]
     [InlineData("abcd.js", "~/test.js", "virtualRoot/test.js")]
-    public void Process_SrcDefaultsToTagHelperOutputSrcAttributeAddedByOtherTagHelper(
+    public async Task ProcessAsync_SrcDefaultsToTagHelperOutputSrcAttributeAddedByOtherTagHelper(
         string src,
         string srcOutput,
         string expectedSrcPrefix)
@@ -66,7 +66,7 @@ public class ScriptTagHelperTest
         helper.Src = src;
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal(
@@ -77,7 +77,7 @@ public class ScriptTagHelperTest
 
     [Theory]
     [MemberData(nameof(LinkTagHelperTest.MultiAttributeSameNameData), MemberType = typeof(LinkTagHelperTest))]
-    public void HandlesMultipleAttributesSameNameCorrectly(TagHelperAttributeList outputAttributes)
+    public async Task HandlesMultipleAttributesSameNameCorrectly(TagHelperAttributeList outputAttributes)
     {
         // Arrange
         var allAttributes = new TagHelperAttributeList(
@@ -107,7 +107,7 @@ public class ScriptTagHelperTest
         expectedAttributes.Add(new TagHelperAttribute("src", "/blank.js"));
 
         // Act
-        helper.Process(tagHelperContext, output);
+        await helper.ProcessAsync(tagHelperContext, output);
 
         // Assert
         Assert.Equal(expectedAttributes, output.Attributes);
@@ -268,7 +268,7 @@ public class ScriptTagHelperTest
 
     [Theory]
     [MemberData(nameof(RunsWhenRequiredAttributesArePresent_Data))]
-    public void RunsWhenRequiredAttributesArePresent(
+    public async Task RunsWhenRequiredAttributesArePresent(
         TagHelperAttributeList attributes,
         Action<ScriptTagHelper> setProperties)
     {
@@ -287,7 +287,7 @@ public class ScriptTagHelperTest
         setProperties(helper);
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.NotNull(output.TagName);
@@ -355,7 +355,7 @@ public class ScriptTagHelperTest
 
     [Theory]
     [MemberData(nameof(RunsWhenRequiredAttributesArePresent_NoSrc_Data))]
-    public void RunsWhenRequiredAttributesArePresent_NoSrc(
+    public async Task RunsWhenRequiredAttributesArePresent_NoSrc(
         TagHelperAttributeList attributes,
         Action<ScriptTagHelper> setProperties)
     {
@@ -374,7 +374,7 @@ public class ScriptTagHelperTest
         setProperties(helper);
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Null(output.TagName);
@@ -449,7 +449,7 @@ public class ScriptTagHelperTest
 
     [Theory]
     [MemberData(nameof(DoesNotRunWhenARequiredAttributeIsMissing_Data))]
-    public void DoesNotRunWhenARequiredAttributeIsMissing(
+    public async Task DoesNotRunWhenARequiredAttributeIsMissing(
         TagHelperAttributeList attributes,
         Action<ScriptTagHelper> setProperties)
     {
@@ -462,7 +462,7 @@ public class ScriptTagHelperTest
         setProperties(helper);
 
         // Act
-        helper.Process(tagHelperContext, output);
+        await helper.ProcessAsync(tagHelperContext, output);
 
         // Assert
         Assert.NotNull(output.TagName);
@@ -472,7 +472,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void DoesNotRunWhenAllRequiredAttributesAreMissing()
+    public async Task DoesNotRunWhenAllRequiredAttributesAreMissing()
     {
         // Arrange
         var tagHelperContext = MakeTagHelperContext();
@@ -482,7 +482,7 @@ public class ScriptTagHelperTest
         var helper = GetHelper();
 
         // Act
-        helper.Process(tagHelperContext, output);
+        await helper.ProcessAsync(tagHelperContext, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -492,7 +492,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void PreservesOrderOfNonSrcAttributes()
+    public async Task PreservesOrderOfNonSrcAttributes()
     {
         // Arrange
         var tagHelperContext = MakeTagHelperContext(
@@ -518,7 +518,7 @@ public class ScriptTagHelperTest
         helper.Src = "/blank.js";
 
         // Act
-        helper.Process(tagHelperContext, output);
+        await helper.ProcessAsync(tagHelperContext, output);
 
         // Assert
         Assert.Equal("data-extra", output.Attributes[0].Name);
@@ -527,7 +527,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RendersScriptTagsForGlobbedSrcResults()
+    public async Task RendersScriptTagsForGlobbedSrcResults()
     {
         // Arrange
         var expectedContent = "<script src=\"HtmlEncode[[/js/site.js]]\"></script>" +
@@ -552,7 +552,7 @@ public class ScriptTagHelperTest
         helper.SrcInclude = "**/*.js";
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -562,7 +562,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RendersScriptTagsForGlobbedSrcResults_EncodesAsExpected()
+    public async Task RendersScriptTagsForGlobbedSrcResults_EncodesAsExpected()
     {
         // Arrange
         var expectedContent =
@@ -605,7 +605,7 @@ public class ScriptTagHelperTest
         helper.SrcInclude = "**/*.js";
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -615,7 +615,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RenderScriptTags_WithFileVersion()
+    public async Task RenderScriptTags_WithFileVersion()
     {
         // Arrange
         var context = MakeTagHelperContext(
@@ -631,7 +631,7 @@ public class ScriptTagHelperTest
         helper.AppendVersion = true;
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -642,7 +642,7 @@ public class ScriptTagHelperTest
     [InlineData("~/js/site.js", "/js/site.fingerprint.js")]
     [InlineData("/js/site.js", "/js/site.fingerprint.js")]
     [InlineData("js/site.js", "js/site.fingerprint.js")]
-    public void RenderScriptTags_WithFileVersion_UsingResourceCollection(string src, string expected)
+    public async Task RenderScriptTags_WithFileVersion_UsingResourceCollection(string src, string expected)
     {
         // Arrange
         var context = MakeTagHelperContext(
@@ -661,7 +661,7 @@ public class ScriptTagHelperTest
         helper.AppendVersion = true;
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -671,7 +671,7 @@ public class ScriptTagHelperTest
     [Theory]
     [InlineData("~/js/site.js")]
     [InlineData("/approot/js/site.js")]
-    public void RenderScriptTags_PathBase_WithFileVersion_UsingResourceCollection(string path)
+    public async Task RenderScriptTags_PathBase_WithFileVersion_UsingResourceCollection(string path)
     {
         // Arrange
         var context = MakeTagHelperContext(
@@ -699,7 +699,7 @@ public class ScriptTagHelperTest
         helper.AppendVersion = true;
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -707,7 +707,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void ScriptTagHelper_RendersProvided_ImportMap()
+    public async Task ScriptTagHelper_RendersProvided_ImportMap()
     {
         // Arrange
         var importMap = new ImportMapDefinition(
@@ -744,7 +744,7 @@ public class ScriptTagHelperTest
         helper.ImportMap = importMap;
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -752,7 +752,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void ScriptTagHelper_RendersImportMap_FromEndpoint()
+    public async Task ScriptTagHelper_RendersImportMap_FromEndpoint()
     {
         // Arrange
         var importMap = new ImportMapDefinition(
@@ -787,7 +787,7 @@ public class ScriptTagHelperTest
         helper.Type = "importmap";
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -862,7 +862,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RenderScriptTags_WithFileVersion_AndRequestPathBase()
+    public async Task RenderScriptTags_WithFileVersion_AndRequestPathBase()
     {
         // Arrange
         var context = MakeTagHelperContext(
@@ -879,7 +879,7 @@ public class ScriptTagHelperTest
         helper.AppendVersion = true;
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -887,7 +887,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RenderScriptTags_FallbackSrc_WithFileVersion()
+    public async Task RenderScriptTags_FallbackSrc_WithFileVersion()
     {
         // Arrange
         var context = MakeTagHelperContext(
@@ -907,7 +907,7 @@ public class ScriptTagHelperTest
         helper.Src = "/js/site.js";
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -918,7 +918,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RenderScriptTags_FallbackSrc_AppendVersion_WithStaticAssets()
+    public async Task RenderScriptTags_FallbackSrc_AppendVersion_WithStaticAssets()
     {
         // Arrange
         var context = MakeTagHelperContext(
@@ -939,7 +939,7 @@ public class ScriptTagHelperTest
         helper.Src = "/js/site.js";
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -950,7 +950,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RenderScriptTags_FallbackSrc_WithFileVersion_EncodesAsExpected()
+    public async Task RenderScriptTags_FallbackSrc_WithFileVersion_EncodesAsExpected()
     {
         // Arrange
         var expectedContent =
@@ -992,7 +992,7 @@ public class ScriptTagHelperTest
         helper.Src = "/js/site.js";
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -1002,7 +1002,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RenderScriptTags_GlobbedSrc_WithFileVersion()
+    public async Task RenderScriptTags_GlobbedSrc_WithFileVersion()
     {
         // Arrange
         var expectedContent = "<script " +
@@ -1030,7 +1030,7 @@ public class ScriptTagHelperTest
         helper.Src = "/js/site.js";
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -1040,7 +1040,7 @@ public class ScriptTagHelperTest
     }
 
     [Fact]
-    public void RenderScriptTags_GlobbedSrc_WithFileVersion_WithStaticAssets()
+    public async Task RenderScriptTags_GlobbedSrc_WithFileVersion_WithStaticAssets()
     {
         // Arrange
         var expectedContent = "<script " +
@@ -1069,7 +1069,7 @@ public class ScriptTagHelperTest
         helper.Src = "/js/site.js";
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
@@ -1081,7 +1081,7 @@ public class ScriptTagHelperTest
     [Theory]
     [InlineData("~/js/site.js")]
     [InlineData("/approot/js/site.js")]
-    public void RenderScriptTags_PathBase_WithFileVersion_UsingResourceCollection_PreservesModule(string path)
+    public async Task RenderScriptTags_PathBase_WithFileVersion_UsingResourceCollection_PreservesModule(string path)
     {
         // Arrange
         var context = MakeTagHelperContext(
@@ -1108,7 +1108,7 @@ public class ScriptTagHelperTest
         helper.AppendVersion = true;
 
         // Act
-        helper.Process(context, output);
+        await helper.ProcessAsync(context, output);
 
         // Assert
         Assert.Equal("script", output.TagName);
