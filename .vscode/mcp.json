@@ -3,11 +3,13 @@
     "playwright": {
       "type": "stdio",
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": [
+        "@playwright/mcp@latest"
+      ]
     },
     "microsoft.docs.mcp": {
-			"type": "http",
-			"url": "https://learn.microsoft.com/api/mcp"
-		}
-	}
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
+    }
+  }
 }
