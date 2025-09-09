@@ -72,6 +72,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 case RequestRejectionReason.BadChunkSizeData:
                     ex = new BadHttpRequestException(CoreStrings.BadRequest_BadChunkSizeData, StatusCodes.Status400BadRequest, reason);
                     break;
+                case RequestRejectionReason.BadChunkExtension:
+                    ex = new BadHttpRequestException(CoreStrings.BadRequest_BadChunkExtension, StatusCodes.Status400BadRequest, reason);
+                    break;
                 case RequestRejectionReason.ChunkedRequestIncomplete:
                     ex = new BadHttpRequestException(CoreStrings.BadRequest_ChunkedRequestIncomplete, StatusCodes.Status400BadRequest, reason);
                     break;
