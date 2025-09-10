@@ -155,6 +155,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // If the QuickGrid is disposed while the JS module is being loaded, we need to avoid calling JS methods
     private bool _wasDisposed;
 
+    private bool _firstRefreshDataAsync = true;
+
     /// <summary>
     /// Constructs an instance of <see cref="QuickGrid{TGridItem}"/>.
     /// </summary>
@@ -311,34 +313,39 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // because in that case there's going to be a re-render anyway.
     private async Task RefreshDataCoreAsync()
     {
-        // Move into a "loading" state, cancelling any earlier-but-still-pending load
-        _pendingDataLoadCancellationTokenSource?.Cancel();
-        var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
+        // First render of Virtualize component will handle the data load itself.
+        if (!_firstRefreshDataAsync || !Virtualize)
+        {
+            // Move into a "loading" state, cancelling any earlier-but-still-pending load
+            _pendingDataLoadCancellationTokenSource?.Cancel();
+            var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
 
-        if (_virtualizeComponent is not null)
-        {
-            // If we're using Virtualize, we have to go through its RefreshDataAsync API otherwise:
-            // (1) It won't know to update its own internal state if the provider output has changed
-            // (2) We won't know what slice of data to query for
-            await _virtualizeComponent.RefreshDataAsync();
-            _pendingDataLoadCancellationTokenSource = null;
-        }
-        else
-        {
-            // If we're not using Virtualize, we build and execute a request against the items provider directly
-            _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
-            var startIndex = Pagination is null ? 0 : (Pagination.CurrentPageIndex * Pagination.ItemsPerPage);
-            var request = new GridItemsProviderRequest<TGridItem>(
-                startIndex, Pagination?.ItemsPerPage, _sortByColumn, _sortByAscending, thisLoadCts.Token);
-            var result = await ResolveItemsRequestAsync(request);
-            if (!thisLoadCts.IsCancellationRequested)
+            if (_virtualizeComponent is not null)
             {
-                _currentNonVirtualizedViewItems = result.Items;
-                _ariaBodyRowCount = _currentNonVirtualizedViewItems.Count;
-                Pagination?.SetTotalItemCountAsync(result.TotalItemCount);
+                // If we're using Virtualize, we have to go through its RefreshDataAsync API otherwise:
+                // (1) It won't know to update its own internal state if the provider output has changed
+                // (2) We won't know what slice of data to query for
+                await _virtualizeComponent.RefreshDataAsync();
                 _pendingDataLoadCancellationTokenSource = null;
             }
+            else
+            {
+                // If we're not using Virtualize, we build and execute a request against the items provider directly
+                _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
+                var startIndex = Pagination is null ? 0 : (Pagination.CurrentPageIndex * Pagination.ItemsPerPage);
+                var request = new GridItemsProviderRequest<TGridItem>(
+                    startIndex, Pagination?.ItemsPerPage, _sortByColumn, _sortByAscending, thisLoadCts.Token);
+                var result = await ResolveItemsRequestAsync(request);
+                if (!thisLoadCts.IsCancellationRequested)
+                {
+                    _currentNonVirtualizedViewItems = result.Items;
+                    _ariaBodyRowCount = _currentNonVirtualizedViewItems.Count;
+                    Pagination?.SetTotalItemCountAsync(result.TotalItemCount);
+                    _pendingDataLoadCancellationTokenSource = null;
+                }
+            }
         }
+        _firstRefreshDataAsync = false;
     }
 
     // Gets called both by RefreshDataCoreAsync and directly by the Virtualize child component during scrolling
