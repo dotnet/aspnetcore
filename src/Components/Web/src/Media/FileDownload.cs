@@ -37,11 +37,26 @@ public sealed class FileDownload : MediaComponentBase
     internal override bool ShouldAutoLoad => false;
 
     /// <summary>
-    /// Builds the anchor element with click handler wiring. The anchor is given an inert href (if one is not supplied)
-    /// and the click default action is prevented so navigation does not occur. Styling into a button shape is left to the user.
+    /// Allows customizing the rendering of the file download component.
     /// </summary>
+    [Parameter] public RenderFragment<FileDownloadContext>? ChildContent { get; set; }
+
     private protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
+        if (ChildContent is not null)
+        {
+            var context = new FileDownloadContext
+            {
+                IsLoading = IsLoading,
+                HasError = _hasError,
+                FileName = FileName,
+            };
+            context.Initialize(r => Element = r, EventCallback.Factory.Create(this, OnClickAsync));
+            builder.AddContent(0, ChildContent, context);
+            return;
+        }
+
+        // Default rendering
         builder.OpenElement(0, "a");
 
         builder.AddAttribute(1, "data-blazor-file-download", "");
@@ -56,7 +71,6 @@ public sealed class FileDownload : MediaComponentBase
         }
 
         builder.AddAttribute(3, "href", "javascript:void(0)");
-
         builder.AddAttribute(4, "onclick", EventCallback.Factory.Create(this, OnClickAsync));
 
         IEnumerable<KeyValuePair<string, object>>? attributesToRender = AdditionalAttributes;
@@ -132,4 +146,25 @@ public sealed class FileDownload : MediaComponentBase
             Render();
         }
     }
+}
+
+/// <summary>
+/// Extended media context for the FileDownload component providing click invocation and filename.
+/// </summary>
+public sealed class FileDownloadContext : MediaContext
+{
+    /// <summary>
+    /// Gets the file name suggested to the browser when initiating the download.
+    /// </summary>
+    public string FileName { get; internal set; } = string.Empty;
+    private EventCallback _onClick;
+    internal void Initialize(Action<ElementReference> capture, EventCallback onClick)
+    {
+        base.Initialize(capture);
+        _onClick = onClick;
+    }
+    /// <summary>
+    /// Initiates the download by invoking the underlying click handler of the parent.
+    /// </summary>
+    public Task InvokeAsync() => _onClick.InvokeAsync();
 }

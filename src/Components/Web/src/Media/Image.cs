@@ -21,8 +21,28 @@ public sealed class Image : MediaComponentBase
 {
     internal override string TargetAttributeName => "src";
 
+    /// <summary>
+    /// Allows customizing the rendering of the image component.
+    /// </summary>
+    [Parameter] public RenderFragment<MediaContext>? ChildContent { get; set; }
+
     private protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
+        if (ChildContent is not null)
+        {
+            var showInitial = Source != null && _currentSource == null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
+            var context = new MediaContext
+            {
+                ObjectUrl = _currentObjectUrl,
+                IsLoading = IsLoading || showInitial,
+                HasError = _hasError,
+            };
+            context.Initialize(r => Element = r);
+            builder.AddContent(0, ChildContent, context);
+            return;
+        }
+
+        // Default rendering
         builder.OpenElement(0, "img");
 
         if (!string.IsNullOrEmpty(_currentObjectUrl))
@@ -32,8 +52,8 @@ public sealed class Image : MediaComponentBase
 
         builder.AddAttribute(2, "data-blazor-image", "");
 
-        var showInitial = Source != null && _currentSource == null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
-        if (IsLoading || showInitial)
+        var defaultShowInitial = Source != null && _currentSource == null && string.IsNullOrEmpty(_currentObjectUrl) && !_hasError;
+        if (IsLoading || defaultShowInitial)
         {
             builder.AddAttribute(3, "data-state", "loading");
         }
