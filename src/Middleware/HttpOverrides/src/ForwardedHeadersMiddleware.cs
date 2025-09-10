@@ -447,7 +447,7 @@ public class ForwardedHeadersMiddleware
         }
 
         var firstNonHostCharIdx = host.AsSpan().IndexOfAnyExcept(HostChars);
-        if (firstNonHostCharIdx == -1)
+        if (firstNonHostCharIdx < 0)
         {
             // no port
             return true;
