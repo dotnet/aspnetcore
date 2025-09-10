@@ -136,6 +136,8 @@
 
     <!-- // Temporary diagnostic code from https://github.com/dotnet/extensions/pull/4130 for metrics APIs used in test. -->
     <NoWarn>$(NoWarn);TBD</NoWarn>
+
+    <NoWarn Condition="'$(_DevBuild)' == 'true'">$(NoWarn);NU3027</NoWarn>
   </PropertyGroup>
 
   <!-- Source code settings -->
