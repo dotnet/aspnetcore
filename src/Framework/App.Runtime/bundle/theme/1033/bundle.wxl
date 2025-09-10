@@ -62,9 +62,9 @@
   <String Id="FilesInUseOkButton" Value="&amp;OK" />
   <String Id="FilesInUseCancelButton" Value="&amp;Cancel" />
   <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:" />
+  <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
+  <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
 
-  <!--_locComment_text="{Locked='[WixBundleName]'}"-->
-  <String Id="Welcome" Value="Welcome to the [WixBundleName] Setup." />
   <!--_locComment_text="{Locked='[WixBundleName]'}"-->
   <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;license terms&lt;/a&gt; and &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;privacy statement&lt;/a&gt;." />
 </WixLocalization>

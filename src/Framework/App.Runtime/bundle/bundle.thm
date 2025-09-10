@@ -24,7 +24,9 @@
             </Button>
         </Page>
         <Page Name="Install">
-            <Label Name="WelcomeHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" HexStyle="000000">#(loc.Welcome)</Label>
+            <Text Name="WelcomeText" X="148" Y="80" Width="-12" Height="-70" FontId="PageHeaderFont" HexStyle="000000" DisablePrefix="yes" />
+            <Text Name="WelcomeHeaderMessage" X="160" Y="80" Width="300" Height="32" FontId="PageHeaderFont">#(loc.WelcomeHeaderMessage)</Text>
+            <Text Name="WelcomeDescription" X="160" Y="124" Width="460" Height="64" FontId="DefaultFont">#(loc.WelcomeDescription)</Text>
 
             <!-- Align the label with the top of the logo on the left. -->
             <Label Name="LicenseTermsAndPolicies" X="148" Y="288" Width="-12" Height="32" FontId="DefaultFont" HexStyle="000000">#(loc.LicenseAssent)</Label>
