@@ -897,7 +897,7 @@ public class RoutingTest : ServerTestBase<ToggleExecutionModeServerFixture<Progr
     }
 
     [Fact]
-    public void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
+    public virtual void NavigationLock_OverlappingNavigationsCancelExistingNavigations_HistoryNavigation()
     {
         SetUrlViaPushState("/");
 
