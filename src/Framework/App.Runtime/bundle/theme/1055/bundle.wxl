@@ -1,7 +1,6 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-  <String Id="Caption" Value="[BundleNameFull] Kurulumu" />
-  <String Id="Title" Value="[BundleNameShort]" />
-  <String Id="SubTitle" Value="[BundleNameSub]" />
+  <String Id="Caption" Value="[WixBundleName] Kurulumu" />
+  <String Id="Title" Value="[BUNDLEMONIKER]" />
   <String Id="InstallVersion" Value="[WixBundleVersion] Sürümü" />
   <String Id="ConfirmCancelMessage" Value="İptal etmek istediğinizden emin misiniz?" />
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Önceki sürüm" />

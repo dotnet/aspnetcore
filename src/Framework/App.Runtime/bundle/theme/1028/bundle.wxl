@@ -1,7 +1,6 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-  <String Id="Caption" Value="[BundleNameFull] 安裝程式" />
-  <String Id="Title" Value="[BundleNameShort]" />
-  <String Id="SubTitle" Value="[BundleNameSub]" />
+  <String Id="Caption" Value="[WixBundleName] 安裝程式" />
+  <String Id="Title" Value="[BUNDLEMONIKER]" />
   <String Id="InstallVersion" Value="版本 [WixBundleVersion]" />
   <String Id="ConfirmCancelMessage" Value="您確定要取消嗎?" />
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="前一版" />

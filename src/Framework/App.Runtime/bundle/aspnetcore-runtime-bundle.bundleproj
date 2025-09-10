@@ -40,18 +40,4 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" />
-
-  <PropertyGroup>
-    <BundleNameShort>Microsoft ASP.NET Core $(PackageBrandingVersion)</BundleNameShort>
-    <BundleNameSub>Shared Framework</BundleNameSub>
-    <BundleName>$(BundleNameShort) - $(BundleNameSub) ($(TargetArchitecture))</BundleName>
-    <BundleNameFull>$(BundleName)</BundleNameFull>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <WixThemeVariable Include="BundleNameShort" Value="$(BundleNameShort)" />
-    <WixThemeVariable Include="BundleNameSub" Value="$(BundleNameSub)" />
-    <WixThemeVariable Include="BundleName" Value="$(BundleName)" />
-    <WixThemeVariable Include="BundleNameFull" Value="$(BundleNameFull)" />
-  </ItemGroup>
 </Project>

@@ -14,7 +14,6 @@
     <Window Width="644" Height="460" HexStyle="100a0000" FontId="DefaultFont" Caption="#(loc.Caption)" IconFile="dotnet.ico">
         <ImageControl Name="DotNetLogo" X="12" Y="-48" Width="124" Height="124" ImageFile="DotNetLogo_256x.png" Visible="yes" />
         <Text X="80" Y="12" Width="-12" Height="40" FontId="WindowBannerFont" Visible="yes" DisablePrefix="yes">#(loc.Title)</Text>
-        <Text X="80" Y="40" Width="-12" Height="40" FontId="WindowBannerFont" Visible="yes" DisablePrefix="yes">#(loc.SubTitle)</Text>
         <Page Name="Help">
             <Label Name="HelpHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" HexStyle="00000000" DisablePrefix="yes">#(loc.HelpHeader)</Label>
             <Label Name="HelpText" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes">#(loc.HelpText)</Label>

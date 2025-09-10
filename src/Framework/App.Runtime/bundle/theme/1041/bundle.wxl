@@ -1,7 +1,6 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-  <String Id="Caption" Value="[BundleNameFull] のセットアップ" />
-  <String Id="Title" Value="[BundleNameShort]" />
-  <String Id="SubTitle" Value="[BundleNameSub]" />
+  <String Id="Caption" Value="[WixBundleName] のセットアップ" />
+  <String Id="Title" Value="[BUNDLEMONIKER]" />
   <String Id="InstallVersion" Value="バージョン [WixBundleVersion]" />
   <String Id="ConfirmCancelMessage" Value="取り消しますか?" />
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="以前のバージョン" />

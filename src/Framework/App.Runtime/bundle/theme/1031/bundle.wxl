@@ -1,7 +1,6 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-  <String Id="Caption" Value="[BundleNameFull]-Setup" />
-  <String Id="Title" Value="[BundleNameShort]" />
-  <String Id="SubTitle" Value="[BundleNameSub]" />
+  <String Id="Caption" Value="[WixBundleName]-Setup" />
+  <String Id="Title" Value="[BUNDLEMONIKER]" />
   <String Id="InstallVersion" Value="Version von [WixBundleVersion]" />
   <String Id="ConfirmCancelMessage" Value="Möchten Sie den Vorgang wirklich abbrechen?" />
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Vorherige Version" />

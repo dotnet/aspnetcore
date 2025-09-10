@@ -1,10 +1,9 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
-  <!--_locComment_text="{Locked='[BundleNameFull]'}"-->
-  <String Id="Caption" Value="[BundleNameFull] Setup" />
+  <!--_locComment_text="{Locked='[WixBundleName]'}"-->
+  <String Id="Caption" Value="[WixBundleName] Setup" />
   <!--_locComment_text="{Locked}"-->
-  <String Id="Title" Value="[BundleNameShort]" />
+  <String Id="Title" Value="[BUNDLEMONIKER]" />
   <!--_locComment_text="{Locked}"-->
-  <String Id="SubTitle" Value="[BundleNameSub]" />
   <!--_locComment_text="{Locked='[WixBundleVersion]'}"-->
   <String Id="InstallVersion" Value="Version [WixBundleVersion]" />
   <String Id="ConfirmCancelMessage" Value="Are you sure you want to cancel?" />
