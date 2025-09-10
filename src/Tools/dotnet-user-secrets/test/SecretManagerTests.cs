@@ -294,15 +294,24 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
     }
 
     [Theory]
-    [InlineData(true)]
-    [InlineData(false)]
-    public void Clear_Secrets(bool fromCurrentDirectory)
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    public void Clear_Secrets(bool fromCurrentDirectory, bool fileBasedApp)
     {
-        var projectPath = _fixture.GetTempSecretProject();
+        var projectPath = fileBasedApp
+            ? _fixture.GetTempFileBasedApp(out _)
+            : _fixture.GetTempSecretProject();
 
         var dir = fromCurrentDirectory
             ? projectPath
             : Path.GetTempPath();
+
+        ReadOnlySpan<string> pathArgs = fromCurrentDirectory
+            ? []
+            : (fileBasedApp
+                ? ["-f", Path.Join(projectPath, "app.cs")]
+                : ["-p", projectPath]);
 
         var secretManager = new Program(_console, dir);
 
@@ -316,10 +325,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
 
         foreach (var secret in secrets)
         {
-            var parameters = fromCurrentDirectory ?
-                new string[] { "set", secret.Key, secret.Value, "--verbose" } :
-                new string[] { "set", secret.Key, secret.Value, "-p", projectPath, "--verbose" };
-            secretManager.RunInternal(parameters);
+            secretManager.RunInternal(["set", secret.Key, secret.Value, .. pathArgs, "--verbose"]);
         }
 
         foreach (var keyValue in secrets)
@@ -331,10 +337,7 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
 
         // Verify secrets are persisted.
         _console.ClearOutput();
-        var args = fromCurrentDirectory ?
-            new string[] { "list", "--verbose" } :
-            new string[] { "list", "-p", projectPath, "--verbose" };
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["list", .. pathArgs, "--verbose"]);
         foreach (var keyValue in secrets)
         {
             Assert.Contains(
@@ -344,11 +347,9 @@ public class SecretManagerTests : IClassFixture<UserSecretsTestFixture>
 
         // Clear secrets.
         _console.ClearOutput();
-        args = fromCurrentDirectory ? new string[] { "clear", "--verbose" } : new string[] { "clear", "-p", projectPath, "--verbose" };
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["clear", .. pathArgs, "--verbose"]);
 
-        args = fromCurrentDirectory ? new string[] { "list", "--verbose" } : new string[] { "list", "-p", projectPath, "--verbose" };
-        secretManager.RunInternal(args);
+        secretManager.RunInternal(["list", .. pathArgs, "--verbose"]);
         Assert.Contains(Resources.Error_No_Secrets_Found, _console.GetOutput());
     }
 
