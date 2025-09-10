@@ -52,9 +52,17 @@ public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
 
     public virtual Task DisposeAsync()
     {
-        if (_originalWindowSize.HasValue && _originalWindowSize != Browser.Manage().Window.Size)
+        try
         {
-            Browser.SetWindowSize(_originalWindowSize.Value.Width, _originalWindowSize.Value.Height);
+            if (_originalWindowSize.HasValue && _originalWindowSize.Value != Browser.Manage().Window.Size)
+            {
+                Browser.SetWindowSize(_originalWindowSize.Value.Width, _originalWindowSize.Value.Height);
+            }
+        }
+        catch (WebDriverException)
+        {
+            // An exception is thrown if the browser has been closed in the test.
+            // In that case we don't need to reset the window size.
         }
 
         return Task.CompletedTask;
