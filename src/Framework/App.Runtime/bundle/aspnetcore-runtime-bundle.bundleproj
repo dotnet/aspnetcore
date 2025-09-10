@@ -19,7 +19,6 @@
     <PatchVersion>$(AspNetCorePatchVersion)</PatchVersion>
 
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
-    <WixBootstrapperFlavor>HyperlinkLicense</WixBootstrapperFlavor>
     <UseWix5>true</UseWix5>
   </PropertyGroup>
 
