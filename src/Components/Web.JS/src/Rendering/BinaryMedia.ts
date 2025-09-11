@@ -255,7 +255,8 @@ export class BinaryMedia {
           resultUrl = null;
         } else {
           const combined = this.combineChunks(chunks);
-          const blob = new Blob([combined.buffer as ArrayBuffer], { type: mimeType });
+          const baseMimeType = this.extractBaseMimeType(mimeType);
+          const blob = new Blob([combined.slice()], { type: baseMimeType });
           const url = URL.createObjectURL(blob);
           this.setUrl(element, url, cacheKey, targetAttr);
           resultUrl = url;
@@ -323,13 +324,13 @@ export class BinaryMedia {
 
     this.tracked.set(element, { url, cacheKey, attr: targetAttr });
 
+    this.setupEventHandlers(element, cacheKey);
+
     if (targetAttr === 'src') {
       (element as HTMLImageElement | HTMLVideoElement).src = url;
     } else {
       (element as HTMLAnchorElement).href = url;
     }
-
-    this.setupEventHandlers(element, cacheKey);
   }
 
   // Streams binary content to a user-selected file when possible,
@@ -376,7 +377,8 @@ export class BinaryMedia {
         return false;
       }
       const combined = this.combineChunks(readResult.chunks);
-      const blob = new Blob([combined.buffer as ArrayBuffer], { type: mimeType });
+      const baseMimeType = this.extractBaseMimeType(mimeType);
+      const blob = new Blob([combined.slice()], { type: baseMimeType });
       const url = URL.createObjectURL(blob);
       this.triggerDownload(url, fileName);
 
@@ -578,6 +580,15 @@ export class BinaryMedia {
         // ignore
       }
     }
+  }
+
+  /**
+   * Extracts the base MIME type from a MIME type that may contain codecs.
+   * Examples: "video/mp4; codecs=\"avc1.64001E\"" -> "video/mp4"
+   */
+  private static extractBaseMimeType(mimeType: string): string {
+    const semicolonIndex = mimeType.indexOf(';');
+    return semicolonIndex !== -1 ? mimeType.substring(0, semicolonIndex).trim() : mimeType;
   }
 
   private static async tryMediaSourceVideoStreaming(
