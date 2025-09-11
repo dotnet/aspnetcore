@@ -46,20 +46,6 @@ public class AntiforgeryTests : ServerTestBase<BasicTestAppServerSiteFixture<Raz
         var submit = Browser.Exists(By.Id("submit"));
         submit.Click();
 
-        Browser.True(() =>
-        {
-            try
-            {
-                var result = Browser.Exists(By.Id("result"));
-                return result.Text == "Test";
-            }
-            catch (StaleElementReferenceException)
-            {
-                // Retry the test in case the element gets re-rendered between
-                // getting its reference and reading the text value.
-                // This caused rare flaky failures in the CI.
-                return false;
-            }
-        });
+        Browser.Equal("Test", () => Browser.FindElement(By.Id("result")).Text);
     }
 }
