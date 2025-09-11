@@ -314,7 +314,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     private async Task RefreshDataCoreAsync()
     {
         // First render of Virtualize component will handle the data load itself.
-        if (!_firstRefreshDataAsync || !Virtualize)
+        if (!(_firstRefreshDataAsync && Virtualize))
         {
             // Move into a "loading" state, cancelling any earlier-but-still-pending load
             _pendingDataLoadCancellationTokenSource?.Cancel();
