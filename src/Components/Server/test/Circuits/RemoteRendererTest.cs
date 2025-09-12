@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -126,6 +127,7 @@ public class RemoteRendererTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61807")]
     public async Task ProcessBufferedRenderBatches_WritesRenders()
     {
         // Arrange
@@ -767,7 +769,13 @@ public class RemoteRendererTest
         public void TriggerRender()
         {
             var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(_renderFragment));
-            Assert.True(task.IsCompletedSuccessfully);
+
+            // Log the task state for debugging purposes.
+            var status = task.Status;
+            var innerException = task.Exception?.InnerException;
+            var message = $"Render task should succeed synchronously.\nStatus: '{status}'\nInner exception: '{innerException}'";
+
+            Assert.True(task.IsCompletedSuccessfully, message);
         }
     }
 
