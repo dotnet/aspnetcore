@@ -30,6 +30,8 @@ parameters:
 
   signingValidationAdditionalParameters: ''
 
+  repositoryAlias: self
+
 jobs:
 - job: Asset_Registry_Publish
 
@@ -65,6 +67,9 @@ jobs:
       os: windows
   steps:
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
+    - checkout: ${{ parameters.repositoryAlias }}
+      fetchDepth: 3
+      clean: true
     - task: DownloadBuildArtifacts@0
       displayName: Download artifact
       inputs:
@@ -82,7 +87,7 @@ jobs:
         azureSubscription: "Darc: Maestro Production"
         scriptType: ps
         scriptLocation: scriptPath
-        scriptPath: $(Build.SourcesDirectory)/eng/common/sdk-task.ps1
+        scriptPath: $(System.DefaultWorkingDirectory)/eng/common/sdk-task.ps1
         arguments: >
           -task PublishBuildAssets -restore -msbuildEngine dotnet
           /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
@@ -115,7 +120,7 @@ jobs:
       inputs:
         targetType: inline
         script: |
-          $symbolExclusionfile = "$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt"
+          $symbolExclusionfile = "$(System.DefaultWorkingDirectory)/eng/SymbolPublishingExclusionsFile.txt"
           if(Test-Path -Path $symbolExclusionfile)
           {
             Write-Host "SymbolExclusionFile exists"
@@ -130,7 +135,7 @@ jobs:
       displayName: Publish SymbolPublishingExclusionsFile Artifact
       condition: eq(variables['SymbolExclusionFile'], 'true') 
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt'
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/eng/SymbolPublishingExclusionsFile.txt'
         PublishLocation: Container
         ArtifactName: ReleaseConfigs
 
@@ -146,7 +151,7 @@ jobs:
           azureSubscription: "Darc: Maestro Production"
           scriptType: ps
           scriptLocation: scriptPath
-          scriptPath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
+          scriptPath: $(System.DefaultWorkingDirectory)/eng/common/post-build/publish-using-darc.ps1
           arguments: -BuildId $(BARBuildId)
             -PublishingInfraVersion 3
             -AzdoToken '$(System.AccessToken)'

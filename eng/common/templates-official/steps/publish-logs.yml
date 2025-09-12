@@ -8,15 +8,15 @@ steps:
   inputs:
     targetType: inline
     script: |
-      New-Item -ItemType Directory $(Build.SourcesDirectory)/PostBuildLogs/${{parameters.StageLabel}}/${{parameters.JobLabel}}/
-      Move-Item -Path $(Build.SourcesDirectory)/artifacts/log/Debug/* $(Build.SourcesDirectory)/PostBuildLogs/${{parameters.StageLabel}}/${{parameters.JobLabel}}/
+      New-Item -ItemType Directory $(System.DefaultWorkingDirectory)/PostBuildLogs/${{parameters.StageLabel}}/${{parameters.JobLabel}}/
+      Move-Item -Path $(System.DefaultWorkingDirectory)/artifacts/log/Debug/* $(System.DefaultWorkingDirectory)/PostBuildLogs/${{parameters.StageLabel}}/${{parameters.JobLabel}}/
   continueOnError: true
   condition: always()
 
 - task: 1ES.PublishBuildArtifacts@1
   displayName: Publish Logs
   inputs:
-    PathtoPublish: '$(Build.SourcesDirectory)/PostBuildLogs'
+    PathtoPublish: '$(System.DefaultWorkingDirectory)/PostBuildLogs'
     PublishLocation: Container
     ArtifactName: PostBuildLogs
   continueOnError: true

@@ -5,7 +5,7 @@ steps:
 - task: PowerShell@2
   displayName: Triggering subscriptions
   inputs:
-    filePath: $(Build.SourcesDirectory)/eng/common/post-build/trigger-subscriptions.ps1
+    filePath: $(System.DefaultWorkingDirectory)/eng/common/post-build/trigger-subscriptions.ps1
     arguments: -SourceRepo $(Build.Repository.Uri)
       -ChannelId ${{ parameters.ChannelId }}
       -MaestroApiAccessToken $(MaestroAccessToken)
