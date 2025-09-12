@@ -39,6 +39,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\ArrayBuilder.cs" LinkBase="Circuits" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\RenderBatchWriter.cs" LinkBase="Circuits" />
