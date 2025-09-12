@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -133,14 +133,8 @@ Use the '--help' flag to see info.</value>
   <data name="Error_No_Secrets_Found" xml:space="preserve">
     <value>No secrets configured for this application.</value>
   </data>
-  <data name="Error_NoProjectsFound" xml:space="preserve">
-    <value>Could not find a MSBuild project file in '{projectPath}'. Specify which project to use with the --project option.</value>
-  </data>
   <data name="Error_ProjectMissingId" xml:space="preserve">
     <value>Could not find the global property 'UserSecretsId' in MSBuild project '{project}'. Ensure this property is set in the project or use the '--id' command line option.</value>
-  </data>
-  <data name="Error_ProjectPath_NotFound" xml:space="preserve">
-    <value>The project file '{path}' does not exist.</value>
   </data>
   <data name="Error_ProjectFailedToLoad" xml:space="preserve">
     <value>Could not load the MSBuild project '{project}'.</value>
@@ -168,5 +162,11 @@ Use the '--help' flag to see info.</value>
   </data>
   <data name="Message_SetUserSecretsIdForProject" xml:space="preserve">
     <value>Set UserSecretsId to '{userSecretsId}' for MSBuild project '{project}'.</value>
+  </data>
+  <data name="Error_ProjectAndFileOptions" xml:space="preserve">
+    <value>Cannot use both --file and --project options together.</value>
+  </data>
+  <data name="Error_InitNotSupportedForFileBasedApps" xml:space="preserve">
+    <value>Init command is currently not supported for file-based apps. Please add '#:property UserSecretsId=...' manually.</value>
   </data>
 </root>
