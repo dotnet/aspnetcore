@@ -770,17 +770,12 @@ public class RemoteRendererTest
         {
             var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(_renderFragment));
 
-            // TODO: Remove the following block once ProcessBufferedRenderBatches_WritesRenders is fixed.
-            if (!task.IsCompletedSuccessfully)
-            {
-                // Log the task state for debugging purposes.
-                var status = task.Status;
-                var innerException = task.Exception?.InnerException;
-                var message = $"Render task should succeed synchronously.\nStatus: '{status}'\nInner exception: '{innerException}'";
-                Assert.True(task.IsCompletedSuccessfully, message);
-            }
+            // Log the task state for debugging purposes.
+            var status = task.Status;
+            var innerException = task.Exception?.InnerException;
+            var message = $"Render task should succeed synchronously.\nStatus: '{status}'\nInner exception: '{innerException}'";
 
-            Assert.True(task.IsCompletedSuccessfully);
+            Assert.True(task.IsCompletedSuccessfully, message);
         }
     }
 
