@@ -1,0 +1,36 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
+@using System.Linq
+
+<p id="items-provider-call-count">@ItemsProviderCallCount</p>
+
+<div id="grid" style="height: 200px; overflow: auto">
+    <QuickGrid ItemsProvider="@itemsProvider" Virtualize="true" ItemSize="50">
+        <PropertyColumn Property="@(p => p.Id)" />
+        <PropertyColumn Property="@(p => p.Name)" />
+    </QuickGrid>
+</div>
+
+@code {
+    internal class Person
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
+    private GridItemsProvider<Person> itemsProvider = default!;
+
+    int ItemsProviderCallCount = 0;
+
+    protected override void OnInitialized()
+    {
+        itemsProvider = async request =>
+        {
+            await Task.CompletedTask;
+            Interlocked.Increment(ref ItemsProviderCallCount);
+            StateHasChanged();
+            return GridItemsProviderResult.From(
+                items: Enumerable.Range(1, 100).Select(i => new Person { Id = i, Name = $"Person {i}" }).ToList(),
+                totalItemCount: 100);
+        };
+    }
+}

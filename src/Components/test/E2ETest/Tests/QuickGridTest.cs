@@ -166,7 +166,7 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         const p = document.querySelector('tbody > tr:first-child > td:nth-child(5)');
         return p ? getComputedStyle(p).textAlign : null;"));
     }
-    
+
     [Fact]
     public void CanOpenColumnOptions()
     {
@@ -207,5 +207,12 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
 
         var firstNameSearchSelector = "#grid > table > thead > tr > th:nth-child(2) input[type=search]";
         Browser.DoesNotExist(By.CssSelector(firstNameSearchSelector));
+    }
+
+    [Fact]
+    public void ItemsProviderCalledOnceWithVirtualize()
+    {
+        app = Browser.MountTestComponent<QuickGridVirtualizeComponent>();
+        Browser.Equal("1", () => app.FindElement(By.Id("items-provider-call-count")).Text);
     }
 }
