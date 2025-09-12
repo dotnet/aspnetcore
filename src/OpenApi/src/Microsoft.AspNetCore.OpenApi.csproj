@@ -14,13 +14,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.OpenApi" />
+    <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
-    <Reference Include="Microsoft.AspNetCore.Routing" />
-    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
     <Reference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
-    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
+    <Reference Include="Microsoft.AspNetCore.Routing" />
+    <Reference Include="Microsoft.OpenApi" />
   </ItemGroup>
 
   <ItemGroup>

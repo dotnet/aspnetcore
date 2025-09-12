@@ -14,6 +14,7 @@
     {"testName": {"contains": "ComponentDisposeMethodThrowsExceptionTerminatesTheCircuit"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/57551
     {"testName": {"contains": "PhoneFactorFailsAfterSecurityStampChangeTest"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/58231
     {"testName": {"contains": "AbortSendsFinalGOAWAY"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/59358
+    {"testName": {"contains": "Http2_RequestWithDataAndContentLength_Success"}}, // Issue: https://github.com/dotnet/aspnetcore/issues/63266
     {"testAssembly": {"contains": "IIS"}},
     {"testAssembly": {"contains": "Template"}},
     {"failureMessage": {"contains":"(Site is started but no worker process found)"}},

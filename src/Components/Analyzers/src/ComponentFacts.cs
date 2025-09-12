@@ -87,6 +87,77 @@ internal static class ComponentFacts
         return property.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.CascadingParameterAttribute));
     }
 
+    public static bool IsSupplyParameterFromForm(ComponentSymbols symbols, IPropertySymbol property)
+    {
+        if (symbols == null)
+        {
+            throw new ArgumentNullException(nameof(symbols));
+        }
+
+        if (property == null)
+        {
+            throw new ArgumentNullException(nameof(property));
+        }
+
+        if (symbols.SupplyParameterFromFormAttribute == null)
+        {
+            return false;
+        }
+
+        return property.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.SupplyParameterFromFormAttribute));
+    }
+
+    public static bool IsPersistentState(ComponentSymbols symbols, IPropertySymbol property)
+    {
+        if (symbols == null)
+        {
+            throw new ArgumentNullException(nameof(symbols));
+        }
+
+        if (property == null)
+        {
+            throw new ArgumentNullException(nameof(property));
+        }
+
+        if (symbols.PersistentStateAttribute == null)
+        {
+            return false;
+        }
+
+        return property.GetAttributes().Any(a => SymbolEqualityComparer.Default.Equals(a.AttributeClass, symbols.PersistentStateAttribute));
+    }
+
+    public static bool IsComponentBase(ComponentSymbols symbols, INamedTypeSymbol type)
+    {
+        if (symbols is null)
+        {
+            throw new ArgumentNullException(nameof(symbols));
+        }
+
+        if (type is null)
+        {
+            throw new ArgumentNullException(nameof(type));
+        }
+
+        if (symbols.ComponentBaseType == null)
+        {
+            return false;
+        }
+
+        // Check if the type inherits from ComponentBase
+        var current = type.BaseType;
+        while (current != null)
+        {
+            if (SymbolEqualityComparer.Default.Equals(current, symbols.ComponentBaseType))
+            {
+                return true;
+            }
+            current = current.BaseType;
+        }
+
+        return false;
+    }
+
     public static bool IsComponent(ComponentSymbols symbols, Compilation compilation, INamedTypeSymbol type)
     {
         if (symbols is null)

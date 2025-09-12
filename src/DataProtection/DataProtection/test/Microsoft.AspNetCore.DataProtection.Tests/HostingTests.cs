@@ -25,6 +25,7 @@ public class HostingTests
             .Returns(Mock.Of<IKeyRing>())
             .Callback(() => tcs.TrySetResult());
 
+#pragma warning disable ASPDEPR004 // Type or member is obsolete
         var builder = new WebHostBuilder()
             .UseStartup<TestStartup>()
             .ConfigureServices(s =>
@@ -33,8 +34,11 @@ public class HostingTests
                 .Replace(ServiceDescriptor.Singleton(mockKeyRing.Object))
                 .AddSingleton<IServer>(
                     new FakeServer(onStart: () => tcs.TrySetException(new InvalidOperationException("Server was started before key ring was initialized")))));
+#pragma warning restore ASPDEPR004 // Type or member is obsolete
 
+#pragma warning disable ASPDEPR008 // IWebHost is obsolete
         using (var host = builder.Build())
+#pragma warning restore ASPDEPR008 // IWebHost is obsolete
         {
             await host.StartAsync();
         }

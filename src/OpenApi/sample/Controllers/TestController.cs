@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Routing;
 
 [ApiController]
 [Route("[controller]")]
@@ -39,12 +40,30 @@ public class TestController : ControllerBase
         return TypedResults.Ok(new CurrentWeather(1.0f));
     }
 
+    [Route("/nohttpmethod")]
+    public ActionResult<CurrentWeather> NoHttpMethod()
+        => Ok(new CurrentWeather(-100));
+
+    [HttpQuery]
+    [Route("/query")]
+    public ActionResult<CurrentWeather> HttpQueryMethod()
+        => Ok(new CurrentWeather(0));
+
+    [HttpFoo] // See https://github.com/dotnet/aspnetcore/issues/60914
+    [Route("/unsupported")]
+    public ActionResult<CurrentWeather> UnsupportedHttpMethod()
+        => Ok(new CurrentWeather(100));
+
+    public class HttpQuery() : HttpMethodAttribute(["QUERY"]);
+
+    public class HttpFoo() : HttpMethodAttribute(["FOO"]);
+
     public class RouteParamsContainer
     {
-        [FromRoute]
+        [FromRoute(Name = "id")]
         public int Id { get; set; }
 
-        [FromRoute]
+        [FromRoute(Name = "name")]
         [MinLength(5)]
         [UnconditionalSuppressMessage("Trimming", "IL2026:RequiresUnreferencedCode", Justification = "MinLengthAttribute works without reflection on string properties.")]
         public string? Name { get; set; }

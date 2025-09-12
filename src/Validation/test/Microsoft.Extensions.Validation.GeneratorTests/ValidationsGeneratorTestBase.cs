@@ -5,31 +5,26 @@
 
 using System.Diagnostics;
 using System.Globalization;
+using System.IO.Pipelines;
 using System.Reflection;
 using System.Runtime.Loader;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.IO.Pipelines;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.InternalTesting;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Validation;
-using Xunit;
 
 namespace Microsoft.Extensions.Validation.GeneratorTests;
 
@@ -86,7 +81,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
                 : "snapshots");
     }
 
-    internal static void VerifyValidatableType(Compilation compilation, string typeName, Action<ValidationOptions, Type> verifyFunc)
+    internal static async Task VerifyValidatableType(Compilation compilation, string typeName, Func<ValidationOptions, Type, Task> verifyFunc)
     {
         if (TryResolveServicesFromCompilation(compilation, targetAssemblyName: "Microsoft.Extensions.Validation", typeName: "Microsoft.Extensions.Validation.ValidationOptions", out var services, out var serviceType, out var outputAssemblyName) is false)
         {
@@ -103,7 +98,7 @@ public partial class ValidationsGeneratorTestBase : LoggedTestBase
         // Then access the Value property
         var valueProperty = optionsType.GetProperty("Value");
         var service = (ValidationOptions)valueProperty.GetValue(optionsInstance) ?? throw new InvalidOperationException("Could not resolve ValidationOptions.");
-        verifyFunc(service, type);
+        await verifyFunc(service, type);
     }
 
     internal static async Task VerifyEndpoint(Compilation compilation, string routePattern, Func<Endpoint, IServiceProvider, Task> verifyFunc)

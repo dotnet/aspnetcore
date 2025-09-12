@@ -327,7 +327,7 @@ public class JsonResultTests
         PopulateMetadata<JsonHttpResult<Todo>>(((Delegate)MyApi).GetMethodInfo(), builder);
 
         // Assert
-        Assert.Contains(builder.Metadata, m => m is IApiEndpointMetadata);
+        Assert.Contains(builder.Metadata, m => m is IDisableCookieRedirectMetadata);
     }
 
     private static void PopulateMetadata<TResult>(MethodInfo method, EndpointBuilder builder)

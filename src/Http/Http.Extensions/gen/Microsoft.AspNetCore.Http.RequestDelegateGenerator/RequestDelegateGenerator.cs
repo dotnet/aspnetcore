@@ -253,7 +253,7 @@ public sealed class RequestDelegateGenerator : IIncrementalGenerator
 
                 if (hasJsonBody || hasResponseMetadata)
                 {
-                    codeWriter.WriteLine(RequestDelegateGeneratorSources.ApiEndpointMetadataClass);
+                    codeWriter.WriteLine(RequestDelegateGeneratorSources.DisableCookieRedirectMetadataClass);
                 }
 
                 if (hasFormBody || hasJsonBody || hasResponseMetadata)

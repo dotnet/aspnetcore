@@ -25,12 +25,13 @@ public class TestingInfrastructureInheritanceTests
 
         // Assert
         Assert.Equal(new[] { "ConfigureWebHost", "Customization", "FurtherCustomization" }, factory.ConfigureWebHostCalled.ToArray());
-        Assert.True(factory.CreateServerCalled);
-        Assert.False(factory.CreateWebHostBuilderCalled);
+        Assert.True(factory.CreateServerIWebHostBuilderCalled);
+        Assert.False(factory.CreateServerWithServiceProviderCalled);
+        Assert.True(factory.CreateWebHostBuilderCalled);
         // GetTestAssemblies is not called when reading content roots from MvcAppManifest
         Assert.False(factory.GetTestAssembliesCalled);
         Assert.True(factory.CreateHostBuilderCalled);
-        Assert.True(factory.CreateHostCalled);
+        Assert.False(factory.CreateHostCalled);
     }
 
     [Fact]
@@ -48,7 +49,8 @@ public class TestingInfrastructureInheritanceTests
         Assert.False(factory.GetTestAssembliesCalled);
         Assert.True(factory.CreateHostBuilderCalled);
         Assert.True(factory.CreateHostCalled);
-        Assert.True(factory.CreateServerCalled);
+        Assert.False(factory.CreateServerIWebHostBuilderCalled);
+        Assert.True(factory.CreateServerWithServiceProviderCalled);
         Assert.False(factory.CreateWebHostBuilderCalled);
     }
 
@@ -108,6 +110,23 @@ public class TestingInfrastructureInheritanceTests
         Assert.True(sink._asyncDisposed);
     }
 
+    [Fact]
+    public void TestingInfrastructure_WebApplicationBuilder_RespectsCustomizations()
+    {
+        // Arrange
+        using var factory = new CustomizedFactory<SimpleWebSiteWithWebApplicationBuilder.Program>();
+        factory.StartServer();
+
+        // Assert
+        Assert.Equal(["ConfigureWebHost"], factory.ConfigureWebHostCalled.ToArray());
+        Assert.False(factory.GetTestAssembliesCalled);
+        Assert.True(factory.CreateHostBuilderCalled);
+        Assert.True(factory.CreateHostCalled);
+        Assert.False(factory.CreateServerIWebHostBuilderCalled);
+        Assert.True(factory.CreateServerWithServiceProviderCalled);
+        Assert.True(factory.CreateWebHostBuilderCalled);
+    }
+
     private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
         builder.UseStartup<GenericHostWebSite.Startup>()
         .ConfigureServices(s => s.AddScoped<DisposableService>());
@@ -131,7 +150,8 @@ public class TestingInfrastructureInheritanceTests
         public bool GetTestAssembliesCalled { get; private set; }
         public bool CreateWebHostBuilderCalled { get; private set; }
         public bool CreateHostBuilderCalled { get; private set; }
-        public bool CreateServerCalled { get; private set; }
+        public bool CreateServerIWebHostBuilderCalled { get; private set; }
+        public bool CreateServerWithServiceProviderCalled { get; private set; }
         public bool CreateHostCalled { get; private set; }
         public IList<string> ConfigureWebHostCalled { get; private set; } = new List<string>();
 
@@ -141,15 +161,19 @@ public class TestingInfrastructureInheritanceTests
             base.ConfigureWebHost(builder);
         }
 
+#pragma warning disable ASPDEPR008 // Type or member is obsolete
+#pragma warning disable CS0672 // Member overrides obsolete member
         protected override TestServer CreateServer(IWebHostBuilder builder)
+#pragma warning restore CS0672 // Member overrides obsolete member
         {
-            CreateServerCalled = true;
+            CreateServerIWebHostBuilderCalled = true;
             return base.CreateServer(builder);
         }
+#pragma warning restore ASPDEPR008 // Type or member is obsolete
 
         protected override TestServer CreateServer(IServiceProvider serviceProvider)
         {
-            CreateServerCalled = true;
+            CreateServerWithServiceProviderCalled = true;
             return base.CreateServer(serviceProvider);
         }
 
