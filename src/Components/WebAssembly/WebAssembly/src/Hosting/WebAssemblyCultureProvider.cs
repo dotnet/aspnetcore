@@ -17,23 +17,19 @@ internal partial class WebAssemblyCultureProvider
     internal const string ReadSatelliteAssemblies = "window.Blazor._internal.readSatelliteAssemblies";
 
     // For unit testing.
-    internal WebAssemblyCultureProvider(CultureInfo initialCulture, CultureInfo initialUICulture)
+    internal WebAssemblyCultureProvider(CultureInfo initialCulture)
     {
         InitialCulture = initialCulture;
-        InitialUICulture = initialUICulture;
     }
 
     public static WebAssemblyCultureProvider? Instance { get; private set; }
 
     public CultureInfo InitialCulture { get; }
 
-    public CultureInfo InitialUICulture { get; }
-
     internal static void Initialize()
     {
         Instance = new WebAssemblyCultureProvider(
-            initialCulture: CultureInfo.CurrentCulture,
-            initialUICulture: CultureInfo.CurrentUICulture);
+            initialCulture: CultureInfo.GetCultureInfo(WebAssemblyCultureProviderInterop.GetApplicationCulture() ?? CultureInfo.InvariantCulture.Name));
     }
 
     public void ThrowIfCultureChangeIsUnsupported()
@@ -48,8 +44,7 @@ internal partial class WebAssemblyCultureProvider
         // The current method is invoked as part of WebAssemblyHost.RunAsync i.e. after user code in Program.MainAsync has run
         // thus allows us to detect if the culture was changed by user code.
         if (Environment.GetEnvironmentVariable("__BLAZOR_SHARDED_ICU") == "1" &&
-            ((!CultureInfo.CurrentCulture.Name.Equals(InitialCulture.Name, StringComparison.Ordinal) ||
-              !CultureInfo.CurrentUICulture.Name.Equals(InitialUICulture.Name, StringComparison.Ordinal))))
+            (!CultureInfo.CurrentCulture.Name.Equals(InitialCulture.Name, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException("Blazor detected a change in the application's culture that is not supported with the current project configuration. " +
                 "To change culture dynamically during startup, set <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData> in the application's project file.");
@@ -118,5 +113,8 @@ internal partial class WebAssemblyCultureProvider
     {
         [JSImport("INTERNAL.loadSatelliteAssemblies")]
         public static partial Task LoadSatelliteAssemblies(string[] culturesToLoad);
+
+        [JSImport("Blazor._internal.getApplicationCulture", "blazor-internal")]
+        public static partial string GetApplicationCulture();
     }
 }
