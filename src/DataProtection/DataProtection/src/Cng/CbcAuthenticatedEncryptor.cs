@@ -264,6 +264,13 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
                     var pbPlaintext = (pbPlaintextArray != null) ? pbPlaintextArray : &dummy;
                     var cbOutputCiphertext = GetCbcEncryptedOutputSizeWithPadding(symmetricKeyHandle, pbPlaintext, (uint)plaintext.Length);
 
+                    // Calculate total required size and validate destination buffer BEFORE any pointer calculations
+                    var totalRequiredSize = checked(cbKeyModifierAndIV + cbOutputCiphertext + _hmacAlgorithmDigestLengthInBytes);
+                    if (destination.Length < totalRequiredSize)
+                    {
+                        return false;
+                    }
+
                     fixed (byte* pbDestination = destination)
                     {
                         // Calculate offsets in destination
@@ -272,11 +279,9 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
                         byte* pbOutputCiphertext = &pbOutputIV[_symmetricAlgorithmBlockSizeInBytes];
                         byte* pbOutputHmac = &pbOutputCiphertext[cbOutputCiphertext];
 
-                        // Copy key modifier and IV to destination
                         Unsafe.CopyBlock(pbOutputKeyModifier, pbKeyModifierAndIV, cbKeyModifierAndIV);
                         bytesWritten += checked((int)cbKeyModifierAndIV);
 
-                        // Perform CBC encryption directly into destination
                         DoCbcEncrypt(
                             symmetricKeyHandle: symmetricKeyHandle,
                             pbIV: pbIV,
@@ -286,7 +291,6 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
                             cbOutput: cbOutputCiphertext);
                         bytesWritten += checked((int)cbOutputCiphertext);
 
-                        // Compute the HMAC over the IV and the ciphertext
                         using (var hashHandle = _hmacAlgorithmHandle.CreateHmac(pbHmacSubkey, _hmacAlgorithmSubkeyLengthInBytes))
                         {
                             hashHandle.HashData(

@@ -197,6 +197,17 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             var keyModifierLength = KEY_MODIFIER_SIZE_IN_BYTES;
             var ivLength = _symmetricAlgorithmBlockSizeInBytes;
 
+            // Calculate the required total size upfront and validate destination buffer
+            using var symmetricAlgorithmForSizing = CreateSymmetricAlgorithm();
+            var cipherTextLength = symmetricAlgorithmForSizing.GetCiphertextLengthCbc(plainText.Length);
+            var macLength = _validationAlgorithmDigestLengthInBytes;
+            var totalRequiredSize = keyModifierLength + ivLength + cipherTextLength + macLength;
+
+            if (destination.Length < totalRequiredSize)
+            {
+                return false;
+            }
+
             Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
                 ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
                 : new byte[_keyDerivationKey.Length];
@@ -237,10 +248,6 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     symmetricAlgorithm.SetKey(encryptionSubkey);
 
                     using var validationAlgorithm = CreateValidationAlgorithm();
-
-                    // Calculate ciphertext length for CBC mode
-                    var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plainText.Length);
-                    var macLength = _validationAlgorithmDigestLengthInBytes;
 
                     // Step 3: Copy the key modifier to the destination
                     keyModifier.CopyTo(destination.Slice(bytesWritten, keyModifierLength));

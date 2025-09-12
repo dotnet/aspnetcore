@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement;
 
-internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector, ISpanDataProtector, IPersistedDataProtector
+internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector, ISpanDataProtector
 {
     public KeyRingBasedSpanDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
         : base(keyRingProvider, logger, originalPurposes, newPurpose)
@@ -51,8 +51,14 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
 
             var preBufferSize = _magicHeaderKeyIdSize;
-            var postBufferSize = 0;
-            var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - (preBufferSize + postBufferSize));
+            // postBufferSize is 0
+            if (destination.Length < preBufferSize)
+            {
+                bytesWritten = default;
+                return false;
+            }
+
+            var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - preBufferSize);
             var success = defaultEncryptor.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
 
             // At this point: destination := { 000..000 || encryptorSpecificProtectedPayload },
@@ -70,7 +76,6 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
                 WriteGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
             }
 #endif
-
             bytesWritten += _magicHeaderKeyIdSize;
 
             // At this point, destination := { magicHeader || keyId || encryptorSpecificProtectedPayload }
@@ -106,7 +111,8 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             if (cipherText.Length < _magicHeaderKeyIdSize)
             {
                 // payload must contain at least the magic header and key id
-                throw Error.ProtectionProvider_BadMagicHeader();
+                bytesWritten = default;
+                return false;
             }
 
             // Parse the payload version number and key id.
@@ -126,7 +132,8 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             {
                 throw Error.ProtectionProvider_BadMagicHeader();
             }
-            else if (payloadVersion != 0)
+
+            if (payloadVersion != 0)
             {
                 throw Error.ProtectionProvider_BadVersion();
             }
@@ -153,8 +160,8 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
                     {
                         _logger.KeyWasNotFoundInTheKeyRingUnprotectOperationCannotProceed(keyIdFromPayload);
                     }
-                    bytesWritten = 0;
-                    return false;
+
+                    throw Error.Common_KeyNotFound(keyIdFromPayload);
                 }
             }
 
@@ -165,8 +172,8 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
                 {
                     _logger.KeyWasRevokedUnprotectOperationCannotProceed(keyIdFromPayload);
                 }
-                bytesWritten = 0;
-                return false;
+
+                throw Error.Common_KeyRevoked(keyIdFromPayload);
             }
 
             // Perform the decryption operation.

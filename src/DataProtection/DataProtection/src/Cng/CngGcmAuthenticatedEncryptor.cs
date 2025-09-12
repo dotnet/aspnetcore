@@ -205,6 +205,13 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
     {
         bytesWritten = 0;
 
+        // before performing steps, make sure destination is large enough to hold the output
+        var totalRequiredSize = checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Length + TAG_SIZE_IN_BYTES));
+        if (destination.Length < totalRequiredSize)
+        {
+            return false;
+        }
+
         try
         {
             fixed (byte* pbDestination = destination)

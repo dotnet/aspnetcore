@@ -207,6 +207,13 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
     {
         bytesWritten = 0;
 
+        // Calculate total required size and validate destination buffer BEFORE any operations
+        var totalRequiredSize = checked(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Length + TAG_SIZE_IN_BYTES);
+        if (destination.Length < totalRequiredSize)
+        {
+            return false;
+        }
+
         try
         {
             // Generate random key modifier and nonce
