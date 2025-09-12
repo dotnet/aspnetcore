@@ -33,7 +33,7 @@ public sealed class OpenApiOptions
     }
 
     /// <summary>
-    /// The version of the OpenAPI specification to use. Defaults to <see cref="OpenApiSpecVersion.OpenApi3_0"/>.
+    /// The version of the OpenAPI specification to use. Defaults to <see cref="OpenApiSpecVersion.OpenApi3_1"/>.
     /// </summary>
     public OpenApiSpecVersion OpenApiVersion { get; set; } = OpenApiSpecVersion.OpenApi3_1;
 

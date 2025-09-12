@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Components;
 
 internal sealed class ComponentFactory
 {
+    // This switch is unsupported and will be removed in a future version.
+    private static readonly bool _propertyInjectionDisabled =
+        AppContext.TryGetSwitch("Microsoft.AspNetCore.Components.Unsupported.DisablePropertyInjection", out var isDisabled) &&
+        isDisabled;
+
     private const BindingFlags _injectablePropertyBindingFlags
         = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
 
@@ -82,15 +87,18 @@ internal sealed class ComponentFactory
             throw new InvalidOperationException($"The component activator returned a null value for a component of type {componentType.FullName}.");
         }
 
-        if (component.GetType() == componentType)
+        if (!_propertyInjectionDisabled)
         {
-            // Fast, common case: use the cached data we already looked up
-            propertyInjector(serviceProvider, component);
-        }
-        else
-        {
-            // Uncommon case where the activator/resolver returned a different type. Needs an extra cache lookup.
-            PerformPropertyInjection(serviceProvider, component);
+            if (component.GetType() == componentType)
+            {
+                // Fast, common case: use the cached data we already looked up
+                propertyInjector(serviceProvider, component);
+            }
+            else
+            {
+                // Uncommon case where the activator/resolver returned a different type. Needs an extra cache lookup.
+                PerformPropertyInjection(serviceProvider, component);
+            }
         }
 
         return component;
