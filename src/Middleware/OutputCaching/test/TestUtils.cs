@@ -159,6 +159,9 @@ internal class TestUtils
                     {
                         services.AddOutputCache(outputCachingOptions =>
                         {
+                            // Without a base policy no caching is applied unless an endpoint is specifically configured.
+                            // Changing options don't define a base policy unless the BasePolicies list is initialized.
+
                             Assert.NotNull(outputCachingOptions.ApplicationServices);
                             if (options != null)
                             {
@@ -171,8 +174,9 @@ internal class TestUtils
                             }
                             else
                             {
-                                outputCachingOptions.BasePolicies = new();
-                                outputCachingOptions.BasePolicies.Add(new OutputCachePolicyBuilder().Build());
+                                // Set the Default Policy as a Base Policy to enable output caching on all requests.
+
+                                outputCachingOptions.BasePolicies = [new OutputCachePolicyBuilder().Build()];
                             }
                         });
                     })

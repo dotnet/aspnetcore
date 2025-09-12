@@ -62,11 +62,17 @@ public sealed class OutputCacheContext
     /// </summary>
     public TimeSpan? ResponseExpirationTimeSpan { get; set; }
 
+    /// <summary>
+    /// Gets or sets whether the cache entry is fresh.
+    /// </summary>
+    /// <remarks>
+    /// The property can be updated in the <see cref="IOutputCachePolicy.ServeFromCacheAsync"/> method.
+    /// </remarks>
+    public bool IsCacheEntryFresh { get; set; }
+
     internal string CacheKey { get; set; } = default!;
 
     internal TimeSpan CachedResponseValidFor { get; set; }
-
-    internal bool IsCacheEntryFresh { get; set; }
 
     internal TimeSpan CachedEntryAge { get; set; }
 
@@ -84,4 +90,5 @@ public sealed class OutputCacheContext
     internal Stream OriginalResponseStream { get; set; } = default!;
 
     internal OutputCacheStream OutputCacheStream { get; set; } = default!;
+
 }

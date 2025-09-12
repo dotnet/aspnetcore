@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OutputCaching.Tests" />
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.NewResponseCaching.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.OutputCaching.Microbenchmarks" />
   </ItemGroup>
   

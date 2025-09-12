@@ -1,21 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.OutputCaching;
+namespace Microsoft.AspNetCore.NewResponseCaching.Tests;
 
 /// <summary>
 /// A policy which caches un-authenticated, GET and HEAD, 200 responses.
 /// </summary>
-internal sealed class DefaultPolicy : IOutputCachePolicy
+internal class ResponseCachingOutputCachePolicy : IOutputCachePolicy
 {
-    public static readonly DefaultPolicy Instance = new();
+    public static readonly ResponseCachingOutputCachePolicy Instance = new();
 
-    private DefaultPolicy()
+    private ResponseCachingOutputCachePolicy()
     {
     }
 
@@ -37,6 +37,16 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
     /// <inheritdoc />
     ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
+        if (HeaderUtilities.TryParseSeconds(context.HttpContext.Request.Headers.CacheControl, CacheControlHeaderValue.MaxAgeString, out var responseMaxAge))
+        {
+            if (context.CachedEntryAge <= responseMaxAge)
+            {
+                context.IsCacheEntryFresh = false;
+            }
+
+            context.ResponseExpirationTimeSpan = responseMaxAge;
+        }
+
         return ValueTask.CompletedTask;
     }
 
@@ -63,11 +73,20 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
         if (HeaderUtilities.ContainsCacheDirective(context.HttpContext.Response.Headers.CacheControl, CacheControlHeaderValue.NoStoreString))
         {
             context.AllowCacheStorage = false;
+            return ValueTask.CompletedTask;
         }
 
         if (HeaderUtilities.ContainsCacheDirective(context.HttpContext.Response.Headers.Pragma, CacheControlHeaderValue.NoStoreString))
         {
             context.AllowCacheStorage = false;
+            return ValueTask.CompletedTask;
+        }
+
+        // Check request no-store
+        if (HeaderUtilities.ContainsCacheDirective(context.HttpContext.Request.Headers.CacheControl, CacheControlHeaderValue.NoStoreString))
+        {
+            context.AllowCacheStorage = false;
+            return ValueTask.CompletedTask;
         }
 
         return ValueTask.CompletedTask;
@@ -75,6 +94,8 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
 
     private static bool AttemptOutputCaching(OutputCacheContext context)
     {
+        context.CacheVaryByRules.HeaderNames = context.CacheVaryByRules.HeaderNames.Concat(context.HttpContext.Response.Headers.Vary).ToArray();
+
         // Check if the current request fulfills the requirements to be cached
 
         var request = context.HttpContext.Request;
@@ -91,6 +112,29 @@ internal sealed class DefaultPolicy : IOutputCachePolicy
             return false;
         }
 
+        // From Response Caching Middleware
+
+        var requestHeaders = context.HttpContext.Request.Headers;
+        var cacheControl = requestHeaders.CacheControl;
+
+        // Verify request cache-control parameters
+        if (!StringValues.IsNullOrEmpty(cacheControl))
+        {
+            if (HeaderUtilities.ContainsCacheDirective(cacheControl, CacheControlHeaderValue.NoCacheString))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            // Support for legacy HTTP 1.0 cache directive
+            if (HeaderUtilities.ContainsCacheDirective(requestHeaders.Pragma, CacheControlHeaderValue.NoCacheString))
+            {
+                return false;
+            }
+        }
+
         return true;
     }
 }
+

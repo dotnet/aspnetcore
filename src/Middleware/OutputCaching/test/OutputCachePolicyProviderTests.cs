@@ -174,7 +174,7 @@ public class OutputCachePolicyProviderTests
     }
 
     [Fact]
-    public async Task IsResponseCacheable_ResponseNoStore_IsAllowed()
+    public async Task IsResponseCacheable_ResponseCacheControlNoStore_IsNotAllowed()
     {
         var sink = new TestSink();
         var context = TestUtils.CreateTestContext(testSink: sink);
@@ -186,7 +186,25 @@ public class OutputCachePolicyProviderTests
         var policy = new OutputCachePolicyBuilder().Build();
         await policy.ServeResponseAsync(context, default);
 
-        Assert.True(context.AllowCacheStorage);
+        Assert.False(context.AllowCacheStorage);
+        Assert.True(context.AllowCacheLookup);
+        Assert.Empty(sink.Writes);
+    }
+
+    [Fact]
+    public async Task IsResponseCacheable_ResponsePragmaNoStore_IsNotAllowed()
+    {
+        var sink = new TestSink();
+        var context = TestUtils.CreateTestContext(testSink: sink);
+        context.HttpContext.Response.Headers.Pragma = new CacheControlHeaderValue()
+        {
+            NoStore = true
+        }.ToString();
+
+        var policy = new OutputCachePolicyBuilder().Build();
+        await policy.ServeResponseAsync(context, default);
+
+        Assert.False(context.AllowCacheStorage);
         Assert.True(context.AllowCacheLookup);
         Assert.Empty(sink.Writes);
     }

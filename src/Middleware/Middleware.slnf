@@ -92,6 +92,7 @@
       "src\\Middleware\\MiddlewareAnalysis\\samples\\MiddlewareAnalysisSample\\MiddlewareAnalysisSample.csproj",
       "src\\Middleware\\MiddlewareAnalysis\\src\\Microsoft.AspNetCore.MiddlewareAnalysis.csproj",
       "src\\Middleware\\MiddlewareAnalysis\\test\\Microsoft.AspNetCore.MiddlewareAnalysis.Tests.csproj",
+      "src\\Middleware\\OutputCaching\\ResponseCaching\\test\\Microsoft.AspNetCore.NewResponseCaching.Tests.csproj",
       "src\\Middleware\\OutputCaching\\samples\\OutputCachingSample\\OutputCachingSample.csproj",
       "src\\Middleware\\OutputCaching\\src\\Microsoft.AspNetCore.OutputCaching.csproj",
       "src\\Middleware\\OutputCaching\\test\\Microsoft.AspNetCore.OutputCaching.Tests.csproj",

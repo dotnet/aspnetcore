@@ -3,19 +3,28 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.OutputCaching;
+using Microsoft.AspNetCore.OutputCaching.Tests;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.ResponseCaching.Tests;
+namespace Microsoft.AspNetCore.NewResponseCaching.Tests;
 
 public class ResponseCachingTests
 {
+    private OutputCacheOptions CreateOutputCacheOptions()
+    {
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(ResponseCachingOutputCachePolicy.Instance);
+        return options;
+    }
+
     [Theory]
     [InlineData("GET")]
     [InlineData("HEAD")]
     public async Task ServesCachedContent_IfAvailable(string method)
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -39,7 +48,7 @@ public class ResponseCachingTests
     [InlineData("HEAD")]
     public async Task ServesFreshContent_IfNotAvailable(string method)
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -61,7 +70,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_Post()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -83,7 +92,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_Head_Get()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -105,7 +114,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_Get_Head()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -129,7 +138,7 @@ public class ResponseCachingTests
     [InlineData("HEAD")]
     public async Task ServesFreshContent_If_CacheControlNoCache(string method)
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -162,7 +171,7 @@ public class ResponseCachingTests
     [InlineData("HEAD")]
     public async Task ServesFreshContent_If_PragmaNoCache(string method)
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -195,7 +204,7 @@ public class ResponseCachingTests
     [InlineData("HEAD")]
     public async Task ServesCachedContent_If_PathCasingDiffers(string method)
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -219,7 +228,7 @@ public class ResponseCachingTests
     [InlineData("HEAD")]
     public async Task ServesFreshContent_If_ResponseExpired(string method)
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -243,7 +252,7 @@ public class ResponseCachingTests
     [InlineData("HEAD")]
     public async Task ServesFreshContent_If_Authorization_HeaderExists(string method)
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -263,15 +272,10 @@ public class ResponseCachingTests
         }
     }
 
-    [Fact(Skip = "Not supported by Output Caching as opposed to Response Caching. Kept for reference.")]
-    public async Task ServesCachedContent_IfVaryHeader_Mismatches()
+    [Fact(Skip = "Output Caching doesn't support Headers.Vary alterations")]
+    public async Task ServesCachedContent_IfVaryHeader_Matches()
     {
-        // Response Caching handles this scenario by storing a special entry using the base key, and then issuing a subsequent lookup
-        // on a newly built key that includes the Vary header value from the request.
-
-        // Output caching doesn't have this separate entry so it can't handle the scenario and just returns a fresh response.
-
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions(), contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
 
         foreach (var builder in builders)
         {
@@ -292,9 +296,41 @@ public class ResponseCachingTests
     }
 
     [Fact]
+    public async Task ServesFreshContent_IfVaryHeader_Mismatches2()
+    {
+        var options = CreateOutputCacheOptions();
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options, contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.From = "user@example.com";
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user2@example.com";
+            var subsequentResponse = await client.GetAsync("");
+
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
+        }
+    }
+
+    [Fact]
     public async Task ServesFreshContent_IfVaryHeader_Mismatches()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
+        var options = CreateOutputCacheOptions();
+
+        // The Vary header is a Response header. It contains a list of Request headers that influenced the Response content.
+        // As such the storage key should include these values when the content is cached (it should be computed after the response is finalized).
+
+        // This ensures that even if the options don't specifically mention that cache entries should vary by a specific header,
+        // a Response can override this behavior and the subsequent requests will not be served from cache if their headers don't match this entry.
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options, contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
 
         foreach (var builder in builders)
         {
@@ -318,7 +354,10 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeys_Matches()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "query" });
+        var options = CreateOutputCacheOptions();
+        options.AddBasePolicy(b => b.SetVaryByQuery("query"));
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -340,7 +379,10 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeysExplicit_Matches_QueryKeyCaseInsensitive()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "QueryA", "queryb" });
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(b => b.SetVaryByQuery("QueryA", "queryb"));
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -362,7 +404,10 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_QueryKeyCaseInsensitive()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "*" });
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(b => b.SetVaryByQuery("*"));
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -384,7 +429,10 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeyExplicit_Matches_OrderInsensitive()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "QueryB", "QueryA" });
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(b => b.SetVaryByQuery("QueryB", "QueryA"));
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -406,7 +454,10 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesCachedContent_IfVaryQueryKeyStar_Matches_OrderInsensitive()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "*" });
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(b => b.SetVaryByQuery("*"));
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -428,7 +479,10 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_IfVaryQueryKey_Mismatches()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "query" });
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(b => b.SetVaryByQuery("query").Build());
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -450,7 +504,9 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_IfVaryQueryKeyExplicit_Mismatch_QueryKeyCaseSensitive()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "QueryA", "QueryB" });
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(new VaryByQueryPolicy("QueryA", "QueryB"));
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -472,7 +528,9 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_IfVaryQueryKeyStar_Mismatch_QueryKeyValueCaseSensitive()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys = new[] { "*" });
+        var options = new OutputCacheOptions();
+        options.AddBasePolicy(new VaryByQueryPolicy("*"));
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -494,7 +552,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_IfRequestRequirements_NotMet()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -520,7 +578,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task Serves504_IfOnlyIfCachedHeader_IsSpecified()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -547,7 +605,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_IfSetCookie_IsSpecified()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.SetCookie = "cookieName=cookieValue");
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context => context.Response.Headers.SetCookie = "cookieName=cookieValue");
 
         foreach (var builder in builders)
         {
@@ -569,7 +627,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesCachedContent_IfSubsequentRequestContainsNoStore()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -595,7 +653,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_IfInitialRequestContainsNoStore()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -621,7 +679,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_IfInitialResponseContainsNoStore()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.CacheControl = CacheControlHeaderValue.NoStoreString);
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context => context.Response.Headers.CacheControl = CacheControlHeaderValue.NoStoreString);
 
         foreach (var builder in builders)
         {
@@ -640,10 +698,10 @@ public class ResponseCachingTests
         }
     }
 
-    [Fact]
+    [Fact(Skip = "By default OC vary by all query strings so this test will not work (first request is on ?Expires=90). And Vary is set. See Serves304_IfIfModifiedSince_Satisfied_Adapted instead")]
     public async Task Serves304_IfIfModifiedSince_Satisfied()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context =>
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context =>
         {
             context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
             context.Response.Headers.ContentLocation = "/";
@@ -671,9 +729,40 @@ public class ResponseCachingTests
     }
 
     [Fact]
+    public async Task Serves304_IfIfModifiedSince_Satisfied_Adapted()
+    {
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context =>
+        {
+            context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
+            context.Response.Headers.ContentLocation = "/";
+            //context.Response.Headers.Vary = HeaderNames.From;
+        });
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                //var initialResponse = await client.GetAsync("?Expires=90");
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.IfModifiedSince = DateTimeOffset.MaxValue;
+                var subsequentResponse = await client.GetAsync("");
+
+                initialResponse.EnsureSuccessStatusCode();
+                Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
+                Assert304Headers(initialResponse, subsequentResponse);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ServesCachedContent_IfIfModifiedSince_NotSatisfied()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {
@@ -693,15 +782,17 @@ public class ResponseCachingTests
         }
     }
 
-    [Fact]
+    [Fact(Skip = "By default OC vary by all query strings so this test will not work (first request is on ?Expires=90). And Vary is set. See Serves304_IfIfNoneMatch_Satisfied_Adapted instead")]
     public async Task Serves304_IfIfNoneMatch_Satisfied()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context =>
+        var options = CreateOutputCacheOptions();
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context =>
         {
             context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
             context.Response.Headers.ContentLocation = "/";
             context.Response.Headers.Vary = HeaderNames.From;
-        });
+        }, options: options);
 
         foreach (var builder in builders)
         {
@@ -724,9 +815,44 @@ public class ResponseCachingTests
     }
 
     [Fact]
+    public async Task Serves304_IfIfNoneMatch_Satisfied_Adapted()
+    {
+        var options = CreateOutputCacheOptions();
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context =>
+        {
+            context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
+            context.Response.Headers.ContentLocation = "/";
+            // context.Response.Headers.Vary = HeaderNames.From;
+        }, options: options);
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using (var server = host.GetTestServer())
+            {
+                var client = server.CreateClient();
+                // var initialResponse = await client.GetAsync("?Expires=90");
+                var initialResponse = await client.GetAsync("");
+                client.DefaultRequestHeaders.IfNoneMatch.Add(new System.Net.Http.Headers.EntityTagHeaderValue("\"E1\""));
+                var subsequentResponse = await client.GetAsync("");
+
+                initialResponse.EnsureSuccessStatusCode();
+                Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
+                Assert304Headers(initialResponse, subsequentResponse);
+            }
+        }
+    }
+
+    [Fact]
     public async Task ServesCachedContent_IfIfNoneMatch_NotSatisfied()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\""));
+        var options = CreateOutputCacheOptions();
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options, contextAction: context => context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\""));
 
         foreach (var builder in builders)
         {
@@ -749,10 +875,10 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesCachedContent_IfBodySize_IsCacheable()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(options: new ResponseCachingOptions()
-        {
-            MaximumBodySize = 100
-        });
+        var options = CreateOutputCacheOptions();
+        options.MaximumBodySize = 1000;
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -774,10 +900,10 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_IfBodySize_IsNotCacheable()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(options: new ResponseCachingOptions()
-        {
-            MaximumBodySize = 1
-        });
+        var options = CreateOutputCacheOptions();
+        options.MaximumBodySize = 1;
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -799,10 +925,10 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_CaseSensitivePaths_IsNotCacheable()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(options: new ResponseCachingOptions()
-        {
-            UseCaseSensitivePaths = true
-        });
+        var options = CreateOutputCacheOptions();
+        options.UseCaseSensitivePaths = true;
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
 
         foreach (var builder in builders)
         {
@@ -821,10 +947,12 @@ public class ResponseCachingTests
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Output Caching doesn't support Headers.Vary alterations")]
     public async Task ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
+        var options = CreateOutputCacheOptions();
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options, contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
 
         foreach (var builder in builders)
         {
@@ -850,7 +978,9 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesFreshContent_IfCachedVaryByUpdated_OnCacheMiss()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = context.Request.Headers.Pragma);
+        var options = CreateOutputCacheOptions();
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options, contextAction: context => context.Response.Headers.Vary = context.Request.Headers.Pragma);
 
         foreach (var builder in builders)
         {
@@ -882,9 +1012,12 @@ public class ResponseCachingTests
         }
     }
 
+    [Fact(Skip = "Output Caching doesn't support Headers.Vary alterations")]
     public async Task ServesCachedContent_IfCachedVaryByNotUpdated_OnCacheMiss()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching(contextAction: context => context.Response.Headers.Vary = context.Request.Headers.Pragma);
+        var options = CreateOutputCacheOptions();
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options, contextAction: context => context.Response.Headers.Vary = context.Request.Headers.Pragma);
 
         foreach (var builder in builders)
         {
@@ -919,7 +1052,7 @@ public class ResponseCachingTests
     [Fact]
     public async Task ServesCachedContent_IfAvailable_UsingHead_WithContentLength()
     {
-        var builders = TestUtils.CreateBuildersWithResponseCaching();
+        var builders = TestUtils.CreateBuildersWithOutputCaching(options: CreateOutputCacheOptions());
 
         foreach (var builder in builders)
         {

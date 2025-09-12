@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -262,12 +263,12 @@ internal sealed class OutputCacheMiddleware
         var cacheEntryAge = context.ResponseTime.Value - context.CachedResponse.Created;
         context.CachedEntryAge = cacheEntryAge > TimeSpan.Zero ? cacheEntryAge : TimeSpan.Zero;
 
+        context.IsCacheEntryFresh = true;
+
         foreach (var policy in policies)
         {
             await policy.ServeFromCacheAsync(context, context.HttpContext.RequestAborted);
         }
-
-        context.IsCacheEntryFresh = true;
 
         // Validate expiration
         if (context.CachedEntryAge <= TimeSpan.Zero)
@@ -394,7 +395,20 @@ internal sealed class OutputCacheMiddleware
             var response = context.HttpContext.Response;
             var headers = response.Headers;
 
-            context.CachedResponseValidFor = context.ResponseExpirationTimeSpan ?? _options.DefaultExpirationTimeSpan;
+            DateTimeOffset? responseExpires = null;
+
+            HeaderUtilities.TryParseSeconds(response.Headers.CacheControl, CacheControlHeaderValue.SharedMaxAgeString, out var responseSharedMaxAge);
+            HeaderUtilities.TryParseSeconds(response.Headers.CacheControl, CacheControlHeaderValue.MaxAgeString, out var responseMaxAge);
+            if (HeaderUtilities.TryParseDate(response.Headers.Expires.ToString(), out var expires))
+            {
+                responseExpires = expires;
+            }
+
+            context.CachedResponseValidFor = responseSharedMaxAge
+                ?? responseMaxAge
+                ?? responseExpires - context.ResponseTime
+                ?? context.ResponseExpirationTimeSpan
+                ?? _options.DefaultExpirationTimeSpan;
 
             // Setting the date on the raw response headers.
             headers.Date = HeaderUtilities.FormatDate(context.ResponseTime!.Value);
@@ -415,7 +429,11 @@ internal sealed class OutputCacheMiddleware
     /// </summary>
     internal async ValueTask FinalizeCacheBodyAsync(OutputCacheContext context)
     {
-        if (context.AllowCacheStorage && context.OutputCacheStream.BufferingEnabled
+        // If the response has Vary headers which are not part of the configured ones, we can't cache the response.
+        var hasCustomVaryHeaders = context.HttpContext.Response.Headers.Vary == "*" ||
+                context.HttpContext.Response.Headers.Vary.Any(header => !context.CacheVaryByRules.HeaderNames.Contains(header, StringComparer.OrdinalIgnoreCase));
+
+        if (!hasCustomVaryHeaders && context.AllowCacheStorage && context.OutputCacheStream.BufferingEnabled
             && context.CachedResponse is not null)
         {
             // If AllowCacheLookup is false, the cache key was not created

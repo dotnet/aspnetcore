@@ -576,6 +576,12 @@
   <Folder Name="/src/Middleware/MiddlewareAnalysis/samples/">
     <Project Path="src/Middleware/MiddlewareAnalysis/samples/MiddlewareAnalysisSample/MiddlewareAnalysisSample.csproj" />
   </Folder>
+  <Folder Name="/src/Middleware/OutputCaching/">
+    <Project Path="src/Middleware/OutputCaching/ResponseCaching/test/Microsoft.AspNetCore.NewResponseCaching.Tests.csproj" />
+    <Project Path="src/Middleware/OutputCaching/samples/OutputCachingSample/OutputCachingSample.csproj" />
+    <Project Path="src/Middleware/OutputCaching/src/Microsoft.AspNetCore.OutputCaching.csproj" />
+    <Project Path="src/Middleware/OutputCaching/test/Microsoft.AspNetCore.OutputCaching.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/Middleware/perf/">
     <Project Path="src/Middleware/perf/Microbenchmarks/Microsoft.AspNetCore.WebSockets.Microbenchmarks.csproj" />
     <Project Path="src/Middleware/perf/ResponseCaching.Microbenchmarks/Microsoft.AspNetCore.ResponseCaching.Microbenchmarks.csproj" />
@@ -1143,6 +1149,7 @@
     <Project Path="src/SignalR/server/StackExchangeRedis/src/Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
     <Project Path="src/SignalR/server/StackExchangeRedis/test/Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj" />
   </Folder>
+  <Folder Name="/src/SiteExtensions/" />
   <Folder Name="/src/SiteExtensions/Microsoft.Web.Xdt.Extensions/">
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/src/Microsoft.Web.Xdt.Extensions.csproj" />
     <Project Path="src/SiteExtensions/Microsoft.Web.Xdt.Extensions/tests/Microsoft.Web.Xdt.Extensions.Tests.csproj" />
@@ -1190,8 +1197,8 @@
     <Project Path="src/Validation/src/Microsoft.Extensions.Validation.csproj" />
   </Folder>
   <Folder Name="/src/Validation/test/">
-    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
     <Project Path="src/Validation/test/Microsoft.Extensions.Validation.GeneratorTests/Microsoft.Extensions.Validation.GeneratorTests.csproj" />
+    <Project Path="src/Validation/test/Microsoft.Extensions.Validation.Tests/Microsoft.Extensions.Validation.Tests.csproj" />
   </Folder>
   <Folder Name="/src/WebEncoders/">
     <Project Path="src/WebEncoders/src/Microsoft.Extensions.WebEncoders.csproj" />
@@ -1232,9 +1239,6 @@
   <Project Path="src/Middleware/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis/src/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.csproj" />
   <Project Path="src/Middleware/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis/test/Microsoft.AspNetCore.OutputCaching.StackExchangeRedis.Tests.csproj" />
   <Project Path="src/Middleware/OutputCaching/perf/Microbenchmarks/Microsoft.AspNetCore.OutputCaching.Microbenchmarks.csproj" />
-  <Project Path="src/Middleware/OutputCaching/samples/OutputCachingSample/OutputCachingSample.csproj" />
-  <Project Path="src/Middleware/OutputCaching/src/Microsoft.AspNetCore.OutputCaching.csproj" />
-  <Project Path="src/Middleware/OutputCaching/test/Microsoft.AspNetCore.OutputCaching.Tests.csproj" />
   <Project Path="src/Middleware/RateLimiting/samples/RateLimitingSample/RateLimitingSample.csproj" />
   <Project Path="src/Middleware/RateLimiting/src/Microsoft.AspNetCore.RateLimiting.csproj" />
   <Project Path="src/Middleware/RateLimiting/test/Microsoft.AspNetCore.RateLimiting.Tests.csproj" />

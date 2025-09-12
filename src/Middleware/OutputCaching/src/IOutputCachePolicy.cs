@@ -18,7 +18,7 @@ public interface IOutputCachePolicy
 
     /// <summary>
     /// Updates the <see cref="OutputCacheContext"/> before the cached response is used.
-    /// At that point the freshness of the cached response can be updated.
+    /// At that point the freshness of the cached response can be updated by setting the <see cref="OutputCacheContext.IsCacheEntryFresh"/> property.
     /// </summary>
     /// <param name="context">The current request's cache context.</param>
     /// <param name="cancellation">The token to monitor for cancellation requests.</param>

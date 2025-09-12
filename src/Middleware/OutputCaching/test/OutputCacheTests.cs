@@ -302,8 +302,10 @@ public class OutputCacheTests
     }
 
     [Fact]
-    public async Task ServesCachedContent_IfVaryHeader_Matches()
+    public async Task ServesFreshContent_IfVaryHeader_Mismatches()
     {
+        // If the Reponse sets the Vary header, the cache key should be altered using the varying headers' values.
+
         var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
 
         foreach (var builder in builders)
@@ -318,17 +320,19 @@ public class OutputCacheTests
             var initialResponse = await client.GetAsync("");
             var subsequentResponse = await client.GetAsync("");
 
-            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
-    [Fact]
-    public async Task ServesFreshContent_IfVaryHeader_Mismatches()
+    [Fact(Skip = "Not supported by Output Caching as opposed to Response Caching. Kept for reference.")]
+    public async Task ServesCachedContent_IfVaryHeader_Mismatches()
     {
-        var options = new OutputCacheOptions();
-        options.AddBasePolicy(b => b.SetVaryByHeader(HeaderNames.From).Build());
+        // Response Caching handles this scenario by storing a special entry using the base key, and then issuing a subsequent lookup
+        // on a newly built key that includes the Vary header value from the request.
 
-        var builders = TestUtils.CreateBuildersWithOutputCaching(options: options);
+        // Output caching doesn't have this separate entry so it can't handle the scenario and just returns a fresh response.
+
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
 
         foreach (var builder in builders)
         {
@@ -343,7 +347,7 @@ public class OutputCacheTests
             client.DefaultRequestHeaders.From = "user2@example.com";
             var subsequentResponse = await client.GetAsync("");
 
-            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
+            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -669,7 +673,7 @@ public class OutputCacheTests
     }
 
     [Fact]
-    public async Task ServesCachedContent_IfInitialResponseContainsNoStore()
+    public async Task ServesFreshContent_IfInitialResponseContainsNoStore()
     {
         var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context => context.Response.Headers.CacheControl = CacheControlHeaderValue.NoStoreString);
 
@@ -684,7 +688,7 @@ public class OutputCacheTests
             var initialResponse = await client.GetAsync("");
             var subsequentResponse = await client.GetAsync("");
 
-            await AssertCachedResponseAsync(initialResponse, subsequentResponse);
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 
@@ -696,7 +700,6 @@ public class OutputCacheTests
             // Ensure these headers are also returned on the subsequent response
             context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
             context.Response.Headers.ContentLocation = "/";
-            context.Response.Headers.Vary = HeaderNames.From;
         });
 
         foreach (var builder in builders)
@@ -712,7 +715,7 @@ public class OutputCacheTests
             var subsequentResponse = await client.GetAsync("");
 
             initialResponse.EnsureSuccessStatusCode();
-            Assert.Equal(System.Net.HttpStatusCode.NotModified, subsequentResponse.StatusCode);
+            Assert.Equal(HttpStatusCode.NotModified, subsequentResponse.StatusCode);
             Assert304Headers(initialResponse, subsequentResponse);
         }
     }
@@ -745,7 +748,6 @@ public class OutputCacheTests
         {
             context.Response.GetTypedHeaders().ETag = new EntityTagHeaderValue("\"E1\"");
             context.Response.Headers.ContentLocation = "/";
-            context.Response.Headers.Vary = HeaderNames.From;
         });
 
         foreach (var builder in builders)
@@ -859,7 +861,7 @@ public class OutputCacheTests
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Not supported by Output Caching as opposed to Response Caching. Kept for reference.")]
     public async Task ServesCachedContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
     {
         var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
@@ -884,6 +886,30 @@ public class OutputCacheTests
     }
 
     [Fact]
+    public async Task ServesFreshContent_WithoutReplacingCachedVaryBy_OnCacheMiss()
+    {
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context => context.Response.Headers.Vary = HeaderNames.From);
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.From = "user@example.com";
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user2@example.com";
+            var otherResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user@example.com";
+            var subsequentResponse = await client.GetAsync("");
+
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
+        }
+    }
+
+    [Fact(Skip = "Not supported by Output Caching as opposed to Response Caching. Kept for reference.")]
     public async Task ServesCachedContent_IfCachedVaryByNotUpdated_OnCacheMiss()
     {
         var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context => context.Response.Headers.Vary = context.Request.Headers.Pragma);
@@ -913,6 +939,39 @@ public class OutputCacheTests
             var subsequentResponse = await client.GetAsync("");
 
             await AssertCachedResponseAsync(initialResponse, subsequentResponse);
+        }
+    }
+
+    [Fact]
+    public async Task ServesFreshContent_IfCachedVaryByNotUpdated_OnCacheMiss()
+    {
+        var builders = TestUtils.CreateBuildersWithOutputCaching(contextAction: context => context.Response.Headers.Vary = context.Request.Headers.Pragma);
+
+        foreach (var builder in builders)
+        {
+            using var host = builder.Build();
+
+            await host.StartAsync();
+
+            using var server = host.GetTestServer();
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.From = "user@example.com";
+            client.DefaultRequestHeaders.Pragma.Clear();
+            client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+            client.DefaultRequestHeaders.MaxForwards = 1;
+            var initialResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user2@example.com";
+            client.DefaultRequestHeaders.Pragma.Clear();
+            client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+            client.DefaultRequestHeaders.MaxForwards = 2;
+            var otherResponse = await client.GetAsync("");
+            client.DefaultRequestHeaders.From = "user@example.com";
+            client.DefaultRequestHeaders.Pragma.Clear();
+            client.DefaultRequestHeaders.Pragma.Add(new System.Net.Http.Headers.NameValueHeaderValue("From"));
+            client.DefaultRequestHeaders.MaxForwards = 1;
+            var subsequentResponse = await client.GetAsync("");
+
+            await AssertFreshResponseAsync(initialResponse, subsequentResponse);
         }
     }
 

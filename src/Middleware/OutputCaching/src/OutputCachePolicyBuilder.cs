@@ -125,6 +125,7 @@ public sealed class OutputCachePolicyBuilder
 
         return AddPolicy(new VaryByHeaderPolicy(headerName, headerNames));
     }
+
     /// <summary>
     /// Adds a policy to vary the cached responses by header.
     /// </summary>

@@ -1,1 +1,3 @@
-#nullable enable
+﻿#nullable enable
+Microsoft.AspNetCore.OutputCaching.OutputCacheContext.IsCacheEntryFresh.get -> bool
+Microsoft.AspNetCore.OutputCaching.OutputCacheContext.IsCacheEntryFresh.set -> void
