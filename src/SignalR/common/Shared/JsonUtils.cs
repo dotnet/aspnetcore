@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Globalization;
 using System.IO;
+using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -214,6 +215,15 @@ internal static class JsonUtils
             if (array is null)
             {
                 return;
+            }
+
+#if NET
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+#else
+            if (!typeof(T).IsPrimitive)
+#endif
+            {
+                array.AsSpan().Clear();
             }
 
             _inner.Return(array);

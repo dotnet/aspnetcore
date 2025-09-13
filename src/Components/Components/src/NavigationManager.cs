@@ -447,6 +447,7 @@ public abstract class NavigationManager
                 }
                 finally
                 {
+                    locationChangingHandlersCopy.AsSpan(0, handlerCount).Clear();
                     ArrayPool<Func<LocationChangingContext, ValueTask>>.Shared.Return(locationChangingHandlersCopy);
                 }
             }

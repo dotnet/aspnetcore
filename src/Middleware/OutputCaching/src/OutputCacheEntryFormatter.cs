@@ -49,6 +49,11 @@ internal static class OutputCacheEntryFormatter
                 await bufferStore.SetAsync(key, new(buffer.GetCommittedMemory()), CopyToLeasedMemory(tags, out var lease), duration, cancellationToken);
                 if (lease is not null)
                 {
+                    if (tags is not null)
+                    {
+                        lease.AsSpan(0, tags.Count).Clear();
+                    }
+
                     ArrayPool<string>.Shared.Return(lease);
                 }
             }
