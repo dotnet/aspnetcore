@@ -221,12 +221,19 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         }
     }
 
-    internal unsafe bool TryGetTlsCipherSuite(out TlsCipherSuite tlsCipherSuite)
+    /// <summary>
+    /// Gets TLS cipher suite used for the request, if supported by the OS and http.sys.
+    /// </summary>
+    /// <returns>
+    /// null, if query of TlsCipherSuite is not supported.
+    /// TlsCipherSuite value, if query is successful.
+    /// Throws <see cref="HttpSysException"/>, if query is supported but fails for some reason.
+    /// </returns>
+    internal unsafe TlsCipherSuite? GetTlsCipherSuite()
     {
-        tlsCipherSuite = default;
         if (!HttpApi.SupportsQueryTlsCipherInfo)
         {
-            return false;
+            return default;
         }
 
         var requestId = PinsReleased ? Request.RequestId : RequestId;
@@ -237,7 +244,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         var statusCode = HttpApi.HttpGetRequestProperty(
             requestQueueHandle: Server.RequestQueue.Handle,
             requestId,
-            propertyId: (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo  */,
+            propertyId: (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
             qualifier: null,
             qualifierSize: 0,
             output: &cipherInfo,
@@ -247,12 +254,12 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         if (statusCode is ErrorCodes.ERROR_SUCCESS)
         {
-            // TODO parse SecPkgContext_CipherInfo to TlsCipherSuite here!
-            return true;
+            return (TlsCipherSuite)cipherInfo.dwCipherSuite;
         }
 
+        // OS supports querying TlsCipherSuite, but request failed.
         Log.QueryTlsCipherSuiteError(Logger, requestId, statusCode);
-        return false;
+        throw new HttpSysException((int)statusCode);
     }
 
     /// <summary>

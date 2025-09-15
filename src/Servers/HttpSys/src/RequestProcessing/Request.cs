@@ -335,7 +335,7 @@ internal sealed partial class Request
 
     public SslProtocols Protocol { get; private set; }
 
-    public TlsCipherSuite NegotiatedCipherSuite { get; private set; }
+    public TlsCipherSuite? NegotiatedCipherSuite { get; private set; }
 
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
@@ -357,13 +357,10 @@ internal sealed partial class Request
 
     private void GetTlsHandshakeResults()
     {
-        if (RequestContext.TryGetTlsCipherSuite(out var tlsCipherSuite))
-        {
-            NegotiatedCipherSuite = tlsCipherSuite;
-        }
-
         var handshake = RequestContext.GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
+
+        NegotiatedCipherSuite = RequestContext.GetTlsCipherSuite();
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
         CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
