@@ -10,8 +10,13 @@ namespace Microsoft.Extensions.Validation;
 
 internal static class ISymbolExtensions
 {
-    public static string GetDisplayName(this ISymbol property, INamedTypeSymbol displayAttribute)
+    public static string GetDisplayName(this ISymbol property, INamedTypeSymbol? displayAttribute)
     {
+        if (displayAttribute is null)
+        {
+            return property.Name;
+        }
+
         var displayNameAttribute = property.GetAttributes()
             .FirstOrDefault(attribute =>
                 attribute.AttributeClass is { } attributeClass &&

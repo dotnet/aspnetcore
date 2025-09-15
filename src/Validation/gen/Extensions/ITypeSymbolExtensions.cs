@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.AspNetCore.Analyzers.RouteEmbeddedLanguage.Infrastructure;
@@ -21,8 +22,13 @@ internal static class ITypeSymbolExtensions
         return type.ImplementsInterface(enumerable) || SymbolEqualityComparer.Default.Equals(type, enumerable);
     }
 
-    public static bool ImplementsValidationAttribute(this ITypeSymbol typeSymbol, INamedTypeSymbol validationAttributeSymbol)
+    public static bool ImplementsValidationAttribute(this ITypeSymbol typeSymbol, INamedTypeSymbol? validationAttributeSymbol)
     {
+        if (validationAttributeSymbol is null)
+        {
+            return false;
+        }
+
         var baseType = typeSymbol.BaseType;
         while (baseType != null)
         {
@@ -36,8 +42,9 @@ internal static class ITypeSymbolExtensions
         return false;
     }
 
-    public static ITypeSymbol UnwrapType(this ITypeSymbol type, INamedTypeSymbol enumerable)
+    public static ITypeSymbol UnwrapType(this ITypeSymbol type, INamedTypeSymbol? enumerable)
     {
+
         if (type.OriginalDefinition.SpecialType == SpecialType.System_Nullable_T &&
             type is INamedTypeSymbol { TypeArguments.Length: 1 })
         {
@@ -52,6 +59,11 @@ internal static class ITypeSymbolExtensions
             type = type.WithNullableAnnotation(NullableAnnotation.NotAnnotated);
         }
 
+        if (enumerable is null)
+        {
+            return type;
+        }
+
         if (type is INamedTypeSymbol namedType && namedType.IsEnumerable(enumerable) && namedType.TypeArguments.Length == 1)
         {
             // Extract the T from an IEnumerable<T> or List<T>
@@ -61,8 +73,13 @@ internal static class ITypeSymbolExtensions
         return type;
     }
 
-    internal static bool ImplementsInterface(this ITypeSymbol type, ITypeSymbol interfaceType)
+    internal static bool ImplementsInterface(this ITypeSymbol type, ITypeSymbol? interfaceType)
     {
+        if (interfaceType is null)
+        {
+            return false;
+        }
+
         foreach (var iface in type.AllInterfaces)
         {
             if (SymbolEqualityComparer.Default.Equals(interfaceType, iface))
@@ -73,8 +90,13 @@ internal static class ITypeSymbolExtensions
         return false;
     }
 
-    internal static ImmutableArray<INamedTypeSymbol>? GetJsonDerivedTypes(this ITypeSymbol type, INamedTypeSymbol jsonDerivedTypeAttribute)
+    internal static ImmutableArray<INamedTypeSymbol>? GetJsonDerivedTypes(this ITypeSymbol type, INamedTypeSymbol? jsonDerivedTypeAttribute)
     {
+        if (jsonDerivedTypeAttribute is null)
+        {
+            return null;
+        }
+
         var derivedTypes = ImmutableArray.CreateBuilder<INamedTypeSymbol>();
         foreach (var attribute in type.GetAttributes())
         {
@@ -95,7 +117,9 @@ internal static class ITypeSymbolExtensions
     // types themselves so we short-circuit on them.
     internal static bool IsExemptType(this ITypeSymbol type, WellKnownTypes wellKnownTypes)
     {
-        return SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpContext))
+        try
+        {
+            return SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpContext))
                || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpRequest))
                || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_HttpResponse))
                || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_Threading_CancellationToken))
@@ -104,6 +128,12 @@ internal static class ITypeSymbolExtensions
                || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.Microsoft_AspNetCore_Http_IFormFile))
                || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_IO_Stream))
                || SymbolEqualityComparer.Default.Equals(type, wellKnownTypes.Get(WellKnownTypeData.WellKnownType.System_IO_Pipelines_PipeReader));
+
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
     }
 
     internal static IPropertySymbol? FindPropertyIncludingBaseTypes(this INamedTypeSymbol typeSymbol, string propertyName)
@@ -132,8 +162,13 @@ internal static class ITypeSymbolExtensions
     /// <param name="parameter">The parameter to check.</param>
     /// <param name="fromServiceMetadataSymbol">The symbol representing the [FromService] attribute.</param>
     /// <param name="fromKeyedServiceAttributeSymbol">The symbol representing the [FromKeyedService] attribute.</param>
-    internal static bool IsServiceParameter(this IParameterSymbol parameter, INamedTypeSymbol fromServiceMetadataSymbol, INamedTypeSymbol fromKeyedServiceAttributeSymbol)
+    internal static bool IsServiceParameter(this IParameterSymbol parameter, INamedTypeSymbol? fromServiceMetadataSymbol, INamedTypeSymbol? fromKeyedServiceAttributeSymbol)
     {
+        if (fromServiceMetadataSymbol is null || fromKeyedServiceAttributeSymbol is null)
+        {
+            return false;
+        }
+
         return parameter.GetAttributes().Any(attr =>
             attr.AttributeClass is not null &&
             (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
@@ -146,8 +181,13 @@ internal static class ITypeSymbolExtensions
     /// <param name="property">The property to check.</param>
     /// <param name="fromServiceMetadataSymbol">The symbol representing the [FromServices] attribute.</param>
     /// <param name="fromKeyedServiceAttributeSymbol">The symbol representing the [FromKeyedServices] attribute.</param>
-    internal static bool IsServiceProperty(this IPropertySymbol property, INamedTypeSymbol fromServiceMetadataSymbol, INamedTypeSymbol fromKeyedServiceAttributeSymbol)
+    internal static bool IsServiceProperty(this IPropertySymbol property, INamedTypeSymbol? fromServiceMetadataSymbol, INamedTypeSymbol? fromKeyedServiceAttributeSymbol)
     {
+        if (fromServiceMetadataSymbol is null || fromKeyedServiceAttributeSymbol is null)
+        {
+            return false;
+        }
+
         return property.GetAttributes().Any(attr =>
             attr.AttributeClass is not null &&
             (attr.AttributeClass.ImplementsInterface(fromServiceMetadataSymbol) ||
@@ -159,19 +199,29 @@ internal static class ITypeSymbolExtensions
     /// </summary>
     /// <param name="property">The property to check.</param>
     /// <param name="jsonIgnoreAttributeSymbol">The symbol representing the [JsonIgnore] attribute.</param>
-    internal static bool IsJsonIgnoredProperty(this IPropertySymbol property, INamedTypeSymbol jsonIgnoreAttributeSymbol)
+    internal static bool IsJsonIgnoredProperty(this IPropertySymbol property, INamedTypeSymbol? jsonIgnoreAttributeSymbol)
     {
+        if (jsonIgnoreAttributeSymbol is null)
+        {
+            return false;
+        }
+
         return property.GetAttributes().Any(attr =>
             attr.AttributeClass is not null &&
             SymbolEqualityComparer.Default.Equals(attr.AttributeClass, jsonIgnoreAttributeSymbol));
     }
 
-    internal static bool IsSkippedValidationProperty(this IPropertySymbol property, INamedTypeSymbol skipValidationAttributeSymbol)
+    internal static bool IsSkippedValidationProperty(this IPropertySymbol property, INamedTypeSymbol? skipValidationAttributeSymbol)
     {
+        if (skipValidationAttributeSymbol is null)
+        {
+            return false;
+        }
+
         return property.HasAttribute(skipValidationAttributeSymbol) || property.Type.HasAttribute(skipValidationAttributeSymbol);
     }
 
-    internal static bool IsSkippedValidationParameter(this IParameterSymbol parameter, INamedTypeSymbol skipValidationAttributeSymbol)
+    internal static bool IsSkippedValidationParameter(this IParameterSymbol parameter, INamedTypeSymbol? skipValidationAttributeSymbol)
     {
         return parameter.HasAttribute(skipValidationAttributeSymbol) || parameter.Type.HasAttribute(skipValidationAttributeSymbol);
     }
