@@ -104,7 +104,7 @@ public partial class MvcAnalyzer : DiagnosticAnalyzer
         if (method.TryGetAttributeImplementingInterface(routeTemplateProviderType, out var attribute))
         {
             var syntax = attribute.ApplicationSyntaxReference!.GetSyntax(context.CancellationToken);
-            context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.AttributeRoutingUsedForNonActionMethod, syntax.GetLocation()));
+            context.ReportDiagnostic(Diagnostic.Create(DiagnosticDescriptors.AttributeRoutingUsedForNonActionMethod, syntax.GetLocation(), method.Name));
         }
     }
 
