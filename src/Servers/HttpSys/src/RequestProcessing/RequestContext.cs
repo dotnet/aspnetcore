@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using Microsoft.AspNetCore.Server.HttpSys.NativeInterop.Types;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;
@@ -217,6 +219,40 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         {
             // RequestQueueHandle may have been closed
         }
+    }
+
+    internal unsafe bool TryGetTlsCipherSuite(out TlsCipherSuite tlsCipherSuite)
+    {
+        tlsCipherSuite = default;
+        if (!HttpApi.SupportsQueryTlsCipherInfo)
+        {
+            return false;
+        }
+
+        var requestId = PinsReleased ? Request.RequestId : RequestId;
+
+        SecPkgContext_CipherInfo cipherInfo = default;
+        uint bytesReturned = 0;
+
+        var statusCode = HttpApi.HttpGetRequestProperty(
+            requestQueueHandle: Server.RequestQueue.Handle,
+            requestId,
+            propertyId: (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo  */,
+            qualifier: null,
+            qualifierSize: 0,
+            output: &cipherInfo,
+            outputSize: (uint)sizeof(SecPkgContext_CipherInfo),
+            bytesReturned: (IntPtr)(&bytesReturned),
+            overlapped: IntPtr.Zero);
+
+        if (statusCode is ErrorCodes.ERROR_SUCCESS)
+        {
+            // TODO parse SecPkgContext_CipherInfo to TlsCipherSuite here!
+            return true;
+        }
+
+        Log.QueryTlsCipherSuiteError(Logger, requestId, statusCode);
+        return false;
     }
 
     /// <summary>

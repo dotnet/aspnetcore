@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Net;
+using System.Net.Security;
 using System.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography;
@@ -334,6 +335,8 @@ internal sealed partial class Request
 
     public SslProtocols Protocol { get; private set; }
 
+    public TlsCipherSuite NegotiatedCipherSuite { get; private set; }
+
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
 
@@ -354,6 +357,11 @@ internal sealed partial class Request
 
     private void GetTlsHandshakeResults()
     {
+        if (RequestContext.TryGetTlsCipherSuite(out var tlsCipherSuite))
+        {
+            NegotiatedCipherSuite = tlsCipherSuite;
+        }
+
         var handshake = RequestContext.GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
