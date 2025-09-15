@@ -370,4 +370,30 @@ public class ImageTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         var src = img.GetAttribute("src");
         Assert.True(string.IsNullOrEmpty(src) || src.StartsWith("blob:", StringComparison.Ordinal));
     }
+
+  [Fact]
+  public void TemplatedImage_Loads_WithContextStates()
+  {
+    Browser.FindElement(By.Id("load-templated-image")).Click();
+    Browser.Equal("Templated image loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+
+    var wrapper = Browser.FindElement(By.Id("templated-image-wrapper"));
+    Assert.NotNull(wrapper);
+
+    var img = Browser.FindElement(By.Id("templated-image"));
+    Browser.True(() =>
+    {
+      var src = img.GetAttribute("src");
+      return !string.IsNullOrEmpty(src) && src.StartsWith("blob:", StringComparison.Ordinal);
+    });
+
+    var status = Browser.FindElement(By.Id("templated-image-status")).Text;
+    Assert.Equal("Loaded", status);
+
+    var cls = wrapper.GetAttribute("class");
+    Assert.Contains("templated-image", cls);
+    Assert.Contains("ready", cls);
+    Assert.DoesNotContain("loading", cls);
+    Assert.DoesNotContain("error", cls);
+  }
 }

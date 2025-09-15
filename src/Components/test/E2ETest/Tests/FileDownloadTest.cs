@@ -182,4 +182,18 @@ public class FileDownloadTest : ServerTestBase<ToggleExecutionModeServerFixture<
               delete window.__downloadDelayResolvers;
             })();");
     }
+
+    [Fact]
+    public void TemplatedFileDownload_Works()
+    {
+        InstrumentDownload();
+        Browser.FindElement(By.Id("show-templated-download")).Click();
+        var link = Browser.FindElement(By.Id("templated-download-link"));
+        Assert.NotNull(link);
+        link.Click();
+        Browser.True(() => GetDownloadCallCount() >= 1);
+        Browser.True(() => GetLastFileName() == "templated.png");
+        var status = Browser.FindElement(By.Id("templated-download-status")).Text;
+        Assert.True(status == "Idle/Done");
+    }
 }

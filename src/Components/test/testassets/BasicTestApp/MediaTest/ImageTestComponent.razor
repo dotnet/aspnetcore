@@ -13,6 +13,7 @@
     <button id="load-error" @onclick="LoadErrorImage">Load Error</button>
     <button id="load-cached-jpg" @onclick="LoadCachedJpg">Load Cached JPG</button>
     <button id="load-invalid-mime" @onclick="LoadInvalidMimeImage">Load Invalid MIME</button>
+    <button id="load-templated-image" @onclick="LoadTemplatedImage">Load Templated Image</button>
 
     <div id="test-status">
         Status: <span id="current-status">@_currentStatus</span>
@@ -59,6 +60,25 @@
     <h4>Invalid MIME Image</h4>
     <Image @ref="@_invalidMimeRef" id="invalid-mime-image" Source="@_invalidMimeSource" />
 }
+@if (_templatedImageVisible)
+{
+    <h4>Templated Image</h4>
+    <Image @ref="_templatedImageComponent" Source="@_templatedImageSource" Context="ctx">
+        <figure id="templated-image-wrapper" class="templated-image @(ctx.IsLoading ? "loading" : ctx.HasError ? "error" : "ready")">
+            @if (ctx.ObjectUrl is not null)
+            {
+                <img id="templated-image" @ref="ctx.Element" data-blazor-image src="@ctx.ObjectUrl" />
+            }
+            else
+            {
+                <img id="templated-image" @ref="ctx.Element" data-blazor-image />
+            }
+            <figcaption id="templated-image-status">
+                @(ctx.IsLoading ? "Loading..." : ctx.HasError ? "Error" : ctx.ObjectUrl is not null ? "Loaded" : "Idle")
+            </figcaption>
+        </figure>
+    </Image>
+}
 
 @code {
     private Image _pngBasicRef;
@@ -69,6 +89,7 @@
     private Image _errorRef;
     private Image _cachedJpgRef;
     private Image _invalidMimeRef;
+    private Image _templatedImageComponent;
 
     private MediaSource _basicImageSource = new MediaSource(new byte[0], string.Empty, string.Empty);
     private MediaSource _jpgStreamSource = new MediaSource(new byte[0], string.Empty, string.Empty);
@@ -77,6 +98,7 @@
     private MediaSource _errorSource = new MediaSource(new byte[0], string.Empty, string.Empty);
     private MediaSource _cachedJpgSource = new MediaSource(new byte[0], string.Empty, string.Empty);
     private MediaSource _invalidMimeSource = new MediaSource(new byte[0], string.Empty, string.Empty);
+    private MediaSource _templatedImageSource = new MediaSource(new byte[0], string.Empty, string.Empty);
 
     private bool _pngBasic;
     private bool _jpgStream;
@@ -86,6 +108,7 @@
     private bool _errorImage;
     private bool _cachedJpgVisible;
     private bool _invalidMimeImage;
+    private bool _templatedImageVisible;
 
     private string _currentStatus = "Ready";
     private bool _isCurrentlyShowingPng = true;
@@ -170,6 +193,14 @@
         _currentStatus = "Invalid mime image loaded";
     }
 
+    private void LoadTemplatedImage()
+    {
+        _currentStatus = "Loading templated image...";
+        _templatedImageSource = new MediaSource(TestPngData, "image/png", "templated-png");
+        _templatedImageVisible = true;
+        _currentStatus = "Templated image loaded";
+    }
+
     public async ValueTask DisposeAsync()
     {
         if (_dynamicSourceRef != null) await _dynamicSourceRef.DisposeAsync();
@@ -178,5 +209,6 @@
         if (_pair1Ref != null) await _pair1Ref.DisposeAsync();
         if (_pair2Ref != null) await _pair2Ref.DisposeAsync();
         if (_invalidMimeRef != null) await _invalidMimeRef.DisposeAsync();
+    if (_templatedImageComponent != null) await _templatedImageComponent.DisposeAsync();
     }
 }

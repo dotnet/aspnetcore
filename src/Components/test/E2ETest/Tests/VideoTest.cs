@@ -121,4 +121,25 @@ public class VideoTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
 
         Assert.NotEqual(initialSrc, finalSrc);
     }
+
+    [Fact]
+    public void TemplatedVideo_LoadsSuccessfully()
+    {
+        Browser.FindElement(By.Id("load-templated-video")).Click();
+        Browser.Equal("Templated video loaded", () => Browser.FindElement(By.Id("current-status")).Text);
+
+        var container = Browser.FindElement(By.Id("templated-video-container"));
+        Assert.NotNull(container);
+        var video = Browser.FindElement(By.Id("templated-video"));
+        Browser.True(() =>
+        {
+            var src = video.GetAttribute("src");
+            return !string.IsNullOrEmpty(src) && src.StartsWith("blob:", StringComparison.Ordinal);
+        });
+        var status = Browser.FindElement(By.Id("templated-video-status")).Text;
+        Assert.Equal("Loaded", status);
+        var cls = container.GetAttribute("class");
+        Assert.Contains("video-shell", cls);
+        Assert.Contains("ready", cls);
+    }
 }

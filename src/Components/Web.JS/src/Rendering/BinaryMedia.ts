@@ -206,22 +206,22 @@ export class BinaryMedia {
     targetAttr: 'src' | 'href'
   ): Promise<string | null> {
 
-    if (targetAttr === 'src' && element instanceof HTMLVideoElement) {
-      try {
-        const mediaSourceUrl = await this.tryMediaSourceVideoStreaming(
-          element,
-          streamRef,
-          mimeType,
-          cacheKey,
-          totalBytes
-        );
-        if (mediaSourceUrl) {
-          return mediaSourceUrl;
-        }
-      } catch (msErr) {
-        this.logger.log(LogLevel.Debug, `MediaSource video streaming path failed, falling back. Error: ${msErr}`);
-      }
-    }
+    // if (targetAttr === 'src' && element instanceof HTMLVideoElement) {
+    //   try {
+    //     const mediaSourceUrl = await this.tryMediaSourceVideoStreaming(
+    //       element,
+    //       streamRef,
+    //       mimeType,
+    //       cacheKey,
+    //       totalBytes
+    //     );
+    //     if (mediaSourceUrl) {
+    //       return mediaSourceUrl;
+    //     }
+    //   } catch (msErr) {
+    //     this.logger.log(LogLevel.Debug, `MediaSource video streaming path failed, falling back. Error: ${msErr}`);
+    //   }
+    // }
 
     this.loadingElements.add(element);
 
