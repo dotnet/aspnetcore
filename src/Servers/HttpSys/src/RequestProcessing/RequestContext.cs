@@ -225,9 +225,8 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     /// Gets TLS cipher suite used for the request, if supported by the OS and http.sys.
     /// </summary>
     /// <returns>
-    /// null, if query of TlsCipherSuite is not supported.
+    /// null, if query of TlsCipherSuite is not supported or the query failed.
     /// TlsCipherSuite value, if query is successful.
-    /// Throws <see cref="HttpSysException"/>, if query is supported but fails for some reason.
     /// </returns>
     internal unsafe TlsCipherSuite? GetTlsCipherSuite()
     {
@@ -259,7 +258,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         // OS supports querying TlsCipherSuite, but request failed.
         Log.QueryTlsCipherSuiteError(Logger, requestId, statusCode);
-        throw new HttpSysException((int)statusCode);
+        return null;
     }
 
     /// <summary>
