@@ -155,6 +155,8 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // If the QuickGrid is disposed while the JS module is being loaded, we need to avoid calling JS methods
     private bool _wasDisposed;
 
+    private bool _firstRefreshDataAsync = true;
+
     /// <summary>
     /// Constructs an instance of <see cref="QuickGrid{TGridItem}"/>.
     /// </summary>
@@ -311,6 +313,13 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     // because in that case there's going to be a re-render anyway.
     private async Task RefreshDataCoreAsync()
     {
+        // First render of Virtualize component will handle the data load itself.
+        if (_firstRefreshDataAsync && Virtualize)
+        {
+            _firstRefreshDataAsync = false;
+            return;
+        }
+
         // Move into a "loading" state, cancelling any earlier-but-still-pending load
         _pendingDataLoadCancellationTokenSource?.Cancel();
         var thisLoadCts = _pendingDataLoadCancellationTokenSource = new CancellationTokenSource();
