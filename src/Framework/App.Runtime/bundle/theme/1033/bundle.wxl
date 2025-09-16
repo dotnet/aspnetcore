@@ -59,8 +59,13 @@
   <String Id="FilesInUseLabel" Value="The following applications are using files that need to be updated:" />
   <String Id="FilesInUseCloseRadioButton" Value="Close the &amp;applications and attempt to restart them." />
   <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required." />
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="Close the &amp;applications." />
   <String Id="FilesInUseOkButton" Value="&amp;OK" />
   <String Id="FilesInUseCancelButton" Value="&amp;Cancel" />
+  <String Id="FilesInUseRetryButton" Value="&amp;Retry" />
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignore" />
+  <String Id="FilesInUseExitButton" Value="E&amp;xit" />
+  <String Id="FilesInUseTitle" Value="Files In Use" />
   <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:" />
   <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
   <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>

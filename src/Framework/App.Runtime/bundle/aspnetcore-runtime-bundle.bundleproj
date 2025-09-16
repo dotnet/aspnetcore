@@ -6,6 +6,8 @@
     <!-- We aren't producing a NuGet package here, so disable package validation -->
     <EnablePackageValidation>false</EnablePackageValidation>
     <IsPackable>false</IsPackable>
+    <!-- Bundles should always be built for x86 -->
+    <InstallerPlatform>x86</InstallerPlatform>
     <BundleInstallerUpgradeCodeSeed>ASP.NET Core Shared Framework Bundle Installer</BundleInstallerUpgradeCodeSeed>
     <BundleThemeDirectory>$(MSBuildProjectDirectory)</BundleThemeDirectory>
     <InstallerName>aspnetcore-runtime</InstallerName>
