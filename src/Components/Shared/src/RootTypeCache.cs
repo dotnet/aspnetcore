@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.HotReload;
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
@@ -12,9 +13,27 @@ namespace Microsoft.AspNetCore.Components;
 #endif
 
 // A cache for root component types
-internal sealed class RootTypeCache
+internal sealed class RootTypeCache : IDisposable
 {
     private readonly ConcurrentDictionary<Key, Type?> _typeToKeyLookUp = new();
+
+    public RootTypeCache()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied += ClearCache;
+        }
+    }
+
+    internal void ClearCache() => _typeToKeyLookUp.Clear();
+
+    public void Dispose()
+    {
+        if (HotReloadManager.Default.MetadataUpdateSupported)
+        {
+            HotReloadManager.Default.OnDeltaApplied -= ClearCache;
+        }
+    }
 
     public Type? GetRootType(string assembly, string type)
     {
