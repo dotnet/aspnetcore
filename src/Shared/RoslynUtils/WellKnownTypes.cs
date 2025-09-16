@@ -19,6 +19,7 @@ internal class WellKnownTypes
 
     private readonly INamedTypeSymbol?[] _lazyWellKnownTypes;
     private readonly Compilation _compilation;
+    private readonly INamedTypeSymbol _missingTypeSymbol;
 
     static WellKnownTypes()
     {
@@ -51,6 +52,7 @@ internal class WellKnownTypes
     {
         _lazyWellKnownTypes = new INamedTypeSymbol?[WellKnownTypeData.WellKnownTypeNames.Length];
         _compilation = compilation;
+        _missingTypeSymbol = compilation.GetTypeByMetadataName(typeof(MissingType).FullName!)!;
     }
 
     public INamedTypeSymbol Get(SpecialType type)
@@ -58,13 +60,8 @@ internal class WellKnownTypes
         return _compilation.GetSpecialType(type);
     }
 
-    public INamedTypeSymbol? Get(WellKnownTypeData.WellKnownType? type)
+    public INamedTypeSymbol Get(WellKnownTypeData.WellKnownType type)
     {
-        if (type is null)
-        {
-            return null;
-        }
-
         var index = (int)type;
         var symbol = _lazyWellKnownTypes[index];
         if (symbol is not null)
@@ -77,18 +74,14 @@ internal class WellKnownTypes
         return GetAndCache(index);
     }
 
-    private INamedTypeSymbol? GetAndCache(int index)
+    private INamedTypeSymbol GetAndCache(int index)
     {
-        var result = GetTypeByMetadataNameInTargetAssembly(WellKnownTypeData.WellKnownTypeNames[index]);
-        //if (result == null)
-        //{
-        //    throw new InvalidOperationException($"Failed to resolve well-known type '{WellKnownTypeData.WellKnownTypeNames[index]}'.");
-        //}
+        var result = GetTypeByMetadataNameInTargetAssembly(WellKnownTypeData.WellKnownTypeNames[index]) ?? _missingTypeSymbol;
         Interlocked.CompareExchange(ref _lazyWellKnownTypes[index], result, null);
 
         // GetTypeByMetadataName should always return the same instance for a name.
         // To ensure we have a consistent value, for thread safety, return symbol set in the array.
-        return _lazyWellKnownTypes[index];
+        return _lazyWellKnownTypes[index]!;
     }
 
     // Filter for types within well-known (framework-owned) assemblies only.
@@ -135,7 +128,7 @@ internal class WellKnownTypes
         return false;
     }
 
-    public bool Implements(ITypeSymbol type, WellKnownTypeData.WellKnownType?[] interfaceWellKnownTypes)
+    public bool Implements(ITypeSymbol type, WellKnownTypeData.WellKnownType[] interfaceWellKnownTypes)
     {
         foreach (var wellKnownType in interfaceWellKnownTypes)
         {
@@ -148,9 +141,9 @@ internal class WellKnownTypes
         return false;
     }
 
-    public static bool Implements(ITypeSymbol? type, ITypeSymbol? interfaceType)
+    public static bool Implements(ITypeSymbol? type, ITypeSymbol interfaceType)
     {
-        if (type is null || interfaceType is null)
+        if (type is null)
         {
             return false;
         }
@@ -164,4 +157,6 @@ internal class WellKnownTypes
         }
         return false;
     }
+
+    internal class MissingType { }
 }
