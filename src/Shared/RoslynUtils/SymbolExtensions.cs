@@ -49,13 +49,8 @@ internal static class SymbolExtensions
         }
     }
 
-    public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol? attributeType)
+    public static bool HasAttribute(this ISymbol symbol, INamedTypeSymbol attributeType)
     {
-        if (attributeType is null)
-        {
-            return false;
-        }
-
         foreach (var attributeData in symbol.GetAttributes())
         {
             if (SymbolEqualityComparer.Default.Equals(attributeData.AttributeClass, attributeType))
@@ -72,13 +67,8 @@ internal static class SymbolExtensions
         return attributes.TryGetAttribute(attributeType, out _);
     }
 
-    public static bool HasAttribute(this ITypeSymbol typeSymbol, INamedTypeSymbol? attributeSymbol)
+    public static bool HasAttribute(this ITypeSymbol typeSymbol, INamedTypeSymbol attributeSymbol)
     {
-        if (attributeSymbol is null)
-        {
-            return false;
-        }
-
         var current = typeSymbol;
 
         while (current is not null)
