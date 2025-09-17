@@ -60,7 +60,7 @@
             <Label Name="ModifyHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" DisablePrefix="yes">#(loc.ModifyHeader)</Label>
 
             <Hypertext Name="ModifyTextIIS" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes" EnableCondition="IISEnabled" HideWhenDisabled="yes">#(loc.ModifyResetIIS)</Hypertext>
-            <Hypertext Name="ModifyTextNoIIS" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes" EnableCondition="IISEnabled" HideWhenDisabled="yes">#(loc.ModifyNoIIS)</Hypertext>
+            <Hypertext Name="ModifyTextNoIIS" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes" EnableCondition="NOT IISEnabled" HideWhenDisabled="yes">#(loc.ModifyNoIIS)</Hypertext>
 
             <Button Name="RepairButton" X="-236" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.ModifyRepairButton)</Button>
             <Button Name="UninstallButton" X="-124" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.ModifyUninstallButton)</Button>
