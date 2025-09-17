@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
-import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, isSamePageWithHash, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage } from './NavigationUtils';
+import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
 import { resetScrollAfterNextBatch, resetScrollIfNeeded } from '../Rendering/Renderer';
 
 /*
@@ -99,7 +99,7 @@ function onDocumentClick(event: MouseEvent) {
   handleClickForNavigationInterception(event, absoluteInternalHref => {
     const originalLocation = location.href;
 
-    const shouldScrollToHash = isSamePageWithHash(absoluteInternalHref);
+    const shouldScrollToHash = isSamePageWithHash(originalLocation, absoluteInternalHref);
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
 
     if (shouldScrollToHash) {
@@ -117,6 +117,11 @@ function onDocumentClick(event: MouseEvent) {
 
 function onPopState(state: PopStateEvent) {
   if (hasInteractiveRouter()) {
+    return;
+  }
+
+  if (state.state == null && isSamePageWithHash(currentContentUrl, location.href)) {
+    currentContentUrl = location.href;
     return;
   }
 
