@@ -1,21 +1,5 @@
 <!-- Targets for making .wixproj better. -->
 <Project>
-  <ItemDefinitionGroup>
-    <!-- Override the MicroBuild default certs which still uses MicrosoftSHA1 and Microsoft401 -->
-    <SignCabs>
-      <Authenticode>Microsoft400</Authenticode>
-    </SignCabs>
-    <SignMsi>
-      <Authenticode>Microsoft400</Authenticode>
-    </SignMsi>
-    <SignBundle>
-      <Authenticode>Microsoft400</Authenticode>
-    </SignBundle>
-    <SignBundleEngine>
-      <Authenticode>Microsoft400</Authenticode>
-    </SignBundleEngine>
-  </ItemDefinitionGroup>
-
   <PropertyGroup Condition="'$(OutputType)' == 'package'">
     <EmbedCab Condition="'$(EmbedCab)' == ''">yes</EmbedCab>
     <InstallDir>$(ProductName)</InstallDir>

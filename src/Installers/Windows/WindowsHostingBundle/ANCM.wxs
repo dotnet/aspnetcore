@@ -29,9 +29,9 @@
 
         <util:RegistrySearch Id="IISW3SVCInstalledSearch_x64" Variable="IISW3SVCInstalled_x64" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Value="W3SVC" Result="value" After="IISCoreWebEngineInstalledSearch_x64" Bitness="always64" />
 
-        <!-- We don't care about the results of the searches below. They are conditioned to execute if we've detected IIS.
-             If IIS is found, the search will execute and the default "disable" value of the relevant variables will be changed, allowing the UI
-             text to be displayed. All these searches need to execute after all the primary util:RegistrySearch operations for IIS. -->
+        <!-- We don't care about the result of the search below. It is conditioned to execute if we've detected IIS.
+             If IIS is found, the search will execute and the default "0" value of the IISEnabled variable will be changed to 1, allowing the UI
+             text to be displayed. This search needs to execute after all the primary util:RegistrySearch operations for IIS. -->
         <util:RegistrySearch Id="IISEnabledSearch" Condition="((IISCoreWebEngineInstalled_x86=1) AND (IISW3SVCInstalled_x86=1)) OR ((IISCoreWebEngineInstalled_x64=1) AND (IISW3SVCInstalled_x64=1))" Variable="IISEnabled" Root="HKLM" Key="SOFTWARE\Microsoft\InetStp\Components" Value="CoreWebEngine" Result="value" After="IISW3SVCInstalledSearch_x64" Bitness="always64" />
     </Fragment>
 </Wix>
