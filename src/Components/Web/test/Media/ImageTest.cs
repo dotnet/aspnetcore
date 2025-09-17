@@ -18,61 +18,61 @@ using Microsoft.JSInterop;
 using Xunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web.Media;
 
-namespace Microsoft.AspNetCore.Components.Web.Image.Tests;
+namespace Microsoft.AspNetCore.Components.Web.Media.Tests;
 
 /// <summary>
-/// Unit tests for the Image component
+/// Unit tests for the new Media.Image component
 /// </summary>
 public class ImageTest
 {
     private static readonly byte[] PngBytes = Convert.FromBase64String("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdjqK6u/g8ABVcCcYoGhmwAAAAASUVORK5CYII=");
 
     [Fact]
-    public async Task LoadsImage_InvokesSetImageAsync_WhenSourceProvided()
+    public async Task LoadsImage_InvokesSetContentAsync_WhenSourceProvided()
     {
-        var js = new FakeImageJsRuntime(cacheHit: false);
+        var js = new FakeMediaJsRuntime(cacheHit: false);
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
 
-        var source = new ImageSource(PngBytes, "image/png", cacheKey: "png-1");
+        var source = new MediaSource(PngBytes, "image/png", cacheKey: "png-1");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = source,
         }));
 
-        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.setImageAsync"));
+        Assert.Equal(1, js.Count("Blazor._internal.BinaryMedia.setContentAsync"));
     }
 
     [Fact]
     public async Task SkipsReload_OnSameCacheKey()
     {
-        var js = new FakeImageJsRuntime(cacheHit: false);
+        var js = new FakeMediaJsRuntime(cacheHit: false);
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
 
-        var s1 = new ImageSource(new byte[10], "image/png", cacheKey: "same");
+        var s1 = new MediaSource(new byte[10], "image/png", cacheKey: "same");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s1,
         }));
 
-        var s2 = new ImageSource(new byte[20], "image/png", cacheKey: "same");
+        var s2 = new MediaSource(new byte[20], "image/png", cacheKey: "same");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s2,
         }));
 
-        // Implementation skips reloading when cache key unchanged.
-        Assert.Equal(1, js.Count("Blazor._internal.BinaryImageComponent.setImageAsync"));
+        Assert.Equal(1, js.Count("Blazor._internal.BinaryMedia.setContentAsync"));
     }
 
     [Fact]
     public async Task NullSource_Throws()
     {
-        var js = new FakeImageJsRuntime(cacheHit: false);
+        var js = new FakeMediaJsRuntime(cacheHit: false);
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
@@ -92,44 +92,43 @@ public class ImageTest
     [Fact]
     public async Task ParameterChange_DifferentCacheKey_Reloads()
     {
-        var js = new FakeImageJsRuntime(cacheHit: false);
+        var js = new FakeMediaJsRuntime(cacheHit: false);
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
-        var s1 = new ImageSource(new byte[4], "image/png", "key-a");
+        var s1 = new MediaSource(new byte[4], "image/png", "key-a");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s1,
         }));
-        var s2 = new ImageSource(new byte[6], "image/png", "key-b");
+        var s2 = new MediaSource(new byte[6], "image/png", "key-b");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s2,
         }));
-        Assert.Equal(2, js.Count("Blazor._internal.BinaryImageComponent.setImageAsync"));
+        Assert.Equal(2, js.Count("Blazor._internal.BinaryMedia.setContentAsync"));
     }
 
     [Fact]
     public async Task ChangingSource_CancelsPreviousLoad()
     {
-        var js = new FakeImageJsRuntime(cacheHit: false) { DelayOnFirstSetCall = true };
+        var js = new FakeMediaJsRuntime(cacheHit: false) { DelayOnFirstSetCall = true };
         using var renderer = CreateRenderer(js);
         var comp = (Image)renderer.InstantiateComponent<Image>();
         var id = renderer.AssignRootComponentId(comp);
 
-        var s1 = new ImageSource(new byte[10], "image/png", "k1");
+        var s1 = new MediaSource(new byte[10], "image/png", "k1");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s1,
         }));
 
-        var s2 = new ImageSource(new byte[10], "image/png", "k2");
+        var s2 = new MediaSource(new byte[10], "image/png", "k2");
         await renderer.RenderRootComponentAsync(id, ParameterView.FromDictionary(new Dictionary<string, object?>
         {
             [nameof(Image.Source)] = s2,
         }));
 
-        // Give a tiny bit of time for cancellation to propagate
         for (var i = 0; i < 10 && js.CapturedTokens.Count < 2; i++)
         {
             await Task.Delay(10);
@@ -137,9 +136,7 @@ public class ImageTest
 
         Assert.NotEmpty(js.CapturedTokens);
         Assert.True(js.CapturedTokens.First().IsCancellationRequested);
-
-        // Two invocations total (first canceled, second completes)
-        Assert.Equal(2, js.Count("Blazor._internal.BinaryImageComponent.setImageAsync"));
+        Assert.Equal(2, js.Count("Blazor._internal.BinaryMedia.setContentAsync"));
     }
 
     private static TestRenderer CreateRenderer(IJSRuntime js)
@@ -156,21 +153,19 @@ public class ImageTest
         protected internal override RendererInfo RendererInfo => new RendererInfo("Test", isInteractive: true);
     }
 
-    private sealed class FakeImageJsRuntime : IJSRuntime
+    private sealed class FakeMediaJsRuntime : IJSRuntime
     {
         public sealed record Invocation(string Identifier, object?[] Args, CancellationToken Token);
         private readonly ConcurrentQueue<Invocation> _invocations = new();
         private readonly ConcurrentDictionary<string, bool> _memoryCache = new();
         private readonly bool _forceCacheHit;
 
-        public FakeImageJsRuntime(bool cacheHit) { _forceCacheHit = cacheHit; }
+        public FakeMediaJsRuntime(bool cacheHit) { _forceCacheHit = cacheHit; }
 
         public int TotalInvocationCount => _invocations.Count;
         public int Count(string id) => _invocations.Count(i => i.Identifier == id);
         public IReadOnlyList<CancellationToken> CapturedTokens => _invocations.Select(i => i.Token).ToList();
-        public void MarkCached(string cacheKey) => _memoryCache[cacheKey] = true;
 
-        // Simulation flags
         public bool DelayOnFirstSetCall { get; set; }
         public bool ForceFail { get; set; }
         public bool FailOnce { get; set; } = true;
@@ -186,7 +181,7 @@ public class ImageTest
             args ??= Array.Empty<object?>();
             _invocations.Enqueue(new Invocation(identifier, args, cancellationToken));
 
-            if (identifier == "Blazor._internal.BinaryImageComponent.setImageAsync")
+            if (identifier == "Blazor._internal.BinaryMedia.setContentAsync")
             {
                 _setCalls++;
                 var cacheKey = args.Length >= 4 ? args[3] as string : null;
