@@ -28,8 +28,8 @@
         <Page Name="Install">
             <Label Name="WelcomeHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" HexStyle="000000">#(loc.Welcome)</Label>
 
-            <Hypertext X="148" Y="120" Width="-12" Height="44" FontId="DefaultFont" Name="InstallResetIIS" HideWhenDisabled="yes">#(loc.InstallResetIIS)</Hypertext>
-            <Hypertext X="148" Y="120" Width="-12" Height="44" FontId="DefaultFont" Name="InstallNoIIS" HideWhenDisabled="yes">#(loc.InstallNoIIS)</Hypertext>
+            <Hypertext X="148" Y="120" Width="-12" Height="44" FontId="DefaultFont" Name="InstallResetIIS" EnableCondition="IISEnabled" HideWhenDisabled="yes">#(loc.InstallResetIIS)</Hypertext>
+            <Hypertext X="148" Y="120" Width="-12" Height="44" FontId="DefaultFont" Name="InstallNoIIS" EnableCondition="NOT IISEnabled" HideWhenDisabled="yes">#(loc.InstallNoIIS)</Hypertext>
 
             <!-- Align the label with the top of the logo on the left. -->
             <Label Name="LicenseTermsAndPolicies" X="148" Y="288" Width="-12" Height="32" FontId="DefaultFont" HexStyle="000000">#(loc.LicenseAssent)</Label>
@@ -59,8 +59,8 @@
         <Page Name="Modify">
             <Label Name="ModifyHeader" X="148" Y="80" Width="-12" Height="32" FontId="PageHeaderFont" DisablePrefix="yes">#(loc.ModifyHeader)</Label>
 
-            <Label Name="ModifyTextIIS" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes">#(loc.ModifyResetIIS)</Label>
-            <Label Name="ModifyTextNoIIS" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes">#(loc.ModifyNoIIS)</Label>
+            <Hypertext Name="ModifyTextIIS" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes" EnableCondition="IISEnabled" HideWhenDisabled="yes">#(loc.ModifyResetIIS)</Hypertext>
+            <Hypertext Name="ModifyTextNoIIS" X="148" Y="124" Width="-12" Height="-48" FontId="DefaultFont" HexStyle="00000000" DisablePrefix="yes" EnableCondition="IISEnabled" HideWhenDisabled="yes">#(loc.ModifyNoIIS)</Hypertext>
 
             <Button Name="RepairButton" X="-236" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.ModifyRepairButton)</Button>
             <Button Name="UninstallButton" X="-124" Y="-12" Width="100" Height="24" TabStop="yes" FontId="DefaultFont">#(loc.ModifyUninstallButton)</Button>
