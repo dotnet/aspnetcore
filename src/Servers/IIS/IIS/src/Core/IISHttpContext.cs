@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
+using Microsoft.AspNetCore.Server.IIS.Core.Native;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -402,6 +403,8 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
     {
         var handshake = GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
+
+        NegotiatedCipherSuite = GetTlsCipherSuite();
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
         CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
@@ -413,6 +416,33 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
         var sni = GetClientSni();
         SniHostName = sni.Hostname.ToString();
+    }
+
+    private unsafe TlsCipherSuite? GetTlsCipherSuite()
+    {
+        var size = sizeof(SecPkgContext_CipherInfo);
+        var buffer = new byte[size];
+
+        fixed (byte* pBuffer = buffer)
+        {
+            var statusCode = NativeMethods.HttpQueryRequestProperty(
+                RequestId,
+                (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+                qualifier: null,
+                qualifierSize: 0,
+                (void*)pBuffer,
+                (uint)buffer.Length,
+                bytesReturned: null,
+                IntPtr.Zero);
+
+            if (statusCode == NativeMethods.HR_OK)
+            {
+                var cipherInfo = Marshal.PtrToStructure<SecPkgContext_CipherInfo>((IntPtr)pBuffer);
+                return (TlsCipherSuite)cipherInfo.dwCipherSuite;
+            }
+
+            return default;
+        }
     }
 
     private unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
