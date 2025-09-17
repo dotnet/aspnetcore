@@ -1,0 +1,52 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="Caption" Value="[WixBundleName] Kurulumu" />
+  <String Id="Title" Value="[BundleNameShort]" />
+  <String Id="SubTitle" Value="[BundleNameSub]" />
+  <String Id="InstallVersion" Value="[WixBundleVersion] Sürümü" />
+  <String Id="ConfirmCancelMessage" Value="İptal etmek istediğinizden emin misiniz?" />
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Önceki sürüm" />
+  <String Id="HelpHeader" Value="Kurulum Yardımı" />
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]dizin[\]] - yükler, onarır, kaldırır ya da dizindeki paketin tam bir yerel kopyasını oluşturur. Varsayılan install değeridir. /passive | /quiet - en az düzeyde istemsiz UI gösterir ya da hiç UI göstermez ve istem yoktur. Varsayılan olarak UI ve tüm istemler görüntülenir. /norestart - yeniden başlama denemelerini engeller. Varsayılan olarak UI yeniden başlatılmadan önce sorar. /log log.txt - belirli bir günlük dosyası tutar. Varsayılan olarak %TEMP% içinde bir günlük dosyası oluşturulur." />
+  <String Id="HelpCloseButton" Value="&amp;Kapat" />
+  <String Id="InstallAcceptCheckbox" Value="Lisans &amp;hüküm ve koşullarını kabul ediyorum" />
+  <String Id="InstallInstallButton" Value="&amp;Yükle" />
+  <String Id="InstallCloseButton" Value="&amp;Kapat" />
+  <String Id="ProgressHeader" Value="Kurulum İlerleme Durumu" />
+  <String Id="ProgressLabel" Value="İşleniyor:" />
+  <String Id="OverallProgressPackageText" Value="Başlatılıyor..." />
+  <String Id="ProgressCancelButton" Value="&amp;İptal" />
+  <String Id="ModifyHeader" Value="Kurulumu değiştir" />
+  <String Id="ModifyRepairButton" Value="&amp;Onar" />
+  <String Id="ModifyUninstallButton" Value="K&amp;aldır" />
+  <String Id="ModifyCloseButton" Value="&amp;Kapat" />
+  <String Id="SuccessRepairHeader" Value="Onarım Başarıyla Tamamlandı" />
+  <String Id="SuccessUninstallHeader" Value="Kaldırma Başarıyla Tamamlandı" />
+  <String Id="SuccessInstallHeader" Value="Yükleme Başarıyla Tamamlandı" />
+  <String Id="SuccessHeader" Value="Kurulum Başarılı" />
+  <String Id="SuccessLaunchButton" Value="&amp;Başlat" />
+  <String Id="SuccessRestartText" Value="Yazılımı kullanabilmeniz için bilgisayarınızı yeniden başlatmanız gerekiyor." />
+  <String Id="SuccessRestartButton" Value="Yeniden &amp;Başlat" />
+  <String Id="SuccessCloseButton" Value="&amp;Kapat" />
+  <String Id="FailureHeader" Value="Kurulum Başarısız" />
+  <String Id="FailureInstallHeader" Value="Kurulum Başarısız" />
+  <String Id="FailureUninstallHeader" Value="Kaldırma Başarısız" />
+  <String Id="FailureRepairHeader" Value="Onarım Başarısız" />
+  <String Id="FailureHyperlinkLogText" Value="Bir ya da daha fazla sorun nedeniyle kurulum başarısız oldu. Lütfen bu sorunları düzeltin ve kurulumu yeniden deneyin. Daha fazla bilgi için &lt;a href=&quot;#&quot;&gt;günlük dosyasına&lt;/a&gt; bakın." />
+  <String Id="FailureRestartText" Value="Yazılımın geri alınmasını tamamlamak için bilgisayarınızı yeniden başlatmanız gerekiyor." />
+  <String Id="FailureRestartButton" Value="Yeniden &amp;Başlat" />
+  <String Id="FailureCloseButton" Value="&amp;Kapat" />
+  <String Id="FilesInUseHeader" Value="Kullanımda Olan Dosyalar" />
+  <String Id="FilesInUseLabel" Value="Şu uygulamalar güncelleştirilmesi gereken dosyaları kullanıyor:" />
+  <String Id="FilesInUseCloseRadioButton" Value="&amp;Uygulamaları kapatın ve yeniden başlatmayı deneyin." />
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Uygulamaları kapatmayın. Sistemi yeniden başlatmanız gerekir." />
+  <String Id="FilesInUseOkButton" Value="&amp;Tamam" />
+  <String Id="FilesInUseCancelButton" Value="&amp;İptal" />
+
+  <!-- Custom UI strings -->
+  <String Id="Welcome" Value="[WixBundleName] Kurulumu'na Hoş Geldiniz." />
+  <String Id="InstallResetIIS" Value="Yükleme tamamlandıktan sonra lütfen IIS'yi yeniden başlatın. Daha fazla bilgiyi &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;bu sayfada&lt;/a&gt; bulabilirsiniz." />
+  <String Id="InstallNoIIS" Value="IIS bu makinede etkin değil. ASP.NET Core uygulamalarını IIS ile çalıştırmak istiyorsanız, bu yükleyiciyi çalıştırmadan önce IIS'yi yüklemeniz gerekir. Daha fazla bilgiyi &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;bu sayfada&lt;/a&gt; bulabilirsiniz." />
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;lisans koşulları&lt;/a&gt; ve &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;gizlilik bildirimi&lt;/a&gt;." />
+  <String Id="ModifyResetIIS" Value="Yükleme tamamlandıktan sonra lütfen IIS'yi yeniden başlatın. Daha fazla bilgiyi &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;bu sayfada&lt;/a&gt; bulabilirsiniz." />
+  <String Id="ModifyNoIIS" Value="IIS bu makinede etkin değil. ASP.NET Core uygulamalarını IIS ile çalıştırmak istiyorsanız, bu yükleyiciyi çalıştırmadan önce IIS'yi yüklemeniz gerekir. Daha fazla bilgiyi &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;bu sayfada&lt;/a&gt; bulabilirsiniz." />
+</WixLocalization>

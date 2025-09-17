@@ -1,56 +1,46 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">Konfiguracja pakietu [BundleNameFull]</String>
-  <String Id="Title">[BundleNameShort]</String>
-  <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallVersion">Wersja [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">Czy na pewno chcesz anulować?</String>
-  <String Id="ExecuteUpgradeRelatedBundleMessage">Poprzednia wersja</String>
-  <String Id="HelpHeader">Instalator — Pomoc</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]katalog[\]] — instaluje, naprawia, odinstalowuje lub
-    tworzy pełną lokalną kopię pakietu w katalogu. Instalacja jest domyślna.
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="Caption" Value="Konfiguracja pakietu [WixBundleName]" />
+  <String Id="Title" Value="[BUNDLEMONIKER]" />
+  <String Id="InstallVersion" Value="Wersja [WixBundleVersion]" />
+  <String Id="ConfirmCancelMessage" Value="Czy na pewno chcesz anulować?" />
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Poprzednia wersja" />
+  <String Id="HelpHeader" Value="Instalator — Pomoc" />
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]katalog[\]] — instaluje, naprawia, odinstalowuje lub tworzy pełną lokalną kopię pakietu w katalogu. Instalacja jest domyślna. /passive | /quiet — wyświetla minimalny interfejs użytkownika bez monitów albo nie wyświetla żadnego interfejsu użytkownika ani monitów . Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity. /norestart — pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem. /log log.txt — tworzy dziennik w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%." />
+  <String Id="HelpCloseButton" Value="&amp;Zamknij" />
+  <String Id="InstallAcceptCheckbox" Value="&amp;Zgadzam się na warunki licencji" />
+  <String Id="InstallInstallButton" Value="&amp;Zainstaluj" />
+  <String Id="InstallCloseButton" Value="&amp;Zamknij" />
+  <String Id="ProgressHeader" Value="Postęp instalacji" />
+  <String Id="ProgressLabel" Value="Przetwarzanie:" />
+  <String Id="OverallProgressPackageText" Value="Trwa inicjowanie..." />
+  <String Id="ProgressCancelButton" Value="&amp;Anuluj" />
+  <String Id="ModifyHeader" Value="Zmodyfikuj instalatora" />
+  <String Id="ModifyRepairButton" Value="&amp;Napraw" />
+  <String Id="ModifyUninstallButton" Value="&amp;Odinstaluj" />
+  <String Id="ModifyCloseButton" Value="&amp;Zamknij" />
+  <String Id="SuccessRepairHeader" Value="Pomyślnie ukończono naprawę" />
+  <String Id="SuccessUninstallHeader" Value="Pomyślnie ukończono operację odinstalowania" />
+  <String Id="SuccessInstallHeader" Value="Pomyślnie ukończono instalację" />
+  <String Id="SuccessHeader" Value="Instalacja przebiegła pomyślnie" />
+  <String Id="SuccessLaunchButton" Value="&amp;Uruchom" />
+  <String Id="SuccessRestartText" Value="Aby korzystać z oprogramowania, należy ponownie uruchomić komputer." />
+  <String Id="SuccessRestartButton" Value="&amp;Uruchom ponownie" />
+  <String Id="SuccessCloseButton" Value="&amp;Zamknij" />
+  <String Id="FailureHeader" Value="Instalacja nie powiodła się" />
+  <String Id="FailureInstallHeader" Value="Konfiguracja nie powiodła się" />
+  <String Id="FailureUninstallHeader" Value="Operacja odinstalowania nie powiodła się" />
+  <String Id="FailureRepairHeader" Value="Naprawa nie powiodła się" />
+  <String Id="FailureHyperlinkLogText" Value="Jeden lub więcej problemów spowodował niepowodzenie instalacji. Napraw błędy, a następnie uruchom ponownie instalację. Aby uzyskać więcej informacji zobacz &lt;a href=&quot;#&quot;&gt;plik dziennika&lt;/a&gt;." />
+  <String Id="FailureRestartText" Value="Należy ponownie uruchomić komputer, aby dokończyć wycofywanie oprogramowania." />
+  <String Id="FailureRestartButton" Value="&amp;Uruchom ponownie" />
+  <String Id="FailureCloseButton" Value="&amp;Zamknij" />
+  <String Id="FilesInUseHeader" Value="Pliki w użyciu" />
+  <String Id="FilesInUseLabel" Value="Następujące aplikacje korzystają z plików, które muszą zostać zaktualizowane:" />
+  <String Id="FilesInUseCloseRadioButton" Value="Zamknij &amp;aplikacje i spróbuj je ponownie uruchomić." />
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Nie zamykaj aplikacji. Będzie konieczne ponowne uruchomienie." />
+  <String Id="FilesInUseOkButton" Value="&amp;OK" />
+  <String Id="FilesInUseCancelButton" Value="&amp;Anuluj" />
 
-/passive | /quiet — wyświetla minimalny interfejs użytkownika bez monitów albo nie wyświetla żadnego interfejsu użytkownika ani monitów
-.
-   Domyślnie jest wyświetlany interfejs użytkownika oraz wszystkie monity.
-
-/norestart  — pomija próby ponownego uruchomienia. Domyślnie interfejs użytkownika wyświetla monit przed ponownym uruchomieniem.
-/log log.txt — tworzy dziennik w określonym pliku. Domyślnie plik dziennika jest tworzony w katalogu %TEMP%.</String>
-  <String Id="HelpCloseButton">&amp;Zamknij</String>
-  <String Id="InstallAcceptCheckbox">&amp;Zgadzam się na warunki licencji</String>
-  <String Id="InstallInstallButton">&amp;Zainstaluj</String>
-  <String Id="InstallCloseButton">&amp;Zamknij</String>
-  <String Id="ProgressHeader">Postęp instalacji</String>
-  <String Id="ProgressLabel">Przetwarzanie:</String>
-  <String Id="OverallProgressPackageText">Trwa inicjowanie...</String>
-  <String Id="ProgressCancelButton">&amp;Anuluj</String>
-  <String Id="ModifyHeader">Zmodyfikuj instalatora</String>
-  <String Id="ModifyRepairButton">&amp;Napraw</String>
-  <String Id="ModifyUninstallButton">&amp;Odinstaluj</String>
-  <String Id="ModifyCloseButton">&amp;Zamknij</String>
-  <String Id="SuccessRepairHeader">Pomyślnie ukończono naprawę</String>
-  <String Id="SuccessUninstallHeader">Pomyślnie ukończono operację odinstalowania</String>
-  <String Id="SuccessInstallHeader">Pomyślnie ukończono instalację</String>
-  <String Id="SuccessHeader">Instalacja przebiegła pomyślnie</String>
-  <String Id="SuccessLaunchButton">&amp;Uruchom</String>
-  <String Id="SuccessRestartText">Aby korzystać z oprogramowania, należy ponownie uruchomić komputer.</String>
-  <String Id="SuccessRestartButton">&amp;Uruchom ponownie</String>
-  <String Id="SuccessCloseButton">&amp;Zamknij</String>
-  <String Id="FailureHeader">Instalacja nie powiodła się</String>
-  <String Id="FailureInstallHeader">Konfiguracja nie powiodła się</String>
-  <String Id="FailureUninstallHeader">Operacja odinstalowania nie powiodła się</String>
-  <String Id="FailureRepairHeader">Naprawa nie powiodła się</String>
-  <String Id="FailureHyperlinkLogText">Jeden lub więcej problemów spowodował niepowodzenie instalacji. Napraw błędy, a następnie uruchom ponownie instalację. Aby uzyskać więcej informacji zobacz &lt;a href="#"&gt;plik dziennika&lt;/a&gt;.</String>
-  <String Id="FailureRestartText">Należy ponownie uruchomić komputer, aby dokończyć wycofywanie oprogramowania.</String>
-  <String Id="FailureRestartButton">&amp;Uruchom ponownie</String>
-  <String Id="FailureCloseButton">&amp;Zamknij</String>
-  <String Id="FilesInUseHeader">Pliki w użyciu</String>
-  <String Id="FilesInUseLabel">Następujące aplikacje korzystają z plików, które muszą zostać zaktualizowane:</String>
-  <String Id="FilesInUseCloseRadioButton">Zamknij &amp;aplikacje i spróbuj je ponownie uruchomić.</String>
-  <String Id="FilesInUseDontCloseRadioButton">&amp;Nie zamykaj aplikacji. Będzie konieczne ponowne uruchomienie.</String>
-  <String Id="FilesInUseOkButton">&amp;OK</String>
-  <String Id="FilesInUseCancelButton">&amp;Anuluj</String>
-
-  <String Id="Welcome">Witamy w instalatorze produktu [WixBundleName].</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;postanowienia licencyjne&lt;/a&gt; i &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;oświadczenie o ochronie prywatności&lt;/a&gt;.</String>
+  <String Id="Welcome" Value="Witamy w instalatorze produktu [WixBundleName]." />
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;postanowienia licencyjne&lt;/a&gt; i &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;oświadczenie o ochronie prywatności&lt;/a&gt;." />
 </WixLocalization>
