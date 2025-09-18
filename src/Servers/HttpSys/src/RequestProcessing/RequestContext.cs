@@ -238,7 +238,6 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         var requestId = PinsReleased ? Request.RequestId : RequestId;
 
         SecPkgContext_CipherInfo cipherInfo = default;
-        uint bytesReturned = 0;
 
         var statusCode = HttpApi.HttpGetRequestProperty(
             requestQueueHandle: Server.RequestQueue.Handle,
@@ -248,7 +247,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
             qualifierSize: 0,
             output: &cipherInfo,
             outputSize: (uint)sizeof(SecPkgContext_CipherInfo),
-            bytesReturned: (IntPtr)(&bytesReturned),
+            bytesReturned: IntPtr.Zero,
             overlapped: IntPtr.Zero);
 
         if (statusCode is ErrorCodes.ERROR_SUCCESS)
