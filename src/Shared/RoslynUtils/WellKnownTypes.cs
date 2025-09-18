@@ -19,6 +19,7 @@ internal class WellKnownTypes
 
     private readonly INamedTypeSymbol?[] _lazyWellKnownTypes;
     private readonly Compilation _compilation;
+    private readonly INamedTypeSymbol _missingTypeSymbol;
 
     static WellKnownTypes()
     {
@@ -51,6 +52,7 @@ internal class WellKnownTypes
     {
         _lazyWellKnownTypes = new INamedTypeSymbol?[WellKnownTypeData.WellKnownTypeNames.Length];
         _compilation = compilation;
+        _missingTypeSymbol = compilation.GetTypeByMetadataName(typeof(MissingType).FullName!)!;
     }
 
     public INamedTypeSymbol Get(SpecialType type)
@@ -74,11 +76,7 @@ internal class WellKnownTypes
 
     private INamedTypeSymbol GetAndCache(int index)
     {
-        var result = GetTypeByMetadataNameInTargetAssembly(WellKnownTypeData.WellKnownTypeNames[index]);
-        if (result == null)
-        {
-            throw new InvalidOperationException($"Failed to resolve well-known type '{WellKnownTypeData.WellKnownTypeNames[index]}'.");
-        }
+        var result = GetTypeByMetadataNameInTargetAssembly(WellKnownTypeData.WellKnownTypeNames[index]) ?? _missingTypeSymbol;
         Interlocked.CompareExchange(ref _lazyWellKnownTypes[index], result, null);
 
         // GetTypeByMetadataName should always return the same instance for a name.
@@ -159,4 +157,6 @@ internal class WellKnownTypes
         }
         return false;
     }
+
+    internal class MissingType { }
 }
