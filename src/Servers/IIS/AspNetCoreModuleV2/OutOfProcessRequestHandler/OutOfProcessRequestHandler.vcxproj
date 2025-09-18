@@ -4,6 +4,7 @@
     <ProjectGuid>{7F87406C-A3C8-4139-A68D-E4C344294A67}</ProjectGuid>
     <RootNamespace>OutOfProcessRequestHandler</RootNamespace>
     <ProjectName>OutOfProcessRequestHandler</ProjectName>
+    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
