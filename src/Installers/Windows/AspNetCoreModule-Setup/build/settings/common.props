@@ -15,7 +15,6 @@
 
   <PropertyGroup>
     <CharacterSet>Unicode</CharacterSet>
-    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
 
   <!--
