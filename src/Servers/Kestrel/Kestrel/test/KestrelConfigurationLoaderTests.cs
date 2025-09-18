@@ -776,6 +776,7 @@ public class KestrelConfigurationLoaderTests
 
     [Theory]
     [MemberData(nameof(GetPemCertificateTestData))]
+    [OSSkipCondition(OperatingSystems.MacOSX)]
     public void ConfigureEndpoint_CanLoadPemCertificates(string algorithmType, string keyPassword, string extension)
     {
         var serverOptions = CreateServerOptions();
