@@ -7,6 +7,7 @@
     <TargetName>aspnetcorev2</TargetName>
     <LinkIncremental>false</LinkIncremental>
     <OutDirName>AspNetCoreModuleShim</OutDirName>
+    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>

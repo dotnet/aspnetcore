@@ -4,6 +4,7 @@
     <ProjectGuid>{D57EA297-6DC2-4BC0-8C91-334863327863}</ProjectGuid>
     <RootNamespace>InProcessRequestHandler</RootNamespace>
     <ProjectName>InProcessRequestHandler</ProjectName>
+    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
