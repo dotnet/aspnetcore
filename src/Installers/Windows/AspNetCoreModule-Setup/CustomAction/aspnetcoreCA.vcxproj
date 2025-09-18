@@ -4,7 +4,6 @@
   <PropertyGroup>
     <ANCM-Setup Condition="'$(ANCM-Setup)' == ''">$(MSBuildThisFileDirectory)..\</ANCM-Setup>
     <EnableSourceLink>false</EnableSourceLink>
-    <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
 
   <PropertyGroup>
