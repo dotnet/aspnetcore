@@ -46,7 +46,7 @@ internal sealed class MsBuildProjectFinder
 
         if (!File.Exists(projectPath))
         {
-            throw new FileNotFoundException(SecretsHelpersResources.FormatError_ProjectPath_NotFound(projectPath));
+            throw new FileNotFoundException(SecretsHelpersResources.FormatError_File_NotFound(projectPath));
         }
 
         return projectPath;
