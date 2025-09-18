@@ -1,0 +1,52 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="Caption" Value="Installazione di [WixBundleName]" />
+  <String Id="Title" Value="[BundleNameShort]" />
+  <String Id="SubTitle" Value="[BundleNameSub]" />
+  <String Id="InstallVersion" Value="Versione [WixBundleVersion]" />
+  <String Id="ConfirmCancelMessage" Value="Annullare?" />
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Versione precedente" />
+  <String Id="HelpHeader" Value="Guida all'installazione" />
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installa, ripara, disinstalla o crea una copia locale completa del bundle nella directory. L'opzione predefinita è install. /passive | /quiet - visualizza un'interfaccia utente minima senza prompt oppure non visualizza alcuna interfaccia utente né prompt. Per impostazione predefinita, viene visualizzata l'intera interfaccia utente e tutti i prompt. /norestart - annulla qualsiasi tentativo di riavvio. Per impostazione predefinita, l'interfaccia utente visualizza una richiesta prima del riavvio. /log log.txt - registra il log in un file specifico. Per impostazione predefinita, viene creato un file di log in %TEMP%." />
+  <String Id="HelpCloseButton" Value="&amp;Chiudi" />
+  <String Id="InstallAcceptCheckbox" Value="&amp;Accetto i termini e le condizioni di licenza" />
+  <String Id="InstallInstallButton" Value="&amp;Installa" />
+  <String Id="InstallCloseButton" Value="&amp;Chiudi" />
+  <String Id="ProgressHeader" Value="Stato installazione" />
+  <String Id="ProgressLabel" Value="Elaborazione di:" />
+  <String Id="OverallProgressPackageText" Value="Inizializzazione in corso..." />
+  <String Id="ProgressCancelButton" Value="&amp;Annulla" />
+  <String Id="ModifyHeader" Value="Modifica installazione" />
+  <String Id="ModifyRepairButton" Value="&amp;Ripristina" />
+  <String Id="ModifyUninstallButton" Value="&amp;Disinstalla" />
+  <String Id="ModifyCloseButton" Value="&amp;Chiudi" />
+  <String Id="SuccessRepairHeader" Value="Riparazione completata correttamente" />
+  <String Id="SuccessUninstallHeader" Value="Disinstallazione completata correttamente" />
+  <String Id="SuccessInstallHeader" Value="Installazione completata correttamente" />
+  <String Id="SuccessHeader" Value="Installazione completata" />
+  <String Id="SuccessLaunchButton" Value="&amp;Avvia" />
+  <String Id="SuccessRestartText" Value="È necessario riavviare il computer prima di utilizzare il software." />
+  <String Id="SuccessRestartButton" Value="&amp;Riavvia" />
+  <String Id="SuccessCloseButton" Value="&amp;Chiudi" />
+  <String Id="FailureHeader" Value="Installazione non riuscita" />
+  <String Id="FailureInstallHeader" Value="Installazione non riuscita" />
+  <String Id="FailureUninstallHeader" Value="Disinstallazione non riuscita" />
+  <String Id="FailureRepairHeader" Value="Riparazione non riuscita" />
+  <String Id="FailureHyperlinkLogText" Value="Installazione non riuscita a causa di uno o più problemi. Risolvere i problemi e ritentare l'installazione. Per ulteriori informazioni, vedere il &lt;a href=&quot;#&quot;&gt;file di log&lt;/a&gt;." />
+  <String Id="FailureRestartText" Value="È necessario riavviare il computer per completare il rollback del software." />
+  <String Id="FailureRestartButton" Value="&amp;Riavvia" />
+  <String Id="FailureCloseButton" Value="&amp;Chiudi" />
+  <String Id="FilesInUseHeader" Value="File in uso" />
+  <String Id="FilesInUseLabel" Value="Le applicazioni seguenti usano file che necessitano di aggiornamento:" />
+  <String Id="FilesInUseCloseRadioButton" Value="Chiudere le &amp;applicazioni e provare a riavviarle." />
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Non chiudere le applicazioni; sarà necessario riavviare il sistema" />
+  <String Id="FilesInUseOkButton" Value="&amp;OK" />
+  <String Id="FilesInUseCancelButton" Value="&amp;Annulla" />
+
+  <!-- Custom UI strings -->
+  <String Id="Welcome" Value="Installazione di [WixBundleName]." />
+  <String Id="InstallResetIIS" Value="Al termine dell'installazione, riavviare IIS. È possibile trovare altre informazioni &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;qui&lt;/a&gt;." />
+  <String Id="InstallNoIIS" Value="IIS non è abilitato su questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Altre informazioni &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;qui&lt;/a&gt;." />
+  <String Id="EulaPrivacy" Value="&lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;Condizioni di licenza&lt;/a&gt; e &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;informativa sulla privacy&lt;/a&gt; di [WixBundleName]." />
+  <String Id="ModifyResetIIS" Value="Al termine dell'installazione, riavviare IIS. È possibile trovare altre informazioni &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;qui&lt;/a&gt;." />
+  <String Id="ModifyNoIIS" Value="IIS non è abilitato su questo computer. Se si intende eseguire applicazioni ASP.NET Core con IIS, è necessario installare IIS prima di eseguire questo programma di installazione. Altre informazioni &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;qui&lt;/a&gt;." />
+</WixLocalization>
