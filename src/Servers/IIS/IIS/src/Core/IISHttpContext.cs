@@ -420,29 +420,24 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
     private unsafe TlsCipherSuite? GetTlsCipherSuite()
     {
-        var size = sizeof(SecPkgContext_CipherInfo);
-        var buffer = new byte[size];
+        SecPkgContext_CipherInfo cipherInfo = default;
 
-        fixed (byte* pBuffer = buffer)
+        var statusCode = NativeMethods.HttpQueryRequestProperty(
+            RequestId,
+            (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+            qualifier: null,
+            qualifierSize: 0,
+            output: &cipherInfo,
+            outputSize: (uint)sizeof(SecPkgContext_CipherInfo),
+            bytesReturned: null,
+            overlapped: IntPtr.Zero);
+
+        if (statusCode == NativeMethods.HR_OK)
         {
-            var statusCode = NativeMethods.HttpQueryRequestProperty(
-                RequestId,
-                (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
-                qualifier: null,
-                qualifierSize: 0,
-                (void*)pBuffer,
-                (uint)buffer.Length,
-                bytesReturned: null,
-                IntPtr.Zero);
-
-            if (statusCode == NativeMethods.HR_OK)
-            {
-                var cipherInfo = Marshal.PtrToStructure<SecPkgContext_CipherInfo>((IntPtr)pBuffer);
-                return (TlsCipherSuite)cipherInfo.dwCipherSuite;
-            }
-
-            return default;
+            return (TlsCipherSuite)cipherInfo.dwCipherSuite;
         }
+
+        return default;
     }
 
     private unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()
