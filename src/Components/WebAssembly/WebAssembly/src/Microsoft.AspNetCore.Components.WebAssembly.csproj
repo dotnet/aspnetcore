@@ -24,6 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\HotReloadManager.cs" LinkBase="HotReload" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\BrowserNavigationManagerInterop.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\PullFromJSDataStream.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\TransmitDataStreamToJS.cs" />
