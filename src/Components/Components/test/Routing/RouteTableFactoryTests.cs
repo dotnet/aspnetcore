@@ -1204,6 +1204,52 @@ public class RouteTableFactoryTests
         Assert.Empty(result.RouteValues);
     }
 
+    [Fact]
+    public void ProcessParameters_WithValidTemplate_WorksNormally()
+    {
+        // This test verifies that ProcessParameters continues to work normally
+        // for valid templates after the hot reload fix.
+
+        // Arrange - Create route data with a valid template
+        var componentType = typeof(TestComponentWithRoute);
+        var validTemplate = "/test-route";
+        var routeValues = new Dictionary<string, object> { { "testParam", "testValue" } };
+        var routeData = new RouteData(componentType, routeValues)
+        {
+            Template = validTemplate
+        };
+
+        // Act - Process the route data with the valid template
+        var result = RouteTable.ProcessParameters(routeData);
+
+        // Assert - Should work normally and process the parameters
+        Assert.NotNull(result);
+        Assert.Equal(componentType, result.PageType);
+        Assert.Equal(validTemplate, result.Template);
+        Assert.Equal("testValue", result.RouteValues["testParam"]);
+    }
+
+    [Fact]
+    public void ProcessParameters_WithNullTemplate_ReturnsOriginalRouteData()
+    {
+        // This test verifies that ProcessParameters continues to work normally
+        // when Template is null (existing behavior).
+
+        // Arrange - Create route data with null template
+        var componentType = typeof(TestComponentWithRoute);
+        var routeValues = new Dictionary<string, object> { { "testParam", "testValue" } };
+        var routeData = new RouteData(componentType, routeValues)
+        {
+            Template = null
+        };
+
+        // Act - Process the route data with null template
+        var result = RouteTable.ProcessParameters(routeData);
+
+        // Assert - Should return the original route data unchanged
+        Assert.Same(routeData, result);
+    }
+
     [Route("/test-route")]
     public class TestComponentWithRoute : ComponentBase { }
 }
