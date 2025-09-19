@@ -6,7 +6,6 @@ using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using Microsoft.AspNetCore.Server.HttpSys.NativeInterop.Types;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Windows.Win32;

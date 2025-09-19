@@ -3,7 +3,7 @@
 
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.HttpSys.NativeInterop.Types;
+namespace Microsoft.AspNetCore.HttpSys.Internal;
 
 // From Schannel.h
 [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
