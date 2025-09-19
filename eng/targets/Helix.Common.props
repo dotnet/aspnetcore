@@ -29,7 +29,7 @@
       <!-- aspnetcore-ci[-official] (ci.yml) -->
       <!-- aspnetcore-quarantined-pr (quarantined-pr.yml) -->
       <ItemGroup>
-        <HelixAvailableTargetQueue Include="Ubuntu.2004.Amd64.Open" Platform="Linux" />
+        <HelixAvailableTargetQueue Include="Ubuntu.2204.Amd64.Open" Platform="Linux" />
         <HelixAvailableTargetQueue Include="OSX.15.Amd64.Open" Platform="OSX" />
         <HelixAvailableTargetQueue Include="Windows.Amd64.VS2022.Pre.Open" Platform="Windows" />
       </ItemGroup>
