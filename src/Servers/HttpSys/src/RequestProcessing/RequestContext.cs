@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
@@ -217,6 +218,45 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
         {
             // RequestQueueHandle may have been closed
         }
+    }
+
+    /// <summary>
+    /// Gets TLS cipher suite used for the request, if supported by the OS and http.sys.
+    /// </summary>
+    /// <returns>
+    /// null, if query of TlsCipherSuite is not supported or the query failed.
+    /// TlsCipherSuite value, if query is successful.
+    /// </returns>
+    internal unsafe TlsCipherSuite? GetTlsCipherSuite()
+    {
+        if (!HttpApi.SupportsQueryTlsCipherInfo)
+        {
+            return default;
+        }
+
+        var requestId = PinsReleased ? Request.RequestId : RequestId;
+
+        SecPkgContext_CipherInfo cipherInfo = default;
+
+        var statusCode = HttpApi.HttpGetRequestProperty(
+            requestQueueHandle: Server.RequestQueue.Handle,
+            requestId,
+            propertyId: (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+            qualifier: null,
+            qualifierSize: 0,
+            output: &cipherInfo,
+            outputSize: (uint)sizeof(SecPkgContext_CipherInfo),
+            bytesReturned: IntPtr.Zero,
+            overlapped: IntPtr.Zero);
+
+        if (statusCode is ErrorCodes.ERROR_SUCCESS)
+        {
+            return checked((TlsCipherSuite)cipherInfo.dwCipherSuite);
+        }
+
+        // OS supports querying TlsCipherSuite, but request failed.
+        Log.QueryTlsCipherSuiteError(Logger, requestId, statusCode);
+        return null;
     }
 
     /// <summary>

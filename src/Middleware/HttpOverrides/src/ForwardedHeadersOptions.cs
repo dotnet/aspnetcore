@@ -13,6 +13,10 @@ namespace Microsoft.AspNetCore.Builder;
 /// </summary>
 public class ForwardedHeadersOptions
 {
+    // Backing dual list that keeps the obsolete and new types in sync.
+    // Once the obsolete IList<IPNetwork> property is removed this can be changed to a simple List<IPNetwork>.
+    private readonly DualIPNetworkList _knownNetworks = new();
+
     /// <summary>
     /// Gets or sets the header used to retrieve the originating client IP. Defaults to the value specified by
     /// <see cref="ForwardedHeadersDefaults.XForwardedForHeaderName"/>.
@@ -87,12 +91,12 @@ public class ForwardedHeadersOptions
     /// Obsolete, please use <see cref="KnownIPNetworks"/> instead
     /// </summary>
     [Obsolete("Please use KnownIPNetworks instead. For more information, visit https://aka.ms/aspnet/deprecate/005.", DiagnosticId = "ASPDEPR005")]
-    public IList<AspNetIPNetwork> KnownNetworks { get; } = new List<AspNetIPNetwork>() { new(IPAddress.Loopback, 8) };
+    public IList<AspNetIPNetwork> KnownNetworks => _knownNetworks;
 
     /// <summary>
     /// Address ranges of known proxies to accept forwarded headers from.
     /// </summary>
-    public IList<IPNetwork> KnownIPNetworks { get; } = new List<IPNetwork>() { new(IPAddress.Loopback, 8) };
+    public IList<IPNetwork> KnownIPNetworks => _knownNetworks;
 
     /// <summary>
     /// The allowed values from x-forwarded-host. If the list is empty then all hosts are allowed.
