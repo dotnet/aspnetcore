@@ -4,6 +4,22 @@
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 
+// Internal helpers (not exported) for narrowing and status normalization
+function isError(u: unknown): u is Error {
+    return u instanceof Error;
+}
+function getStatus(u: unknown): number | undefined {
+    if (typeof u !== "object" || u === null) { return undefined; }
+    const rec = u as Record<string, unknown>;
+    const raw = rec["statusCode"] ?? rec["status"];
+    if (typeof raw === "number") { return raw; }
+    if (typeof raw === "string") {
+        const n = parseInt(raw, 10);
+        return Number.isNaN(n) ? undefined : n;
+    }
+    return undefined;
+}
+
 /** @private */
 export class AccessTokenHttpClient extends HttpClient {
     private _innerClient: HttpClient;
@@ -25,14 +41,47 @@ export class AccessTokenHttpClient extends HttpClient {
             this._accessToken = await this._accessTokenFactory();
         }
         this._setAuthorizationHeader(request);
-        const response = await this._innerClient.send(request);
 
-        if (allowRetry && response.statusCode === 401 && this._accessTokenFactory) {
-            this._accessToken = await this._accessTokenFactory();
-            this._setAuthorizationHeader(request);
-            return await this._innerClient.send(request);
+        try {
+            const response = await this._innerClient.send(request);
+
+            if (allowRetry && this._accessTokenFactory && response.statusCode === 401) {
+                return await this._refreshTokenAndRetry(request, response);
+            }
+            return response;
+        } catch (err: unknown) {
+            if (!allowRetry || !this._accessTokenFactory) {
+                throw err;
+            }
+            if (!isError(err)) {
+                throw err;
+            }
+            const status = getStatus(err);
+            if (status === 401) {
+                return await this._refreshTokenAndRetry(request, err);
+            }
+            throw err;
         }
-        return response;
+    }
+
+    private async _refreshTokenAndRetry(request: HttpRequest, original: HttpResponse | Error): Promise<HttpResponse> {
+        if (!this._accessTokenFactory) {
+            if (original instanceof HttpResponse) {
+                return original;
+            }
+            throw original;
+        }
+
+        const newToken = await this._accessTokenFactory();
+        if (!newToken) {
+            if (original instanceof HttpResponse) {
+                return original;
+            }
+            throw original;
+        }
+        this._accessToken = newToken;
+        this._setAuthorizationHeader(request);
+        return await this._innerClient.send(request);
     }
 
     private _setAuthorizationHeader(request: HttpRequest) {
