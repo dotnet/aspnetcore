@@ -8,7 +8,7 @@ parameters:
   CeapexPat: $(dn-bot-ceapex-package-r) # PAT for the loc AzDO instance https://dev.azure.com/ceapex
   GithubPat: $(BotAccount-dotnet-bot-repo-PAT)
 
-  SourcesDirectory: $(Build.SourcesDirectory)
+  SourcesDirectory: $(System.DefaultWorkingDirectory)
   CreatePr: true
   AutoCompletePr: false
   ReusePr: true
@@ -63,7 +63,7 @@ jobs:
     - ${{ if ne(parameters.SkipLocProjectJsonGeneration, 'true') }}:
       - task: Powershell@2
         inputs:
-          filePath: $(Build.SourcesDirectory)/eng/common/generate-locproject.ps1
+          filePath: $(System.DefaultWorkingDirectory)/eng/common/generate-locproject.ps1
           arguments: $(_GenerateLocProjectArguments)
         displayName: Generate LocProject.json
         condition: ${{ parameters.condition }}
@@ -106,7 +106,7 @@ jobs:
     - task: 1ES.PublishBuildArtifacts@1
       displayName: Publish LocProject.json
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/eng/Localize/'
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/eng/Localize/'
         PublishLocation: Container
         ArtifactName: Loc
       condition: ${{ parameters.condition }}

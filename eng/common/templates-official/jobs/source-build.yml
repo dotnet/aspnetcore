@@ -21,6 +21,9 @@ parameters:
   # one job runs on 'defaultManagedPlatform'.
   platforms: []
 
+  # Optional list of directories to ignore for component governance scans.
+  cgIgnoreDirectories: []
+
   # If set to true and running on a non-public project,
   # Internal nuget and blob storage locations will be enabled.
   # This is not enabled by default because many repositories do not need internal sources
@@ -44,6 +47,7 @@ jobs:
     parameters:
       jobNamePrefix: ${{ parameters.jobNamePrefix }}
       platform: ${{ platform }}
+      cgIgnoreDirectories: ${{ parameters.cgIgnoreDirectories }}
       enableInternalSources: ${{ parameters.enableInternalSources }}
 
 - ${{ if eq(length(parameters.platforms), 0) }}:
@@ -51,4 +55,5 @@ jobs:
     parameters:
       jobNamePrefix: ${{ parameters.jobNamePrefix }}
       platform: ${{ parameters.defaultManagedPlatform }}
+      cgIgnoreDirectories: ${{ parameters.cgIgnoreDirectories }}
       enableInternalSources: ${{ parameters.enableInternalSources }}
