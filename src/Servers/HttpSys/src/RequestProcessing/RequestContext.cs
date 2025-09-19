@@ -251,7 +251,7 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
 
         if (statusCode is ErrorCodes.ERROR_SUCCESS)
         {
-            return (TlsCipherSuite)cipherInfo.dwCipherSuite;
+            return checked((TlsCipherSuite)cipherInfo.dwCipherSuite);
         }
 
         // OS supports querying TlsCipherSuite, but request failed.
