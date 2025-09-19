@@ -433,7 +433,7 @@ internal abstract partial class IISHttpContext : NativeRequestContext, IThreadPo
 
         if (statusCode == NativeMethods.HR_OK)
         {
-            return (TlsCipherSuite)cipherInfo.dwCipherSuite;
+            return checked((TlsCipherSuite)cipherInfo.dwCipherSuite);
         }
 
         return default;
