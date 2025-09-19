@@ -65,13 +65,6 @@ export class AccessTokenHttpClient extends HttpClient {
     }
 
     private async _refreshTokenAndRetry(request: HttpRequest, original: HttpResponse | Error): Promise<HttpResponse> {
-        if (!this._accessTokenFactory) {
-            if (original instanceof HttpResponse) {
-                return original;
-            }
-            throw original;
-        }
-
         const newToken = await this._accessTokenFactory();
         if (!newToken) {
             if (original instanceof HttpResponse) {
