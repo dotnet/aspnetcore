@@ -4,7 +4,7 @@
 import { HeaderNames } from "./HeaderNames";
 import { HttpClient, HttpRequest, HttpResponse } from "./HttpClient";
 
-// Internal helpers (not exported) for narrowing and status normalization
+// Internal helpers for Error type guarding and status normalization
 function isError(u: unknown): u is Error {
     return u instanceof Error;
 }
