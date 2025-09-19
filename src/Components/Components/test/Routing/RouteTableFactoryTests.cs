@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using System.Reflection;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
@@ -1161,95 +1160,4 @@ public class RouteTableFactoryTests
     [Route("/ComponentWithExcludeFromInteractiveRoutingAttribute")]
     [ExcludeFromInteractiveRouting]
     public class ComponentWithExcludeFromInteractiveRoutingAttribute : ComponentBase { }
-
-    [Fact]
-    public void CreateEntry_ThrowsForNonExistentTemplate()
-    {
-        // This test reproduces the hot reload issue where stale route data
-        // with an old template path is passed to CreateEntry after hot reload
-        // has updated the component to use a new template path.
-
-        // Arrange - Create a component type with a route
-        var componentType = typeof(TestComponentWithRoute);
-
-        // Act & Assert - Attempt to create an entry with a template that doesn't exist
-        // This should throw an InvalidOperationException with a descriptive message
-        var exception = Assert.Throws<InvalidOperationException>(() => 
-            RouteTableFactory.CreateEntry(componentType, "/non-existent-template"));
-
-        Assert.Contains("Unable to find the provided template '/non-existent-template'", exception.Message);
-    }
-
-    [Fact]
-    public void ProcessParameters_HandlesStaleTemplateGracefully()
-    {
-        // This test verifies that RouteTable.ProcessParameters handles the hot reload
-        // scenario where stale route data with an old template is passed to it.
-
-        // Arrange - Create route data with a component type and a non-existent template
-        var componentType = typeof(TestComponentWithRoute);
-        var staleTemplate = "/non-existent-template";
-        var routeData = new RouteData(componentType, new Dictionary<string, object>())
-        {
-            Template = staleTemplate
-        };
-
-        // Act - Process the route data with the stale template
-        var result = RouteTable.ProcessParameters(routeData);
-
-        // Assert - Should not throw and should return the original route data
-        Assert.NotNull(result);
-        Assert.Equal(componentType, result.PageType);
-        Assert.Equal(staleTemplate, result.Template);
-        Assert.Empty(result.RouteValues);
-    }
-
-    [Fact]
-    public void ProcessParameters_WithValidTemplate_WorksNormally()
-    {
-        // This test verifies that ProcessParameters continues to work normally
-        // for valid templates after the hot reload fix.
-
-        // Arrange - Create route data with a valid template
-        var componentType = typeof(TestComponentWithRoute);
-        var validTemplate = "/test-route";
-        var routeValues = new Dictionary<string, object> { { "testParam", "testValue" } };
-        var routeData = new RouteData(componentType, routeValues)
-        {
-            Template = validTemplate
-        };
-
-        // Act - Process the route data with the valid template
-        var result = RouteTable.ProcessParameters(routeData);
-
-        // Assert - Should work normally and process the parameters
-        Assert.NotNull(result);
-        Assert.Equal(componentType, result.PageType);
-        Assert.Equal(validTemplate, result.Template);
-        Assert.Equal("testValue", result.RouteValues["testParam"]);
-    }
-
-    [Fact]
-    public void ProcessParameters_WithNullTemplate_ReturnsOriginalRouteData()
-    {
-        // This test verifies that ProcessParameters continues to work normally
-        // when Template is null (existing behavior).
-
-        // Arrange - Create route data with null template
-        var componentType = typeof(TestComponentWithRoute);
-        var routeValues = new Dictionary<string, object> { { "testParam", "testValue" } };
-        var routeData = new RouteData(componentType, routeValues)
-        {
-            Template = null
-        };
-
-        // Act - Process the route data with null template
-        var result = RouteTable.ProcessParameters(routeData);
-
-        // Assert - Should return the original route data unchanged
-        Assert.Same(routeData, result);
-    }
-
-    [Route("/test-route")]
-    public class TestComponentWithRoute : ComponentBase { }
 }

@@ -32,20 +32,9 @@ internal sealed class RouteTable(TreeRouter treeRouter)
     {
         if (endpointRouteData.Template != null)
         {
-            InboundRouteEntry? entry = null;
-            try
-            {
-                entry = _routeEntryCache.GetOrAdd(
-                    (endpointRouteData.PageType, endpointRouteData.Template),
-                    ((Type page, string template) key) => RouteTableFactory.CreateEntry(key.page, key.template));
-            }
-            catch (InvalidOperationException)
-            {
-                // This can happen during hot reload when the route template has been changed
-                // but there's still stale route data with the old template. In this case,
-                // we'll fall back to returning the original route data without processing.
-                return endpointRouteData;
-            }
+            var entry = _routeEntryCache.GetOrAdd(
+                (endpointRouteData.PageType, endpointRouteData.Template),
+                ((Type page, string template) key) => RouteTableFactory.CreateEntry(key.page, key.template));
 
             var routeValueDictionary = new RouteValueDictionary(endpointRouteData.RouteValues);
             foreach (var kvp in endpointRouteData.RouteValues)
