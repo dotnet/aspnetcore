@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.Net.Http;
+using System.Net.Mime;
 using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -1028,6 +1029,29 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                     Assert.Equal(JsonSchemaType.String, property.Value.Type);
                     Assert.Equal("date-time", property.Value.Format);
                 });
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiResponse_HandlesFileContentResultTypeResponse()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/filecontentresult", () => { return new FileContentResult([], MediaTypeNames.Application.Octet); })
+            .Produces<FileContentResult>(contentType: MediaTypeNames.Application.Octet);
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var operation = document.Paths["/filecontentresult"].Operations[HttpMethod.Post];
+            var responses = Assert.Single(operation.Responses);
+            var response = responses.Value;
+            Assert.True(response.Content.TryGetValue("application/octet-stream", out var mediaType));
+            var schema = mediaType.Schema;
+            Assert.Equal(JsonSchemaType.String, schema.Type);
+            Assert.Equal("binary", schema.Format);
         });
     }
 
