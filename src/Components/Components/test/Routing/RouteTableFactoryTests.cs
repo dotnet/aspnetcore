@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using System.Reflection;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
@@ -1160,4 +1161,49 @@ public class RouteTableFactoryTests
     [Route("/ComponentWithExcludeFromInteractiveRoutingAttribute")]
     [ExcludeFromInteractiveRouting]
     public class ComponentWithExcludeFromInteractiveRoutingAttribute : ComponentBase { }
+
+    [Fact]
+    public void CreateEntry_ThrowsForNonExistentTemplate()
+    {
+        // This test reproduces the hot reload issue where stale route data
+        // with an old template path is passed to CreateEntry after hot reload
+        // has updated the component to use a new template path.
+
+        // Arrange - Create a component type with a route
+        var componentType = typeof(TestComponentWithRoute);
+
+        // Act & Assert - Attempt to create an entry with a template that doesn't exist
+        // This should throw an InvalidOperationException with a descriptive message
+        var exception = Assert.Throws<InvalidOperationException>(() => 
+            RouteTableFactory.CreateEntry(componentType, "/non-existent-template"));
+
+        Assert.Contains("Unable to find the provided template '/non-existent-template'", exception.Message);
+    }
+
+    [Fact]
+    public void ProcessParameters_HandlesStaleTemplateGracefully()
+    {
+        // This test verifies that RouteTable.ProcessParameters handles the hot reload
+        // scenario where stale route data with an old template is passed to it.
+
+        // Arrange - Create route data with a component type and a non-existent template
+        var componentType = typeof(TestComponentWithRoute);
+        var staleTemplate = "/non-existent-template";
+        var routeData = new RouteData(componentType, new Dictionary<string, object>())
+        {
+            Template = staleTemplate
+        };
+
+        // Act - Process the route data with the stale template
+        var result = RouteTable.ProcessParameters(routeData);
+
+        // Assert - Should not throw and should return the original route data
+        Assert.NotNull(result);
+        Assert.Equal(componentType, result.PageType);
+        Assert.Equal(staleTemplate, result.Template);
+        Assert.Empty(result.RouteValues);
+    }
+
+    [Route("/test-route")]
+    public class TestComponentWithRoute : ComponentBase { }
 }
