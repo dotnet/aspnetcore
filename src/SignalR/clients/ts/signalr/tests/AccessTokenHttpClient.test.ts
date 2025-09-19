@@ -73,7 +73,7 @@ describe("AccessTokenHttpClient", () => {
             await client.get("http://example.com/prime");
             try {
                 await client.get("http://example.com/resource");
-                fail("expected to throw");
+                expect.fail("expected to throw");
             } catch (e: any) {
                 expect(e).toBeInstanceOf(HttpError);
                 expect(e.statusCode ?? e.status).toBe(status);
