@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
-using Microsoft.AspNetCore.Server.IIS.Core.Native;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
