@@ -172,7 +172,7 @@ describe("AccessTokenHttpClient", () => {
         let factoryCalls = 0;
         const client = new AccessTokenHttpClient(inner, () => {
             factoryCalls++;
-            return `token${factoryCalls}`; // Explicitly call send with allowRetry=false to ensure no retry is attempted.
+            return `token${factoryCalls}`; // Token factory returns a token string for each call.
         });
 
         const request: HttpRequest = { method: "GET", url: "http://example.com/resource" };
