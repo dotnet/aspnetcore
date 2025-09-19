@@ -25,7 +25,7 @@
     <Compile Include="$(IIS-Setup)iisca\wix5\iisca.wxs">
       <Link>iisca.wxs</Link>
     </Compile>
-    <EmbeddedResource Include="..\setupstrings.wxl">
+    <EmbeddedResource Include="..\LCID\1033\setupstrings.wxl">
       <Link>setupstrings.wxl</Link>
     </EmbeddedResource>
     <Content Include="$(IIS-Setup)include.wxi">
