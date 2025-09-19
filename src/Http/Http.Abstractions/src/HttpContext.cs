@@ -73,6 +73,15 @@ public abstract class HttpContext
     public abstract ISession Session { get; set; }
 
     /// <summary>
+    /// Gets or sets the <see cref="Endpoint"/> for the current request.
+    /// </summary>
+    /// <remarks>
+    /// The endpoint for a request is typically set by routing middleware. A request might not have
+    /// an endpoint if routing middleware hasn't run yet, or the request didn't match a route.
+    /// </remarks>
+    public abstract Endpoint? Endpoint { get; set; }
+
+    /// <summary>
     /// Aborts the connection underlying this request.
     /// </summary>
     public abstract void Abort();
@@ -90,7 +99,7 @@ public abstract class HttpContext
         public HttpContextFeatureDebugView Features => new HttpContextFeatureDebugView(_context.Features);
         public HttpRequest Request => _context.Request;
         public HttpResponse Response => _context.Response;
-        public Endpoint? Endpoint => _context.GetEndpoint();
+        public Endpoint? Endpoint => _context.Endpoint;
         public ConnectionInfo Connection => _context.Connection;
         public WebSocketManager WebSockets => _context.WebSockets;
         public ClaimsPrincipal User => _context.User;
