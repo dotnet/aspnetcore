@@ -63,7 +63,7 @@ public class UserStore<TUser, TRole, TContext> : UserStore<TUser, TRole, TContex
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TRole">The type representing a role.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for the user and role entities.</typeparam>
 public class UserStore<TUser, TRole, TContext, TKey> : UserStore<TUser, TRole, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserRole<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>, IdentityRoleClaim<TKey>>
     where TUser : IdentityUser<TKey>
     where TRole : IdentityRole<TKey>
@@ -84,7 +84,7 @@ public class UserStore<TUser, TRole, TContext, TKey> : UserStore<TUser, TRole, T
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TRole">The type representing a role.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for the user and role entities.</typeparam>
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
@@ -116,7 +116,7 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TRole">The type representing a role.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for the user and role entities.</typeparam>
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
