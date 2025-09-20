@@ -390,7 +390,7 @@ internal sealed class RoutePatternMatcher
                     StringComparison.OrdinalIgnoreCase);
                 }
 
-                if (indexOfLiteral == -1)
+                if (indexOfLiteral < 0)
                 {
                     // If we couldn't find this literal index, this segment cannot match
                     return false;
