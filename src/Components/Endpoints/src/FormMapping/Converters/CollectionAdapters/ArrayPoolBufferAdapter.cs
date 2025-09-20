@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Components.Endpoints.FormMapping;
 
@@ -17,7 +18,14 @@ internal abstract class ArrayPoolBufferAdapter<TCollection, TCollectionFactory, 
         {
             var newBuffer = ArrayPool<TElement>.Shared.Rent(buffer.Data.Length * 2);
             Array.Copy(buffer.Data, newBuffer, buffer.Data.Length);
+
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<TElement>())
+            {
+                buffer.Data.AsSpan(0, buffer.Count).Clear();
+            }
+
             ArrayPool<TElement>.Shared.Return(buffer.Data);
+
             buffer.Data = newBuffer;
         }
 
@@ -28,7 +36,14 @@ internal abstract class ArrayPoolBufferAdapter<TCollection, TCollectionFactory, 
     public static TCollection ToResult(PooledBuffer buffer)
     {
         var result = TCollectionFactory.ToResultCore(buffer.Data, buffer.Count);
+
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<TElement>())
+        {
+            buffer.Data.AsSpan(0, buffer.Count).Clear();
+        }
+
         ArrayPool<TElement>.Shared.Return(buffer.Data);
+
         return result;
     }
 

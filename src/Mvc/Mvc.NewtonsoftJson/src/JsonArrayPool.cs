@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using Newtonsoft.Json;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 
@@ -25,6 +26,11 @@ internal sealed class JsonArrayPool<T> : IArrayPool<T>
     public void Return(T[]? array)
     {
         ArgumentNullException.ThrowIfNull(array);
+
+        if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+        {
+            array.AsSpan().Clear();
+        }
 
         _inner.Return(array);
     }

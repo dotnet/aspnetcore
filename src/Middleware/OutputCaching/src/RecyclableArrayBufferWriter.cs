@@ -3,6 +3,7 @@
 
 using System.Buffers;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -32,10 +33,16 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
     public void Dispose()
     {
         var tmp = _buffer;
+        var count = _index;
         _index = 0;
         _buffer = Array.Empty<T>();
         if (tmp.Length != 0)
         {
+            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+            {
+                tmp.AsSpan(0, count).Clear();
+            }
+
             ArrayPool<T>.Shared.Return(tmp);
         }
     }
@@ -120,6 +127,11 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
             oldArray.AsSpan(0, _index).CopyTo(_buffer);
             if (oldArray.Length != 0)
             {
+                if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
+                {
+                    oldArray.AsSpan(0, _index).Clear();
+                }
+
                 ArrayPool<T>.Shared.Return(oldArray);
             }
         }
