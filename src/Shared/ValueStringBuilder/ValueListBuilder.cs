@@ -63,10 +63,12 @@ internal ref partial struct ValueListBuilder<T>
 
             if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
-                toReturn.AsSpan(0, _pos).Clear();
+                ArrayPool<T>.Shared.Return(toReturn, _pos);
             }
-
-            ArrayPool<T>.Shared.Return(toReturn);
+            else
+            {
+                ArrayPool<T>.Shared.Return(toReturn);
+            }
         }
     }
 
@@ -103,10 +105,12 @@ internal ref partial struct ValueListBuilder<T>
         {
             if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
-                toReturn.AsSpan(0, _pos).Clear();
+                ArrayPool<T>.Shared.Return(toReturn, _pos);
             }
-
-            ArrayPool<T>.Shared.Return(toReturn);
+            else
+            {
+                ArrayPool<T>.Shared.Return(toReturn);
+            }
         }
     }
 }

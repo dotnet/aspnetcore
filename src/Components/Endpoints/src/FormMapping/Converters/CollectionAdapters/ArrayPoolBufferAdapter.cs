@@ -21,10 +21,12 @@ internal abstract class ArrayPoolBufferAdapter<TCollection, TCollectionFactory, 
 
             if (RuntimeHelpers.IsReferenceOrContainsReferences<TElement>())
             {
-                buffer.Data.AsSpan(0, buffer.Count).Clear();
+                ArrayPool<TElement>.Shared.Return(buffer.Data, buffer.Count);
             }
-
-            ArrayPool<TElement>.Shared.Return(buffer.Data);
+            else
+            {
+                ArrayPool<TElement>.Shared.Return(buffer.Data);
+            }
 
             buffer.Data = newBuffer;
         }
@@ -39,10 +41,12 @@ internal abstract class ArrayPoolBufferAdapter<TCollection, TCollectionFactory, 
 
         if (RuntimeHelpers.IsReferenceOrContainsReferences<TElement>())
         {
-            buffer.Data.AsSpan(0, buffer.Count).Clear();
+            ArrayPool<TElement>.Shared.Return(buffer.Data, buffer.Count);
         }
-
-        ArrayPool<TElement>.Shared.Return(buffer.Data);
+        else
+        {
+            ArrayPool<TElement>.Shared.Return(buffer.Data);
+        }
 
         return result;
     }

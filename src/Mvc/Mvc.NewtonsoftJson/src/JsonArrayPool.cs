@@ -29,9 +29,11 @@ internal sealed class JsonArrayPool<T> : IArrayPool<T>
 
         if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
         {
-            array.AsSpan().Clear();
+            _inner.Return(array, array.Length);
         }
-
-        _inner.Return(array);
+        else
+        {
+            _inner.Return(array);
+        }
     }
 }

@@ -40,10 +40,12 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
         {
             if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
             {
-                tmp.AsSpan(0, count).Clear();
+                ArrayPool<T>.Shared.Return(tmp, count);
             }
-
-            ArrayPool<T>.Shared.Return(tmp);
+            else
+            {
+                ArrayPool<T>.Shared.Return(tmp);
+            }
         }
     }
 
@@ -129,10 +131,12 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
             {
                 if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
                 {
-                    oldArray.AsSpan(0, _index).Clear();
+                    ArrayPool<T>.Shared.Return(oldArray, _index);
                 }
-
-                ArrayPool<T>.Shared.Return(oldArray);
+                else
+                {
+                    ArrayPool<T>.Shared.Return(oldArray);
+                }
             }
         }
 

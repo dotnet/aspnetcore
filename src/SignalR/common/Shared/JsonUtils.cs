@@ -223,10 +223,12 @@ internal static class JsonUtils
             if (!typeof(T).IsPrimitive)
 #endif
             {
-                array.AsSpan().Clear();
+                _inner.Return(array, array.Length);
             }
-
-            _inner.Return(array);
+            else
+            {
+                _inner.Return(array);
+            }
         }
     }
 }
