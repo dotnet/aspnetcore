@@ -1,0 +1,82 @@
+﻿@using Microsoft.AspNetCore.Components.QuickGrid
+
+
+@if (RendererInfo.IsInteractive)
+{
+    <button id="finish-loading-button" @onclick="@(() => FinishLoading(200))">Finish loading</button>
+    <button id="start-loading-button" @onclick="@(() => StartNewAsyncLoad())">Start new load</button>
+
+    <br/>
+
+    <div id="async-container" style="height: 500px; overflow-y: auto;">
+        <QuickGrid @ref="asyncGrid" TGridItem="DataItem" ItemsProvider="GetItemsAsync" Virtualize="true" ItemSize="25">
+            <PropertyColumn Property="@(p => p.Id)" class="async-id">
+            </PropertyColumn>
+            <PropertyColumn Property="@(p => p.SecondNum)" class="async-second">
+                <PlaceholderTemplate>
+                    <strong class="async-placeholder">LOADING DATA</strong>
+                </PlaceholderTemplate>
+            </PropertyColumn>
+        </QuickGrid>
+    </div>
+
+
+
+}
+
+@code {
+    record DataItem(int Id, int SecondNum);
+    QuickGrid<DataItem> asyncGrid;
+
+    int asyncTotalItemCount = 200;
+    int asyncCancellationCount = 0;
+
+    TaskCompletionSource asyncTcs = new TaskCompletionSource();
+
+    private async ValueTask<GridItemsProviderResult<DataItem>> GetItemsAsync(GridItemsProviderRequest<DataItem> request)
+    {
+        var loadingTask = asyncTcs.Task;
+        var registration = request.CancellationToken.Register(() => CancelLoading(request.CancellationToken));
+
+        try
+        {
+            await loadingTask.WaitAsync(request.CancellationToken);
+
+            var items = Enumerable.Range(request.StartIndex, request.Count ?? 200)
+                .Select(i => new DataItem(i, i * 2))
+                .ToArray();
+
+            return GridItemsProviderResult.From(items, asyncTotalItemCount);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        finally
+        {
+            registration.Dispose();
+        }
+    }
+
+
+    void StartNewAsyncLoad()
+    {
+        asyncTcs = new TaskCompletionSource();
+        StateHasChanged();
+    }
+
+    void FinishLoading(int totalItemCount)
+    {
+        asyncTotalItemCount = totalItemCount;
+        asyncTcs.SetResult();
+        StateHasChanged();
+    }
+
+    void CancelLoading(System.Threading.CancellationToken cancellationToken)
+    {
+        asyncTcs.TrySetCanceled(cancellationToken);
+        asyncTcs = new TaskCompletionSource();
+        asyncCancellationCount++;
+        StateHasChanged();
+    }
+}
