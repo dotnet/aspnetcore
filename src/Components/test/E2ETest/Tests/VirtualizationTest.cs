@@ -573,6 +573,101 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         int GetPlaceholderCount() => Browser.FindElements(By.Id("async-placeholder")).Count;
     }
 
+    [Fact]
+    public void CanElevateEffectiveMaxItemCount_WhenOverscanExceedsMax()
+    {
+        Browser.MountTestComponent<VirtualizationLargeOverscan>();
+        var container = Browser.Exists(By.Id("virtualize-large-overscan"));
+        // Ensure we have an initial contiguous batch and the elevated effective max has kicked in (>= OverscanCount)
+        var indices = GetVisibleItemIndices();
+        Browser.True(() => indices.Count >= 200);
+
+        // Give focus so PageDown works
+        container.Click();
+
+        var js = (IJavaScriptExecutor)Browser;
+        var lastMaxIndex = -1;
+        var lastScrollTop = -1L;
+
+        // Check if we've reached (or effectively reached) the bottom
+        var scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+        var clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+        var scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        while (scrollTop + clientHeight < scrollHeight)
+        {
+            // Validate contiguity on the current page
+            Browser.True(() => IsCurrentViewContiguous(indices));
+
+            // Track progress in indices
+            var currentMax = indices.Max();
+            Assert.True(currentMax >= lastMaxIndex, $"Unexpected backward movement: previous max {lastMaxIndex}, current max {currentMax}.");
+            lastMaxIndex = currentMax;
+
+            // Send PageDown
+            container.SendKeys(Keys.PageDown);
+
+            // Wait for scrollTop to change (progress) to avoid infinite loop
+            var prevScrollTop = scrollTop;
+            Browser.True(() =>
+            {
+                var st = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+                if (st > prevScrollTop)
+                {
+                    lastScrollTop = st;
+                    return true;
+                }
+                return false;
+            });
+            scrollHeight = (long)js.ExecuteScript("return arguments[0].scrollHeight", container);
+            clientHeight = (long)js.ExecuteScript("return arguments[0].clientHeight", container);
+            scrollTop = (long)js.ExecuteScript("return arguments[0].scrollTop", container);
+        }
+
+        // Final contiguous assertion at bottom
+        Browser.True(() => IsCurrentViewContiguous());
+
+        // Helper: check visible items contiguous with no holes
+        bool IsCurrentViewContiguous(List<int> existingIndices = null)
+        {
+            var indices = existingIndices ?? GetVisibleItemIndices();
+            if (indices.Count == 0)
+            {
+                return false;
+            }
+
+            if (indices[^1] - indices[0] != indices.Count - 1)
+            {
+                return false;
+            }
+            for (var i = 1; i < indices.Count; i++)
+            {
+                if (indices[i] - indices[i - 1] != 1)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        List<int> GetVisibleItemIndices()
+        {
+            var elements = container.FindElements(By.CssSelector(".large-overscan-item"));
+            var list = new List<int>(elements.Count);
+            foreach (var el in elements)
+            {
+                var text = el.Text;
+                if (text.StartsWith("Item ", StringComparison.Ordinal))
+                {
+                    if (int.TryParse(text.AsSpan(5), NumberStyles.Integer, CultureInfo.InvariantCulture, out var value))
+                    {
+                        list.Add(value);
+                    }
+                }
+            }
+            return list;
+        }
+    }
+
     private string[] GetPeopleNames(IWebElement container)
     {
         var peopleElements = container.FindElements(By.CssSelector(".person span"));
