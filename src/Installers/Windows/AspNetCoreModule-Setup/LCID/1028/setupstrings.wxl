@@ -14,7 +14,7 @@
   <!--Custom errors for OOB Projects -->
 
   <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
-  <String Id="ConflictingProduct" Overridable="yes" Value="An incompatible product, [CONFLICTING_PRODUCT_NAME], is on this computer. Installation of [ProductName] cannot continue. To install this product, use Add/Remove Programs on the Control Panel to remove [CONFLICTING_PRODUCT_NAME]."/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="此電腦上有不相容的產品 [CONFLICTING_PRODUCT_NAME]。無法繼續安裝 [ProductName]。若要安裝此產品，請使用控制面板 上的新增/移除程式來移除 [CONFLICTING_PRODUCT_NAME]。"/>
   <String Id="AdminRequired" Overridable="yes" Value="需要系統管理員權限才能安裝 [ProductName]。"/>
   <String Id="IIS7Only" Overridable="yes" Value="需要 IIS 版本 7.0 才能使用 [ProductName]。"/>
   <String Id="IIS7OrGreater" Overridable="yes" Value="需要 IIS 版本 7.0 或更新版本才能安裝 [ProductName]。"/>
@@ -31,7 +31,7 @@
   <String Id="LaunchCondition_32BIT" Value="64 位元版本的 [ProductName] 無法安裝在 32 位元版本的 Microsoft Windows 上。"/>
   <String Id="LaunchCondition_64BIT" Value="32 位元版本的 [ProductName] 無法安裝在 64 位元版本的 Microsoft Windows 上。"/>
   <String Id="NetFX2OrGreaterRequired" Value="需要 Microsoft .NET Framework 版本 2.0 或更新版本才能安裝 [ProductName]。"/>
-  <String Id="NetFX35OrGreaterRequired" Value="Microsoft .NET Framework Version 3.5 or greater is required to install [ProductName]. Use 'Add Features' under the Server Manager to install Microsoft .Net Version 3.5."/>
+  <String Id="NetFX35OrGreaterRequired" Value="需要 Microsoft .NET Framework 版本 3.5 或更新版本才能安裝 [ProductName]。請使用伺服器管理員中的新增功能來安裝 Microsoft .NET 版本 3.5。"/>
   <String Id="NetFX4OrGreaterRequired" Value="需要 Microsoft .NET Framework 版本 4.0 或更新版本才能安裝 [ProductName]。"/>
   <String Id="NetFX20SP1IsRequired" Value="在安裝 [ProductName] 之前，請先安裝 Microsoft .NET Framework 版本 2.0 Service Pack 1 (或更新的 Service Pack)。"/>
   <String Id="WindowsUpdateEnabled" Value="Windows Update (wuauserv) 服務無法停用，此服務是安裝 [ProductName] 的必要條件。"/>

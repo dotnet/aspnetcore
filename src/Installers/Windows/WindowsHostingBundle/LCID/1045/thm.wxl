@@ -1,17 +1,17 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   
-  <String Id="Caption" Value="[WixBundleName] Setup"/>
+  <String Id="Caption" Value="[WixBundleName] — instalacja"/>
   
   <String Id="Title" Value="[BundleNameShort]"/>
   
   <String Id="SubTitle" Value="[BundleNameSub]"/>
   
-  <String Id="InstallVersion" Value="Version [WixBundleVersion]"/>
+  <String Id="InstallVersion" Value="Wersja [WixBundleVersion]"/>
   <String Id="ConfirmCancelMessage" Value="Czy na pewno chcesz anulować?"/>
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Poprzednia wersja"/>
   <String Id="HelpHeader" Value="Konfiguracja — Pomoc"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default. /passive | /quiet - displays minimal UI with no prompts or displays no UI and no prompts. By default UI and all prompts are displayed. /norestart - suppress any attempts to restart. By default UI will prompt before restart. /log log.txt - logs to a specific file. By default a log file is created in %TEMP%."/>
+  <String Id="HelpText" Value="/instaluj | /napraw | /odinstaluj | /układ [\[]katalog[\]] — instaluje, naprawia, odinstalowuje lub tworzy pełną lokalną kopię pakietu w katalogu. Instalacja jest domyślna. /pasywny | /spokojny — wyświetla minimalny interfejs użytkownika bez monitów lub nie wyświetla interfejsu użytkownika ani monitów. Domyślnie wyświetlany jest interfejs użytkownika i wszystkie monity. /brakrestartu — pomiń wszelkie próby ponownego uruchomienia. Domyślnie interfejs użytkownika będzie monitować przed ponownym uruchomieniem. /zarejestruj log.txt — rejestruje do określonego pliku. Domyślnie plik dziennika jest tworzony w folderze %TEMP%."/>
   <String Id="HelpCloseButton" Value="&amp;Zamknij"/>
   <String Id="InstallAcceptCheckbox" Value="&amp;Akceptuję postanowienia licencyjne"/>
   <String Id="InstallInstallButton" Value="&amp;Zainstaluj"/>
@@ -38,24 +38,24 @@
   <String Id="SuccessRestartButton" Value="&amp;Uruchom ponownie"/>
   <String Id="SuccessCloseButton" Value="&amp;Zamknij"/>
   <String Id="FailureHeader" Value="Konfiguracja nie powiodła się"/>
-  <String Id="FailureCacheHeader" Value="Cache Failed"/>
-  <String Id="FailureLayoutHeader" Value="Layout Failed"/>
-  <String Id="FailureModifyHeader" Value="Modify Failed"/>
+  <String Id="FailureCacheHeader" Value="Buforowanie nie powiodło się"/>
+  <String Id="FailureLayoutHeader" Value="Układ nie powiódł się"/>
+  <String Id="FailureModifyHeader" Value="Modyfikacja nie powiodła się"/>
   <String Id="FailureInstallHeader" Value="Konfiguracja nie powiodła się"/>
-  <String Id="FailureUnsafeUninstallHeader" Value="Uninstall Failed"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Operacja odinstalowania nie powiodła się"/>
   <String Id="FailureUninstallHeader" Value="Operacja odinstalowania nie powiodła się"/>
   <String Id="FailureRepairHeader" Value="Naprawa nie powiodła się"/>
-  <String Id="FailureHyperlinkLogText" Value="One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href=&quot;#&quot;&gt;log file&lt;/a&gt;."/>
+  <String Id="FailureHyperlinkLogText" Value="Co najmniej jeden problem spowodował niepowodzenie konfiguracji. Rozwiąż problemy, a następnie ponów próbę konfiguracji. Aby uzyskać więcej informacji, zobacz &lt;a href=&quot;#&quot;&gt;plik dziennika&lt;/a&gt;."/>
   <String Id="FailureRestartText" Value="Aby ukończyć wycofywanie oprogramowania, musisz uruchomić ponownie komputer."/>
   <String Id="FailureRestartButton" Value="&amp;Uruchom ponownie"/>
   <String Id="FailureCloseButton" Value="&amp;Zamknij"/>
-  <String Id="FilesInUseHeader" Value="Files In Use"/>
+  <String Id="FilesInUseHeader" Value="Pliki w użyciu"/>
   <String Id="FilesInUseLabel" Value="Następujące aplikacje korzystają z plików, które muszą zostać zaktualizowane:"/>
   <String Id="FilesInUseCloseRadioButton" Value="Zamknij &amp;aplikacje i spróbuj je ponownie uruchomić."/>
   <String Id="FilesInUseNetfxCloseRadioButton" Value="Zamknij &amp;aplikacje."/>
   <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Nie zamykaj aplikacji. Wymagany będzie ponowny rozruch."/>
   <String Id="FilesInUseOkButton" Value="&amp;OK"/>
-  <String Id="FilesInUseCancelButton" Value="&amp;Cancel"/>
+  <String Id="FilesInUseCancelButton" Value="&amp;Anuluj"/>
   <String Id="FilesInUseRetryButton" Value="&amp;Ponów próbę"/>
   <String Id="FilesInUseIgnoreButton" Value="&amp;Ignoruj"/>
   <String Id="FilesInUseExitButton" Value="Za&amp;kończ"/>
@@ -66,13 +66,13 @@
   
   <String Id="Welcome" Value="Witamy w instalatorze produktu [WixBundleName]."/>
   
-  <String Id="InstallResetIIS" Value="Please restart IIS after the installation completes. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="InstallResetIIS" Value="Uruchom ponownie usługi IIS po zakończeniu instalacji. Dodatkowe informacje można znaleźć &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;tutaj&lt;/a&gt;."/>
   
-  <String Id="InstallNoIIS" Value="IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="InstallNoIIS" Value="Usługi IIS nie są włączone na tym komputerze. Jeśli zamierzasz uruchamiać aplikacje ASP.NET Core z usługami IIS, musisz zainstalować usługi IIS przed uruchomieniem tego instalatora. Dodatkowe informacje można znaleźć &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;tutaj&lt;/a&gt;."/>
   
-  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;license terms&lt;/a&gt; and &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;privacy statement&lt;/a&gt;."/>
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;postanowienia licencyjne&lt;/a&gt; i &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;zasady zachowania poufności informacji&lt;/a&gt;."/>
   
-  <String Id="ModifyResetIIS" Value="Please restart IIS after the installation completes. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="ModifyResetIIS" Value="Uruchom ponownie usługi IIS po zakończeniu instalacji. Dodatkowe informacje można znaleźć &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;tutaj&lt;/a&gt;."/>
   
-  <String Id="ModifyNoIIS" Value="IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="ModifyNoIIS" Value="Usługi IIS nie są włączone na tym komputerze. Jeśli zamierzasz uruchamiać aplikacje ASP.NET Core z usługami IIS, musisz zainstalować usługi IIS przed uruchomieniem tego instalatora. Dodatkowe informacje można znaleźć &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;tutaj&lt;/a&gt;."/>
 </WixLocalization>

@@ -28,14 +28,14 @@
   <String Id="IISManagementConsole" Overridable="yes" Value="La console de gestion IIS doit être installée pour utiliser [ProductName]."/>
   <String Id="WebServicesRunning" Overridable="yes" Value="Please stop both services Windows Process Activation Service (WAS) and Web Management Service (WMSvc) before installing [ProductName]. You will need to start the services after installing [ProductName]."/>
   <String Id="MetabaseRequired" Overridable="yes" Value="La métabase IIS est requise pour installer [ProductName]."/>
-  <String Id="LaunchCondition_32BIT" Value="The 64-bit version of [ProductName] cannot be installed on a 32-bit edition of Microsoft Windows."/>
-  <String Id="LaunchCondition_64BIT" Value="The 32-bit version of [ProductName] cannot be installed on a 64-bit edition of Microsoft Windows."/>
+  <String Id="LaunchCondition_32BIT" Value="La version 64 bits de [ProductName] ne peut pas être installée sur une édition 32 bits de Microsoft Windows."/>
+  <String Id="LaunchCondition_64BIT" Value="La version 32 bits de [ProductName] ne peut pas être installée sur une édition 64 bits de Microsoft Windows."/>
   <String Id="NetFX2OrGreaterRequired" Value="La version Microsoft .NET Framework 2.0 ou ultérieure est nécessaire pour installer [ProductName]."/>
-  <String Id="NetFX35OrGreaterRequired" Value="Microsoft .NET Framework Version 3.5 or greater is required to install [ProductName]. Use 'Add Features' under the Server Manager to install Microsoft .Net Version 3.5."/>
+  <String Id="NetFX35OrGreaterRequired" Value="La version Microsoft .NET Framework 3.5 ou ultérieure est nécessaire pour installer [ProductName]. Utilisez « Ajouter des fonctionnalités » dans le Gestionnaire de serveur pour installer Microsoft .NET version 3.5."/>
   <String Id="NetFX4OrGreaterRequired" Value="La version Microsoft .NET Framework 4.0 ou ultérieure est nécessaire pour installer [ProductName]."/>
   <String Id="NetFX20SP1IsRequired" Value="Veuillez installer Microsoft .NET Framework version 2.0 Service Pack 1 (ou un Service Pack ultérieur) avant d’installer [ProductName]."/>
   <String Id="WindowsUpdateEnabled" Value="Le service Windows Update (wuauserv) ne peut pas être désactivé, il est requis pour installer [ProductName]."/>
-  <String Id="GetFromOSforWin7" Value="The PowerShell snap-in is part of Windows Operating System. Please install it via 'Programs and Features' or 'Server Manager'."/>
+  <String Id="GetFromOSforWin7" Value="Le composant logiciel enfichable PowerShell fait partie du système d’exploitation Windows. Veuillez l’installer via « Programmes et fonctionnalités » ou le « Gestionnaire de serveur »."/>
   <String Id="WebPI3OrGreaterRequired" Value="Microsoft Web Platform Installer version 3.0 ou ultérieure est nécessaire pour installer [ProductName]."/>
 
   <String Id="Error30001" Overridable="yes" Value="Le programme d’installation n’a pas pu détecter la configuration partagée."/>
