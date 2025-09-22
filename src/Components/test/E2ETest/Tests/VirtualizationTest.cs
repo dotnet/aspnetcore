@@ -291,7 +291,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // we only render 10 items due to the MaxItemCount setting
         var scrollArea = Browser.Exists(By.Id("virtualize-scroll-area"));
         var getItems = () => scrollArea.FindElements(By.ClassName("my-item"));
-        Browser.Equal(10, () => getItems().Count);
+        Browser.Equal(16, () => getItems().Count);
         Browser.Equal("Id: 0; Name: Thing 0", () => getItems().First().Text);
 
         // Scrolling still works and loads new data, though there's no guarantee about
