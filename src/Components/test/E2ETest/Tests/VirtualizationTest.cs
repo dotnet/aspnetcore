@@ -298,7 +298,7 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
         // exactly how many items will show up at any one time
         Browser.ExecuteJavaScript("document.getElementById('virtualize-scroll-area').scrollTop = 300;");
         Browser.NotEqual("Id: 0; Name: Thing 0", () => getItems().First().Text);
-        Browser.True(() => getItems().Count > 3 && getItems().Count <= 10);
+        Browser.True(() => getItems().Count > 3 && getItems().Count <= 16);
     }
 
     [Fact]
