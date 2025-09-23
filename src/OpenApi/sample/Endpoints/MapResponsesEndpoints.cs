@@ -17,6 +17,13 @@ public static class ResponseEndpoints
         responses.MapGet("/triangle", () => new Triangle { Color = "red", Sides = 3, Hypotenuse = 5.0 });
         responses.MapGet("/shape", Shape () => new Triangle { Color = "blue", Sides = 4 });
 
+        // Test custom descriptions
+        responses.MapGet("/custom-description", () => "Hello World")
+            .WithMetadata(new ProducesResponseTypeMetadata(StatusCodes.Status200OK, null, new[] { "text/html" })
+            {
+                Description = "Downloadable HTML file containing all todos in a formatted table"
+            });
+
         return endpointRouteBuilder;
     }
 }
