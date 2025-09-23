@@ -1027,16 +1027,14 @@ public class OpenApiOperationGeneratorTests
     {
         const string customOkDescription = "Custom success response";
 
-        var operation = GetOpenApiOperation(() => "",
-            additionalMetadata: new[]
-            {
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
             new ProducesResponseTypeMetadata(StatusCodes.Status200OK, null, new[] { "application/json" })
             {
                 Description = customOkDescription
             },
-            new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, null, new[] { "application/json" })
-                // No custom description - should use default
-            });
+            new ProducesResponseTypeMetadata(StatusCodes.Status400BadRequest, null, new[] { "application/json" }) // No custom description - should use default
+        });
 
         Assert.Equal(2, operation.Responses.Count);
 
@@ -1050,14 +1048,13 @@ public class OpenApiOperationGeneratorTests
     [Fact]
     public void EmptyCustomDescriptionFallsBackToDefault()
     {
-        var operation = GetOpenApiOperation(() => "",
-            additionalMetadata: new[]
-            {
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
             new ProducesResponseTypeMetadata(StatusCodes.Status200OK, null, new[] { "application/json" })
             {
                 Description = "" // Empty string should fall back to default
             }
-            });
+        });
 
         var response = Assert.Single(operation.Responses);
         Assert.Equal("200", response.Key);
@@ -1067,14 +1064,13 @@ public class OpenApiOperationGeneratorTests
     [Fact]
     public void NullCustomDescriptionFallsBackToDefault()
     {
-        var operation = GetOpenApiOperation(() => "",
-            additionalMetadata: new[]
-            {
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
             new ProducesResponseTypeMetadata(StatusCodes.Status200OK, null, new[] { "application/json" })
             {
                 Description = null // Explicit null should fall back to default
             }
-            });
+        });
 
         var response = Assert.Single(operation.Responses);
         Assert.Equal("200", response.Key);
@@ -1087,9 +1083,8 @@ public class OpenApiOperationGeneratorTests
         const string firstDescription = "First description";
         const string secondDescription = "Second description";
 
-        var operation = GetOpenApiOperation(() => "",
-            additionalMetadata: new[]
-            {
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
             new ProducesResponseTypeMetadata(StatusCodes.Status200OK, typeof(string), new[] { "text/plain" })
             {
                 Description = firstDescription
@@ -1098,7 +1093,7 @@ public class OpenApiOperationGeneratorTests
             {
                 Description = secondDescription
             }
-            });
+        });
 
         var response = Assert.Single(operation.Responses);
         Assert.Equal("200", response.Key);
@@ -1112,9 +1107,8 @@ public class OpenApiOperationGeneratorTests
         const string notFoundDescription = "The requested resource was not found";
         const string serverErrorDescription = "An internal server error occurred";
 
-        var operation = GetOpenApiOperation(() => "",
-            additionalMetadata: new[]
-            {
+        var operation = GetOpenApiOperation(() => "", additionalMetadata: new[]
+        {
             new ProducesResponseTypeMetadata(StatusCodes.Status201Created, null, new[] { "application/json" })
             {
                 Description = createdDescription
@@ -1127,7 +1121,7 @@ public class OpenApiOperationGeneratorTests
             {
                 Description = serverErrorDescription
             }
-            });
+        });
 
         Assert.Equal(3, operation.Responses.Count);
 
