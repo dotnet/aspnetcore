@@ -26,7 +26,7 @@
   <String Id="DuplicateVersionFound" Overridable="yes" Value="安裝程式無法繼續，因為此電腦已安裝另一個 [ProductName] 執行個體。請先解除安裝，然後再重新啟動此安裝。"/>
   <String Id="CoreWebW3SVC" Overridable="yes" Value="必須安裝 IIS 7.0 CoreWebEngine 和 W3SVC 功能，以使用 [ProductName]。"/>
   <String Id="IISManagementConsole" Overridable="yes" Value="必須安裝 IIS 管理控制台，以使用 [ProductName]。"/>
-  <String Id="WebServicesRunning" Overridable="yes" Value="Please stop both services Windows Process Activation Service (WAS) and Web Management Service (WMSvc) before installing [ProductName]. You will need to start the services after installing [ProductName]."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="安裝 [ProductName] 之前，請先停止 Windows 處理序啟用服務 (WAS) 和 Web Management Service (WMSvc)。[ProductName] 安裝完成後，請重新啟動這些服務。"/>
   <String Id="MetabaseRequired" Overridable="yes" Value="需要 IIS Metabase 才能安裝 [ProductName]。"/>
   <String Id="LaunchCondition_32BIT" Value="64 位元版本的 [ProductName] 無法安裝在 32 位元版本的 Microsoft Windows 上。"/>
   <String Id="LaunchCondition_64BIT" Value="32 位元版本的 [ProductName] 無法安裝在 64 位元版本的 Microsoft Windows 上。"/>
