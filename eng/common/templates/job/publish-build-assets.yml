@@ -32,6 +32,8 @@ parameters:
 
   repositoryAlias: self
 
+  officialBuildId: ''
+
 jobs:
 - job: Asset_Registry_Publish
 
@@ -52,6 +54,11 @@ jobs:
       value: false
     - ${{ if eq(parameters.publishAssetsImmediately, 'true') }}:
       - template: /eng/common/templates/post-build/common-variables.yml
+  - name: OfficialBuildId
+    ${{ if ne(parameters.officialBuildId, '') }}:
+      value: ${{ parameters.officialBuildId }}
+    ${{ else }}:
+      value: $(Build.BuildNumber)
 
   pool:
     # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
@@ -91,7 +98,7 @@ jobs:
           /p:ManifestsPath='$(Build.StagingDirectory)/Download/AssetManifests'
           /p:MaestroApiEndpoint=https://maestro.dot.net
           /p:PublishUsingPipelines=${{ parameters.publishUsingPipelines }}
-          /p:OfficialBuildId=$(Build.BuildNumber)
+          /p:OfficialBuildId=$(OfficialBuildId)
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
 
