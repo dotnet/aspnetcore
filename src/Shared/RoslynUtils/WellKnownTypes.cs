@@ -19,6 +19,7 @@ internal class WellKnownTypes
 
     private readonly INamedTypeSymbol?[] _lazyWellKnownTypes;
     private readonly Compilation _compilation;
+    private readonly INamedTypeSymbol _missingTypeSymbol;
 
     static WellKnownTypes()
     {
@@ -51,6 +52,7 @@ internal class WellKnownTypes
     {
         _lazyWellKnownTypes = new INamedTypeSymbol?[WellKnownTypeData.WellKnownTypeNames.Length];
         _compilation = compilation;
+        _missingTypeSymbol = compilation.GetTypeByMetadataName(typeof(MissingType).FullName!)!;
     }
 
     public INamedTypeSymbol Get(SpecialType type)
