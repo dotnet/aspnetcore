@@ -1,0 +1,51 @@
+﻿<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+
+  <String Id="Language" Value="1033"/>
+
+  <!-- Strings for AspNetCore Module -->
+  <String Id="AspNetCoreModuleProductName" Value="Microsoft ASP.NET Core 模块"/>
+  <String Id="AspNetCoreModuleProductNameV2" Value="Microsoft ASP.NET Core 模块 V2"/>
+  <String Id="AspNetCoreModuleProductTitle" Value="ASP.NET Core IIS 运行时"/>
+  <String Id="AspNetCoreModuleProductDescription" Value="将 asp.net core 应用程序的支持添加到 IIS。"/>
+  <String Id="AspNetCoreIISExpressModuleProductName" Value="Microsoft ASP.NET Core 模块(IIS Express)"/>
+  <String Id="AspNetCoreIISExpressModuleProductNameV2" Value="Microsoft ASP.NET Core 模块 V2 (IIS Express)"/>
+  <String Id="AspNetCoreModuleIISExpressPrereq" Value="IIS Express 8.0 或更高版本未安装。"/>
+
+  <!--Custom errors for OOB Projects -->
+
+  <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="此计算机上存在不兼容的产品 [CONFLICTING_PRODUCT_NAME]。无法继续安装 [ProductName]。若要安装此产品，请使用控制面板上的“添加/移除程序”移除 [CONFLICTING_PRODUCT_NAME]。"/>
+  <String Id="AdminRequired" Overridable="yes" Value="安装 [ProductName] 需要管理员权限。"/>
+  <String Id="IIS7Only" Overridable="yes" Value="使用 [ProductName] 需要 IIS 版本 7.0。"/>
+  <String Id="IIS7OrGreater" Overridable="yes" Value="安装 [ProductName] 需要 IIS 版本 7.0 或更高版本。"/>
+  <String Id="IIS75OrGreater" Overridable="yes" Value="安装 [ProductName] 需要 IIS 版本 7.5 或更高版本。"/>
+  <String Id="IIS7Or75Only" Overridable="yes" Value="安装 [ProductName] 需要 IIS 版本 7 或 7.5。"/>
+  <String Id="IIS8OrGreater" Overridable="yes" Value="安装 [ProductName] 需要 IIS 版本 8.0 或更高版本。"/>
+  <String Id="BetaVersionFound" Overridable="yes" Value="在此计算机上发现了 beta 版本的 [ProductName]。"/>
+  <String Id="NewerVersionFound" Overridable="yes" Value="在此计算机上发现了更新版本的 [ProductName]。"/>
+  <String Id="DuplicateVersionFound" Overridable="yes" Value="无法继续安装，因为此计算机上已安装另一个 [ProductName] 实例。请先卸载该实例，然后重新启动此安装。"/>
+  <String Id="CoreWebW3SVC" Overridable="yes" Value="必须安装 IIS 7.0 CoreWebEngine 和 W3SVC 功能才能使用 [ProductName]。"/>
+  <String Id="IISManagementConsole" Overridable="yes" Value="必须安装 IIS 管理控制台才能使用 [ProductName]。"/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="请先停止 Windows Process Activation Service (WAS)和 Web 管理服务(WMSvc)这两项服务，然后再安装 [ProductName]。安装 [ProductName] 后需要启动这些服务。"/>
+  <String Id="MetabaseRequired" Overridable="yes" Value="安装 [ProductName] 需要 IIS 元数据库。"/>
+  <String Id="LaunchCondition_32BIT" Value="无法在 32 位版本的 Microsoft Windows 上安装 64 位版本的 [ProductName]。"/>
+  <String Id="LaunchCondition_64BIT" Value="无法在 64 位版本的 Microsoft Windows 上安装 32 位版本的 [ProductName]。"/>
+  <String Id="NetFX2OrGreaterRequired" Value="安装 [ProductName] 需要 Microsoft .NET Framework 版本 2.0 或更高版本。"/>
+  <String Id="NetFX35OrGreaterRequired" Value="安装 [ProductName] 需要 Microsoft .NET Framework 版本 3.5 或更高版本。使用服务器管理器中的“添加功能”安装 Microsoft .NET 版本 3.5。"/>
+  <String Id="NetFX4OrGreaterRequired" Value="安装 [ProductName] 需要 Microsoft .NET Framework 版本 4.0 或更高版本。"/>
+  <String Id="NetFX20SP1IsRequired" Value="请先安装 Microsoft .NET Framework 版本 2.0 Service Pack 1 (或更高版本的服务包)，然后再安装 [ProductName]。"/>
+  <String Id="WindowsUpdateEnabled" Value="无法禁用 Windows 更新(wuauserv)服务，安装 [ProductName] 需要该服务。"/>
+  <String Id="GetFromOSforWin7" Value="PowerShell 管理单元是 Windows 操作系统的一部分。请通过“程序和功能”或“服务器管理器”安装。"/>
+  <String Id="WebPI3OrGreaterRequired" Value="安装 [ProductName] 需要 Microsoft Web 平台安装程序版本 3.0 或更高版本。"/>
+
+  <String Id="Error30001" Overridable="yes" Value="安装未能检测到共享配置。"/>
+  <String Id="Error30002" Overridable="yes" Value="IIS 已启用共享配置。使用共享配置时不支持安装 [ProductName]。请先禁用共享配置，然后再安装此功能。"/>
+
+  <String Id="W3SVCRunning" Overridable="yes" Value="请先停止 World Wide Web 发布服务(W3SVC)，然后再安装 [ProductName]。安装后需要启动该服务。"/>
+  <String Id="IISPowershellConsole" Value="IIS PowerShell 管理控制台"/>
+  <String Id="IISPowershellSnapin" Value="IIS PowerShell 管理单元"/>
+  <String Id="PowerShellRequired" Value="IIS PowerShell 管理单元需要安装 PowerShell v1.0 或 v2.0"/>
+  <String Id="WasAndConfigRequired" Value="IIS PowerShell 管理单元需要安装 WAS 和配置"/>
+  <String Id="TestBogusString" Overridable="yes" Value="这是一个虚假字符串。"/>
+
+</WixLocalization>
