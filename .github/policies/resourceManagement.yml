@@ -453,7 +453,7 @@ configuration:
       - removeMilestone
       - addMilestone:
           milestone: 10.0-rc2
-      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0-rc1 branch'
+      description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0-rc2 branch'
     - if:
       - payloadType: Pull_Request
       - isAction:
