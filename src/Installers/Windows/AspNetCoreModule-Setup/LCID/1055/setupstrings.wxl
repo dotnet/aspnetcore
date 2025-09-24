@@ -26,7 +26,7 @@
   <String Id="DuplicateVersionFound" Overridable="yes" Value="Bu bilgisayarda başka bir [ProductName] örneği zaten yüklü olduğu için kurulum devam edemiyor. Lütfen önce onu kaldırın ve ardından bu yüklemeyi yeniden başlatın."/>
   <String Id="CoreWebW3SVC" Overridable="yes" Value="[ProductName] kullanmak için IIS 7.0 CoreWebEngine ve W3SVC özellikleri yüklü olmalıdır."/>
   <String Id="IISManagementConsole" Overridable="yes" Value="[ProductName] kullanmak için IIS Yönetim Konsolu yüklü olmalıdır."/>
-  <String Id="WebServicesRunning" Overridable="yes" Value="Please stop both services Windows Process Activation Service (WAS) and Web Management Service (WMSvc) before installing [ProductName]. You will need to start the services after installing [ProductName]."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="[ProductName] yüklemeden önce Windows İşlem Etkinleştirme Hizmeti (WAS) ve Web Yönetimi Hizmeti (WMSvc) hizmetlerini durdurun. [ProductName] yüklemesinden sonra bu hizmetleri başlatmanız gerekecek."/>
   <String Id="MetabaseRequired" Overridable="yes" Value="[ProductName] yüklemek için IIS Metatabanı gereklidir."/>
   <String Id="LaunchCondition_32BIT" Value="[ProductName]'in 64 bit sürümü, 32 bit Microsoft Windows sürümüne yüklenemez."/>
   <String Id="LaunchCondition_64BIT" Value="[ProductName]'in 32 bit sürümü, 64 bit Microsoft Windows sürümüne yüklenemez."/>

@@ -14,7 +14,7 @@
   <!--Custom errors for OOB Projects -->
 
   <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
-  <String Id="ConflictingProduct" Overridable="yes" Value="An incompatible product, [CONFLICTING_PRODUCT_NAME], is on this computer. Installation of [ProductName] cannot continue. To install this product, use Add/Remove Programs on the Control Panel to remove [CONFLICTING_PRODUCT_NAME]."/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="Un produit incompatible, [CONFLICTING_PRODUCT_NAME], est présent sur cet ordinateur. L’installation de [ProductName] ne peut pas continuer. Pour installer ce produit, utilisez l’option Ajouter/Supprimer des programme dans le Panneau de contrôle pour supprimer [CONFLICTING_PRODUCT_NAME]."/>
   <String Id="AdminRequired" Overridable="yes" Value="Un privilège d’administrateur(-trice) est requis pour installer [ProductName]."/>
   <String Id="IIS7Only" Overridable="yes" Value="La version 7.0 d’IIS est requise pour utiliser [ProductName]."/>
   <String Id="IIS7OrGreater" Overridable="yes" Value="IIS version 7.0 ou ultérieure est nécessaire pour installer [ProductName]."/>
@@ -26,7 +26,7 @@
   <String Id="DuplicateVersionFound" Overridable="yes" Value="L’installation ne peut pas continuer car une autre instance de [ProductName] est déjà installée sur cet ordinateur. Veuillez la désinstaller d’abord, puis relancez cette installation."/>
   <String Id="CoreWebW3SVC" Overridable="yes" Value="Les fonctionnalités IIS 7.0 CoreWebEngine et W3SVC doivent être installées pour utiliser [ProductName]."/>
   <String Id="IISManagementConsole" Overridable="yes" Value="La console de gestion IIS doit être installée pour utiliser [ProductName]."/>
-  <String Id="WebServicesRunning" Overridable="yes" Value="Please stop both services Windows Process Activation Service (WAS) and Web Management Service (WMSvc) before installing [ProductName]. You will need to start the services after installing [ProductName]."/>
+  <String Id="WebServicesRunning" Overridable="yes" Value="Veuillez arrêter les services Windows Process Activation Service (WAS) et Web Management Service (WMSvc) avant d’installer [ProductName]. Vous devrez les redémarrer après l’installation de [ProductName]."/>
   <String Id="MetabaseRequired" Overridable="yes" Value="La métabase IIS est requise pour installer [ProductName]."/>
   <String Id="LaunchCondition_32BIT" Value="La version 64 bits de [ProductName] ne peut pas être installée sur une édition 32 bits de Microsoft Windows."/>
   <String Id="LaunchCondition_64BIT" Value="La version 32 bits de [ProductName] ne peut pas être installée sur une édition 64 bits de Microsoft Windows."/>

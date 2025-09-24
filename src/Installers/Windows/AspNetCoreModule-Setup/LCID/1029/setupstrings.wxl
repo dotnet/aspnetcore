@@ -14,7 +14,7 @@
   <!--Custom errors for OOB Projects -->
 
   <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
-  <String Id="ConflictingProduct" Overridable="yes" Value="An incompatible product, [CONFLICTING_PRODUCT_NAME], is on this computer. Installation of [ProductName] cannot continue. To install this product, use Add/Remove Programs on the Control Panel to remove [CONFLICTING_PRODUCT_NAME]."/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="Na tomto počítači je nekompatibilní produkt [CONFLICTING_PRODUCT_NAME]. Instalace produktu [ProductName] nemůže pokračovat. Chcete-li tento produkt nainstalovat, odeberte [CONFLICTING_PRODUCT_NAME] pomocí možnosti Přidat/Odebrat programy v Ovládacích panelech."/>
   <String Id="AdminRequired" Overridable="yes" Value="Instalace produktu [ProductName] vyžaduje oprávnění správce."/>
   <String Id="IIS7Only" Overridable="yes" Value="K použití produktu [ProductName] je vyžadována služba IIS verze 7.0."/>
   <String Id="IIS7OrGreater" Overridable="yes" Value="K instalaci [ProductName] je vyžadována služba IIS verze 7.0 nebo novější."/>
