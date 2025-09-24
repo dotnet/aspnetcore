@@ -14,7 +14,7 @@ Typically, we will update the Major Version before updating the TFM. This is bec
   1. Increment `AspNetCoreMajorVersion` by 1.
   2. Change `PreReleaseVersionIteration` to `1`.
   3. Change `PreReleaseVersionLabel` to `alpha`.
-  4. Change `PreReleaseBrandingLabel` to `Alpha $(PreReleaseVersionIteration)`.
+  Note: `PreReleaseBrandingLabel` is automatically calculated based on `PreReleaseVersionLabel` and does not need to be manually updated.
 * Add entries to [NuGet.config](/NuGet.config) for the new Major Version's feed. This just means copying the current feeds (e.g. `dotnet8` and `dotnet8-transport`) and adding entries for the new feeds (`dotnet9` and `dotnet9-transport`). Make an effort to remove old feeds here at the same time.
 * In [src/ProjectTemplates/Shared/TemplatePackageInstaller.cs](/src/ProjectTemplates/Shared/TemplatePackageInstaller.cs), add an entry to `_templatePackages` for `Microsoft.DotNet.Web.ProjectTemplates` matching the new version.
 * In [eng/targets/CSharp.Common.props](/eng/targets/CSharp.Common.props) for the previous release branch, modify the `<LangVersion>` to be a hardcoded version instead of `preview`. (e.g. If main is being updated to 8.0.0 modify the `<LangVersion>` in the release/7.0 branch). See https://learn.microsoft.com/dotnet/csharp/language-reference/configure-language-version#defaults to find what language version to use.
