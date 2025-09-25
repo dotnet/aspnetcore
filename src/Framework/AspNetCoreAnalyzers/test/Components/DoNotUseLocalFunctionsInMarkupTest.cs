@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 var builder = new RenderTreeBuilder();
 
-/*MM*/void LocalFunction()
+void /*MM*/LocalFunction()
 {
     builder.OpenElement(0, ""div"");
     builder.CloseElement();
@@ -47,7 +47,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 var builder = new RenderTreeBuilder();
 
-/*MM*/void LocalFunction()
+void /*MM*/LocalFunction()
 {
     builder.OpenElement(0, ""div"");
     builder.AddContent(1, ""text"");
@@ -122,7 +122,7 @@ var builder = new RenderTreeBuilder();
 
 void OuterFunction()
 {
-    /*MM*/void InnerFunction()
+    void /*MM*/InnerFunction()
     {
         builder.OpenElement(0, ""div"");
         builder.CloseElement();
@@ -137,10 +137,11 @@ OuterFunction();
         var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
 
         // Assert
-        var analyzerDiagnostic = diagnostics.FirstOrDefault(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup);
-        Assert.NotNull(analyzerDiagnostic);
-        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, analyzerDiagnostic.Location);
-        Assert.StartsWith("Local function 'InnerFunction' accesses RenderTreeBuilder from parent scope", analyzerDiagnostic.GetMessage(CultureInfo.InvariantCulture));
+        var analyzerDiagnostics = diagnostics.Where(d => d.Descriptor == DiagnosticDescriptors.DoNotUseLocalFunctionsInMarkup).ToList();
+        var innerFunctionDiagnostic = analyzerDiagnostics.FirstOrDefault(d => d.GetMessage(CultureInfo.InvariantCulture).Contains("InnerFunction"));
+        Assert.NotNull(innerFunctionDiagnostic);
+        AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, innerFunctionDiagnostic.Location);
+        Assert.StartsWith("Local function 'InnerFunction' accesses RenderTreeBuilder from parent scope", innerFunctionDiagnostic.GetMessage(CultureInfo.InvariantCulture));
     }
 
     [Fact]
@@ -177,7 +178,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 var builder = new RenderTreeBuilder();
 
-/*MM*/void LocalFunction()
+void /*MM*/LocalFunction()
 {
     builder.AddMarkupContent(0, ""<div>Hello</div>"");
 }
