@@ -1025,7 +1025,7 @@ public static partial class Results
     /// <summary>
     /// Produces an empty result response, that when executed will do nothing.
     /// </summary>
-    public static IResult Empty { get; } = TypedResults.Empty;
+    public static IResult Empty => EmptyHttpResult.Instance;
 
     /// <summary>
     /// Provides a container for external libraries to extend
