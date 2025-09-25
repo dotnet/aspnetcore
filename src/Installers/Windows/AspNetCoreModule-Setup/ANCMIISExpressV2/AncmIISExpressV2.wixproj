@@ -2,11 +2,10 @@
 <Project>
   <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
-    <Name>AspNetCoreModuleV2IISExpress</Name>
     <IsShipping>true</IsShipping>
     <ProjectGuid>17c76489-4c09-4e14-b81c-7a86cd937144</ProjectGuid>
     <OutputType>Package</OutputType>
-    <OutputName>$(Name)_$(Platform)</OutputName>
+    <OutputName>ancm_iis_express_$(Platform)_en_v2_$(_ProductVersionForInstallers)</OutputName>
     <SuppressIces>ICE03</SuppressIces>
     <DisableGuidGeneration>true</DisableGuidGeneration>
     <SchemaVersion>2.0</SchemaVersion>
@@ -64,7 +63,7 @@
   <Import Project="..\build\settings.props" />
 
   <PropertyGroup>
-    <PackageFileName>ancm_iis_express_$(Platform)_en_v2_$(PackageVersion)$(TargetExt)</PackageFileName>
+    <PackageFileName>$(OutputName)$(TargetExt)</PackageFileName>
     <ProductNameShort>ASP.NET Core Module IIS Express V2</ProductNameShort>
   </PropertyGroup>
 

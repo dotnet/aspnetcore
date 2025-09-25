@@ -129,6 +129,7 @@
       PdbFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetPdbFileName)"
       PdbType="$(DebugType)"
       SourceFiles="@(Compile)"
+      SuppressSpecificWarnings="$(SuppressSpecificWarnings)"
       LocalizationFiles="@(_WixLocalizationFile)"
       BindPaths="@(BindPath)"
       WixpackWorkingDir="$(WixpackWorkingDir)">
