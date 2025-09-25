@@ -253,7 +253,7 @@ internal static class DiagnosticDescriptors
     internal static readonly DiagnosticDescriptor InvalidRouteConstraintForParameterType = CreateDescriptor(
         "ASP0029",
         Usage,
-        DiagnosticSeverity.Info);
+        DiagnosticSeverity.Error);
 
     private static DiagnosticDescriptor CreateDescriptor(string id, string category, DiagnosticSeverity defaultSeverity, bool isEnabledByDefault = true, [CallerMemberName] string? name = null) => new(
         id,
