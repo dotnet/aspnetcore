@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -120,6 +121,37 @@ public class ComponentEndpointRouteBuilderExtensionsTest
         // Assert
         Assert.True(called);
         Assert.Equal(new[] { "first-in", "last-in" }, populatedMetadata);
+    }
+
+    [Fact]
+    public void MapBlazorHub_AddsComponentFrameworkEndpointMetadata()
+    {
+        // Arrange
+        var applicationBuilder = CreateAppBuilder();
+        var frameworkEndpoints = new List<string>();
+
+        // Act
+        var app = applicationBuilder
+            .UseRouting()
+            .UseEndpoints(endpoints =>
+            {
+                endpoints
+                    .MapBlazorHub()
+                    .Finally(builder =>
+                    {
+                        if (builder.Metadata.GetMetadata<ComponentFrameworkEndpointMetadata>() is not null)
+                        {
+                            frameworkEndpoints.Add(builder.DisplayName);
+                        }
+                    });
+            }).Build();
+
+        // Trigger endpoint construction
+        app.Invoke(new DefaultHttpContext());
+
+        // Assert
+        Assert.Contains("Blazor disconnect", frameworkEndpoints);
+        Assert.Contains("Blazor initializers", frameworkEndpoints);
     }
 
     private IApplicationBuilder CreateAppBuilder()
