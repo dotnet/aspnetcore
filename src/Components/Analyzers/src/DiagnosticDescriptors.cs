@@ -92,4 +92,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Warning,
         isEnabledByDefault: true,
         description: CreateLocalizableResourceString(nameof(Resources.PersistentStateShouldNotHavePropertyInitializer_Description)));
+
+    public static readonly DiagnosticDescriptor ComponentParametersShouldNotUseRequiredOrInit = new(
+        "BL0010",
+        CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldNotUseRequiredOrInit_Title)),
+        CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldNotUseRequiredOrInit_Format)),
+        Usage,
+        DiagnosticSeverity.Warning,
+        isEnabledByDefault: true,
+        description: CreateLocalizableResourceString(nameof(Resources.ComponentParametersShouldNotUseRequiredOrInit_Description)));
 }
