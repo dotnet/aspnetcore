@@ -136,7 +136,7 @@ public class TypeJsonConverterTest
     public void Read_ThrowsJsonException_IfJsonIsNotStartObject()
     {
         // Arrange
-        var json = """"invalid"""";
+        var json = "\"invalid\"";
 
         // Act & Assert
         var ex = Assert.Throws<JsonException>(() => JsonSerializer.Deserialize<Type>(json, _jsonSerializerOptions));
