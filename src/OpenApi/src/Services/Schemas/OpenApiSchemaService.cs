@@ -58,9 +58,9 @@ internal sealed class OpenApiSchemaService(
         TransformSchemaNode = (context, schema) =>
         {
             var type = context.TypeInfo.Type;
-            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, and PipeReader
+            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader and FileContentResult
             // that appear as properties within complex types.
-            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader))
+            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader) || type == typeof(Mvc.FileContentResult))
             {
                 schema = new JsonObject
                 {
@@ -337,7 +337,7 @@ internal sealed class OpenApiSchemaService(
             if (schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var schemaId) &&
                 schemaId is string schemaIdString)
             {
-                return document.AddOpenApiSchemaByReference(schemaIdString, schema);
+                return new OpenApiSchemaReference(schemaIdString, document);
             }
             var relativeSchemaId = $"#/components/schemas/{rootSchemaId}{refIdString.Replace("#", string.Empty)}";
             return new OpenApiSchemaReference(relativeSchemaId, document);

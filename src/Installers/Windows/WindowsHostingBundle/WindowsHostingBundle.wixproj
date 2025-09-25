@@ -1,48 +1,37 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
-
+﻿<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.WixToolset.Sdk" />
   <PropertyGroup>
-    <Name>WindowsServerHostingBundle</Name>
-    <OutputName>WindowsServerHostingBundle</OutputName>
+    <Name>dotnet-hosting-$(_ProductVersionForInstallers)-win</Name>
+    <OutputName>$(Name)</OutputName>
+    <PackageFileName>$(Name).exe</PackageFileName>
     <IsShipping>true</IsShipping>
     <ProjectGuid>6F1B115C-1903-40CB-837D-7961AB610F4E</ProjectGuid>
     <OutputType>Bundle</OutputType>
     <Platform>x86</Platform>
     <SchemaVersion>2.0</SchemaVersion>
+    <!-- We import D.B.T ourselves in this file -->
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
 
     <!-- Namespace used to generate stable UUID3 GUIDs for MSI ProductCode, etc. DO NOT CHANGE THIS. -->
     <NamespaceGuid>$(HostingBundleNamespaceGuid)</NamespaceGuid>
+
+    <!-- Globbing will automatically find any .wxl relative to the project file. Since we're simshipping localized content for
+         the bundle UI, we either need to exclude the .wxl files or place them in a directory outside of the project. For simshipping
+         we only need to ensure the files are pulled in as additional payloads into the UX container. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);LCID\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
-    <WixExtension Include="WixUtilExtension">
-      <HintPath>$(WixExtDir)\WixUtilExtension.dll</HintPath>
-      <Name>WixUtilExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixDependencyExtension">
-      <HintPath>$(WixExtDir)\WixDependencyExtension.dll</HintPath>
-      <Name>WixDependencyExtension</Name>
-    </WixExtension>
-    <WixExtension Include="WixBalExtension">
-      <HintPath>$(WixExtDir)\WixBalExtension.dll</HintPath>
-      <Name>WixBalExtension</Name>
-    </WixExtension>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Include="thm.xml" />
-    <Compile Include="ANCM.wxs" />
-    <Compile Include="Bundle.wxs" />
-    <Compile Include="DotNetCore.wxs" />
-    <Compile Include="SharedFramework.wxs" />
-    <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle\upgradePolicies.wxs" />
+    <Content Include="bundle.thm" />
+    <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix5\bundle\upgradePolicies.wxs" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
       <SetPlatform>Platform=x86</SetPlatform>
       <Name>AspNetCoreModuleV2_x86</Name>
+      <BindName>AspNetCoreModuleV2_x86</BindName>
       <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
@@ -50,6 +39,7 @@
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
       <SetPlatform>Platform=x64</SetPlatform>
       <Name>AspNetCoreModuleV2_x64</Name>
+      <BindName>AspNetCoreModuleV2_x64</BindName>
       <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
@@ -57,12 +47,14 @@
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMV2\ANCMV2.wixproj">
       <SetPlatform>Platform=arm64</SetPlatform>
       <Name>AspNetCoreModuleV2_arm64</Name>
+      <BindName>AspNetCoreModuleV2_arm64</BindName>
       <Project>f9bacb48-3bd7-4ec2-ae31-664e8703ec12</Project>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
     <ProjectReference Include="..\HostOptions\HostOptions.wixproj">
       <Name>HostOptions</Name>
+      <BindName>HostOptions</BindName>
       <Project>20248cd1-c5aa-4f42-ad88-bc260d64deea</Project>
       <Private>True</Private>
       <DoNotHarvest>True</DoNotHarvest>
@@ -75,18 +67,21 @@
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj">
       <SetPlatform>Platform=x86</SetPlatform>
       <Name>AspNetCoreModuleV2IISExpress_x86</Name>
+      <BindName>AspNetCoreModuleV2IISExpress_x86</BindName>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj">
       <SetPlatform>Platform=x64</SetPlatform>
       <Name>AspNetCoreModuleV2IISExpress_x64</Name>
+      <BindName>AspNetCoreModuleV2IISExpress_x64</BindName>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
     <ProjectReference Include="..\AspNetCoreModule-Setup\ANCMIISExpressV2\AncmIISExpressV2.wixproj">
       <SetPlatform>Platform=arm64</SetPlatform>
       <Name>AspNetCoreModuleV2IISExpress_arm64</Name>
+      <BindName>AspNetCoreModuleV2IISExpress_arm64</BindName>
       <Private>True</Private>
       <DoNotHarvest>true</DoNotHarvest>
     </ProjectReference>
@@ -94,11 +89,10 @@
 
   <Import Project="Product.targets" />
 
+  <Import Project="Sdk.targets" Sdk="Microsoft.WixToolset.Sdk" />
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 
   <PropertyGroup>
-    <PackageFileName>dotnet-hosting-$(PackageVersion)-win$(TargetExt)</PackageFileName>
-
     <BundleNameShort>Microsoft .NET $(PackageBrandingVersion)</BundleNameShort>
     <SharedFxPackageVersion>$(PackageVersion)</SharedFxPackageVersion>
     <SharedFxMsiVersion>$(PackageVersion)</SharedFxMsiVersion>

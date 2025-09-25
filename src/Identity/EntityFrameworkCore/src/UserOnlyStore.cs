@@ -43,7 +43,7 @@ public class UserOnlyStore<TUser, TContext> : UserOnlyStore<TUser, TContext, str
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 public class UserOnlyStore<TUser, TContext, TKey> : UserOnlyStore<TUser, TContext, TKey, IdentityUserClaim<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
     where TUser : IdentityUser<TKey>
     where TContext : DbContext
@@ -62,7 +62,7 @@ public class UserOnlyStore<TUser, TContext, TKey> : UserOnlyStore<TUser, TContex
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
@@ -88,7 +88,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
 /// </summary>
 /// <typeparam name="TUser">The type representing a user.</typeparam>
 /// <typeparam name="TContext">The type of the data context class used to access the store.</typeparam>
-/// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+/// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
 /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
 /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
 /// <typeparam name="TUserToken">The type representing a user token.</typeparam>

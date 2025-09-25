@@ -1,55 +1,75 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[BundleNameFull] 설치</String>
-  <String Id="Title">[BundleNameShort]</String>
-  <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallVersion">버전 [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">취소하시겠습니까?</String>
-  <String Id="ExecuteUpgradeRelatedBundleMessage">이전 버전</String>
-  <String Id="HelpHeader">설치 도움말</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]디렉터리[\]] - 디렉터리에 번들의 전체 로컬 복사본을
-   설치, 복구, 제거 또는 작성합니다. 설치가 기본값입니다.
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="[WixBundleName] Setup"/>
+  
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  
+  
+  <String Id="InstallVersion" Value="Version [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="Are you sure you want to cancel?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Previous version"/>
+  <String Id="HelpHeader" Value="Setup Help"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
+   creates a complete local copy of the bundle in directory. Install is the default.
 
-/passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI 및
-   프롬프트를 표시하지 않습니다. 기본값으로 UI와 모든 프롬프트가 표시됩니다.
+/passive | /quiet -  displays minimal UI with no prompts or displays no UI and
+   no prompts. By default UI and all prompts are displayed.
 
-/norestart   - 다시 시작하지 않게 합니다. 기본값으로 UI에서는 다시 시작하기 전에 묻는 메시지를 표시합니다.
-/log log.txt - 특정 파일에 기록합니다. 기본값으로 로그 파일은 %TEMP%에 만들어집니다.</String>
-  <String Id="HelpCloseButton">닫기(&amp;C)</String>
-  <String Id="InstallAcceptCheckbox">동의함(&amp;A)</String>
-  <String Id="InstallInstallButton">설치(&amp;I)</String>
-  <String Id="InstallCloseButton">닫기(&amp;C)</String>
-  <String Id="ProgressHeader">설치 진행률</String>
-  <String Id="ProgressLabel">처리 중:</String>
-  <String Id="OverallProgressPackageText">초기화 중...</String>
-  <String Id="ProgressCancelButton">취소(&amp;C)</String>
-  <String Id="ModifyHeader">설치 수정</String>
-  <String Id="ModifyRepairButton">복구(&amp;R)</String>
-  <String Id="ModifyUninstallButton">제거(&amp;U)</String>
-  <String Id="ModifyCloseButton">닫기(&amp;C)</String>
-  <String Id="SuccessRepairHeader">복구 완료됨</String>
-  <String Id="SuccessUninstallHeader">제거 완료됨</String>
-  <String Id="SuccessInstallHeader">설치 완료됨</String>
-  <String Id="SuccessHeader">설치 완료</String>
-  <String Id="SuccessLaunchButton">시작(&amp;L)</String>
-  <String Id="SuccessRestartText">소프트웨어를 사용하려면 먼저 컴퓨터를 다시 시작해야 합니다.</String>
-  <String Id="SuccessRestartButton">다시 시작(&amp;R)</String>
-  <String Id="SuccessCloseButton">닫기(&amp;C)</String>
-  <String Id="FailureHeader">설치 실패</String>
-  <String Id="FailureInstallHeader">설치 실패</String>
-  <String Id="FailureUninstallHeader">제거 실패</String>
-  <String Id="FailureRepairHeader">복구 실패</String>
-  <String Id="FailureHyperlinkLogText">하나 이상의 문제가 발생하여 설치하지 못했습니다. 문제를 해결한 다음 설치를 다시 시도하십시오. 자세한 내용은 &lt;a href="#"&gt;로그 파일&lt;/a&gt;을 참조하십시오.</String>
-  <String Id="FailureRestartText">소프트웨어 롤백을 완료하려면 컴퓨터를 다시 시작해야 합니다.</String>
-  <String Id="FailureRestartButton">다시 시작(&amp;R)</String>
-  <String Id="FailureCloseButton">닫기(&amp;C)</String>
-  <String Id="FilesInUseHeader">사용 중인 파일</String>
-  <String Id="FilesInUseLabel">다음의 응용 프로그램이 업데이트해야 할 파일을 사용 중입니다.</String>
-  <String Id="FilesInUseCloseRadioButton">응용 프로그램을 닫고 다시 시작합니다(&amp;A).</String>
-  <String Id="FilesInUseDontCloseRadioButton">응용 프로그램을 닫지 않습니다(&amp;D). 다시 부팅해야 합니다.</String>
-  <String Id="FilesInUseOkButton">확인(&amp;O)</String>
-  <String Id="FilesInUseCancelButton">취소(&amp;C)</String>
+/norestart   - suppress any attempts to restart. By default UI will prompt before restart.
+/log log.txt - logs to a specific file. By default a log file is created in %TEMP%."/>
+  <String Id="HelpCloseButton" Value="&amp;Close"/>
+  <String Id="InstallAcceptCheckbox" Value="I &amp;agree to the license terms and conditions"/>
+  <String Id="InstallInstallButton" Value="&amp;Install"/>
+  <String Id="InstallCloseButton" Value="&amp;Close"/>
+  <String Id="ProgressHeader" Value="Setup Progress"/>
+  <String Id="ProgressLabel" Value="Processing:"/>
+  <String Id="OverallProgressPackageText" Value="Initializing..."/>
+  <String Id="ProgressCancelButton" Value="&amp;Cancel"/>
+  <String Id="ModifyHeader" Value="Modify Setup"/>
+  <String Id="ModifyRepairButton" Value="&amp;Repair"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Uninstall"/>
+  <String Id="ModifyCloseButton" Value="&amp;Close"/>
+  <String Id="SuccessCacheHeader" Value="Cache Successfully Completed"/>
+  <String Id="SuccessModifyHeader" Value="Modify Successfully Completed"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Uninstall Successfully Completed"/>
+  <String Id="SuccessLayoutHeader" Value="Layout Successfully Completed"/>
+  <String Id="SuccessRepairHeader" Value="Repair Successfully Completed"/>
+  <String Id="SuccessUninstallHeader" Value="Uninstall Successfully Completed"/>
+  <String Id="SuccessInstallHeader" Value="Installation Successfully Completed"/>
+  <String Id="SuccessHeader" Value="Setup Successful"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Launch"/>
+  <String Id="SuccessRestartText" Value="You must restart your computer before you can use the software."/>
+  <String Id="SuccessUninstallRestartText" Value="You must restart your computer to complete the removal of the software."/>
+  <String Id="SuccessRestartButton" Value="&amp;Restart"/>
+  <String Id="SuccessCloseButton" Value="&amp;Close"/>
+  <String Id="FailureHeader" Value="Setup Failed"/>
+  <String Id="FailureCacheHeader" Value="Cache Failed"/>
+  <String Id="FailureLayoutHeader" Value="Layout Failed"/>
+  <String Id="FailureInstallHeader" Value="Setup Failed"/>
+  <String Id="FailureUninstallHeader" Value="Uninstall Failed"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Uninstall Failed"/>
+  <String Id="FailureRepairHeader" Value="Repair Failed"/>
+  <String Id="FailureModifyHeader" Value="Modify Failed"/>
+  <String Id="FailureHyperlinkLogText" Value="One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href=&quot;#&quot;&gt;log file&lt;/a&gt;."/>
+  <String Id="FailureRestartText" Value="You must restart your computer to complete the rollback of the software."/>
+  <String Id="FailureRestartButton" Value="&amp;Restart"/>
+  <String Id="FailureCloseButton" Value="&amp;Close"/>
+  <String Id="FilesInUseHeader" Value="Files In Use"/>
+  <String Id="FilesInUseLabel" Value="The following applications are using files that need to be updated:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="Close the &amp;applications and attempt to restart them."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="Close the &amp;applications."/>
+  <String Id="FilesInUseOkButton" Value="&amp;OK"/>
+  <String Id="FilesInUseCancelButton" Value="&amp;Cancel"/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Retry"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignore"/>
+  <String Id="FilesInUseExitButton" Value="E&amp;xit"/>
+  <String Id="FilesInUseTitle" Value="Files In Use"/>
+  <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:"/>
+  <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
+  <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
 
-  <String Id="Welcome">[WixBundleName] 설치를 시작합니다.</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;사용 조건&lt;/a&gt; 및 &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;개인정보처리방침&lt;/a&gt;.</String>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;license terms&lt;/a&gt; and &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;privacy statement&lt;/a&gt;."/>
 </WixLocalization>

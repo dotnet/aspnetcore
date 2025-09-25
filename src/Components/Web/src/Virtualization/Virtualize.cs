@@ -362,6 +362,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             _ => MaxItemCount
         };
 
+        // Count the OverscanCount as used capacity, so we don't end up in a situation where
+        // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
+        maxItemCount += OverscanCount * 2;
+
         itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
         visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;
         unusedItemCapacity = Math.Max(0, visibleItemCapacity - maxItemCount);

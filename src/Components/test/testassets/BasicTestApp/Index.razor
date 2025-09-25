@@ -2,7 +2,7 @@
 @using System.Web
 @inject NavigationManager NavigationManager
 
-<p id="session-storage-anchor"></p>
+<p id="session-storage-marker"></p>
 <div id="test-selector">
     Select test:
     <select id="test-selector-select" @bind=SelectedComponentTypeName>
@@ -48,7 +48,9 @@
         <option value="BasicTestApp.FormsTest.SimpleValidationComponentUsingExperimentalValidator">Simple validation using experimental validator</option>
         <option value="BasicTestApp.FormsTest.ModelLevelValidationComponent">Model-level validation</option>
         <option value="BasicTestApp.FormsTest.TypicalValidationComponent">Typical validation</option>
-        <option value="BasicTestApp.ImageTest.ImageTestComponent">Image component tests</option>
+        <option value="BasicTestApp.MediaTest.ImageTestComponent">Image component tests</option>
+        <option value="BasicTestApp.MediaTest.VideoTestComponent">Video component tests</option>
+        <option value="BasicTestApp.MediaTest.FileDownloadTestComponent">File download component tests</option>
         <option value="BasicTestApp.FormsTest.TypicalValidationComponentUsingExperimentalValidator">Typical validation using experimental validator</option>
         <option value="BasicTestApp.FormsTest.ValidationComponentDI">Validation with Dependency Injection</option>
         <option value="BasicTestApp.FormsTest.InputFileComponent">Input file</option>
@@ -94,6 +96,7 @@
         <option value="@GetTestServerProjectComponent("Components.TestServer.ProtectedBrowserStorageUsageComponent")">Protected browser storage usage</option>
         <option value="@GetTestServerProjectComponent("Components.TestServer.ProtectedBrowserStorageInjectionComponent")">Protected browser storage injection</option>
         <option value="BasicTestApp.QuickGridTest.SampleQuickGridComponent">QuickGrid Example</option>
+        <option value="BasicTestApp.QuickGridTest.QuickGridVirtualizeComponent">QuickGrid with Virtualize Example</option>
         <option value="BasicTestApp.RazorTemplates">Razor Templates</option>
         <option value="BasicTestApp.Reconnection.ReconnectionComponent">Reconnection server-side blazor</option>
         <option value="BasicTestApp.RedTextComponent">Red text</option>
@@ -120,6 +123,7 @@
         <option value="BasicTestApp.VirtualizationMaxItemCount">Virtualization MaxItemCount</option>
         <option value="BasicTestApp.VirtualizationMaxItemCount_AppContext">Virtualization MaxItemCount (via AppContext)</option>
         <option value="BasicTestApp.VirtualizationTable">Virtualization HTML table</option>
+        <option value="BasicTestApp.VirtualizationLargeOverscan">Virtualization large overscan</option>
         <option value="BasicTestApp.HotReload.RenderOnHotReload">Render on hot reload</option>
         <option value="BasicTestApp.SectionsTest.ParentComponentWithTwoChildren">Sections test</option>
         <option value="BasicTestApp.SectionsTest.SectionsWithCascadingParameters">Sections with Cascading parameters test</option>

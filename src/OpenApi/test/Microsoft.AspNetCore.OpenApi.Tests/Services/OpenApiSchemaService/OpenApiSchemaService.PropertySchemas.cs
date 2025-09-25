@@ -411,6 +411,236 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         });
     }
 
+    [Fact]
+    public async Task GetOpenApiSchema_Base64StringAttribute_StringProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["base64StringValue"];
+            var nullable = schema.Properties["nullableBase64StringValue"];
+            Assert.Equal(JsonSchemaType.String, nonNullable.Type);
+            Assert.Equal("byte", nonNullable.Format);
+            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal("byte", nullable.Format);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_RangeAttribute_IntProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["rangeIntValue"];
+            var nullable = schema.Properties["nullableRangeIntValue"];
+            Assert.Equal(JsonSchemaType.Integer, nonNullable.Type);
+            Assert.Equal("int32", nonNullable.Format);
+            Assert.Equal("1", nonNullable.Minimum);
+            Assert.Equal("100", nonNullable.Maximum);
+            Assert.Equal(JsonSchemaType.Integer | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal("int32", nullable.Format);
+            Assert.Equal("1", nullable.Minimum);
+            Assert.Equal("100", nullable.Maximum);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_RangeAttribute_DoubleProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["rangeDoubleValue"];
+            var nullable = schema.Properties["nullableRangeDoubleValue"];
+            Assert.Equal(JsonSchemaType.Number, nonNullable.Type);
+            Assert.Equal("double", nonNullable.Format);
+            Assert.Equal("0.1", nonNullable.Minimum as string);
+            Assert.Equal("99.9", nonNullable.Maximum as string);
+            Assert.Equal(JsonSchemaType.Number | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal("double", nullable.Format);
+            Assert.Equal("0.1", nullable.Minimum as string);
+            Assert.Equal("99.9", nullable.Maximum as string);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_RegularExpressionAttribute_StringProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["regexStringValue"];
+            var nullable = schema.Properties["nullableRegexStringValue"];
+            Assert.Equal(JsonSchemaType.String, nonNullable.Type);
+            Assert.Equal("^[A-Z]{3}$", nonNullable.Pattern);
+            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal("^[A-Z]{3}$", nullable.Pattern);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_MaxLengthAttribute_StringProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["maxLengthStringValue"];
+            var nullable = schema.Properties["nullableMaxLengthStringValue"];
+            Assert.Equal(JsonSchemaType.String, nonNullable.Type);
+            Assert.Equal(10, nonNullable.MaxLength);
+            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal(10, nullable.MaxLength);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_MaxLengthAttribute_ArrayProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["maxLengthArrayValue"];
+            var nullable = schema.Properties["nullableMaxLengthArrayValue"];
+            Assert.Equal(JsonSchemaType.Array, nonNullable.Type);
+            Assert.Equal(5, nonNullable.MaxItems);
+            Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal(5, nullable.MaxItems);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_MinLengthAttribute_StringProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["minLengthStringValue"];
+            var nullable = schema.Properties["nullableMinLengthStringValue"];
+            Assert.Equal(JsonSchemaType.String, nonNullable.Type);
+            Assert.Equal(3, nonNullable.MinLength);
+            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal(3, nullable.MinLength);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_MinLengthAttribute_ArrayProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["minLengthArrayValue"];
+            var nullable = schema.Properties["nullableMinLengthArrayValue"];
+            Assert.Equal(JsonSchemaType.Array, nonNullable.Type);
+            Assert.Equal(2, nonNullable.MinItems);
+            Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal(2, nullable.MinItems);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_LengthAttribute_StringProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["lengthStringValue"];
+            var nullable = schema.Properties["nullableLengthStringValue"];
+            Assert.Equal(JsonSchemaType.String, nonNullable.Type);
+            Assert.Equal(2, nonNullable.MinLength);
+            Assert.Equal(8, nonNullable.MaxLength);
+            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal(2, nullable.MinLength);
+            Assert.Equal(8, nullable.MaxLength);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_LengthAttribute_ArrayProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["lengthArrayValue"];
+            var nullable = schema.Properties["nullableLengthArrayValue"];
+            Assert.Equal(JsonSchemaType.Array, nonNullable.Type);
+            Assert.Equal(1, nonNullable.MinItems);
+            Assert.Equal(4, nonNullable.MaxItems);
+            Assert.Equal(JsonSchemaType.Array | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal(1, nullable.MinItems);
+            Assert.Equal(4, nullable.MaxItems);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_UrlAttribute_StringProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["urlStringValue"];
+            var nullable = schema.Properties["nullableUrlStringValue"];
+            Assert.Equal(JsonSchemaType.String, nonNullable.Type);
+            Assert.Equal("uri", nonNullable.Format);
+            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal("uri", nullable.Format);
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiSchema_StringLengthAttribute_StringProperties()
+    {
+        var builder = CreateBuilder();
+        builder.MapPost("/api", (PropertiesWithDataAnnotations model) => { });
+
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var schema = document.Paths["/api"].Operations[HttpMethod.Post].RequestBody.Content.First().Value.Schema;
+            var nonNullable = schema.Properties["stringLengthValue"];
+            var nullable = schema.Properties["nullableStringLengthValue"];
+            Assert.Equal(JsonSchemaType.String, nonNullable.Type);
+            Assert.Equal(5, nonNullable.MinLength);
+            Assert.Equal(20, nonNullable.MaxLength);
+            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, nullable.Type);
+            Assert.Equal(5, nullable.MinLength);
+            Assert.Equal(20, nullable.MaxLength);
+        });
+    }
+
 #nullable enable
     private class NullablePropertiesTestModel
     {
@@ -451,6 +681,73 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         [Description("A description field")]
         public string? NullableDescription { get; set; }
+    }
+
+    private class PropertiesWithDataAnnotations
+    {
+        // Base64StringAttribute
+        [Base64String]
+        public string Base64StringValue { get; set; } = string.Empty;
+        [Base64String]
+        public string? NullableBase64StringValue { get; set; }
+
+        // RangeAttribute
+        [Range(1, 100)]
+        public int RangeIntValue { get; set; } = 0;
+        [Range(1, 100)]
+        public int? NullableRangeIntValue { get; set; }
+        [Range(0.1, 99.9)]
+        public double RangeDoubleValue { get; set; } = 0.0;
+        [Range(0.1, 99.9)]
+        public double? NullableRangeDoubleValue { get; set; }
+
+        // RegularExpressionAttribute
+        [RegularExpression(@"^[A-Z]{3}$")]
+        public string RegexStringValue { get; set; } = string.Empty;
+        [RegularExpression(@"^[A-Z]{3}$")]
+        public string? NullableRegexStringValue { get; set; }
+
+        // MaxLengthAttribute
+        [MaxLength(10)]
+        public string MaxLengthStringValue { get; set; } = string.Empty;
+        [MaxLength(10)]
+        public string? NullableMaxLengthStringValue { get; set; }
+        [MaxLength(5)]
+        public int[] MaxLengthArrayValue { get; set; } = [];
+        [MaxLength(5)]
+        public int[]? NullableMaxLengthArrayValue { get; set; }
+
+        // MinLengthAttribute
+        [MinLength(3)]
+        public string MinLengthStringValue { get; set; } = string.Empty;
+        [MinLength(3)]
+        public string? NullableMinLengthStringValue { get; set; }
+        [MinLength(2)]
+        public int[] MinLengthArrayValue { get; set; } = [];
+        [MinLength(2)]
+        public int[]? NullableMinLengthArrayValue { get; set; }
+
+        // LengthAttribute (custom, if available)
+        [Length(2, 8)]
+        public string LengthStringValue { get; set; } = string.Empty;
+        [Length(2, 8)]
+        public string? NullableLengthStringValue { get; set; }
+        [Length(1, 4)]
+        public int[] LengthArrayValue { get; set; } = [];
+        [Length(1, 4)]
+        public int[]? NullableLengthArrayValue { get; set; }
+
+        // UrlAttribute
+        [Url]
+        public string UrlStringValue { get; set; } = string.Empty;
+        [Url]
+        public string? NullableUrlStringValue { get; set; }
+
+        // StringLengthAttribute
+        [StringLength(20, MinimumLength = 5)]
+        public string StringLengthValue { get; set; } = string.Empty;
+        [StringLength(20, MinimumLength = 5)]
+        public string? NullableStringLengthValue { get; set; }
     }
 #nullable restore
 }
