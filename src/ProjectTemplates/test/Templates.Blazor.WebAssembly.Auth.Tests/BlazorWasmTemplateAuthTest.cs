@@ -113,4 +113,40 @@ public class BlazorWasmTemplateAuthTest : BlazorTemplateTest
     [MemberData(nameof(TemplateDataSingleOrgProgramMain))]
     public Task BlazorWasmStandaloneTemplate_AzureActiveDirectoryTemplate_SingleOrg_NoHttps_ProgramMain_Works(TemplateInstance instance)
         => CreateBuildPublishAsync(auth: instance.Auth, args: instance.Arguments.Union(new[] { ArgConstants.NoHttps }).ToArray(), targetFramework: "netstandard2.1");
+
+    [Theory]
+    [InlineData("Individual")]
+    [InlineData("IndividualB2C")]
+    [InlineData("SingleOrg")]
+    public async Task BlazorWasmAuthTemplates_UseModernNavigateToLogoutMethod(string authType)
+    {
+        // Arrange
+        var args = authType switch
+        {
+            "Individual" => new[] { "--authority", "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration", "--client-id", "test-client-id" },
+            "IndividualB2C" => new[] { "--aad-b2c-instance", "https://example.b2clogin.com/", "--susi-policy-id", "b2c_1_susi", "--client-id", "test-client", "--domain", "test-domain" },
+            "SingleOrg" => new[] { "--domain", "test-domain", "--tenant-id", "test-tenant", "--client-id", "test-client" },
+            _ => throw new ArgumentException($"Unknown auth type: {authType}")
+        };
+
+        // Act
+        var project = await CreateBuildPublishAsync(authType, args, onlyCreate: true);
+
+        // Assert
+        var loginDisplayContent = File.ReadAllText(Path.Combine(project.TemplateOutputDir, "Layout", "LoginDisplay.razor"));
+
+        // Verify the template uses the modern NavigateToLogout method
+        Assert.Contains("Navigation.NavigateToLogout(\"authentication/logout\");", loginDisplayContent);
+        
+        // Verify the template does NOT use obsolete SignOutSessionStateManager methods
+        Assert.DoesNotContain("SignOutManager", loginDisplayContent);
+        Assert.DoesNotContain("SetSignOutState", loginDisplayContent);
+        Assert.DoesNotContain("BeginLogout(MouseEventArgs args)", loginDisplayContent);
+        Assert.DoesNotContain("await SignOutManager.SetSignOutState();", loginDisplayContent);
+        Assert.DoesNotContain("@inject SignOutSessionStateManager SignOutManager", loginDisplayContent);
+        
+        // Verify the method signature is the modern synchronous version
+        Assert.Contains("public void BeginLogOut()", loginDisplayContent);
+        Assert.DoesNotContain("private async Task BeginLogout(MouseEventArgs args)", loginDisplayContent);
+    }
 }
