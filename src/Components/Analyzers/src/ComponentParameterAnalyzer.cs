@@ -166,7 +166,17 @@ public sealed class ComponentParameterAnalyzer : DiagnosticAnalyzer
                 {
                     foreach (var accessor in propertyDeclaration.AccessorList.Accessors)
                     {
-                        if (accessor.Keyword.ValueText == "set")
+                        // Check if this is an init accessor
+                        if (accessor.Keyword.ValueText == "init")
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                DiagnosticDescriptors.ComponentParametersShouldNotUseRequiredOrInit,
+                                accessor.Keyword.GetLocation(),
+                                propertySymbol.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                "init"));
+                        }
+                        // Also check for init in modifiers (though it might not be there)
+                        else if (accessor.Keyword.ValueText == "set")
                         {
                             foreach (var modifier in accessor.Modifiers)
                             {
