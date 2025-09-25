@@ -19,6 +19,7 @@
 using System.IO.Compression;
 using System.Linq;
 using Grpc.AspNetCore.Server;
+using Grpc.AspNetCore.Server.Internal;
 using Grpc.Net.Compression;
 
 namespace Grpc.Shared.Server;
@@ -70,6 +71,8 @@ internal sealed class MethodOptions
     // Fast check for whether the service has any interceptors
     internal bool HasInterceptors { get; }
 
+    internal bool SuppressCreatingService { get; }
+
     private MethodOptions(
         Dictionary<string, ICompressionProvider> compressionProviders,
         InterceptorCollection interceptors,
@@ -77,7 +80,8 @@ internal sealed class MethodOptions
         int? maxReceiveMessageSize,
         bool? enableDetailedErrors,
         string? responseCompressionAlgorithm,
-        CompressionLevel? responseCompressionLevel)
+        CompressionLevel? responseCompressionLevel,
+        bool suppressCreatingService)
     {
         CompressionProviders = compressionProviders;
         Interceptors = interceptors;
@@ -87,6 +91,7 @@ internal sealed class MethodOptions
         EnableDetailedErrors = enableDetailedErrors;
         ResponseCompressionAlgorithm = responseCompressionAlgorithm;
         ResponseCompressionLevel = responseCompressionLevel;
+        SuppressCreatingService = suppressCreatingService;
 
         if (ResponseCompressionAlgorithm != null)
         {
@@ -115,8 +120,9 @@ internal sealed class MethodOptions
         bool? enableDetailedErrors = null;
         string? responseCompressionAlgorithm = null;
         CompressionLevel? responseCompressionLevel = null;
+        bool? suppressCreatingService = null;
 
-        foreach (var options in Enumerable.Reverse(serviceOptions))
+        foreach (var options in serviceOptions.Reverse())
         {
             AddCompressionProviders(resolvedCompressionProviders, options.CompressionProviders);
             tempInterceptors.InsertRange(0, options.Interceptors);
@@ -128,9 +134,9 @@ internal sealed class MethodOptions
         }
 
         var interceptors = new InterceptorCollection();
-        foreach (var interceptor in tempInterceptors)
+        foreach (var registration in tempInterceptors)
         {
-            interceptors.Add(interceptor);
+            interceptors.Add(registration);
         }
 
         return new MethodOptions
@@ -141,7 +147,8 @@ internal sealed class MethodOptions
             maxReceiveMessageSize: maxReceiveMessageSize,
             enableDetailedErrors: enableDetailedErrors,
             responseCompressionAlgorithm: responseCompressionAlgorithm,
-            responseCompressionLevel: responseCompressionLevel
+            responseCompressionLevel: responseCompressionLevel,
+            suppressCreatingService: suppressCreatingService ?? false
         );
     }
 
@@ -151,10 +158,7 @@ internal sealed class MethodOptions
         {
             foreach (var compressionProvider in compressionProviders)
             {
-                if (!resolvedProviders.ContainsKey(compressionProvider.EncodingName))
-                {
-                    resolvedProviders.Add(compressionProvider.EncodingName, compressionProvider);
-                }
+                resolvedProviders.TryAdd(compressionProvider.EncodingName, compressionProvider);
             }
         }
     }

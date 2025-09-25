@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Validation;
 
 namespace Microsoft.AspNetCore.Routing;
 
@@ -239,7 +240,9 @@ internal sealed class RouteEndpointDataSource : EndpointDataSource
 
         // Initialize this route endpoint builder with validation convention if validation options
         // are registered and validation is not disabled on the endpoint.
+#pragma warning disable ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var hasValidationResolvers = builder.ApplicationServices.GetService<IOptions<ValidationOptions>>() is { Value: { } options } && options.Resolvers.Count > 0;
+#pragma warning restore ASP0029 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         var hasDisableValidationMetadata = builder.Metadata.OfType<IDisableValidationMetadata>().FirstOrDefault() is not null;
         if (hasValidationResolvers && !hasDisableValidationMetadata)
         {

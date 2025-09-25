@@ -24,13 +24,16 @@ internal partial class CircuitHost : IAsyncDisposable
     private readonly CircuitOptions _options;
     private readonly RemoteNavigationManager _navigationManager;
     private readonly ILogger _logger;
-    private readonly CircuitMetrics? _circuitMetrics;
+    private readonly CircuitMetrics _circuitMetrics;
+    private readonly CircuitActivitySource _circuitActivitySource;
     private Func<Func<Task>, Task> _dispatchInboundActivity;
     private CircuitHandler[] _circuitHandlers;
     private bool _initialized;
     private bool _isFirstUpdate = true;
+    private bool _onConnectionDownFired;
     private bool _disposed;
     private long _startTime;
+    private PersistedCircuitState _persistedCircuitState;
 
     // This event is fired when there's an unrecoverable exception coming from the circuit, and
     // it need so be torn down. The registry listens to this even so that the circuit can
@@ -50,7 +53,8 @@ internal partial class CircuitHost : IAsyncDisposable
         RemoteJSRuntime jsRuntime,
         RemoteNavigationManager navigationManager,
         CircuitHandler[] circuitHandlers,
-        CircuitMetrics? circuitMetrics,
+        CircuitMetrics circuitMetrics,
+        CircuitActivitySource circuitActivitySource,
         ILogger logger)
     {
         CircuitId = circuitId;
@@ -69,6 +73,7 @@ internal partial class CircuitHost : IAsyncDisposable
         _navigationManager = navigationManager ?? throw new ArgumentNullException(nameof(navigationManager));
         _circuitHandlers = circuitHandlers ?? throw new ArgumentNullException(nameof(circuitHandlers));
         _circuitMetrics = circuitMetrics;
+        _circuitActivitySource = circuitActivitySource;
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
         Services = scope.ServiceProvider;
@@ -103,9 +108,11 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public IServiceProvider Services { get; }
 
+    internal bool HasPendingPersistedCircuitState => _persistedCircuitState != null;
+
     // InitializeAsync is used in a fire-and-forget context, so it's responsible for its own
     // error handling.
-    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, CancellationToken cancellationToken)
+    public Task InitializeAsync(ProtectedPrerenderComponentApplicationStore store, ActivityContext httpActivityContext, CancellationToken cancellationToken)
     {
         Log.InitializationStarted(_logger);
 
@@ -116,12 +123,17 @@ internal partial class CircuitHost : IAsyncDisposable
                 throw new InvalidOperationException("The circuit host is already initialized.");
             }
 
+            CircuitActivityHandle activityHandle = default;
+
             try
             {
                 _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
+                activityHandle = _circuitActivitySource.StartCircuitActivity(CircuitId.Id, httpActivityContext);
+                _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
+
                 // We only run the handlers in case we are in a Blazor Server scenario, which renders
-                // the components inmediately during start.
+                // the components immediately during start.
                 // On Blazor Web scenarios we delay running these handlers until the first UpdateRootComponents call
                 // We do this so that the handlers can have access to the restored application state.
                 if (Descriptors.Count > 0)
@@ -162,9 +174,13 @@ internal partial class CircuitHost : IAsyncDisposable
                 _isFirstUpdate = Descriptors.Count == 0;
 
                 Log.InitializationSucceeded(_logger);
+
+                _circuitActivitySource.StopCircuitActivity(activityHandle, null);
             }
             catch (Exception ex)
             {
+                _circuitActivitySource.StopCircuitActivity(activityHandle, ex);
+
                 // Report errors asynchronously. InitializeAsync is designed not to throw.
                 Log.InitializationFailed(_logger, ex);
                 UnhandledException?.Invoke(this, new UnhandledExceptionEventArgs(ex, isTerminating: false));
@@ -235,7 +251,6 @@ internal partial class CircuitHost : IAsyncDisposable
     private async Task OnCircuitOpenedAsync(CancellationToken cancellationToken)
     {
         Log.CircuitOpened(_logger, CircuitId);
-        _startTime = (_circuitMetrics != null && _circuitMetrics.IsDurationEnabled()) ? Stopwatch.GetTimestamp() : 0;
         _circuitMetrics?.OnCircuitOpened();
 
         Renderer.Dispatcher.AssertAccess();
@@ -265,6 +280,7 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public async Task OnConnectionUpAsync(CancellationToken cancellationToken)
     {
+        _onConnectionDownFired = false;
         Log.ConnectionUp(_logger, CircuitId, Client.ConnectionId);
         _circuitMetrics?.OnConnectionUp();
 
@@ -295,6 +311,12 @@ internal partial class CircuitHost : IAsyncDisposable
 
     public async Task OnConnectionDownAsync(CancellationToken cancellationToken)
     {
+        if (_onConnectionDownFired)
+        {
+            return;
+        }
+
+        _onConnectionDownFired = true;
         Log.ConnectionDown(_logger, CircuitId, Client.ConnectionId);
         _circuitMetrics?.OnConnectionDown();
 
@@ -738,7 +760,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
     internal Task UpdateRootComponents(
         RootComponentOperationBatch operationBatch,
-        ProtectedPrerenderComponentApplicationStore store,
+        IClearableStore store,
+        bool isRestore,
         CancellationToken cancellation)
     {
         Log.UpdateRootComponentsStarted(_logger);
@@ -749,6 +772,8 @@ internal partial class CircuitHost : IAsyncDisposable
             var shouldWaitForQuiescence = false;
             var operations = operationBatch.Operations;
             var batchId = operationBatch.BatchId;
+            var postRemovalTask = Task.CompletedTask;
+            TaskCompletionSource? taskCompletionSource = null;
             try
             {
                 if (Descriptors.Count > 0)
@@ -758,19 +783,41 @@ internal partial class CircuitHost : IAsyncDisposable
                     throw new InvalidOperationException("UpdateRootComponents is not supported when components have" +
                         " been provided during circuit start up.");
                 }
+
+                if (store != null)
+                {
+                    shouldClearStore = true;
+                    // We only do this if we have no root components. Otherwise, the state would have been
+                    // provided during the start up process
+                    var persistenceManager = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
+                    if (_isFirstUpdate)
+                    {
+                        persistenceManager.SetPlatformRenderMode(RenderMode.InteractiveServer);
+                    }
+
+                    // Use the appropriate scenario based on whether this is a restore operation
+                    var context = (isRestore, _isFirstUpdate) switch
+                    {
+                        (_, false) => RestoreContext.ValueUpdate,
+                        (true, _) => RestoreContext.LastSnapshot,
+                        (false, _) => RestoreContext.InitialValue
+                    };
+                    if (context == RestoreContext.ValueUpdate)
+                    {
+                        taskCompletionSource = new();
+                        postRemovalTask = EnqueueRestore(taskCompletionSource, persistenceManager, context, store);
+                    }
+                    else
+                    {
+                        // Trigger the restore of the state right away.
+                        await persistenceManager.RestoreStateAsync(store, context);
+                    }
+                }
+
                 if (_isFirstUpdate)
                 {
                     _isFirstUpdate = false;
                     shouldWaitForQuiescence = true;
-                    if (store != null)
-                    {
-                        shouldClearStore = true;
-                        // We only do this if we have no root components. Otherwise, the state would have been
-                        // provided during the start up process
-                        var appLifetime = _scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
-                        appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
-                        await appLifetime.RestoreStateAsync(store);
-                    }
 
                     // Retrieve the circuit handlers at this point.
                     _circuitHandlers = [.. _scope.ServiceProvider.GetServices<CircuitHandler>().OrderBy(h => h.Order)];
@@ -788,7 +835,10 @@ internal partial class CircuitHost : IAsyncDisposable
                     }
                 }
 
-                await PerformRootComponentOperations(operations, shouldWaitForQuiescence);
+                var operationsTask = PerformRootComponentOperations(operations, shouldWaitForQuiescence, postRemovalTask);
+                taskCompletionSource?.SetResult();
+
+                await operationsTask;
 
                 await Client.SendAsync("JS.EndUpdateRootComponents", batchId);
 
@@ -808,17 +858,30 @@ internal partial class CircuitHost : IAsyncDisposable
                     // At this point all components have successfully produced an initial render and we can clear the contents of the component
                     // application state store. This ensures the memory that was not used during the initial render of these components gets
                     // reclaimed since no-one else is holding on to it any longer.
-                    store.ExistingState.Clear();
+                    store.Clear();
                 }
             }
         });
     }
 
+    private static async Task EnqueueRestore(
+        TaskCompletionSource taskCompletionSource,
+        ComponentStatePersistenceManager manager,
+        RestoreContext context,
+        IPersistentComponentStateStore store)
+    {
+        await taskCompletionSource.Task;
+        await manager.RestoreStateAsync(store, context);
+    }
+
     private async ValueTask PerformRootComponentOperations(
         RootComponentOperation[] operations,
-        bool shouldWaitForQuiescence)
+        bool shouldWaitForQuiescence,
+        Task postStateTask)
     {
         var webRootComponentManager = Renderer.GetOrCreateWebRootComponentManager();
+        webRootComponentManager.SetCurrentUpdateTask(postStateTask);
+
         var pendingTasks = shouldWaitForQuiescence
             ? new Task[operations.Length]
             : null;
@@ -838,6 +901,7 @@ internal partial class CircuitHost : IAsyncDisposable
                             operation.Descriptor.ComponentType,
                             operation.Marker.Value.Key,
                             operation.Descriptor.Parameters);
+
                         pendingTasks?[i] = task;
                         break;
                     case RootComponentOperationType.Update:
@@ -860,6 +924,42 @@ internal partial class CircuitHost : IAsyncDisposable
         if (pendingTasks != null)
         {
             await Task.WhenAll(pendingTasks);
+        }
+    }
+
+    internal void AttachPersistedState(PersistedCircuitState persistedCircuitState)
+    {
+        if (_persistedCircuitState != null)
+        {
+            throw new InvalidOperationException("Persisted state has already been attached to this circuit.");
+        }
+
+        _persistedCircuitState = persistedCircuitState;
+    }
+
+    internal PersistedCircuitState TakePersistedCircuitState()
+    {
+        var result = _persistedCircuitState;
+        _persistedCircuitState = null;
+        return result;
+    }
+
+    internal async Task<bool> SendPersistedStateToClient(string rootComponents, string applicationState, CancellationToken cancellation)
+    {
+        try
+        {
+            var succeded = await Client.InvokeAsync<bool>(
+                "JS.SavePersistedState",
+                CircuitId.Secret,
+                rootComponents,
+                applicationState,
+                cancellationToken: cancellation);
+            return succeded;
+        }
+        catch (Exception ex)
+        {
+            Log.FailedToSaveStateToClient(_logger, CircuitId, ex);
+            return false;
         }
     }
 
@@ -1018,5 +1118,8 @@ internal partial class CircuitHost : IAsyncDisposable
 
         [LoggerMessage(219, LogLevel.Error, "Location change to '{URI}' in circuit '{CircuitId}' failed.", EventName = "LocationChangeFailedInCircuit")]
         public static partial void LocationChangeFailedInCircuit(ILogger logger, string uri, CircuitId circuitId, Exception exception);
+
+        [LoggerMessage(220, LogLevel.Debug, "Failed to save state to client in circuit '{CircuitId}'.", EventName = "FailedToSaveStateToClient")]
+        public static partial void FailedToSaveStateToClient(ILogger logger, CircuitId circuitId, Exception exception);
     }
 }

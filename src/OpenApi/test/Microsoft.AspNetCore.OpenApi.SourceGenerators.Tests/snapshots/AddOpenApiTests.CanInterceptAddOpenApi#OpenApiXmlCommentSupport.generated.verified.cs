@@ -39,10 +39,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.OpenApi;
     using Microsoft.AspNetCore.Mvc.Controllers;
+    using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.OpenApi.Models;
-    using Microsoft.OpenApi.Models.References;
-    using Microsoft.OpenApi.Any;
+    using Microsoft.OpenApi;
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file record XmlComment(
@@ -77,6 +76,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class DocumentationCommentIdHelper
     {
         /// <summary>
@@ -131,6 +131,30 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 }
                 sb.Append(')');
             }
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// Generates a documentation comment ID for a property given its container type and property name.
+        /// Example: P:Namespace.ContainingType.PropertyName
+        /// </summary>
+        public static string CreateDocumentationId(Type containerType, string propertyName)
+        {
+            if (containerType == null)
+            {
+                throw new ArgumentNullException(nameof(containerType));
+            }
+            if (string.IsNullOrEmpty(propertyName))
+            {
+                throw new ArgumentException("Property name cannot be null or empty.", nameof(propertyName));
+            }
+
+            var sb = new StringBuilder();
+            sb.Append("P:");
+            sb.Append(GetTypeDocId(containerType, includeGenericArguments: false, omitGenericArity: false));
+            sb.Append('.');
+            sb.Append(propertyName);
 
             return sb.ToString();
         }
@@ -286,6 +310,33 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             // For non-generic types, use FullName (if available) and replace nested type separators.
             return (type.FullName ?? type.Name).Replace('+', '.');
         }
+
+        /// <summary>
+        /// Normalizes a documentation comment ID to match the compiler-style format.
+        /// Strips the return type suffix for ordinary methods but retains it for conversion operators.
+        /// </summary>
+        /// <param name="docId">The documentation comment ID to normalize.</param>
+        /// <returns>The normalized documentation comment ID.</returns>
+        public static string NormalizeDocId(string docId)
+        {
+            // Find the tilde character that indicates the return type suffix
+            var tildeIndex = docId.IndexOf('~');
+            if (tildeIndex == -1)
+            {
+                // No return type suffix, return as-is
+                return docId;
+            }
+
+            // Check if this is a conversion operator (op_Implicit or op_Explicit)
+            // For these operators, we need to keep the return type suffix
+            if (docId.Contains("op_Implicit") || docId.Contains("op_Explicit"))
+            {
+                return docId;
+            }
+
+            // For ordinary methods, strip the return type suffix
+            return docId.Substring(0, tildeIndex);
+        }
     }
 
     [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
@@ -301,7 +352,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             {
                 return Task.CompletedTask;
             }
-            if (XmlCommentCache.Cache.TryGetValue(methodInfo.CreateDocumentationId(), out var methodComment))
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(methodInfo.CreateDocumentationId()), out var methodComment))
             {
                 if (methodComment.Summary is { } summary)
                 {
@@ -323,9 +374,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         var operationParameter = operation.Parameters?.SingleOrDefault(parameter => parameter.Name == parameterComment.Name);
                         if (operationParameter is not null)
                         {
-                            var targetOperationParameter = operationParameter is OpenApiParameterReference reference
-                                ? reference.Target
-                                : (OpenApiParameter)operationParameter;
+                            var targetOperationParameter = UnwrapOpenApiParameter(operationParameter);
                             targetOperationParameter.Description = parameterComment.Description;
                             if (parameterComment.Example is { } jsonString)
                             {
@@ -341,7 +390,12 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                 requestBody.Description = parameterComment.Description;
                                 if (parameterComment.Example is { } jsonString)
                                 {
-                                    foreach (var mediaType in requestBody.Content.Values)
+                                    var content = requestBody?.Content?.Values;
+                                    if (content is null)
+                                    {
+                                        continue;
+                                    }
+                                    foreach (var mediaType in content)
                                     {
                                         mediaType.Example = jsonString.Parse();
                                     }
@@ -350,6 +404,13 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         }
                     }
                 }
+                // Applies `<returns>` on XML comments for operation with single response value.
+                if (methodComment.Returns is { } returns && operation.Responses is { Count: 1 })
+                {
+                    var response = operation.Responses.First();
+                    response.Value.Description = returns;
+                }
+                // Applies `<response>` on XML comments for operation with multiple response values.
                 if (methodComment.Responses is { Count: > 0} && operation.Responses is { Count: > 0 })
                 {
                     foreach (var response in operation.Responses)
@@ -362,8 +423,84 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     }
                 }
             }
+            foreach (var parameterDescription in context.Description.ParameterDescriptions)
+            {
+                var metadata = parameterDescription.ModelMetadata;
+                if (metadata.MetadataKind == ModelMetadataKind.Property
+                    && metadata.ContainerType is { } containerType
+                    && metadata.PropertyName is { } propertyName)
+                {
+                    var propertyDocId = DocumentationCommentIdHelper.CreateDocumentationId(containerType, propertyName);
+                    if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyDocId), out var propertyComment))
+                    {
+                        var parameter = operation.Parameters?.SingleOrDefault(p => p.Name == metadata.Name);
+                        var description = propertyComment.Summary;
+                        if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                        {
+                            description = $"{description}\n{propertyComment.Value}";
+                        }
+                        else if (string.IsNullOrEmpty(description))
+                        {
+                            description = propertyComment.Value;
+                        }
+                        if (parameter is null)
+                        {
+                            if (operation.RequestBody is not null)
+                            {
+                                operation.RequestBody.Description = description;
+                                if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                                {
+                                    var content = operation.RequestBody.Content?.Values;
+                                    if (content is null)
+                                    {
+                                        continue;
+                                    }
+                                    var parsedExample = jsonString.Parse();
+                                    foreach (var mediaType in content)
+                                    {
+                                        mediaType.Example = parsedExample;
+                                    }
+                                }
+                            }
+                            continue;
+                        }
+                        var targetOperationParameter = UnwrapOpenApiParameter(parameter);
+                        if (targetOperationParameter is not null)
+                        {
+                            targetOperationParameter.Description = description;
+                            if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                            {
+                                targetOperationParameter.Example = jsonString.Parse();
+                            }
+                        }
+                    }
+                }
+            }
 
             return Task.CompletedTask;
+        }
+
+        private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
+        {
+            if (sourceParameter is OpenApiParameterReference parameterReference)
+            {
+                if (parameterReference.Target is OpenApiParameter target)
+                {
+                    return target;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+                }
+            }
+            else if (sourceParameter is OpenApiParameter directParameter)
+            {
+                return directParameter;
+            }
+            else
+            {
+                throw new InvalidOperationException($"The input schema must be an {nameof(OpenApiParameter)} or {nameof(OpenApiParameterReference)}.");
+            }
         }
     }
 
@@ -372,18 +509,8 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
-            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
-            {
-                if (XmlCommentCache.Cache.TryGetValue(propertyInfo.CreateDocumentationId(), out var propertyComment))
-                {
-                    schema.Description = propertyComment.Value ?? propertyComment.Returns ?? propertyComment.Summary;
-                    if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
-                    {
-                        schema.Example = jsonString.Parse();
-                    }
-                }
-            }
-            if (XmlCommentCache.Cache.TryGetValue(context.JsonTypeInfo.Type.CreateDocumentationId(), out var typeComment))
+            // Apply comments from the type
+            if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(context.JsonTypeInfo.Type.CreateDocumentationId()), out var typeComment))
             {
                 schema.Description = typeComment.Summary;
                 if (typeComment.Examples?.FirstOrDefault() is { } jsonString)
@@ -391,10 +518,51 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     schema.Example = jsonString.Parse();
                 }
             }
+
+            if (context.JsonPropertyInfo is { AttributeProvider: PropertyInfo propertyInfo })
+            {
+                // Apply comments from the property
+                if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
+                {
+                    var description = propertyComment.Summary;
+                    if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
+                    {
+                        description = $"{description}\n{propertyComment.Value}";
+                    }
+                    else if (string.IsNullOrEmpty(description))
+                    {
+                        description = propertyComment.Value;
+                    }
+                    if (schema.Metadata is null
+                        || !schema.Metadata.TryGetValue("x-schema-id", out var schemaId)
+                        || string.IsNullOrEmpty(schemaId as string))
+                    {
+                        // Inlined schema
+                        schema.Description = description;
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Example = jsonString.Parse();
+                        }
+                    }
+                    else
+                    {
+                        // Schema Reference
+                        if (!string.IsNullOrEmpty(description))
+                        {
+                            schema.Metadata["x-ref-description"] = description;
+                        }
+                        if (propertyComment.Examples?.FirstOrDefault() is { } jsonString)
+                        {
+                            schema.Metadata["x-ref-example"] = jsonString.Parse()!;
+                        }
+                    }
+                }
+            }
             return Task.CompletedTask;
         }
     }
 
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.AspNetCore.OpenApi.SourceGenerators, Version=42.42.42.42, Culture=neutral, PublicKeyToken=adb9793829ddae60", "42.42.42.42")]
     file static class JsonNodeExtensions
     {
         public static JsonNode? Parse(this string? json)

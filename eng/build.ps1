@@ -99,6 +99,12 @@ Additional feed that can be used when downloading .NET runtimes and SDKs
 .PARAMETER RuntimeSourceFeedKey
 Key for feed that can be used when downloading .NET runtimes and SDKs
 
+.PARAMETER ProductBuild
+Build the repository in product mode (short: -pb).
+
+.PARAMETER fromVMR
+Set when building from within the VMR.
+
 .EXAMPLE
 Building both native and managed projects.
 
@@ -196,6 +202,13 @@ param(
     [Alias('DotNetRuntimeSourceFeedKey')]
     [string]$RuntimeSourceFeedKey,
 
+    # Product build
+    [Alias('pb')]
+    [switch]$ProductBuild,
+
+    # Intentionally lowercase as tools.ps1 depends on it
+    [switch]$fromVMR,
+
     # Capture the rest
     [Parameter(ValueFromRemainingArguments = $true)]
     [string[]]$MSBuildArguments
@@ -275,6 +288,9 @@ $MSBuildArguments += "/p:Publish=$Publish"
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
 
+if ($ProductBuild) { $MSBuildArguments += "/p:DotNetBuild=$ProductBuild" }
+if ($fromVMR) { $MSBuildArguments += "/p:DotNetBuildFromVMR=$fromVMR" }
+
 if (-not $Configuration) {
     $Configuration = if ($CI) { 'Release' } else { 'Debug' }
 }
@@ -289,6 +305,8 @@ if ($RuntimeSourceFeed -or $RuntimeSourceFeedKey) {
     $ToolsetBuildArguments += $runtimeFeedArg
     $ToolsetBuildArguments += $runtimeFeedKeyArg
 }
+if ($ProductBuild) { $ToolsetBuildArguments += "/p:DotNetBuild=$ProductBuild" }
+if ($fromVMR) { $ToolsetBuildArguments += "/p:DotNetBuildFromVMR=$fromVMR" }
 
 # Split build categories between dotnet msbuild and desktop msbuild. Use desktop msbuild as little as possible.
 [string[]]$dotnetBuildArguments = ''
@@ -351,10 +369,6 @@ Remove-Item variable:global:_BuildTool -ea Ignore
 Remove-Item variable:global:_DotNetInstallDir -ea Ignore
 Remove-Item variable:global:_ToolsetBuildProj -ea Ignore
 Remove-Item variable:global:_MSBuildExe -ea Ignore
-
-# tools.ps1 expects the remaining arguments to be available via the $properties string array variable
-# TODO: Remove when https://github.com/dotnet/source-build/issues/4337 is implemented.
-[string[]] $properties = $MSBuildArguments
 
 # Import Arcade
 . "$PSScriptRoot/common/tools.ps1"

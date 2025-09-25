@@ -3,6 +3,7 @@
 
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -1277,8 +1278,9 @@ public class DefaultApplicationModelProviderTest
 
         // Assert
         Assert.NotNull(selector.EndpointMetadata);
-        Assert.Single(selector.EndpointMetadata);
-        Assert.IsType<ProducesResponseTypeMetadata>(selector.EndpointMetadata.Single()); 
+        Assert.Equal(2, selector.EndpointMetadata.Count);
+        Assert.Single(selector.EndpointMetadata.OfType<ProducesResponseTypeMetadata>());
+        Assert.Single(selector.EndpointMetadata.OfType<IDisableCookieRedirectMetadata>());
         Assert.Equal(200, ((ProducesResponseTypeMetadata)selector.EndpointMetadata[0]).StatusCode);
     }
 

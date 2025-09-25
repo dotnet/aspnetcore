@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.OpenApi;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
 {
@@ -33,7 +32,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, options, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -46,8 +45,8 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
                 item => Assert.Equal("square", item.Key)
             );
             Assert.Collection(schema.Discriminator.Mapping,
-                item => Assert.Equal("#/components/schemas/MyShapeMyTriangle", item.Value),
-                item => Assert.Equal("#/components/schemas/MyShapeMySquare", item.Value)
+                item => Assert.Equal("#/components/schemas/MyShapeMyTriangle", item.Value.Reference.ReferenceV3),
+                item => Assert.Equal("#/components/schemas/MyShapeMySquare", item.Value.Reference.ReferenceV3)
             );
             // Assert the schemas with the discriminator have been inserted into the components
             Assert.True(document.Components.Schemas.TryGetValue("MyShapeMyTriangle", out var triangleSchema));
@@ -71,7 +70,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, options, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
 
             Assert.NotNull(requestBody);
@@ -120,7 +119,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, options, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
 
             Assert.NotNull(requestBody);
@@ -177,7 +176,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
 
         await VerifyOpenApiDocument(builder, options, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var response = operation.Responses["200"];
 
@@ -220,7 +219,7 @@ public class CreateSchemaReferenceIdTests : OpenApiDocumentServiceTestBase
 
         await VerifyOpenApiDocument(builder, options, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var response = operation.Responses["200"];
 

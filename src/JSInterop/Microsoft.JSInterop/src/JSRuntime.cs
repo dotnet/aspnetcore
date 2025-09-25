@@ -85,12 +85,12 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         => InvokeAsync<TValue>(WindowObjectId, identifier, JSCallType.FunctionCall, cancellationToken, args);
 
     /// <inheritdoc />
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, object?[]? args)
-        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.NewCall, args);
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args)
+        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.ConstructorCall, args);
 
     /// <inheritdoc />
-    public ValueTask<IJSObjectReference> InvokeNewAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
-        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.NewCall, cancellationToken, args);
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+        => InvokeAsync<IJSObjectReference>(WindowObjectId, identifier, JSCallType.ConstructorCall, cancellationToken, args);
 
     /// <inheritdoc />
     public ValueTask<TValue> GetValueAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(string identifier)
@@ -192,7 +192,8 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
         => BeginInvokeJS(taskId, identifier, argsJson, JSCallResultType.Default, WindowObjectId);
 
     /// <summary>
-    /// Begins an asynchronous function invocation.
+    /// Begins an asynchronous function invocation with the call type <see cref="JSCallType.FunctionCall"/>.
+    /// For more configuration options, use the overload <see cref="BeginInvokeJS(in JSInvocationInfo)" />.
     /// </summary>
     /// <param name="taskId">The identifier for the function invocation, or zero if no async callback is required.</param>
     /// <param name="identifier">The identifier for the function to invoke.</param>
@@ -205,7 +206,10 @@ public abstract partial class JSRuntime : IJSRuntime, IDisposable
     /// Begins an asynchronous function invocation.
     /// </summary>
     /// <param name="invocationInfo">Configuration of the interop call from .NET to JavaScript.</param>
-    protected abstract void BeginInvokeJS(in JSInvocationInfo invocationInfo);
+    protected virtual void BeginInvokeJS(in JSInvocationInfo invocationInfo)
+    {
+        BeginInvokeJS(invocationInfo.AsyncHandle, invocationInfo.Identifier, invocationInfo.ArgsJson, invocationInfo.ResultType, invocationInfo.TargetInstanceId);
+    }
 
     /// <summary>
     /// Completes an async JS interop call from JavaScript to .NET

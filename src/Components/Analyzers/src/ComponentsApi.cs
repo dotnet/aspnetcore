@@ -23,6 +23,24 @@ internal static class ComponentsApi
         public const string MetadataName = FullTypeName;
     }
 
+    public static class SupplyParameterFromFormAttribute
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.SupplyParameterFromFormAttribute";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class ComponentBase
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.ComponentBase";
+        public const string MetadataName = FullTypeName;
+    }
+
+    public static class PersistentStateAttribute
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.PersistentStateAttribute";
+        public const string MetadataName = FullTypeName;
+    }
+
     public static class IComponent
     {
         public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";

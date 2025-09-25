@@ -1,19 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
 internal sealed class SizeLimitedStream : Stream
 {
     private readonly Stream _innerStream;
     private readonly long? _sizeLimit;
-
+    private readonly Action<long>? _handleSizeLimit;
     private long _totalBytesRead;
 
-    public SizeLimitedStream(Stream innerStream, long? sizeLimit)
+    public SizeLimitedStream(Stream innerStream, long? sizeLimit, Action<long>? handleSizeLimit = null)
     {
         ArgumentNullException.ThrowIfNull(innerStream);
 
         _innerStream = innerStream;
         _sizeLimit = sizeLimit;
+        _handleSizeLimit = handleSizeLimit;
     }
 
     public override bool CanRead => _innerStream.CanRead;
@@ -48,7 +51,14 @@ internal sealed class SizeLimitedStream : Stream
         _totalBytesRead += bytesRead;
         if (_totalBytesRead > _sizeLimit)
         {
-            throw new InvalidOperationException("The maximum number of bytes have been read.");
+            if (_handleSizeLimit != null)
+            {
+                _handleSizeLimit(_sizeLimit.Value);
+            }
+            else
+            {
+                throw new InvalidOperationException("The maximum number of bytes have been read.");
+            }
         }
 
         return bytesRead;
@@ -81,7 +91,14 @@ internal sealed class SizeLimitedStream : Stream
         _totalBytesRead += bytesRead;
         if (_totalBytesRead > _sizeLimit)
         {
-            throw new InvalidOperationException("The maximum number of bytes have been read.");
+            if (_handleSizeLimit != null)
+            {
+                _handleSizeLimit(_sizeLimit.Value);
+            }
+            else
+            {
+                throw new InvalidOperationException("The maximum number of bytes have been read.");
+            }
         }
 
         return bytesRead;

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Security;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -36,6 +37,7 @@ internal partial class RequestContext :
     IHttpResponseTrailersFeature,
     IHttpResetFeature,
     IHttpSysRequestDelegationFeature,
+    IHttpSysRequestPropertyFeature,
     IConnectionLifetimeNotificationFeature
 {
     private IFeatureCollection? _features;
@@ -592,6 +594,8 @@ internal partial class RequestContext :
 
     SslProtocols ITlsHandshakeFeature.Protocol => Request.Protocol;
 
+    TlsCipherSuite? ITlsHandshakeFeature.NegotiatedCipherSuite => Request.NegotiatedCipherSuite;
+
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
     CipherAlgorithmType ITlsHandshakeFeature.CipherAlgorithm => Request.CipherAlgorithm;
 
@@ -752,5 +756,10 @@ internal partial class RequestContext :
         {
             Response.Headers[HeaderNames.Connection] = "close";
         }
+    }
+
+    public bool TryGetTlsClientHello(Span<byte> tlsClientHelloBytesDestination, out int bytesReturned)
+    {
+        return TryGetTlsClientHelloMessageBytes(tlsClientHelloBytesDestination, out bytesReturned);
     }
 }

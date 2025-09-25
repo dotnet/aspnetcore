@@ -1,0 +1,35 @@
+﻿@*#if (UseWebAssembly && InteractiveAtRoot) -->
+<script type="module" src="@Assets["Layout/ReconnectModal.razor.js"]"></script>
+##else
+<script type="module" src="@Assets["Components/Layout/ReconnectModal.razor.js"]"></script>
+##endif*@
+
+<dialog id="components-reconnect-modal" data-nosnippet>
+    <div class="components-reconnect-container">
+        <div class="components-rejoining-animation" aria-hidden="true">
+            <div></div>
+            <div></div>
+        </div>
+        <p class="components-reconnect-first-attempt-visible">
+            Rejoining the server...
+        </p>
+        <p class="components-reconnect-repeated-attempt-visible">
+            Rejoin failed... trying again in <span id="components-seconds-to-next-attempt"></span> seconds.
+        </p>
+        <p class="components-reconnect-failed-visible">
+            Failed to rejoin.<br />Please retry or reload the page.
+        </p>
+        <button id="components-reconnect-button" class="components-reconnect-failed-visible">
+            Retry
+        </button>
+        <p class="components-pause-visible">
+            The session has been paused by the server.
+        </p>
+        <button id="components-resume-button" class="components-pause-visible">
+            Resume
+        </button>
+        <p class="components-resume-failed-visible">
+            Failed to resume the session.<br />Please reload the page.
+        </p>
+    </div>
+</dialog>

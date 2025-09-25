@@ -278,11 +278,13 @@ public class EventTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void PreventDefault_DotNotApplyByDefault()
+    public void PreventDefault_DoNotApplyByDefault()
     {
         var appElement = Browser.MountTestComponent<EventPreventDefaultComponent>();
         appElement.FindElement(By.Id("form-2-button")).Click();
-        Assert.Contains("about:blank", Browser.Url);
+
+        // The URL should change because the submit event is not prevented
+        Browser.Contains("about:blank", () => Browser.Url);
     }
 
     [Fact]

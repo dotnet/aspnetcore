@@ -5,8 +5,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 
 namespace Microsoft.AspNetCore.OpenApi.Microbenchmarks;
 
@@ -102,13 +101,14 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
         {
             _options.AddSchemaTransformer((schema, context, token) =>
             {
+                schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
                 if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription != null)
                 {
-                    schema.Extensions["x-my-extension"] = new OpenApiAny(context.ParameterDescription.Name);
+                    schema.Extensions["x-my-extension"] = new JsonNodeExtension(context.ParameterDescription.Name);
                 }
                 else
                 {
-                    schema.Extensions["x-my-extension"] = new OpenApiAny("response");
+                    schema.Extensions["x-my-extension"] = new JsonNodeExtension("response");
                 }
                 return Task.CompletedTask;
             });
@@ -175,13 +175,14 @@ public class TransformersBenchmark : OpenApiDocumentServiceTestBase
     {
         public Task TransformAsync(OpenApiSchema schema, OpenApiSchemaTransformerContext context, CancellationToken cancellationToken)
         {
+            schema.Extensions ??= new Dictionary<string, IOpenApiExtension>();
             if (context.JsonTypeInfo.Type == typeof(Todo) && context.ParameterDescription != null)
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny(context.ParameterDescription.Name);
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension(context.ParameterDescription.Name);
             }
             else
             {
-                schema.Extensions["x-my-extension"] = new OpenApiAny("response");
+                schema.Extensions["x-my-extension"] = new JsonNodeExtension("response");
             }
             return Task.CompletedTask;
         }

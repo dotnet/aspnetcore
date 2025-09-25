@@ -33,15 +33,14 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
 
     protected override void RegisterAuth(AuthenticationBuilder services, Action<JwtBearerOptions> configure)
     {
-        services.AddJwtBearer(o =>
-        {
-            ConfigureDefaults(o);
-            configure.Invoke(o);
-        });
+        services.AddJwtBearer(configure);
     }
 
-    private void ConfigureDefaults(JwtBearerOptions o)
+    [Fact]
+    public void EventsPropertyIsInitializedOnConstruction()
     {
+        var options = new JwtBearerOptions();
+        Assert.NotNull(options.Events);
     }
 
     [Fact]
@@ -973,7 +972,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
             issuer: "issuer.contoso.com",
             audience: "audience.contoso.com",
             claims: claims,
-            expires: DateTime.MaxValue,
+            expires: new DateTime(DateTime.MaxValue.Ticks, DateTimeKind.Utc),
             signingCredentials: creds);
 
         var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
@@ -1001,8 +1000,7 @@ public class JwtBearerTests : SharedAuthenticationTests<JwtBearerOptions>
         var expiresElement = dom.RootElement.GetProperty("expires");
         Assert.Equal(JsonValueKind.String, expiresElement.ValueKind);
 
-        var elementValue = DateTime.Parse(expiresElement.GetString(), CultureInfo.InvariantCulture);
-        var elementValueUtc = elementValue.ToUniversalTime();
+        var elementValueUtc = DateTime.Parse(expiresElement.GetString(), CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal);
         // roundtrip DateTime.MaxValue through parsing because it is lossy and we
         // need equivalent values to compare against.
         var max = DateTime.Parse(DateTime.MaxValue.ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);

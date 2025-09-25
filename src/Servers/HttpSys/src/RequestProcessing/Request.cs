@@ -3,13 +3,13 @@
 
 using System.Globalization;
 using System.Net;
+using System.Net.Security;
 using System.Security;
 using System.Security.Authentication;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Shared;
 using Microsoft.Extensions.Logging;
@@ -335,6 +335,8 @@ internal sealed partial class Request
 
     public SslProtocols Protocol { get; private set; }
 
+    public TlsCipherSuite? NegotiatedCipherSuite { get; private set; }
+
     [Obsolete(Obsoletions.RuntimeTlsCipherAlgorithmEnumsMessage, DiagnosticId = Obsoletions.RuntimeTlsCipherAlgorithmEnumsDiagId, UrlFormat = Obsoletions.RuntimeSharedUrlFormat)]
     public CipherAlgorithmType CipherAlgorithm { get; private set; }
 
@@ -357,6 +359,8 @@ internal sealed partial class Request
     {
         var handshake = RequestContext.GetTlsHandshake();
         Protocol = (SslProtocols)handshake.Protocol;
+
+        NegotiatedCipherSuite = RequestContext.GetTlsCipherSuite();
 #pragma warning disable SYSLIB0058 // Type or member is obsolete
         CipherAlgorithm = (CipherAlgorithmType)handshake.CipherType;
         CipherStrength = (int)handshake.CipherStrength;
@@ -369,9 +373,6 @@ internal sealed partial class Request
         var sni = RequestContext.GetClientSni();
         SniHostName = sni.Hostname.ToString();
     }
-
-    internal bool GetAndInvokeTlsClientHelloCallback(IFeatureCollection features, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
-        => RequestContext.GetAndInvokeTlsClientHelloMessageBytesCallback(features, tlsClientHelloBytesCallback);
 
     public X509Certificate2? ClientCertificate
     {

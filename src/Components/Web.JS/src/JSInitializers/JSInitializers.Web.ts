@@ -4,14 +4,16 @@
 import { Logger } from '../Platform/Logging/Logger';
 import { WebStartOptions } from '../Platform/WebStartOptions';
 import { discoverWebInitializers } from '../Services/ComponentDescriptorDiscovery';
-import { JSInitializer } from './JSInitializers';
+import { JSAsset, JSInitializer } from './JSInitializers';
 
 export async function fetchAndInvokeInitializers(options: Partial<WebStartOptions>, logger: Logger) : Promise<JSInitializer> {
   const initializersElement = discoverWebInitializers(document);
   if (!initializersElement) {
     return new JSInitializer(false, logger);
   }
-  const initializers: string[] = JSON.parse(atob(initializersElement)) as string[] ?? [];
+  const initializers = (JSON.parse(atob(initializersElement)) as string[] ?? []).map(name => ({
+    name,
+  })) as JSAsset[];
   const jsInitializer = new JSInitializer(false, logger);
   await jsInitializer.importInitializersAsync(initializers, [options]);
   return jsInitializer;

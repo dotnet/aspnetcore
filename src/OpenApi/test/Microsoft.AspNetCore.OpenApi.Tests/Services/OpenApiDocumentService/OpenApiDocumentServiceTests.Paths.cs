@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.OpenApi.Models;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -27,7 +27,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
                         operation =>
                         {
-                            Assert.Equal(OperationType.Get, operation.Key);
+                            Assert.Equal(HttpMethod.Get, operation.Key);
                         });
                 },
                 path =>
@@ -36,7 +36,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                     Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
                         operation =>
                         {
-                            Assert.Equal(OperationType.Get, operation.Key);
+                            Assert.Equal(HttpMethod.Get, operation.Key);
                         });
                 });
         });
@@ -84,15 +84,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 path =>
                 {
                     Assert.Equal("/api/todos", path.Key);
-                    Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Get, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Post, operation.Key);
-                        });
+                    Assert.Equal(2, path.Value.Operations.Count);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Post, path.Value.Operations);
                 }
             );
         });
@@ -116,23 +110,11 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 path =>
                 {
                     Assert.Equal("/api/todos/{id}", path.Key);
-                    Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Get, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Put, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Post, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Patch, operation.Key);
-                        });
+                    Assert.Equal(4, path.Value.Operations.Count);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Put, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Post, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Patch, path.Value.Operations);
                 }
             );
         });
@@ -155,15 +137,9 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
                 path =>
                 {
                     Assert.Equal("/api/todos/{id}", path.Key);
-                    Assert.Collection(path.Value.Operations.OrderBy(o => o.Key),
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Get, operation.Key);
-                        },
-                        operation =>
-                        {
-                            Assert.Equal(OperationType.Post, operation.Key);
-                        });
+                    Assert.Equal(2, path.Value.Operations.Count);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                    Assert.Contains(HttpMethod.Post, path.Value.Operations);
                 }
             );
         });

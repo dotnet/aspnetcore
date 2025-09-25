@@ -67,6 +67,34 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
     return true;
   };
 
+  Blazor.pauseCircuit = async () => {
+    if (circuit.didRenderingFail()) {
+      // We can't pause after a failure, so exit early.
+      return false;
+    }
+
+    if (!(await circuit.pause())) {
+      logger.log(LogLevel.Information, 'Pause attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
+      return false;
+    }
+
+    return true;
+  };
+
+  Blazor.resumeCircuit = async () => {
+    if (circuit.didRenderingFail()) {
+      // We can't resume after a failure, so exit early.
+      return false;
+    }
+
+    if (!(await circuit.resume())) {
+      logger.log(LogLevel.Information, 'Resume attempt to the circuit was rejected by the server. This may indicate that the associated state is no longer available on the server.');
+      return false;
+    }
+
+    return true;
+  };
+
   Blazor.defaultReconnectionHandler = new DefaultReconnectionHandler(logger);
   options.reconnectionHandler = options.reconnectionHandler || Blazor.defaultReconnectionHandler;
 
@@ -93,7 +121,7 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
 
   Blazor.disconnect = cleanup;
 
-  window.addEventListener('unload', cleanup, { capture: false, once: true });
+  window.addEventListener('pagehide', cleanup, { capture: false, once: true });
 
   logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
@@ -158,16 +186,16 @@ export function isCircuitAvailable(): boolean {
   return circuit && !circuit.isDisposedOrDisposing();
 }
 
-export function updateServerRootComponents(operations: string): Promise<void> | undefined {
+export function updateServerRootComponents(operations: string, serverState: string): Promise<void> | undefined {
   if (circuit && !circuit.isDisposedOrDisposing()) {
-    return circuit.updateRootComponents(operations);
+    return circuit.updateRootComponents(operations, serverState);
   } else {
-    scheduleWhenReady(operations);
+    scheduleWhenReady(operations, serverState);
   }
 }
-async function scheduleWhenReady(operations: string) {
+async function scheduleWhenReady(operations: string, serverState: string) {
   await serverStartPromise;
   if (await startCircuit()) {
-    return circuit.updateRootComponents(operations);
+    return circuit.updateRootComponents(operations, serverState);
   }
 }

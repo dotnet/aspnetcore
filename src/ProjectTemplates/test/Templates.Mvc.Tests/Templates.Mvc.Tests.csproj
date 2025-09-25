@@ -27,9 +27,9 @@
     <!-- These tests fail in Helix in Debian and Mariner due to error -901 -->
     <!-- Disabling on those OSes until a better fix can be identified -->
     <SkipHelixQueues>
-      $(HelixQueueArmDebian12);
-      $(HelixQueueDebian12);
-      $(HelixQueueMariner);
+      $(HelixQueueArmDebian);
+      $(HelixQueueAzureLinux);
+      $(HelixQueueDebian);
       $(SkipHelixQueues)
     </SkipHelixQueues>
   </PropertyGroup>

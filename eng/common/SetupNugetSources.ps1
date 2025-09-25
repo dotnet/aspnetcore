@@ -10,8 +10,8 @@
 #    displayName: Setup Private Feeds Credentials
 #    condition: eq(variables['Agent.OS'], 'Windows_NT')
 #    inputs:
-#      filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.ps1
-#      arguments: -ConfigFile $(Build.SourcesDirectory)/NuGet.config -Password $Env:Token
+#      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.ps1
+#      arguments: -ConfigFile $(System.DefaultWorkingDirectory)/NuGet.config -Password $Env:Token
 #    env:
 #      Token: $(dn-bot-dnceng-artifact-feeds-rw)
 #
@@ -157,7 +157,7 @@ if ($dotnet31Source -ne $null) {
     AddPackageSource -Sources $sources -SourceName "dotnet3.1-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/_packaging/dotnet3.1-internal-transport/nuget/v2" -Creds $creds -Username $userName -pwd $Password
 }
 
-$dotnetVersions = @('5','6','7','8','9')
+$dotnetVersions = @('5','6','7','8','9','10')
 
 foreach ($dotnetVersion in $dotnetVersions) {
     $feedPrefix = "dotnet" + $dotnetVersion;

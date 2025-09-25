@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Globalization;
-using System.Text.Json.Nodes;
-using Microsoft.OpenApi.Models;
+using System.Net.Http;
 
 namespace Microsoft.AspNetCore.OpenApi.SourceGenerators.Tests;
 
@@ -39,6 +37,7 @@ app.MapPost("/inherit-all-but-remarks", (InheritAllButRemarks remarks) => { });
 app.MapPost("/generic-class", (GenericClass<string> generic) => { });
 app.MapPost("/generic-parent", (GenericParent parent) => { });
 app.MapPost("/params-and-param-refs", (ParamsAndParamRefs refs) => { });
+app.MapPost("/xml-property-test", (XmlPropertyTestClass test) => { });
 
 
 app.Run();
@@ -439,47 +438,113 @@ public class ParamsAndParamRefs
         return para;
     }
 }
+
+/// <summary>
+/// A class that implements the <see cref="IDisposable"/> interface.
+/// </summary>
+public class DisposableType : IDisposable
+{
+    /// <summary>
+    /// Finalizes an instance of the <see cref="DisposableType"/> class.
+    /// </summary>
+    ~DisposableType()
+    {
+        Dispose(false);
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+    /// </summary>
+    /// <param name="disposing">
+    /// <see langword="true" /> to release both managed and unmanaged resources;
+    /// <see langword="false" /> to release only unmanaged resources.
+    /// <see langword="null" /> to indicate a no-op.
+    /// </param>
+    protected virtual void Dispose(bool disposing)
+    {
+        // No-op
+    }
+}
+
+/// <summary>
+/// This class tests different XML comment scenarios for properties.
+/// </summary>
+public class XmlPropertyTestClass
+{
+    /// <summary>
+    /// A property with only summary tag.
+    /// </summary>
+    public string SummaryOnly { get; set; }
+
+    /// <value>
+    /// A property with only value tag.
+    /// </value>
+    public string ValueOnly { get; set; }
+
+    /// <summary>
+    /// A property with both summary and value.
+    /// </summary>
+    /// <value>Additional value information.</value>
+    public string BothSummaryAndValue { get; set; }
+
+    /// <returns>This should be ignored for properties.</returns>
+    public string ReturnsOnly { get; set; }
+
+    /// <summary>
+    /// A property with summary and returns.
+    /// </summary>
+    /// <returns>This should be ignored for properties.</returns>
+    public string SummaryAndReturns { get; set; }
+}
 """;
         var generator = new XmlCommentGenerator();
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
         await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
         {
-            var path = document.Paths["/example-class"].Operations[OperationType.Post];
+            var path = document.Paths["/example-class"].Operations[HttpMethod.Post];
             var exampleClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("Every class and member should have a one sentence\nsummary describing its purpose.", exampleClass.Description, ignoreLineEndingDifferences: true);
+            // Label property has only <value> tag -> uses value directly
             Assert.Equal("The `Label` property represents a label\nfor this instance.", exampleClass.Properties["label"].Description, ignoreLineEndingDifferences: true);
 
-            path = document.Paths["/person"].Operations[OperationType.Post];
+            path = document.Paths["/person"].Operations[HttpMethod.Post];
             var person = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This is an example of a positional record.", person.Description);
             Assert.Equal("This tag will apply to the primary constructor parameter.", person.Properties["firstName"].Description);
             Assert.Equal("This tag will apply to the primary constructor parameter.", person.Properties["lastName"].Description);
 
-            path = document.Paths["/derived-class"].Operations[OperationType.Post];
+            path = document.Paths["/derived-class"].Operations[HttpMethod.Post];
             var derivedClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("A summary about this class.", derivedClass.Description);
 
-            path = document.Paths["/main-class"].Operations[OperationType.Post];
+            path = document.Paths["/main-class"].Operations[HttpMethod.Post];
             var mainClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("A summary about this class.", mainClass.Description);
 
-            path = document.Paths["/implementing-class"].Operations[OperationType.Post];
+            path = document.Paths["/implementing-class"].Operations[HttpMethod.Post];
             var implementingClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This interface would describe all the methods in\nits contract.", implementingClass.Description, ignoreLineEndingDifferences: true);
 
-            path = document.Paths["/inherit-only-returns"].Operations[OperationType.Post];
+            path = document.Paths["/inherit-only-returns"].Operations[HttpMethod.Post];
             var inheritOnlyReturns = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This class shows hows you can \"inherit\" the doc\ncomments from one method in another method.", inheritOnlyReturns.Description, ignoreLineEndingDifferences: true);
 
-            path = document.Paths["/inherit-all-but-remarks"].Operations[OperationType.Post];
+            path = document.Paths["/inherit-all-but-remarks"].Operations[HttpMethod.Post];
             var inheritAllButRemarks = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This class shows an example of sharing comments across methods.", inheritAllButRemarks.Description);
 
-            path = document.Paths["/generic-class"].Operations[OperationType.Post];
+            path = document.Paths["/generic-class"].Operations[HttpMethod.Post];
             var genericClass = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This is a generic class.", genericClass.Description);
 
-            path = document.Paths["/generic-parent"].Operations[OperationType.Post];
+            path = document.Paths["/generic-parent"].Operations[HttpMethod.Post];
             var genericParent = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This class validates the behavior for mapping\ngeneric types to open generics for use in\ntypeof expressions.", genericParent.Description, ignoreLineEndingDifferences: true);
             Assert.Equal("This property is a nullable value type.", genericParent.Properties["id"].Description);
@@ -488,9 +553,29 @@ public class ParamsAndParamRefs
             Assert.Equal("This property is a tuple with a generic type inside.", genericParent.Properties["tupleWithGenericProp"].Description);
             Assert.Equal("This property is a tuple with a nested generic type inside.", genericParent.Properties["tupleWithNestedGenericProp"].Description);
 
-            path = document.Paths["/params-and-param-refs"].Operations[OperationType.Post];
+            path = document.Paths["/params-and-param-refs"].Operations[HttpMethod.Post];
             var paramsAndParamRefs = path.RequestBody.Content["application/json"].Schema;
             Assert.Equal("This shows examples of typeparamref and typeparam tags", paramsAndParamRefs.Description);
+
+            // Test new XML property documentation behavior
+            path = document.Paths["/xml-property-test"].Operations[HttpMethod.Post];
+            var xmlPropertyTest = path.RequestBody.Content["application/json"].Schema;
+            Assert.Equal("This class tests different XML comment scenarios for properties.", xmlPropertyTest.Description);
+
+            // Property with only <summary> -> uses summary directly
+            Assert.Equal("A property with only summary tag.", xmlPropertyTest.Properties["summaryOnly"].Description);
+
+            // Property with only <value> -> uses value directly
+            Assert.Equal("A property with only value tag.", xmlPropertyTest.Properties["valueOnly"].Description);
+
+            // Property with both <summary> and <value> -> combines with newline separator
+            Assert.Equal($"A property with both summary and value.\nAdditional value information.", xmlPropertyTest.Properties["bothSummaryAndValue"].Description);
+
+            // Property with only <returns> -> should be null (ignored)
+            Assert.Null(xmlPropertyTest.Properties["returnsOnly"].Description);
+
+            // Property with <summary> and <returns> -> uses summary only, ignores returns
+            Assert.Equal("A property with summary and returns.", xmlPropertyTest.Properties["summaryAndReturns"].Description);
         });
     }
 }

@@ -20,13 +20,13 @@ internal sealed partial class CircuitFactory : ICircuitFactory
     private readonly CircuitIdFactory _circuitIdFactory;
     private readonly CircuitOptions _options;
     private readonly ILogger _logger;
-    private readonly CircuitMetrics? _circuitMetrics;
+    private readonly CircuitMetrics _circuitMetrics;
 
     public CircuitFactory(
         IServiceScopeFactory scopeFactory,
         ILoggerFactory loggerFactory,
         CircuitIdFactory circuitIdFactory,
-        CircuitMetrics? circuitMetrics,
+        CircuitMetrics circuitMetrics,
         IOptions<CircuitOptions> options)
     {
         _scopeFactory = scopeFactory;
@@ -54,6 +54,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
         var navigationManager = (RemoteNavigationManager)scope.ServiceProvider.GetRequiredService<NavigationManager>();
         var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
         var scrollToLocationHash = (RemoteScrollToLocationHash)scope.ServiceProvider.GetRequiredService<IScrollToLocationHash>();
+        var circuitActivitySource = scope.ServiceProvider.GetRequiredService<CircuitActivitySource>();
+
         if (client.Connected)
         {
             navigationManager.AttachJsRuntime(jsRuntime);
@@ -74,7 +76,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             // when the first set of components is provided via an UpdateRootComponents call.
             var appLifetime = scope.ServiceProvider.GetRequiredService<ComponentStatePersistenceManager>();
             appLifetime.SetPlatformRenderMode(RenderMode.InteractiveServer);
-            await appLifetime.RestoreStateAsync(store);
+            await appLifetime.RestoreStateAsync(store, RestoreContext.InitialValue);
         }
 
         var serverComponentDeserializer = scope.ServiceProvider.GetRequiredService<IServerComponentDeserializer>();
@@ -89,6 +91,8 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             jsRuntime,
             jsComponentInterop,
             resourceCollection);
+
+        circuitActivitySource.Init(new Infrastructure.Server.ComponentsActivityLinkStore(renderer));
 
         // In Blazor Server we have already restored the app state, so we can get the handlers from DI.
         // In Blazor Web the state is provided in the first call to UpdateRootComponents, so we need to
@@ -109,6 +113,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             navigationManager,
             circuitHandlers,
             _circuitMetrics,
+            circuitActivitySource,
             _loggerFactory.CreateLogger<CircuitHost>());
         Log.CreatedCircuit(_logger, circuitHost);
 

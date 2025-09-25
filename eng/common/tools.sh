@@ -5,6 +5,9 @@
 # CI mode - set to true on CI server for PR validation build or official build.
 ci=${ci:-false}
 
+# Build mode
+source_build=${source_build:-false}
+
 # Set to true to use the pipelines logger which will enable Azure logging output.
 # https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
 # This flag is meant as a temporary opt-opt for the feature while validate it across
@@ -58,7 +61,8 @@ use_installed_dotnet_cli=${use_installed_dotnet_cli:-true}
 dotnetInstallScriptVersion=${dotnetInstallScriptVersion:-'v1'}
 
 # True to use global NuGet cache instead of restoring packages to repository-local directory.
-if [[ "$ci" == true ]]; then
+# Keep in sync with NuGetPackageroot in Arcade SDK's RepositoryLayout.props.
+if [[ "$ci" == true || "$source_build" == true ]]; then
   use_global_nuget_cache=${use_global_nuget_cache:-false}
 else
   use_global_nuget_cache=${use_global_nuget_cache:-true}
@@ -68,8 +72,8 @@ fi
 runtime_source_feed=${runtime_source_feed:-''}
 runtime_source_feed_key=${runtime_source_feed_key:-''}
 
-# True if the build is a product build
-product_build=${product_build:-false}
+# True when the build is running within the VMR.
+from_vmr=${from_vmr:-false}
 
 # Resolve any symlinks in the given path.
 function ResolvePath {
@@ -296,8 +300,29 @@ function GetDotNetInstallScript {
   local root=$1
   local install_script="$root/dotnet-install.sh"
   local install_script_url="https://builds.dotnet.microsoft.com/dotnet/scripts/$dotnetInstallScriptVersion/dotnet-install.sh"
+  local timestamp_file="$root/.dotnet-install.timestamp"
+  local should_download=false
 
   if [[ ! -a "$install_script" ]]; then
+    should_download=true
+  elif [[ -f "$timestamp_file" ]]; then
+    # Check if the script is older than 30 days using timestamp file
+    local download_time=$(cat "$timestamp_file" 2>/dev/null || echo "0")
+    local current_time=$(date +%s)
+    local age_seconds=$((current_time - download_time))
+    
+    # 30 days = 30 * 24 * 60 * 60 = 2592000 seconds
+    if [[ $age_seconds -gt 2592000 ]]; then
+      echo "Existing install script is too old, re-downloading..."
+      should_download=true
+    fi
+  else
+    # No timestamp file exists, assume script is old and re-download
+    echo "No timestamp found for existing install script, re-downloading..."
+    should_download=true
+  fi
+
+  if [[ "$should_download" == true ]]; then
     mkdir -p "$root"
 
     echo "Downloading '$install_script_url'"
@@ -324,6 +349,9 @@ function GetDotNetInstallScript {
         ExitWithExitCode $exit_code
       }
     fi
+    
+    # Create timestamp file to track download time in seconds from epoch
+    date +%s > "$timestamp_file"
   fi
   # return value
   _GetDotNetInstallScript="$install_script"
@@ -341,14 +369,12 @@ function InitializeBuildTool {
   _InitializeBuildToolCommand="msbuild"
 }
 
-# Set RestoreNoHttpCache as a workaround for https://github.com/NuGet/Home/issues/3116
 function GetNuGetPackageCachePath {
   if [[ -z ${NUGET_PACKAGES:-} ]]; then
     if [[ "$use_global_nuget_cache" == true ]]; then
       export NUGET_PACKAGES="$HOME/.nuget/packages/"
     else
       export NUGET_PACKAGES="$repo_root/.packages/"
-      export RESTORENOHTTPCACHE=true
     fi
   fi
 
@@ -445,27 +471,13 @@ function MSBuild {
     fi
 
     local toolset_dir="${_InitializeToolset%/*}"
-    # new scripts need to work with old packages, so we need to look for the old names/versions
-    local selectedPath=
-    local possiblePaths=()
-    possiblePaths+=( "$toolset_dir/net/Microsoft.DotNet.ArcadeLogging.dll" )
-    possiblePaths+=( "$toolset_dir/net/Microsoft.DotNet.Arcade.Sdk.dll" )
+    local selectedPath="$toolset_dir/net/Microsoft.DotNet.ArcadeLogging.dll"
 
-    # This list doesn't need to be updated anymore and can eventually be removed.
-    possiblePaths+=( "$toolset_dir/net9.0/Microsoft.DotNet.ArcadeLogging.dll" )
-    possiblePaths+=( "$toolset_dir/net9.0/Microsoft.DotNet.Arcade.Sdk.dll" )
-    possiblePaths+=( "$toolset_dir/net8.0/Microsoft.DotNet.ArcadeLogging.dll" )
-    possiblePaths+=( "$toolset_dir/net8.0/Microsoft.DotNet.Arcade.Sdk.dll" )
-    for path in "${possiblePaths[@]}"; do
-      if [[ -f $path ]]; then
-        selectedPath=$path
-        break
-      fi
-    done
     if [[ -z "$selectedPath" ]]; then
-      Write-PipelineTelemetryError -category 'Build'  "Unable to find arcade sdk logger assembly."
+      Write-PipelineTelemetryError -category 'Build'  "Unable to find arcade sdk logger assembly: $selectedPath"
       ExitWithExitCode 1
     fi
+
     args+=( "-logger:$selectedPath" )
   fi
 
@@ -502,8 +514,8 @@ function MSBuild-Core {
       echo "Build failed with exit code $exit_code. Check errors above."
 
       # When running on Azure Pipelines, override the returned exit code to avoid double logging.
-      # Skip this when the build is a child of the VMR orchestrator build.
-      if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$product_build" != true && "$properties" != *"DotNetBuildRepo=true"* ]]; then
+      # Skip this when the build is a child of the VMR build.
+      if [[ "$ci" == true && -n ${SYSTEM_TEAMPROJECT:-} && "$from_vmr" != true ]]; then
         Write-PipelineSetResult -result "Failed" -message "msbuild execution failed."
         # Exiting with an exit code causes the azure pipelines task to log yet another "noise" error
         # The above Write-PipelineSetResult will cause the task to be marked as failure without adding yet another error
@@ -526,6 +538,7 @@ function GetDarc {
     fi
 
     "$eng_root/common/darc-init.sh" --toolpath "$darc_path" $version
+    darc_tool="$darc_path/darc"
 }
 
 # Returns a full path to an Arcade SDK task project file.

@@ -144,7 +144,7 @@ public static class StatusCodePagesExtensions
     public static IApplicationBuilder UseStatusCodePagesWithReExecute(
         this IApplicationBuilder app,
         string pathFormat,
-        string? queryFormat = null)
+        string queryFormat)
     {
         ArgumentNullException.ThrowIfNull(app);
 
@@ -168,15 +168,15 @@ public static class StatusCodePagesExtensions
     /// </summary>
     /// <param name="app"></param>
     /// <param name="pathFormat"></param>
-    /// <param name="createScopeForErrors">Whether or not to create a new <see cref="IServiceProvider"/> scope.</param>
     /// <param name="queryFormat"></param>
+    /// <param name="createScopeForStatusCodePages">Whether or not to create a new <see cref="IServiceProvider"/> scope.</param>
     /// <returns></returns>
     [SuppressMessage("ApiDesign", "RS0026:Do not add multiple overloads with optional parameters", Justification = "Required to maintain compatibility")]
     public static IApplicationBuilder UseStatusCodePagesWithReExecute(
         this IApplicationBuilder app,
         string pathFormat,
-        bool createScopeForErrors,
-        string? queryFormat = null)
+        string? queryFormat = null,
+        bool createScopeForStatusCodePages = false)
     {
         ArgumentNullException.ThrowIfNull(app);
 
@@ -187,9 +187,11 @@ public static class StatusCodePagesExtensions
             {
                 var newNext = RerouteHelper.Reroute(app, routeBuilder, next);
                 return new StatusCodePagesMiddleware(next,
-                    Options.Create(new StatusCodePagesOptions() {
+                    Options.Create(new StatusCodePagesOptions()
+                    {
                         HandleAsync = CreateHandler(pathFormat, queryFormat, newNext),
-                        CreateScopeForErrors = createScopeForErrors
+                        CreateScopeForStatusCodePages = createScopeForStatusCodePages,
+                        PathFormat = pathFormat
                     })).Invoke;
             });
         }
@@ -197,7 +199,8 @@ public static class StatusCodePagesExtensions
         var options = new StatusCodePagesOptions
         {
             HandleAsync = CreateHandler(pathFormat, queryFormat),
-            CreateScopeForErrors = createScopeForErrors
+            CreateScopeForStatusCodePages = createScopeForStatusCodePages,
+            PathFormat = pathFormat
         };
         var wrappedOptions = new OptionsWrapper<StatusCodePagesOptions>(options);
         return app.UseMiddleware<StatusCodePagesMiddleware>(wrappedOptions);
@@ -219,8 +222,8 @@ public static class StatusCodePagesExtensions
             var originalQueryString = context.HttpContext.Request.QueryString;
 
             var routeValuesFeature = context.HttpContext.Features.Get<IRouteValuesFeature>();
-            var oldScope = context.Options.CreateScopeForErrors ? context.HttpContext.RequestServices : null;
-            await using AsyncServiceScope? scope = context.Options.CreateScopeForErrors
+            var oldScope = context.Options.CreateScopeForStatusCodePages ? context.HttpContext.RequestServices : null;
+            await using AsyncServiceScope? scope = context.Options.CreateScopeForStatusCodePages
                 ? context.HttpContext.RequestServices.GetRequiredService<IServiceScopeFactory>().CreateAsyncScope()
                 : null;
 

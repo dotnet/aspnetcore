@@ -332,6 +332,108 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void AddsResponseDescription_WorksWithGenerics()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => new GenericClass<TimeSpan> { Value = new TimeSpan() });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.Type);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithGenericsAndTypedResults()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<GenericClass<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => TypedResults.Ok(new GenericClass<TimeSpan> { Value = new TimeSpan() }));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.Type);
+        Assert.Equal(typeof(GenericClass<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollections()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => new List<TimeSpan> { new() });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.Type); // We use List as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    [Fact]
+    public void AddsResponseDescription_WorksWithCollectionsAndTypedResults()
+    {
+        const string expectedOkDescription = "The weather forecast for the next 5 days.";
+
+        var apiDescription = GetApiDescription([ProducesResponseType<IEnumerable<TimeSpan>>(StatusCodes.Status200OK, Description = expectedOkDescription)]
+        () => TypedResults.Ok(new List<TimeSpan> { new() }));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.Type); // We use List as the inferred type has higher priority than those set by metadata (attributes)
+        Assert.Equal(typeof(List<TimeSpan>), okResponseType.ModelMetadata?.ModelType);
+        Assert.Equal(expectedOkDescription, okResponseType.Description);
+
+        var createdOkFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", createdOkFormat.MediaType);
+    }
+
+    /// <summary>
+    /// EndpointMetadataApiDescriptionProvider performs a one way type check for discovering response types to match the description that's set in [ProducesResponseType]
+    /// The reason we do a one-way check instead of a bidirectional check is to prevent too many positive matches.
+    /// </summary>
+    /// <remarks>
+    /// Example: If we did a bidirectional check, we would match something scenarios like this, which can cause confusion:
+    /// [ProducesResponseType<string>(StatusCodes.Status200OK, Description = "Returned with a string")] -> TypedResults.Ok(new object())
+    /// This would match because object is assignable to string,
+    /// but it doesn't make sense to add the Description to the object type because the attribute says we should return a string.
+    ///
+    /// This test documents this desired behavior and will fail if the behavior changes, so the developer can double check if their change is intentional.
+    /// </summary>
+    [Fact]
+    public void AddsResponseDescription_ShouldFailWhenInferredTypeIsNotDirectlyAssignableToAttributeType()
+    {
+        var apiDescription = GetApiDescription([ProducesResponseType<string>(StatusCodes.Status200OK, Description = "Only returned with a string")]
+        () => TypedResults.Ok(new object()));
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(object), okResponseType.Type);
+        Assert.Equal(typeof(object), okResponseType.ModelMetadata?.ModelType);
+        Assert.Null(okResponseType.Description);
+    }
+
+    [Fact]
     public void WithEmptyMethodBody_AddsResponseDescription()
     {
         const string expectedCreatedDescription = "A new item was created";
@@ -527,6 +629,32 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void ResponseProducesMetadataWithIResultImplementor()
+    {
+        var apiDescription = GetApiDescription(
+            [ProducesResponseType(typeof(CustomIResultImplementor), StatusCodes.Status200OK)] () => new CustomIResultImplementor { Content = "Hello, World!" });
+
+        var okResponseType = Assert.Single(apiDescription.SupportedResponseTypes);
+
+        Assert.Equal(200, okResponseType.StatusCode);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.Type);
+        Assert.Equal(typeof(CustomIResultImplementor), okResponseType.ModelMetadata?.ModelType);
+
+        var okResponseFormat = Assert.Single(okResponseType.ApiResponseFormats);
+        Assert.Equal("application/json", okResponseFormat.MediaType);
+    }
+
+    public class CustomIResultImplementor : IResult
+    {
+        public required string Content { get; set; }
+
+        public Task ExecuteAsync(HttpContext httpContext)
+        {
+            return httpContext.Response.WriteAsJsonAsync(this);
+        }
+    }
+
+    [Fact]
     public void AddsFromRouteParameterAsPath()
     {
         static void AssertPathParameter(ApiDescription apiDescription)
@@ -693,7 +821,9 @@ public class EndpointMetadataApiDescriptionProviderTest
     {
         Assert.Empty(GetApiDescription((IInferredServiceInterface foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromServices] InferredServiceClass foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription(([FromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
+        Assert.Empty(GetApiDescription(([CustomFromKeyedServices("foo")] InferredServiceClass foo) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpContext context) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpRequest request) => { }).ParameterDescriptions);
         Assert.Empty(GetApiDescription((HttpResponse response) => { }).ParameterDescriptions);
@@ -1814,4 +1944,10 @@ public class EndpointMetadataApiDescriptionProviderTest
             return null;
         }
     }
+
+    private class GenericClass<TType> { public required TType Value { get; set; } }
+
+    private class CustomFromKeyedServicesAttribute(object key) : FromKeyedServicesAttribute(key);
+
+    private class CustomFromServicesAttribute : FromServicesAttribute;
 }

@@ -32,6 +32,16 @@ parameters:
   # Optional: 🌤️ or not the build has assets it wants to publish to BAR
   isAssetlessBuild: false
 
+  # Optional, publishing version
+  publishingVersion: 3
+
+  # Optional: A minimatch pattern for the asset manifests to publish to BAR
+  assetManifestsPattern: '*/manifests/**/*.xml'
+
+  repositoryAlias: self
+
+  officialBuildId: ''
+
 jobs:
 - job: Asset_Registry_Publish
 
@@ -54,6 +64,11 @@ jobs:
       value: false
     # unconditional - needed for logs publishing (redactor tool version)
     - template: /eng/common/core-templates/post-build/common-variables.yml
+  - name: OfficialBuildId
+    ${{ if ne(parameters.officialBuildId, '') }}:
+      value: ${{ parameters.officialBuildId }}
+    ${{ else }}:
+      value: $(Build.BuildNumber)
 
   pool:
     # We don't use the collection uri here because it might vary (.visualstudio.com vs. dev.azure.com)
@@ -72,18 +87,36 @@ jobs:
     - 'Illegal entry point, is1ESPipeline is not defined. Repository yaml should not directly reference templates in core-templates folder.': error
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
-    - checkout: self
+    - checkout: ${{ parameters.repositoryAlias }}
       fetchDepth: 3
       clean: true
 
     - ${{ if eq(parameters.isAssetlessBuild, 'false') }}: 
-      - task: DownloadPipelineArtifact@2
-        displayName: Download Asset Manifests
-        inputs:
-          artifactName: AssetManifests
-          targetPath: '$(Build.StagingDirectory)/AssetManifests'
-        condition: ${{ parameters.condition }}
-        continueOnError: ${{ parameters.continueOnError }}
+      - ${{ if eq(parameters.publishingVersion, 3) }}: 
+        - task: DownloadPipelineArtifact@2
+          displayName: Download Asset Manifests
+          inputs:
+            artifactName: AssetManifests
+            targetPath: '$(Build.StagingDirectory)/AssetManifests'
+          condition: ${{ parameters.condition }}
+          continueOnError: ${{ parameters.continueOnError }}
+      - ${{ if eq(parameters.publishingVersion, 4) }}:
+        - task: DownloadPipelineArtifact@2
+          displayName: Download V4 asset manifests
+          inputs:
+            itemPattern: '*/manifests/**/*.xml'
+            targetPath: '$(Build.StagingDirectory)/AllAssetManifests'
+          condition: ${{ parameters.condition }}
+          continueOnError: ${{ parameters.continueOnError }}
+        - task: CopyFiles@2
+          displayName: Copy V4 asset manifests to AssetManifests
+          inputs:
+            SourceFolder: '$(Build.StagingDirectory)/AllAssetManifests'
+            Contents: ${{ parameters.assetManifestsPattern }}
+            TargetFolder: '$(Build.StagingDirectory)/AssetManifests'
+            flattenFolders: true
+          condition: ${{ parameters.condition }}
+          continueOnError: ${{ parameters.continueOnError }}
     
     - task: NuGetAuthenticate@1
 
@@ -93,12 +126,12 @@ jobs:
         azureSubscription: "Darc: Maestro Production"
         scriptType: ps
         scriptLocation: scriptPath
-        scriptPath: $(Build.SourcesDirectory)/eng/common/sdk-task.ps1
+        scriptPath: $(System.DefaultWorkingDirectory)/eng/common/sdk-task.ps1
         arguments: -task PublishBuildAssets -restore -msbuildEngine dotnet
           /p:ManifestsPath='$(Build.StagingDirectory)/AssetManifests'
           /p:IsAssetlessBuild=${{ parameters.isAssetlessBuild }}
           /p:MaestroApiEndpoint=https://maestro.dot.net
-          /p:OfficialBuildId=$(Build.BuildNumber)
+          /p:OfficialBuildId=$(OfficialBuildId)
       condition: ${{ parameters.condition }}
       continueOnError: ${{ parameters.continueOnError }}
     
@@ -113,12 +146,23 @@ jobs:
           Add-Content -Path $filePath -Value "$(DefaultChannels)"
           Add-Content -Path $filePath -Value $(IsStableBuild)
 
-          $symbolExclusionfile = "$(Build.SourcesDirectory)/eng/SymbolPublishingExclusionsFile.txt"
+          $symbolExclusionfile = "$(System.DefaultWorkingDirectory)/eng/SymbolPublishingExclusionsFile.txt"
           if (Test-Path -Path $symbolExclusionfile)
           {
             Write-Host "SymbolExclusionFile exists"
             Copy-Item -Path $symbolExclusionfile -Destination "$(Build.StagingDirectory)/ReleaseConfigs"
           }
+
+    - ${{ if eq(parameters.publishingVersion, 4) }}:
+      - template: /eng/common/core-templates/steps/publish-pipeline-artifacts.yml
+        parameters:
+          is1ESPipeline: ${{ parameters.is1ESPipeline }}
+          args:
+            targetPath: '$(Build.ArtifactStagingDirectory)/MergedManifest.xml'
+            artifactName: AssetManifests
+            displayName: 'Publish Merged Manifest'
+            retryCountOnTaskFailure: 10 # for any logs being locked
+            sbomEnabled: false  # we don't need SBOM for logs
 
     - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
       parameters:
@@ -142,7 +186,7 @@ jobs:
           azureSubscription: "Darc: Maestro Production"
           scriptType: ps
           scriptLocation: scriptPath
-          scriptPath: $(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1
+          scriptPath: $(System.DefaultWorkingDirectory)/eng/common/post-build/publish-using-darc.ps1
           arguments: >
             -BuildId $(BARBuildId)
             -PublishingInfraVersion 3

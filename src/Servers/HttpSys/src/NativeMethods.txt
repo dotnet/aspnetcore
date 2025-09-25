@@ -42,6 +42,7 @@ HTTPAPI_VERSION
 HttpCancelHttpRequest
 HttpCloseServerSession
 HttpCloseUrlGroup
+HttpCloseRequestQueue
 HttpCreateRequestQueue
 HttpCreateServerSession
 HttpCreateUrlGroup
@@ -59,3 +60,6 @@ HttpSetUrlGroupProperty
 SetFileCompletionNotificationModes
 SOCKADDR_IN
 SOCKADDR_IN6
+GetSecurityInfo
+GetSecurityDescriptorLength
+LocalFree

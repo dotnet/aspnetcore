@@ -1,15 +1,15 @@
 parameters:
-  sourceIndexUploadPackageVersion: 2.0.0-20240522.1
-  sourceIndexProcessBinlogPackageVersion: 1.0.1-20240522.1
+  sourceIndexUploadPackageVersion: 2.0.0-20250906.1
+  sourceIndexProcessBinlogPackageVersion: 1.0.1-20250906.1
   sourceIndexPackageSource: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-tools/nuget/v3/index.json
   binlogPath: artifacts/log/Debug/Build.binlog
 
 steps:
 - task: UseDotNet@2
-  displayName: "Source Index: Use .NET 8 SDK"
+  displayName: "Source Index: Use .NET 9 SDK"
   inputs:
     packageType: sdk
-    version: 8.0.x
+    version: 9.0.x
     installationPath: $(Agent.TempDirectory)/dotnet
     workingDirectory: $(Agent.TempDirectory)
 
@@ -20,7 +20,7 @@ steps:
   # Set working directory to temp directory so 'dotnet' doesn't try to use global.json and use the repo's sdk.
   workingDirectory: $(Agent.TempDirectory)
 
-- script: $(Agent.TempDirectory)/.source-index/tools/BinLogToSln -i ${{parameters.BinlogPath}} -r $(Build.SourcesDirectory) -n $(Build.Repository.Name) -o .source-index/stage1output
+- script: $(Agent.TempDirectory)/.source-index/tools/BinLogToSln -i ${{parameters.BinlogPath}} -r $(System.DefaultWorkingDirectory) -n $(Build.Repository.Name) -o .source-index/stage1output
   displayName: "Source Index: Process Binlog into indexable sln"
 
 - ${{ if and(ne(parameters.runAsPublic, 'true'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:

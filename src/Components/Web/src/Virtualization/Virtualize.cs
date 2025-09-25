@@ -223,7 +223,8 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
 
         builder.OpenElement(0, SpacerElement);
         builder.AddAttribute(1, "style", GetSpacerStyle(_itemsBefore));
-        builder.AddElementReferenceCapture(2, elementReference => _spacerBefore = elementReference);
+        builder.AddAttribute(2, "aria-hidden", "true");
+        builder.AddElementReferenceCapture(3, elementReference => _spacerBefore = elementReference);
         builder.CloseElement();
 
         var lastItemIndex = Math.Min(_itemsBefore + _visibleItemCapacity, _itemCount);
@@ -283,8 +284,9 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
         var itemsAfter = Math.Max(0, _itemCount - _visibleItemCapacity - _itemsBefore);
 
         builder.OpenElement(7, SpacerElement);
-        builder.AddAttribute(8, "style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
-        builder.AddElementReferenceCapture(9, elementReference => _spacerAfter = elementReference);
+        builder.AddAttribute(8, "aria-hidden", "true");
+        builder.AddAttribute(9, "style", GetSpacerStyle(itemsAfter, _unusedItemCapacity));
+        builder.AddElementReferenceCapture(10, elementReference => _spacerAfter = elementReference);
 
         builder.CloseElement();
     }
@@ -359,6 +361,10 @@ public sealed class Virtualize<TItem> : ComponentBase, IVirtualizeJsCallbacks, I
             int val => Math.Min(val, MaxItemCount),
             _ => MaxItemCount
         };
+
+        // Count the OverscanCount as used capacity, so we don't end up in a situation where
+        // the user has set a very low MaxItemCount and we end up in an infinite loading loop.
+        maxItemCount += OverscanCount * 2;
 
         itemsInSpacer = Math.Max(0, (int)Math.Floor(spacerSize / _itemSize) - OverscanCount);
         visibleItemCapacity = (int)Math.Ceiling(containerSize / _itemSize) + 2 * OverscanCount;

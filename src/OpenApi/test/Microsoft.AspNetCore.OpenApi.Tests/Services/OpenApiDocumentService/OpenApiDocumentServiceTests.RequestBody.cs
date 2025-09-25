@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Pipelines;
+using System.Net.Http;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Models;
 
 public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -32,7 +34,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.True(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
@@ -70,18 +72,18 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations![HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.True(operation.RequestBody.Required);
-            var schema = operation.RequestBody.Content["multipart/form-data"].Schema;
+            var schema = operation.RequestBody.Content!["multipart/form-data"].Schema;
             Assert.NotNull(schema);
             if (!isOptional)
             {
-                Assert.Contains("formFile", schema.Required);
+                Assert.Contains("formFile", schema.Required!);
             }
             else
             {
-                Assert.DoesNotContain("formFile", schema.Required);
+                Assert.Null(schema.Required);
             }
         });
     }
@@ -109,7 +111,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.True(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
@@ -148,18 +150,18 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations![HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.True(operation.RequestBody.Required);
-            var schema = operation.RequestBody.Content["multipart/form-data"].Schema;
+            var schema = operation.RequestBody.Content!["multipart/form-data"].Schema;
             Assert.NotNull(schema);
             if (!isOptional)
             {
-                Assert.Contains("formFile", schema.Required);
+                Assert.Contains("formFile", schema.Required!);
             }
             else
             {
-                Assert.DoesNotContain("formFile", schema.Required);
+                Assert.Null(schema.Required);
             }
         });
     }
@@ -178,7 +180,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
@@ -218,7 +220,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
@@ -245,7 +247,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
@@ -272,7 +274,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.False(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
@@ -304,7 +306,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations![HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.Equal(!isOptional, operation.RequestBody.Required);
         });
@@ -325,7 +327,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.False(operation.RequestBody.Required);
             Assert.NotNull(operation.RequestBody.Content);
@@ -347,7 +349,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
@@ -368,7 +370,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
@@ -389,7 +391,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.Null(operation.RequestBody);
         });
     }
@@ -408,7 +410,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -465,7 +467,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -512,7 +514,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -567,7 +569,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Post];
+            var operation = paths.Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -633,7 +635,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -701,7 +703,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -741,7 +743,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody);
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
@@ -783,7 +785,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             var item = Assert.Single(content.Values);
@@ -825,7 +827,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             foreach (var item in content.Values)
@@ -866,7 +868,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             var item = Assert.Single(content.Values);
@@ -925,7 +927,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             foreach (var item in content.Values)
@@ -956,7 +958,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(builder, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             foreach (var item in content.Values)
@@ -1020,7 +1022,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         await VerifyOpenApiDocument(action, document =>
         {
             var paths = Assert.Single(document.Paths.Values);
-            var operation = paths.Operations[OperationType.Get];
+            var operation = paths.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = operation.RequestBody.Content;
             foreach (var item in content.Values)
@@ -1092,7 +1094,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         {
             foreach (var path in document.Paths)
             {
-                var operation = path.Value.Operations[OperationType.Get];
+                var operation = path.Value.Operations[HttpMethod.Get];
                 Assert.NotNull(operation.RequestBody.Content);
                 var content = Assert.Single(operation.RequestBody.Content);
                 Assert.Equal("application/octet-stream", content.Key);
@@ -1117,7 +1119,7 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
         static void VerifyDocument(OpenApiDocument document)
         {
             var path = Assert.Single(document.Paths);
-            var operation = path.Value.Operations[OperationType.Get];
+            var operation = path.Value.Operations[HttpMethod.Get];
             Assert.NotNull(operation.RequestBody.Content);
             var content = Assert.Single(operation.RequestBody.Content);
             Assert.Equal("application/octet-stream", content.Key);
@@ -1131,4 +1133,318 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
     private void ActionWithStream(Stream stream) { }
     [Route("/pipereader")]
     private void ActionWithPipeReader(PipeReader pipeReader) { }
+
+    [Fact]
+    public async Task GetRequestBody_HandlesJsonPatchBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", (JsonPatchDocument patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.False(operation.RequestBody.Required);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+#nullable enable
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetRequestBody_HandlesJsonPatchBodyOptionality(bool isOptional)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        if (isOptional)
+        {
+            builder.MapPatch("/", (JsonPatchDocument? patch) => { });
+        }
+        else
+        {
+            builder.MapPatch("/", (JsonPatchDocument patch) => { });
+        }
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations![HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.Equal(!isOptional, operation.RequestBody.Required);
+        });
+
+    }
+#nullable restore
+
+    [Fact]
+    public async Task GetRequestBody_HandlesJsonPatchBodyWithAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", ([FromBody] JsonPatchDocument patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.False(operation.RequestBody.Required);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task GetRequestBody_HandlesJsonPatchBodyWithAcceptsMetadata()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", (JsonPatchDocument name) => { }).Accepts(typeof(JsonPatchDocument), "application/vnd.github.patch+json");
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/vnd.github.patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task GetRequestBody_HandlesJsonPatchBodyWithConsumesAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", [Consumes(typeof(JsonPatchDocument), "application/vnd.github.patch+json")] (JsonPatchDocument patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/vnd.github.patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task GetRequestBody_HandlesGenericJsonPatchBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", (JsonPatchDocument<JsonPatchModel> patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.False(operation.RequestBody.Required);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+#nullable enable
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task GetRequestBody_HandlesGenericJsonPatchBodyOptionality(bool isOptional)
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        if (isOptional)
+        {
+            builder.MapPatch("/", (JsonPatchDocument<JsonPatchModel>? patch) => { });
+        }
+        else
+        {
+            builder.MapPatch("/", (JsonPatchDocument<JsonPatchModel> patch) => { });
+        }
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations![HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.Equal(!isOptional, operation.RequestBody.Required);
+        });
+
+    }
+#nullable restore
+
+    [Fact]
+    public async Task GetRequestBody_HandlesGenericJsonPatchBodyWithAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", ([FromBody] JsonPatchDocument<JsonPatchModel> patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.False(operation.RequestBody.Required);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task GetRequestBody_HandlesGenericJsonPatchBodyWithAcceptsMetadata()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", (JsonPatchDocument<JsonPatchModel> name) => { })
+               .Accepts(typeof(JsonPatchDocument<JsonPatchModel>), "application/vnd.github.patch+json");
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/vnd.github.patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+    [Fact]
+    public async Task GetRequestBody_HandlesGenericJsonPatchBodyWithConsumesAttribute()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", [Consumes(typeof(JsonPatchDocument<JsonPatchModel>), "application/vnd.github.patch+json")] (JsonPatchDocument<JsonPatchModel> patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/vnd.github.patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+#nullable enable
+    private sealed class JsonPatchModel
+    {
+        [JsonPropertyName("first")]
+        public string? First { get; set; }
+
+        [JsonPropertyName("second")]
+        public string? Second { get; set; }
+    }
+#nullable restore
+
+    [Fact]
+    public async Task GetRequestBody_HandlesCustomJsonPatchBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", (CustomJsonPatchDocument patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.False(operation.RequestBody.Required);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+    private class CustomJsonPatchDocument : JsonPatchDocument;
+
+    [Fact]
+    public async Task GetRequestBody_HandlesGenericCustomJsonPatchBody()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPatch("/", (CustomJsonPatchDocument<JsonPatchModel> patch) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            var paths = Assert.Single(document.Paths.Values);
+            var operation = paths.Operations[HttpMethod.Patch];
+            Assert.NotNull(operation.RequestBody);
+            Assert.False(operation.RequestBody.Required);
+            Assert.NotNull(operation.RequestBody.Content);
+            var content = Assert.Single(operation.RequestBody.Content);
+            Assert.Equal("application/json-patch+json", content.Key);
+            var schema = Assert.IsType<OpenApiSchemaReference>(content.Value.Schema);
+            Assert.Equal("JsonPatchDocument", schema.Reference.Id);
+        });
+    }
+
+    private class CustomJsonPatchDocument<T> : JsonPatchDocument<T> where T : class;
 }

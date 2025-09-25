@@ -1,0 +1,39 @@
+﻿<!--
+    Copyright (c) Microsoft Corporation. All rights reserved.
+    Licensed under the MIT license.
+-->
+
+<Include xmlns="http://wixtoolset.org/schemas/v4/wxs">
+
+<!-- This is the old fragment:
+
+  <Fragment Id="Fragment.IIS.OOB.Common.WindowsHotfix">
+
+To add this to your wxs file, add:
+
+    <?include $(PROJECT_ROOT)\setup\iisca\wix5\filename.wxi ?>
+
+-->
+
+    <CustomAction Id="ScheduleInstallWindowsHotfix" DllEntry="ScheduleInstallWindowsHotfixCA" Execute="immediate" Return="check" BinaryRef="IISCustomActionDll" />
+    <!-- Deferred custom actions scheduled by the immediate actions above -->
+    <CustomAction Id="ExecuteInstallWindowsHotfix" DllEntry="ExecuteInstallWindowsHotfixCA" Execute="deferred" Return="check" Impersonate="no" BinaryRef="IISCustomActionDll" />
+    <CustomAction Id="RollbackCleanUpWindowsHotfix" DllEntry="ExecuteCleanUpWindowsHotfixCA" Execute="rollback" Return="check" Impersonate="no" BinaryRef="IISCustomActionDll" />
+    <CustomAction Id="CommitCleanUpWindowsHotfix" DllEntry="ExecuteCleanUpWindowsHotfixCA" Execute="commit" Return="check" Impersonate="no" BinaryRef="IISCustomActionDll" />
+    
+    <CustomAction Id="ScheduleRebootIfRequired" DllEntry="ScheduleRebootIfRequiredCA" Execute="immediate" Return="check" BinaryRef="IISCustomActionDll" />
+    
+    <CustomTable Id="IISWindowsHotfix">
+      <Column Id="Name" Type="string" PrimaryKey="yes" />
+      <Column Id="BinaryName_" Type="string" KeyTable="Binary" KeyColumn="1" Category="identifier" Width="72" />
+      <Column Id="OSMajorVersion" Type="int" Width="4" Nullable="yes" />
+      <Column Id="OSMinorVersion" Type="int" Width="4" Nullable="yes" />
+      <Column Id="SPMajorVersion" Type="int" Width="2" Nullable="yes" />
+      <Column Id="Condition" Type="string" Category="condition" Nullable="yes" />
+    </CustomTable>
+    
+    <InstallExecuteSequence>
+      <Custom Action="ScheduleInstallWindowsHotfix" Before="RemoveFiles" Condition="NOT SKIPINSTALLWINDOWSHOTFIX" />
+      <Custom Action="ScheduleRebootIfRequired" After="InstallFinalize" Condition="NOT SKIPREBOOTIFREQUIRED" />
+    </InstallExecuteSequence>
+</Include>

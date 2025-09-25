@@ -4,14 +4,12 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Pipelines;
+using System.Net.Http;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.OpenApi.Any;
-using Microsoft.OpenApi.Models;
-using Microsoft.OpenApi.Models.References;
 
 public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 {
@@ -27,7 +25,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
 
             Assert.NotNull(requestBody);
@@ -84,7 +82,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/"].Operations[OperationType.Post];
+            var operation = document.Paths["/"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
 
             Assert.NotNull(requestBody);
@@ -97,8 +95,8 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
                 {
                     Assert.Equal("id", property.Key);
                     Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
-                    Assert.Equal(1, property.Value.Minimum);
-                    Assert.Equal(100, property.Value.Maximum);
+                    Assert.Equal("1", property.Value.Minimum);
+                    Assert.Equal("100", property.Value.Maximum);
                     Assert.Null(property.Value.Default);
                 },
                 property =>
@@ -164,7 +162,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
 
         static OpenApiRequestBody GetRequestBodyForPath(OpenApiDocument document, string path)
         {
-            var operation = document.Paths[path].Operations[OperationType.Post];
+            var operation = document.Paths[path].Operations[HttpMethod.Post];
             return operation.RequestBody as OpenApiRequestBody;
         }
     }
@@ -181,7 +179,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/required-properties"].Operations[OperationType.Post];
+            var operation = document.Paths["/required-properties"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -208,7 +206,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         {
             foreach (var path in paths)
             {
-                var operation = document.Paths[$"/{path}"].Operations[OperationType.Post];
+                var operation = document.Paths[$"/{path}"].Operations[HttpMethod.Post];
                 var requestBody = operation.RequestBody;
 
                 var effectiveSchema = requestBody.Content["application/octet-stream"].Schema;
@@ -231,7 +229,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths[$"/proposal"].Operations[OperationType.Post];
+            var operation = document.Paths[$"/proposal"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var schema = requestBody.Content["application/json"].Schema;
             Assert.Equal("Proposal", ((OpenApiSchemaReference)schema).Reference.Id);
@@ -264,9 +262,9 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var enumerableTodo = document.Paths["/enumerable-todo"].Operations[OperationType.Post];
-            var arrayTodo = document.Paths["/array-todo"].Operations[OperationType.Post];
-            var arrayParsable = document.Paths["/array-parsable"].Operations[OperationType.Get];
+            var enumerableTodo = document.Paths["/enumerable-todo"].Operations[HttpMethod.Post];
+            var arrayTodo = document.Paths["/array-todo"].Operations[HttpMethod.Post];
+            var arrayParsable = document.Paths["/array-parsable"].Operations[HttpMethod.Get];
 
             Assert.NotNull(enumerableTodo.RequestBody);
             Assert.NotNull(arrayTodo.RequestBody);
@@ -325,13 +323,13 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
             var schema = mediaType.Schema;
             Assert.Equal(JsonSchemaType.Object, schema.Type);
-            Assert.Empty(schema.AnyOf);
+            Assert.Null(schema.AnyOf);
             Assert.Collection(schema.Properties,
                 property =>
                 {
@@ -365,7 +363,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             var requestBody = operation.RequestBody.Content;
             Assert.True(requestBody.TryGetValue("application/json", out var mediaType));
@@ -413,7 +411,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.NotNull(operation.RequestBody);
             Assert.Equal("The todo item to create.", operation.RequestBody.Description);
         });
@@ -431,7 +429,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -467,6 +465,188 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiRequestBody_HandlesNullableParameterWithOneOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        builder.MapPost("/api/nullable-todo", (Todo? todo) => { });
+        builder.MapPost("/api/nullable-point", (Point? point) => { });
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable Todo parameter
+            var todoOperation = document.Paths["/api/nullable-todo"].Operations[HttpMethod.Post];
+            var todoRequestBody = todoOperation.RequestBody;
+            var todoContent = Assert.Single(todoRequestBody.Content);
+            Assert.Equal("application/json", todoContent.Key);
+            var todoSchema = todoContent.Value.Schema;
+            Assert.NotNull(todoSchema.OneOf);
+            Assert.Equal(2, todoSchema.OneOf.Count);
+            Assert.Collection(todoSchema.OneOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Object, item.Type);
+                    Assert.Collection(item.Properties,
+                        property =>
+                        {
+                            Assert.Equal("id", property.Key);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("title", property.Key);
+                            Assert.Equal(JsonSchemaType.String | JsonSchemaType.Null, property.Value.Type);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("completed", property.Key);
+                            Assert.Equal(JsonSchemaType.Boolean, property.Value.Type);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("createdAt", property.Key);
+                            Assert.Equal(JsonSchemaType.String, property.Value.Type);
+                            Assert.Equal("date-time", property.Value.Format);
+                        });
+                });
+
+            // Verify nullable Point parameter
+            var pointOperation = document.Paths["/api/nullable-point"].Operations[HttpMethod.Post];
+            var pointRequestBody = pointOperation.RequestBody;
+            var pointContent = Assert.Single(pointRequestBody.Content);
+            Assert.Equal("application/json", pointContent.Key);
+            var pointSchema = pointContent.Value.Schema;
+            Assert.NotNull(pointSchema.OneOf);
+            Assert.Equal(2, pointSchema.OneOf.Count);
+            Assert.Collection(pointSchema.OneOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Object, item.Type);
+                    Assert.Collection(item.Properties,
+                        property =>
+                        {
+                            Assert.Equal("x", property.Key);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
+                        },
+                        property =>
+                        {
+                            Assert.Equal("y", property.Key);
+                            Assert.Equal(JsonSchemaType.Integer, property.Value.Type);
+                            Assert.Equal("int32", property.Value.Format);
+                        });
+                });
+
+            Assert.Equal(["Point", "Todo"], [.. document.Components.Schemas.Keys]);
+            Assert.Collection(document.Components.Schemas.Values,
+                item => Assert.Equal(JsonSchemaType.Object, item.Type),
+                item => Assert.Equal(JsonSchemaType.Object, item.Type));
+        });
+    }
+
+    [Fact]
+    public async Task GetOpenApiRequestBody_HandlesNullableCollectionParametersWithOneOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        builder.MapPost("/api/nullable-array", (Todo[]? todos) => { });
+        builder.MapPost("/api/nullable-list", (List<Todo>? todoList) => { });
+        builder.MapPost("/api/nullable-enumerable", (IEnumerable<Todo>? todoEnumerable) => { });
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable array parameter - verify actual behavior with OneOf
+            var arrayOperation = document.Paths["/api/nullable-array"].Operations[HttpMethod.Post];
+            var arrayRequestBody = arrayOperation.RequestBody;
+            var arrayContent = Assert.Single(arrayRequestBody.Content);
+            Assert.Equal("application/json", arrayContent.Key);
+            var arraySchema = arrayContent.Value.Schema;
+            Assert.NotNull(arraySchema.OneOf); // OneOf IS used for nullable collections
+            Assert.Equal(2, arraySchema.OneOf.Count);
+            Assert.Collection(arraySchema.OneOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+
+            // Verify nullable List parameter - verify actual behavior with OneOf
+            var listOperation = document.Paths["/api/nullable-list"].Operations[HttpMethod.Post];
+            var listRequestBody = listOperation.RequestBody;
+            var listContent = Assert.Single(listRequestBody.Content);
+            Assert.Equal("application/json", listContent.Key);
+            var listSchema = listContent.Value.Schema;
+            Assert.NotNull(listSchema.OneOf); // OneOf IS used for nullable collections
+            Assert.Equal(2, listSchema.OneOf.Count);
+            Assert.Collection(listSchema.OneOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+
+            // Verify nullable IEnumerable parameter - verify actual behavior with OneOf
+            var enumerableOperation = document.Paths["/api/nullable-enumerable"].Operations[HttpMethod.Post];
+            var enumerableRequestBody = enumerableOperation.RequestBody;
+            var enumerableContent = Assert.Single(enumerableRequestBody.Content);
+            Assert.Equal("application/json", enumerableContent.Key);
+            var enumerableSchema = enumerableContent.Value.Schema;
+            Assert.NotNull(enumerableSchema.OneOf); // OneOf IS used for nullable collections
+            Assert.Equal(2, enumerableSchema.OneOf.Count);
+            Assert.Collection(enumerableSchema.OneOf,
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Null, item.Type);
+                },
+                item =>
+                {
+                    Assert.NotNull(item);
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+        });
+    }
+
+    [Fact]
     public async Task SupportsNestedTypes()
     {
         // Arrange
@@ -478,7 +658,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("NestedType", ((OpenApiSchemaReference)content.Value.Schema).Reference.Id);
@@ -523,7 +703,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             Assert.Equal("NestedType", ((OpenApiSchemaReference)content.Value.Schema).Reference.Id);
@@ -588,7 +768,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             Assert.Collection(operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.AllOf,
                 schema =>
                 {
@@ -620,7 +800,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -646,7 +826,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -673,6 +853,67 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
+    public async Task GetOpenApiRequestBody_HandlesNullableGenericTypesWithOneOf()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+#nullable enable
+        builder.MapPost("/api/nullable-result", (Result<Todo>? result) => { });
+        builder.MapPost("/api/nullable-list", (List<Todo>? todos) => { });
+        builder.MapPost("/api/nullable-dictionary", (Dictionary<string, Todo>? todoDict) => { });
+#nullable restore
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            // Verify nullable Result<Todo> uses allOf
+            var resultOperation = document.Paths["/api/nullable-result"].Operations[HttpMethod.Post];
+            var resultRequestBody = resultOperation.RequestBody;
+            var resultContent = Assert.Single(resultRequestBody.Content);
+            var resultSchema = resultContent.Value.Schema;
+            Assert.NotNull(resultSchema.OneOf);
+            Assert.Equal(2, resultSchema.OneOf.Count);
+            Assert.Collection(resultSchema.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item => Assert.Equal(JsonSchemaType.Object, item.Type));
+
+            // Verify nullable List<Todo> uses allOf
+            var listOperation = document.Paths["/api/nullable-list"].Operations[HttpMethod.Post];
+            var listRequestBody = listOperation.RequestBody;
+            var listContent = Assert.Single(listRequestBody.Content);
+            var listSchema = listContent.Value.Schema;
+            Assert.NotNull(listSchema.OneOf);
+            Assert.Equal(2, listSchema.OneOf.Count);
+            Assert.Collection(listSchema.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item =>
+                {
+                    Assert.Equal(JsonSchemaType.Array, item.Type);
+                    Assert.NotNull(item.Items);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.Items).Reference.Id);
+                });
+
+            // Verify nullable Dictionary<string, Todo> uses allOf
+            var dictOperation = document.Paths["/api/nullable-dictionary"].Operations[HttpMethod.Post];
+            var dictRequestBody = dictOperation.RequestBody;
+            var dictContent = Assert.Single(dictRequestBody.Content);
+            var dictSchema = dictContent.Value.Schema;
+            Assert.NotNull(dictSchema.OneOf);
+            Assert.Equal(2, dictSchema.OneOf.Count);
+            Assert.Collection(dictSchema.OneOf,
+                item => Assert.Equal(JsonSchemaType.Null, item.Type),
+                item =>
+                {
+                    Assert.Equal(JsonSchemaType.Object, item.Type);
+                    Assert.NotNull(item.AdditionalProperties);
+                    Assert.Equal("Todo", ((OpenApiSchemaReference)item.AdditionalProperties).Reference.Id);
+                });
+        });
+    }
+
+    [Fact]
     public async Task SupportsTypesWithSelfReferencedProperties()
     {
         // Arrange
@@ -684,7 +925,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         // Assert
         await VerifyOpenApiDocument(builder, document =>
         {
-            var operation = document.Paths["/api"].Operations[OperationType.Post];
+            var operation = document.Paths["/api"].Operations[HttpMethod.Post];
             var requestBody = operation.RequestBody;
             var content = Assert.Single(requestBody.Content);
             var schema = content.Value.Schema;
@@ -710,4 +951,51 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
         public IDictionary<string, Parent> SelfReferenceDictionary { get; set; } = new Dictionary<string, Parent>();
     }
 
+    /// <remarks>
+    /// Regression test for https://github.com/dotnet/aspnetcore/issues/61327
+    /// </remarks>
+    [Fact]
+    public async Task RespectsEnumDefaultValueInControllerFormParameters()
+    {
+        // Arrange
+        var actionDescriptor = CreateActionDescriptor(nameof(TestBodyController.FormPostWithOptionalEnumParam), typeof(TestBodyController));
+
+        // Assert
+        await VerifyOpenApiDocument(actionDescriptor, VerifyOptionalEnum);
+    }
+
+    [Fact]
+    public async Task RespectsEnumDefaultValueInMinimalApiFormParameters()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/optionalEnum", ([FromForm(Name = "status")] Status status = Status.Approved) => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, VerifyOptionalEnum);
+    }
+
+    private void VerifyOptionalEnum(OpenApiDocument document)
+    {
+        var operation = document.Paths["/optionalEnum"].Operations[HttpMethod.Post];
+        var properties = operation.RequestBody.Content["application/x-www-form-urlencoded"].Schema.Properties;
+        var property = properties["status"];
+
+        Assert.NotNull(property);
+        Assert.Equal(3, property.Enum.Count);
+        Assert.Equal("Approved", property.Default.GetValue<string>());
+    }
+
+    [ApiController]
+    [Produces("application/json")]
+    public class TestBodyController
+    {
+        [Route("/optionalEnum")]
+        [HttpPost]
+        internal Status FormPostWithOptionalEnumParam(
+            [FromForm(Name = "status")] Status status = Status.Approved
+        ) => status;
+    }
 }

@@ -213,7 +213,7 @@ public class ForwardedHeadersMiddleware
             // Host and Scheme initial values are never inspected, no need to set them here.
         };
 
-        var checkKnownIps = _options.KnownNetworks.Count > 0 || _options.KnownProxies.Count > 0;
+        var checkKnownIps = _options.KnownIPNetworks.Count > 0 || _options.KnownProxies.Count > 0;
         bool applyChanges = false;
         int entriesConsumed = 0;
 
@@ -399,7 +399,7 @@ public class ForwardedHeadersMiddleware
         {
             return true;
         }
-        foreach (var network in _options.KnownNetworks)
+        foreach (var network in _options.KnownIPNetworks)
         {
             if (network.Contains(address))
             {

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -126,6 +127,7 @@ public class RemoteRendererTest
     }
 
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/61807")]
     public async Task ProcessBufferedRenderBatches_WritesRenders()
     {
         // Arrange
@@ -137,7 +139,7 @@ public class RemoteRendererTest
         var secondBatchTCS = new TaskCompletionSource();
         var thirdBatchTCS = new TaskCompletionSource();
 
-        var initialClient = new Mock<IClientProxy>();
+        var initialClient = new Mock<ISingleClientProxy>();
         initialClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[0]))
             .Returns(firstBatchTCS.Task);
@@ -150,7 +152,7 @@ public class RemoteRendererTest
             builder.CloseElement();
         });
 
-        var client = new Mock<IClientProxy>();
+        var client = new Mock<ISingleClientProxy>();
         client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[0]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[0] == 3 ? secondBatchTCS.Task : thirdBatchTCS.Task);
@@ -197,7 +199,7 @@ public class RemoteRendererTest
         var serviceProvider = CreateServiceProvider();
         var firstBatchTCS = new TaskCompletionSource();
         var secondBatchTCS = new TaskCompletionSource();
-        var offlineClient = new CircuitClientProxy(new Mock<IClientProxy>(MockBehavior.Strict).Object, "offline-client");
+        var offlineClient = new CircuitClientProxy(new Mock<ISingleClientProxy>(MockBehavior.Strict).Object, "offline-client");
         offlineClient.SetDisconnected();
         var renderer = GetRemoteRenderer(serviceProvider, offlineClient);
         RenderFragment initialContent = (builder) =>
@@ -208,7 +210,7 @@ public class RemoteRendererTest
         };
         var trigger = new Trigger();
         var renderIds = new List<long>();
-        var onlineClient = new Mock<IClientProxy>();
+        var onlineClient = new Mock<ISingleClientProxy>();
         onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
@@ -260,7 +262,7 @@ public class RemoteRendererTest
         var serviceProvider = CreateServiceProvider();
         var firstBatchTCS = new TaskCompletionSource();
         var secondBatchTCS = new TaskCompletionSource();
-        var offlineClient = new CircuitClientProxy(new Mock<IClientProxy>(MockBehavior.Strict).Object, "offline-client");
+        var offlineClient = new CircuitClientProxy(new Mock<ISingleClientProxy>(MockBehavior.Strict).Object, "offline-client");
         offlineClient.SetDisconnected();
         var renderer = GetRemoteRenderer(serviceProvider, offlineClient);
         RenderFragment initialContent = (builder) =>
@@ -271,7 +273,7 @@ public class RemoteRendererTest
         };
         var trigger = new Trigger();
         var renderIds = new List<long>();
-        var onlineClient = new Mock<IClientProxy>();
+        var onlineClient = new Mock<ISingleClientProxy>();
         onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
@@ -325,7 +327,7 @@ public class RemoteRendererTest
         var secondBatchTCS = new TaskCompletionSource();
         var renderIds = new List<long>();
 
-        var onlineClient = new Mock<IClientProxy>();
+        var onlineClient = new Mock<ISingleClientProxy>();
         onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
@@ -382,7 +384,7 @@ public class RemoteRendererTest
         var secondBatchTCS = new TaskCompletionSource();
         var renderIds = new List<long>();
 
-        var onlineClient = new Mock<IClientProxy>();
+        var onlineClient = new Mock<ISingleClientProxy>();
         onlineClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
             .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
             .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 2 ? firstBatchTCS.Task : secondBatchTCS.Task);
@@ -767,7 +769,13 @@ public class RemoteRendererTest
         public void TriggerRender()
         {
             var task = _renderHandle.Dispatcher.InvokeAsync(() => _renderHandle.Render(_renderFragment));
-            Assert.True(task.IsCompletedSuccessfully);
+
+            // Log the task state for debugging purposes.
+            var status = task.Status;
+            var innerException = task.Exception?.InnerException;
+            var message = $"Render task should succeed synchronously.\nStatus: '{status}'\nInner exception: '{innerException}'";
+
+            Assert.True(task.IsCompletedSuccessfully, message);
         }
     }
 

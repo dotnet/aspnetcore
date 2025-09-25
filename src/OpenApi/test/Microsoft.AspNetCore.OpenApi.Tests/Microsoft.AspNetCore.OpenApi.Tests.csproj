@@ -13,7 +13,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.OpenApi" />
-    <Reference Include="Microsoft.OpenApi.Readers" />
+    <Reference Include="Microsoft.OpenApi.YamlReader" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Core" />
@@ -39,5 +39,9 @@
     <HelixContent
       Include="$(MSBuildProjectDirectory)\Integration\snapshots\**"
       LinkBase="$(MSBuildThisFileDirectory)\Integration\snapshots"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Microsoft.OpenApi" />
   </ItemGroup>
 </Project>

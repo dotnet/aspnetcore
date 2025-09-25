@@ -11,8 +11,8 @@
 #  - task: Bash@3
 #    displayName: Setup Internal Feeds
 #    inputs:
-#      filePath: $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-#      arguments: $(Build.SourcesDirectory)/NuGet.config
+#      filePath: $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.sh
+#      arguments: $(System.DefaultWorkingDirectory)/NuGet.config
 #    condition: ne(variables['Agent.OS'], 'Windows_NT')
 #  - task: NuGetAuthenticate@1
 #
@@ -99,7 +99,7 @@ if [ "$?" == "0" ]; then
     PackageSources+=('dotnet3.1-internal-transport')
 fi
 
-DotNetVersions=('5' '6' '7' '8' '9')
+DotNetVersions=('5' '6' '7' '8' '9' '10')
 
 for DotNetVersion in ${DotNetVersions[@]} ; do
     FeedPrefix="dotnet${DotNetVersion}";

@@ -5,6 +5,7 @@ using System.IO.Pipelines;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 
@@ -58,8 +59,11 @@ public class JsonTypeInfoExtensionsTests
         [(new { Id = 1, Name = "Todo" }).GetType(), "AnonymousTypeOfintAndstring"],
         [typeof(IFormFile), "IFormFile"],
         [typeof(IFormFileCollection), "IFormFileCollection"],
+        [typeof(JsonPatchDocument), "JsonPatchDocument"],
+        [typeof(JsonPatchDocument<Todo>), "JsonPatchDocument"],
         [typeof(Stream), "Stream"],
         [typeof(PipeReader), "PipeReader"],
+        [typeof(FileContentResult), "FileContentResult"],
         [typeof(Results<Ok<TodoWithDueDate>, Ok<Todo>>), "ResultsOfOkOfTodoWithDueDateAndOkOfTodo"],
         [typeof(Ok<Todo>), "OkOfTodo"],
         [typeof(NotFound<TodoWithDueDate>), "NotFoundOfTodoWithDueDate"],

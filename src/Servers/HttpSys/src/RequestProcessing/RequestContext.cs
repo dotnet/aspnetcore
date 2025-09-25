@@ -1,11 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
+using System.Net.Security;
 using System.Runtime.InteropServices;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -222,89 +221,96 @@ internal partial class RequestContext : NativeRequestContext, IThreadPoolWorkIte
     }
 
     /// <summary>
-    /// Attempts to get the client hello message bytes from the http.sys.
-    /// If not successful, will return false.
+    /// Gets TLS cipher suite used for the request, if supported by the OS and http.sys.
     /// </summary>
-    internal unsafe bool GetAndInvokeTlsClientHelloMessageBytesCallback(IFeatureCollection features, Action<IFeatureCollection, ReadOnlySpan<byte>> tlsClientHelloBytesCallback)
+    /// <returns>
+    /// null, if query of TlsCipherSuite is not supported or the query failed.
+    /// TlsCipherSuite value, if query is successful.
+    /// </returns>
+    internal unsafe TlsCipherSuite? GetTlsCipherSuite()
     {
-        if (!HttpApi.SupportsClientHello)
+        if (!HttpApi.SupportsQueryTlsCipherInfo)
         {
-            // not supported, so we just return and don't invoke the callback
-            return false;
+            return default;
         }
-
-        uint bytesReturnedValue = 0;
-        uint* bytesReturned = &bytesReturnedValue;
-        uint statusCode;
 
         var requestId = PinsReleased ? Request.RequestId : RequestId;
 
-        // we will try with some "random" buffer size
-        var buffer = ArrayPool<byte>.Shared.Rent(512);
-        try
-        {
-            fixed (byte* pBuffer = buffer)
-            {
-                statusCode = HttpApi.HttpGetRequestProperty(
-                    requestQueueHandle: Server.RequestQueue.Handle,
-                    requestId,
-                    propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
-                    qualifier: null,
-                    qualifierSize: 0,
-                    output: pBuffer,
-                    outputSize: (uint)buffer.Length,
-                    bytesReturned: (IntPtr)bytesReturned,
-                    overlapped: IntPtr.Zero);
+        SecPkgContext_CipherInfo cipherInfo = default;
 
-                if (statusCode is ErrorCodes.ERROR_SUCCESS)
-                {
-                    tlsClientHelloBytesCallback(features, buffer.AsSpan(0, (int)bytesReturnedValue));
-                    return true;
-                }
-            }
-        }
-        finally
+        var statusCode = HttpApi.HttpGetRequestProperty(
+            requestQueueHandle: Server.RequestQueue.Handle,
+            requestId,
+            propertyId: (HTTP_REQUEST_PROPERTY)14 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsCipherInfo */,
+            qualifier: null,
+            qualifierSize: 0,
+            output: &cipherInfo,
+            outputSize: (uint)sizeof(SecPkgContext_CipherInfo),
+            bytesReturned: IntPtr.Zero,
+            overlapped: IntPtr.Zero);
+
+        if (statusCode is ErrorCodes.ERROR_SUCCESS)
         {
-            ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+            return checked((TlsCipherSuite)cipherInfo.dwCipherSuite);
         }
 
-        // if buffer supplied is too small, `bytesReturned` will have proper size
-        // so retry should succeed with the properly allocated buffer
-        if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
+        // OS supports querying TlsCipherSuite, but request failed.
+        Log.QueryTlsCipherSuiteError(Logger, requestId, statusCode);
+        return null;
+    }
+
+    /// <summary>
+    /// Attempts to get the client hello message bytes from the http.sys.
+    /// If successful writes the bytes into <paramref name="destination"/>, and shows how many bytes were written in <paramref name="bytesReturned"/>.
+    /// If not successful because <paramref name="destination"/> is not large enough, returns false and shows a size of <paramref name="destination"/> required in <paramref name="bytesReturned"/>.
+    /// If not successful for other reason - throws exception with message/errorCode.
+    /// </summary>
+    internal unsafe bool TryGetTlsClientHelloMessageBytes(
+        Span<byte> destination,
+        out int bytesReturned)
+    {
+        bytesReturned = default;
+        if (!HttpApi.SupportsClientHello)
         {
-            try
+            // not supported, so we just return and don't invoke the callback
+            throw new InvalidOperationException("Windows HTTP Server API does not support HTTP_FEATURE_ID.HttpFeatureCacheTlsClientHello or HttpQueryRequestProperty. See HTTP_FEATURE_ID for details.");
+        }
+
+        uint statusCode;
+        var requestId = PinsReleased ? Request.RequestId : RequestId;
+
+        uint bytesReturnedValue = 0;
+        uint* bytesReturnedPointer = &bytesReturnedValue;
+
+        fixed (byte* pBuffer = destination)
+        {
+            statusCode = HttpApi.HttpGetRequestProperty(
+                requestQueueHandle: Server.RequestQueue.Handle,
+                requestId,
+                propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
+                qualifier: null,
+                qualifierSize: 0,
+                output: pBuffer,
+                outputSize: (uint)destination.Length,
+                bytesReturned: (IntPtr)bytesReturnedPointer,
+                overlapped: IntPtr.Zero);
+
+            bytesReturned = checked((int)bytesReturnedValue);
+
+            if (statusCode is ErrorCodes.ERROR_SUCCESS)
             {
-                var correctSize = (int)bytesReturnedValue;
-                buffer = ArrayPool<byte>.Shared.Rent(correctSize);
-
-                fixed (byte* pBuffer = buffer)
-                {
-                    statusCode = HttpApi.HttpGetRequestProperty(
-                        requestQueueHandle: Server.RequestQueue.Handle,
-                        requestId,
-                        propertyId: (HTTP_REQUEST_PROPERTY)11 /* HTTP_REQUEST_PROPERTY.HttpRequestPropertyTlsClientHello  */,
-                        qualifier: null,
-                        qualifierSize: 0,
-                        output: pBuffer,
-                        outputSize: (uint)buffer.Length,
-                        bytesReturned: (IntPtr)bytesReturned,
-                        overlapped: IntPtr.Zero);
-
-                    if (statusCode is ErrorCodes.ERROR_SUCCESS)
-                    {
-                        tlsClientHelloBytesCallback(features, buffer.AsSpan(0, correctSize));
-                        return true;
-                    }
-                }
+                return true;
             }
-            finally
+
+            // if buffer supplied is too small, `bytesReturned` has proper size
+            if (statusCode is ErrorCodes.ERROR_MORE_DATA or ErrorCodes.ERROR_INSUFFICIENT_BUFFER)
             {
-                ArrayPool<byte>.Shared.Return(buffer, clearArray: true);
+                return false;
             }
         }
 
         Log.TlsClientHelloRetrieveError(Logger, requestId, statusCode);
-        return false;
+        throw new HttpSysException((int)statusCode);
     }
 
     internal unsafe HTTP_REQUEST_PROPERTY_SNI GetClientSni()

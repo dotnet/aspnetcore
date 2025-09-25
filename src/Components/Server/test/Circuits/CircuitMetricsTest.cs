@@ -39,20 +39,14 @@ public class CircuitMetricsTest
     {
         // Arrange
         var circuitMetrics = new CircuitMetrics(_meterFactory);
-        using var activeTotalCounter = new MetricCollector<long>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.count");
         using var activeCircuitCounter = new MetricCollector<long>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.active_circuits");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.active");
 
         // Act
         circuitMetrics.OnCircuitOpened();
 
         // Assert
-        var totalMeasurements = activeTotalCounter.GetMeasurementSnapshot();
         var activeMeasurements = activeCircuitCounter.GetMeasurementSnapshot();
-
-        Assert.Single(totalMeasurements);
-        Assert.Equal(1, totalMeasurements[0].Value);
 
         Assert.Single(activeMeasurements);
         Assert.Equal(1, activeMeasurements[0].Value);
@@ -64,7 +58,7 @@ public class CircuitMetricsTest
         // Arrange
         var circuitMetrics = new CircuitMetrics(_meterFactory);
         using var connectedCircuitCounter = new MetricCollector<long>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.connected_circuits");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.connected");
 
         // Act
         circuitMetrics.OnConnectionUp();
@@ -82,7 +76,7 @@ public class CircuitMetricsTest
         // Arrange
         var circuitMetrics = new CircuitMetrics(_meterFactory);
         using var connectedCircuitCounter = new MetricCollector<long>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.connected_circuits");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.connected");
 
         // Act
         circuitMetrics.OnConnectionDown();
@@ -95,33 +89,29 @@ public class CircuitMetricsTest
     }
 
     [Fact]
-    public void OnCircuitDown_UpdatesCountersAndRecordsDuration()
+    public async Task OnCircuitDown_UpdatesCountersAndRecordsDuration()
     {
         // Arrange
         var circuitMetrics = new CircuitMetrics(_meterFactory);
         using var activeCircuitCounter = new MetricCollector<long>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.active_circuits");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.active");
         using var connectedCircuitCounter = new MetricCollector<long>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.connected_circuits");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.connected");
         using var circuitDurationCollector = new MetricCollector<double>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.duration");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.duration");
 
         // Act
         var startTime = Stopwatch.GetTimestamp();
-        Thread.Sleep(10); // Add a small delay to ensure a measurable duration
+        await Task.Delay(10); // Add a small delay to ensure a measurable duration
         var endTime = Stopwatch.GetTimestamp();
         circuitMetrics.OnCircuitDown(startTime, endTime);
 
         // Assert
         var activeMeasurements = activeCircuitCounter.GetMeasurementSnapshot();
-        var connectedMeasurements = connectedCircuitCounter.GetMeasurementSnapshot();
         var durationMeasurements = circuitDurationCollector.GetMeasurementSnapshot();
 
         Assert.Single(activeMeasurements);
         Assert.Equal(-1, activeMeasurements[0].Value);
-
-        Assert.Single(connectedMeasurements);
-        Assert.Equal(-1, connectedMeasurements[0].Value);
 
         Assert.Single(durationMeasurements);
         Assert.True(durationMeasurements[0].Value > 0);
@@ -135,7 +125,7 @@ public class CircuitMetricsTest
 
         // Create a collector to ensure the meter is enabled
         using var circuitDurationCollector = new MetricCollector<double>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.duration");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.duration");
 
         // Act & Assert
         Assert.True(circuitMetrics.IsDurationEnabled());
@@ -146,14 +136,12 @@ public class CircuitMetricsTest
     {
         // Arrange
         var circuitMetrics = new CircuitMetrics(_meterFactory);
-        using var totalCounter = new MetricCollector<long>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.count");
         using var activeCircuitCounter = new MetricCollector<long>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.active_circuits");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.active");
         using var connectedCircuitCounter = new MetricCollector<long>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.connected_circuits");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.connected");
         using var circuitDurationCollector = new MetricCollector<double>(_meterFactory,
-            CircuitMetrics.MeterName, "aspnetcore.components.circuits.duration");
+            CircuitMetrics.MeterName, "aspnetcore.components.circuit.duration");
 
         // Act - Simulating a full circuit lifecycle
         var startTime = Stopwatch.GetTimestamp();
@@ -170,20 +158,18 @@ public class CircuitMetricsTest
         // 4. Connection re-established
         circuitMetrics.OnConnectionUp();
 
-        // 5. Circuit closes
+        // 5. Connection drops
+        circuitMetrics.OnConnectionDown();
+
+        // 6. Circuit closes
         Thread.Sleep(10); // Add a small delay to ensure a measurable duration
         var endTime = Stopwatch.GetTimestamp();
         circuitMetrics.OnCircuitDown(startTime, endTime);
 
         // Assert
-        var totalMeasurements = totalCounter.GetMeasurementSnapshot();
         var activeMeasurements = activeCircuitCounter.GetMeasurementSnapshot();
         var connectedMeasurements = connectedCircuitCounter.GetMeasurementSnapshot();
         var durationMeasurements = circuitDurationCollector.GetMeasurementSnapshot();
-
-        // Total circuit count should have 1 measurement with value 1
-        Assert.Single(totalMeasurements);
-        Assert.Equal(1, totalMeasurements[0].Value);
 
         // Active circuit count should have 2 measurements (1 for open, -1 for close)
         Assert.Equal(2, activeMeasurements.Count);

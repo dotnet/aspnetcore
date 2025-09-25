@@ -14,12 +14,16 @@ internal sealed class PropertyGetter
 
     private readonly Func<object, object?> _GetterDelegate;
 
+    public PropertyInfo PropertyInfo { get; }
+
     [UnconditionalSuppressMessage(
         "ReflectionAnalysis",
         "IL2060:MakeGenericMethod",
         Justification = "The referenced methods don't have any DynamicallyAccessedMembers annotations. See https://github.com/mono/linker/issues/1727")]
     public PropertyGetter(Type targetType, PropertyInfo property)
     {
+        PropertyInfo = property;
+
         if (property.GetMethod == null)
         {
             throw new InvalidOperationException("Cannot provide a value for property " +
@@ -33,8 +37,10 @@ internal sealed class PropertyGetter
 
             var propertyGetterAsFunc =
                 getMethod.CreateDelegate(typeof(Func<,>).MakeGenericType(targetType, property.PropertyType));
+
             var callPropertyGetterClosedGenericMethod =
                 CallPropertyGetterOpenGenericMethod.MakeGenericMethod(targetType, property.PropertyType);
+
             _GetterDelegate = (Func<object, object>)
                 callPropertyGetterClosedGenericMethod.CreateDelegate(typeof(Func<object, object>), propertyGetterAsFunc);
         }
@@ -46,11 +52,11 @@ internal sealed class PropertyGetter
 
     public object? GetValue(object target) => _GetterDelegate(target);
 
-    private static TValue CallPropertyGetter<TTarget, TValue>(
+    private static object? CallPropertyGetter<TTarget, TValue>(
         Func<TTarget, TValue> Getter,
         object target)
         where TTarget : notnull
     {
-        return Getter((TTarget)target);
+        return (object?)Getter((TTarget)target);
     }
 }

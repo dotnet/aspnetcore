@@ -17,6 +17,12 @@
     <FileSignInfo Include="Mono.Cecil.Rocks.dll" CertificateName="3PartySHA2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Composite r2r images show up as fully native images and trigger the 3rd party warning when signing on Mac/Linux
+         even though they don't have readable copyright info. Skip those files in the signing check. -->
+    <ItemsToSkip3rdPartyCheck Include="Microsoft.AspNetCore.App.Runtime.Composite.r2r.dll" />
+  </ItemGroup>
+
   <PropertyGroup>
     <BaseRedistNetCorePath>$(ArtifactsObjDir)RedistSharedFx.Layout\$(Configuration)\</BaseRedistNetCorePath>
     <RedistNetCorePath>$(BaseRedistNetCorePath)$(TargetRuntimeIdentifier)\</RedistNetCorePath>
