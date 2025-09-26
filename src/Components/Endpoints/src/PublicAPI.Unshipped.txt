@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Builder.EndpointConventionBuilderResourceCollectionExtensions
+static Microsoft.AspNetCore.Builder.EndpointConventionBuilderResourceCollectionExtensions.WithStaticAssets<TBuilder>(this TBuilder builder, Microsoft.AspNetCore.Routing.IEndpointRouteBuilder! endpoints, string? manifestPath = null) -> TBuilder
 Microsoft.AspNetCore.Components.ResourcePreloader
 Microsoft.AspNetCore.Components.ResourcePreloader.ResourcePreloader() -> void
 Microsoft.Extensions.DependencyInjection.RazorComponentsRazorComponentBuilderExtensions
