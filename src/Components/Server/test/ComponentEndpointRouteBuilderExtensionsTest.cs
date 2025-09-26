@@ -139,7 +139,8 @@ public class ComponentEndpointRouteBuilderExtensionsTest
                     .MapBlazorHub()
                     .Finally(builder =>
                     {
-                        if (builder.Metadata.GetMetadata<ComponentFrameworkEndpointMetadata>() is not null)
+                        // Check if metadata collection contains ComponentFrameworkEndpointMetadata
+                        if (builder.Metadata.OfType<ComponentFrameworkEndpointMetadata>().Any())
                         {
                             frameworkEndpoints.Add(builder.DisplayName);
                         }
