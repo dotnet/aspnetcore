@@ -6,7 +6,6 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
@@ -1383,9 +1382,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         public void RerenderOnHotReload()
         {
-            if (_executionContext is null)
+            if (executionContext is null)
             {
-                _renderer.RenderRootComponentsOnHotReload();
+                renderer.RenderRootComponentsOnHotReload();
             }
             else
             {
