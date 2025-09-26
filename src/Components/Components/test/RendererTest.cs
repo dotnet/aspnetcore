@@ -5033,7 +5033,8 @@ public class RendererTest
     {
         await using var renderer = new TestRenderer();
 
-        renderer.HotReloadManager = HotReloadManager.Default;
+        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
+        renderer.HotReloadManager = hotReloadManager;
         HotReloadManager.Default.MetadataUpdateSupported = true;
 
         var component = new AsyncLocalCaptureComponent();
@@ -5053,7 +5054,7 @@ public class RendererTest
         {
             // Simulate environment where the ambient value is not present on the hot reload thread.
             ServiceAccessor.TestAsyncLocal.Value = null;
-            HotReloadManager.UpdateApplication([]);
+            hotReloadManager.TriggerOnDeltaApplied();
         });
         thread.Start();
         thread.Join();
