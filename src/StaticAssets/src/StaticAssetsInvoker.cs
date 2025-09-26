@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.StaticAssets.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
@@ -104,7 +105,8 @@ internal class StaticAssetsInvoker
 
             foreach (var header in _remainingHeaders ?? [])
             {
-                responseHeaders.Append(header.Name, header.Value);
+                var safeValue = HeaderValueEncoder.Sanitize(header.Name, header.Value);
+                responseHeaders.Append(header.Name, safeValue);
             }
         }
 
