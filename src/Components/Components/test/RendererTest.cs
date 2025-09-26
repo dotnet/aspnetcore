@@ -5029,21 +5029,17 @@ public class RendererTest
     }
 
     [Fact]
-    public async Task HotReload_ReRenderPreservesAsyncLocalValues_FailsToday()
+    public async Task HotReload_ReRenderPreservesAsyncLocalValues()
     {
-        // This is a regression test for the reported issue: AsyncLocal values are lost during hot reload.
-        // The desired (correct) behavior is that AsyncLocal values flow into the hot-reload re-render.
-        // Currently, because the hot reload callback is raised from a context without the original ExecutionContext,
-        // the AsyncLocal value is lost and the assertion below will FAIL (demonstrating the bug).
-
         await using var renderer = new TestRenderer();
-        var hotReloadManager = new HotReloadManager { MetadataUpdateSupported = true };
-        renderer.HotReloadManager = hotReloadManager;
+
+        renderer.HotReloadManager = HotReloadManager.Default;
+        HotReloadManager.Default.MetadataUpdateSupported = true;
 
         var component = new AsyncLocalCaptureComponent();
 
         // Establish AsyncLocal value before registering hot reload handler / rendering.
-        AsyncLocalCaptureComponent.TestAsyncLocal.Value = "AmbientValue";
+        ServiceAccessor.TestAsyncLocal.Value = "AmbientValue";
 
         var componentId = renderer.AssignRootComponentId(component);
         await renderer.Dispatcher.InvokeAsync(() => renderer.RenderRootComponentAsync(componentId));
@@ -5052,20 +5048,16 @@ public class RendererTest
         Assert.Null(component.HotReloadValue);
 
         // Simulate hot reload delta applied from a fresh thread (different ExecutionContext) so the AsyncLocal value is lost.
-        var expected = AsyncLocalCaptureComponent.TestAsyncLocal.Value;
+        var expected = ServiceAccessor.TestAsyncLocal.Value;
         var thread = new Thread(() =>
         {
             // Simulate environment where the ambient value is not present on the hot reload thread.
-            AsyncLocalCaptureComponent.TestAsyncLocal.Value = null;
-            var evtField = typeof(HotReloadManager).GetField("OnDeltaApplied", BindingFlags.Instance | BindingFlags.NonPublic);
-            var del = (Action)evtField.GetValue(hotReloadManager);
-            del?.Invoke();
+            ServiceAccessor.TestAsyncLocal.Value = null;
+            HotReloadManager.UpdateApplication([]);
         });
         thread.Start();
         thread.Join();
 
-        // EXPECTED (desired) correct behavior: value should still be present.
-        // ACTUAL today: this will be null, so the test fails, confirming the bug.
         Assert.Equal(expected, component.HotReloadValue);
     }
 
@@ -5222,10 +5214,13 @@ public class RendererTest
             => Task.CompletedTask;
     }
 
+    private class ServiceAccessor
+    {
+        public static AsyncLocal<string> TestAsyncLocal = new AsyncLocal<string>();
+    }
+
     private class AsyncLocalCaptureComponent : IComponent
     {
-        public static readonly AsyncLocal<string> TestAsyncLocal = new();
-
         private bool _initialized;
         private RenderHandle _renderHandle;
         public string HotReloadValue { get; private set; }
@@ -5241,7 +5236,7 @@ public class RendererTest
             else
             {
                 // Hot reload re-render path.
-                HotReloadValue = TestAsyncLocal.Value;
+                HotReloadValue = ServiceAccessor.TestAsyncLocal.Value;
             }
             return Task.CompletedTask;
         }
