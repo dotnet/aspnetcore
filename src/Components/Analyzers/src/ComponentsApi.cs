@@ -46,4 +46,17 @@ internal static class ComponentsApi
         public const string FullTypeName = "Microsoft.AspNetCore.Components.IComponent";
         public const string MetadataName = FullTypeName;
     }
+
+    public static class LayoutAttribute
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.LayoutAttribute";
+        public const string MetadataName = FullTypeName;
+        public const string LayoutType = "LayoutType";
+    }
+
+    public static class LayoutComponentBase
+    {
+        public const string FullTypeName = "Microsoft.AspNetCore.Components.LayoutComponentBase";
+        public const string MetadataName = FullTypeName;
+    }
 }
