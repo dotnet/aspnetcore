@@ -6,6 +6,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading;
 using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Infrastructure;
 using Microsoft.AspNetCore.Components.Reflection;
@@ -235,9 +236,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // Capture the current ExecutionContext so AsyncLocal values present during initial root component
                 // registration flow through to hot reload re-renders. Without this, hot reload callbacks execute
                 // on a thread without the original ambient context and AsyncLocal values appear null.
-                var executionContext = System.Threading.ExecutionContext.Capture();
+                var executionContext = ExecutionContext.Capture();
                 _hotReloadRenderHandler = new HotReloadRenderHandler(this, executionContext);
-                HotReloadManager.OnDeltaApplied += _hotReloadRenderHandler.OnDeltaApplied;
+                HotReloadManager.OnDeltaApplied += _hotReloadRenderHandler.RerenderOnHotReload;
             }
         }
 
@@ -1242,7 +1243,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
 
         if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported && _hotReloadRenderHandler is not null)
         {
-            HotReloadManager.OnDeltaApplied -= _hotReloadRenderHandler.OnDeltaApplied;
+            HotReloadManager.OnDeltaApplied -= _hotReloadRenderHandler.RerenderOnHotReload;
         }
 
         // It's important that we handle all exceptions here before reporting any of them.
@@ -1378,18 +1379,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
         }
     }
 
-    private sealed class HotReloadRenderHandler
+    private sealed class HotReloadRenderHandler(Renderer renderer, ExecutionContext? executionContext)
     {
-        private readonly Renderer _renderer;
-        private readonly System.Threading.ExecutionContext? _executionContext;
-
-        public HotReloadRenderHandler(Renderer renderer, System.Threading.ExecutionContext? executionContext)
-        {
-            _renderer = renderer;
-            _executionContext = executionContext; // May be null if flow is suppressed
-        }
-
-        public void OnDeltaApplied()
+        public void RerenderOnHotReload()
         {
             if (_executionContext is null)
             {
@@ -1397,7 +1389,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             }
             else
             {
-                System.Threading.ExecutionContext.Run(_executionContext, static s => ((Renderer)s!).RenderRootComponentsOnHotReload(), _renderer);
+                ExecutionContext.Run(executionContext, static s => ((Renderer)s!).RenderRootComponentsOnHotReload(), renderer);
             }
         }
     }
