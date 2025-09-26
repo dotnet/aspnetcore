@@ -59,6 +59,7 @@ internal partial class OpaqueRedirection
         };
 
         routeEndpointBuidler.Metadata.Add(new HttpMethodMetadata([HttpMethods.Get]));
+        routeEndpointBuidler.Metadata.Add(new ComponentFrameworkEndpointMetadata());
 
         return routeEndpointBuidler;
     }

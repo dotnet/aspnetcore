@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Endpoints;
@@ -60,6 +61,37 @@ public static class RazorComponentsEndpointConventionBuilderExtensions
             builder.BeforeCreateEndpoints += convention.OnBeforeCreateEndpoints;
             builder.Add(convention.ApplyConvention);
         }
+
+        return builder;
+    }
+
+    /// <summary>
+    /// Configures framework endpoints for the Blazor application. Framework endpoints are internal
+    /// infrastructure endpoints such as opaque redirection, disconnect, and initializers.
+    /// </summary>
+    /// <param name="builder">The <see cref="RazorComponentsEndpointConventionBuilder"/>.</param>
+    /// <param name="configureEndpoints">A callback to configure framework endpoints.</param>
+    /// <returns>The <see cref="RazorComponentsEndpointConventionBuilder"/>.</returns>
+    /// <remarks>
+    /// This method provides a way to apply specific conventions or metadata to Blazor's infrastructure
+    /// endpoints without affecting regular component endpoints. Framework endpoints are identified by
+    /// the presence of <see cref="ComponentFrameworkEndpointMetadata"/> in their metadata collection.
+    /// </remarks>
+    public static RazorComponentsEndpointConventionBuilder ConfigureFrameworkEndpoints(
+        this RazorComponentsEndpointConventionBuilder builder,
+        Action<EndpointBuilder> configureEndpoints)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(configureEndpoints);
+
+        builder.Add(endpointBuilder =>
+        {
+            // Only apply configuration to endpoints that have ComponentFrameworkEndpointMetadata
+            if (endpointBuilder.Metadata.OfType<ComponentFrameworkEndpointMetadata>().Any())
+            {
+                configureEndpoints(endpointBuilder);
+            }
+        });
 
         return builder;
     }

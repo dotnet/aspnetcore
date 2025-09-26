@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
@@ -78,12 +79,14 @@ public static class ComponentEndpointRouteBuilderExtensions
         var disconnectEndpoint = endpoints.Map(
             (path.EndsWith('/') ? path : path + "/") + "disconnect/",
             endpoints.CreateApplicationBuilder().UseMiddleware<CircuitDisconnectMiddleware>().Build())
-            .WithDisplayName("Blazor disconnect");
+            .WithDisplayName("Blazor disconnect")
+            .WithMetadata(new ComponentFrameworkEndpointMetadata());
 
         var jsInitializersEndpoint = endpoints.Map(
             (path.EndsWith('/') ? path : path + "/") + "initializers/",
             endpoints.CreateApplicationBuilder().UseMiddleware<CircuitJavaScriptInitializationMiddleware>().Build())
-            .WithDisplayName("Blazor initializers");
+            .WithDisplayName("Blazor initializers")
+            .WithMetadata(new ComponentFrameworkEndpointMetadata());
 
         return new ComponentEndpointConventionBuilder(hubEndpoint, disconnectEndpoint, jsInitializersEndpoint);
     }
