@@ -7,6 +7,7 @@
       Chrome in docker appears to run in to cache corruption issues when the cache is read multiple times over.
       Client caching isn't part of our performance measurement, so we'll skip it.
     -->
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
   </PropertyGroup>
 
   <ItemGroup>
