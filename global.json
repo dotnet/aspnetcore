@@ -32,9 +32,9 @@
     "jdk": "latest"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.25474.105",
-    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.25474.105",
-    "Microsoft.DotNet.SharedFramework.Sdk": "11.0.0-beta.25474.105",
+    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.25476.103",
+    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.25476.103",
+    "Microsoft.DotNet.SharedFramework.Sdk": "11.0.0-beta.25476.103",
     "Microsoft.Build.NoTargets": "3.7.0",
     "Microsoft.Build.Traversal": "3.4.0",
     "Microsoft.WixToolset.Sdk": "5.0.2-dotnet.2737382"
