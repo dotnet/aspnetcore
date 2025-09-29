@@ -8,333 +8,333 @@
   See https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md for instructions on using darc.
 -->
 <Dependencies>
-  <Source Uri="https://github.com/dotnet/dotnet" Mapping="aspnetcore" Sha="a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3" BarId="284548" />
+  <Source Uri="https://github.com/dotnet/dotnet" Mapping="aspnetcore" Sha="f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d" BarId="284884" />
   <ProductDependencies>
-    <Dependency Name="dotnet-ef" Version="10.0.0-rc.2.25474.105">
+    <Dependency Name="dotnet-ef" Version="10.0.0-rc.2.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
       <SourceBuildTarball RepoName="efcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0-rc.2.25474.105">
+    <Dependency Name="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0-rc.2.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0-rc.2.25474.105">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0-rc.2.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0-rc.2.25474.105">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0-rc.2.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0-rc.2.25474.105">
+    <Dependency Name="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0-rc.2.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0-rc.2.25474.105">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0-rc.2.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore" Version="10.0.0-rc.2.25474.105">
+    <Dependency Name="Microsoft.EntityFrameworkCore" Version="10.0.0-rc.2.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-rc.2.25474.105">
+    <Dependency Name="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-rc.2.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Diagnostics" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.Abstractions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.Abstractions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Hosting" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Http" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Http" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Options" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Internal.Runtime.AspNetCore.Transport" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Configuration.ConfigurationManager" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Configuration.ConfigurationManager" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Diagnostics.DiagnosticSource" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.EventLog" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Diagnostics.EventLog" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.DirectoryServices.Protocols" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.DirectoryServices.Protocols" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Formats.Asn1" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Formats.Asn1" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Formats.Cbor" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Formats.Cbor" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Pipelines" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.IO.Pipelines" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.Json" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Net.Http.Json" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Net.Http.WinHttpHandler" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Net.Http.WinHttpHandler" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Net.ServerSentEvents" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Net.ServerSentEvents" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Reflection.Metadata" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Reflection.Metadata" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Resources.Extensions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Resources.Extensions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Pkcs" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Security.Cryptography.Pkcs" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Cryptography.Xml" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Security.Cryptography.Xml" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Security.Permissions" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Security.Permissions" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.ServiceProcess.ServiceController" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.ServiceProcess.ServiceController" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Encodings.Web" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Text.Encodings.Web" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Text.Json" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Text.Json" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Threading.AccessControl" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Threading.AccessControl" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Threading.Channels" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Threading.Channels" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Threading.RateLimiting" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Threading.RateLimiting" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.NET.Runtime.MonoAOTCompiler.Task" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.NET.Runtime.WebAssembly.Sdk" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Bcl.AsyncInterfaces" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
     <!-- Transitive package to provide coherency in dotnet/extensions -->
-    <Dependency Name="Microsoft.Bcl.TimeProvider" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.Bcl.TimeProvider" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Collections.Immutable" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Collections.Immutable" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Diagnostics.PerformanceCounter" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Diagnostics.PerformanceCounter" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.IO.Hashing" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.IO.Hashing" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Memory.Data" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Memory.Data" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Numerics.Tensors" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Numerics.Tensors" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Runtime.Caching" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Runtime.Caching" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.NETCore.BrowserDebugHost.Transport" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Web.Xdt" Version="3.2.0-preview.25474.105">
+    <Dependency Name="Microsoft.Web.Xdt" Version="3.2.0-preview.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="System.Composition" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="System.Composition" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
     <!-- These versions are manually updated -->
@@ -358,37 +358,37 @@
   </ProductDependencies>
   <ToolsetDependencies>
     <!-- Listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
-    <Dependency Name="Microsoft.NETCore.Platforms" Version="10.0.0-rc.1.25474.105">
+    <Dependency Name="Microsoft.NETCore.Platforms" Version="10.0.0-rc.1.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.25474.105">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Archives" Version="11.0.0-beta.25474.105">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Archives" Version="11.0.0-beta.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="11.0.0-beta.25474.105">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="11.0.0-beta.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="11.0.0-beta.25474.105">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="11.0.0-beta.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="11.0.0-beta.25474.105">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="11.0.0-beta.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="11.0.0-beta.25474.105">
+    <Dependency Name="Microsoft.DotNet.RemoteExecutor" Version="11.0.0-beta.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SharedFramework.Sdk" Version="11.0.0-beta.25474.105">
+    <Dependency Name="Microsoft.DotNet.SharedFramework.Sdk" Version="11.0.0-beta.25476.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Caching.Hybrid" Version="9.10.0-preview.1.25475.1">
       <Uri>https://github.com/dotnet/extensions</Uri>
@@ -440,17 +440,17 @@
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="7.0.0-preview.1.47505" Label="Manual">
+    <Dependency Name="NuGet.Frameworks" Version="7.0.0-preview.1.47703" Label="Manual">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="7.0.0-preview.1.47505" Label="Manual">
+    <Dependency Name="NuGet.Packaging" Version="7.0.0-preview.1.47703" Label="Manual">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="7.0.0-preview.1.47505" Label="Manual">
+    <Dependency Name="NuGet.Versioning" Version="7.0.0-preview.1.47703" Label="Manual">
       <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>a0ca1b9be44fcdffcc9f6a0d6a1f3dca62d1b3f3</Sha>
+      <Sha>f4b7bd12733f53a99cb8dd2564c77e2e6f10a05d</Sha>
     </Dependency>
     <!-- End of manually updated dependencies -->
   </ToolsetDependencies>
