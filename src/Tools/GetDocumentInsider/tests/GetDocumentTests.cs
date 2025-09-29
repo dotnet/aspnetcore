@@ -238,35 +238,6 @@ public class GetDocumentTests(ITestOutputHelper output)
         Assert.True(File.Exists(Path.Combine(outputPath.FullName, "Sample_internal.json")));
     }
 
-    [Fact]
-    public void GetDocument_WithEnvironment_Works()
-    {
-        // Arrange
-        var outputPath = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()));
-        var app = new Program(_console);
-
-        // Act
-        app.Run([
-            "--assembly", _testAppAssembly,
-            "--project", _testAppProject,
-            "--framework", _testAppFrameworkMoniker,
-            "--tools-directory", _toolsDirectory,
-            "--output", outputPath.FullName,
-            "--file-list", Path.Combine(outputPath.FullName, "file-list.cache"),
-            "--environment", "Development"
-        ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
-
-        // Assert
-        using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
-        var result = OpenApiDocument.Load(stream, "json");
-        // TODO: Needs https://github.com/microsoft/OpenAPI.NET/issues/2055 to be fixed
-        // Assert.Empty(result.Diagnostic.Errors);
-        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
-        Assert.Equal("GetDocumentSample | v1", result.Document.Info.Title);
-        // The environment parameter is passed through to the host factory
-        // The actual effect depends on the application's configuration
-    }
-
     [Theory]
     [InlineData("Development")]
     [InlineData("Staging")]
@@ -289,7 +260,11 @@ public class GetDocumentTests(ITestOutputHelper output)
         ], new GetDocumentCommand(_console), throwOnUnexpectedArg: false);
 
         // Assert
-        Assert.True(File.Exists(Path.Combine(outputPath.FullName, "Sample.json")));
-        // The environment parameter should be accepted for all standard environments
+        using var stream = new MemoryStream(File.ReadAllBytes(Path.Combine(outputPath.FullName, "Sample.json")));
+        var result = OpenApiDocument.Load(stream, "json");
+        Assert.Equal(OpenApiSpecVersion.OpenApi3_1, result.Diagnostic.SpecificationVersion);
+
+        // Verify environment appears in summary - this proves --environment parameter is used
+        Assert.Equal($"Running in '{environment}' environment", result.Document.Info.Summary);
     }
 }
