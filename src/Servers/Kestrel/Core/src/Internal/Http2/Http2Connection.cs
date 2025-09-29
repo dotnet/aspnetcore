@@ -1162,7 +1162,7 @@ internal sealed partial class Http2Connection : IHttp2StreamLifetimeHandler, IHt
                 // RFC 7540 (Sections 5.1, 6.9) / RFC 9113 do not explicitly define semantics for WINDOW_UPDATE on a
                 // stream in the "closed" state due to a reset by client. We surface it as a stream error (STREAM_CLOSED)
                 // rather than aborting the entire connection to keep behavior deterministic and consistent with other servers.
-                // https://httpwg.org/specs/rfc7540.html#rfc.section.6.9
+                // https://github.com/dotnet/aspnetcore/issues/63726
                 throw new Http2StreamErrorException(_incomingFrame.StreamId, CoreStrings.Http2StreamAborted, Http2ErrorCode.STREAM_CLOSED);
             }
 

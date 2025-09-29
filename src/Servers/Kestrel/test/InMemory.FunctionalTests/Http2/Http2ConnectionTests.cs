@@ -3620,6 +3620,9 @@ public class Http2ConnectionTests : Http2TestBase
         await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.STREAM_CLOSED, CoreStrings.Http2StreamAborted);
 
         tcs.TrySetResult(); // Don't let the response start until after the abort
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        AssertConnectionNoError();
     }
 
     [Fact]
