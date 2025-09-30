@@ -60,15 +60,7 @@ internal ref partial struct ValueListBuilder<T>
         if (toReturn != null)
         {
             _arrayFromPool = null;
-
-            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-            {
-                ArrayPool<T>.Shared.Return(toReturn, _pos);
-            }
-            else
-            {
-                ArrayPool<T>.Shared.Return(toReturn);
-            }
+            ArrayPool<T>.Shared.ReturnAndClearReferences(toReturn, _pos);
         }
     }
 
@@ -103,14 +95,7 @@ internal ref partial struct ValueListBuilder<T>
         _span = _arrayFromPool = array;
         if (toReturn != null)
         {
-            if (RuntimeHelpers.IsReferenceOrContainsReferences<T>())
-            {
-                ArrayPool<T>.Shared.Return(toReturn, _pos);
-            }
-            else
-            {
-                ArrayPool<T>.Shared.Return(toReturn);
-            }
+            ArrayPool<T>.Shared.ReturnAndClearReferences(toReturn, _pos);
         }
     }
 }
