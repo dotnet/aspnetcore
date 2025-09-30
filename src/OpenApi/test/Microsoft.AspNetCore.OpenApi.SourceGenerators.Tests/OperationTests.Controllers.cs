@@ -98,7 +98,7 @@ public record Todo(int Id, string Title, bool Completed);
     }
 
     [Fact]
-    public async Task DoesAllowUnusedRouteParameters()
+    public async Task SupportsRouteParametersFromControllers()
     {
         var source = """
 using Microsoft.AspNetCore.Builder;
