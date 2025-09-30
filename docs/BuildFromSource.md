@@ -214,7 +214,7 @@ While it's typically better to use the project-specific build scripts, the repo-
 | ------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
 | `.\eng\build.cmd -all -pack -arch x64`                                                           | Build development packages for all the shipping projects in the repo. Must be run from the root of the repo.                            |
 | `.\eng\build.cmd -test -projects .\src\Framework\test\Microsoft.AspNetCore.App.UnitTests.csproj` | Run all the unit tests in the `Microsoft.AspNetCore.App.UnitTests` project.                                                             |
-| `.\eng\build.cmd -noBuildNative -noBuildManage`                                                  | Builds the repo and skips native and managed projects, a quicker alternative to `./restore.cmd`. Must be run from the root of the repo. |
+| `.\eng\build.cmd -noBuildNative -noBuildManaged`                                                 | Builds the repo and skips native and managed projects, a quicker alternative to `./restore.cmd`. Must be run from the root of the repo. |
 
 ## Complete list of repo dependencies
 

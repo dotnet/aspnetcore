@@ -27,7 +27,7 @@
       <!-- See https://github.com/dotnet/aspnetcore/issues/40525 -->
       <WarningLevel>Level4</WarningLevel>
       <TreatSpecificWarningsAsErrors>$(TreatSpecificWarningsAsErrors);4018;4055;4146;4242;4244;4267;4302;4308;4509;4510;4532;4533;4610;4611;4700;4701;4703;4789;4995;4996</TreatSpecificWarningsAsErrors>
-      <AdditionalOptions>/guard:cf</AdditionalOptions>
+      <AdditionalOptions>/guard:cf /Qspectre</AdditionalOptions>
     </ClCompile>
   </ItemDefinitionGroup>
 

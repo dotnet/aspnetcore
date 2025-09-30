@@ -1,55 +1,75 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-  <String Id="Caption">[BundleNameFull] のセットアップ</String>
-  <String Id="Title">[BundleNameShort]</String>
-  <String Id="SubTitle">[BundleNameSub]</String>
-  <String Id="InstallVersion">バージョン [WixBundleVersion]</String>
-  <String Id="ConfirmCancelMessage">取り消しますか?</String>
-  <String Id="ExecuteUpgradeRelatedBundleMessage">以前のバージョン</String>
-  <String Id="HelpHeader">セットアップのヘルプ</String>
-  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]ディレクトリ[\]] - バンドルの完全なローカル コピーに対する
-  ディレクトリへのインストール、修復、ディレクトリからのアンインストール、またはディレクトリ内への作成を行います。既定の設定はインストールです。
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  
+  <String Id="Caption" Value="[WixBundleName] Setup"/>
+  
+  <String Id="Title" Value="[BUNDLEMONIKER]"/>
+  
+  
+  <String Id="InstallVersion" Value="Version [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="Are you sure you want to cancel?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Previous version"/>
+  <String Id="HelpHeader" Value="Setup Help"/>
+  
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or
+   creates a complete local copy of the bundle in directory. Install is the default.
 
-/passive | /quiet -  最小限の UI だけを表示しプロンプトは表示しない、または UI もプロンプトも
-   表示しません。既定では UI とすべてのプロンプトが表示されます。
+/passive | /quiet -  displays minimal UI with no prompts or displays no UI and
+   no prompts. By default UI and all prompts are displayed.
 
-/norestart   - 再起動を抑制します。既定では再起動前に確認メッセージが表示されます。
-/log log.txt - 特定のファイルに記録します。ログ ファイルは既定では %TEMP% に作成されます。</String>
-  <String Id="HelpCloseButton">閉じる(&amp;C)</String>
-  <String Id="InstallAcceptCheckbox">ライセンス条項および使用条件に同意する(&amp;A)</String>
-  <String Id="InstallInstallButton">インストール(&amp;I)</String>
-  <String Id="InstallCloseButton">閉じる(&amp;C)</String>
-  <String Id="ProgressHeader">セットアップの進行状況</String>
-  <String Id="ProgressLabel">処理中:</String>
-  <String Id="OverallProgressPackageText">初期化しています...</String>
-  <String Id="ProgressCancelButton">キャンセル(&amp;C)</String>
-  <String Id="ModifyHeader">セットアップの変更</String>
-  <String Id="ModifyRepairButton">修復(&amp;R)</String>
-  <String Id="ModifyUninstallButton">アンインストール(&amp;U)</String>
-  <String Id="ModifyCloseButton">閉じる(&amp;C)</String>
-  <String Id="SuccessRepairHeader">修復が正常に完了しました</String>
-  <String Id="SuccessUninstallHeader">アンインストールが正常に完了しました</String>
-  <String Id="SuccessInstallHeader">インストールが正常に完了しました</String>
-  <String Id="SuccessHeader">セットアップ完了</String>
-  <String Id="SuccessLaunchButton">起動(&amp;L)</String>
-  <String Id="SuccessRestartText">ソフトウェアを使用する前にコンピューターを再起動する必要があります。</String>
-  <String Id="SuccessRestartButton">再起動(&amp;R)</String>
-  <String Id="SuccessCloseButton">閉じる(&amp;C)</String>
-  <String Id="FailureHeader">セットアップに失敗しました</String>
-  <String Id="FailureInstallHeader">セットアップに失敗しました</String>
-  <String Id="FailureUninstallHeader">アンインストールに失敗しました</String>
-  <String Id="FailureRepairHeader">修復に失敗しました</String>
-  <String Id="FailureHyperlinkLogText">1 つまたは複数の問題により、セットアップが失敗しました。問題を解決してからセットアップを再試行してください。詳細については、&lt;a href="#"&gt;ログ ファイル&lt;/a&gt;を参照してください。</String>
-  <String Id="FailureRestartText">ソフトウェアのロールバックを完了するには、コンピューターを再起動する必要があります。</String>
-  <String Id="FailureRestartButton">再起動(&amp;R)</String>
-  <String Id="FailureCloseButton">閉じる(&amp;C)</String>
-  <String Id="FilesInUseHeader">ファイルが使用中</String>
-  <String Id="FilesInUseLabel">次のアプリケーションは、更新の必要があるファイルを使用しています:</String>
-  <String Id="FilesInUseCloseRadioButton">アプリケーションを閉じて再起動を試みる。(&amp;A)</String>
-  <String Id="FilesInUseDontCloseRadioButton">アプリケーションを終了させない (コンピューターの再起動が必要になります)(&amp;D)</String>
-  <String Id="FilesInUseOkButton">OK(&amp;O)</String>
-  <String Id="FilesInUseCancelButton">キャンセル(&amp;C)</String>
+/norestart   - suppress any attempts to restart. By default UI will prompt before restart.
+/log log.txt - logs to a specific file. By default a log file is created in %TEMP%."/>
+  <String Id="HelpCloseButton" Value="&amp;Close"/>
+  <String Id="InstallAcceptCheckbox" Value="I &amp;agree to the license terms and conditions"/>
+  <String Id="InstallInstallButton" Value="&amp;Install"/>
+  <String Id="InstallCloseButton" Value="&amp;Close"/>
+  <String Id="ProgressHeader" Value="Setup Progress"/>
+  <String Id="ProgressLabel" Value="Processing:"/>
+  <String Id="OverallProgressPackageText" Value="Initializing..."/>
+  <String Id="ProgressCancelButton" Value="&amp;Cancel"/>
+  <String Id="ModifyHeader" Value="Modify Setup"/>
+  <String Id="ModifyRepairButton" Value="&amp;Repair"/>
+  <String Id="ModifyUninstallButton" Value="&amp;Uninstall"/>
+  <String Id="ModifyCloseButton" Value="&amp;Close"/>
+  <String Id="SuccessCacheHeader" Value="Cache Successfully Completed"/>
+  <String Id="SuccessModifyHeader" Value="Modify Successfully Completed"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="Uninstall Successfully Completed"/>
+  <String Id="SuccessLayoutHeader" Value="Layout Successfully Completed"/>
+  <String Id="SuccessRepairHeader" Value="Repair Successfully Completed"/>
+  <String Id="SuccessUninstallHeader" Value="Uninstall Successfully Completed"/>
+  <String Id="SuccessInstallHeader" Value="Installation Successfully Completed"/>
+  <String Id="SuccessHeader" Value="Setup Successful"/>
+  <String Id="SuccessLaunchButton" Value="&amp;Launch"/>
+  <String Id="SuccessRestartText" Value="You must restart your computer before you can use the software."/>
+  <String Id="SuccessUninstallRestartText" Value="You must restart your computer to complete the removal of the software."/>
+  <String Id="SuccessRestartButton" Value="&amp;Restart"/>
+  <String Id="SuccessCloseButton" Value="&amp;Close"/>
+  <String Id="FailureHeader" Value="Setup Failed"/>
+  <String Id="FailureCacheHeader" Value="Cache Failed"/>
+  <String Id="FailureLayoutHeader" Value="Layout Failed"/>
+  <String Id="FailureInstallHeader" Value="Setup Failed"/>
+  <String Id="FailureUninstallHeader" Value="Uninstall Failed"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="Uninstall Failed"/>
+  <String Id="FailureRepairHeader" Value="Repair Failed"/>
+  <String Id="FailureModifyHeader" Value="Modify Failed"/>
+  <String Id="FailureHyperlinkLogText" Value="One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href=&quot;#&quot;&gt;log file&lt;/a&gt;."/>
+  <String Id="FailureRestartText" Value="You must restart your computer to complete the rollback of the software."/>
+  <String Id="FailureRestartButton" Value="&amp;Restart"/>
+  <String Id="FailureCloseButton" Value="&amp;Close"/>
+  <String Id="FilesInUseHeader" Value="Files In Use"/>
+  <String Id="FilesInUseLabel" Value="The following applications are using files that need to be updated:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="Close the &amp;applications and attempt to restart them."/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required."/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="Close the &amp;applications."/>
+  <String Id="FilesInUseOkButton" Value="&amp;OK"/>
+  <String Id="FilesInUseCancelButton" Value="&amp;Cancel"/>
+  <String Id="FilesInUseRetryButton" Value="&amp;Retry"/>
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignore"/>
+  <String Id="FilesInUseExitButton" Value="E&amp;xit"/>
+  <String Id="FilesInUseTitle" Value="Files In Use"/>
+  <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:"/>
+  <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
+  <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
 
-  <String Id="Welcome">[WixBundleName] のセットアップへようこそ。</String>
-  <String Id="EulaPrivacy">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=329770"&gt;ライセンス条項&lt;/a&gt;および&lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;プライバシーに関する声明&lt;/a&gt;。</String>
+  
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;license terms&lt;/a&gt; and &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;privacy statement&lt;/a&gt;."/>
 </WixLocalization>
