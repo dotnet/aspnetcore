@@ -173,6 +173,13 @@
 
       <!-- Include Microsoft.AspNetCore.App for Package Pruning -->
       <_AspNetCoreAppPackageOverrides Include="$(SharedFrameworkName)|$(ReferencePackSharedFxVersion)" />
+
+      <!--
+        Exclude Microsoft.Extensions.FileProviders.Embedded from pruning because it contains build logic
+        required to generate the embedded files manifest. The package's build targets are not in the SDK,
+        so they must be available from the package itself. See https://github.com/dotnet/aspnetcore/issues/63719
+      -->
+      <_AspNetCoreAppPackageOverrides Remove="Microsoft.Extensions.FileProviders.Embedded|$(ReferencePackSharedFxVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile
