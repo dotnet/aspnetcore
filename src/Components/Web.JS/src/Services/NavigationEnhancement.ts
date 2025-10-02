@@ -242,7 +242,7 @@ export async function performEnhancedPageLoad(internalDestinationHref: string, i
         }
       }
 
-      if (isSuccessResponse && response.headers.get('blazor-enhanced-nav') !== 'allow') {
+      if (isSuccessResponse && response.headers.get('blazor-enhanced-nav')?.toLowerCase() !== 'allow') {
         // This appears to be a non-Blazor-Endpoint success response. We don't want to use enhanced nav
         // because the content we receive is not designed to be patched into an existing frame,
         // and may be incompatible with the Blazor JS that's already here.
