@@ -3355,10 +3355,12 @@ public class Http2ConnectionTests : Http2TestBase
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendRstStreamAsync(1);
         await SendWindowUpdateAsync(1, 1024);
-        tcs.TrySetResult();
 
-        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
-            Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.WINDOW_UPDATE, 1));
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.STREAM_CLOSED, CoreStrings.Http2StreamAborted);
+
+        tcs.TrySetResult(); // Don't let the response start until after the abort
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
     }
 
     [Fact]
