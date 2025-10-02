@@ -150,7 +150,7 @@ function performExternalNavigation(uri: string, replace: boolean) {
 async function performInternalNavigation(absoluteInternalHref: string, interceptedLink: boolean, replace: boolean, state: string | undefined = undefined, skipLocationChangingCallback = false) {
   ignorePendingNavigation();
 
-  if (isSamePageWithHash(absoluteInternalHref)) {
+  if (isSamePageWithHash(location.href, absoluteInternalHref)) {
     saveToBrowserHistory(absoluteInternalHref, replace, state);
     performScrollToElementOnTheSamePage(absoluteInternalHref);
     return;
