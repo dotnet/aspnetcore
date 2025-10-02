@@ -14,7 +14,7 @@
   <!--Custom errors for OOB Projects -->
 
   <String Id="Manufacturer" Overridable="yes" Value="Microsoft Corporation"/>
-  <String Id="ConflictingProduct" Overridable="yes" Value="An incompatible product, [CONFLICTING_PRODUCT_NAME], is on this computer. Installation of [ProductName] cannot continue. To install this product, use Add/Remove Programs on the Control Panel to remove [CONFLICTING_PRODUCT_NAME]."/>
+  <String Id="ConflictingProduct" Overridable="yes" Value="Auf diesem Computer befindet sich das inkompatible Produkt [CONFLICTING_PRODUCT_NAME]. Die Installation von [ProductName] kann nicht fortgesetzt werden. Um dieses Produkt zu installieren, entfernen Sie [CONFLICTING_PRODUCT_NAME] in der Systemsteuerung über &quot;Programme hinzufügen oder entfernen&quot;."/>
   <String Id="AdminRequired" Overridable="yes" Value="Zum Installieren von [ProductName] sind Administratorrechte erforderlich."/>
   <String Id="IIS7Only" Overridable="yes" Value="Für die Verwendung von [ProductName] ist IIS Version 7.0 erforderlich."/>
   <String Id="IIS7OrGreater" Overridable="yes" Value="IIS Version 7.0 oder höher ist erforderlich, um [ProductName] zu installieren."/>
