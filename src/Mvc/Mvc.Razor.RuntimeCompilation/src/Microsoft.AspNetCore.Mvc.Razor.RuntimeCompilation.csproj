@@ -23,6 +23,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="targets\$(PackageId).targets" Pack="true" PackagePath="build\$(DefaultNetCoreTargetFramework)\$(PackageId).targets" />
     <None Include="targets\$(PackageId).targets" Pack="true" PackagePath="buildTransitive\$(DefaultNetCoreTargetFramework)\$(PackageId).targets" />
   </ItemGroup>
