@@ -52,7 +52,7 @@ export default function createBaseConfig({ inputOutputMap, dir, updateConfig }) 
           'Platform.isNode': 'false',
           preventAssignment: true
         }),
-        terser({
+        environment !== 'development' && terser({
           compress: {
             passes: 3
           },
