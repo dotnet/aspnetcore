@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Hosting;
 /// <summary>
 /// A builder for <see cref="IWebHost"/>
 /// </summary>
-[Obsolete("WebHostBuilder is deprecated in favor of HostBuilder and WebApplicationBuilder. For more information, visit https://aka.ms/aspnet/deprecate/004.", DiagnosticId = "ASPDEPR004")]
+[Obsolete("WebHostBuilder is deprecated in favor of HostBuilder and WebApplicationBuilder. For more information, visit https://aka.ms/aspnet/deprecate/004.", DiagnosticId = "ASPDEPR004", UrlFormat = "https://aka.ms/aspnet/deprecate/{0}")]
 public class WebHostBuilder : IWebHostBuilder
 {
     private readonly HostingEnvironment _hostingEnvironment;

@@ -53,7 +53,7 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="host"></param>
     /// <returns></returns>
-    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
+    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = "https://aka.ms/aspnet/deprecate/{0}")]
     public static TestServer GetTestServer(this IWebHost host)
     {
         return (TestServer)host.Services.GetRequiredService<IServer>();
@@ -64,7 +64,7 @@ public static class WebHostBuilderExtensions
     /// </summary>
     /// <param name="host"></param>
     /// <returns></returns>
-    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
+    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = "https://aka.ms/aspnet/deprecate/{0}")]
     public static HttpClient GetTestClient(this IWebHost host)
     {
         return host.GetTestServer().CreateClient();
