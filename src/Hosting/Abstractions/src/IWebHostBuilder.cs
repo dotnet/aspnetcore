@@ -15,7 +15,7 @@ public interface IWebHostBuilder
     /// <summary>
     /// Builds an <see cref="IWebHost"/> which hosts a web application.
     /// </summary>
-    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008")]
+    [Obsolete("IWebHost is obsolete. Use IHost instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = "https://aka.ms/aspnet/deprecate/{0}")]
     IWebHost Build();
 
     /// <summary>

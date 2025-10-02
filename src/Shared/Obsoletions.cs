@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Shared;
 internal sealed class Obsoletions
 {
     internal const string RuntimeSharedUrlFormat = "https://aka.ms/dotnet-warnings/{0}";
+    internal const string AspNetCoreSharedUrlFormat = "https://aka.ms/aspnet/deprecate/{0}";
 
     internal const string RuntimeTlsCipherAlgorithmEnumsMessage = "KeyExchangeAlgorithm, KeyExchangeStrength, CipherAlgorithm, CipherStrength, HashAlgorithm and HashStrength properties are obsolete. Use NegotiatedCipherSuite instead.";
     internal const string RuntimeTlsCipherAlgorithmEnumsDiagId = "SYSLIB0058";

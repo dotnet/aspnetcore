@@ -90,7 +90,7 @@ public class ForwardedHeadersOptions
     /// Address ranges of known proxies to accept forwarded headers from.
     /// Obsolete, please use <see cref="KnownIPNetworks"/> instead
     /// </summary>
-    [Obsolete("Please use KnownIPNetworks instead. For more information, visit https://aka.ms/aspnet/deprecate/005.", DiagnosticId = "ASPDEPR005")]
+    [Obsolete("Please use KnownIPNetworks instead. For more information, visit https://aka.ms/aspnet/deprecate/005.", DiagnosticId = "ASPDEPR005", UrlFormat = "https://aka.ms/aspnet/deprecate/{0}")]
     public IList<AspNetIPNetwork> KnownNetworks => _knownNetworks;
 
     /// <summary>
