@@ -114,6 +114,7 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
 
         var hasBodyOrFormFileParameter = false;
         var parameters = routeEndpoint.Metadata.GetOrderedMetadata<IParameterBindingMetadata>();
+        var remainingRouteParameters = routeEndpoint.RoutePattern.Parameters.ToDictionary(p => p.Name, StringComparer.OrdinalIgnoreCase);
 
         foreach (var parameter in parameters)
         {
@@ -122,11 +123,33 @@ internal sealed class EndpointMetadataApiDescriptionProvider : IApiDescriptionPr
             if (parameterDescription is { })
             {
                 apiDescription.ParameterDescriptions.Add(parameterDescription);
+                if (parameterDescription.Source == BindingSource.Path)
+                {
+                    remainingRouteParameters.Remove(parameterDescription.Name);
+                }
 
                 hasBodyOrFormFileParameter |=
                     parameterDescription.Source == BindingSource.Body ||
                     parameterDescription.Source == BindingSource.FormFile;
             }
+        }
+
+        // Add any remaining route parameters that weren't associated with a parameter in the delegate.
+        foreach (var remainingRouteParameter in remainingRouteParameters.Values)
+        {
+            var parameterDescription = new ApiParameterDescription
+            {
+                Name = remainingRouteParameter.Name,
+                Source = BindingSource.Path,
+                IsRequired = true,
+                RouteInfo = new ApiParameterRouteInfo
+                {
+                    IsOptional = false,
+                    Constraints = Array.Empty<IRouteConstraint>(),
+                    DefaultValue = null,
+                },
+            };
+            apiDescription.ParameterDescriptions.Add(parameterDescription);
         }
 
         // Get IAcceptsMetadata.
