@@ -61,6 +61,9 @@
   <String Id="FilesInUseExitButton" Value="E&amp;sci"/>
   <String Id="FilesInUseTitle" Value="File in uso"/>
   <String Id="LicenseAssent" Value="Facendo clic su Installa, si accettano le condizioni seguenti:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Privacy Statement&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Licensing Information for .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetry collection and opt-out&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   
