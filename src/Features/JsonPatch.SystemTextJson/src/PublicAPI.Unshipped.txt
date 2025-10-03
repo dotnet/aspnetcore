@@ -14,7 +14,6 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation<TModel>.Opera
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.OperationBase() -> void
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.OperationType.get -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType
-Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.ShouldSerializeFrom() -> bool
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Add = 0 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType
 Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Copy = 4 -> Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType
