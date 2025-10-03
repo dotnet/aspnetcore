@@ -7,3 +7,5 @@ Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryMa
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryMaxRetained.set -> void
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryRetentionPeriod.get -> System.TimeSpan
 Microsoft.AspNetCore.Components.Server.CircuitOptions.PersistedCircuitInMemoryRetentionPeriod.set -> void
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.get -> System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions!>?
+Microsoft.AspNetCore.Components.Server.ServerComponentsEndpointOptions.ConfigureConnection.set -> void
