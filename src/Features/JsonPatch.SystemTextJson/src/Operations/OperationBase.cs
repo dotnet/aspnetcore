@@ -44,7 +44,9 @@ public class OperationBase
     }
 
     [JsonPropertyName(nameof(from))]
-    public string from { get; set; }
+    #nullable enable
+    public string? from { get; set; }
+    #nullable restore
 
     public OperationBase()
     {

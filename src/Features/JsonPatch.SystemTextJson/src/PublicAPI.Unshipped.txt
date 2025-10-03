@@ -97,8 +97,8 @@ Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationType.Test = 5 
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation<TModel>.Apply(TModel objectToApplyTo, Microsoft.AspNetCore.JsonPatch.SystemTextJson.Adapters.IObjectAdapter adapter) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation<TModel>.Operation(string op, string path, string from) -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.Operation<TModel>.Operation(string op, string path, string from, object value) -> void
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.from.get -> string
-~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.from.set -> void
+Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.from.get -> string?
+Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.from.set -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.op.get -> string
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.op.set -> void
 ~Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.OperationBase(string op, string path, string from) -> void
