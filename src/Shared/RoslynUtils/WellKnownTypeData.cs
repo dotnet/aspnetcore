@@ -127,6 +127,8 @@ internal static class WellKnownTypeData
         System_ComponentModel_DataAnnotations_IValidatableObject,
         Microsoft_Extensions_Validation_SkipValidationAttribute,
         System_Type,
+        Microsoft_AspNetCore_Hosting_IWebHostBuilder,
+        Microsoft_AspNetCore_WebHost,
     }
 
     public static string[] WellKnownTypeNames =
@@ -251,5 +253,7 @@ internal static class WellKnownTypeData
         "System.ComponentModel.DataAnnotations.IValidatableObject",
         "Microsoft.Extensions.Validation.SkipValidationAttribute",
         "System.Type",
+        "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+        "Microsoft.AspNetCore.WebHost",
     ];
 }
