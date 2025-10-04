@@ -37,7 +37,7 @@ parameters:
 # Sbom related params
   enableSbom: true
   PackageVersion: 7.0.0
-  BuildDropPath: '$(Build.SourcesDirectory)/artifacts'
+  BuildDropPath: '$(System.DefaultWorkingDirectory)/artifacts'
 
 jobs:
 - job: ${{ parameters.name }}
@@ -163,7 +163,7 @@ jobs:
       inputs:
         languages: ${{ coalesce(parameters.richCodeNavigationLanguage, 'csharp') }}
         environment: ${{ coalesce(parameters.richCodeNavigationEnvironment, 'production') }}
-        richNavLogOutputDirectory: $(Build.SourcesDirectory)/artifacts/bin
+        richNavLogOutputDirectory: $(System.DefaultWorkingDirectory)/artifacts/bin
         uploadRichNavArtifacts: ${{ coalesce(parameters.richCodeNavigationUploadArtifacts, false) }}
       continueOnError: true
 
@@ -220,7 +220,7 @@ jobs:
     - task: PublishBuildArtifacts@1
       displayName: Publish Logs
       inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/artifacts/log/$(_BuildConfig)'
+        PathtoPublish: '$(System.DefaultWorkingDirectory)/artifacts/log/$(_BuildConfig)'
         PublishLocation: Container
         ArtifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)' ) }}
       continueOnError: true
@@ -232,7 +232,7 @@ jobs:
       inputs:
         testResultsFormat: 'xUnit'
         testResultsFiles: '*.xml'
-        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        searchFolder: '$(System.DefaultWorkingDirectory)/artifacts/TestResults/$(_BuildConfig)'
         testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-xunit
         mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
@@ -243,7 +243,7 @@ jobs:
       inputs:
         testResultsFormat: 'VSTest'
         testResultsFiles: '*.trx'
-        searchFolder: '$(Build.SourcesDirectory)/artifacts/TestResults/$(_BuildConfig)'
+        searchFolder: '$(System.DefaultWorkingDirectory)/artifacts/TestResults/$(_BuildConfig)'
         testRunTitle: ${{ coalesce(parameters.testRunTitle, parameters.name, '$(System.JobName)') }}-trx
         mergeTestResults: ${{ parameters.mergeTestResults }}
       continueOnError: true
@@ -257,7 +257,7 @@ jobs:
         IgnoreDirectories: ${{ parameters.componentGovernanceIgnoreDirectories }}
 
   - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
-    - publish: $(Build.SourcesDirectory)\eng\common\BuildConfiguration
+    - publish: $(System.DefaultWorkingDirectory)\eng\common\BuildConfiguration
       artifact: BuildConfiguration
       displayName: Publish build retry configuration
       continueOnError: true

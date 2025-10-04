@@ -59,7 +59,7 @@ jobs:
   - script: ${{ parameters.sourceIndexBuildCommand }}
     displayName: Build Repository
 
-  - script: $(Agent.TempDirectory)/.source-index/tools/BinLogToSln -i $(BinlogPath) -r $(Build.SourcesDirectory) -n $(Build.Repository.Name) -o .source-index/stage1output
+  - script: $(Agent.TempDirectory)/.source-index/tools/BinLogToSln -i $(BinlogPath) -r $(System.DefaultWorkingDirectory) -n $(Build.Repository.Name) -o .source-index/stage1output
     displayName: Process Binlog into indexable sln
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
