@@ -3588,6 +3588,7 @@ public class Http2ConnectionTests : Http2TestBase
     public async Task RST_STREAM_IncompleteRequest_AdditionalWindowUpdateFrame_ConnectionAborted()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
         var headers = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
@@ -3595,6 +3596,7 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
         };
         await InitializeConnectionAsync(context => tcs.Task);
+
         await StartStreamAsync(1, headers, endStream: false);
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendRstStreamAsync(1);
