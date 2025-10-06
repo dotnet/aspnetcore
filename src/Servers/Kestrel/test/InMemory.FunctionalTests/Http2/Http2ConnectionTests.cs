@@ -3584,12 +3584,10 @@ public class Http2ConnectionTests : Http2TestBase
         AssertConnectionNoError();
     }
 
-    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/53744")]
     [Fact]
     public async Task RST_STREAM_IncompleteRequest_AdditionalWindowUpdateFrame_ConnectionAborted()
     {
         var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-
         var headers = new[]
         {
             new KeyValuePair<string, string>(InternalHeaderNames.Method, "POST"),
@@ -3597,15 +3595,17 @@ public class Http2ConnectionTests : Http2TestBase
             new KeyValuePair<string, string>(InternalHeaderNames.Scheme, "http"),
         };
         await InitializeConnectionAsync(context => tcs.Task);
-
         await StartStreamAsync(1, headers, endStream: false);
         await SendDataAsync(1, new byte[1], endStream: false);
         await SendRstStreamAsync(1);
         await SendWindowUpdateAsync(1, 1024);
-        tcs.TrySetResult();
 
-        await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(ignoreNonGoAwayFrames: false, expectedLastStreamId: 1,
-            Http2ErrorCode.STREAM_CLOSED, CoreStrings.FormatHttp2ErrorStreamAborted(Http2FrameType.WINDOW_UPDATE, 1));
+        await WaitForStreamErrorAsync(expectedStreamId: 1, Http2ErrorCode.STREAM_CLOSED, CoreStrings.Http2StreamAborted);
+
+        tcs.TrySetResult(); // Don't let the response start until after the abort
+
+        await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+        AssertConnectionNoError();
     }
 
     [Fact]
