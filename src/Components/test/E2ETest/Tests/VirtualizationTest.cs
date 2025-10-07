@@ -426,6 +426,18 @@ public class VirtualizationTest : ServerTestBase<ToggleExecutionModeServerFixtur
             name => Assert.Equal("Person 3", name));
     }
 
+    [Fact]
+    public void CanScrollWhenAppliedScale()
+    {
+        Browser.MountTestComponent<VirtualizationScale>();
+        var container = Browser.Exists(By.Id("virtualize"));
+
+        var people = GetPeopleNames(container);
+        Assert.True(GetPeopleNames(container).Length > 0);
+        ScrollTopToEnd(Browser, container);
+        Assert.True(GetPeopleNames(container).Length > 0);
+    }
+
     [Theory]
     [InlineData("simple-scroll-horizontal")]
     [InlineData("complex-scroll-horizontal")]
