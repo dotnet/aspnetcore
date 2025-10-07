@@ -11,7 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="이전 버전"/>
   <String Id="HelpHeader" Value="설치 도움말"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - 디렉터리에서 번들의 전체 로컬 복사본을 설치, 복구, 제거하거나 만드세요. 설치가 기본값입니다. /passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI 및 프롬프트를 모두 표시하지 않습니다. 기본적으로 UI와 모든 프롬프트가 표시됩니다. /norestart - 다시 시작 시도를 억제합니다. 기본적으로 UI는 다시 시작하기 전에 메시지를 표시합니다. /log log.txt - 특정 파일에 로그합니다. 기본적으로 로그 파일은 %TEMP%에 만들어집니다."/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default.
+
+/passive | /quiet - displays minimal UI with no prompts or displays no UI and no prompts. By default UI and all prompts are displayed.
+
+/norestart - suppress any attempts to restart. By default UI will prompt before restart.
+
+/log &lt;LOG_FILE&gt; - logs to a specific file. By default a log file is created in %TEMP%."/>
   <String Id="HelpCloseButton" Value="닫기(&amp;C)"/>
   <String Id="InstallAcceptCheckbox" Value="라이선스 사용 약관에 동의합니다(&amp;A)."/>
   <String Id="InstallInstallButton" Value="설치(&amp;I)"/>
