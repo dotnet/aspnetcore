@@ -31,6 +31,9 @@ parameters:
   #   container and pool.
   platform: {}
 
+  # Optional list of directories to ignore for component governance scans.
+  cgIgnoreDirectories: []
+
   # If set to true and running on a non-public project,
   # Internal blob storage locations will be enabled.
   # This is not enabled by default because many repositories do not need internal sources
@@ -72,3 +75,4 @@ jobs:
   - template: /eng/common/templates/steps/source-build.yml
     parameters:
       platform: ${{ parameters.platform }}
+      cgIgnoreDirectories: ${{ parameters.cgIgnoreDirectories }}
