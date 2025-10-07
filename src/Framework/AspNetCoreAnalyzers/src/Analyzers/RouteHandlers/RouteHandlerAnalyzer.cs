@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
@@ -253,7 +254,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             return constraint switch
             {
                 "length" or "minlength" or "maxlength" or "regex" when type.SpecialType is not SpecialType.System_String => true,
-                "min" or "max" or "range" when type.SpecialType < SpecialType.System_SByte || type.SpecialType > SpecialType.System_UInt64 => true,
+                "min" or "max" or "range" when !IsIntegerType(type) && !IsNullableIntegerType(type) => true,
                 _ => false
             };
         }
@@ -263,14 +264,14 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
             return constraint switch
             {
-                "int" when type.SpecialType < SpecialType.System_SByte || type.SpecialType > SpecialType.System_UInt64 => true,
-                "bool" when type.SpecialType is not SpecialType.System_Boolean => true,
-                "datetime" when type.SpecialType is not SpecialType.System_DateTime => true,
-                "double" when type.SpecialType is not SpecialType.System_Double => true,
-                "guid" when !type.Equals(wellKnownTypes.Get(WellKnownType.System_Guid), SymbolEqualityComparer.Default) => true,
-                "long" when type.SpecialType is not SpecialType.System_Int64 and not SpecialType.System_UInt64 => true,
-                "decimal" when type.SpecialType is not SpecialType.System_Decimal => true,
-                "float" when type.SpecialType is not SpecialType.System_Single => true,
+                "int" when !IsIntegerType(type) && !IsNullableIntegerType(type) => true,
+                "bool" when !IsValueTypeOrNullableValueType(type, SpecialType.System_Boolean) => true,
+                "datetime" when !IsValueTypeOrNullableValueType(type, SpecialType.System_DateTime) => true,
+                "double" when !IsValueTypeOrNullableValueType(type, SpecialType.System_Double) => true,
+                "guid" when !IsGuidType(type, wellKnownTypes) && !IsNullableGuidType(type, wellKnownTypes) => true,
+                "long" when !IsLongType(type) && !IsNullableLongType(type) => true,
+                "decimal" when !IsValueTypeOrNullableValueType(type, SpecialType.System_Decimal) => true,
+                "float" when !IsValueTypeOrNullableValueType(type, SpecialType.System_Single) => true,
                 "alpha" when type.SpecialType is not SpecialType.System_String => true,
                 "file" or "nonfile" when type.SpecialType is not SpecialType.System_String => true,
                 _ => false
@@ -289,6 +290,52 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         }
 
         return null;
+    }
+
+    private static bool IsGuidType(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+    {
+        return type.Equals(wellKnownTypes.Get(WellKnownType.System_Guid), SymbolEqualityComparer.Default);
+    }
+
+    private static bool IsIntegerType(ITypeSymbol type)
+    {
+        return type.SpecialType >= SpecialType.System_SByte && type.SpecialType <= SpecialType.System_UInt64;
+    }
+
+    private static bool IsLongType(ITypeSymbol type)
+    {
+        return type.SpecialType is SpecialType.System_Int64 or SpecialType.System_UInt64;
+    }
+
+    private static bool IsNullableGuidType(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+    {
+        return IsNullableType(type, out var namedType) && IsGuidType(namedType.TypeArguments[0], wellKnownTypes);
+    }
+
+    private static bool IsNullableIntegerType(ITypeSymbol type)
+    {
+        return IsNullableType(type, out var namedType) && IsIntegerType(namedType.TypeArguments[0]);
+    }
+
+    private static bool IsNullableLongType(ITypeSymbol type)
+    {
+        return IsNullableType(type, out var namedType) && IsLongType(namedType.TypeArguments[0]);
+    }
+
+    public static bool IsNullableType(ITypeSymbol type, [NotNullWhen(true)] out INamedTypeSymbol? namedType)
+    {
+        namedType = type as INamedTypeSymbol;
+        return namedType != null && namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T;
+    }
+
+    private static bool IsNullableValueType(ITypeSymbol type, SpecialType specialType)
+    {
+        return IsNullableType(type, out var namedType) && namedType.TypeArguments[0].SpecialType == specialType;
+    }
+
+    private static bool IsValueTypeOrNullableValueType(ITypeSymbol type, SpecialType specialType)
+    {
+        return type.SpecialType == specialType || IsNullableValueType(type, specialType);
     }
 
     private record struct MapOperation(IOperation? Builder, IInvocationOperation Operation, RouteUsageModel RouteUsageModel)
