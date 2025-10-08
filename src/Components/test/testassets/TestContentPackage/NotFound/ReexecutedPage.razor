@@ -1,6 +1,20 @@
 ﻿@page "/not-found-reexecute"
+@rendermode RenderMode.InteractiveServer
 
 <PageTitle>Re-executed page</PageTitle>
 
 <h3 id="test-info">Welcome On Page Re-executed After Not Found Event</h3>
 <p>This page is shown when UseStatusCodePagesWithReExecute is set and another page sets 404</p>
+
+<p role="status">Current count: @currentCount</p>
+
+<button id="increment-button" class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount()
+    {
+        currentCount++;
+    }
+}
