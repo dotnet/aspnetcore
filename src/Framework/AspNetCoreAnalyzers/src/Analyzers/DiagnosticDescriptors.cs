@@ -248,4 +248,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Info,
         isEnabledByDefault: true,
         helpLinkUri: AnalyzersLink);
+
+    internal static readonly DiagnosticDescriptor AttributeRoutingUsedForNonActionMethod = new(
+        "ASP0029",
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_AttributeRoutingUsedForNonActionMethod_Title)),
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_AttributeRoutingUsedForNonActionMethod_Message)),
+        Usage,
+        DiagnosticSeverity.Info,
+        isEnabledByDefault: true,
+        helpLinkUri: AnalyzersLink);
 }
