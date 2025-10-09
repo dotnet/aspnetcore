@@ -8,6 +8,7 @@
     <TieredCompilation>false</TieredCompilation>
     <DefineConstants>$(DefineConstants);IS_BENCHMARKS</DefineConstants>
     <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
+    <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
   </PropertyGroup>
 
   <ItemGroup>

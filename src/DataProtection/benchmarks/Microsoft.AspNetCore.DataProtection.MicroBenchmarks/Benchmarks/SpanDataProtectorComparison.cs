@@ -5,7 +5,7 @@ using System.Buffers;
 using BenchmarkDotNet.Attributes;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.DataProtection.MicroBenchmarks;
+namespace Microsoft.AspNetCore.DataProtection.MicroBenchmarks.Benchmarks;
 
 [SimpleJob, MemoryDiagnoser]
 public class SpanDataProtectorComparison
@@ -59,10 +59,11 @@ public class SpanDataProtectorComparison
     public void ProtectUnprotectRoundtrip()
     {
         var plaintext = GetPlaintext();
-        
+
         // Traditional approach with allocations
         var protectedData = _dataProtector.Protect(plaintext);
         var unprotectedData = _dataProtector.Unprotect(protectedData);
+        _ = unprotectedData.Length;
     }
 
     [Benchmark]
