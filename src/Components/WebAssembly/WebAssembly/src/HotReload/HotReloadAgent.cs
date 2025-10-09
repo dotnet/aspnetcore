@@ -118,6 +118,13 @@ internal sealed class HotReloadAgent : IDisposable
     {
         foreach (var delta in deltas)
         {
+            if (delta.MetadataDelta.Length == 0)
+            {
+                // When the debugger is attached the delta is empty.
+                // The client only calls to trigger metadata update handlers.
+                continue;
+            }
+
             Reporter.Report($"Applying delta to module {delta.ModuleId}.", AgentMessageSeverity.Verbose);
 
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
