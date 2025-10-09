@@ -1502,13 +1502,26 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Assert404ReExecuted();
     }
 
-    [Fact]
-    public void BrowserNavigationToNotExistingPathReExecutesTo404()
+    [Theory]
+    // prerendering (SSR) is tested in NoInteractivityTest
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void BrowserNavigationToNotExistingPathReExecutesTo404(string renderMode)
     {
         // non-existing path has to have re-execution middleware set up
         // so it has to have "reexecution" prefix. Otherwise middleware mapping
         // will not be activated, see configuration in Startup
-        Navigate($"{ServerPathBase}/reexecution/not-existing-page");
+        Navigate($"{ServerPathBase}/reexecution/not-existing-page?renderMode={renderMode}");
+        Assert404ReExecuted();
+    }
+
+    [Fact]
+    public void BrowserNavigationToNotExistingPathReExecutesTo404_Interactive()
+    {
+        // non-existing path has to have re-execution middleware set up
+        // so it has to have "interactive-reexecution" prefix. Otherwise middleware mapping
+        // will not be activated, see configuration in Startup
+        Navigate($"{ServerPathBase}/interactive-reexecution/not-existing-page");
         Assert404ReExecuted();
         AssertReExecutedPageIsInteractive();
     }
