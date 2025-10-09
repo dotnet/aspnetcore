@@ -189,7 +189,7 @@ public class HotReloadServiceTests
 
     private static void ConfigureServerComponentBuilder(ComponentApplicationBuilder builder)
     {
-        ConfigureBuilder(builder, typeof(StaticComponent));
+        ConfigureBuilder(builder, typeof(ServerComponent));
     }
 
     private IServiceProvider CreateServices(params Type[] types)
