@@ -53,7 +53,7 @@ internal class AspNetCoreBenchmarkAttribute : Attribute, IConfigSource
                 throw new InvalidOperationException(message);
             }
 
-            return (IConfig)Activator.CreateInstance(configType, Array.Empty<object>());
+            return (IConfig)Activator.CreateInstance(configType, Array.Empty<object>())!;
         }
     }
 
