@@ -708,6 +708,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
         ArgumentNullException.ThrowIfNull(user);
+        ArgumentNullException.ThrowIfNull(credentialId);
 
         var passkey = await FindUserPasskeyAsync(user.Id, credentialId, cancellationToken).ConfigureAwait(false);
         if (passkey != null)

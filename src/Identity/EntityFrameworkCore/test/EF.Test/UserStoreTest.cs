@@ -40,7 +40,12 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
 
     private IdentityDbContext CreateContext()
     {
-        var db = DbUtil.Create<IdentityDbContext>(_fixture.Connection);
+        var services = new ServiceCollection();
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        });
+        var db = DbUtil.Create<IdentityDbContext>(_fixture.Connection, services);
         db.Database.EnsureCreated();
         return db;
     }
@@ -195,7 +200,6 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
         userB.Email = "dupe@dupe.com";
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(userB, "password"));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.FindByEmailAsync("dupe@dupe.com"));
-
     }
 
     [ConditionalFact]

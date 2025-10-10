@@ -48,6 +48,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequireUppercase = false;
             options.User.AllowedUserNameCharacters = null;
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
         }).AddDefaultTokenProviders();
         AddUserStore(services, context);
         AddRoleStore(services, context);
@@ -236,7 +237,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
         var roleSafe = CreateTestRole("ClaimsAdd");
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(role));
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(roleSafe));
-        Claim[] claims = { new Claim("c", "v"), new Claim("c2", "v2"), new Claim("c2", "v3") };
+        Claim[] claims = [new Claim("c", "v"), new Claim("c2", "v2"), new Claim("c2", "v3")];
         foreach (Claim c in claims)
         {
             IdentityResultAssert.IsSuccess(await manager.AddClaimAsync(role, c));
@@ -366,9 +367,9 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
         var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
         IdentityResultAssert.IsSuccess(await roleManager.CreateAsync(role));
         TUser[] users =
-        {
+        [
                 CreateTestUser("1"),CreateTestUser("2"),CreateTestUser("3"),CreateTestUser("4"),
-            };
+            ];
         foreach (var u in users)
         {
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(u));
@@ -603,5 +604,353 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
             roles.Add(CreateTestRole(namePrefix + i));
         }
         return roles;
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
+    public async Task CanAddAndRetrievePasskey()
+    {
+        var context = CreateTestContext();
+        var manager = CreateManager(context);
+        Assert.True(manager.SupportsUserPasskey);
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+        var credentialId = Guid.NewGuid().ToByteArray();
+        var passkey = new UserPasskeyInfo(
+            credentialId,
+            publicKey: [1, 2, 3, 4],
+            DateTimeOffset.UtcNow,
+            signCount: 0,
+            transports: ["usb"],
+            isUserVerified: false,
+            isBackupEligible: true,
+            isBackedUp: false,
+            attestationObject: [5, 6, 7],
+            clientDataJson: [8, 9])
+        {
+            Name = "InitialName"
+        };
+
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, passkey));
+
+        var fetched = await manager.GetPasskeyAsync(user, credentialId);
+        Assert.NotNull(fetched);
+        Assert.Equal("InitialName", fetched.Name);
+        Assert.Equal(0u, fetched.SignCount);
+
+        var list = await manager.GetPasskeysAsync(user);
+        Assert.Single(list);
+        Assert.Equal("InitialName", list[0].Name);
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
+    public async Task AddOrUpdatePasskeyUpdatesMutableFields()
+    {
+        var context = CreateTestContext();
+        var manager = CreateManager(context);
+        Assert.True(manager.SupportsUserPasskey);
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+        var credentialId = Guid.NewGuid().ToByteArray();
+        var passkey = new UserPasskeyInfo(
+            credentialId,
+            publicKey: [10, 11, 12],
+            DateTimeOffset.UtcNow,
+            signCount: 1,
+            transports: ["nfc"],
+            isUserVerified: false,
+            isBackupEligible: true,
+            isBackedUp: false,
+            attestationObject: [13],
+            clientDataJson: [14])
+        {
+            Name = "Original"
+        };
+
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, passkey));
+
+        passkey.Name = "Updated";
+        passkey.SignCount = 2;
+        passkey.IsBackedUp = true;
+        passkey.IsUserVerified = true;
+
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, passkey));
+
+        var updated = await manager.GetPasskeyAsync(user, credentialId);
+        Assert.NotNull(updated);
+        Assert.Equal("Updated", updated.Name);
+        Assert.Equal(2u, updated.SignCount);
+        Assert.True(updated.IsBackedUp);
+        Assert.True(updated.IsUserVerified);
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
+    public async Task CanRemovePasskey()
+    {
+        var context = CreateTestContext();
+        var manager = CreateManager(context);
+        Assert.True(manager.SupportsUserPasskey);
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+        var passkey = new UserPasskeyInfo(
+            credentialId: Guid.NewGuid().ToByteArray(),
+            publicKey: [1],
+            DateTimeOffset.UtcNow,
+            signCount: 0,
+            transports: null,
+            isUserVerified: false,
+            isBackupEligible: false,
+            isBackedUp: false,
+            attestationObject: [2],
+            clientDataJson: [3])
+        {
+            Name = "ToRemove"
+        };
+
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, passkey));
+        Assert.Single(await manager.GetPasskeysAsync(user));
+        IdentityResultAssert.IsSuccess(await manager.RemovePasskeyAsync(user, passkey.CredentialId));
+        Assert.Empty(await manager.GetPasskeysAsync(user));
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
+    public async Task CanAddMultiplePasskeys()
+    {
+        var context = CreateTestContext();
+        var manager = CreateManager(context);
+        Assert.True(manager.SupportsUserPasskey);
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+        var passkey1 = new UserPasskeyInfo(
+            credentialId: Guid.NewGuid().ToByteArray(),
+            publicKey: [1],
+            DateTimeOffset.UtcNow,
+            signCount: 0,
+            transports: ["usb"],
+            isUserVerified: false,
+            isBackupEligible: false,
+            isBackedUp: false,
+            attestationObject: [10],
+            clientDataJson: [11])
+        {
+            Name = "One"
+        };
+        var pk2 = new UserPasskeyInfo(
+            credentialId: Guid.NewGuid().ToByteArray(),
+            publicKey: [2],
+            DateTimeOffset.UtcNow,
+            signCount: 5,
+            transports: ["nfc"],
+            isUserVerified: true,
+            isBackupEligible: false,
+            isBackedUp: false,
+            attestationObject: [12],
+            clientDataJson: [13])
+        {
+            Name = "Two"
+        };
+
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, passkey1));
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, pk2));
+
+        var all = await manager.GetPasskeysAsync(user);
+        Assert.Equal(2, all.Count);
+        Assert.Contains(all, p => p.Name == "One");
+        Assert.Contains(all, p => p.Name == "Two");
+        Assert.NotNull(await manager.GetPasskeyAsync(user, passkey1.CredentialId));
+        Assert.NotNull(await manager.GetPasskeyAsync(user, pk2.CredentialId));
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
+    public async Task CannotAccessAnotherUsersPasskey()
+    {
+        var context = CreateTestContext();
+        var manager = CreateManager(context);
+        var user1 = CreateTestUser();
+        var user2 = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user1));
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user2));
+
+        var passkey = new UserPasskeyInfo(
+            credentialId: Guid.NewGuid().ToByteArray(),
+            publicKey: [1],
+            DateTimeOffset.UtcNow,
+            signCount: 0,
+            transports: ["usb"],
+            isUserVerified: false,
+            isBackupEligible: false,
+            isBackedUp: false,
+            attestationObject: [10],
+            clientDataJson: [11])
+        {
+            Name = "One"
+        };
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user1, passkey));
+
+        // user2 should not see user1's passkey via GetPasskeyAsync
+        Assert.Null(await manager.GetPasskeyAsync(user2, passkey.CredentialId));
+        var owner = await manager.FindByPasskeyIdAsync(passkey.CredentialId);
+        Assert.Equal(await manager.GetUserIdAsync(user1), await manager.GetUserIdAsync(owner));
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
+    public async Task FindByPasskeyIdReturnsCorrectUser()
+    {
+        var context = CreateTestContext();
+        var manager = CreateManager(context);
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+        var passkey = new UserPasskeyInfo(
+            credentialId: Guid.NewGuid().ToByteArray(),
+            publicKey: [1],
+            DateTimeOffset.UtcNow,
+            signCount: 0,
+            transports: ["usb"],
+            isUserVerified: false,
+            isBackupEligible: false,
+            isBackedUp: false,
+            attestationObject: [10],
+            clientDataJson: [11])
+        {
+            Name = "One"
+        };
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, passkey));
+
+        var found = await manager.FindByPasskeyIdAsync(passkey.CredentialId);
+        Assert.Equal(await manager.GetUserIdAsync(user), await manager.GetUserIdAsync(found));
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
+    public async Task UpdatingPasskeyDoesNotChangeImmutableFields()
+    {
+        var context = CreateTestContext();
+        var manager = CreateManager(context);
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+        var original = new UserPasskeyInfo(
+            credentialId: Guid.NewGuid().ToByteArray(),
+            publicKey: [9, 9],
+            createdAt: DateTimeOffset.UtcNow,
+            signCount: 1,
+            transports: ["usb", "nfc"],
+            isUserVerified: false,
+            isBackupEligible: true,
+            isBackedUp: false,
+            attestationObject: [5],
+            clientDataJson: [6])
+        {
+            Name = "ImmutableTest"
+        };
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, original));
+
+        // Attempt to modify immutable fields
+        var update = new UserPasskeyInfo(
+            credentialId: original.CredentialId,
+            publicKey: [0xFF, 0xFF],
+            createdAt: original.CreatedAt.AddMinutes(5),
+            signCount: 3,
+            transports: ["ble"],
+            isUserVerified: true,
+            isBackupEligible: false,
+            isBackedUp: true,
+            attestationObject: [7],
+            clientDataJson: [8])
+        {
+            Name = "Changed"
+        };
+
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, update));
+
+        var stored = await manager.GetPasskeyAsync(user, original.CredentialId);
+        Assert.NotNull(stored);
+
+        // Mutable
+        Assert.Equal("Changed", stored.Name);
+        Assert.Equal((uint)3, stored.SignCount);
+        Assert.True(stored.IsBackedUp);
+        Assert.True(stored.IsUserVerified);
+
+        // Immutable
+        Assert.Equal(original.PublicKey, stored.PublicKey);
+        Assert.Equal(original.CreatedAt, stored.CreatedAt);
+        Assert.Equal(original.IsBackupEligible, stored.IsBackupEligible);
+        Assert.Equal(original.AttestationObject, stored.AttestationObject);
+        Assert.Equal(original.ClientDataJson, stored.ClientDataJson);
+        Assert.Equal(original.Transports, stored.Transports);
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
+    public async Task RemovePasskeyIsIdempotent()
+    {
+        var context = CreateTestContext();
+        var manager = CreateManager(context);
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+        var pk = new UserPasskeyInfo(Guid.NewGuid().ToByteArray(), [1], DateTimeOffset.UtcNow, 0, null, false, false, false, [2], [3]);
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, pk));
+
+        IdentityResultAssert.IsSuccess(await manager.RemovePasskeyAsync(user, pk.CredentialId));
+        Assert.Empty(await manager.GetPasskeysAsync(user));
+
+        // Second removal should not throw or change anything
+        IdentityResultAssert.IsSuccess(await manager.RemovePasskeyAsync(user, pk.CredentialId));
+        Assert.Empty(await manager.GetPasskeysAsync(user));
+    }
+
+    /// <summary>
+    /// Test.
+    /// </summary>
+    /// <returns>Task</returns>
+    [Fact]
+    public async Task FindPasskeyReturnsNullForUnknownCredential()
+    {
+        var context = CreateTestContext();
+        var manager = CreateManager(context);
+        var user = CreateTestUser();
+        IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+
+        var pk = new UserPasskeyInfo(Guid.NewGuid().ToByteArray(), [7], DateTimeOffset.UtcNow, 0, null, false, false, false, [8], [9]);
+        IdentityResultAssert.IsSuccess(await manager.AddOrUpdatePasskeyAsync(user, pk));
+
+        var randomId = Guid.NewGuid().ToByteArray();
+        Assert.Null(await manager.GetPasskeyAsync(user, randomId));
     }
 }
