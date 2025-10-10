@@ -55,7 +55,12 @@
     </ItemGroup>
 
     <GenerateMvcTestManifestTask ManifestPath="$(PublishDir)MvcTestingAppManifest.json" Projects="@(_PublishManifestProjects)" />
-    <Copy SourceFiles="%(_DepsFileToPublish.FullPath)" DestinationFolder="$(PublishDir)" Condition="Exists('%(_DepsFileToPublish.FullPath)')" />
+    
+    <ItemGroup>
+      <_DepsFilesToPublish Include="@(_DepsFileToPublish)" Condition="Exists('%(_DepsFileToPublish.FullPath)')" />
+    </ItemGroup>
+    
+    <Copy SourceFiles="@(_DepsFilesToPublish)" DestinationFolder="$(PublishDir)" SkipUnchangedFiles="true" Condition="'@(_DepsFilesToPublish)' != ''" />
   </Target>
 
   <Target Name="_MvcCopyDependencyFiles" AfterTargets="Build;_ResolveMvcTestProjectReferences" Condition="'$(TargetFramework)'!=''">
