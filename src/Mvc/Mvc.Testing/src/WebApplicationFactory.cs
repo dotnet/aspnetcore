@@ -578,7 +578,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
     /// <param name="builder">The <see cref="IWebHostBuilder"/> used to
     /// create the server.</param>
     /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
-    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the overloads that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreSharedUrlFormat)]
+    [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the overloads that takes an IServiceProvider instead. For more information, visit https://aka.ms/aspnet/deprecate/008.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
     protected virtual TestServer CreateServer(IWebHostBuilder builder) => new(builder);
 
     /// <summary>
@@ -857,7 +857,7 @@ public partial class WebApplicationFactory<TEntryPoint> : IDisposable, IAsyncDis
             _configuration = configureWebHost;
         }
 
-        [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreSharedUrlFormat)]
+        [Obsolete("IWebHost, which this method uses, is obsolete. Use one of the ctors that takes an IServiceProvider instead.", DiagnosticId = "ASPDEPR008", UrlFormat = Obsoletions.AspNetCoreDeprecate008Url)]
         protected override TestServer CreateServer(IWebHostBuilder builder) => _createServer(builder);
 
         protected override TestServer CreateServer(IServiceProvider serviceProvider) => _createServerFromServiceProvider(serviceProvider);
