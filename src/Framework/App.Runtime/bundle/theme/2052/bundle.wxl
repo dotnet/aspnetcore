@@ -69,6 +69,9 @@
   <String Id="LicenseAssent" Value="单击“安装”即表示你同意以下条款:"/>
   <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
   <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;隐私声明&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET 的许可信息&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;遥测收集和选择退出&lt;/A&gt;"/>
 
   
   <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;许可条款&lt;/a&gt;和&lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;隐私声明&lt;/a&gt;。"/>

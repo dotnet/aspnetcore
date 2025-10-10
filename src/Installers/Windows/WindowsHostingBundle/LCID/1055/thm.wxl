@@ -11,7 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Önceki sürüm"/>
   <String Id="HelpHeader" Value="Kurulum Yardımı"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - dizindeki paketin eksiksiz bir yerel kopyasını yükler, onarır, kaldırır veya oluşturur. Install varsayılandır. /passive | /quiet - kullanıcı arabirimini istem olmadan minimum düzeyde görüntüler veya kullanıcı arabirimi ve istem görüntülemez. Varsayılan olarak kullanıcı arabirimi ve tüm istemler görüntülenir. /norestart - yeniden başlatma girişimlerini gizle. Varsayılan olarak kullanıcı arabirimi yeniden başlatmadan önce sorar. /log log.txt - belirli bir dosyaya kaydeder. Varsayılan olarak %TEMP% içinde bir günlük dosyası oluşturulur."/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - dizindeki paketin eksiksiz bir yerel kopyasını yükler, onarır, kaldırır veya oluşturur. Yükleme varsayılan eylemdir.
+
+/passive | /quiet - kullanıcı arabirimini istem olmadan minimum düzeyde görüntüler veya kullanıcı arabirimi ve istem görüntülemez. Varsayılan olarak kullanıcı arabirimi ve tüm istemler görüntülenir.
+
+/norestart - yeniden başlatma girişimlerini durdurur. Varsayılan olarak kullanıcı arabirimi yeniden başlatmadan önce sorar.
+
+/log &lt;LOG_FILE&gt; - belirli bir dosyaya kaydeder. Varsayılan olarak %TEMP% içinde bir günlük dosyası oluşturulur."/>
   <String Id="HelpCloseButton" Value="&amp;Kapat"/>
   <String Id="InstallAcceptCheckbox" Value="Lisans hüküm ve koşullarını &amp;kabul ediyorum"/>
   <String Id="InstallInstallButton" Value="&amp;Yükle"/>
@@ -61,6 +67,9 @@
   <String Id="FilesInUseExitButton" Value="Çı&amp;k"/>
   <String Id="FilesInUseTitle" Value="Kullanımda Olan Dosyalar"/>
   <String Id="LicenseAssent" Value="Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Gizlilik Bildirimi&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET için Lisans Bilgileri&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetri toplama ve geri çevirme&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   

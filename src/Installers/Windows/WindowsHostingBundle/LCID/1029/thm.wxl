@@ -11,7 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Předchozí verze"/>
   <String Id="HelpHeader" Value="Nápověda k nastavení"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]adresář[\]] – Nainstaluje, opraví, odinstaluje nebo vytvoří úplnou místní kopii sady v adresáři. Výchozí možností je instalace. /passive | /quiet – Zobrazí minimální uživatelské rozhraní bez jakýchkoli výzev nebo nezobrazí žádné rozhraní ani výzvy. Ve výchozím nastavení se zobrazí uživatelské rozhraní a všechny výzvy. /norestart – Potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní zobrazí před restartováním výzvu. /log log.txt – Zapíše protokol do konkrétního souboru. Ve výchozím nastavení bude soubor protokolu vytvořen v adresáři %TEMP%."/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]adresář[\]] – Nainstaluje, opraví, odinstaluje nebo vytvoří úplnou místní kopii sady v adresáři. Výchozí možností je instalace.
+
+/passive | /quiet – Zobrazí minimální uživatelské rozhraní bez jakýchkoli výzev nebo nezobrazí žádné rozhraní ani výzvy. Ve výchozím nastavení se zobrazí uživatelské rozhraní a všechny výzvy.
+
+/norestart – Potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní zobrazí před restartováním výzvu.
+
+/log &lt;LOG_FILE&gt; – zapíše protokol do konkrétního souboru. Ve výchozím nastavení bude soubor protokolu vytvořen v adresáři %TEMP%."/>
   <String Id="HelpCloseButton" Value="&amp;Zavřít"/>
   <String Id="InstallAcceptCheckbox" Value="&amp;Souhlasím s licenčními podmínkami a ujednáními"/>
   <String Id="InstallInstallButton" Value="Na&amp;instalovat"/>
@@ -61,6 +67,9 @@
   <String Id="FilesInUseExitButton" Value="&amp;Ukončit"/>
   <String Id="FilesInUseTitle" Value="Soubory jsou používány."/>
   <String Id="LicenseAssent" Value="Kliknutím na Nainstalovat vyjadřujete souhlas s následujícími podmínkami:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Prohlášení o zásadách ochrany osobních údajů&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Informace o licencování pro .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Shromažďování telemetrie a výslovný nesouhlas&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   
