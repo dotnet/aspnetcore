@@ -20,10 +20,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)Obsoletions.cs" LinkBase="Shared" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing.Tasks"
       Private="false"
       ReferenceOutputAssembly="false"
