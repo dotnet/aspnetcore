@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory;
 public class InMemoryStore<TUser, TRole> :
     InMemoryUserStore<TUser>,
     IUserRoleStore<TUser>,
+    IUserPasskeyStore<TUser>,
     IQueryableRoleStore<TRole>,
     IRoleClaimStore<TRole>
     where TRole : PocoRole
@@ -157,6 +158,82 @@ public class InMemoryStore<TUser, TRole> :
         role.NormalizedName = normalizedName;
         return Task.FromResult(0);
     }
+
+    public Task AddOrUpdatePasskeyAsync(TUser user, UserPasskeyInfo passkey, CancellationToken cancellationToken)
+    {
+        var passkeyEntity = user.Passkeys.FirstOrDefault(p => p.CredentialId.SequenceEqual(passkey.CredentialId));
+        if (passkeyEntity is null)
+        {
+            user.Passkeys.Add(ToPocoUserPasskey(user, passkey));
+        }
+        else
+        {
+            passkeyEntity.Name = passkey.Name;
+            passkeyEntity.SignCount = passkey.SignCount;
+            passkeyEntity.IsBackedUp = passkey.IsBackedUp;
+            passkeyEntity.IsUserVerified = passkey.IsUserVerified;
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task<IList<UserPasskeyInfo>> GetPasskeysAsync(TUser user, CancellationToken cancellationToken)
+    {
+        return Task.FromResult<IList<UserPasskeyInfo>>(user.Passkeys.Select(ToUserPasskeyInfo).ToList()!);
+    }
+
+    public Task<TUser> FindByPasskeyIdAsync(byte[] credentialId, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(Users.FirstOrDefault(u => u.Passkeys.Any(p => p.CredentialId.SequenceEqual(credentialId))));
+    }
+
+    public Task<UserPasskeyInfo> FindPasskeyAsync(TUser user, byte[] credentialId, CancellationToken cancellationToken)
+    {
+        return Task.FromResult(ToUserPasskeyInfo(user.Passkeys.FirstOrDefault(p => p.CredentialId.SequenceEqual(credentialId))));
+    }
+
+    public Task RemovePasskeyAsync(TUser user, byte[] credentialId, CancellationToken cancellationToken)
+    {
+        var passkey = user.Passkeys.SingleOrDefault(p => p.CredentialId.SequenceEqual(credentialId));
+        if (passkey is not null)
+        {
+            user.Passkeys.Remove(passkey);
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private static UserPasskeyInfo ToUserPasskeyInfo(PocoUserPasskey<string> p)
+        => p is null ? null : new(
+            p.CredentialId,
+            p.PublicKey,
+            p.CreatedAt,
+            p.SignCount,
+            p.Transports,
+            p.IsUserVerified,
+            p.IsBackupEligible,
+            p.IsBackedUp,
+            p.AttestationObject,
+            p.ClientDataJson)
+        {
+            Name = p.Name
+        };
+
+    private static PocoUserPasskey<string> ToPocoUserPasskey(TUser user, UserPasskeyInfo p)
+        => new()
+        {
+            UserId = user.Id,
+            CredentialId = p.CredentialId,
+            PublicKey = p.PublicKey,
+            Name = p.Name,
+            CreatedAt = p.CreatedAt,
+            Transports = p.Transports,
+            SignCount = p.SignCount,
+            IsUserVerified = p.IsUserVerified,
+            IsBackupEligible = p.IsBackupEligible,
+            IsBackedUp = p.IsBackedUp,
+            AttestationObject = p.AttestationObject,
+            ClientDataJson = p.ClientDataJson,
+        };
 
     public IQueryable<TRole> Roles
     {
