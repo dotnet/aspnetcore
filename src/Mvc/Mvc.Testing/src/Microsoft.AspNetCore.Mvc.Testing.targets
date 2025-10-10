@@ -70,11 +70,16 @@
         <_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible Condition="'$(_CreateSymbolicLinksMvcCopyDependencyFilesIfPossible)' == ''">$(CreateSymbolicLinksForCopyFilesToOutputDirectoryIfPossible)</_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible>
     </PropertyGroup>
 
-    <Copy SourceFiles="%(DepsFilePaths.FullPath)"
+    <ItemGroup>
+      <_DepsFilesToCopy Include="@(DepsFilePaths)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_DepsFilesToCopy)"
        DestinationFolder="$(OutDir)"
        UseHardlinksIfPossible="$(_CreateHardLinksForMvcCopyDependencyFilesIfPossible)"
        UseSymboliclinksIfPossible="$(_CreateSymbolicLinksForMvcCopyDependencyFilesIfPossible)"
-       Condition="Exists('%(DepsFilePaths.FullPath)')" />
+       SkipUnchangedFiles="true"
+       Condition="'@(_DepsFilesToCopy)' != ''" />
   </Target>
 
 </Project>
