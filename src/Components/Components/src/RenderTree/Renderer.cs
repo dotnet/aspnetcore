@@ -54,6 +54,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private bool _rendererIsDisposed;
 
     private bool _hotReloadInitialized;
+    private HotReloadRenderHandler? _hotReloadRenderHandler;
 
     /// <summary>
     /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
@@ -231,7 +232,12 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _hotReloadInitialized = true;
             if (HotReloadManager.MetadataUpdateSupported)
             {
-                HotReloadManager.OnDeltaApplied += RenderRootComponentsOnHotReload;
+                // Capture the current ExecutionContext so AsyncLocal values present during initial root component
+                // registration flow through to hot reload re-renders. Without this, hot reload callbacks execute
+                // on a thread without the original ambient context and AsyncLocal values appear null.
+                var executionContext = ExecutionContext.Capture();
+                _hotReloadRenderHandler = new HotReloadRenderHandler(this, executionContext);
+                HotReloadManager.OnDeltaApplied += _hotReloadRenderHandler.RerenderOnHotReload;
             }
         }
 
@@ -1234,9 +1240,9 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             _rendererIsDisposed = true;
         }
 
-        if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported)
+        if (_hotReloadInitialized && HotReloadManager.MetadataUpdateSupported && _hotReloadRenderHandler is not null)
         {
-            HotReloadManager.OnDeltaApplied -= RenderRootComponentsOnHotReload;
+            HotReloadManager.OnDeltaApplied -= _hotReloadRenderHandler.RerenderOnHotReload;
         }
 
         // It's important that we handle all exceptions here before reporting any of them.
@@ -1368,6 +1374,21 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
             else
             {
                 await default(ValueTask);
+            }
+        }
+    }
+
+    private sealed class HotReloadRenderHandler(Renderer renderer, ExecutionContext? executionContext)
+    {
+        public void RerenderOnHotReload()
+        {
+            if (executionContext is null)
+            {
+                renderer.RenderRootComponentsOnHotReload();
+            }
+            else
+            {
+                ExecutionContext.Run(executionContext, static s => ((Renderer)s!).RenderRootComponentsOnHotReload(), renderer);
             }
         }
     }
