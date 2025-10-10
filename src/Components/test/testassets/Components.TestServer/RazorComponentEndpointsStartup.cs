@@ -109,6 +109,13 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 reexecutionApp.UseAntiforgery();
                 ConfigureEndpoints(reexecutionApp, env);
             });
+            app.Map("/interactive-reexecution", reexecutionApp =>
+            {
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute-interactive", createScopeForStatusCodePages: true);
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                ConfigureEndpoints(reexecutionApp, env);
+            });
 
             ConfigureSubdirPipeline(app, env);
         });

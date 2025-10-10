@@ -1515,6 +1515,24 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
         Assert404ReExecuted();
     }
 
+    [Fact]
+    public void BrowserNavigationToNotExistingPathReExecutesTo404_Interactive()
+    {
+        // non-existing path has to have re-execution middleware set up
+        // so it has to have "interactive-reexecution" prefix. Otherwise middleware mapping
+        // will not be activated, see configuration in Startup
+        Navigate($"{ServerPathBase}/interactive-reexecution/not-existing-page");
+        Assert404ReExecuted();
+        AssertReExecutedPageIsInteractive();
+    }
+
+    private void AssertReExecutedPageIsInteractive()
+    {
+        Browser.Equal("Current count: 0", () => Browser.FindElement(By.CssSelector("[role='status']")).Text);
+        Browser.Click(By.Id("increment-button"));
+        Browser.Equal("Current count: 1", () => Browser.FindElement(By.CssSelector("[role='status']")).Text);
+    }
+
     private void Assert404ReExecuted() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 }
