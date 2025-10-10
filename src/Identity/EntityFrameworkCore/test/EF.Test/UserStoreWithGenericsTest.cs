@@ -21,7 +21,12 @@ public class UserStoreWithGenericsTest : IdentitySpecificationTestBase<IdentityU
 
     private ContextWithGenerics CreateContext()
     {
-        var db = DbUtil.Create<ContextWithGenerics>(_fixture.Connection);
+        var services = new ServiceCollection();
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        });
+        var db = DbUtil.Create<ContextWithGenerics>(_fixture.Connection, services);
         db.Database.EnsureCreated();
         return db;
     }

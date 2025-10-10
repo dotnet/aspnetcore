@@ -770,6 +770,7 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
         var userPasskey = await FindUserPasskeyByIdAsync(passkey.CredentialId, cancellationToken).ConfigureAwait(false);
         if (userPasskey != null)
         {
+            userPasskey.Data.Name = passkey.Name;
             userPasskey.Data.SignCount = passkey.SignCount;
             userPasskey.Data.IsBackedUp = passkey.IsBackedUp;
             userPasskey.Data.IsUserVerified = passkey.IsUserVerified;
@@ -851,6 +852,7 @@ public class UserStore<TUser, TRole, TContext, [DynamicallyAccessedMembers(Dynam
     {
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
+        ArgumentNullException.ThrowIfNull(user);
         ArgumentNullException.ThrowIfNull(credentialId);
 
         var passkey = await FindUserPasskeyAsync(user.Id, credentialId, cancellationToken).ConfigureAwait(false);
