@@ -11,13 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Předchozí verze"/>
   <String Id="HelpHeader" Value="Nápověda k nastavení"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default.
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]adresář[\]] – Nainstaluje, opraví, odinstaluje nebo vytvoří úplnou místní kopii sady v adresáři. Výchozí možností je instalace.
 
-/passive | /quiet - displays minimal UI with no prompts or displays no UI and no prompts. By default UI and all prompts are displayed.
+/passive | /quiet – Zobrazí minimální uživatelské rozhraní bez jakýchkoli výzev nebo nezobrazí žádné rozhraní ani výzvy. Ve výchozím nastavení se zobrazí uživatelské rozhraní a všechny výzvy.
 
-/norestart - suppress any attempts to restart. By default UI will prompt before restart.
+/norestart – Potlačí všechny pokusy o restartování. Ve výchozím nastavení uživatelské rozhraní zobrazí před restartováním výzvu.
 
-/log &lt;LOG_FILE&gt; - logs to a specific file. By default a log file is created in %TEMP%."/>
+/log &lt;LOG_FILE&gt; – zapíše protokol do konkrétního souboru. Ve výchozím nastavení bude soubor protokolu vytvořen v adresáři %TEMP%."/>
   <String Id="HelpCloseButton" Value="&amp;Zavřít"/>
   <String Id="InstallAcceptCheckbox" Value="&amp;Souhlasím s licenčními podmínkami a ujednáními"/>
   <String Id="InstallInstallButton" Value="Na&amp;instalovat"/>
