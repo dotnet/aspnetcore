@@ -1,4 +1,6 @@
 #nullable enable
+abstract Microsoft.AspNetCore.Http.HttpContext.Endpoint.get -> Microsoft.AspNetCore.Http.Endpoint?
+abstract Microsoft.AspNetCore.Http.HttpContext.Endpoint.set -> void
 Microsoft.AspNetCore.Http.Metadata.IAllowCookieRedirectMetadata
 Microsoft.AspNetCore.Http.Metadata.IDisableCookieRedirectMetadata
 Microsoft.AspNetCore.Http.Metadata.IDisableValidationMetadata
