@@ -517,6 +517,7 @@ public static class DotNetDispatcher
             _cachedMethodsByAssembly.Clear();
             _cachedMethodsByType.Clear();
             _cachedConvertToTaskByType.Clear();
+            TypeJsonConverter.ClearCache();
         }
     }
 
