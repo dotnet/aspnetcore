@@ -11,13 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Version précédente"/>
   <String Id="HelpHeader" Value="Aide sur l’installation"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default.
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] : installe, répare, désinstalle ou crée une copie locale complète du lot dans le répertoire. L’installation constitue la valeur par défaut.
 
-/passive | /quiet - displays minimal UI with no prompts or displays no UI and no prompts. By default UI and all prompts are displayed.
+/passive | /quiet : permet d’afficher une interface utilisateur minimale sans aucune requête ou de n’afficher ni interface utilisateur, ni requêtes. Par défaut, l’interface utilisateur et toutes les requêtes sont affichées.
 
-/norestart - suppress any attempts to restart. By default UI will prompt before restart.
+/norestart : permet de supprimer toutes les tentatives de redémarrage. Par défaut, l’interface utilisateur vous invite à redémarrer.
 
-/log &lt;LOG_FILE&gt; - logs to a specific file. By default a log file is created in %TEMP%."/>
+/log &lt;LOG_FILE&gt; : permet d’enregistrer dans un fichier spécifique. Par défaut, un fichier journal est créé dans %TEMP%."/>
   <String Id="HelpCloseButton" Value="&amp;Fermer"/>
   <String Id="InstallAcceptCheckbox" Value="J’&amp;accepte les conditions générales de la licence"/>
   <String Id="InstallInstallButton" Value="&amp;Installer"/>
