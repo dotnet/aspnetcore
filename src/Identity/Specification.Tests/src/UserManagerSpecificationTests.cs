@@ -61,6 +61,7 @@ public abstract class UserManagerSpecificationTestBase<TUser, TKey>
             options.Password.RequireNonAlphanumeric = false;
             options.Password.RequireUppercase = false;
             options.User.AllowedUserNameCharacters = null;
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
         }).AddDefaultTokenProviders();
         AddUserStore(services, context);
         services.AddLogging();

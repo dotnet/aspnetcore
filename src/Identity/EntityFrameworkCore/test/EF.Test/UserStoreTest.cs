@@ -195,7 +195,6 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
         userB.Email = "dupe@dupe.com";
         IdentityResultAssert.IsSuccess(await manager.CreateAsync(userB, "password"));
         await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.FindByEmailAsync("dupe@dupe.com"));
-
     }
 
     [ConditionalFact]

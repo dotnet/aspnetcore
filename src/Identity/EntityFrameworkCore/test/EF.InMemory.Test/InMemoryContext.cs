@@ -3,17 +3,31 @@
 
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test;
 
 public class InMemoryContext :
     InMemoryContext<IdentityUser, IdentityRole, string>
 {
-    private InMemoryContext(DbConnection connection) : base(connection)
+    private InMemoryContext(DbConnection connection, IServiceProvider serviceProvider) : base(connection, serviceProvider)
     { }
 
-    public static new InMemoryContext Create(DbConnection connection)
-        => Initialize(new InMemoryContext(connection));
+    public static new InMemoryContext Create(DbConnection connection, IServiceCollection services = null)
+    {
+        services = ConfigureDbServices(services);
+        return Initialize(new InMemoryContext(connection, services.BuildServiceProvider()));
+    }
+
+    public static IServiceCollection ConfigureDbServices(IServiceCollection services = null)
+    {
+        services ??= new ServiceCollection();
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        });
+        return services;
+    }
 
     public static TContext Initialize<TContext>(TContext context) where TContext : DbContext
     {
@@ -28,17 +42,25 @@ public class InMemoryContext<TUser> :
     where TUser : IdentityUser
 {
     private readonly DbConnection _connection;
+    private readonly IServiceProvider _serviceProvider;
 
-    private InMemoryContext(DbConnection connection)
+    private InMemoryContext(DbConnection connection, IServiceProvider serviceProvider)
     {
         _connection = connection;
+        _serviceProvider = serviceProvider;
     }
 
-    public static InMemoryContext<TUser> Create(DbConnection connection)
-        => InMemoryContext.Initialize(new InMemoryContext<TUser>(connection));
+    public static InMemoryContext<TUser> Create(DbConnection connection, IServiceCollection services = null)
+    {
+        services = InMemoryContext.ConfigureDbServices(services);
+        return InMemoryContext.Initialize(new InMemoryContext<TUser>(connection, services.BuildServiceProvider()));
+    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite(_connection);
+    {
+        optionsBuilder.UseSqlite(_connection);
+        optionsBuilder.UseApplicationServiceProvider(_serviceProvider);
+    }
 }
 
 public class InMemoryContext<TUser, TRole, TKey> : IdentityDbContext<TUser, TRole, TKey>
@@ -47,17 +69,25 @@ public class InMemoryContext<TUser, TRole, TKey> : IdentityDbContext<TUser, TRol
     where TKey : IEquatable<TKey>
 {
     private readonly DbConnection _connection;
+    private readonly IServiceProvider _serviceProvider;
 
-    protected InMemoryContext(DbConnection connection)
+    protected InMemoryContext(DbConnection connection, IServiceProvider serviceProvider)
     {
         _connection = connection;
+        _serviceProvider = serviceProvider;
     }
 
-    public static InMemoryContext<TUser, TRole, TKey> Create(DbConnection connection)
-        => InMemoryContext.Initialize(new InMemoryContext<TUser, TRole, TKey>(connection));
+    public static InMemoryContext<TUser, TRole, TKey> Create(DbConnection connection, IServiceCollection services = null)
+    {
+        services = InMemoryContext.ConfigureDbServices(services);
+        return InMemoryContext.Initialize(new InMemoryContext<TUser, TRole, TKey>(connection, services.BuildServiceProvider()));
+    }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlite(_connection);
+    {
+        optionsBuilder.UseSqlite(_connection);
+        optionsBuilder.UseApplicationServiceProvider(_serviceProvider);
+    }
 }
 
 public abstract class InMemoryContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> :
