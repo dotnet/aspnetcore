@@ -60,6 +60,21 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
         services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, IdentityDbContext>((IdentityDbContext)context));
     }
 
+    private DbContextOptions<IdentityDbContext> CreateOptions(string databaseName)
+    {
+        var services = new ServiceCollection();
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        });
+        var serviceProvider = services.BuildServiceProvider();
+
+        return new DbContextOptionsBuilder<IdentityDbContext>()
+            .UseSqlite($"Data Source={databaseName}")
+            .UseApplicationServiceProvider(serviceProvider)
+            .Options;
+    }
+
     [Fact]
     public async Task SqlUserStoreMethodsThrowWhenDisposedTest()
     {
@@ -210,7 +225,7 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task ConcurrentUpdatesWillFail()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = CreateOptions($"D{Guid.NewGuid()}.db");
         var user = CreateTestUser();
         using (var db = new IdentityDbContext(options))
         {
@@ -241,7 +256,7 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task ConcurrentUpdatesWillFailWithDetachedUser()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = CreateOptions($"D{Guid.NewGuid()}.db");
         var user = CreateTestUser();
         using (var db = new IdentityDbContext(options))
         {
@@ -270,7 +285,7 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task DeleteAModifiedUserWillFail()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = CreateOptions($"D{Guid.NewGuid()}.db");
         var user = CreateTestUser();
         using (var db = new IdentityDbContext(options))
         {
@@ -300,7 +315,7 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task ConcurrentRoleUpdatesWillFail()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = CreateOptions($"D{Guid.NewGuid()}.db");
         var role = new IdentityRole(Guid.NewGuid().ToString());
         using (var db = new IdentityDbContext(options))
         {
@@ -331,7 +346,7 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task ConcurrentRoleUpdatesWillFailWithDetachedRole()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = CreateOptions($"D{Guid.NewGuid()}.db");
         var role = new IdentityRole(Guid.NewGuid().ToString());
         using (var db = new IdentityDbContext(options))
         {
@@ -361,7 +376,7 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [ConditionalFact]
     public async Task DeleteAModifiedRoleWillFail()
     {
-        var options = new DbContextOptionsBuilder().UseSqlite($"Data Source=D{Guid.NewGuid()}.db").Options;
+        var options = CreateOptions($"D{Guid.NewGuid()}.db");
         var role = new IdentityRole(Guid.NewGuid().ToString());
         using (var db = new IdentityDbContext(options))
         {
