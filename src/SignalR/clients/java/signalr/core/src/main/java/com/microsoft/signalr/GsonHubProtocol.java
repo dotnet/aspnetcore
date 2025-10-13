@@ -237,7 +237,13 @@ public final class GsonHubProtocol implements HubProtocol {
         if (paramTypes.size() >= 1) {
             arguments = new ArrayList<>();
             for (int i = 0; i < paramTypes.size(); i++) {
-                arguments.add(gson.fromJson(argumentsToken.get(i), paramTypes.get(i)));
+                Object obj;
+                try {
+                    obj = gson.fromJson(argumentsToken.get(i), paramTypes.get(i));
+                } catch (Exception ex) {
+                    throw new RuntimeException(String.format("Error binding argument %d. Make sure that the types of the provided values match the types of the method being invoked.", i + 1), ex);
+                }
+                arguments.add(obj);
             }
         }
 
@@ -251,7 +257,13 @@ public final class GsonHubProtocol implements HubProtocol {
         ArrayList<Object> arguments = new ArrayList<>();
         while (reader.peek() != JsonToken.END_ARRAY) {
             if (argCount < paramCount) {
-                arguments.add(gson.fromJson(reader, paramTypes.get(argCount)));
+                Object obj;
+                try {
+                    obj = gson.fromJson(reader, paramTypes.get(argCount));
+                } catch (Exception ex) {
+                    throw new RuntimeException(String.format("Error binding argument %d. Make sure that the types of the provided values match the types of the method being invoked.", argCount + 1), ex);
+                }
+                arguments.add(obj);
             } else {
                 reader.skipValue();
             }

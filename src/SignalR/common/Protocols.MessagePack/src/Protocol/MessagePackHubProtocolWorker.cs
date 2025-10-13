@@ -303,10 +303,11 @@ internal abstract class MessagePackHubProtocolWorker
                 $"Invocation provides {argumentCount} argument(s) but target expects {parameterTypes.Count}.");
         }
 
+        var i = 0;
         try
         {
             var arguments = new object?[argumentCount];
-            for (var i = 0; i < argumentCount; i++)
+            for (; i < argumentCount; i++)
             {
                 arguments[i] = DeserializeObject(ref reader, parameterTypes[i], "argument");
             }
@@ -315,7 +316,7 @@ internal abstract class MessagePackHubProtocolWorker
         }
         catch (Exception ex)
         {
-            throw new InvalidDataException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
+            throw new InvalidDataException($"Error binding argument {i + 1}. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
         }
     }
 
