@@ -121,13 +121,11 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
         // Check for transform property (matrix form)
         if (computedStyle.transform && computedStyle.transform !== 'none') {
-          const match = computedStyle.transform.match(/matrix\(([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+)/);
+          // A 2D transform matrix has 6 values: matrix(scaleX, skewY, skewX, scaleY, translateX, translateY)
+          const match = computedStyle.transform.match(/matrix\([^,]+,\s*[^,]+,\s*[^,]+,\s*([^,]+)/);
           if (match) {
-            const scaleX = parseFloat(match[1]);
-            const scaleY = parseFloat(match[4]);
-            if (Math.abs(scaleX - 1.0) > 0.01 || Math.abs(scaleY - 1.0) > 0.01) {
-              scaleFactor *= scaleY; // Use vertical scale
-            }
+            const scaleY = parseFloat(match[1]);
+            scaleFactor *= scaleY;
           }
         }
         element = element.parentElement;
