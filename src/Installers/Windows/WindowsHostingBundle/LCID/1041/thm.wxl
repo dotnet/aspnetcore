@@ -11,7 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="以前のバージョン"/>
   <String Id="HelpHeader" Value="セットアップのヘルプ"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - ディレクトリ内のバンドルの完全なローカル コピーをインストール、修復、アンインストール、または作成します。install が既定値です。/passive | /quiet - プロンプトなしで最小限の UI を表示するか、UI もプロンプトも表示しません。既定では UI とすべてのプロンプトが表示されます。/norestart - 再起動の試行をすべて抑制します。既定では、再起動の前に UI が表示されます。/log log.txt - 特定のファイルにログを出力します。既定では、ログ ファイルは %TEMP% に作成されます。"/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - ディレクトリ内のバンドルの完全なローカル コピーをインストール、修復、アンインストール、または作成します。install が既定値です。
+
+/passive | /quiet - プロンプトなしで最小限の UI を表示するか、UI もプロンプトも表示しません。既定では、UI とすべてのプロンプトが表示されます。
+
+/norestart - 再起動の試行をすべて抑止します。既定では、再起動の前に UI が表示されます。
+
+/log &lt;LOG_FILE&gt; - 特定のファイルにログを記録します。既定では、ログ ファイルは %TEMP% に作成されます。"/>
   <String Id="HelpCloseButton" Value="閉じる(&amp;C)"/>
   <String Id="InstallAcceptCheckbox" Value="ライセンス条項および条件に同意します(&amp;A)"/>
   <String Id="InstallInstallButton" Value="インストール(&amp;I)"/>
@@ -61,6 +67,9 @@
   <String Id="FilesInUseExitButton" Value="終了(&amp;X)"/>
   <String Id="FilesInUseTitle" Value="ファイルが使用中"/>
   <String Id="LicenseAssent" Value="インストール をクリックすると、次の条項に同意したものと見なされます:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;プライバシーに関する声明&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET のライセンス情報&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;テレメトリの収集とオプトアウト&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   

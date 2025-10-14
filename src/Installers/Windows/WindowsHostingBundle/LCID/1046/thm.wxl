@@ -11,7 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Versão anterior"/>
   <String Id="HelpHeader" Value="Ajuda de Configuração"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - instala, repara, desinstala ou cria uma cópia local completa do pacote no diretório. Install é o padrão. /passive | /quiet - exibe interface mínima sem solicitações ou não exibe interface nem solicitações. Por padrão, a interface e todas as solicitações são exibidas. /norestart - suprime quaisquer tentativas de reinício. Por padrão, a interface exibirá uma solicitação antes de reiniciar. /log log.txt - registra em um arquivo específico. Por padrão, um arquivo de log é criado em %TEMP%."/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - instala, repara, desinstala ou cria uma cópia local completa do pacote no diretório. A instalação é padrão.
+
+/passive | /quiet — exibe a interface do usuário mínima sem prompts ou não exibe nenhuma interface do usuário e nenhum prompt. Por padrão, a interface do usuário e todas as solicitações são exibidas.
+
+/norestart — suprime quaisquer tentativas de reinicialização. Por padrão, a interface do usuário exibirá uma solicitação antes de reiniciar.
+
+/log &lt;LOG_FILE&gt; — registra em log em um arquivo específico. Por padrão, um arquivo de log é criado em %TEMP%."/>
   <String Id="HelpCloseButton" Value="&amp;Fechar"/>
   <String Id="InstallAcceptCheckbox" Value="Eu &amp;concordo com os termos e condições da licença"/>
   <String Id="InstallInstallButton" Value="I&amp;nstalar"/>
@@ -61,6 +67,9 @@
   <String Id="FilesInUseExitButton" Value="&amp;Saída"/>
   <String Id="FilesInUseTitle" Value="Arquivos em Uso"/>
   <String Id="LicenseAssent" Value="Ao clicar em Instalar, você concorda com os termos a seguir:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Política de privacidade&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Informações de licenciamento para .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Coleta e recusa de telemetria&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   

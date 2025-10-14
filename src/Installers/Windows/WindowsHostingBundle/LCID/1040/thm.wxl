@@ -11,7 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Versione precedente"/>
   <String Id="HelpHeader" Value="Guida all'installazione"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - Consente di installare, riparare, disinstallare o creare una copia locale completa del bundle nella directory. /install è l'opzione predefinita. /passive | /quiet - Consente di visualizzare un'interfaccia utente minima senza prompt o di non visualizzare alcuna interfaccia utente e alcun prompt. Per impostazione predefinita, vengono visualizzati l'interfaccia utente e tutti i prompt. /norestart - Consente di impedire qualsiasi tentativo di riavvio. Per impostazione predefinita, prima del riavvio verrà visualizzato un prompt nell'interfaccia utente. /log log.txt - Esegue la registrazione in un file specifico. Per impostazione predefinita, viene creato un file di log in %TEMP%."/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - Consente di installare, riparare, disinstallare o creare una copia locale completa del pacchetto nella directory. /install è l'opzione predefinita.
+
+/passive | /quiet - Consente di visualizzare un'interfaccia utente minima senza richieste o di non visualizzare alcuna interfaccia utente e alcuna richiesta. Per impostazione predefinita, vengono visualizzate l'interfaccia utente e tutte le richieste.
+
+/norestart - Consente di impedire qualsiasi tentativo di riavvio. Per impostazione predefinita, prima del riavvio verrà visualizzata una richiesta nell'interfaccia utente.
+
+/log &lt;LOG_FILE&gt; - Consente di eseguire la registrazione in un file specifico. Per impostazione predefinita, viene creato un file di log in %TEMP%."/>
   <String Id="HelpCloseButton" Value="&amp;Chiudi"/>
   <String Id="InstallAcceptCheckbox" Value="A&amp;ccetto i termini e le condizioni di licenza"/>
   <String Id="InstallInstallButton" Value="&amp;Installa"/>
@@ -61,6 +67,9 @@
   <String Id="FilesInUseExitButton" Value="E&amp;sci"/>
   <String Id="FilesInUseTitle" Value="File in uso"/>
   <String Id="LicenseAssent" Value="Facendo clic su Installa, si accettano le condizioni seguenti:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Informativa sulla privacy&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Informazioni sulle licenze per .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Raccolta di telemetria e rifiuto esplicito&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   
