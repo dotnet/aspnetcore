@@ -41,6 +41,7 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     private IdentityDbContext CreateContext()
     {
         var db = DbUtil.Create<IdentityDbContext>(_fixture.Connection);
+        db.Database.EnsureDeleted();
         db.Database.EnsureCreated();
         return db;
     }
