@@ -132,7 +132,6 @@
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.ApiDescription.Client" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.ApiDescription.Server" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Logging.AzureAppServices" />
-    <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.ConcurrencyLimiter" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
     <AspNetCoreShippingAssembly Include="Microsoft.AspNetCore.HeaderPropagation" />
     <AspNetCoreShippingAssembly Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
