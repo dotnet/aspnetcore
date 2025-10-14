@@ -12,6 +12,9 @@ parameters:
   # the usage of the properties on this object is split between the 'job' and 'steps' templates.
   platform: {}
 
+  # Optional list of directories to ignore for component governance scans.
+  cgIgnoreDirectories: []
+
 steps:
 # Build. Keep it self-contained for simple reusability. (No source-build-specific job variables.)
 - script: |
@@ -26,8 +29,8 @@ steps:
     internalRestoreArgs=
     if [ '$(dn-bot-dnceng-artifact-feeds-rw)' != '$''(dn-bot-dnceng-artifact-feeds-rw)' ]; then
       # Temporarily work around https://github.com/dotnet/arcade/issues/7709
-      chmod +x $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh
-      $(Build.SourcesDirectory)/eng/common/SetupNugetSources.sh $(Build.SourcesDirectory)/NuGet.config $(dn-bot-dnceng-artifact-feeds-rw)
+      chmod +x $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.sh
+      $(System.DefaultWorkingDirectory)/eng/common/SetupNugetSources.sh $(System.DefaultWorkingDirectory)/NuGet.config $(dn-bot-dnceng-artifact-feeds-rw)
       internalRestoreArgs='/p:CopyWipIntoInnerSourceBuildRepo=true'
 
       # The 'Copy WIP' feature of source build uses git stash to apply changes from the original repo.
@@ -101,7 +104,7 @@ steps:
 - task: CopyFiles@2
   displayName: Prepare BuildLogs staging directory
   inputs:
-    SourceFolder: '$(Build.SourcesDirectory)'
+    SourceFolder: '$(System.DefaultWorkingDirectory)'
     Contents: |
       **/*.log
       **/*.binlog
@@ -126,4 +129,7 @@ steps:
 - task: ComponentGovernanceComponentDetection@0
   displayName: Component Detection (Exclude upstream cache)
   inputs:
-    ignoreDirectories: '$(Build.SourcesDirectory)/artifacts/source-build/self/src/artifacts/obj/source-built-upstream-cache'
+    ${{ if eq(length(parameters.cgIgnoreDirectories), 0) }}:
+      ignoreDirectories: '$(System.DefaultWorkingDirectory)/artifacts/source-build/self/src/artifacts/obj/source-built-upstream-cache'
+    ${{ else }}:
+      ignoreDirectories: ${{ join(',', parameters.cgIgnoreDirectories) }}
