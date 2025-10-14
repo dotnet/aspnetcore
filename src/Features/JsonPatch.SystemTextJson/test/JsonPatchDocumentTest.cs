@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.JsonPatch.SystemTextJson;
 
@@ -22,11 +21,14 @@ public class JsonPatchDocumentTest
         var patchDocument = new JsonPatchDocument();
 
         // Act
-        var exception = Assert.Throws<JsonPatchException>(() => { patchDocument.Add("//NewInt", 1); });
+        var exception = Assert.Throws<JsonPatchException>(() =>
+        {
+            patchDocument.Add("//NewInt", 1);
+        });
 
         // Assert
         Assert.Equal(
-            "The provided string '//NewInt' is an invalid path.",
+           "The provided string '//NewInt' is an invalid path.",
             exception.Message);
     }
 
@@ -37,11 +39,14 @@ public class JsonPatchDocumentTest
         var patchDocument = new JsonPatchDocument();
 
         // Act
-        var exception = Assert.Throws<JsonPatchException>(() => { patchDocument.Add("NewInt//", 1); });
+        var exception = Assert.Throws<JsonPatchException>(() =>
+        {
+            patchDocument.Add("NewInt//", 1);
+        });
 
         // Assert
         Assert.Equal(
-            "The provided string 'NewInt//' is an invalid path.",
+           "The provided string 'NewInt//' is an invalid path.",
             exception.Message);
     }
 
@@ -49,7 +54,11 @@ public class JsonPatchDocumentTest
     public void NonGenericPatchDocToGenericMustSerialize()
     {
         // Arrange
-        var targetObject = new SimpleObject() { StringProperty = "A", AnotherStringProperty = "B" };
+        var targetObject = new SimpleObject()
+        {
+            StringProperty = "A",
+            AnotherStringProperty = "B"
+        };
 
         var patchDocument = new JsonPatchDocument();
         patchDocument.Copy("StringProperty", "AnotherStringProperty");
@@ -103,7 +112,11 @@ public class JsonPatchDocumentTest
     public void GenericPatchDocToNonGenericMustSerialize()
     {
         // Arrange
-        var targetObject = new SimpleObject() { StringProperty = "A", AnotherStringProperty = "B" };
+        var targetObject = new SimpleObject()
+        {
+            StringProperty = "A",
+            AnotherStringProperty = "B"
+        };
 
         var patchDocTyped = new JsonPatchDocument<SimpleObject>();
         patchDocTyped.Copy(o => o.StringProperty, o => o.AnotherStringProperty);
@@ -189,31 +202,14 @@ public class JsonPatchDocumentTest
     }
 
     [Fact]
-    public void Serialization_ShouldExcludeFrom_WhenNullAndNotMoveOrCopy()
-    {
-        // Arrange
-        JsonPatchDocument patchDocument = new();
-        patchDocument.Add("/a/b/c", "foo");
-        patchDocument.Remove("/x/y/z");
-        patchDocument.Replace("/d/e", "bar");
-        patchDocument.Test("/f/e", "t1");
-
-        var json = JsonSerializer.Serialize(patchDocument);
-        Console.WriteLine(json);
-
-        // Assert
-        var expectedJson = """
-        [{"value":"foo","path":"/a/b/c","op":"add"},{"value":null,"path":"/x/y/z","op":"remove"},
-        { "value":"bar","path":"/d/e","op":"replace"},{ "value":"t1","path":"/f/e","op":"test"}]
-        """;
-        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedJson), JsonNode.Parse(json)));
-    }
-
-    [Fact]
     public void Deserialization_RespectsNamingPolicy()
     {
         // Arrange
-        var childToAdd = new SimpleObject { GuidValue = Guid.NewGuid(), StringProperty = "some test data" };
+        var childToAdd = new SimpleObject
+        {
+            GuidValue = Guid.NewGuid(),
+            StringProperty = "some test data"
+        };
 
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
@@ -233,7 +229,10 @@ public class JsonPatchDocumentTest
         docSuccess.ApplyTo(getTestObject());
 
         // The following call should fail
-        Assert.Throws<JsonPatchException>(() => { docFail.ApplyTo(getTestObject()); });
+        Assert.Throws<JsonPatchException>(() =>
+        {
+            docFail.ApplyTo(getTestObject());
+        });
     }
 
     private static JsonPatchDocument<SimpleObject> DeserializePatchDocumentWithNamingPolicy(string json, JsonNamingPolicy policy)
@@ -247,9 +246,34 @@ public class JsonPatchDocumentTest
     private string GeneratePatchDocumentJson(SimpleObject toAdd, JsonSerializerOptions jsonSerializerOptions)
     {
         var document = new JsonPatchDocument<SimpleObject>();
-        var operation = new Operation<SimpleObject> { op = "add", path = "/simpleObjectList/-", value = toAdd };
+        var operation = new Operation<SimpleObject>
+        {
+            op = "add",
+            path = "/simpleObjectList/-",
+            value = toAdd
+        };
         document.Operations.Add(operation);
 
         return JsonSerializer.Serialize<JsonPatchDocument<SimpleObject>>(document, jsonSerializerOptions);
+    }
+
+    [Fact]
+    public void Serialization_ShouldExcludeFrom_WhenNullAndNotMoveOrCopy()
+    {
+        // Arrange
+        JsonPatchDocument patchDocument = new();
+        patchDocument.Add("/a/b/c", "foo");
+        patchDocument.Remove("/x/y/z");
+        patchDocument.Replace("/d/e", "bar");
+        patchDocument.Test("/f/e", "t1");
+
+        var json = JsonSerializer.Serialize(patchDocument);
+
+        // Assert
+        var expectedJson = """
+        [{"value":"foo","path":"/a/b/c","op":"add"},{"value":null,"path":"/x/y/z","op":"remove"},
+        { "value":"bar","path":"/d/e","op":"replace"},{ "value":"t1","path":"/f/e","op":"test"}]
+        """;
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedJson), JsonNode.Parse(json)));
     }
 }
