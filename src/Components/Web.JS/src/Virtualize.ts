@@ -94,8 +94,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       // scrolling glitches.
       rangeBetweenSpacers.setStartAfter(spacerBefore);
       rangeBetweenSpacers.setEndBefore(spacerAfter);
-      const rangeRect = rangeBetweenSpacers.getBoundingClientRect();
-      const spacerSeparation = rangeRect.height;
+      const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height;
       const containerSize = entry.rootBounds?.height;
 
       // Accumulate scale factors from all parent elements as they multiply together
@@ -107,7 +106,7 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         const computedStyle = getComputedStyle(element);
 
         // Check for zoom property (applies uniform scaling)
-        if (computedStyle.zoom && computedStyle.zoom !== 'normal' && computedStyle.zoom !== '1') {
+        if (computedStyle.zoom && computedStyle.zoom !== '1') {
           scaleFactor *= parseFloat(computedStyle.zoom);
         }
 
@@ -121,12 +120,10 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
 
         // Check for transform property (matrix form)
         if (computedStyle.transform && computedStyle.transform !== 'none') {
-          // A 2D transform matrix has 6 values: matrix(scaleX, skewY, skewX, scaleY, translateX, translateY)
-          const match = computedStyle.transform.match(/matrix\([^,]+,\s*[^,]+,\s*[^,]+,\s*([^,]+)/);
-          if (match) {
-            const scaleY = parseFloat(match[1]);
-            scaleFactor *= scaleY;
-          }
+          // Parse the transform matrix using DOMMatrix to extract scaleY
+          const matrix = new DOMMatrix(computedStyle.transform);
+          // For vertical scrolling, we only need the Y-axis scale factor (d/m22)
+          scaleFactor *= matrix.d;
         }
         element = element.parentElement;
       }
