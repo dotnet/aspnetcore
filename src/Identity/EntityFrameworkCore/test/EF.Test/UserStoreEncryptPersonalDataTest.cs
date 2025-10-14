@@ -184,6 +184,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
             services.AddIdentity<CustomUser, IdentityRole>(options =>
             {
                 options.Stores.ProtectPersonalData = protect;
+                options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
             })
                 .AddEntityFrameworkStores<TContext>()
                 .AddPersonalDataProtection<InkProtector, DefaultKeyRing>();
@@ -281,6 +282,7 @@ public class ProtectedUserStoreTest : SqlStoreTestBase<IdentityUser, IdentityRol
             services.AddIdentity<CustomUser, IdentityRole>(options =>
             {
                 options.Stores.ProtectPersonalData = true;
+                options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
             })
                 .AddEntityFrameworkStores<IdentityDbContext<CustomUser>>()
                 .AddPersonalDataProtection<InkProtector, DefaultKeyRing>();
