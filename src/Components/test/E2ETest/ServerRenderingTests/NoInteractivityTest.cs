@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Net.Http;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
@@ -123,6 +124,25 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         string streamingPath = streaming ? "-streaming" : "";
         Navigate($"{ServerPathBase}/reexecution/not-existing-page-ssr{streamingPath}");
         AssertReExecutionPageRendered();
+    }
+
+    [Fact]
+    public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404()
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+
+        // using query for controlling router parameters does not work in re-execution scenario, we have to rely on other communication channel
+        const string useOnNavigateAsyncSwitch = "Components.TestServer.RazorComponents.UseOnNavigateAsync";
+        AppContext.SetSwitch(useOnNavigateAsyncSwitch, true);
+        try
+        {
+            Navigate($"{ServerPathBase}/reexecution/not-existing-page");
+            AssertReExecutionPageRendered();
+        }
+        finally
+        {
+            AppContext.SetSwitch(useOnNavigateAsyncSwitch, false);
+        }
     }
 
     private void AssertReExecutionPageRendered() =>
