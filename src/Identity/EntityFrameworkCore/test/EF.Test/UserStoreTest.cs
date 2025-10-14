@@ -79,7 +79,15 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     [Fact]
     public async Task SqlUserStoreMethodsThrowWhenDisposedTest()
     {
-        var store = new UserStore(new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().Options));
+        var services = new ServiceCollection();
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        });
+        var options = new DbContextOptionsBuilder<IdentityDbContext>()
+            .UseApplicationServiceProvider(services.BuildServiceProvider())
+            .Options;
+        var store = new UserStore(new IdentityDbContext(options));
         store.Dispose();
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddClaimsAsync(null, null));
         await Assert.ThrowsAsync<ObjectDisposedException>(async () => await store.AddLoginAsync(null, null));
@@ -113,7 +121,15 @@ public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, Identit
     public async Task UserStorePublicNullCheckTest()
     {
         Assert.Throws<ArgumentNullException>("context", () => new UserStore(null));
-        var store = new UserStore(new IdentityDbContext(new DbContextOptionsBuilder<IdentityDbContext>().Options));
+        var services = new ServiceCollection();
+        services.Configure<IdentityOptions>(options =>
+        {
+            options.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        });
+        var options = new DbContextOptionsBuilder<IdentityDbContext>()
+            .UseApplicationServiceProvider(services.BuildServiceProvider())
+            .Options;
+        var store = new UserStore(new IdentityDbContext(options));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserIdAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.GetUserNameAsync(null));
         await Assert.ThrowsAsync<ArgumentNullException>("user", async () => await store.SetUserNameAsync(null, null));
