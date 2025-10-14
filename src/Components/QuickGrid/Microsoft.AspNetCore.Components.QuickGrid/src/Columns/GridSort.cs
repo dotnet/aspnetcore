@@ -15,6 +15,7 @@ public sealed class GridSort<TGridItem>
     private const string ExpressionNotRepresentableMessage = "The supplied expression can't be represented as a property name for sorting. Only simple member expressions, such as @(x => x.SomeProperty), can be converted to property names.";
 
     private readonly Func<IQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> _first;
+    private readonly Func<IOrderedQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> _thenFirst;
     private List<Func<IOrderedQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>>>? _then;
 
     private (LambdaExpression, bool) _firstExpression;
@@ -23,10 +24,14 @@ public sealed class GridSort<TGridItem>
     private IReadOnlyCollection<SortedProperty>? _cachedPropertyListAscending;
     private IReadOnlyCollection<SortedProperty>? _cachedPropertyListDescending;
 
-    internal GridSort(Func<IQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> first, (LambdaExpression, bool) firstExpression)
+    internal GridSort(
+        Func<IQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> first, 
+        (LambdaExpression, bool) firstExpression,
+        Func<IOrderedQueryable<TGridItem>, bool, IOrderedQueryable<TGridItem>> thenFirst)
     {
         _first = first;
         _firstExpression = firstExpression;
+        _thenFirst = thenFirst;
         _then = default;
         _thenExpressions = default;
     }
@@ -39,7 +44,8 @@ public sealed class GridSort<TGridItem>
     /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
     public static GridSort<TGridItem> ByAscending<U>(Expression<Func<TGridItem, U>> expression)
         => new((queryable, asc) => asc ? queryable.OrderBy(expression) : queryable.OrderByDescending(expression),
-            (expression, true));
+            (expression, true),
+            (queryable, asc) => asc ? queryable.ThenBy(expression) : queryable.ThenByDescending(expression));
 
     /// <summary>
     /// Produces a <see cref="GridSort{T}"/> instance that sorts according to the specified <paramref name="expression"/>, descending.
@@ -49,7 +55,8 @@ public sealed class GridSort<TGridItem>
     /// <returns>A <see cref="GridSort{T}"/> instance representing the specified sorting rule.</returns>
     public static GridSort<TGridItem> ByDescending<U>(Expression<Func<TGridItem, U>> expression)
         => new((queryable, asc) => asc ? queryable.OrderByDescending(expression) : queryable.OrderBy(expression),
-            (expression, false));
+            (expression, false),
+            (queryable, asc) => asc ? queryable.ThenByDescending(expression) : queryable.ThenBy(expression));
 
     /// <summary>
     /// Updates a <see cref="GridSort{T}"/> instance by appending a further sorting rule.
@@ -85,9 +92,9 @@ public sealed class GridSort<TGridItem>
         return this;
     }
 
-    internal IOrderedQueryable<TGridItem> Apply(IQueryable<TGridItem> queryable, bool ascending)
+    internal IOrderedQueryable<TGridItem> Apply(IQueryable<TGridItem> queryable, bool ascending, bool firstColumn)
     {
-        var orderedQueryable = _first(queryable, ascending);
+        var orderedQueryable = ApplyCore(queryable, ascending, firstColumn);
 
         if (_then is not null)
         {
@@ -98,6 +105,21 @@ public sealed class GridSort<TGridItem>
         }
 
         return orderedQueryable;
+    }
+
+    private IOrderedQueryable<TGridItem> ApplyCore(IQueryable<TGridItem> queryable, bool ascending, bool firstColumn)
+    {
+        if (firstColumn)
+        {
+            return _first(queryable, ascending);
+        }
+
+        if (queryable is not IOrderedQueryable<TGridItem> src)
+        {
+            throw new InvalidOperationException($"Expected {typeof(IOrderedQueryable<TGridItem>)} since this is not the first sort column.");
+        }
+
+        return _thenFirst(src, ascending);
     }
 
     internal IReadOnlyCollection<SortedProperty> ToPropertyList(bool ascending)
