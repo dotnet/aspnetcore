@@ -274,6 +274,8 @@ public class JsonPatchDocumentTest
         [{"value":"foo","path":"/a/b/c","op":"add"},{"value":null,"path":"/x/y/z","op":"remove"},
         { "value":"bar","path":"/d/e","op":"replace"},{ "value":"t1","path":"/f/e","op":"test"}]
         """;
+
+        // Act
         Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedJson), JsonNode.Parse(json)));
     }
 }
