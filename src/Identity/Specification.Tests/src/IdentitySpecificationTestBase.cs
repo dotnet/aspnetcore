@@ -610,6 +610,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
     /// Test.
     /// </summary>
     /// <returns>Task</returns>
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/64055")]
     [Fact]
     public async Task CanAddAndRetrievePasskey()
     {
@@ -649,6 +650,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
     /// Test.
     /// </summary>
     /// <returns>Task</returns>
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/64055")]
     [Fact]
     public async Task CanRemovePasskey()
     {
@@ -687,6 +689,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
     /// Test.
     /// </summary>
     /// <returns>Task</returns>
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/64055")]
     [Fact]
     public async Task CanAddMultiplePasskeys()
     {
@@ -743,6 +746,7 @@ public abstract class IdentitySpecificationTestBase<TUser, TRole, TKey> : UserMa
     /// Test.
     /// </summary>
     /// <returns>Task</returns>
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/64055")]
     [Fact]
     public async Task UpdatingPasskeyChangesOnlyMutableFields()
     {
