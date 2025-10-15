@@ -11,7 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Vorherige Version"/>
   <String Id="HelpHeader" Value="Setuphilfe"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]]: Installiert, repariert, deinstalliert oder erstellt eine vollständige lokale Kopie des Pakets im Verzeichnis. Standardmäßig wird eine Installation durchgeführt. /passive | /quiet: Zeigt eine minimale Benutzeroberfläche ohne Eingabeaufforderungen oder weder eine Benutzeroberfläche noch Eingabeaufforderungen an. Standardmäßig werden die Benutzeroberfläche und alle Eingabeaufforderungen angezeigt. /norestart: Unterdrückt alle Neustartversuche. Standardmäßig wird die Benutzeroberfläche vor dem Neustart aufgefordert. /log log.txt: Protokolliert eine bestimmte Datei. Standardmäßig wird die Protokolldatei in %TEMP% erstellt."/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]]: Installiert, repariert, deinstalliert oder erstellt eine vollständige lokale Kopie des Pakets im Verzeichnis. Standardmäßig wird eine Installation durchgeführt.
+
+/passive | /quiet: Zeigt eine minimale Benutzeroberfläche ohne Prompts oder keine Benutzeroberfläche und keine Prompts an. Standardmäßig werden die Benutzeroberfläche und alle Prompts angezeigt.
+
+/norestart: Unterdrückt alle Neustartversuche. Standardmäßig wird die Benutzeroberfläche vor dem Neustart aufgefordert.
+
+/log &lt;LOG_FILE&gt;: Protokolliert eine bestimmte Datei. Standardmäßig wird die Protokolldatei in %TEMP% erstellt."/>
   <String Id="HelpCloseButton" Value="&amp;Schließen"/>
   <String Id="InstallAcceptCheckbox" Value="Ich &amp;stimme den Bedingungen des Lizenzvertrags zu"/>
   <String Id="InstallInstallButton" Value="&amp;Installieren"/>
@@ -61,6 +67,9 @@
   <String Id="FilesInUseExitButton" Value="&amp;Beenden"/>
   <String Id="FilesInUseTitle" Value="Dateien in Verwendung"/>
   <String Id="LicenseAssent" Value="Durch Klicken auf „Installieren“ stimmen Sie den nachstehenden Bedingungen zu:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Datenschutzerklärung&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Lizenzierungsinformationen für .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Telemetriesammlung und Kündigen&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   

@@ -11,7 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Version précédente"/>
   <String Id="HelpHeader" Value="Aide sur l’installation"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] – installe, répare, désinstalle ou crée une copie locale complète du lot dans le répertoire. Installer est la valeur par défaut. /passive | /quiet – affiche une interface utilisateur minimale sans invites ou n’affiche ni interface utilisateur, ni invites. Par défaut, l’interface utilisateur et toutes les invites sont affichées. /norestart : supprime toutes les tentatives de redémarrage. Par défaut, l’interface utilisateur vous invite à redémarrer. /log log.txt : journalise un fichier spécifique. Par défaut, un fichier journal est créé dans %TEMP%."/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] : installe, répare, désinstalle ou crée une copie locale complète du lot dans le répertoire. L’installation constitue la valeur par défaut.
+
+/passive | /quiet : permet d’afficher une interface utilisateur minimale sans aucune requête ou de n’afficher ni interface utilisateur, ni requêtes. Par défaut, l’interface utilisateur et toutes les requêtes sont affichées.
+
+/norestart : permet de supprimer toutes les tentatives de redémarrage. Par défaut, l’interface utilisateur vous invite à redémarrer.
+
+/log &lt;LOG_FILE&gt; : permet d’enregistrer dans un fichier spécifique. Par défaut, un fichier journal est créé dans %TEMP%."/>
   <String Id="HelpCloseButton" Value="&amp;Fermer"/>
   <String Id="InstallAcceptCheckbox" Value="J’&amp;accepte les conditions générales de la licence"/>
   <String Id="InstallInstallButton" Value="&amp;Installer"/>
@@ -61,6 +67,9 @@
   <String Id="FilesInUseExitButton" Value="Q&amp;uitter"/>
   <String Id="FilesInUseTitle" Value="Fichiers en cours d’utilisation"/>
   <String Id="LicenseAssent" Value="En cliquant sur Installer, vous acceptez les conditions suivantes :"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;Déclaration de confidentialité&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;Informations de licence pour .NET&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;Collecte de données de télémétrie et option de refus&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   

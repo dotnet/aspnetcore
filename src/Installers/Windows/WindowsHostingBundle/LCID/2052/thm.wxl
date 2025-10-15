@@ -11,7 +11,13 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="上一个版本"/>
   <String Id="HelpHeader" Value="安装帮助"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]目录[\]] - 在目录中安装、修复、卸载或创建捆绑包的完整本地副本。Install 为默认值。/passive | /quiet - 在无提示的情况下显示最小 UI 或不显示 UI 和提示。默认情况下，将显示 UI 和所有提示。/norestart - 禁止任何重启尝试。默认情况下，UI 将在重启前提示。/log log.txt - 记录到特定文件。默认在 %TEMP% 中创建日志文件。"/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]目录[\]] - 在目录中安装、修复、卸载或创建捆绑包的完整本地副本。Install 为默认值。
+
+/passive | /quiet - 在无提示的情况下显示最小 UI 或不显示 UI 和提示。默认情况下，将显示 UI 和所有提示。
+
+/norestart - 抑制任何重启尝试。默认情况下，UI 将在重启前提示。
+
+/log &lt;LOG_FILE&gt; - 记录到特定文件。默认在 %TEMP% 中创建日志文件。"/>
   <String Id="HelpCloseButton" Value="关闭(&amp;C)"/>
   <String Id="InstallAcceptCheckbox" Value="我同意(&amp;A)许可条款和条件"/>
   <String Id="InstallInstallButton" Value="安装(&amp;I)"/>
@@ -61,6 +67,9 @@
   <String Id="FilesInUseExitButton" Value="退出(&amp;X)"/>
   <String Id="FilesInUseTitle" Value="文件正在使用"/>
   <String Id="LicenseAssent" Value="单击“安装”即表示你同意以下条款:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;隐私声明&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET 的许可信息&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;遥测收集和选择退出&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   
