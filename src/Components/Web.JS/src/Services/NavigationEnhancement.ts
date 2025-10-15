@@ -3,7 +3,7 @@
 
 import { synchronizeDomContent } from '../Rendering/DomMerging/DomSync';
 import { attachProgrammaticEnhancedNavigationHandler, handleClickForNavigationInterception, hasInteractiveRouter, isForSamePath, notifyEnhancedNavigationListeners, performScrollToElementOnTheSamePage, isSamePageWithHash } from './NavigationUtils';
-import { resetScrollAfterNextBatch, resetScrollIfNeeded } from '../Rendering/Renderer';
+import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
 
 /*
 In effect, we have two separate client-side navigation mechanisms:
@@ -109,7 +109,6 @@ function onDocumentClick(event: MouseEvent) {
       performEnhancedPageLoad(absoluteInternalHref, /* interceptedLink */ true);
       if (!isSelfNavigation) {
         resetScrollAfterNextBatch();
-        resetScrollIfNeeded();
       }
     }
   });
