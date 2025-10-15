@@ -27,7 +27,8 @@
 
     private Type? NotFoundPageType { get; set; }
     private NavigationManager _navigationManager = default!;
-    private bool ShouldDelayOnNavigateAsync => string.Equals(UseOnNavigateAsync, "true", StringComparison.OrdinalIgnoreCase);
+    private bool ShouldDelayOnNavigateAsync
+        => bool.TryParse(UseOnNavigateAsync, out var result) && result;
 
     [Inject]
     private NavigationManager NavigationManager
