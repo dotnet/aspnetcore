@@ -1,3 +1,6 @@
 #nullable enable
 Microsoft.AspNetCore.Builder.ValidationEndpointConventionBuilderExtensions
+Microsoft.AspNetCore.Routing.Constraints.NotRouteConstraint
+Microsoft.AspNetCore.Routing.Constraints.NotRouteConstraint.Match(Microsoft.AspNetCore.Http.HttpContext? httpContext, Microsoft.AspNetCore.Routing.IRouter? route, string! routeKey, Microsoft.AspNetCore.Routing.RouteValueDictionary! values, Microsoft.AspNetCore.Routing.RouteDirection routeDirection) -> bool
+Microsoft.AspNetCore.Routing.Constraints.NotRouteConstraint.NotRouteConstraint(string! constraints) -> void
 static Microsoft.AspNetCore.Builder.ValidationEndpointConventionBuilderExtensions.DisableValidation<TBuilder>(this TBuilder builder) -> TBuilder
