@@ -69,6 +69,9 @@
   <String Id="LicenseAssent" Value="설치를 클릭하면 다음 사용 약관에 동의하는 것입니다."/>
   <String Id="WelcomeHeaderMessage">ASP.NET Runtime</String>
   <String Id="WelcomeDescription">The ASP.NET Runtime is used to run ASP.NET applications, on your Windows computer. ASP.NET is open source, cross platform, and supported by Microsoft. We hope you enjoy it!</String>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;개인정보처리방침&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET에 대한 라이선싱 정보&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;원격 분석 수집 및 옵트아웃&lt;/A&gt;"/>
 
   
   <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;사용 조건&lt;/a&gt;과 &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;개인정보 처리방침&lt;/a&gt;."/>
