@@ -221,13 +221,12 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     internal virtual void Refresh(bool isNavigationIntercepted)
     {
         var endpointRouteData = RoutingStateProvider?.RouteData;
-        var navigationInProgress = _previousOnNavigateTask.Status != TaskStatus.RanToCompletion;
 
         // If an `OnNavigateAsync` task is currently in progress, then wait
         // for it to complete before rendering. Note: because _previousOnNavigateTask
         // is initialized to a CompletedTask on initialization, this will still
         // allow first-render to complete successfully.
-        if (navigationInProgress)
+        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion)
         {
             if (endpointRouteData is null)
             {
