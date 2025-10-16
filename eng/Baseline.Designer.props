@@ -256,15 +256,6 @@
     <BaselinePackageReference Include="Microsoft.Extensions.FileProviders.Composite" Version="[9.0.0, )" />
     <BaselinePackageReference Include="Microsoft.Extensions.Logging" Version="[9.0.0, )" />
   </ItemGroup>
-  <!-- Package: Microsoft.AspNetCore.ConcurrencyLimiter-->
-  <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' ">
-    <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
-  </PropertyGroup>
-  <ItemGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.ConcurrencyLimiter' AND ('$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' OR '$(TargetFramework)' == 'net9.0') ">
-    <BaselinePackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="[9.0.0, )" />
-    <BaselinePackageReference Include="Microsoft.Extensions.Options" Version="[9.0.0, )" />
-    <BaselinePackageReference Include="System.Threading.RateLimiting" Version="[9.0.0, )" />
-  </ItemGroup>
   <!-- Package: Microsoft.AspNetCore.Connections.Abstractions-->
   <PropertyGroup Condition=" '$(PackageId)' == 'Microsoft.AspNetCore.Connections.Abstractions' ">
     <BaselinePackageVersion>9.0.0</BaselinePackageVersion>
