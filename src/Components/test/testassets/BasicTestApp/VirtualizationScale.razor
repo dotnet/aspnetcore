@@ -1,13 +1,18 @@
 ﻿<div style="scale: @ScaleX @ScaleY; transform-origin: top left;">
     <div id="virtualize" style="height: 200px; overflow: auto">
-        <Virtualize ItemsProvider="@itemsProvider">
-            <tr class="person"><span>@context.Name</span></tr>
-        </Virtualize>
+        <table>
+            <tbody>
+                <Virtualize ItemsProvider="@itemsProvider">
+                    <tr class="person"><span>@context.Id</span></tr>
+            </Virtualize>
+            </tbody>
+        </table>
     </div>
 </div>
 
-<input type="number" @bind="ScaleX" />
-<input type="number" @bind="ScaleY" />
+<input type="number" @bind="ScaleX" id="scale-x-input" />
+<input type="number" @bind="ScaleY" id="scale-y-input" />
+<button id="btn">Click</button>
 
 @code {
     internal class Person
@@ -16,8 +21,8 @@
         public string Name { get; set; } = string.Empty;
     }
 
-    public double ScaleX { get; set; } = 1.0;
-    public double ScaleY { get; set; } = 1.0;
+    public double? ScaleX { get; set; } = 1.0;
+    public double? ScaleY { get; set; } = 1.0;
 
     private ItemsProviderDelegate<Person> itemsProvider = default!;
 

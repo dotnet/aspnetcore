@@ -113,16 +113,13 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
         // Check for scale property (can have separate X/Y values)
         if (computedStyle.scale && computedStyle.scale !== 'none' && computedStyle.scale !== '1') {
           const parts = computedStyle.scale.split(' ');
-          const scaleX = parseFloat(parts[0]);
-          const scaleY = parts.length > 1 ? parseFloat(parts[1]) : scaleX;
+          const scaleY = parts.length > 1 ? parseFloat(parts[1]) : parseFloat(parts[0]);
           scaleFactor *= scaleY; // Use vertical scale for vertical scrolling
         }
 
         // Check for transform property (matrix form)
         if (computedStyle.transform && computedStyle.transform !== 'none') {
-          // Parse the transform matrix using DOMMatrix to extract scaleY
           const matrix = new DOMMatrix(computedStyle.transform);
-          // For vertical scrolling, we only need the Y-axis scale factor (d/m22)
           scaleFactor *= matrix.d;
         }
         element = element.parentElement;
