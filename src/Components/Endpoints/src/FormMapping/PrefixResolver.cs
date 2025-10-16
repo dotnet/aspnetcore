@@ -38,7 +38,7 @@ internal readonly struct PrefixResolver : IDisposable
     {
         if (_sortedKeys != null)
         {
-            ArrayPool<FormKey>.Shared.Return(_sortedKeys);
+            ArrayPool<FormKey>.Shared.Return(_sortedKeys, _length);
         }
     }
 
