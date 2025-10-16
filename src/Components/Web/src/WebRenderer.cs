@@ -52,9 +52,6 @@ public abstract class WebRenderer : Renderer
     protected int RendererId
     {
         get => _rendererId;
-
-        [Obsolete($"The renderer ID can be assigned by overriding '{nameof(GetWebRendererId)}'.")]
-        init { /* No-op */ }
     }
 
     /// <summary>

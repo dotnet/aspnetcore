@@ -1,5 +1,7 @@
 #nullable enable
 *REMOVED*Microsoft.AspNetCore.Components.ResourceAsset.ResourceAsset(string! url, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.ResourceAssetProperty!>? properties) -> void
+*REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.get -> bool
+*REMOVED*Microsoft.AspNetCore.Components.Routing.Router.PreferExactMatches.set -> void
 Microsoft.AspNetCore.Components.Infrastructure.ComponentStatePersistenceManager.RestoreStateAsync(Microsoft.AspNetCore.Components.IPersistentComponentStateStore! store, Microsoft.AspNetCore.Components.RestoreContext! context) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.PersistentComponentState.RegisterOnRestoring(System.Action! callback, Microsoft.AspNetCore.Components.RestoreOptions options) -> Microsoft.AspNetCore.Components.RestoringComponentStateSubscription
 Microsoft.AspNetCore.Components.PersistentStateAttribute.AllowUpdates.get -> bool
