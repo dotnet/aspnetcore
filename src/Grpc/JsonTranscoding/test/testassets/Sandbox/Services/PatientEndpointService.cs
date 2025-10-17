@@ -1,4 +1,8 @@
 using static Server.Startup;
+using Microsoft.OpenApi.Any;
+using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Writers;
+using Sandbox.Services.Metadata;
 
 namespace Sandbox.Services
 {
@@ -28,8 +32,7 @@ namespace Sandbox.Services
             {
                 patients.Add(patient);
                 return Results.Created($"/patients/{patient.id}", patient);
-            })
-              .WithMetadata(new PathItemTypeAttribute(PathItemType.Standard));
+            }).WithMetadata(new PathItemTypeAttribute(PathItemType.Standard));
 
             //Webhook endpoint
 
@@ -49,19 +52,7 @@ namespace Sandbox.Services
         }
 
         public record Patient(int id, string Name, string Location, int age);
-
-        public enum PathItemType
-        {
-            Standard,
-            Webhook
-        }
-
-        [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate)]
-        public class PathItemTypeAttribute : Attribute
-        {
-            public PathItemType Type { get; }
-            public PathItemTypeAttribute(PathItemType type) => Type = type;
-        }
+        
     }
 
       static class CustomOpenApiDocumentGenerator
@@ -101,7 +92,7 @@ namespace Sandbox.Services
                     var type = endpoint.Metadata.OfType<PathItemTypeAttribute>().FirstOrDefault()?.Type
                                ?? PathItemType.Standard;
 
-                    var paths = documentGroups[type];
+                    var paths = documentGroups[(PathItemType)type!];
 
                     if (!paths.TryGetValue(routePattern, out var pathItem))
                     {
