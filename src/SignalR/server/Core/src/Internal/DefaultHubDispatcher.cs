@@ -181,17 +181,17 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 return ProcessInvocation(connection, streamInvocationMessage, isStreamResponse: true);
 
             case CancelInvocationMessage cancelInvocationMessage:
-                // Check if there is an associated active stream and cancel it if it exists.
-                // The cts will be removed when the streaming method completes executing
+                // Check if there is an associated active invocation or stream and cancel it if it exists.
+                // The cts will be removed when the hub method completes executing
                 if (connection.ActiveRequestCancellationSources.TryGetValue(cancelInvocationMessage.InvocationId!, out var cts))
                 {
-                    Log.CancelStream(_logger, cancelInvocationMessage.InvocationId!);
+                    Log.CancelInvocation(_logger, cancelInvocationMessage.InvocationId!);
                     cts.Cancel();
                 }
                 else
                 {
-                    // Stream can be canceled on the server while client is canceling stream.
-                    Log.UnexpectedCancel(_logger);
+                    // Invocation can be canceled on the server while client is canceling invocation.
+                    Log.UnexpectedCancel(_logger, cancelInvocationMessage.InvocationId!);
                 }
                 break;
 
