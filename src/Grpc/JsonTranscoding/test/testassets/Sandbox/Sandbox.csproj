@@ -1,6 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework> 
   </PropertyGroup>
 
   <ItemGroup>
@@ -8,7 +8,10 @@
     <Protobuf Include="transcoding.proto" GrpcServices="Server" />
 
     <Reference Include="Grpc.AspNetCore" />
-    <Reference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding" />
-    <Reference Include="Microsoft.AspNetCore.Grpc.Swagger" />
+    <Reference Include="Microsoft.AspNetCore.Grpc.JsonTranscoding">      
+    </Reference>
+    <Reference Include="Microsoft.AspNetCore.Grpc.Swagger" >
+    </Reference>     
   </ItemGroup>
 </Project>
+ 
