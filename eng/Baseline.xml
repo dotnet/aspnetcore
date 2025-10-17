@@ -4,7 +4,7 @@ This file contains a list of all the packages and their versions which were rele
 build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.3.5">
+<Baseline Version="2.3.6">
   <Package Id="dotnet-dev-certs" Version="2.1.1" />
   <Package Id="dotnet-sql-cache" Version="2.1.1" />
   <Package Id="dotnet-user-secrets" Version="2.1.1" />
@@ -99,7 +99,7 @@ build of ASP.NET Core 2.1.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Routing" Version="2.3.0" />
   <Package Id="Microsoft.AspNetCore.Server.HttpSys" Version="2.3.0" />
   <Package Id="Microsoft.AspNetCore.Server.IISIntegration" Version="2.3.0" />
-  <Package Id="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.3.0" />
+  <Package Id="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.3.6" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Https" Version="2.3.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Version="2.3.0" />
   <Package Id="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Version="2.3.0" />
