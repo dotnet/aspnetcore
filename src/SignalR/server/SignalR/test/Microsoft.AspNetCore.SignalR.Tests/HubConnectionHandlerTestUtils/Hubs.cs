@@ -1022,6 +1022,14 @@ public class LongRunningHub : Hub
         return 12;
     }
 
+    public async Task<int> CancelableInvocation(CancellationToken token)
+    {
+        _tcsService.StartedMethod.SetResult(null);
+        await token.WaitForCancellationAsync();
+        _tcsService.EndMethod.SetResult(null);
+        return 42;
+    }
+
     public async Task<ChannelReader<string>> LongRunningStream()
     {
         _tcsService.StartedMethod.TrySetResult(null);
