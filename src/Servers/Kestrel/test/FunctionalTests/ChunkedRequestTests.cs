@@ -9,6 +9,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -28,6 +29,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ConnectionAdapters = { new PassThroughConnectionAdapter() }
             }
         };
+
+        [Theory]
+        [InlineData("2;\rxx\r\nxy\r\n0")] // \r in chunk extensions
+        [InlineData("2;\nxx\r\nxy\r\n0")] // \n in chunk extensions
+        public async Task RejectsInvalidChunkExtensions(string invalidChunkLine)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            using (var server = new TestServer(AppChunked, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "Content-Type: text/plain",
+                        "",
+                        invalidChunkLine,
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("2;a=b;b=c\r\nxy\r\n0")] // Multiple chunk extensions
+        [InlineData("2; \r\nxy\r\n0")] // Space in chunk extensions (BWS)
+        [InlineData("2;;;\r\nxy\r\n0")] // Multiple ';' in chunk extensions
+        [InlineData("2;novalue\r\nxy\r\n0")] // Name only chunk extension
+        //[InlineData("2 ;\r\nxy\r\n0")] // Technically allowed per spec, but we never supported it, and no one should be sending it
+        public async Task AllowsValidChunkExtensions(string chunkLine)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            using (var server = new TestServer(AppChunked, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                    "POST / HTTP/1.1",
+                    "Host:",
+                    "Transfer-Encoding: chunked",
+                    "Content-Type: text/plain",
+                    "",
+                    chunkLine,
+                    "",
+                    "");
+                    await connection.Receive(
+                    "HTTP/1.1 200 OK",
+                    $"Date: {testContext.DateHeaderValue}",
+                    "Content-Length: 2",
+                    "",
+                    "xy");
+                }
+            }
+        }
 
         private async Task App(HttpContext httpContext)
         {
@@ -682,6 +745,78 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     var badReqEx = await exTcs.Task.TimeoutAfter(TestConstants.DefaultTimeout);
                     Assert.Equal(RequestRejectionReason.UnexpectedEndOfRequestContent, badReqEx.Reason);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task MultiReadWithInvalidNewlineAcrossReads()
+        {
+            // Inline so that we know when the first connection.Send has been parsed so we can send the next part
+            var testContext = new TestServiceContext(LoggerFactory)
+                { Scheduler = System.IO.Pipelines.PipeScheduler.Inline };
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (var server = new TestServer(async httpContext =>
+            {
+                var readTask = httpContext.Request.Body.CopyToAsync(Stream.Null);
+                tcs.TrySetResult(true);
+                await readTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "1;\r");
+                    await tcs.Task;
+                    await connection.SendAll(
+                        "\r");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task InvalidNewlineInFirstReadWithPartialChunkExtension()
+        {
+            // Inline so that we know when the first connection.Send has been parsed so we can send the next part
+            var testContext = new TestServiceContext(LoggerFactory)
+                { Scheduler = System.IO.Pipelines.PipeScheduler.Inline };
+            var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            using (var server = new TestServer(async httpContext =>
+            {
+                var readTask = httpContext.Request.Body.CopyToAsync(Stream.Null);
+                tcs.TrySetResult(true);
+                await readTask;
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendAll(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "1;\n");
+                    await tcs.Task;
+                    await connection.SendAll(
+                        "t");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 400 Bad Request",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Content-Length: 0",
+                        "",
+                        "");
                 }
             }
         }
