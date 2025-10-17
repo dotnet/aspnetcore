@@ -241,9 +241,9 @@ public class ForwardedHeadersMiddleware
                 if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
                 {
                     // Stop at the first unknown remote IP, but still apply changes processed so far.
-                    if (_logger.IsEnabled(LogLevel.Warning))
+                    if (_logger.IsEnabled(LogLevel.Debug))
                     {
-                        _logger.LogWarning(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
+                        _logger.LogDebug(1, "Unknown proxy: {RemoteIpAndPort}", currentValues.RemoteIpAndPort);
                     }
                     break;
                 }
