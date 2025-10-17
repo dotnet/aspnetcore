@@ -220,17 +220,20 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     internal virtual void Refresh(bool isNavigationIntercepted)
     {
+        // endpointRouterData is populated only in navigations that passed through SSR, including re-executions
+        var endpointRouteData = RoutingStateProvider?.RouteData;
+
         // If an `OnNavigateAsync` task is currently in progress, then wait
         // for it to complete before rendering. Note: because _previousOnNavigateTask
         // is initialized to a CompletedTask on initialization, this will still
         // allow first-render to complete successfully.
-        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion)
+        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion && endpointRouteData is null)
         {
             if (Navigating != null)
             {
                 _renderHandle.Render(Navigating);
+                return;
             }
-            return;
         }
 
         var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute.AsSpan());
@@ -239,7 +242,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         ComponentsActivityHandle activityHandle;
 
         // In order to avoid routing twice we check for RouteData
-        if (RoutingStateProvider?.RouteData is { } endpointRouteData)
+        if (endpointRouteData is not null)
         {
             activityHandle = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
 
