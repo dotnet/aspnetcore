@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     if (currentValues.RemoteIpAndPort != null && checkKnownIps && !CheckKnownAddress(currentValues.RemoteIpAndPort.Address))
                     {
                         // Stop at the first unknown remote IP, but still apply changes processed so far.
-                        _logger.LogWarning(1, $"Unknown proxy: {currentValues.RemoteIpAndPort}");
+                        _logger.LogDebug(1, $"Unknown proxy: {currentValues.RemoteIpAndPort}");
                         break;
                     }
                 }
