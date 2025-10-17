@@ -198,7 +198,7 @@ internal sealed partial class HttpConnectionDispatcher
 
             if (connection.TransportType != HttpTransportType.WebSockets || connection.UseStatefulReconnect)
             {
-                if (!await connection.CancelPreviousPoll(context))
+                if (connection.ApplicationTask is not null && !await connection.CancelPreviousPoll(context))
                 {
                     // Connection closed. It's already set the response status code.
                     return;
@@ -376,6 +376,11 @@ internal sealed partial class HttpConnectionDispatcher
         if (error == null)
         {
             connection = CreateConnection(options, clientProtocolVersion, useStatefulReconnect);
+            if (connection.Status == HttpConnectionStatus.Disposed)
+            {
+                // Happens if the server is shutting down when a new negotiate request comes in
+                error = "The connection was closed before negotiation completed.";
+            }
         }
 
         // Set the Connection ID on the logging scope so that logs from now on will have the

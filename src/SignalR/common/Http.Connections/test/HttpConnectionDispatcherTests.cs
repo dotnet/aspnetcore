@@ -194,6 +194,38 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task NegotiateAfterApplicationStoppingReturnsError()
+    {
+        using (StartVerifiableLog())
+        {
+            var appLifetime = new TestApplicationLifetime();
+            var manager = CreateConnectionManager(LoggerFactory, appLifetime);
+            appLifetime.Start();
+
+            appLifetime.StopApplication();
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var context = new DefaultHttpContext();
+            var services = new ServiceCollection();
+            services.AddSingleton<TestConnectionHandler>();
+            services.AddOptions();
+            var ms = new MemoryStream();
+            context.Request.Path = "/foo";
+            context.Request.Method = "POST";
+            context.Response.Body = ms;
+            context.Request.QueryString = new QueryString("");
+            await dispatcher.ExecuteNegotiateAsync(context, new HttpConnectionDispatcherOptions());
+            var negotiateResponse = JsonConvert.DeserializeObject<JObject>(Encoding.UTF8.GetString(ms.ToArray()));
+
+            var error = negotiateResponse.Value<string>("error");
+            Assert.Equal("The connection was closed before negotiation completed.", error);
+
+            var connectionId = negotiateResponse.Value<string>("connectionId");
+            Assert.Null(connectionId);
+        }
+    }
+
     [Theory]
     [InlineData(HttpTransportType.LongPolling)]
     [InlineData(HttpTransportType.ServerSentEvents)]
@@ -2517,6 +2549,59 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task StatefulReconnectionConnectionClosesOnApplicationStopping()
+    {
+        // ReconnectConnectionHandler can throw OperationCanceledException during Pipe.ReadAsync
+        using (StartVerifiableLog(wc => wc.EventId.Name == "FailedDispose"))
+        {
+            var appLifetime = new TestApplicationLifetime();
+            var manager = CreateConnectionManager(LoggerFactory, appLifetime);
+            var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
+            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
+            // pretend negotiate occurred
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+
+            var context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<ReconnectConnectionHandler>();
+            var app = builder.Build();
+
+            var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+            var reconnectFeature = connection.Features.Get<IStatefulReconnectFeature>();
+#pragma warning restore CA2252 // This API requires opting into preview features
+            Assert.NotNull(reconnectFeature);
+
+            var websocketFeature = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+
+            // Stop application should cause the connection to close and new connection attempts to fail
+            appLifetime.StopApplication();
+            var webSocketMessage = await websocketFeature.Client.GetNextMessageAsync().DefaultTimeout();
+
+            Assert.Equal(WebSocketCloseStatus.NormalClosure, webSocketMessage.CloseStatus);
+
+            await initialWebSocketTask.DefaultTimeout();
+
+            // New websocket connection with previous connection token
+            context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+            // Should complete immediately with 404 as the connection is closed
+            Assert.Equal(404, context.Response.StatusCode);
+        }
+    }
+
     private class ControllableMemoryStream : MemoryStream
     {
         private readonly SyncPoint _syncPoint;
@@ -3766,18 +3851,24 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime hostApplicationLifetime)
+    {
+        return CreateConnectionManager(loggerFactory, null, null, hostApplicationLifetime);
+    }
+
     private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, HttpConnectionsMetrics metrics = null)
     {
         return CreateConnectionManager(loggerFactory, null, metrics);
     }
 
-    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, TimeSpan? disconnectTimeout, HttpConnectionsMetrics metrics = null)
+    private static HttpConnectionManager CreateConnectionManager(ILoggerFactory loggerFactory, TimeSpan? disconnectTimeout,
+        HttpConnectionsMetrics metrics = null, IHostApplicationLifetime hostApplicationLifetime = null)
     {
         var connectionOptions = new ConnectionOptions();
         connectionOptions.DisconnectTimeout = disconnectTimeout;
         return new HttpConnectionManager(
             loggerFactory ?? new LoggerFactory(),
-            new EmptyApplicationLifetime(),
+            hostApplicationLifetime ?? new EmptyApplicationLifetime(),
             Options.Create(connectionOptions),
             metrics ?? new HttpConnectionsMetrics(new TestMeterFactory()));
     }
