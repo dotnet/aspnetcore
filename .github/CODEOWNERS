@@ -6,13 +6,10 @@
 /.github/                       @dotnet/aspnet-build
 /build/                         @dotnet/aspnet-build
 /eng/                           @dotnet/aspnet-build
-/src/DefaultBuilder/            @tratcher
-/src/Hosting/                   @tratcher
-/src/Http/                      @tratcher @BrennanConroy
+/src/Http/                      @BrennanConroy
 /src/Http/Routing/              @javiercn
-/src/Middleware/                @tratcher @BrennanConroy
+/src/Middleware/                @BrennanConroy
 /src/Mvc/                       @javiercn
-/src/Security/                  @tratcher
-/src/Servers/                   @tratcher @halter73 @BrennanConroy
+/src/Servers/                   @halter73 @BrennanConroy
 /src/SignalR/                   @BrennanConroy @halter73
 /modules                        @dotnet/aspnet-build @wtgodbe
