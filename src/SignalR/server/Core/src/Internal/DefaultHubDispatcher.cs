@@ -410,7 +410,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                         // Register the CancellationTokenSource if present so CancelInvocationMessage can cancel it
                         if (cts != null && !string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
                         {
-                            if (!connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts))
+                            if (!connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId!, cts))
                             {
                                 Log.InvocationIdInUse(logger, hubMethodInvocationMessage.InvocationId);
                                 await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
@@ -446,7 +446,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                             // Remove the CancellationTokenSource from active requests
                             if (cts != null && !string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
                             {
-                                connection.ActiveRequestCancellationSources.TryRemove(hubMethodInvocationMessage.InvocationId, out _);
+                                connection.ActiveRequestCancellationSources.TryRemove(hubMethodInvocationMessage.InvocationId!, out _);
                             }
 
                             // Stream response handles cleanup in StreamResultsAsync
