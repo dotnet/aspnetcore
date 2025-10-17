@@ -854,7 +854,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
             }
             catch (Exception ex)
             {
-                throw new InvalidDataException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
+                throw new InvalidDataException($"Error binding argument {paramIndex + 1}. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
             }
         }
 
@@ -908,9 +908,10 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
 
         var arguments = new object?[argCount];
 
+        var i = 0;
         try
         {
-            for (var i = 0; i < paramCount; i++)
+            for (; i < paramCount; i++)
             {
                 var paramType = paramTypes[i];
                 arguments[i] = args[i].ToObject(paramType, PayloadSerializer);
@@ -920,7 +921,7 @@ public class NewtonsoftJsonHubProtocol : IHubProtocol
         }
         catch (Exception ex)
         {
-            throw new InvalidDataException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
+            throw new InvalidDataException($"Error binding argument {i + 1}. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
         }
     }
 
