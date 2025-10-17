@@ -312,6 +312,59 @@ public class RazorComponentsEndpointConventionBuilderExtensionsTest
         }
     }
 
+    [Fact]
+    public void ConfigureFrameworkEndpoints_AppliesConfigurationOnlyToFrameworkEndpoints()
+    {
+        // Arrange
+        var endpointBuilder = new TestEndpointRouteBuilder();
+        var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
+        var configuredEndpoints = new List<string>();
+
+        // Act
+        builder.ConfigureFrameworkEndpoints(endpointBuilder =>
+        {
+            configuredEndpoints.Add(endpointBuilder.DisplayName ?? "Unknown");
+        });
+
+        // Create endpoints to trigger configuration
+        var endpoints = endpointBuilder.DataSources.First().Endpoints.ToList();
+
+        // Assert - no endpoints should be configured since we haven't added framework metadata
+        Assert.Empty(configuredEndpoints);
+    }
+
+    [Fact]
+    public void ConfigureFrameworkEndpoints_OnlyConfiguresEndpointsWithFrameworkMetadata()
+    {
+        // Arrange
+        var endpointBuilder = new TestEndpointRouteBuilder();
+        var builder = CreateRazorComponentsAppBuilder(endpointBuilder);
+        var configuredEndpoints = new List<string>();
+
+        builder.Add(endpoint =>
+        {
+            // Simulate framework endpoint by adding the metadata
+            if (endpoint.DisplayName == "TestFrameworkEndpoint")
+            {
+                endpoint.Metadata.Add(new ComponentFrameworkEndpointMetadata());
+            }
+            endpoint.DisplayName ??= "TestFrameworkEndpoint";
+        });
+
+        // Act
+        builder.ConfigureFrameworkEndpoints(endpointBuilder =>
+        {
+            configuredEndpoints.Add(endpointBuilder.DisplayName ?? "Unknown");
+        });
+
+        // Create endpoints to trigger configuration
+        var endpoints = endpointBuilder.DataSources.First().Endpoints.ToList();
+
+        // Assert
+        Assert.Single(configuredEndpoints);
+        Assert.Contains("TestFrameworkEndpoint", configuredEndpoints);
+    }
+
     private class App : IComponent
     {
         void IComponent.Attach(RenderHandle renderHandle) => throw new NotImplementedException();
