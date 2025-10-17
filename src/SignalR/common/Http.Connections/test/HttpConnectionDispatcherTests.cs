@@ -2602,6 +2602,67 @@ public class HttpConnectionDispatcherTests : VerifiableLoggedTest
         }
     }
 
+    [Fact]
+    public async Task StatefulReconnectionConnectionThatReconnectedClosesOnApplicationStopping()
+    {
+        // ReconnectConnectionHandler can throw OperationCanceledException during Pipe.ReadAsync
+        using (StartVerifiableLog(wc => wc.EventId.Name == "FailedDispose"))
+        {
+            var appLifetime = new TestApplicationLifetime();
+            var manager = CreateConnectionManager(LoggerFactory, appLifetime);
+            var options = new HttpConnectionDispatcherOptions() { AllowStatefulReconnects = true };
+            options.WebSockets.CloseTimeout = TimeSpan.FromMilliseconds(1);
+            // pretend negotiate occurred
+            var connection = manager.CreateConnection(options, negotiateVersion: 1, useStatefulReconnect: true);
+            connection.TransportType = HttpTransportType.WebSockets;
+
+            var dispatcher = CreateDispatcher(manager, LoggerFactory);
+            var services = new ServiceCollection();
+
+            var context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            var builder = new ConnectionBuilder(services.BuildServiceProvider());
+            builder.UseConnectionHandler<ReconnectConnectionHandler>();
+            var app = builder.Build();
+
+            var initialWebSocketTask = dispatcher.ExecuteAsync(context, options, app);
+
+#pragma warning disable CA2252 // This API requires opting into preview features
+            var reconnectFeature = connection.Features.Get<IStatefulReconnectFeature>();
+#pragma warning restore CA2252 // This API requires opting into preview features
+            Assert.NotNull(reconnectFeature);
+
+            var websocketFeature = (TestWebSocketConnectionFeature)context.Features.Get<IHttpWebSocketFeature>();
+            await websocketFeature.Accepted.DefaultTimeout();
+
+            // New websocket connection with previous connection token
+            context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            var secondWebSocketTask = dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+            await initialWebSocketTask.DefaultTimeout();
+
+            // Stop application should cause the connection to close and new connection attempts to fail
+            appLifetime.StopApplication();
+            var webSocketMessage = await websocketFeature.Client.GetNextMessageAsync().DefaultTimeout();
+
+            Assert.Equal(WebSocketCloseStatus.NormalClosure, webSocketMessage.CloseStatus);
+
+            await secondWebSocketTask.DefaultTimeout();
+
+            // New websocket connection with previous connection token
+            context = MakeRequest("/foo", connection, services);
+            SetTransport(context, HttpTransportType.WebSockets);
+
+            await dispatcher.ExecuteAsync(context, options, app).DefaultTimeout();
+
+            // Should complete immediately with 404 as the connection is closed
+            Assert.Equal(404, context.Response.StatusCode);
+        }
+    }
+
     private class ControllableMemoryStream : MemoryStream
     {
         private readonly SyncPoint _syncPoint;

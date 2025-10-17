@@ -172,9 +172,6 @@ internal sealed partial class HttpConnectionDispatcher
                 if (connection is not null)
                 {
                     Log.EstablishedConnection(_logger);
-
-                    // Allow the reads to be canceled
-                    connection.Cancellation ??= new CancellationTokenSource();
                 }
             }
             else
@@ -215,6 +212,9 @@ internal sealed partial class HttpConnectionDispatcher
                 case HttpTransportType.None:
                     break;
                 case HttpTransportType.WebSockets:
+                    // Allow the reads to be canceled
+                    connection.Cancellation ??= new CancellationTokenSource();
+
                     var isReconnect = connection.ApplicationTask is not null;
                     var ws = new WebSocketsServerTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
                     if (!connection.TryActivatePersistentConnection(connectionDelegate, ws, currentRequestTcs.Task, context, _logger))
