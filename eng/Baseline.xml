@@ -46,7 +46,6 @@ Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.0" />
   <Package Id="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.0" />
   <Package Id="Microsoft.AspNetCore.Components.WebView" Version="9.0.0" />
-  <Package Id="Microsoft.AspNetCore.ConcurrencyLimiter" Version="9.0.0" />
   <Package Id="Microsoft.AspNetCore.Connections.Abstractions" Version="9.0.0" />
   <Package Id="Microsoft.AspNetCore.Cryptography.Internal" Version="9.0.0" />
   <Package Id="Microsoft.AspNetCore.Cryptography.KeyDerivation" Version="9.0.0" />
