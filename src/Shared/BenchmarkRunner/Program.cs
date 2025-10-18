@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner;
 
 sealed partial class Program
 {
-    private static TextWriter _standardOutput;
-    private static StringBuilder _standardOutputText;
+    private static TextWriter? _standardOutput;
+    private static StringBuilder? _standardOutputText;
 
     static partial void BeforeMain(string[] args);
 
@@ -62,7 +62,7 @@ sealed partial class Program
 
     private static int Fail(object o, string message)
     {
-        _standardOutput?.WriteLine(_standardOutputText.ToString());
+        _standardOutput?.WriteLine(_standardOutputText?.ToString());
 
         Console.Error.WriteLine("'{0}' failed, reason: '{1}'", o, message);
         return 1;
