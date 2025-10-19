@@ -175,13 +175,16 @@ internal static class JsonNodeSchemaExtensions
             return;
         }
 
+        var isReferencedSchema = schema[OpenApiConstants.SchemaId] is null;
+        var schemaAttribute = isReferencedSchema ? OpenApiConstants.RefDefaultAnnotation : OpenApiSchemaKeywords.DefaultKeyword;
+
         if (defaultValue is null)
         {
-            schema[OpenApiSchemaKeywords.DefaultKeyword] = null;
+            schema[schemaAttribute] = null;
         }
         else
         {
-            schema[OpenApiSchemaKeywords.DefaultKeyword] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
+            schema[schemaAttribute] = JsonSerializer.SerializeToNode(defaultValue, jsonTypeInfo);
         }
     }
 
