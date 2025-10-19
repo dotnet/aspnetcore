@@ -17,25 +17,27 @@ internal static class OpenApiDocumentExtensions
     /// <returns>An <see cref="IOpenApiSchema"/> with a reference to the stored schema.</returns>
     public static IOpenApiSchema AddOpenApiSchemaByReference(this OpenApiDocument document, string schemaId, IOpenApiSchema schema)
     {
-        document.Components ??= new();
-        document.Components.Schemas ??= new Dictionary<string, IOpenApiSchema>();
-        document.Components.Schemas[schemaId] = schema;
+        // Make sure the document has a workspace,
+        // AddComponent will add it to the workspace when adding the component.
         document.Workspace ??= new();
-        var location = document.BaseUri + "/components/schemas/" + schemaId;
-        document.Workspace.RegisterComponentForDocument(document, schema, location);
+        // AddComponent will only add the schema if it doesn't already exist.
+        document.AddComponent(schemaId, schema);
 
         object? description = null;
         object? example = null;
+        object? defaultAnnotation = null;
         if (schema is OpenApiSchema actualSchema)
         {
             actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefDescriptionAnnotation, out description);
             actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefExampleAnnotation, out example);
+            actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out defaultAnnotation);
         }
 
         return new OpenApiSchemaReference(schemaId, document)
         {
             Description = description as string,
             Examples = example is JsonNode exampleJson ? [exampleJson] : null,
+            Default = defaultAnnotation as JsonNode,
         };
     }
 }

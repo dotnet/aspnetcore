@@ -265,6 +265,20 @@ internal sealed class OpenApiSchemaService(
     {
         var schema = UnwrapOpenApiSchema(inputSchema);
 
+        if (inputSchema is OpenApiSchema && schema.Metadata is not null &&
+            !schema.Metadata.ContainsKey(OpenApiConstants.RefId) &&
+            schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var referenceId) &&
+            referenceId is string referenceIdString)
+        {
+            var targetReferenceId = baseSchemaId is not null
+                ? $"{baseSchemaId}{referenceIdString}"
+                : referenceIdString;
+            if (!string.IsNullOrEmpty(targetReferenceId))
+            {
+                document.AddOpenApiSchemaByReference(targetReferenceId, schema);
+            }
+        }
+
         if (schema.Metadata is not null &&
             schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var resolvedBaseSchemaId))
         {
@@ -347,14 +361,14 @@ internal sealed class OpenApiSchemaService(
         // we don't want to replace the top-level inline schema with a reference to itself. We want to replace
         // inline schemas to reference schemas for all schemas referenced in the top-level schema though (such as
         // `allOf`, `oneOf`, `anyOf`, `items`, `properties`, etc.) which is why `isTopLevel` is only set once.
-        if (schema is OpenApiSchema && schema.Metadata is not null &&
+        if (inputSchema is OpenApiSchema && schema.Metadata is not null &&
             !schema.Metadata.ContainsKey(OpenApiConstants.RefId) &&
-            schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var referenceId) &&
-            referenceId is string referenceIdString)
+            schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var referenceId2) &&
+            referenceId2 is string referenceIdString2)
         {
             var targetReferenceId = baseSchemaId is not null
-                ? $"{baseSchemaId}{referenceIdString}"
-                : referenceIdString;
+                ? $"{baseSchemaId}{referenceIdString2}"
+                : referenceIdString2;
             if (!string.IsNullOrEmpty(targetReferenceId))
             {
                 return document.AddOpenApiSchemaByReference(targetReferenceId, schema);
