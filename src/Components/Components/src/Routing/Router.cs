@@ -31,6 +31,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     ILogger<Router> _logger;
     string _notFoundPageRoute;
 
+    private string _pendingExternalNavigationUri;
+
     private string _updateScrollPositionForHashLastLocation;
     private bool _updateScrollPositionForHash;
 
@@ -232,8 +234,14 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             if (Navigating != null)
             {
                 _renderHandle.Render(Navigating);
-                return;
             }
+
+            return;
+        }
+
+        if (_pendingExternalNavigationUri is not null && !string.Equals(_pendingExternalNavigationUri, _locationAbsolute, StringComparison.Ordinal))
+        {
+            _pendingExternalNavigationUri = null;
         }
 
         var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute.AsSpan());
@@ -309,7 +317,11 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 activityHandle = RecordDiagnostics("External", "External");
 
                 Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
-                NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
+                if (!string.Equals(_pendingExternalNavigationUri, _locationAbsolute, StringComparison.Ordinal))
+                {
+                    _pendingExternalNavigationUri = _locationAbsolute;
+                    NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
+                }
             }
         }
         _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
