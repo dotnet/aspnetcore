@@ -424,21 +424,21 @@
     </Dependency>
     <!-- Dependencies required for source build to lift to the previously-source-built version. -->
     <!-- These versions are manually updated -->
-    <Dependency Name="Microsoft.Build" Version="17.12.36" Label="Manual">
+    <Dependency Name="Microsoft.Build" Version="17.12.50" Label="Manual">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
+      <Sha>465c45808f0e9f3c32eb145101eeeccdc29d39e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Framework" Version="17.12.36" Label="Manual">
+    <Dependency Name="Microsoft.Build.Framework" Version="17.12.50" Label="Manual">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
+      <Sha>465c45808f0e9f3c32eb145101eeeccdc29d39e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.12.36" Label="Manual">
+    <Dependency Name="Microsoft.Build.Tasks.Core" Version="17.12.50" Label="Manual">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
+      <Sha>465c45808f0e9f3c32eb145101eeeccdc29d39e6</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.12.36" Label="Manual">
+    <Dependency Name="Microsoft.Build.Utilities.Core" Version="17.12.50" Label="Manual">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>d1cce8d7cc03c23a4f1bad8e9240714fd9d199a3</Sha>
+      <Sha>465c45808f0e9f3c32eb145101eeeccdc29d39e6</Sha>
     </Dependency>
     <Dependency Name="NuGet.Frameworks" Version="7.0.0-preview.1.1610" Label="Manual">
       <Uri>https://github.com/dotnet/dotnet</Uri>
