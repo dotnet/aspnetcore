@@ -53,11 +53,17 @@ internal static partial class DefaultHubDispatcherLog
     [LoggerMessage(9, LogLevel.Trace, "'{HubName}' hub method '{HubMethod}' is bound.", EventName = "HubMethodBound")]
     public static partial void HubMethodBound(ILogger logger, string hubName, string hubMethod);
 
-    [LoggerMessage(10, LogLevel.Debug, "Canceling invocation {InvocationId}.", EventName = "CancelInvocation")]
+    [LoggerMessage(10, LogLevel.Debug, "Canceling stream for invocation {InvocationId}.", EventName = "CancelStream")]
+    public static partial void CancelStream(ILogger logger, string invocationId);
+
+    [LoggerMessage(11, LogLevel.Debug, "CancelInvocationMessage received unexpectedly.", EventName = "UnexpectedCancel")]
+    public static partial void UnexpectedCancel(ILogger logger);
+
+    [LoggerMessage(26, LogLevel.Debug, "Canceling invocation or stream {InvocationId}.", EventName = "CancelInvocation")]
     public static partial void CancelInvocation(ILogger logger, string invocationId);
 
-    [LoggerMessage(11, LogLevel.Debug, "CancelInvocationMessage received for {InvocationId} but invocation was not found.", EventName = "UnexpectedCancel")]
-    public static partial void UnexpectedCancel(ILogger logger, string invocationId);
+    [LoggerMessage(27, LogLevel.Debug, "CancelInvocationMessage received for {InvocationId} but invocation or stream was not found.", EventName = "UnexpectedCancelWithId")]
+    public static partial void UnexpectedCancelWithId(ILogger logger, string invocationId);
 
     [LoggerMessage(12, LogLevel.Debug, "Received stream hub invocation: {InvocationMessage}.", EventName = "ReceivedStreamHubInvocation")]
     public static partial void ReceivedStreamHubInvocation(ILogger logger, StreamInvocationMessage invocationMessage);

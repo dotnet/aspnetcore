@@ -700,37 +700,6 @@ public partial class HubConnection : IAsyncDisposable
 
     private async Task<ChannelReader<object?>> StreamAsChannelCoreAsyncCore(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken)
     {
-        async Task OnStreamCanceled(InvocationRequest irq)
-        {
-            // We need to take the connection lock in order to ensure we a) have a connection and b) are the only one accessing the write end of the pipe.
-            await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
-            try
-            {
-                if (_state.CurrentConnectionStateUnsynchronized != null)
-                {
-                    Log.SendingCancellation(_logger, irq.InvocationId);
-
-                    // Don't pass irq.CancellationToken, that would result in canceling the Flush and a delayed CancelInvocationMessage being sent.
-                    await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), cancellationToken: default).ConfigureAwait(false);
-                }
-                else
-                {
-                    Log.UnableToSendCancellation(_logger, irq.InvocationId);
-                }
-            }
-            catch
-            {
-                // Connection closed while trying to cancel a stream. This is fine to ignore.
-            }
-            finally
-            {
-                _state.ReleaseConnectionLock();
-            }
-
-            // Cancel the invocation
-            irq.Dispose();
-        }
-
         var readers = default(Dictionary<string, object>);
 
         CheckDisposed();
@@ -751,7 +720,7 @@ public partial class HubConnection : IAsyncDisposable
 
             if (cancellationToken.CanBeCanceled)
             {
-                cancellationToken.Register(state => _ = OnStreamCanceled((InvocationRequest)state!), irq);
+                cancellationToken.Register(state => _ = CancelInvocationAsync((InvocationRequest)state!), irq);
             }
 
             LaunchStreams(connectionState, readers, cancellationToken);
@@ -1078,37 +1047,6 @@ public partial class HubConnection : IAsyncDisposable
 
     private async Task<object?> InvokeCoreAsyncCore(string methodName, Type returnType, object?[] args, CancellationToken cancellationToken)
     {
-        async Task OnInvocationCanceled(InvocationRequest irq)
-        {
-            // We need to take the connection lock in order to ensure we a) have a connection and b) are the only one accessing the write end of the pipe.
-            await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
-            try
-            {
-                if (_state.CurrentConnectionStateUnsynchronized != null)
-                {
-                    Log.SendingCancellation(_logger, irq.InvocationId);
-
-                    // Don't pass irq.CancellationToken, that would result in canceling the Flush and a delayed CancelInvocationMessage being sent.
-                    await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), cancellationToken: default).ConfigureAwait(false);
-                }
-                else
-                {
-                    Log.UnableToSendCancellation(_logger, irq.InvocationId);
-                }
-            }
-            catch
-            {
-                // Connection closed while trying to cancel an invocation. This is fine to ignore.
-            }
-            finally
-            {
-                _state.ReleaseConnectionLock();
-            }
-
-            // Cancel the invocation
-            irq.Dispose();
-        }
-
         var readers = default(Dictionary<string, object>);
 
         CheckDisposed();
@@ -1127,7 +1065,7 @@ public partial class HubConnection : IAsyncDisposable
 
             if (cancellationToken.CanBeCanceled)
             {
-                cancellationToken.Register(state => _ = OnInvocationCanceled((InvocationRequest)state!), irq);
+                cancellationToken.Register(state => _ = CancelInvocationAsync((InvocationRequest)state!), irq);
             }
 
             LaunchStreams(connectionState, readers, cancellationToken);
@@ -1166,6 +1104,37 @@ public partial class HubConnection : IAsyncDisposable
         }
 
         return activity;
+    }
+
+    private async Task CancelInvocationAsync(InvocationRequest irq)
+    {
+        // We need to take the connection lock in order to ensure we a) have a connection and b) are the only one accessing the write end of the pipe.
+        await _state.WaitConnectionLockAsync(token: default).ConfigureAwait(false);
+        try
+        {
+            if (_state.CurrentConnectionStateUnsynchronized != null)
+            {
+                Log.SendingCancellation(_logger, irq.InvocationId);
+
+                // Don't pass irq.CancellationToken, that would result in canceling the Flush and a delayed CancelInvocationMessage being sent.
+                await SendHubMessage(_state.CurrentConnectionStateUnsynchronized, new CancelInvocationMessage(irq.InvocationId), cancellationToken: default).ConfigureAwait(false);
+            }
+            else
+            {
+                Log.UnableToSendCancellation(_logger, irq.InvocationId);
+            }
+        }
+        catch
+        {
+            // Connection closed while trying to cancel. This is fine to ignore.
+        }
+        finally
+        {
+            _state.ReleaseConnectionLock();
+        }
+
+        // Cancel the invocation
+        irq.Dispose();
     }
 
     private async Task InvokeCore(ConnectionState connectionState, string methodName, InvocationRequest irq, object?[] args, string[]? streams, CancellationToken cancellationToken)

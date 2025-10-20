@@ -191,7 +191,7 @@ internal sealed partial class DefaultHubDispatcher<[DynamicallyAccessedMembers(H
                 else
                 {
                     // Invocation can be canceled on the server while client is canceling invocation.
-                    Log.UnexpectedCancel(_logger, cancelInvocationMessage.InvocationId!);
+                    Log.UnexpectedCancelWithId(_logger, cancelInvocationMessage.InvocationId!);
                 }
                 break;
 
