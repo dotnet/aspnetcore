@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -175,8 +176,9 @@ internal static class JsonNodeSchemaExtensions
             return;
         }
 
-        var isReferencedSchema = schema[OpenApiConstants.SchemaId] is not null;
-        var schemaAttribute = isReferencedSchema ? OpenApiConstants.RefDefaultAnnotation : OpenApiSchemaKeywords.DefaultKeyword;
+        var schemaAttribute = schema.WillBeComponentized()
+            ? OpenApiConstants.RefDefaultAnnotation
+            : OpenApiSchemaKeywords.DefaultKeyword;
 
         if (defaultValue is null)
         {
@@ -433,6 +435,33 @@ internal static class JsonNodeSchemaExtensions
     }
 
     /// <summary>
+    /// Determines whether the specified JSON schema will be moved into the components section.
+    /// </summary>
+    /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
+    /// <returns><see langword="true"/> if the schema will be componentized; otherwise, <see langword="false"/>.</returns>
+    internal static bool WillBeComponentized(this JsonNode schema)
+        => schema.WillBeComponentized(out _);
+
+    /// <summary>
+    /// Determines whether the specified JSON schema node contains a componentized schema identifier.
+    /// </summary>
+    /// <param name="schema">The JSON schema node to inspect for a componentized schema identifier.</param>
+    /// <param name="schemaId">When this method returns <see langword="true"/>, contains the schema identifier found in the node; otherwise,
+    /// <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if the schema will be componentized; otherwise, <see langword="false"/>.</returns>
+    internal static bool WillBeComponentized(this JsonNode schema, [NotNullWhen(true)] out string? schemaId)
+    {
+        if (schema[OpenApiConstants.SchemaId] is JsonNode schemaIdNode
+            && schemaIdNode.GetValueKind() == JsonValueKind.String)
+        {
+            schemaId = schemaIdNode.GetValue<string>();
+            return true;
+        }
+        schemaId = null;
+        return false;
+    }
+
+    /// <summary>
     /// Returns <langword ref="true" /> if the current type is a non-abstract base class that is not defined as its
     /// own derived type.
     /// </summary>
@@ -461,7 +490,7 @@ internal static class JsonNodeSchemaExtensions
                 schema[OpenApiSchemaKeywords.TypeKeyword] = (schemaTypes | JsonSchemaType.Null).ToString();
             }
         }
-        if (schema[OpenApiConstants.SchemaId] is not null &&
+        if (schema.WillBeComponentized() &&
             propertyInfo.PropertyType != typeof(object) && propertyInfo.ShouldApplyNullablePropertySchema())
         {
             schema[OpenApiConstants.NullableProperty] = true;
@@ -475,7 +504,7 @@ internal static class JsonNodeSchemaExtensions
     /// <param name="schema">The <see cref="JsonNode"/> produced by the underlying schema generator.</param>
     internal static void PruneNullTypeForComponentizedTypes(this JsonNode schema)
     {
-        if (schema[OpenApiConstants.SchemaId] is not null &&
+        if (schema.WillBeComponentized() &&
                 schema[OpenApiSchemaKeywords.TypeKeyword] is JsonArray typeArray)
         {
             for (var i = typeArray.Count - 1; i >= 0; i--)
