@@ -26,6 +26,8 @@
     <None Include="..\InProcessWebSite\wwwroot\**" CopyToOutputDirectory="PreserveNewest" LinkBase="wwwroot/"/>
     <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
+  
+  <ItemGroup>
     <Reference Include="xunit.assert" />
   </ItemGroup>
 </Project>
