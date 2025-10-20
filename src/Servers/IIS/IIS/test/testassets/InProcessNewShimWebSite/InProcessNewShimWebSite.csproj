@@ -2,7 +2,7 @@
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFramework>$(DefaultNetCoreTargetFramework)</TargetFramework>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(NetMinimum)</TargetFrameworks>
     <AssemblyName>InProcessWebSite</AssemblyName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
@@ -26,42 +26,6 @@
     <None Include="..\InProcessWebSite\wwwroot\**" CopyToOutputDirectory="PreserveNewest" LinkBase="wwwroot/"/>
     <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
-
-  <ItemGroup>
-    <!-- This package is hard-coded to the 2.2.0 package as a part of ensuring ANCM stays forward compatible.  -->
-    <PackageReference Include="Microsoft.AspNetCore.Server.IIS" Version="2.2.6">
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.3.6" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.AspNetCore.HttpsPolicy" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.2.0" >
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
     <Reference Include="xunit.assert" />
   </ItemGroup>
 </Project>
