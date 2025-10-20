@@ -1239,19 +1239,19 @@ public class OpenApiSchemaReferenceTransformerTests : OpenApiDocumentServiceTest
     // Test models for issue 64048
     public class CircularReferenceWithArrayRootOrderArrayLast
     {
-        public CircularReferenceWithArrayModel Item { get; set; }
-        public ICollection<CircularReferenceWithArrayModel> ItemArray { get; set; }
+        public CircularReferenceWithArrayModel Item { get; set; } = null!;
+        public ICollection<CircularReferenceWithArrayModel> ItemArray { get; set; } = [];
     }
 
     public class CircularReferenceWithArrayRootOrderArrayFirst
     {
-        public ICollection<CircularReferenceWithArrayModel> ItemArray { get; set; }
-        public CircularReferenceWithArrayModel Item { get; set; }
+        public ICollection<CircularReferenceWithArrayModel> ItemArray { get; set; } = [];
+        public CircularReferenceWithArrayModel Item { get; set; } = null!;
     }
 
     public class CircularReferenceWithArrayModel
     {
-        public ICollection<CircularReferenceWithArrayModel> SelfArray { get; set; }
+        public ICollection<CircularReferenceWithArrayModel> SelfArray { get; set; } = [];
     }
 }
 #nullable restore
