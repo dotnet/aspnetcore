@@ -175,7 +175,7 @@ internal static class JsonNodeSchemaExtensions
             return;
         }
 
-        var isReferencedSchema = schema[OpenApiConstants.SchemaId] is null;
+        var isReferencedSchema = schema[OpenApiConstants.SchemaId] is not null;
         var schemaAttribute = isReferencedSchema ? OpenApiConstants.RefDefaultAnnotation : OpenApiSchemaKeywords.DefaultKeyword;
 
         if (defaultValue is null)
