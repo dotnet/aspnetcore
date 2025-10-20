@@ -15,9 +15,9 @@ public sealed class PersistentStateAttribute : CascadingParameterAttributeBase
     /// </summary>
     /// <remarks>
     /// By default it always restores the value on all situations.
-    /// Use <code cref="RestoreBehavior.SkipInitialValue"/> to skip restoring the initial value
+    /// Use <see cref="RestoreBehavior.SkipInitialValue"/> to skip restoring the initial value
     /// when the host starts up.
-    /// Use <code cref="RestoreBehavior.SkipLastSnapshot"/> to skip restoring the last value captured
+    /// Use <see cref="RestoreBehavior.SkipLastSnapshot"/> to skip restoring the last value captured
     /// the last time the current host was shut down.
     /// </remarks>
     public RestoreBehavior RestoreBehavior { get; set; } = RestoreBehavior.Default;
