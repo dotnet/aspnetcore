@@ -27,9 +27,10 @@
     <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworks)' == '$(NetMinimum)'">
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(TargetFrameworks)' == '$(NetMinimum)'">
+    <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
+    <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
+  </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
