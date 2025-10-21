@@ -32,10 +32,6 @@
     <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == '$(NetMinimum)'">
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
     <Reference Include="Microsoft.AspNetCore.Hosting" />
