@@ -27,12 +27,12 @@
     <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <PropertyGroup Condition="'$(TargetFrameworks)' == '$(NetMinimum)'">
+  <PropertyGroup Condition="'$(TargetFramework)' == '$(NetMinimum)'">
     <UseAspNetCoreSharedRuntime>true</UseAspNetCoreSharedRuntime>
     <DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>true</DoNotApplyWorkaroundsToMicrosoftAspNetCoreApp>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworks)' == '$(NetMinimum)'">
+  <ItemGroup Condition="'$(TargetFramework)' == '$(NetMinimum)'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
