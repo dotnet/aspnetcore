@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.Internal;
 
 public class StackTraceHelperTest
 {
+    private static bool IsMono => Type.GetType("Mono.RuntimeStructs") != null;
     [Fact]
     public void StackTraceHelper_IncludesLineNumbersForFiles()
     {
@@ -176,27 +177,33 @@ public class StackTraceHelperTest
 
         // Act
         var stackFrames = StackTraceHelper.GetFrames(exception, out _);
-        var methodNames = stackFrames.Select(stackFrame => stackFrame.MethodDisplayInfo.ToString()).ToList();
+        var methodNames = stackFrames.Select(stackFrame => stackFrame.MethodDisplayInfo.ToString()).ToArray();
 
-        // Assert - Runtime-agnostic checks for essential stack trace components
-        // Instead of exact string matching, verify key components are present
-        Assert.Equal(expectedCallStack.Count, methodNames.Count);
+        // Assert
+        Assert.Equal(expectedCallStack.Count, methodNames.Length);
 
-        // Check each frame contains the essential method information
-        Assert.Contains("Iterator()+MoveNext()", methodNames[0]);
-        Assert.Contains("string.Join", methodNames[1]);
-        Assert.Contains("GenericClass<T>.GenericMethod<V>", methodNames[2]);
-        Assert.Contains("MethodAsync(int value)", methodNames[3]);
+        if (IsMono)
+        {
+            // On Mono, verify key components are present but allow for runtime-specific formatting
+            Assert.Contains("Iterator()+MoveNext()", methodNames[0]);
+            Assert.Contains("string.Join", methodNames[1]);
+            Assert.Contains("GenericClass<T>.GenericMethod<V>", methodNames[2]);
+            Assert.Contains("MethodAsync(int value)", methodNames[3]);
 
-        // For async generic method, check for either resolved form or state machine form
-        var asyncGenericFrame = methodNames[4];
-        Assert.True(
-            asyncGenericFrame.Contains("MethodAsync<TValue>(TValue value)") ||  // CoreCLR resolved form
-            asyncGenericFrame.Contains("MethodAsync") && asyncGenericFrame.Contains("TValue"), // Mono state machine form
-            $"Expected async generic method info in: {asyncGenericFrame}");
+            // For async generic method on Mono, check for either resolved form or state machine form
+            var asyncGenericFrame = methodNames[4];
+            Assert.True(
+                asyncGenericFrame.Contains("MethodAsync<TValue>(TValue value)") ||  // Resolved form
+                asyncGenericFrame.Contains("MethodAsync") && asyncGenericFrame.Contains("TValue"), // State machine form
+                $"Expected async generic method info in: {asyncGenericFrame}");
 
-        Assert.Contains("Method(string value)", methodNames[5]);
-        Assert.Contains("StackTraceHelper_ProducesReadableOutput()", methodNames[6]);
+            Assert.Contains("Method(string value)", methodNames[5]);
+            Assert.Contains("StackTraceHelper_ProducesReadableOutput()", methodNames[6]);
+        }
+        else
+        {
+            Assert.Equal(expectedCallStack, methodNames);
+        }
     }
 
     [Fact]
@@ -259,12 +266,20 @@ public class StackTraceHelperTest
         // Assert
         var frame = frames[0];
         Assert.Null(frame.FilePath);
-        // Runtime-agnostic test: should contain "lambda_method" regardless of prefix
-        // CoreCLR: "lambda_method34(Closure )"
-        // Mono: "object.lambda_method34(Closure )"
         var methodDisplay = frame.MethodDisplayInfo.ToString();
-        Assert.Contains("lambda_method", methodDisplay);
-        Assert.EndsWith("(Closure )", methodDisplay);
+
+        if (IsMono)
+        {
+            // On Mono, lambda methods may include declaring type prefix (e.g., "object.lambda_method34")
+            Assert.Contains("lambda_method", methodDisplay);
+            Assert.EndsWith("(Closure )", methodDisplay);
+        }
+        else
+        {
+            // On CoreCLR, maintain strict check to prevent regressions
+            Assert.StartsWith("lambda_method", methodDisplay);
+            Assert.EndsWith("(Closure )", methodDisplay);
+        }
     }
 
     [MethodImpl(MethodImplOptions.NoOptimization | MethodImplOptions.NoInlining)]
