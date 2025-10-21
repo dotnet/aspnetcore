@@ -1,0 +1,12 @@
+@page "/routing/with-lazy-assembly"
+@using Components.TestServer.RazorComponents;
+
+<h1 id="lazy-route-status">Lazy route rendered</h1>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        NavigationCompletionTracker.AssertNavigationCompleted();
+    }
+}

@@ -145,6 +145,23 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         }
     }
 
+    [Fact]
+    public void BrowserNavigationToLazyLoadedRoute_WaitsForOnNavigateAsyncGuard()
+    {
+        const string navigationGuardSwitch = "Components.TestServer.RazorComponents.UseNavigationCompletionGuard";
+        AppContext.SetSwitch(navigationGuardSwitch, true);
+
+        try
+        {
+            Navigate($"{ServerPathBase}/routing/with-lazy-assembly");
+            Browser.Equal("Lazy route rendered", () => Browser.Exists(By.Id("lazy-route-status")).Text);
+        }
+        finally
+        {
+            AppContext.SetSwitch(navigationGuardSwitch, false);
+        }
+    }
+
     private void AssertReExecutionPageRendered() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 
@@ -454,3 +471,6 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("Re-executed page", () => Browser.Title);
     }
 }
+
+#pragma warning restore RS0037 // PublicAPI files must include '#nullable enable'
+#pragma warning restore RS0016 // Add public types and members to the declared API
