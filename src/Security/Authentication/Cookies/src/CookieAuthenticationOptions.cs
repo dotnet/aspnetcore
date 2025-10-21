@@ -128,7 +128,7 @@ public class CookieAuthenticationOptions : AuthenticationSchemeOptions
     /// even if it is passed to the server after the browser should have purged it.
     /// </para>
     /// <para>
-    /// This property should be used instead of <see cref="CookieOptions.Expires"/>.
+    /// This property should be used instead of <see cref="CookieOptions.Expires"/>, which is ignored.
     /// </para>
     /// </summary>
     public TimeSpan ExpireTimeSpan { get; set; }
