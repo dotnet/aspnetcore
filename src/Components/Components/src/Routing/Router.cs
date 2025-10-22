@@ -31,8 +31,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     ILogger<Router> _logger;
     string _notFoundPageRoute;
 
-    private string _pendingExternalNavigationUri;
-
     private string _updateScrollPositionForHashLastLocation;
     private bool _updateScrollPositionForHash;
 
@@ -222,26 +220,17 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     internal virtual void Refresh(bool isNavigationIntercepted)
     {
-        // endpointRouterData is populated only in navigations that passed through SSR, including re-executions
-        var endpointRouteData = RoutingStateProvider?.RouteData;
-
         // If an `OnNavigateAsync` task is currently in progress, then wait
         // for it to complete before rendering. Note: because _previousOnNavigateTask
         // is initialized to a CompletedTask on initialization, this will still
         // allow first-render to complete successfully.
-        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion && endpointRouteData is null)
+        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion)
         {
             if (Navigating != null)
             {
                 _renderHandle.Render(Navigating);
             }
-
             return;
-        }
-
-        if (_pendingExternalNavigationUri is not null && !string.Equals(_pendingExternalNavigationUri, _locationAbsolute, StringComparison.Ordinal))
-        {
-            _pendingExternalNavigationUri = null;
         }
 
         var relativePath = NavigationManager.ToBaseRelativePath(_locationAbsolute.AsSpan());
@@ -250,7 +239,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         ComponentsActivityHandle activityHandle;
 
         // In order to avoid routing twice we check for RouteData
-        if (endpointRouteData is not null)
+        if (RoutingStateProvider?.RouteData is { } endpointRouteData)
         {
             activityHandle = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
 
@@ -317,11 +306,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
                 activityHandle = RecordDiagnostics("External", "External");
 
                 Log.NavigatingToExternalUri(_logger, _locationAbsolute, locationPath, _baseUri);
-                if (!string.Equals(_pendingExternalNavigationUri, _locationAbsolute, StringComparison.Ordinal))
-                {
-                    _pendingExternalNavigationUri = _locationAbsolute;
-                    NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
-                }
+                NavigationManager.NavigateTo(_locationAbsolute, forceLoad: true);
             }
         }
         _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);

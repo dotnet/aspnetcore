@@ -21,14 +21,12 @@
     [SupplyParameterFromQuery(Name = "appSetsEventArgsPath")]
     public bool AppSetsEventArgsPath { get; set; }
 
-    [Parameter]
-    [SupplyParameterFromQuery(Name = "useOnNavigateAsync")]
-    public string? UseOnNavigateAsync { get; set; }
+    private const string UseOnNavigateAsyncSwitchName = "Components.TestServer.RazorComponents.UseOnNavigateAsync";
 
     private Type? NotFoundPageType { get; set; }
     private NavigationManager _navigationManager = default!;
-    private bool ShouldDelayOnNavigateAsync
-        => bool.TryParse(UseOnNavigateAsync, out var result) && result;
+    private bool ShouldDelayOnNavigateAsync =>
+        AppContext.TryGetSwitch(UseOnNavigateAsyncSwitchName, out var switchEnabled) && switchEnabled;
 
     [Inject]
     private NavigationManager NavigationManager
