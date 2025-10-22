@@ -87,7 +87,8 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             context,
             componentType: pageComponent,
             handler: result.HandlerName,
-            form: result.HandlerName != null && context.Request.HasFormContentType ? await context.Request.ReadFormAsync() : null);
+            form: result.HandlerName != null && context.Request.HasFormContentType ? await context.Request.ReadFormAsync() : null,
+            allowRenderingDuringPendingNavigation: isReExecuted);
 
         // Matches MVC's MemoryPoolHttpResponseStreamWriterFactory.DefaultBufferSize
         var defaultBufferSize = 16 * 1024;

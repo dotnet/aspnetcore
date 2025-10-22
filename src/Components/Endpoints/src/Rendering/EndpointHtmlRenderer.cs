@@ -54,6 +54,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     private string _notFoundUrl = string.Empty;
 
+    private const string AllowRenderDuringPendingNavigationKey = "__BlazorAllowRenderDuringPendingNavigation";
+
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
@@ -81,12 +83,13 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type? componentType = null,
         string? handler = null,
-        IFormCollection? form = null)
+        IFormCollection? form = null,
+        bool allowRenderingDuringPendingNavigation = false)
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
-            GetContextBaseUri(httpContext.Request), 
-            GetFullUri(httpContext.Request), 
+            GetContextBaseUri(httpContext.Request),
+            GetFullUri(httpContext.Request),
             uri => GetErrorHandledTask(OnNavigateTo(uri)));
 
         navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
@@ -132,7 +135,13 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         {
             // Saving RouteData to avoid routing twice in Router component
             var routingStateProvider = httpContext.RequestServices.GetRequiredService<EndpointRoutingStateProvider>();
-            routingStateProvider.RouteData = new RouteData(componentType, httpContext.GetRouteData().Values);
+            var routeValues = new RouteValueDictionary(httpContext.GetRouteData().Values);
+            if (allowRenderingDuringPendingNavigation)
+            {
+                routeValues[AllowRenderDuringPendingNavigationKey] = true;
+            }
+
+            routingStateProvider.RouteData = new RouteData(componentType, routeValues);
             if (httpContext.GetEndpoint() is RouteEndpoint routeEndpoint)
             {
                 routingStateProvider.RouteData.Template = routeEndpoint.RoutePattern.RawText;

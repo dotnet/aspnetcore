@@ -42,6 +42,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private bool _onNavigateCalled;
 
+    internal const string AllowRenderDuringPendingNavigationKey = "__BlazorAllowRenderDuringPendingNavigation";
+
     [Inject] private NavigationManager NavigationManager { get; set; }
 
     [Inject] private INavigationInterception NavigationInterception { get; set; }
@@ -220,11 +222,14 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     internal virtual void Refresh(bool isNavigationIntercepted)
     {
+        var providerRouteData = RoutingStateProvider?.RouteData;
+        var allowRenderDuringPendingNavigation = TryConsumeAllowRenderDuringPendingNavigation(providerRouteData);
+
         // If an `OnNavigateAsync` task is currently in progress, then wait
         // for it to complete before rendering. Note: because _previousOnNavigateTask
         // is initialized to a CompletedTask on initialization, this will still
         // allow first-render to complete successfully.
-        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion)
+        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion && !allowRenderDuringPendingNavigation)
         {
             if (Navigating != null)
             {
@@ -239,7 +244,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         ComponentsActivityHandle activityHandle;
 
         // In order to avoid routing twice we check for RouteData
-        if (RoutingStateProvider?.RouteData is { } endpointRouteData)
+        if (providerRouteData is { } endpointRouteData)
         {
             activityHandle = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
 
@@ -310,6 +315,17 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             }
         }
         _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
+    }
+
+    private static bool TryConsumeAllowRenderDuringPendingNavigation(RouteData? routeData)
+    {
+        if (routeData?.RouteValues.TryGetValue(AllowRenderDuringPendingNavigationKey, out var value) == true && value is true)
+        {
+            (routeData.RouteValues as IDictionary<string, object?>)?.Remove(AllowRenderDuringPendingNavigationKey);
+            return true;
+        }
+
+        return false;
     }
 
     private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
