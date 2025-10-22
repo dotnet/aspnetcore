@@ -1214,6 +1214,53 @@ public class DefaultPageApplicationModelProviderTest
     [ServiceFilter(typeof(IServiceProvider))]
     private class DerivedFromPageModel : PageModel { }
 
+    [Fact]
+    public void PopulateHandlerMethods_Ignores_OverriddenPageModelLifecycleMethods()
+    {
+        // Arrange
+        var provider = CreateProvider();
+        var typeInfo = typeof(ModelOverridingPageModelLifecycle).GetTypeInfo();
+        var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, []);
+
+        // Act
+        provider.PopulateHandlerMethods(pageModel);
+
+        // Assert
+        // Only OnGet should be discovered as a handler. OnPageHandlerExecuting, OnPageHandlerExecuted,
+        // and OnPageHandlerSelected are lifecycle methods and should be excluded even when overridden.
+        var handlerMethods = pageModel.HandlerMethods;
+        Assert.Collection(
+            handlerMethods,
+            handler =>
+            {
+                Assert.Equal(nameof(ModelOverridingPageModelLifecycle.OnGet), handler.MethodInfo.Name);
+                Assert.Equal("Get", handler.HttpMethod);
+                Assert.Null(handler.HandlerName);
+            });
+    }
+
+    private class ModelOverridingPageModelLifecycle : PageModel
+    {
+        public void OnGet()
+        {
+        }
+
+        public override void OnPageHandlerExecuting(PageHandlerExecutingContext context)
+        {
+            base.OnPageHandlerExecuting(context);
+        }
+
+        public override void OnPageHandlerExecuted(PageHandlerExecutedContext context)
+        {
+            base.OnPageHandlerExecuted(context);
+        }
+
+        public override void OnPageHandlerSelected(PageHandlerSelectedContext context)
+        {
+            base.OnPageHandlerSelected(context);
+        }
+    }
+
     private static DefaultPageApplicationModelProvider CreateProvider()
     {
         var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
