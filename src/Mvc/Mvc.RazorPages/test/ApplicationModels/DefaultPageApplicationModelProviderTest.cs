@@ -1220,7 +1220,7 @@ public class DefaultPageApplicationModelProviderTest
         // Arrange
         var provider = CreateProvider();
         var typeInfo = typeof(ModelOverridingPageModelLifecycle).GetTypeInfo();
-        var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, new object[0]);
+        var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, []);
 
         // Act
         provider.PopulateHandlerMethods(pageModel);
