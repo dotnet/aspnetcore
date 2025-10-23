@@ -229,7 +229,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false, true)]
     [InlineData(false, false)]
     // This tests the application subscribing to OnNotFound event and setting NotFoundEventArgs.Path, opposed to the framework doing it for the app.
-    public void NotFoundSetOnInitialization_ApplicationSubscribesToNotFoundEventToSetNotFoundPath_SSR (bool streaming, bool customRouter)
+    public void NotFoundSetOnInitialization_ApplicationSubscribesToNotFoundEventToSetNotFoundPath_SSR(bool streaming, bool customRouter)
     {
         string streamingPath = streaming ? "-streaming" : "";
         string testUrl = $"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomRouter={customRouter}&appSetsEventArgsPath=true";
@@ -471,6 +471,3 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         Browser.Equal("Re-executed page", () => Browser.Title);
     }
 }
-
-#pragma warning restore RS0037 // PublicAPI files must include '#nullable enable'
-#pragma warning restore RS0016 // Add public types and members to the declared API
