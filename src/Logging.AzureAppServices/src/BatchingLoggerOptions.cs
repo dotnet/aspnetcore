@@ -6,7 +6,7 @@ using System;
 namespace Microsoft.Extensions.Logging.AzureAppServices;
 
 /// <summary>
-/// Options for a logger which batches up log messages.
+/// Specifies options for a logger that batches log messages.
 /// </summary>
 public class BatchingLoggerOptions
 {
@@ -31,10 +31,14 @@ public class BatchingLoggerOptions
     }
 
     /// <summary>
-    /// Gets or sets the maximum size of the background log message queue or null for no limit.
-    /// After maximum queue size is reached log event sink would start blocking.
-    /// Defaults to <c>1000</c>.
+    /// Gets or sets the maximum size of the background log message queue, or null for no limit.
     /// </summary>
+    /// <value>
+    /// The maximum size of the background log message queue, or <see langword="null" /> for no limit. The default is 1000.
+    /// </value>
+    /// <remarks>
+    /// After the maximum queue size is reached, the log event sink starts blocking.
+    /// </remarks>
     public int? BackgroundQueueSize
     {
         get { return _backgroundQueueSize; }
@@ -49,9 +53,11 @@ public class BatchingLoggerOptions
     }
 
     /// <summary>
-    /// Gets or sets a maximum number of events to include in a single batch or null for no limit.
+    /// Gets or sets the maximum number of events to include in a single batch.
     /// </summary>
-    /// Defaults to <c>null</c>.
+    /// <value>
+    /// The maximum number of events to include in a single batch, or <see langword="null" /> for no limit. The default is <see langword="null" />.
+    /// </value>
     public int? BatchSize
     {
         get { return _batchSize; }
@@ -66,13 +72,15 @@ public class BatchingLoggerOptions
     }
 
     /// <summary>
-    /// Gets or sets value indicating if logger accepts and queues writes.
+    /// Gets or sets a value indicating whether the logger accepts and queues writes.
     /// </summary>
     public bool IsEnabled { get; set; }
 
     /// <summary>
     /// Gets or sets a value indicating whether scopes should be included in the message.
-    /// Defaults to <c>false</c>.
     /// </summary>
+    /// <value>
+    /// The default is <see langword="false" />.
+    /// </value>
     public bool IncludeScopes { get; set; }
 }
