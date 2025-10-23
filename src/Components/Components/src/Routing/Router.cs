@@ -42,8 +42,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private bool _onNavigateCalled;
 
-    internal const string AllowRenderDuringPendingNavigationKey = "__BlazorAllowRenderDuringPendingNavigation";
-
     [Inject] private NavigationManager NavigationManager { get; set; }
 
     [Inject] private INavigationInterception NavigationInterception { get; set; }
@@ -319,9 +317,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private static bool TryConsumeAllowRenderDuringPendingNavigation(RouteData? routeData)
     {
-        if (routeData?.RouteValues.TryGetValue(AllowRenderDuringPendingNavigationKey, out var value) == true && value is true)
+        if (routeData?.RouteValues.TryGetValue(ComponentsConstants.AllowRenderDuringPendingNavigationKey, out var value) == true && value is true)
         {
-            (routeData.RouteValues as IDictionary<string, object?>)?.Remove(AllowRenderDuringPendingNavigationKey);
+            (routeData.RouteValues as IDictionary<string, object?>)?.Remove(ComponentsConstants.AllowRenderDuringPendingNavigationKey);
             return true;
         }
 

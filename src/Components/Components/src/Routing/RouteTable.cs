@@ -78,7 +78,7 @@ internal sealed class RouteTable(TreeRouter treeRouter)
 
     private static void ProcessParameters(InboundRouteEntry entry, RouteValueDictionary routeValues)
     {
-        routeValues.Remove(Router.AllowRenderDuringPendingNavigationKey);
+        routeValues.Remove(ComponentsConstants.AllowRenderDuringPendingNavigationKey);
 
         // Add null values for unused route parameters.
         if (entry.UnusedRouteParameterNames != null)

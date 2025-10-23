@@ -54,8 +54,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     private string _notFoundUrl = string.Empty;
 
-    private const string AllowRenderDuringPendingNavigationKey = "__BlazorAllowRenderDuringPendingNavigation";
-
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
     {
@@ -138,7 +136,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             var routeValues = new RouteValueDictionary(httpContext.GetRouteData().Values);
             if (allowRenderingDuringPendingNavigation)
             {
-                routeValues[AllowRenderDuringPendingNavigationKey] = true;
+                routeValues[ComponentsConstants.AllowRenderDuringPendingNavigationKey] = true;
             }
 
             routingStateProvider.RouteData = new RouteData(componentType, routeValues);
