@@ -59,7 +59,7 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain);
 
-        CheckResponseCompressed(response, expectedBodyLength: 29, expectedEncoding: "gzip");
+        await CheckResponseCompressed(response, "gzip");
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
@@ -68,7 +68,7 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "br" }, responseType: TextPlain);
 
-        CheckResponseCompressed(response, expectedBodyLength: 21, expectedEncoding: "br");
+        await CheckResponseCompressed(response, "br");
         AssertCompressedWithLog(logMessages, "br");
     }
 
@@ -79,7 +79,7 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain);
 
-        CheckResponseCompressed(response, expectedBodyLength: 21, expectedEncoding: "br");
+        await CheckResponseCompressed(response, "br");
         AssertCompressedWithLog(logMessages, "br");
     }
 
@@ -96,7 +96,7 @@ public class ResponseCompressionMiddlewareTest
 
         var (response, logMessages) = await InvokeMiddleware(100, new[] { encoding1, encoding2 }, responseType: TextPlain, configure: Configure);
 
-        CheckResponseCompressed(response, expectedBodyLength: 29, expectedEncoding: "gzip");
+        await CheckResponseCompressed(response, "gzip");
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
@@ -127,7 +127,7 @@ public class ResponseCompressionMiddlewareTest
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "gzip", "deflate" }, responseType: TextPlain, httpMethod: HttpMethods.Head);
 
         // Per RFC 7231, section 4.3.2, the Content-Length header can be omitted on HEAD requests.
-        CheckResponseCompressed(response, expectedBodyLength: null, expectedEncoding: "gzip");
+        await CheckResponseCompressed(response, "gzip");
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
@@ -140,7 +140,7 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(uncompressedBodyLength: 100, requestAcceptEncodings: new[] { "gzip" }, contentType);
 
-        CheckResponseCompressed(response, expectedBodyLength: 29, expectedEncoding: "gzip");
+        await CheckResponseCompressed(response, "gzip");
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
@@ -179,7 +179,7 @@ public class ResponseCompressionMiddlewareTest
 
         var response = await client.SendAsync(request);
 
-        CheckResponseCompressed(response, expectedBodyLength: 133, expectedEncoding: "gzip");
+        await CheckResponseCompressed(response, "gzip");
     }
 
     [Theory]
@@ -272,7 +272,7 @@ public class ResponseCompressionMiddlewareTest
 
         if (compress)
         {
-            CheckResponseCompressed(response, expectedBodyLength: 29, expectedEncoding: "gzip");
+            await CheckResponseCompressed(response, "gzip");
             AssertCompressedWithLog(logMessages, "gzip");
         }
         else
@@ -293,7 +293,7 @@ public class ResponseCompressionMiddlewareTest
                 options.ExcludedMimeTypes = new[] { "text/*" };
             });
 
-        CheckResponseCompressed(response, expectedBodyLength: 29, expectedEncoding: "gzip");
+        await CheckResponseCompressed(response, "gzip");
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
@@ -345,7 +345,7 @@ public class ResponseCompressionMiddlewareTest
     {
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { "*" }, responseType: TextPlain);
 
-        CheckResponseCompressed(response, expectedBodyLength: 21, expectedEncoding: "br");
+        await CheckResponseCompressed(response, "br");
         AssertCompressedWithLog(logMessages, "br");
     }
 
@@ -367,9 +367,10 @@ public class ResponseCompressionMiddlewareTest
     [InlineData(new[] { "identity;q=0.5", "gzip" }, 29)]
     public async Task Request_AcceptWithHigherCompressionQuality_Compressed(string[] acceptEncodings, int expectedBodyLength)
     {
+        _ = expectedBodyLength; // Parameter kept for test data compatibility
         var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: acceptEncodings, responseType: TextPlain);
 
-        CheckResponseCompressed(response, expectedBodyLength: expectedBodyLength, expectedEncoding: "gzip");
+        await CheckResponseCompressed(response, "gzip");
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
@@ -478,7 +479,7 @@ public class ResponseCompressionMiddlewareTest
 
         if (enableHttps)
         {
-            CheckResponseCompressed(response, expectedLength, "gzip");
+            await CheckResponseCompressed(response, "gzip");
         }
         else
         {
@@ -548,7 +549,7 @@ public class ResponseCompressionMiddlewareTest
 
         if (mode == HttpsCompressionMode.Compress)
         {
-            CheckResponseCompressed(response, expectedLength, "gzip");
+            await CheckResponseCompressed(response, "gzip");
         }
         else
         {
@@ -618,7 +619,7 @@ public class ResponseCompressionMiddlewareTest
 
         if (mode != HttpsCompressionMode.DoNotCompress)
         {
-            CheckResponseCompressed(response, expectedLength, "gzip");
+            await CheckResponseCompressed(response, "gzip");
         }
         else
         {
@@ -640,6 +641,7 @@ public class ResponseCompressionMiddlewareTest
     [MemberData(nameof(SupportedEncodingsWithBodyLength))]
     public async Task FlushHeaders_SendsHeaders_Compresses(string encoding, int expectedBodyLength)
     {
+        _ = expectedBodyLength; // Parameter kept for test data compatibility
         var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var host = new HostBuilder()
@@ -679,13 +681,14 @@ public class ResponseCompressionMiddlewareTest
 
         await response.Content.LoadIntoBufferAsync();
 
-        CheckResponseCompressed(response, expectedBodyLength, encoding);
+        await CheckResponseCompressed(response, encoding);
     }
 
     [Theory]
     [MemberData(nameof(SupportedEncodingsWithBodyLength))]
     public async Task FlushAsyncHeaders_SendsHeaders_Compresses(string encoding, int expectedBodyLength)
     {
+        _ = expectedBodyLength; // Parameter kept for test data compatibility
         var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var host = new HostBuilder()
@@ -724,7 +727,7 @@ public class ResponseCompressionMiddlewareTest
 
         await response.Content.LoadIntoBufferAsync();
 
-        CheckResponseCompressed(response, expectedBodyLength, encoding);
+        await CheckResponseCompressed(response, encoding);
     }
 
     [Theory]
@@ -1135,7 +1138,7 @@ public class ResponseCompressionMiddlewareTest
 
         var response = await client.SendAsync(request);
 
-        CheckResponseCompressed(response, expectedBodyLength: 35, expectedEncoding: "gzip");
+        await CheckResponseCompressed(response, "gzip");
 
         Assert.False(fakeSendFile.SendFileInvoked);
     }
@@ -1185,7 +1188,7 @@ public class ResponseCompressionMiddlewareTest
 
         var response = await client.SendAsync(request);
 
-        CheckResponseCompressed(response, expectedBodyLength: 46, expectedEncoding: "gzip");
+        await CheckResponseCompressed(response, "gzip");
 
         Assert.False(fakeSendFile.SendFileInvoked);
     }
@@ -1307,7 +1310,7 @@ public class ResponseCompressionMiddlewareTest
         return (response, sink.Writes.ToList());
     }
 
-    private static void CheckResponseCompressed(HttpResponseMessage response, long? expectedBodyLength, string expectedEncoding)
+    private static async Task CheckResponseCompressed(HttpResponseMessage response, string expectedEncoding)
     {
         var containsVaryAcceptEncoding = false;
         foreach (var value in response.Headers.GetValues(HeaderNames.Vary))
@@ -1323,10 +1326,10 @@ public class ResponseCompressionMiddlewareTest
         Assert.Single(response.Content.Headers.ContentEncoding, expectedEncoding);
 
         // Test functionality instead of exact byte counts
-        CheckCompressionFunctionality(response, expectedEncoding).GetAwaiter().GetResult();
+        await CheckCompressionFunctionality(response, expectedEncoding, new string('a', 100));
     }
 
-    private static async Task CheckCompressionFunctionality(HttpResponseMessage response, string expectedEncoding)
+    private static async Task CheckCompressionFunctionality(HttpResponseMessage response, string expectedEncoding, string expectedContent)
     {
         var compressedBytes = await response.Content.ReadAsByteArrayAsync();
 
@@ -1359,9 +1362,7 @@ public class ResponseCompressionMiddlewareTest
         }
 
         // Verify decompressed content matches what we expect
-        var expectedContent = new string('a', 100);
-
-        if (decompressedContent.Length >= 100 && decompressedContent.StartsWith(expectedContent, StringComparison.Ordinal))
+        if (decompressedContent.Length >= expectedContent.Length && decompressedContent.StartsWith(expectedContent, StringComparison.Ordinal))
         {
             // Handles cases like SendFileAsync where additional content is appended
             Assert.True(true);
