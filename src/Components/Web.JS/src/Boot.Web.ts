@@ -15,7 +15,7 @@ import { shouldAutoStart } from './BootCommon';
 import { Blazor } from './GlobalExports';
 import { WebStartOptions } from './Platform/WebStartOptions';
 import { attachStreamingRenderingListener } from './Rendering/StreamingRendering';
-import { resetScrollIfNeeded } from './Rendering/Renderer';
+import { resetScrollIfNeeded, ScrollResetSchedule } from './Rendering/Renderer';
 import { NavigationEnhancementCallbacks, attachProgressivelyEnhancedNavigationListener } from './Services/NavigationEnhancement';
 import { WebRootComponentManager } from './Services/WebRootComponentManager';
 import { hasProgrammaticEnhancedNavigationHandler, performProgrammaticEnhancedNavigation } from './Services/NavigationUtils';
@@ -58,7 +58,7 @@ function boot(options?: Partial<WebStartOptions>) : Promise<void> {
     },
     documentUpdated: () => {
       rootComponentManager.onDocumentUpdated();
-      resetScrollIfNeeded();
+      resetScrollIfNeeded(ScrollResetSchedule.AfterDocumentUpdate);
       jsEventRegistry.dispatchEvent('enhancedload', {});
     },
     enhancedNavigationCompleted() {
