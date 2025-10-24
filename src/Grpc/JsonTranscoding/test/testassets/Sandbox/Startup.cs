@@ -45,6 +45,22 @@ public class Startup
         {
             endpoints.MapGrpcService<JsonTranscodingGreeterService>();
             endpoints.MapGrpcService<GreeterService>();
+            endpoints.MapPatientEndpoints();
         });
     }
+
+    public enum PathItemType
+    {
+        Standard,
+        Webhook
+    }
+
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Delegate)]
+    public class PathItemTypeAttribute : Attribute
+    {
+        public PathItemType Type { get; }
+        public PathItemTypeAttribute(PathItemType type) => Type = type;
+    }
+
+  
 }
