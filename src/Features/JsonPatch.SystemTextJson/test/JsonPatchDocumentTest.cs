@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Converters;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Exceptions;
 using Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations;
@@ -254,5 +255,27 @@ public class JsonPatchDocumentTest
         document.Operations.Add(operation);
 
         return JsonSerializer.Serialize<JsonPatchDocument<SimpleObject>>(document, jsonSerializerOptions);
+    }
+
+    [Fact]
+    public void Serialization_ShouldExcludeFrom_WhenNullAndNotMoveOrCopy()
+    {
+        // Arrange
+        JsonPatchDocument patchDocument = new();
+        patchDocument.Add("/a/b/c", "foo");
+        patchDocument.Remove("/x/y/z");
+        patchDocument.Replace("/d/e", "bar");
+        patchDocument.Test("/f/e", "t1");
+
+        var json = JsonSerializer.Serialize(patchDocument);
+
+        // Assert
+        var expectedJson = """
+        [{"value":"foo","path":"/a/b/c","op":"add"},{"value":null,"path":"/x/y/z","op":"remove"},
+        { "value":"bar","path":"/d/e","op":"replace"},{ "value":"t1","path":"/f/e","op":"test"}]
+        """;
+
+        // Act
+        Assert.True(JsonNode.DeepEquals(JsonNode.Parse(expectedJson), JsonNode.Parse(json)));
     }
 }
