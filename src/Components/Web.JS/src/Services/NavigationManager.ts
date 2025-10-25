@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import '@microsoft/dotnet-js-interop';
-import { resetScrollAfterNextBatch } from '../Rendering/Renderer';
+import { scheduleScrollReset, ScrollResetSchedule } from '../Rendering/Renderer';
 import { EventDelegator } from '../Rendering/Events/EventDelegator';
 import { attachEnhancedNavigationListener, getInteractiveRouterRendererId, handleClickForNavigationInterception, hasInteractiveRouter, hasProgrammaticEnhancedNavigationHandler, isForSamePath, isSamePageWithHash, isWithinBaseUriSpace, performProgrammaticEnhancedNavigation, performScrollToElementOnTheSamePage, scrollToElement, setHasInteractiveRouter, toAbsoluteUri } from './NavigationUtils';
 import { WebRendererId } from '../Rendering/WebRendererId';
@@ -170,7 +170,7 @@ async function performInternalNavigation(absoluteInternalHref: string, intercept
   // To avoid ugly flickering effects, we don't want to change the scroll position until
   // we render the new page. As a best approximation, wait until the next batch.
   if (!isForSamePath(absoluteInternalHref, location.href)) {
-    resetScrollAfterNextBatch();
+    scheduleScrollReset(ScrollResetSchedule.AfterBatch);
   }
 
   saveToBrowserHistory(absoluteInternalHref, replace, state);
