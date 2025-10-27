@@ -9,6 +9,7 @@
     <DefineConstants>$(DefineConstants);IS_BENCHMARKS</DefineConstants>
     <SkipMicrobenchmarksValidation>true</SkipMicrobenchmarksValidation>
     <AddPublicApiAnalyzers>false</AddPublicApiAnalyzers>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

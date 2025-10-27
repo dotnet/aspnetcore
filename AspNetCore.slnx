@@ -162,7 +162,7 @@
     <Project Path="src/DataProtection/Abstractions/test/Microsoft.AspNetCore.DataProtection.Abstractions.Tests.csproj" />
   </Folder>
   <Folder Name="/src/DataProtection/benchmarks/">
-    <Project Path="src/DataProtection/benchmarks/Microsoft.AspNetCore.DataProtection.MicroBenchmarks/Microsoft.AspNetCore.DataProtection.MicroBenchmarks.csproj" Id="71744108-dc12-4558-9788-ed62c9f0441c" />
+    <Project Path="src/DataProtection/benchmarks/Microsoft.AspNetCore.DataProtection.MicroBenchmarks/Microsoft.AspNetCore.DataProtection.MicroBenchmarks.csproj" />
   </Folder>
   <Folder Name="/src/DataProtection/Cryptography.Internal/">
     <Project Path="src/DataProtection/Cryptography.Internal/src/Microsoft.AspNetCore.Cryptography.Internal.csproj" />
