@@ -474,6 +474,8 @@ public partial class Startup
                 return ctx.Response.WriteAsync($"Failure: '{headerName}' TryGetValue");
             }
 
+            // ASP0019 recommends using Append or the indexer over Add, because it throws, but we're testing that behavior here.
+#pragma warning disable ASP0019 // Use IHeaderDictionary.Append or the indexer to append or set headers
             // Both default and StringValues.Empty should unset the header, allowing it to be added again.
             ArgumentException duplicateKeyException = null;
             ctx.Request.Headers.Add(headerName, "test");
@@ -492,6 +494,7 @@ public partial class Startup
                 duplicateKeyException = ex;
                 ctx.Request.Headers[headerName] = default;
             }
+#pragma warning restore ASP0019 // Use IHeaderDictionary.Append or the indexer to append or set headers
 
             if (duplicateKeyException is null)
             {

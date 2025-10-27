@@ -95,6 +95,8 @@ public partial class Startup
 
     private void WebSocketUpgradeFails(IApplicationBuilder app)
     {
+        // Suppress false positive. https://github.com/dotnet/aspnetcore/issues/64173
+#pragma warning disable ASP0016 // The method used to create a RequestDelegate returns Task<System.IO.Stream>
         app.Run(async context =>
         {
             var upgradeFeature = context.Features.Get<IHttpUpgradeFeature>();
@@ -105,6 +107,7 @@ public partial class Startup
                 throw new InvalidOperationException("Unexpected error from UpgradeAsync.");
             }
         });
+#pragma warning restore ASP0016 // The method used to create a RequestDelegate returns Task<System.IO.Stream>
     }
 
 #if !FORWARDCOMPAT
