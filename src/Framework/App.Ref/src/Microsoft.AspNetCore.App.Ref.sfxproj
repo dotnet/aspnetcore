@@ -101,17 +101,6 @@
     <PackageOverridesFile Include="$(ReferencePackageOverridesPath)" />
   </ItemGroup>
 
-  <!--
-    COMPAT: Remove the System.Security.Cryptography.Pkcs reference from the project.
-    We don't package System.Security.Cryptography.Pkcs into the reference pack for ASP.NET Core.
-  -->
-  <Target Name="_RemovePkcsReference" AfterTargets="ResolveReferences">
-    <ItemGroup>
-      <ReferencePath Remove="@(ReferencePath)" Condition="'%(FileName)' == 'System.Security.Cryptography.Pkcs'" />
-      <IgnoredReference Include="System.Security.Cryptography.Pkcs" />
-    </ItemGroup>
-  </Target>
-
   <Target Name="_AddAnalyzersToRefPack" BeforeTargets="GetFilesToPackage">
     <ItemGroup>
       <!-- Include analyzers from dotnet/runtime. Start with the non-Roslyn-versioned ones -->
