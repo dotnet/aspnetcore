@@ -62,7 +62,7 @@ public partial class Startup
         {
             var ws = await Upgrade(context);
 #if FORWARDCOMPAT
-            var appLifetime = app.ApplicationServices.GetRequiredService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
+            var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
 #else
             var appLifetime = app.ApplicationServices.GetRequiredService<IHostApplicationLifetime>();
 #endif
