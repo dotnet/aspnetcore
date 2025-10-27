@@ -14,8 +14,8 @@ interface BrowserRendererRegistry {
 
 export enum ScrollResetSchedule {
   None,
-  AfterBatch,
-  AfterDocumentUpdate,
+  AfterBatch, // Reset scroll after interactive components finish rendering (interactive navigation)
+  AfterDocumentUpdate, // Reset scroll after enhanced navigation updates the DOM (enhanced navigation)
 }
 
 const browserRenderers: BrowserRendererRegistry = {};
@@ -99,7 +99,7 @@ export function renderBatch(browserRendererId: number, batch: RenderBatch): void
 }
 
 export function scheduleScrollReset(timing: ScrollResetSchedule): void {
-  if (timing != ScrollResetSchedule.AfterBatch) {
+  if (timing !== ScrollResetSchedule.AfterBatch) {
       pendingScrollResetTiming = timing;
       return;
   }
