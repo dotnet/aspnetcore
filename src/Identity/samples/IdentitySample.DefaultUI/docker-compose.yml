@@ -31,7 +31,7 @@ services:
       - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=IdentitySample_V3;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;MultipleActiveResultSets=true
       # Social login credentials (set these in a .env file or here)
       - Authentication__Google__ClientId=${GoogleClientId}
-      - Authentication__Google__ClientSecret={GoogleClientSecret}
+      - Authentication__Google__ClientSecret=${GoogleClientSecret}
     ports:
       - "5000:80"
     volumes:
