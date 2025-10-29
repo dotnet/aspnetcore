@@ -86,8 +86,6 @@ virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.ClaimType.get -> s
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.ClaimType.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.ClaimValue.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.ClaimValue.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.get -> int
-virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.InitializeFromClaim(System.Security.Claims.Claim? other) -> void
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.RoleId.get -> TKey
 virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.RoleId.set -> void
@@ -126,8 +124,6 @@ virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ClaimType.get -> s
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ClaimType.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ClaimValue.get -> string?
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ClaimValue.set -> void
-virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.get -> int
-virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.InitializeFromClaim(System.Security.Claims.Claim! claim) -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.ToClaim() -> System.Security.Claims.Claim!
 virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.UserId.get -> TKey

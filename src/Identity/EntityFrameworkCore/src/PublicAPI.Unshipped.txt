@@ -1,4 +1,6 @@
 #nullable enable
+override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserToken, TUserPasskey>.FindTokenByUniqueIndexAsync(TUser! user, string! loginProvider, string! name, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserToken?>!
+override Microsoft.AspNetCore.Identity.EntityFrameworkCore.UserStore<TUser, TRole, TContext, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim, TUserPasskey>.FindTokenByUniqueIndexAsync(TUser! user, string! loginProvider, string! name, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserToken?>!
 Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken, TUserPasskey>
 Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken, TUserPasskey>.IdentityDbContext() -> void
 Microsoft.AspNetCore.Identity.EntityFrameworkCore.IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken, TUserPasskey>.IdentityDbContext(Microsoft.EntityFrameworkCore.DbContextOptions! options) -> void

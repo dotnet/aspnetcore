@@ -1,0 +1,51 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: identity-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrong@Passw0rd
+      - MSSQL_PID=Developer
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - identity-network
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P YourStrong@Passw0rd -No -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  webapp:
+    build:
+      context: ../../../../
+      dockerfile: src/Identity/samples/IdentitySample.DefaultUI/Dockerfile
+    container_name: identity-webapp
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - OPENSSL_CONF=/dev/null
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=IdentitySample_V3;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;MultipleActiveResultSets=true
+      # Social login credentials (set these in a .env file or here)
+      - Authentication__Google__ClientId=${GoogleClientId}
+      - Authentication__Google__ClientSecret={GoogleClientSecret}
+    ports:
+      - "5000:80"
+    volumes:
+      - dataprotection-keys:/root/.aspnet/DataProtection-Keys
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    networks:
+      - identity-network
+
+volumes:
+  sqlserver-data:
+  dataprotection-keys:
+
+networks:
+  identity-network:
+    driver: bridge

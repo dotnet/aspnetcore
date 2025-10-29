@@ -354,7 +354,13 @@ public class RoleStore<TRole, TContext, TKey, TUserRole, TRoleClaim> :
         ArgumentNullException.ThrowIfNull(role);
         ArgumentNullException.ThrowIfNull(claim);
 
-        RoleClaims.Add(CreateRoleClaim(role, claim));
+        var roleClaim = CreateRoleClaim(role, claim);
+        // For string keys, ensure Id is set before adding to EF
+        if (typeof(TKey) == typeof(string) && EqualityComparer<TKey>.Default.Equals(roleClaim.Id, default!))
+        {
+            roleClaim.Id = (TKey)(object)Guid.NewGuid().ToString();
+        }
+        RoleClaims.Add(roleClaim);
         return Task.FromResult(false);
     }
 

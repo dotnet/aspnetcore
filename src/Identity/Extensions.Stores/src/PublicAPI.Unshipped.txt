@@ -1,4 +1,5 @@
 #nullable enable
+abstract Microsoft.AspNetCore.Identity.UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>.FindTokenByUniqueIndexAsync(TUser! user, string! loginProvider, string! name, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task<TUserToken?>!
 Microsoft.AspNetCore.Identity.IdentityPasskeyData
 Microsoft.AspNetCore.Identity.IdentityPasskeyData.IdentityPasskeyData() -> void
 Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>
@@ -23,9 +24,17 @@ virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.SignCount.get -> uint
 virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.SignCount.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Transports.get -> string![]?
 virtual Microsoft.AspNetCore.Identity.IdentityPasskeyData.Transports.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.get -> TKey
+virtual Microsoft.AspNetCore.Identity.IdentityRoleClaim<TKey>.Id.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.get -> TKey
+virtual Microsoft.AspNetCore.Identity.IdentityUserClaim<TKey>.Id.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.Id.get -> TKey
+virtual Microsoft.AspNetCore.Identity.IdentityUserLogin<TKey>.Id.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.CredentialId.get -> byte[]!
 virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.CredentialId.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.Data.get -> Microsoft.AspNetCore.Identity.IdentityPasskeyData!
 virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.Data.set -> void
 virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.UserId.get -> TKey
 virtual Microsoft.AspNetCore.Identity.IdentityUserPasskey<TKey>.UserId.set -> void
+virtual Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>.Id.get -> TKey
+virtual Microsoft.AspNetCore.Identity.IdentityUserToken<TKey>.Id.set -> void
