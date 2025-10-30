@@ -2,7 +2,7 @@
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFramework>$(NetMinimum)</TargetFramework>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(NetMinimum)</TargetFrameworks>
     <AssemblyName>InProcessWebSite</AssemblyName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
