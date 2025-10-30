@@ -2,7 +2,7 @@
   <Import Project="..\..\..\..\build\testsite.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(NetMinimum)</TargetFrameworks>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
     <AssemblyName>InProcessWebSite</AssemblyName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
     <CompileUsingReferenceAssemblies>false</CompileUsingReferenceAssemblies>
@@ -16,7 +16,7 @@
     <!-- ReferenceTestTasks is workaround for https://github.com/dotnet/sdk/issues/2482 -->
     <TestAssetPublishProfile Include="Standalone-x64"
         Condition=" '$(TargetArchitecture)' != 'arm' "
-        Properties="SelfContained=true;RuntimeIdentifier=win-x64;ReferenceTestTasks=false;TargetFramework=$(TargetFramework)" />
+        Properties="SelfContained=true;RuntimeIdentifier=win-x64;ReferenceTestTasks=false" />
   </ItemGroup>
 
   <ItemGroup>
