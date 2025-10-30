@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using IdentitySample.DefaultUI.Data;
+using IdentitySample.DefaultUI.Services;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
@@ -42,9 +44,33 @@ public class Startup
 
         services.AddMvc().AddNewtonsoftJson();
 
-        services.AddDefaultIdentity<ApplicationUser>(o => o.SignIn.RequireConfirmedAccount = true)
+        services.AddDefaultIdentity<ApplicationUser>(o =>
+        {
+            o.SignIn.RequireConfirmedAccount = true;
+            // Configure Identity to use V3 schema with Id primary keys and unique indexes
+            o.Stores.SchemaVersion = IdentitySchemaVersions.Version3;
+        })
              .AddRoles<IdentityRole>()
              .AddEntityFrameworkStores<ApplicationDbContext>();
+
+        // Add external authentication providers
+        var authentication = services.AddAuthentication();
+
+        // Google Authentication
+        var googleClientId = Configuration["Authentication:Google:ClientId"];
+        var googleClientSecret = Configuration["Authentication:Google:ClientSecret"];
+        if (!string.IsNullOrEmpty(googleClientId) && !string.IsNullOrEmpty(googleClientSecret))
+        {
+            authentication.AddGoogle(options =>
+            {
+                options.ClientId = googleClientId;
+                options.ClientSecret = googleClientSecret;
+                options.SaveTokens = true;
+            });
+        }
+
+        // Add email sender for account confirmation
+        services.AddTransient<IEmailSender, EmailSender>();
 
         services.AddDatabaseDeveloperPageExceptionFilter();
     }

@@ -262,7 +262,7 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
         cancellationToken.ThrowIfCancellationRequested();
         ThrowIfDisposed();
         var id = ConvertIdFromString(userId);
-        return UsersSet.FindAsync(new object?[] { id }, cancellationToken).AsTask();
+        return UsersSet.FindAsync([id], cancellationToken).AsTask();
     }
 
     /// <summary>
@@ -529,8 +529,20 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     /// <param name="name">The name of the token.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The user token if it exists.</returns>
+    [Obsolete("This method uses composite primary keys from V1/V2 schema. Consider using FindTokenByUniqueIndexAsync for V3 schema with Id primary key and unique indexes.")]
     protected override Task<TUserToken?> FindTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
         => UserTokens.FindAsync(new object[] { user.Id, loginProvider, name }, cancellationToken).AsTask();
+
+    /// <summary>
+    /// Find a user token if it exists using the unique index (for V3 schema with Id primary key).
+    /// </summary>
+    /// <param name="user">The token owner.</param>
+    /// <param name="loginProvider">The login provider for the token.</param>
+    /// <param name="name">The name of the token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The user token if it exists.</returns>
+    protected override Task<TUserToken?> FindTokenByUniqueIndexAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
+        => UserTokens.SingleOrDefaultAsync(ut => ut.UserId.Equals(user.Id) && ut.LoginProvider == loginProvider && ut.Name == name, cancellationToken);
 
     /// <summary>
     /// Add a new user token.
@@ -539,6 +551,11 @@ public class UserOnlyStore<TUser, TContext, TKey, TUserClaim, TUserLogin, TUserT
     /// <returns></returns>
     protected override Task AddUserTokenAsync(TUserToken token)
     {
+        // For string keys in V3 schema, ensure Id is set before adding to EF
+        if (typeof(TKey) == typeof(string) && EqualityComparer<TKey>.Default.Equals(token.Id, default!))
+        {
+            token.Id = (TKey)(object)Guid.NewGuid().ToString();
+        }
         UserTokens.Add(token);
         return Task.CompletedTask;
     }

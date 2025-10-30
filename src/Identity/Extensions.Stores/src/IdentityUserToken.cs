@@ -12,7 +12,11 @@ namespace Microsoft.AspNetCore.Identity;
 public class IdentityUserToken<TKey> where TKey : IEquatable<TKey>
 {
     /// <summary>
-    /// Gets or sets the primary key of the user that the token belongs to.
+    /// Gets or sets the primary key.
+    /// </summary>
+    public virtual TKey Id { get; set; } = default!;
+    /// <summary>
+    /// Gets or sets the foreign kwy for the user identifier.
     /// </summary>
     public virtual TKey UserId { get; set; } = default!;
 

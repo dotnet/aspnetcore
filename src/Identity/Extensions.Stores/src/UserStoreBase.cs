@@ -78,15 +78,13 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     /// <param name="login">The associated login.</param>
     /// <returns></returns>
     protected virtual TUserLogin CreateUserLogin(TUser user, UserLoginInfo login)
-    {
-        return new TUserLogin
+        => new TUserLogin
         {
             UserId = user.Id,
             ProviderKey = login.ProviderKey,
             LoginProvider = login.LoginProvider,
             ProviderDisplayName = login.ProviderDisplayName
         };
-    }
 
     /// <summary>
     /// Called to create a new instance of a <see cref="IdentityUserToken{TKey}"/>.
@@ -97,15 +95,13 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     /// <param name="value">The value of the user token.</param>
     /// <returns></returns>
     protected virtual TUserToken CreateUserToken(TUser user, string loginProvider, string name, string? value)
-    {
-        return new TUserToken
+        => new TUserToken
         {
             UserId = user.Id,
             LoginProvider = loginProvider,
             Name = name,
             Value = value
         };
-    }
 
     /// <summary>
     /// Gets the user identifier for the specified <paramref name="user"/>.
@@ -800,7 +796,18 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
     /// <param name="name">The name of the token.</param>
     /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
     /// <returns>The user token if it exists.</returns>
+    [Obsolete("This method uses composite primary keys from V1/V2 schema. Consider using FindTokenByUniqueIndexAsync for V3 schema with Id primary key and unique indexes.")]
     protected abstract Task<TUserToken?> FindTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Find a user token if it exists using the unique index (for V3 schema with Id primary key).
+    /// </summary>
+    /// <param name="user">The token owner.</param>
+    /// <param name="loginProvider">The login provider for the token.</param>
+    /// <param name="name">The name of the token.</param>
+    /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+    /// <returns>The user token if it exists.</returns>
+    protected abstract Task<TUserToken?> FindTokenByUniqueIndexAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken);
 
     /// <summary>
     /// Add a new user token.
@@ -832,7 +839,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
 
         ArgumentNullThrowHelper.ThrowIfNull(user);
 
-        var token = await FindTokenAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
+        var token = await FindTokenByUniqueIndexAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
         if (token == null)
         {
             await AddUserTokenAsync(CreateUserToken(user, loginProvider, name, value)).ConfigureAwait(false);
@@ -857,7 +864,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
         ThrowIfDisposed();
 
         ArgumentNullThrowHelper.ThrowIfNull(user);
-        var entry = await FindTokenAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
+        var entry = await FindTokenByUniqueIndexAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
         if (entry != null)
         {
             await RemoveUserTokenAsync(entry).ConfigureAwait(false);
@@ -878,7 +885,7 @@ public abstract class UserStoreBase<TUser, [DynamicallyAccessedMembers(Dynamical
         ThrowIfDisposed();
 
         ArgumentNullThrowHelper.ThrowIfNull(user);
-        var entry = await FindTokenAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
+        var entry = await FindTokenByUniqueIndexAsync(user, loginProvider, name, cancellationToken).ConfigureAwait(false);
         return entry?.Value;
     }
 
