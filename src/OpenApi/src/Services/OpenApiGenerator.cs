@@ -116,9 +116,18 @@ internal sealed class OpenApiGenerator
 
         var eligibileAnnotations = new Dictionary<int, (Type?, MediaTypeCollection)>();
 
+        // Track custom descriptions for each status code
+        var customDescriptions = new Dictionary<int, string?>();
+
         foreach (var responseMetadata in producesResponseMetadata)
         {
             var statusCode = responseMetadata.StatusCode;
+
+            // Capture custom description if provided
+            if (!string.IsNullOrEmpty(responseMetadata.Description))
+            {
+                customDescriptions[statusCode] = responseMetadata.Description;
+            }
 
             var discoveredTypeAnnotation = responseMetadata.Type;
             var discoveredContentTypeAnnotation = new MediaTypeCollection();
@@ -204,10 +213,15 @@ internal sealed class OpenApiGenerator
                 responseContent[contentType] = new OpenApiMediaType();
             }
 
+            // Use custom description if available, otherwise fall back to default
+            var description = customDescriptions.TryGetValue(statusCode, out var customDesc) && !string.IsNullOrEmpty(customDesc)
+                ? customDesc
+                : GetResponseDescription(statusCode);
+
             responses[statusCode.ToString(CultureInfo.InvariantCulture)] = new OpenApiResponse
             {
                 Content = responseContent,
-                Description = GetResponseDescription(statusCode)
+                Description = description
             };
         }
         return responses;
