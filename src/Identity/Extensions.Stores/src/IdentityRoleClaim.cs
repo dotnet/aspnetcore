@@ -15,7 +15,7 @@ public class IdentityRoleClaim<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// Gets or sets the identifier for this role claim.
     /// </summary>
-    public virtual int Id { get; set; } = default!;
+    public virtual TKey Id { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the of the primary key of the role associated with this claim.
