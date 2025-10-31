@@ -362,25 +362,24 @@ public class ResponseCompressionMiddlewareTest
     }
 
     [Theory]
-    [InlineData(new[] { "identity;q=0.5", "gzip;q=1" }, 29)]
-    [InlineData(new[] { "identity;q=0", "gzip;q=0.8" }, 29)]
-    [InlineData(new[] { "identity;q=0.5", "gzip" }, 29)]
-    public async Task Request_AcceptWithHigherCompressionQuality_Compressed(string[] acceptEncodings, int expectedBodyLength)
+    [InlineData("identity;q=0.5", "gzip;q=1")]
+    [InlineData("identity;q=0", "gzip;q=0.8")]
+    [InlineData("identity;q=0.5", "gzip")]
+    public async Task Request_AcceptWithHigherCompressionQuality_Compressed(string encoding1, string encoding2)
     {
-        _ = expectedBodyLength; // Parameter kept for test data compatibility
-        var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: acceptEncodings, responseType: TextPlain);
+        var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { encoding1, encoding2 }, responseType: TextPlain);
 
         await CheckResponseCompressed(response, "gzip");
         AssertCompressedWithLog(logMessages, "gzip");
     }
 
     [Theory]
-    [InlineData(new[] { "gzip;q=0.5", "identity;q=0.8" }, 100)]
-    public async Task Request_AcceptWithhigherIdentityQuality_NotCompressed(string[] acceptEncodings, int expectedBodyLength)
+    [InlineData("gzip;q=0.5", "identity;q=0.8")]
+    public async Task Request_AcceptWithhigherIdentityQuality_NotCompressed(string encoding1, string encoding2)
     {
-        var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: acceptEncodings, responseType: TextPlain);
+        var (response, logMessages) = await InvokeMiddleware(100, requestAcceptEncodings: new[] { encoding1, encoding2 }, responseType: TextPlain);
 
-        CheckResponseNotCompressed(response, expectedBodyLength: expectedBodyLength, sendVaryHeader: true);
+        CheckResponseNotCompressed(response, expectedBodyLength: 100, sendVaryHeader: true);
         Assert.Equal(3, logMessages.Count);
         AssertLog(logMessages.First(), LogLevel.Trace, "This request accepts compression.");
         AssertLog(logMessages.Skip(1).First(), LogLevel.Trace, "Response compression is available for this Content-Type.");
@@ -638,10 +637,9 @@ public class ResponseCompressionMiddlewareTest
     }
 
     [Theory]
-    [MemberData(nameof(SupportedEncodingsWithBodyLength))]
-    public async Task FlushHeaders_SendsHeaders_Compresses(string encoding, int expectedBodyLength)
+    [MemberData(nameof(SupportedEncodings))]
+    public async Task FlushHeaders_SendsHeaders_Compresses(string encoding)
     {
-        _ = expectedBodyLength; // Parameter kept for test data compatibility
         var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var host = new HostBuilder()
@@ -685,10 +683,9 @@ public class ResponseCompressionMiddlewareTest
     }
 
     [Theory]
-    [MemberData(nameof(SupportedEncodingsWithBodyLength))]
-    public async Task FlushAsyncHeaders_SendsHeaders_Compresses(string encoding, int expectedBodyLength)
+    [MemberData(nameof(SupportedEncodings))]
+    public async Task FlushAsyncHeaders_SendsHeaders_Compresses(string encoding)
     {
-        _ = expectedBodyLength; // Parameter kept for test data compatibility
         var responseReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
         using var host = new HostBuilder()
