@@ -18,7 +18,7 @@
       ]
     },
     "vs": {
-      "version": "17.13",
+      "version": "17.14",
       "components": [
         "Microsoft.VisualStudio.Component.VC.ATL",
         "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
@@ -26,7 +26,7 @@
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
       ]
     },
-    "xcopy-msbuild": "17.13.0"
+    "xcopy-msbuild": "17.14.16"
   },
   "native-tools": {
     "jdk": "latest"
