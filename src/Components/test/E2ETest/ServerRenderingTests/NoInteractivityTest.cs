@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using System;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -125,6 +126,42 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         AssertReExecutionPageRendered();
     }
 
+    [Fact]
+    public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404()
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+
+        // using query for controlling router parameters does not work in re-execution scenario, we have to rely on other communication channel
+        const string useOnNavigateAsyncSwitch = "Components.TestServer.RazorComponents.UseOnNavigateAsync";
+        AppContext.SetSwitch(useOnNavigateAsyncSwitch, true);
+        try
+        {
+            Navigate($"{ServerPathBase}/reexecution/not-existing-page");
+            AssertReExecutionPageRendered();
+        }
+        finally
+        {
+            AppContext.SetSwitch(useOnNavigateAsyncSwitch, false);
+        }
+    }
+
+    [Fact]
+    public void BrowserNavigationToLazyLoadedRoute_WaitsForOnNavigateAsyncGuard()
+    {
+        const string navigationGuardSwitch = "Components.TestServer.RazorComponents.UseNavigationCompletionGuard";
+        AppContext.SetSwitch(navigationGuardSwitch, true);
+
+        try
+        {
+            Navigate($"{ServerPathBase}/routing/with-lazy-assembly");
+            Browser.Equal("Lazy route rendered", () => Browser.Exists(By.Id("lazy-route-status")).Text);
+        }
+        finally
+        {
+            AppContext.SetSwitch(navigationGuardSwitch, false);
+        }
+    }
+
     private void AssertReExecutionPageRendered() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 
@@ -192,7 +229,7 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     [InlineData(false, true)]
     [InlineData(false, false)]
     // This tests the application subscribing to OnNotFound event and setting NotFoundEventArgs.Path, opposed to the framework doing it for the app.
-    public void NotFoundSetOnInitialization_ApplicationSubscribesToNotFoundEventToSetNotFoundPath_SSR (bool streaming, bool customRouter)
+    public void NotFoundSetOnInitialization_ApplicationSubscribesToNotFoundEventToSetNotFoundPath_SSR(bool streaming, bool customRouter)
     {
         string streamingPath = streaming ? "-streaming" : "";
         string testUrl = $"{ServerPathBase}/set-not-found-ssr{streamingPath}?useCustomRouter={customRouter}&appSetsEventArgsPath=true";
