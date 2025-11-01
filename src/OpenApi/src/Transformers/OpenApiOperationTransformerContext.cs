@@ -17,9 +17,14 @@ public sealed class OpenApiOperationTransformerContext
     public required string DocumentName { get; init; }
 
     /// <summary>
-    /// Gets the API description associated with target operation.
+    /// Gets the primary API description associated with target operation.
     /// </summary>
     public required ApiDescription Description { get; init; }
+
+    /// <summary>
+    /// Gets all API descriptions that were merged to create the target operation.
+    /// </summary>
+    public required IReadOnlyList<ApiDescription> AllDescriptions { get; init; }
 
     /// <summary>
     /// Gets the application services associated with the current document the target operation is in.
