@@ -62,7 +62,7 @@ internal static class HttpRuleParser
 
         var subspan = input.AsSpan(startIndex);
         var firstNonTokenCharIdx = subspan.IndexOfAnyExcept(TokenChars);
-        return (firstNonTokenCharIdx == -1) ? subspan.Length : firstNonTokenCharIdx;
+        return (firstNonTokenCharIdx < 0) ? subspan.Length : firstNonTokenCharIdx;
     }
 
     internal static int GetWhitespaceLength(StringSegment input, int startIndex)
@@ -172,7 +172,7 @@ internal static class HttpRuleParser
 
         // Quoted-char has 2 characters. Check whether there are 2 chars left ('\' + char)
         // If so, check whether the character is in the range 0-127. If not, it's an invalid value.
-        if ((startIndex + 2 > input.Length) || (input[startIndex + 1] > 127))
+        if ((startIndex > input.Length - 2) || (input[startIndex + 1] > 127))
         {
             return HttpParseResult.InvalidFormat;
         }

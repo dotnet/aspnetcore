@@ -180,7 +180,7 @@ public class EmbeddedFileProvider : IFileProvider
 
     private static bool HasInvalidPathChars(string path)
     {
-        return path.IndexOfAny(_invalidFileNameChars) != -1;
+        return path.IndexOfAny(_invalidFileNameChars) >= 0;
     }
 
     #region Helper methods
