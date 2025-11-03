@@ -18,16 +18,16 @@ public interface IValidatableInfoResolver
     /// </summary>
     /// <param name="type">The type to get validation information for.</param>
     /// <param name="validatableInfo">
-    /// The output parameter that will contain the validatable information if found.
+    /// When this method returns, contains the validatable information if found.
     /// </param>
-    /// <returns><see langword="true" /> if the validatable type information was found; otherwise, false.</returns>
+    /// <returns><see langword="true" /> if the validatable type information was found; otherwise, <see langword="false" />.</returns>
     bool TryGetValidatableTypeInfo(Type type, [NotNullWhen(true)] out IValidatableInfo? validatableInfo);
 
     /// <summary>
     /// Gets validation information for the specified parameter.
     /// </summary>
     /// <param name="parameterInfo">The parameter to get validation information for.</param>
-    /// <param name="validatableInfo">The output parameter that will contain the validatable information if found.</param>
-    /// <returns><see langword="true" /> if the validatable parameter information was found; otherwise, false.</returns>
+    /// <param name="validatableInfo">When this method returns, contains the validatable information if found.</param>
+    /// <returns><see langword="true" /> if the validatable parameter information was found; otherwise, <see langword="false" />.</returns>
     bool TryGetValidatableParameterInfo(ParameterInfo parameterInfo, [NotNullWhen(true)] out IValidatableInfo? validatableInfo);
 }
