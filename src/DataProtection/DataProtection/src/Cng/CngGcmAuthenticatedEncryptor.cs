@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.Cryptography.Cng;
 using Microsoft.AspNetCore.Cryptography.SafeHandles;
@@ -50,33 +51,22 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         _contextHeader = CreateContextHeader();
     }
 
-    public int GetDecryptedSize(int cipherTextLength)
+    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) where TWriter : IBufferWriter<byte>
+#if NET
+        , allows ref struct
+#endif
     {
         // Argument checking: input must at the absolute minimum contain a key modifier, nonce, and tag
-        if (cipherTextLength < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
+        if (ciphertext.Length < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
         {
             throw Error.CryptCommon_PayloadInvalid();
         }
 
-        // in GCM ciphertext is of exactly the same length as plaintext
-        return checked(cipherTextLength - (int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES));
-    }
+        var plaintextLength = checked(ciphertext.Length - (int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES));
 
-    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
-    {
-        bytesWritten = 0;
-        var plaintextLength = GetDecryptedSize(cipherText.Length);
-            
-        // Check if destination is large enough
-        if (destination.Length < plaintextLength)
-        {
-            return false;
-        }
-
-        // Assumption: cipherText := { keyModifier || nonce || encryptedData || authenticationTag }
-        fixed (byte* pbCiphertext = cipherText)
+        // Assumption: ciphertext := { keyModifier || nonce || encryptedData || authenticationTag }
+        fixed (byte* pbCiphertext = ciphertext)
         fixed (byte* pbAdditionalAuthenticatedData = additionalAuthenticatedData)
-        fixed (byte* pbDestination = destination)
         {
             // Calculate offsets
             byte* pbKeyModifier = pbCiphertext;
@@ -98,39 +88,43 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
                     pbDerivedKey: pbSymmetricDecryptionSubkey,
                     cbDerivedKey: _symmetricAlgorithmSubkeyLengthInBytes);
 
+                // Get buffer from writer with the plaintext size
+                var buffer = destination.GetSpan(plaintextLength);
+
                 // Perform the decryption operation
                 using (var decryptionSubkeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricDecryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
                 {
-                    byte dummy;
-                    byte* pbPlaintext = (plaintextLength > 0) ? pbDestination : &dummy; // CLR doesn't like pinning empty buffers
+                    fixed (byte* pbBuffer = buffer)
+                    {
+                        byte dummy;
+                        byte* pbPlaintext = (plaintextLength > 0) ? pbBuffer : &dummy; // CLR doesn't like pinning empty buffers
 
-                    BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO authInfo;
-                    BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO.Init(out authInfo);
-                    authInfo.pbNonce = pbNonce;
-                    authInfo.cbNonce = NONCE_SIZE_IN_BYTES;
-                    authInfo.pbTag = pbAuthTag;
-                    authInfo.cbTag = TAG_SIZE_IN_BYTES;
+                        BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO authInfo;
+                        BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO.Init(out authInfo);
+                        authInfo.pbNonce = pbNonce;
+                        authInfo.cbNonce = NONCE_SIZE_IN_BYTES;
+                        authInfo.pbTag = pbAuthTag;
+                        authInfo.cbTag = TAG_SIZE_IN_BYTES;
 
-                    // The call to BCryptDecrypt will also validate the authentication tag
-                    uint cbDecryptedBytesWritten;
-                    var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
-                        hKey: decryptionSubkeyHandle,
-                        pbInput: pbEncryptedData,
-                        cbInput: (uint)plaintextLength,
-                        pPaddingInfo: &authInfo,
-                        pbIV: null, // IV not used; nonce provided in pPaddingInfo
-                        cbIV: 0,
-                        pbOutput: pbPlaintext,
-                        cbOutput: (uint)plaintextLength,
-                        pcbResult: out cbDecryptedBytesWritten,
-                        dwFlags: 0);
-                    UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
-                    CryptoUtil.Assert(cbDecryptedBytesWritten == plaintextLength, "cbDecryptedBytesWritten == plaintextLength");
+                        // The call to BCryptDecrypt will also validate the authentication tag
+                        uint cbDecryptedBytesWritten;
+                        var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
+                            hKey: decryptionSubkeyHandle,
+                            pbInput: pbEncryptedData,
+                            cbInput: (uint)plaintextLength,
+                            pPaddingInfo: &authInfo,
+                            pbIV: null, // IV not used; nonce provided in pPaddingInfo
+                            cbIV: 0,
+                            pbOutput: pbPlaintext,
+                            cbOutput: (uint)plaintextLength,
+                            pcbResult: out cbDecryptedBytesWritten,
+                            dwFlags: 0);
+                        UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
+                        CryptoUtil.Assert(cbDecryptedBytesWritten == plaintextLength, "cbDecryptedBytesWritten == plaintextLength");
 
-                    // At this point, retVal := { decryptedPayload }
-                    // And we're done!
-                    bytesWritten = (int)cbDecryptedBytesWritten;
-                    return true;
+                        // Advance the writer by the number of bytes written
+                        destination.Advance((int)cbDecryptedBytesWritten);
+                    }
                 }
             }
             finally
@@ -146,21 +140,16 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         ciphertext.Validate();
         additionalAuthenticatedData.Validate();
 
-        var size = GetDecryptedSize(ciphertext.Count);
-        var plaintext = new byte[size];
-        var destination = plaintext.AsSpan();
-
-        if (!TryDecrypt(
-            cipherText: ciphertext,
-            additionalAuthenticatedData: additionalAuthenticatedData,
-            destination: destination,
-            out var bytesWritten))
-        {
-            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
-        }
-
-        CryptoUtil.Assert(bytesWritten == size, "bytesWritten == size");
-        return plaintext;
+        var outputSize = checked(ciphertext.Count - (int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES));
+#if NET
+        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        Decrypt(ciphertext, additionalAuthenticatedData, refPooledBuffer);
+        return refPooledBuffer.WrittenSpan.ToArray();
+#else
+        using var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
+        Decrypt(ciphertext, additionalAuthenticatedData, pooledArrayBuffer);
+        return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+#endif
     }
 
     // 'pbNonce' must point to a 96-bit buffer.
@@ -194,39 +183,30 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         }
     }
 
-    public int GetEncryptedSize(int plainTextLength)
+    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) where TWriter : IBufferWriter<byte>
+#if NET
+    , allows ref struct
+#endif
     {
-        // A buffer to hold the key modifier, nonce, encrypted data, and tag.
-        // In GCM, the encrypted output will be the same length as the plaintext input.
-        return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plainTextLength + TAG_SIZE_IN_BYTES));
-    }
-
-    public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
-    {
-        bytesWritten = 0;
-
-        // before performing steps, make sure destination is large enough to hold the output
-        var totalRequiredSize = checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Length + TAG_SIZE_IN_BYTES));
-        if (destination.Length < totalRequiredSize)
-        {
-            return false;
-        }
-
         try
         {
-            fixed (byte* pbDestination = destination)
+            // Calculate total required size: keyModifier + nonce + plaintext + tag
+            // In GCM, ciphertext length equals plaintext length
+            var totalRequiredSize = checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Length + TAG_SIZE_IN_BYTES));
+
+            // Get buffer from writer with the required total size
+            var buffer = destination.GetSpan(totalRequiredSize);
+
+            fixed (byte* pbBuffer = buffer)
             {
                 // Calculate offsets
-                byte* pbKeyModifier = pbDestination;
+                byte* pbKeyModifier = pbBuffer;
                 byte* pbNonce = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
                 byte* pbEncryptedData = &pbNonce[NONCE_SIZE_IN_BYTES];
                 byte* pbAuthTag = &pbEncryptedData[plaintext.Length];
 
                 // Randomly generate the key modifier and nonce
                 _genRandom.GenRandom(pbKeyModifier, KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES);
-                bytesWritten += checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES));
-
-                // At this point, retVal := { preBuffer | keyModifier | nonce | _____ | _____ | postBuffer }
 
                 // Use the KDF to generate a new symmetric block cipher key
                 // We'll need a temporary buffer to hold the symmetric encryption subkey
@@ -261,10 +241,8 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
                             pbTag: pbAuthTag);
                     }
 
-                    // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
-                    // And we're done!
-                    bytesWritten += plaintext.Length + checked((int)TAG_SIZE_IN_BYTES);
-                    return true;
+                    // Advance the writer by the total bytes written
+                    destination.Advance(totalRequiredSize);
                 }
                 finally
                 {
@@ -287,21 +265,23 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         plaintext.Validate();
         additionalAuthenticatedData.Validate();
 
-        var size = GetEncryptedSize(plaintext.Count);
-        var ciphertext = new byte[preBufferSize + size + postBufferSize];
-        var destination = ciphertext.AsSpan((int)preBufferSize, size);
+        var size = checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Count + TAG_SIZE_IN_BYTES));
+        var outputSize = (int)(preBufferSize + size + postBufferSize);
+#if NET
+        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
 
-        if (!TryEncrypt(
-            plaintext: plaintext,
-            additionalAuthenticatedData: additionalAuthenticatedData,
-            destination: destination,
-            out var bytesWritten))
-        {
-            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
-        }
+        Encrypt(plaintext, additionalAuthenticatedData, refPooledBuffer);
+        CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == size, "bytesWritten == size");
 
-        CryptoUtil.Assert(bytesWritten == size, "bytesWritten == size");
-        return ciphertext;
+        return refPooledBuffer.WrittenSpan.ToArray();
+#else
+        using var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
+
+        Encrypt(plaintext, additionalAuthenticatedData, pooledArrayBuffer);
+        CryptoUtil.Assert(pooledArrayBuffer.WrittenCount == size, "bytesWritten == size");
+
+        return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+#endif
     }
 
     private byte[] CreateContextHeader()
