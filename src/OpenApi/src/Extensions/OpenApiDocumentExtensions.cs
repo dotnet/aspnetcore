@@ -21,8 +21,7 @@ internal static class OpenApiDocumentExtensions
         document.Components.Schemas ??= new Dictionary<string, IOpenApiSchema>();
         document.Components.Schemas[schemaId] = schema;
         document.Workspace ??= new();
-        var location = document.BaseUri + "/components/schemas/" + schemaId;
-        document.Workspace.RegisterComponentForDocument(document, schema, location);
+        document.Workspace.RegisterComponentForDocument(document, schema, schemaId);
 
         object? description = null;
         object? example = null;
