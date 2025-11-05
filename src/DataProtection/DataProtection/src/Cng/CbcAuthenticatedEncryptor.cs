@@ -57,32 +57,28 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         _contextHeader = CreateContextHeader();
     }
 
-    public int GetDecryptedSize(int cipherTextLength)
+    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) where TWriter : IBufferWriter<byte>
+#if NET
+        , allows ref struct
+#endif
     {
         // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
-        if (cipherTextLength < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _hmacAlgorithmDigestLengthInBytes))
+        if (ciphertext.Length < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _hmacAlgorithmDigestLengthInBytes))
         {
             throw Error.CryptCommon_PayloadInvalid();
         }
 
-        return checked(cipherTextLength - (int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _hmacAlgorithmDigestLengthInBytes));
-    }
+        var cbEncryptedDataLength = checked(ciphertext.Length - (int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _hmacAlgorithmDigestLengthInBytes));
 
-    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
-    {
-        bytesWritten = 0;
-        var cbEncryptedData = GetDecryptedSize(cipherText.Length);
-
-        // Assumption: cipherText := { keyModifier | IV | encryptedData | MAC(IV | encryptedPayload) }
-        fixed (byte* pbCiphertext = cipherText)
+        // Assumption: ciphertext := { keyModifier | IV | encryptedData | MAC(IV | encryptedPayload) }
+        fixed (byte* pbCiphertext = ciphertext)
         fixed (byte* pbAdditionalAuthenticatedData = additionalAuthenticatedData)
-        fixed (byte* pbDestination = destination)
         {
             // Calculate offsets
             byte* pbKeyModifier = pbCiphertext;
             byte* pbIV = &pbKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
             byte* pbEncryptedData = &pbIV[_symmetricAlgorithmBlockSizeInBytes];
-            byte* pbActualHmac = &pbEncryptedData[cbEncryptedData];
+            byte* pbActualHmac = &pbEncryptedData[cbEncryptedDataLength];
 
             // Use the KDF to recreate the symmetric encryption and HMAC subkeys
             // We'll need a temporary buffer to hold them
@@ -108,7 +104,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
                 // keyModifier since that value was provided to the KDF earlier.
                 using (var hashHandle = _hmacAlgorithmHandle.CreateHmac(pbHmacSubkey, _hmacAlgorithmSubkeyLengthInBytes))
                 {
-                    if (!ValidateHash(hashHandle, pbIV, _symmetricAlgorithmBlockSizeInBytes + (uint)cbEncryptedData, pbActualHmac))
+                    if (!ValidateHash(hashHandle, pbIV, _symmetricAlgorithmBlockSizeInBytes + (uint)cbEncryptedDataLength, pbActualHmac))
                     {
                         throw Error.CryptCommon_PayloadInvalid();
                     }
@@ -121,31 +117,48 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
                     byte* pbClonedIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
                     UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV, byteCount: _symmetricAlgorithmBlockSizeInBytes);
 
-                    // Perform the decryption directly into destination
-                    uint dwActualDecryptedByteCount;
-                    byte dummy;
+                    // First, query the output size needed
                     var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
                         hKey: decryptionSubkeyHandle,
                         pbInput: pbEncryptedData,
-                        cbInput: (uint)cbEncryptedData,
+                        cbInput: (uint)cbEncryptedDataLength,
                         pPaddingInfo: null,
                         pbIV: pbClonedIV,
                         cbIV: _symmetricAlgorithmBlockSizeInBytes,
-                        pbOutput: (destination.Length > 0) ? pbDestination : &dummy,
-                        cbOutput: (uint)destination.Length,
-                        pcbResult: out dwActualDecryptedByteCount,
+                        pbOutput: null,  // NULL output = size query only
+                        cbOutput: 0,
+                        pcbResult: out var dwRequiredSize,
                         dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
-
-                    // Check for buffer too small before throwing other exceptions
-                    // https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/596a1078-e883-4972-9bbc-49e60bebca55
-                    if (ntstatus == unchecked((int)0xC0000023)) // STATUS_BUFFER_TOO_SMALL
-                    {
-                        return false;
-                    }
                     UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
 
-                    bytesWritten = checked((int)dwActualDecryptedByteCount);
-                    return true;
+                    // Get buffer from writer with the required size
+                    var buffer = destination.GetSpan(checked((int)dwRequiredSize));
+
+                    // Clone IV again for the actual decryption call
+                    byte* pbClonedIV2 = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
+                    UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV2, byteCount: _symmetricAlgorithmBlockSizeInBytes);
+
+                    // Perform the actual decryption
+                    fixed (byte* pbBuffer = buffer)
+                    {
+                        byte dummy;
+                        ntstatus = UnsafeNativeMethods.BCryptDecrypt(
+                            hKey: decryptionSubkeyHandle,
+                            pbInput: pbEncryptedData,
+                            cbInput: (uint)cbEncryptedDataLength,
+                            pPaddingInfo: null,
+                            pbIV: pbClonedIV2,
+                            cbIV: _symmetricAlgorithmBlockSizeInBytes,
+                            pbOutput: (buffer.Length > 0) ? pbBuffer : &dummy,
+                            cbOutput: (uint)buffer.Length,
+                            pcbResult: out var dwActualDecryptedByteCount,
+                            dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
+
+                        UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
+
+                        // Advance the writer by the number of bytes actually written
+                        destination.Advance(checked((int)dwActualDecryptedByteCount));
+                    }
                 }
             }
             finally
@@ -161,30 +174,17 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         ciphertext.Validate();
         additionalAuthenticatedData.Validate();
 
-        var size = GetDecryptedSize(ciphertext.Count);
-        var rentedArray = ArrayPool<byte>.Shared.Rent(size);
-        try
-        {
-            var destination = rentedArray.AsSpan(0, size);
+        var outputSize = checked(ciphertext.Count - (int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _hmacAlgorithmDigestLengthInBytes));
 
-            if (!TryDecrypt(
-                cipherText: ciphertext,
-                additionalAuthenticatedData: additionalAuthenticatedData,
-                destination: destination,
-                out var bytesWritten))
-            {
-                throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
-            }
-
-            // in CBC we dont know the exact size of the decrypted data beforehand,
-            // so we firstly use rented array and then allocate with the exact size
-            var result = destination.Slice(0, bytesWritten).ToArray();
-            return result;
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(rentedArray);
-        }
+#if NET
+        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        Decrypt(ciphertext, additionalAuthenticatedData, refPooledBuffer);
+        return refPooledBuffer.WrittenSpan.ToArray();
+#else
+        using var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
+        Decrypt(ciphertext, additionalAuthenticatedData, pooledArrayBuffer);
+        return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+#endif
     }
 
     // 'pbIV' must be a pointer to a buffer equal in length to the symmetric algorithm block size.
@@ -218,10 +218,11 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + paddedCiphertextLength + _hmacAlgorithmDigestLengthInBytes));
     }
 
-    public bool TryEncrypt(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
+    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) where TWriter : IBufferWriter<byte>
+#if NET
+        , allows ref struct
+#endif
     {
-        bytesWritten = 0;
-
         // This buffer will be used to hold the symmetric encryption and HMAC subkeys
         // used in the generation of this payload.
         var cbTempSubkeys = checked(_symmetricAlgorithmSubkeyLengthInBytes + _hmacAlgorithmSubkeyLengthInBytes);
@@ -257,51 +258,75 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
 
             using (var symmetricKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
             {
-                // Get the padded output size
+                // Query the padded ciphertext output size
                 byte dummy;
                 fixed (byte* pbPlaintextArray = plaintext)
                 {
                     var pbPlaintext = (pbPlaintextArray != null) ? pbPlaintextArray : &dummy;
-                    var cbOutputCiphertext = GetCbcEncryptedOutputSizeWithPadding(symmetricKeyHandle, pbPlaintext, (uint)plaintext.Length);
 
-                    // Calculate total required size and validate destination buffer BEFORE any pointer calculations
-                    var totalRequiredSize = checked(cbKeyModifierAndIV + cbOutputCiphertext + _hmacAlgorithmDigestLengthInBytes);
-                    if (destination.Length < totalRequiredSize)
-                    {
-                        return false;
-                    }
+                    // First, query the size needed for ciphertext
+                    var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
+                        hKey: symmetricKeyHandle,
+                        pbInput: pbPlaintext,
+                        cbInput: (uint)plaintext.Length,
+                        pPaddingInfo: null,
+                        pbIV: pbIV,
+                        cbIV: _symmetricAlgorithmBlockSizeInBytes,
+                        pbOutput: null,  // NULL output = size query only
+                        cbOutput: 0,
+                        pcbResult: out var dwCiphertextSize,
+                        dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
+                    UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
 
-                    fixed (byte* pbDestination = destination)
+                    // Calculate total required size
+                    var totalRequiredSize = checked((int)(cbKeyModifierAndIV + dwCiphertextSize + _hmacAlgorithmDigestLengthInBytes));
+
+                    // Get buffer from writer with the required total size
+                    var buffer = destination.GetSpan(totalRequiredSize);
+
+                    fixed (byte* pbBuffer = buffer)
                     {
-                        // Calculate offsets in destination
-                        byte* pbOutputKeyModifier = pbDestination;
+                        // Calculate offsets in destination buffer
+                        byte* pbOutputKeyModifier = pbBuffer;
                         byte* pbOutputIV = &pbOutputKeyModifier[KEY_MODIFIER_SIZE_IN_BYTES];
                         byte* pbOutputCiphertext = &pbOutputIV[_symmetricAlgorithmBlockSizeInBytes];
-                        byte* pbOutputHmac = &pbOutputCiphertext[cbOutputCiphertext];
+                        byte* pbOutputHmac = &pbOutputCiphertext[dwCiphertextSize];
 
+                        // Copy key modifier and IV to output
                         Unsafe.CopyBlock(pbOutputKeyModifier, pbKeyModifierAndIV, cbKeyModifierAndIV);
-                        bytesWritten += checked((int)cbKeyModifierAndIV);
 
-                        DoCbcEncrypt(
-                            symmetricKeyHandle: symmetricKeyHandle,
-                            pbIV: pbIV,
+                        // Clone IV for encryption (BCryptEncrypt mutates it)
+                        byte* pbClonedIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
+                        UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV, byteCount: _symmetricAlgorithmBlockSizeInBytes);
+
+                        // Perform encryption
+                        ntstatus = UnsafeNativeMethods.BCryptEncrypt(
+                            hKey: symmetricKeyHandle,
                             pbInput: pbPlaintext,
                             cbInput: (uint)plaintext.Length,
+                            pPaddingInfo: null,
+                            pbIV: pbClonedIV,
+                            cbIV: _symmetricAlgorithmBlockSizeInBytes,
                             pbOutput: pbOutputCiphertext,
-                            cbOutput: cbOutputCiphertext);
-                        bytesWritten += checked((int)cbOutputCiphertext);
+                            cbOutput: dwCiphertextSize,
+                            pcbResult: out var dwActualCiphertextSize,
+                            dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
+                        UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
 
+                        CryptoUtil.Assert(dwActualCiphertextSize == dwCiphertextSize, "dwActualCiphertextSize == dwCiphertextSize");
+
+                        // Calculate HMAC over (IV | ciphertext)
                         using (var hashHandle = _hmacAlgorithmHandle.CreateHmac(pbHmacSubkey, _hmacAlgorithmSubkeyLengthInBytes))
                         {
                             hashHandle.HashData(
                                 pbInput: pbOutputIV,
-                                cbInput: checked(_symmetricAlgorithmBlockSizeInBytes + cbOutputCiphertext),
+                                cbInput: checked(_symmetricAlgorithmBlockSizeInBytes + dwCiphertextSize),
                                 pbHashDigest: pbOutputHmac,
                                 cbHashDigest: _hmacAlgorithmDigestLengthInBytes);
                         }
-                        bytesWritten += checked((int)_hmacAlgorithmDigestLengthInBytes);
 
-                        return true;
+                        // Advance the writer by the total bytes written
+                        destination.Advance(totalRequiredSize);
                     }
                 }
             }
@@ -322,20 +347,23 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         additionalAuthenticatedData.Validate();
 
         var size = GetEncryptedSize(plaintext.Count);
-        var ciphertext = new byte[preBufferSize + size + postBufferSize];
-        var destination = ciphertext.AsSpan((int)preBufferSize, size);
+        var outputSize = (int)(preBufferSize + size + postBufferSize);
 
-        if (!TryEncrypt(
-            plaintext: plaintext,
-            additionalAuthenticatedData: additionalAuthenticatedData,
-            destination: destination,
-            out var bytesWritten))
-        {
-            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
-        }
+#if NET
+        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
 
-        CryptoUtil.Assert(bytesWritten == size, "bytesWritten == size");
-        return ciphertext;
+        Encrypt(plaintext, additionalAuthenticatedData, refPooledBuffer);
+        CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == size, "bytesWritten == size");
+
+        return refPooledBuffer.WrittenSpan.ToArray();
+#else
+        using var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
+
+        Encrypt(plaintext, additionalAuthenticatedData, pooledArrayBuffer);
+        CryptoUtil.Assert(pooledArrayBuffer.WrittenCount == size, "bytesWritten == size");
+
+        return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+#endif
     }
 
     /// <summary>

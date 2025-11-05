@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Cryptography;
@@ -17,6 +18,16 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
     public KeyRingBasedSpanDataProtector(IKeyRingProvider keyRingProvider, ILogger? logger, string[]? originalPurposes, string newPurpose)
         : base(keyRingProvider, logger, originalPurposes, newPurpose)
     {
+    }
+
+    public void Protect<TWriter>(ReadOnlySpan<byte> plaintext, TWriter destination) where TWriter : IBufferWriter<byte>
+    {
+        throw new NotImplementedException();
+    }
+
+    public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, TWriter destination) where TWriter : IBufferWriter<byte>
+    {
+        throw new NotImplementedException();
     }
 
     public int GetProtectedSize(int plainTextLength)

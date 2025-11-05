@@ -22,7 +22,10 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 
     public PooledArrayBufferWriter(int initialCapacity)
     {
-        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(initialCapacity);
+        if (initialCapacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(initialCapacity), actualValue: initialCapacity, $"{nameof(initialCapacity)} ('{initialCapacity}') must be a non-negative and non-zero value.");
+        }
 
         _rentedBuffer = ArrayPool<T>.Shared.Rent(initialCapacity);
         _index = 0;
@@ -106,14 +109,20 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 
     private static void ThrowObjectDisposedException()
     {
+#if NET
         throw new ObjectDisposedException(nameof(ArrayBufferWriter<T>));
+#else
+        throw new ObjectDisposedException(nameof(IBufferWriter<T>));
+#endif
     }
 
     public void Advance(int count)
     {
         CheckIfDisposed();
-
-        ArgumentOutOfRangeException.ThrowIfNegative(count);
+        if (count <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(count), actualValue: count, $"{nameof(count)} ('{count}') must be a non-negative value.");
+        }
 
         if (_index > _rentedBuffer.Length - count)
         {
@@ -143,7 +152,10 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
         Debug.Assert(_rentedBuffer != null);
 
-        ArgumentOutOfRangeException.ThrowIfNegative(sizeHint);
+        if (sizeHint <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(sizeHint), actualValue: sizeHint, $"{nameof(sizeHint)} ('{sizeHint}') must be a non-negative value.");
+        }
 
         if (sizeHint == 0)
         {
