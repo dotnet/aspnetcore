@@ -9,9 +9,9 @@
   <PropertyGroup Label="Version settings">
     <AspNetCoreMajorVersion>10</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
-    <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
+    <AspNetCorePatchVersion>1</AspNetCorePatchVersion>
     <PreReleaseVersionIteration></PreReleaseVersionIteration>
-    <ValidateBaseline>true</ValidateBaseline>
+    <ValidateBaseline>false</ValidateBaseline>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' != 'true'">8.0.1</IdentityModelVersion>
     <IdentityModelVersion Condition="'$(IsIdentityModelTestJob)' == 'true'">*-*</IdentityModelVersion>
     <!--
@@ -19,8 +19,13 @@
     -->
     <StabilizePackageVersion Condition="'$(StabilizePackageVersion)' == ''">false</StabilizePackageVersion>
     <DotNetFinalVersionKind Condition="'$(StabilizePackageVersion)' == 'true'">release</DotNetFinalVersionKind>
-    <PreReleaseVersionLabel>rtm</PreReleaseVersionLabel>
-    <PreReleaseBrandingLabel>RTM $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseVersionLabel>servicing</PreReleaseVersionLabel>
+    <!-- PreReleaseBrandingLabel is automatically calculated based on PreReleaseVersionLabel -->
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'alpha'">Alpha $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'preview'">Preview $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'rc'">RC $(PreReleaseVersionIteration)</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'rtm'">RTM</PreReleaseBrandingLabel>
+    <PreReleaseBrandingLabel Condition="'$(PreReleaseVersionLabel)' == 'servicing'">Servicing</PreReleaseBrandingLabel>
     <IncludePreReleaseLabelInPackageVersion>true</IncludePreReleaseLabelInPackageVersion>
     <IncludePreReleaseLabelInPackageVersion Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludePreReleaseLabelInPackageVersion>
     <AspNetCoreMajorMinorVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion)</AspNetCoreMajorMinorVersion>
