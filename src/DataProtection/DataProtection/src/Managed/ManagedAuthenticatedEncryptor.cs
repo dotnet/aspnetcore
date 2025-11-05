@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.DataProtection.Managed;
 // The payloads produced by this encryptor should be compatible with the payloads
 // produced by the CNG-based Encrypt(CBC) + HMAC authenticated encryptor.
 internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncryptor, IDisposable
-#if NET10_0_OR_GREATER
+#if NET
     , ISpanAuthenticatedEncryptor
 #endif
 {
@@ -72,47 +73,32 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         _contextHeader = CreateContextHeader();
     }
 
-#if NET10_0_OR_GREATER
-    public int GetDecryptedSize(int cipherTextLength)
+#if NET
+    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination)
+        where TWriter : IBufferWriter<byte>, allows ref struct
     {
-        // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
-        if (cipherTextLength < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
-        {
-            throw Error.CryptCommon_PayloadInvalid();
-        }
-
-        // For CBC mode with padding, the decrypted size is at most the encrypted data size
-        // We return an over-estimation since we can't know the exact padding without decrypting
-        return checked(cipherTextLength - (KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes));
-    }
-
-    public bool TryDecrypt(ReadOnlySpan<byte> cipherText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
-    {
-        bytesWritten = 0;
-
         try
         {
             // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
-            if (cipherText.Length < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
+            if (ciphertext.Length < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
             {
                 throw Error.CryptCommon_PayloadInvalid();
             }
 
-            // Calculate the maximum possible plaintext size and check destination buffer
-            var estimatedDecryptedSize = GetDecryptedSize(cipherText.Length);
-            if (destination.Length < estimatedDecryptedSize)
-            {
-                return false;
-            }
+            // Calculate the maximum possible plaintext size
+            var estimatedDecryptedSize = ciphertext.Length - (KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes);
 
-            // Calculate offsets in the cipherText
+            // Get buffer from writer with the estimated plaintext size
+            var buffer = destination.GetSpan(estimatedDecryptedSize);
+
+            // Calculate offsets in the ciphertext
             var keyModifierOffset = 0;
             var ivOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
             var ciphertextOffset = ivOffset + _symmetricAlgorithmBlockSizeInBytes;
-            var macOffset = cipherText.Length - _validationAlgorithmDigestLengthInBytes;
+            var macOffset = ciphertext.Length - _validationAlgorithmDigestLengthInBytes;
 
             // Extract spans for each component
-            var keyModifier = cipherText.Slice(keyModifierOffset, KEY_MODIFIER_SIZE_IN_BYTES);
+            var keyModifier = ciphertext.Slice(keyModifierOffset, KEY_MODIFIER_SIZE_IN_BYTES);
 
             // Decrypt the KDK and use it to restore the original encryption and MAC keys
             Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
@@ -144,8 +130,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                         validationSubkey: validationSubkey);
 
                     // Validate the MAC provided as part of the payload
-                    var ivAndCiphertextSpan = cipherText.Slice(ivOffset, macOffset - ivOffset);
-                    var providedMac = cipherText.Slice(macOffset, _validationAlgorithmDigestLengthInBytes);
+                    var ivAndCiphertextSpan = ciphertext.Slice(ivOffset, macOffset - ivOffset);
+                    var providedMac = ciphertext.Slice(macOffset, _validationAlgorithmDigestLengthInBytes);
 
                     if (!ValidateMac(ivAndCiphertextSpan, providedMac, validationSubkey, validationSubkeyArray))
                     {
@@ -153,22 +139,22 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                     }
 
                     // If the integrity check succeeded, decrypt the payload directly into destination
-                    var ciphertextSpan = cipherText.Slice(ciphertextOffset, macOffset - ciphertextOffset);
-                    var iv = cipherText.Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
+                    var ciphertextSpan = ciphertext.Slice(ciphertextOffset, macOffset - ciphertextOffset);
+                    var iv = ciphertext.Slice(ivOffset, _symmetricAlgorithmBlockSizeInBytes);
 
                     using var symmetricAlgorithm = CreateSymmetricAlgorithm();
                     symmetricAlgorithm.SetKey(decryptionSubkey);
 
-                    // Decrypt directly into destination
-                    var actualDecryptedBytes = symmetricAlgorithm.DecryptCbc(ciphertextSpan, iv, destination);
-                    bytesWritten = actualDecryptedBytes;
-                    return true;
+                    // Decrypt directly into destination buffer
+                    var actualDecryptedBytes = symmetricAlgorithm.DecryptCbc(ciphertextSpan, iv, buffer);
+
+                    // Advance the writer by the actual number of bytes written
+                    destination.Advance(actualDecryptedBytes);
                 }
                 finally
                 {
                     // delete since these contain secret material
                     validationSubkey.Clear();
-
                     decryptedKdk.Clear();
                     decryptionSubkey.Clear();
                 }
@@ -181,33 +167,38 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
     }
 
-    public int GetEncryptedSize(int plainTextLength)
+    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination)
+        where TWriter : IBufferWriter<byte>, allows ref struct
     {
-        var symmetricAlgorithm = CreateSymmetricAlgorithm();
-        var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plainTextLength);
-        return KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes /* IV */ + cipherTextLength + _validationAlgorithmDigestLengthInBytes /* MAC */;
-    }
-
-    public bool TryEncrypt(ReadOnlySpan<byte> plainText, ReadOnlySpan<byte> additionalAuthenticatedData, Span<byte> destination, out int bytesWritten)
-    {
-        bytesWritten = 0;
-
         try
         {
             var keyModifierLength = KEY_MODIFIER_SIZE_IN_BYTES;
             var ivLength = _symmetricAlgorithmBlockSizeInBytes;
 
-            // Calculate the required total size upfront and validate destination buffer
+            // Calculate the required total size upfront
             using var symmetricAlgorithmForSizing = CreateSymmetricAlgorithm();
-            var cipherTextLength = symmetricAlgorithmForSizing.GetCiphertextLengthCbc(plainText.Length);
+            var cipherTextLength = symmetricAlgorithmForSizing.GetCiphertextLengthCbc(plaintext.Length);
             var macLength = _validationAlgorithmDigestLengthInBytes;
             var totalRequiredSize = keyModifierLength + ivLength + cipherTextLength + macLength;
 
-            if (destination.Length < totalRequiredSize)
-            {
-                return false;
-            }
+            // Get buffer from writer with the required total size
+            var buffer = destination.GetSpan(totalRequiredSize);
 
+            // Generate random key modifier and IV
+            Span<byte> keyModifier = keyModifierLength <= 128
+                ? stackalloc byte[128].Slice(0, keyModifierLength)
+                : new byte[keyModifierLength];
+
+            _genRandom.GenRandom(keyModifier);
+
+            // Copy key modifier to buffer
+            keyModifier.CopyTo(buffer.Slice(0, keyModifierLength));
+
+            // Generate IV directly into buffer
+            var iv = buffer.Slice(keyModifierLength, ivLength);
+            _genRandom.GenRandom(iv);
+
+            // Use the KDF to generate a new symmetric block cipher key
             Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
                 ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
                 : new byte[_keyDerivationKey.Length];
@@ -225,16 +216,8 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             fixed (byte* __unused__1 = encryptionSubkey)
             fixed (byte* __unused__2 = validationSubkeyArray)
             {
-                // Step 1: Generate a random key modifier and IV for this operation.
-                Span<byte> keyModifier = keyModifierLength <= 128
-                    ? stackalloc byte[128].Slice(0, keyModifierLength)
-                    : new byte[keyModifierLength];
-
-                _genRandom.GenRandom(keyModifier);
-
                 try
                 {
-                    // Step 2: Decrypt the KDK, and use it to generate new encryption and HMAC keys.
                     _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
                     ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                         kdk: decryptedKdk,
@@ -249,23 +232,13 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 
                     using var validationAlgorithm = CreateValidationAlgorithm();
 
-                    // Step 3: Copy the key modifier to the destination
-                    keyModifier.CopyTo(destination.Slice(bytesWritten, keyModifierLength));
-                    bytesWritten += keyModifierLength;
+                    // Perform the encryption operation
+                    var ciphertextDestination = buffer.Slice(keyModifierLength + ivLength, cipherTextLength);
+                    symmetricAlgorithm.EncryptCbc(plaintext, iv, ciphertextDestination);
 
-                    // Step 4: Generate IV directly into the destination
-                    var iv = destination.Slice(bytesWritten, ivLength);
-                    _genRandom.GenRandom(iv);
-                    bytesWritten += ivLength;
-
-                    // Step 5: Perform the encryption operation
-                    var ciphertextDestination = destination.Slice(bytesWritten, cipherTextLength);
-                    symmetricAlgorithm.EncryptCbc(plainText, iv, ciphertextDestination);
-                    bytesWritten += cipherTextLength;
-
-                    // Step 6: Calculate the digest over the IV and ciphertext
-                    var ivAndCipherTextSpan = destination.Slice(keyModifierLength, ivLength + cipherTextLength);
-                    var macDestinationSpan = destination.Slice(bytesWritten, macLength);
+                    // Calculate the digest over the IV and ciphertext
+                    var ivAndCipherTextSpan = buffer.Slice(keyModifierLength, ivLength + cipherTextLength);
+                    var macDestinationSpan = buffer.Slice(keyModifierLength + ivLength + cipherTextLength, macLength);
 
                     // Use optimized method for specific algorithms when possible
                     if (validationAlgorithm is HMACSHA256)
@@ -281,17 +254,19 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
                         validationAlgorithm.Key = validationSubkeyArray ?? validationSubkey.ToArray();
                         if (!validationAlgorithm.TryComputeHash(source: ivAndCipherTextSpan, destination: macDestinationSpan, out _))
                         {
-                            return false;
+                            throw Error.CryptCommon_GenericError(new InvalidOperationException("Failed to compute HMAC"));
                         }
                     }
-                    bytesWritten += macLength;
 
-                    return true;
+                    // Advance the writer by the total bytes written
+                    destination.Advance(totalRequiredSize);
                 }
                 finally
                 {
                     keyModifier.Clear();
                     decryptedKdk.Clear();
+                    validationSubkey.Clear();
+                    encryptionSubkey.Clear();
                 }
             }
         }
@@ -309,16 +284,17 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         additionalAuthenticatedData.Validate();
         var plainTextSpan = plaintext.AsSpan();
 
-#if NET10_0_OR_GREATER
-        var size = GetEncryptedSize(plainTextSpan.Length);
-        var retVal = new byte[size];
+#if NET
+        var symmetricAlgorithm = CreateSymmetricAlgorithm();
+        var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plaintext.Count);
+        var outputSize = KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes /* IV */ + cipherTextLength + _validationAlgorithmDigestLengthInBytes /* MAC */;
 
-        if (!TryEncrypt(plainTextSpan, additionalAuthenticatedData, retVal, out var bytesWritten))
-        {
-            throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array."));
-        }
+        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
 
-        return retVal;
+        Encrypt(plaintext, additionalAuthenticatedData, refPooledBuffer);
+        CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == outputSize, "bytesWritten == size");
+
+        return refPooledBuffer.WrittenSpan.ToArray();
 #else
         try
         {
@@ -401,7 +377,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
 #endif
     }
 
-#if NET10_0_OR_GREATER
+#if NET
     private bool ValidateMac(ReadOnlySpan<byte> dataToValidate, ReadOnlySpan<byte> providedMac, ReadOnlySpan<byte> validationSubkey, byte[]? validationSubkeyArray)
     {
         using var validationAlgorithm = CreateValidationAlgorithm();
@@ -480,31 +456,11 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         protectedPayload.Validate();
         additionalAuthenticatedData.Validate();
 
-#if NET10_0_OR_GREATER
-        var size = GetDecryptedSize(protectedPayload.Count);
-        var rentedArray = ArrayPool<byte>.Shared.Rent(size);
-        try
-        {
-            var destination = rentedArray.AsSpan(0, size);
-
-            if (!TryDecrypt(
-                cipherText: protectedPayload,
-                additionalAuthenticatedData: additionalAuthenticatedData,
-                destination: destination,
-                out var bytesWritten))
-            {
-                throw Error.CryptCommon_GenericError(new ArgumentException("Not enough space in destination array"));
-            }
-
-            // we don't know the exact size of the decrypted data beforehand,
-            // so we firstly use rented array and then allocate with the exact size
-            var result = destination.Slice(0, bytesWritten).ToArray();
-            return result;
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(rentedArray);
-        }
+#if NET
+        var outputSize = checked(protectedPayload.Count - (KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes));
+        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        Decrypt(protectedPayload, additionalAuthenticatedData, refPooledBuffer);
+        return refPooledBuffer.WrittenSpan.ToArray();
 #else
         // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
         if (protectedPayload.Count < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))
