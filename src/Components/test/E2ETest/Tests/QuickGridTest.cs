@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.Extensions;
 using Xunit.Abstractions;
 
@@ -214,5 +215,35 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     {
         app = Browser.MountTestComponent<QuickGridVirtualizeComponent>();
         Browser.Equal("1", () => app.FindElement(By.Id("items-provider-call-count")).Text);
+    }
+
+    [Fact]
+    public void FilterUsingSetCurrentPageDoesNotCauseExtraRefresh()
+    {
+        app = Browser.MountTestComponent<QuickGridFilterComponent>();
+
+        Browser.Equal("1", () => app.FindElement(By.Id("items-provider-calls")).Text);
+
+        var filterInput = app.FindElement(By.Id("filter-input"));
+        filterInput.Clear();
+        filterInput.SendKeys("Item 1");
+        app.FindElement(By.Id("apply-filter-reset-pagination-btn")).Click();
+
+        Browser.Equal("2", () => app.FindElement(By.Id("items-provider-calls")).Text);
+    }
+
+    [Fact]
+    public void FilterUsingRefreshDataDoesNotCauseExtraRefresh()
+    {
+        app = Browser.MountTestComponent<QuickGridFilterComponent>();
+
+        Browser.Equal("1", () => app.FindElement(By.Id("items-provider-calls")).Text);
+
+        var filterInput = app.FindElement(By.Id("filter-input"));
+        filterInput.Clear();
+        filterInput.SendKeys("Item 1");
+        app.FindElement(By.Id("apply-filter-refresh-data-btn")).Click();
+
+        Browser.Equal("2", () => app.FindElement(By.Id("items-provider-calls")).Text);
     }
 }
