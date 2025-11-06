@@ -45,7 +45,6 @@ public static class IdentityServiceCollectionExtensions
         // No interface for the error describer so we can add errors without rev'ing the interface
         services.TryAddScoped<IdentityErrorDescriber>();
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser>>();
-        services.TryAddSingleton<UserManagerMetrics>();
         services.TryAddScoped<UserManager<TUser>>();
 
         if (setupAction != null)
