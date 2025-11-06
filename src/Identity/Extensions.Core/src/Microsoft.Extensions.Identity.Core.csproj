@@ -29,7 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.Specification.Tests" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.Test" />
     <InternalsVisibleTo Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test" />

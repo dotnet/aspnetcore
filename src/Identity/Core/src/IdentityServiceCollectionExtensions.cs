@@ -103,7 +103,6 @@ public static class IdentityServiceCollectionExtensions
         services.TryAddScoped<IUserClaimsPrincipalFactory<TUser>, UserClaimsPrincipalFactory<TUser, TRole>>();
         services.TryAddScoped<IUserConfirmation<TUser>, DefaultUserConfirmation<TUser>>();
         services.TryAddScoped<IPasskeyHandler<TUser>, PasskeyHandler<TUser>>();
-        services.TryAddSingleton<UserManagerMetrics>();
         services.TryAddSingleton<SignInManagerMetrics>();
         services.TryAddScoped<UserManager<TUser>>();
         services.TryAddScoped<SignInManager<TUser>>();
