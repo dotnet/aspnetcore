@@ -830,6 +830,8 @@ internal abstract class CertificateManager
         }
 
         // Only add the SKI and AKI extensions if neither is already present.
+        // OpenSSL needs these to correctly identify the trust chain for a private key. If multiple certificates don't have a subject key identifier and share the same subject,
+        // the wrong certificate can be chosen for the trust chain, leading to validation errors.
         if (!request.CertificateExtensions.OfType<X509SubjectKeyIdentifierExtension>().Any() && !request.CertificateExtensions.OfType<X509AuthorityKeyIdentifierExtension>().Any())
         {
             // RFC 5280 section 4.2.1.2
