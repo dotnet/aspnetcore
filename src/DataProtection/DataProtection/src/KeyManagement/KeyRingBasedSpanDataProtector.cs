@@ -21,28 +21,9 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
     }
 
     public void Protect<TWriter>(ReadOnlySpan<byte> plaintext, TWriter destination) where TWriter : IBufferWriter<byte>
-    {
-        throw new NotImplementedException();
-    }
-
-    public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, TWriter destination) where TWriter : IBufferWriter<byte>
-    {
-        throw new NotImplementedException();
-    }
-
-    public int GetProtectedSize(int plainTextLength)
-    {
-        // Get the current key ring to access the encryptor
-        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
-        var defaultEncryptor = (ISpanAuthenticatedEncryptor)currentKeyRing.DefaultAuthenticatedEncryptor!;
-        CryptoUtil.Assert(defaultEncryptor != null, "DefaultAuthenticatedEncryptor != null");
-
-        // We allocate a 20-byte pre-buffer so that we can inject the magic header and key id into the return value.
-        // See Protect() / TryProtect() for details
-        return _magicHeaderKeyIdSize + defaultEncryptor.GetEncryptedSize(plainTextLength);
-    }
-
-    public bool TryProtect(ReadOnlySpan<byte> plaintext, Span<byte> destination, out int bytesWritten)
+#if NET
+        , allows ref struct
+#endif
     {
         try
         {
@@ -60,38 +41,28 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             // We'll need to apply the default key id to the template if it hasn't already been applied.
             // If the default key id has been updated since the last call to Protect, also write back the updated template.
             var aad = _aadTemplate.GetAadForKey(defaultKeyId, isProtecting: true);
-
             var preBufferSize = _magicHeaderKeyIdSize;
-            // postBufferSize is 0
-            if (destination.Length < preBufferSize)
-            {
-                bytesWritten = default;
-                return false;
-            }
 
-            var destinationBufferOffsets = destination.Slice(preBufferSize, destination.Length - preBufferSize);
-            var success = defaultEncryptor.TryEncrypt(plaintext, aad, destinationBufferOffsets, out bytesWritten);
-
-            // At this point: destination := { 000..000 || encryptorSpecificProtectedPayload },
-            // where 000..000 is a placeholder for our magic header and key id.
-
-            // Write out the magic header and key id
-#if NET10_0_OR_GREATER
-            BinaryPrimitives.WriteUInt32BigEndian(destination.Slice(0, sizeof(uint)), MAGIC_HEADER_V0);
-            var writeKeyIdResult = defaultKeyId.TryWriteBytes(destination.Slice(sizeof(uint), sizeof(Guid)));
+            // Step 1: Write the magic header and key id
+            var headerBuffer = destination.GetSpan(preBufferSize);
+#if NET
+            BinaryPrimitives.WriteUInt32BigEndian(headerBuffer.Slice(0, sizeof(uint)), MAGIC_HEADER_V0);
+            var writeKeyIdResult = defaultKeyId.TryWriteBytes(headerBuffer.Slice(sizeof(uint), sizeof(Guid)));
             Debug.Assert(writeKeyIdResult, "Failed to write Guid to destination.");
 #else
-            fixed (byte* pbRetVal = destination)
+            fixed (byte* pbBuffer = headerBuffer)
             {
-                WriteBigEndianInteger(pbRetVal, MAGIC_HEADER_V0);
-                WriteGuid(&pbRetVal[sizeof(uint)], defaultKeyId);
+                WriteBigEndianInteger(pbBuffer, MAGIC_HEADER_V0);
+                WriteGuid(&pbBuffer[sizeof(uint)], defaultKeyId);
             }
 #endif
-            bytesWritten += _magicHeaderKeyIdSize;
+            destination.Advance(preBufferSize);
+
+            // Step 2: Perform encryption into the destination writer
+            defaultEncryptor.Encrypt(plaintext, aad, destination);
 
             // At this point, destination := { magicHeader || keyId || encryptorSpecificProtectedPayload }
             // And we're done!
-            return success;
         }
         catch (Exception ex) when (ex.RequiresHomogenization())
         {
@@ -100,41 +71,28 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
         }
     }
 
-    public int GetUnprotectedSize(int cipherTextLength)
-    {
-        // The ciphertext includes the magic header and key id, so we need to subtract those
-        if (cipherTextLength < _magicHeaderKeyIdSize)
-        {
-            throw Error.ProtectionProvider_BadMagicHeader();
-        }
-
-        var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
-        var defaultEncryptor = (ISpanAuthenticatedEncryptor)currentKeyRing.DefaultAuthenticatedEncryptor!;
-        CryptoUtil.Assert(defaultEncryptor != null, "DefaultAuthenticatedEncryptor != null");
-
-        return defaultEncryptor.GetDecryptedSize(cipherTextLength - _magicHeaderKeyIdSize);
-    }
-
-    public bool TryUnprotect(ReadOnlySpan<byte> cipherText, Span<byte> destination, out int bytesWritten)
+    public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, TWriter destination) where TWriter : IBufferWriter<byte>
+#if NET
+        , allows ref struct
+#endif
     {
         try
         {
-            if (cipherText.Length < _magicHeaderKeyIdSize)
+            if (protectedData.Length < _magicHeaderKeyIdSize)
             {
                 // payload must contain at least the magic header and key id
-                bytesWritten = default;
-                return false;
+                throw Error.ProtectionProvider_BadMagicHeader();
             }
 
             // Parse the payload version number and key id.
-            var magicHeaderFromPayload = BinaryPrimitives.ReadUInt32BigEndian(cipherText.Slice(0, sizeof(uint)));
-#if NET10_0_OR_GREATER
-            var keyIdFromPayload = new Guid(cipherText.Slice(sizeof(uint), sizeof(Guid)));
+            var magicHeaderFromPayload = BinaryPrimitives.ReadUInt32BigEndian(protectedData.Slice(0, sizeof(uint)));
+#if NET
+            var keyIdFromPayload = new Guid(protectedData.Slice(sizeof(uint), sizeof(Guid)));
 #else
             Guid keyIdFromPayload;
-            fixed (byte* pbCipherText = cipherText)
+            fixed (byte* pbProtectedData = protectedData)
             {
-                keyIdFromPayload = ReadGuid(&pbCipherText[sizeof(uint)]);
+                keyIdFromPayload = ReadGuid(&pbProtectedData[sizeof(uint)]);
             }
 #endif
 
@@ -188,13 +146,16 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             }
 
             // Perform the decryption operation.
-            ReadOnlySpan<byte> actualCiphertext = cipherText.Slice(sizeof(uint) + sizeof(Guid)); // chop off magic header + encryptor id
+            ReadOnlySpan<byte> actualCiphertext = protectedData.Slice(sizeof(uint) + sizeof(Guid)); // chop off magic header + key id
             ReadOnlySpan<byte> aad = _aadTemplate.GetAadForKey(keyIdFromPayload, isProtecting: false);
 
             // At this point, actualCiphertext := { encryptorSpecificPayload },
             // so all that's left is to invoke the decryption routine directly.
             var spanEncryptor = (ISpanAuthenticatedEncryptor)requestedEncryptor;
-            return spanEncryptor.TryDecrypt(actualCiphertext, aad, destination, out bytesWritten);
+            spanEncryptor.Decrypt(actualCiphertext, aad, destination);
+
+            // At this point, destination contains the decrypted plaintext
+            // And we're done!
         }
         catch (Exception ex) when (ex.RequiresHomogenization())
         {
