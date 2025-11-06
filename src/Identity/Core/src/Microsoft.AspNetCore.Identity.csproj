@@ -14,8 +14,6 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)DefaultMessageEmailSender.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)Metrics\MetricsConstants.cs" LinkBase="Shared" />
-    <Compile Include="$(SharedSourceRoot)ValueStopwatch\ValueStopwatch.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
