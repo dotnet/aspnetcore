@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
+using System.Formats.Asn1;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
@@ -19,8 +20,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation;
 
 internal abstract class CertificateManager
 {
-    internal const int CurrentAspNetCoreCertificateVersion = 4;
-    internal const int CurrentMinimumAspNetCoreCertificateVersion = 4;
+    internal const int CurrentAspNetCoreCertificateVersion = 5;
+    internal const int CurrentMinimumAspNetCoreCertificateVersion = 5;
 
     // OID used for HTTPS certs
     internal const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
@@ -28,7 +29,7 @@ internal abstract class CertificateManager
 
     private const string ServerAuthenticationEnhancedKeyUsageOid = "1.3.6.1.5.5.7.3.1";
     private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
-    
+
     // dns names of the host from a container
     private const string LocalhostDockerHttpsDnsName = "host.docker.internal";
     private const string ContainersDockerHttpsDnsName = "host.containers.internal";
@@ -826,6 +827,18 @@ internal abstract class CertificateManager
         foreach (var extension in extensions)
         {
             request.CertificateExtensions.Add(extension);
+        }
+
+        // Only add the SKI and AKI extensions if neither is already present.
+        if (!request.CertificateExtensions.OfType<X509SubjectKeyIdentifierExtension>().Any() && !request.CertificateExtensions.OfType<X509AuthorityKeyIdentifierExtension>().Any())
+        {
+            // RFC 5280 section 4.2.1.2
+            var subjectKeyIdentifier = new X509SubjectKeyIdentifierExtension(new PublicKey(key), critical: false);
+            // RFC 5280 section 4.2.1.1
+            var authorityKeyIdentifier = X509AuthorityKeyIdentifierExtension.CreateFromSubjectKeyIdentifier(subjectKeyIdentifier);
+
+            request.CertificateExtensions.Add(subjectKeyIdentifier);
+            request.CertificateExtensions.Add(authorityKeyIdentifier);
         }
 
         var result = request.CreateSelfSigned(notBefore, notAfter);
