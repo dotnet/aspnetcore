@@ -372,6 +372,9 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
         try
         {
+            // arrays are pooled. and they MAY contain non-zeros in the pre-buffer and post-buffer regions.
+            // we could clean them up, but it's not strictly necessary - the important part is that output array
+            // has those pre/post buffer regions, which will be used by the caller.
             refPooledBuffer.Advance(preBufferSize);
             Encrypt(plaintext, additionalAuthenticatedData, ref refPooledBuffer);
             refPooledBuffer.Advance(postBufferSize);
@@ -394,6 +397,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
 
             var resultSpan = pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
             CryptoUtil.Assert(resultSpan.Length == outputSize, "bytesWritten == size");
+
             return resultSpan;
         }
         finally

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Cryptography.Cng;
@@ -10,10 +11,11 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.Test.Shared;
 using Microsoft.AspNetCore.DataProtection.Tests.Internal;
 using Microsoft.AspNetCore.InternalTesting;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
 
-public class CbcAuthenticatedEncryptorTests
+public class CbcAuthenticatedEncryptorTests(ITestOutputHelper outputHelper)
 {
     [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]
@@ -97,25 +99,31 @@ public class CbcAuthenticatedEncryptorTests
         ArraySegment<byte> plaintext = new ArraySegment<byte>(new byte[] { 0, 1, 2, 3, 4, 5, 6, 7 }, 2, 3);
         ArraySegment<byte> aad = new ArraySegment<byte>(new byte[] { 7, 6, 5, 4, 3, 2, 1, 0 }, 1, 4);
 
+        var preBufferSize = 3;
+        var postBufferSize = 4;
+
         // Act
         byte[] retVal = encryptor.Encrypt(
             plaintext: plaintext,
             additionalAuthenticatedData: aad,
-            preBufferSize: 3,
-            postBufferSize: 4);
+            preBufferSize: (uint)preBufferSize,
+            postBufferSize: (uint)postBufferSize);
 
         // Assert
 
-        // retVal := 00 00 00 (preBuffer)
+        // retVal := 00 00 00 (preBuffer) (no requirement to have exactly zeros in the preBuffer)
         //         | 00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F (keyModifier)
         //         | 10 11 12 13 14 15 16 17 18 19 1A 1B 1C 1D 1E 1F (IV)
         //         | B7 EA 3E 32 58 93 A3 06 03 89 C6 66 03 63 08 4B (encryptedData)
         //         | 9D 8A 85 C7 0F BD 98 D8 7F 72 E7 72 3E B5 A6 26 (HMAC)
         //         | 6C 38 77 F7 66 19 A2 C9 2C BB AD DA E7 62 00 00
-        //         | 00 00 00 00 (postBuffer)
+        //         | 00 00 00 00 (postBuffer) (no requirement to have exactly zeros in the preBuffer)
 
-        string retValAsString = Convert.ToBase64String(retVal);
-        Assert.Equal("AAAAAAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAAAAAAA", retValAsString);
+        Assert.Equal(80 + preBufferSize + postBufferSize, retVal.Length);
+
+        var buffer = retVal.AsSpan(preBufferSize, retVal.Length - preBufferSize - postBufferSize);
+        var retValAsString = Convert.ToBase64String(buffer);
+        Assert.Equal("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAA=", retValAsString);
     }
 
     [ConditionalTheory]

@@ -31,12 +31,23 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
         _index = 0;
     }
 
+    /// <summary>
+    /// Gets a span of the written data.
+    /// </summary>
+    public ReadOnlySpan<T> WrittenSpan
+    {
+        get
+        {
+            CheckIfDisposed();
+            return _rentedBuffer.AsSpan(0, _index);
+        }
+    }
+
     public ReadOnlyMemory<T> WrittenMemory
     {
         get
         {
             CheckIfDisposed();
-
             return _rentedBuffer.AsMemory(0, _index);
         }
     }
