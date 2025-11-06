@@ -28,47 +28,27 @@ internal static class RoundtripEncryptionHelpers
         byte[] decipheredtext = encryptor.Decrypt(new ArraySegment<byte>(ciphertext), aad);
         Assert.Equal(plaintext.AsSpan(), decipheredtext.AsSpan());
 
-        // assert calculated sizes are correct
-        var expectedEncryptedSize = spanAuthenticatedEncryptor.GetEncryptedSize(plaintext.Count);
-        Assert.Equal(expectedEncryptedSize, ciphertext.Length);
-        var expectedDecryptedSize = spanAuthenticatedEncryptor.GetDecryptedSize(ciphertext.Length);
-
-        // note: for decryption we cant know for sure how many bytes will be written.
-        // so we cant assert equality, but we can check if expected decrypted size is greater or equal than original deciphered text
-        Assert.True(expectedDecryptedSize >= decipheredtext.Length);
-
         // perform TryEncrypt and Decrypt roundtrip - ensures cross operation compatibility
-        var cipherTextPooled = ArrayPool<byte>.Shared.Rent(expectedEncryptedSize);
-        try
-        {
-            var tryEncryptResult = spanAuthenticatedEncryptor.TryEncrypt(plaintext, aad, cipherTextPooled, out var bytesWritten);
-            Assert.Equal(expectedEncryptedSize, bytesWritten);
-            Assert.True(tryEncryptResult);
+        var buffer = new ArrayBufferWriter<byte>();
+        spanAuthenticatedEncryptor.Encrypt(plaintext, aad, buffer);
+        var encryptResult = buffer.WrittenSpan;
+        Assert.Equal(ciphertext.Length, encryptResult.Length);
+        Assert.True(encryptResult.SequenceEqual(ciphertext));
 
-            var decipheredTryEncrypt = spanAuthenticatedEncryptor.Decrypt(new ArraySegment<byte>(cipherTextPooled, 0, expectedEncryptedSize), aad);
-            Assert.Equal(plaintext.AsSpan(), decipheredTryEncrypt.AsSpan());
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(cipherTextPooled);
-        }
+        buffer = new ArrayBufferWriter<byte>();
+        spanAuthenticatedEncryptor.Decrypt(ciphertext, aad, buffer);
+        var decryptedResult = buffer.WrittenSpan;
+        Assert.Equal(decipheredtext.Length, decryptedResult.Length);
+        Assert.True(decryptedResult.SequenceEqual(decipheredtext));
 
         // perform Encrypt and TryDecrypt roundtrip - ensures cross operation compatibility
-        var plainTextPooled = ArrayPool<byte>.Shared.Rent(expectedDecryptedSize);
-        try
-        {
-            var encrypted = spanAuthenticatedEncryptor.Encrypt(plaintext, aad);
-            var decipheredTryDecrypt = spanAuthenticatedEncryptor.TryDecrypt(encrypted, aad, plainTextPooled, out var bytesWritten);
-            Assert.Equal(plaintext.AsSpan(), plainTextPooled.AsSpan(0, bytesWritten));
-            Assert.True(decipheredTryDecrypt);
+        var encrypted = spanAuthenticatedEncryptor.Encrypt(plaintext, aad);
 
-            // now we should know that bytesWritten is STRICTLY equal to the deciphered text
-            Assert.Equal(decipheredtext.Length, bytesWritten);
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(plainTextPooled);
-        }
+        buffer = new ArrayBufferWriter<byte>();
+        spanAuthenticatedEncryptor.Decrypt(encrypted, aad, buffer);
+        var decryptedResult2 = buffer.WrittenSpan;
+        Assert.Equal(decipheredtext.Length, decryptedResult2.Length);
+        Assert.True(decryptedResult2.SequenceEqual(decipheredtext));
     }
 
     /// <summary>
@@ -84,47 +64,28 @@ internal static class RoundtripEncryptionHelpers
         byte[] unprotectedData = protector.Unprotect(protectedData);
         Assert.Equal(plaintext, unprotectedData.AsSpan());
 
-        // assert calculated sizes are correct
-        var expectedProtectedSize = protector.GetProtectedSize(plaintext.Length);
-        Assert.Equal(expectedProtectedSize, protectedData.Length);
-        var expectedUnprotectedSize = protector.GetUnprotectedSize(protectedData.Length);
-
-        // note: for unprotection we can't know exactly how many bytes will be written since it's the original plaintext
-        Assert.True(expectedUnprotectedSize >= unprotectedData.Length);
-
         // perform TryProtect and Unprotect roundtrip - ensures cross operation compatibility
-        var protectedPooled = ArrayPool<byte>.Shared.Rent(expectedProtectedSize);
-        try
-        {
-            var tryProtectResult = protector.TryProtect(plaintext, protectedPooled, out var bytesWritten);
-            Assert.Equal(expectedProtectedSize, bytesWritten);
-            Assert.True(tryProtectResult);
+        var buffer = new ArrayBufferWriter<byte>();
+        protector.Protect(plaintext, buffer);
+        var protectedResult = buffer.WrittenSpan;
+        Assert.Equal(protectedData.Length, protectedResult.Length);
+        Assert.True(protectedResult.SequenceEqual(protectedData));
 
-            var unprotectedTryProtect = protector.Unprotect(protectedPooled.AsSpan(0, expectedProtectedSize).ToArray());
-            Assert.Equal(plaintext, unprotectedTryProtect.AsSpan());
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(protectedPooled);
-        }
+        buffer = new ArrayBufferWriter<byte>();
+        protector.Unprotect(unprotectedData, buffer);
+        var unProtectedResult = buffer.WrittenSpan;
+        Assert.Equal(unprotectedData.Length, unProtectedResult.Length);
+        Assert.True(unProtectedResult.SequenceEqual(unprotectedData));
 
         // perform Protect and TryUnprotect roundtrip - ensures cross operation compatibility
         // Note: This test is limited because we can't easily access the correct AAD from outside the protector
         // But we can test basic functionality with empty AAD and expect it to fail gracefully
-        var unprotectedPooled = ArrayPool<byte>.Shared.Rent(expectedUnprotectedSize);
-        try
-        {
-            var protectedByProtect = protector.Protect(plaintext.ToArray());
-            var unprotectedTryUnprotect = protector.TryUnprotect(protectedByProtect, unprotectedPooled, out var bytesWritten);
-            Assert.Equal(plaintext, unprotectedPooled.AsSpan(0, bytesWritten));
-            Assert.True(unprotectedTryUnprotect);
+        var protectedByProtect = protector.Protect(plaintext.ToArray());
 
-            // now we should know that bytesWritten is STRICTLY equal to the deciphered text
-            Assert.Equal(unprotectedData.Length, bytesWritten);
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(unprotectedPooled);
-        }
+        buffer = new ArrayBufferWriter<byte>();
+        protector.Unprotect(protectedByProtect, buffer);
+        var unProtectedResult2 = buffer.WrittenSpan;
+        Assert.Equal(unprotectedData.Length, unProtectedResult.Length);
+        Assert.True(unProtectedResult.SequenceEqual(unprotectedData));
     }
 }

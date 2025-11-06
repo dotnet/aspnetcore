@@ -56,56 +56,29 @@ public class SpanDataProtectorComparison
     }
 
     [Benchmark]
-    public void ProtectUnprotectRoundtrip()
+    public int ProtectUnprotectRoundtrip()
     {
         var plaintext = GetPlaintext();
 
         // Traditional approach with allocations
         var protectedData = _dataProtector.Protect(plaintext);
         var unprotectedData = _dataProtector.Unprotect(protectedData);
-        _ = unprotectedData.Length;
+        return protectedData.Length + unprotectedData.Length;
     }
 
     [Benchmark]
-    public void TryProtectTryUnprotectRoundtrip()
+    public int TryProtectTryUnprotectRoundtrip()
     {
         var plaintext = GetPlaintext();
-        
-        // Span-based approach with minimal allocations
-        var protectedSize = _spanDataProtector.GetProtectedSize(plaintext.Length);
-        var protectedBuffer = ArrayPool<byte>.Shared.Rent(protectedSize);
-        
-        try
-        {
-            var protectSuccess = _spanDataProtector.TryProtect(plaintext, protectedBuffer, out var protectedBytesWritten);
-            if (!protectSuccess)
-            {
-                throw new InvalidOperationException("TryProtect failed");
-            }
 
-            var unprotectedSize = _spanDataProtector.GetUnprotectedSize(protectedBytesWritten);
-            var unprotectedBuffer = ArrayPool<byte>.Shared.Rent(unprotectedSize);
-            
-            try
-            {
-                var unprotectSuccess = _spanDataProtector.TryUnprotect(
-                    protectedBuffer.AsSpan(0, protectedBytesWritten),
-                    unprotectedBuffer, 
-                    out var unprotectedBytesWritten);
-                    
-                if (!unprotectSuccess)
-                {
-                    throw new InvalidOperationException("TryUnprotect failed");
-                }
-            }
-            finally
-            {
-                ArrayPool<byte>.Shared.Return(unprotectedBuffer);
-            }
-        }
-        finally
-        {
-            ArrayPool<byte>.Shared.Return(protectedBuffer);
-        }
+        var protectBuffer = new RefPooledArrayBufferWriter(initialCapacity: 255);
+        _spanDataProtector.Protect(plaintext, protectBuffer);
+        var protectedSpan = protectBuffer.WrittenSpan;
+
+        var unprotectBuffer = new RefPooledArrayBufferWriter(initialCapacity: PlaintextLength);
+        _spanDataProtector.Unprotect(protectedSpan, unprotectBuffer);
+        var unProtectedSpan = unprotectBuffer.WrittenSpan;
+
+        return protectedSpan.Length + unProtectedSpan.Length;
     }
 }

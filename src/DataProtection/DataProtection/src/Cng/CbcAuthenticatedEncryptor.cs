@@ -353,7 +353,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
 
         Encrypt(plaintext, additionalAuthenticatedData, refPooledBuffer);
-        CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == size, "bytesWritten == size");
+        CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == outputSize, "bytesWritten == size");
 
         return refPooledBuffer.WrittenSpan.ToArray();
 #else

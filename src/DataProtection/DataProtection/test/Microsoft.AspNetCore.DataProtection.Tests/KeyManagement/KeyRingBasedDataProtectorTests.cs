@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Globalization;
@@ -723,17 +724,12 @@ public class KeyRingBasedDataProtectorTests
 
         // Act - first protect the data  
         byte[] protectedData = protector.Protect(plaintext);
-        
-        // Act - get estimated unprotected size
-        var estimatedUnprotectedSize = protector.GetUnprotectedSize(protectedData.Length);
-        
-        // Assert
-        Assert.True(estimatedUnprotectedSize >= plaintext.Length, $"Estimated unprotected size should be at least as large as original plaintext for {plaintextSize} byte plaintext");
 
-        // Verify we can actually unprotect the data
-        byte[] unprotectedData = protector.Unprotect(protectedData);
+        var arrayBufferWriter = new ArrayBufferWriter<byte>(plaintextSize);
+        protector.Unprotect(protectedData, arrayBufferWriter);
+        var unprotectedData = arrayBufferWriter.WrittenSpan;
+        Assert.Equal(protectedData.Length, unprotectedData.Length);
         Assert.Equal(plaintext, unprotectedData);
-        Assert.True(unprotectedData.Length <= estimatedUnprotectedSize, "Actual unprotected size should not exceed estimate");
     }
 
     [Fact]
@@ -753,9 +749,9 @@ public class KeyRingBasedDataProtectorTests
 
         // Act - try to unprotect with too short ciphertext (shorter than magic header + key id)
         byte[] shortCiphertext = new byte[10]; // Less than 20 bytes (magic header + key id)
-        byte[] destination = new byte[100];
+        var destination = new ArrayBufferWriter<byte>(100);
 
-        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.TryUnprotect(shortCiphertext, destination, out int bytesWritten));
+        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(shortCiphertext, destination));
         Assert.Equal(Resources.ProtectionProvider_BadMagicHeader, ex.Message);
     }
 
@@ -775,7 +771,7 @@ public class KeyRingBasedDataProtectorTests
             newPurpose: "purpose");
 
         // Less than magic header + key id size
-        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.GetUnprotectedSize(10));
+        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(new byte[10], new ArrayBufferWriter<byte>()));
         Assert.Equal(Resources.ProtectionProvider_BadMagicHeader, ex.Message);
     }
 

@@ -1,6 +1,4 @@
 #nullable enable
 Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor
-Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.GetDecryptedSize(int cipherTextLength) -> int
-Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.GetEncryptedSize(int plainTextLength) -> int
-Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.TryDecrypt(System.ReadOnlySpan<byte> cipherText, System.ReadOnlySpan<byte> additionalAuthenticatedData, System.Span<byte> destination, out int bytesWritten) -> bool
-Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.TryEncrypt(System.ReadOnlySpan<byte> plaintext, System.ReadOnlySpan<byte> additionalAuthenticatedData, System.Span<byte> destination, out int bytesWritten) -> bool
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.Decrypt<TWriter>(System.ReadOnlySpan<byte> ciphertext, System.ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) -> void
+Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ISpanAuthenticatedEncryptor.Encrypt<TWriter>(System.ReadOnlySpan<byte> plaintext, System.ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) -> void

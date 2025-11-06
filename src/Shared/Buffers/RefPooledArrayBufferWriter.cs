@@ -39,7 +39,9 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
     public void Dispose()
     {
         if (_buffer == null)
+        {
             return;
+        }
 
         // Optionally clear the buffer before returning to pool (security)
         // Uncomment if needed for sensitive data:
@@ -121,10 +123,14 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
         ThrowIfDisposed();
 
         if (count < 0)
+        {
             throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be negative.");
+        }
 
         if (_index > _buffer.Length - count)
+        {
             throw new InvalidOperationException($"Cannot advance past the end of the buffer. Current position: {_index}, Capacity: {_buffer.Length}, Requested advance: {count}.");
+        }
 
         _index += count;
     }
@@ -134,7 +140,6 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
     /// </summary>
     public ReadOnlySpan<byte> WrittenSpan
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             ThrowIfDisposed();
@@ -147,7 +152,6 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
     /// </summary>
     public ReadOnlyMemory<byte> WrittenMemory
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         get
         {
             ThrowIfDisposed();
