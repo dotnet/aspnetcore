@@ -726,9 +726,9 @@ public class KeyRingBasedDataProtectorTests
         byte[] protectedData = protector.Protect(plaintext);
 
         var arrayBufferWriter = new ArrayBufferWriter<byte>(plaintextSize);
-        protector.Unprotect(protectedData, arrayBufferWriter);
+        protector.Unprotect(protectedData, ref arrayBufferWriter);
         var unprotectedData = arrayBufferWriter.WrittenSpan;
-        Assert.Equal(protectedData.Length, unprotectedData.Length);
+        Assert.Equal(plaintextSize, unprotectedData.Length);
         Assert.Equal(plaintext, unprotectedData);
     }
 
@@ -751,7 +751,7 @@ public class KeyRingBasedDataProtectorTests
         byte[] shortCiphertext = new byte[10]; // Less than 20 bytes (magic header + key id)
         var destination = new ArrayBufferWriter<byte>(100);
 
-        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(shortCiphertext, destination));
+        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(shortCiphertext, ref destination));
         Assert.Equal(Resources.ProtectionProvider_BadMagicHeader, ex.Message);
     }
 
@@ -771,7 +771,8 @@ public class KeyRingBasedDataProtectorTests
             newPurpose: "purpose");
 
         // Less than magic header + key id size
-        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(new byte[10], new ArrayBufferWriter<byte>()));
+        var buffer = new ArrayBufferWriter<byte>();
+        var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Unprotect(new byte[10], ref buffer));
         Assert.Equal(Resources.ProtectionProvider_BadMagicHeader, ex.Message);
     }
 

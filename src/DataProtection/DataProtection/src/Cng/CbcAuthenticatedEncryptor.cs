@@ -57,7 +57,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         _contextHeader = CreateContextHeader();
     }
 
-    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) where TWriter : IBufferWriter<byte>
+    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : IBufferWriter<byte>
 #if NET
         , allows ref struct
 #endif
@@ -174,16 +174,35 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         ciphertext.Validate();
         additionalAuthenticatedData.Validate();
 
-        var outputSize = checked(ciphertext.Count - (int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _hmacAlgorithmDigestLengthInBytes));
+        var outputSize = ciphertext.Count - (int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _hmacAlgorithmDigestLengthInBytes);
+        if (outputSize <= 0)
+        {
+            throw Error.CryptCommon_PayloadInvalid();
+        }
 
 #if NET
-        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
-        Decrypt(ciphertext, additionalAuthenticatedData, refPooledBuffer);
-        return refPooledBuffer.WrittenSpan.ToArray();
+        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        try
+        {
+            Decrypt(ciphertext, additionalAuthenticatedData, ref refPooledBuffer);
+            return refPooledBuffer.WrittenSpan.ToArray();
+        }
+        finally
+        {
+            refPooledBuffer.Dispose();
+        }
+
 #else
-        using var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
-        Decrypt(ciphertext, additionalAuthenticatedData, pooledArrayBuffer);
-        return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+        var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
+        try
+        {
+            Decrypt(ciphertext, additionalAuthenticatedData, ref pooledArrayBuffer);
+            return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+        }
+        finally
+        {
+            pooledArrayBuffer.Dispose();
+        }
 #endif
     }
 
@@ -218,7 +237,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + paddedCiphertextLength + _hmacAlgorithmDigestLengthInBytes));
     }
 
-    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) where TWriter : IBufferWriter<byte>
+    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : IBufferWriter<byte>
 #if NET
         , allows ref struct
 #endif
@@ -350,19 +369,37 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         var outputSize = (int)(preBufferSize + size + postBufferSize);
 
 #if NET
-        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        try
+        {
+            refPooledBuffer.Advance(preBufferSize);
+            Encrypt(plaintext, additionalAuthenticatedData, ref refPooledBuffer);
+            refPooledBuffer.Advance(postBufferSize);
 
-        Encrypt(plaintext, additionalAuthenticatedData, refPooledBuffer);
-        CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == outputSize, "bytesWritten == size");
-
-        return refPooledBuffer.WrittenSpan.ToArray();
+            var resultSpan = refPooledBuffer.WrittenSpan.ToArray();
+            CryptoUtil.Assert(resultSpan.Length == outputSize, "bytesWritten == size");
+            return resultSpan;
+        }
+        finally
+        {
+            refPooledBuffer.Dispose();
+        }
 #else
-        using var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
+        var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
+        try
+        {
+            pooledArrayBuffer.Advance(preBufferSize);
+            Encrypt(plaintext, additionalAuthenticatedData, ref pooledArrayBuffer);
+            pooledArrayBuffer.Advance(postBufferSize);
 
-        Encrypt(plaintext, additionalAuthenticatedData, pooledArrayBuffer);
-        CryptoUtil.Assert(pooledArrayBuffer.WrittenCount == size, "bytesWritten == size");
-
-        return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+            var resultSpan = pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+            CryptoUtil.Assert(resultSpan.Length == outputSize, "bytesWritten == size");
+            return resultSpan;
+        }
+        finally
+        {
+            pooledArrayBuffer.Dispose();
+        }
 #endif
     }
 

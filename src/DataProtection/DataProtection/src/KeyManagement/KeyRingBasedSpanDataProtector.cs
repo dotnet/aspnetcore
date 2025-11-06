@@ -20,7 +20,7 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
     {
     }
 
-    public void Protect<TWriter>(ReadOnlySpan<byte> plaintext, TWriter destination) where TWriter : IBufferWriter<byte>
+    public void Protect<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination) where TWriter : IBufferWriter<byte>
 #if NET
         , allows ref struct
 #endif
@@ -59,7 +59,7 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             destination.Advance(preBufferSize);
 
             // Step 2: Perform encryption into the destination writer
-            defaultEncryptor.Encrypt(plaintext, aad, destination);
+            defaultEncryptor.Encrypt(plaintext, aad, ref destination);
 
             // At this point, destination := { magicHeader || keyId || encryptorSpecificProtectedPayload }
             // And we're done!
@@ -71,7 +71,7 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
         }
     }
 
-    public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, TWriter destination) where TWriter : IBufferWriter<byte>
+    public void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, ref TWriter destination) where TWriter : IBufferWriter<byte>
 #if NET
         , allows ref struct
 #endif
@@ -152,7 +152,7 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
             // At this point, actualCiphertext := { encryptorSpecificPayload },
             // so all that's left is to invoke the decryption routine directly.
             var spanEncryptor = (ISpanAuthenticatedEncryptor)requestedEncryptor;
-            spanEncryptor.Decrypt(actualCiphertext, aad, destination);
+            spanEncryptor.Decrypt(actualCiphertext, aad, ref destination);
 
             // At this point, destination contains the decrypted plaintext
             // And we're done!

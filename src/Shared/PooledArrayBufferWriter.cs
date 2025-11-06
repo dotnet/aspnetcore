@@ -116,10 +116,19 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 #endif
     }
 
+    public void Advance(uint count)
+        => Advance((int)count);
+
     public void Advance(int count)
     {
+        if (count == 0)
+        {
+            // no-op
+            return;
+        }
+
         CheckIfDisposed();
-        if (count <= 0)
+        if (count < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(count), actualValue: count, $"{nameof(count)} ('{count}') must be a non-negative value.");
         }

@@ -32,7 +32,7 @@ public interface ISpanAuthenticatedEncryptor : IAuthenticatedEncryptor
     /// which can improve performance and reduce memory allocation pressure.
     /// The buffer writer is advanced by the total number of bytes written to it.
     /// </remarks>
-    void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination)
+    void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
         where TWriter : IBufferWriter<byte>
 #if NET
         , allows ref struct
@@ -55,7 +55,7 @@ public interface ISpanAuthenticatedEncryptor : IAuthenticatedEncryptor
     /// which can improve performance and reduce memory allocation pressure.
     /// The buffer writer is advanced by the total number of bytes written to it.
     /// </remarks>
-    void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination)
+    void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
         where TWriter : IBufferWriter<byte>
 #if NET
         , allows ref struct

@@ -72,11 +72,11 @@ public class SpanDataProtectorComparison
         var plaintext = GetPlaintext();
 
         var protectBuffer = new RefPooledArrayBufferWriter(initialCapacity: 255);
-        _spanDataProtector.Protect(plaintext, protectBuffer);
+        _spanDataProtector.Protect(plaintext, ref protectBuffer);
         var protectedSpan = protectBuffer.WrittenSpan;
 
         var unprotectBuffer = new RefPooledArrayBufferWriter(initialCapacity: PlaintextLength);
-        _spanDataProtector.Unprotect(protectedSpan, unprotectBuffer);
+        _spanDataProtector.Unprotect(protectedSpan, ref unprotectBuffer);
         var unProtectedSpan = unprotectBuffer.WrittenSpan;
 
         return protectedSpan.Length + unProtectedSpan.Length;

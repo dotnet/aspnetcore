@@ -21,7 +21,7 @@ internal static class RoundtripEncryptionHelpers
     public static void AssertTryEncryptTryDecryptParity(IAuthenticatedEncryptor encryptor, ArraySegment<byte> plaintext, ArraySegment<byte> aad)
     {
         var spanAuthenticatedEncryptor = encryptor as ISpanAuthenticatedEncryptor;
-        Debug.Assert(spanAuthenticatedEncryptor != null, "ISpanDataProtector is not supported by the encryptor");
+        Debug.Assert(spanAuthenticatedEncryptor != null, "ISpanAuthenticatedEncryptor is not supported by the encryptor");
 
         // assert "allocatey" Encrypt/Decrypt APIs roundtrip correctly
         byte[] ciphertext = encryptor.Encrypt(plaintext, aad);
@@ -30,14 +30,14 @@ internal static class RoundtripEncryptionHelpers
 
         // perform TryEncrypt and Decrypt roundtrip - ensures cross operation compatibility
         var buffer = new ArrayBufferWriter<byte>();
-        spanAuthenticatedEncryptor.Encrypt(plaintext, aad, buffer);
-        var encryptResult = buffer.WrittenSpan;
+        spanAuthenticatedEncryptor.Encrypt(plaintext, aad, ref buffer);
+        var encryptResult = buffer.WrittenSpan.ToArray();
         Assert.Equal(ciphertext.Length, encryptResult.Length);
-        Assert.True(encryptResult.SequenceEqual(ciphertext));
+        // we can't sequence equal here, because the ciphertext will differ due to random IVs
 
         buffer = new ArrayBufferWriter<byte>();
-        spanAuthenticatedEncryptor.Decrypt(ciphertext, aad, buffer);
-        var decryptedResult = buffer.WrittenSpan;
+        spanAuthenticatedEncryptor.Decrypt(encryptResult, aad, ref buffer);
+        var decryptedResult = buffer.WrittenSpan.ToArray();
         Assert.Equal(decipheredtext.Length, decryptedResult.Length);
         Assert.True(decryptedResult.SequenceEqual(decipheredtext));
 
@@ -45,7 +45,7 @@ internal static class RoundtripEncryptionHelpers
         var encrypted = spanAuthenticatedEncryptor.Encrypt(plaintext, aad);
 
         buffer = new ArrayBufferWriter<byte>();
-        spanAuthenticatedEncryptor.Decrypt(encrypted, aad, buffer);
+        spanAuthenticatedEncryptor.Decrypt(encrypted, aad, ref buffer);
         var decryptedResult2 = buffer.WrittenSpan;
         Assert.Equal(decipheredtext.Length, decryptedResult2.Length);
         Assert.True(decryptedResult2.SequenceEqual(decipheredtext));
@@ -66,13 +66,13 @@ internal static class RoundtripEncryptionHelpers
 
         // perform TryProtect and Unprotect roundtrip - ensures cross operation compatibility
         var buffer = new ArrayBufferWriter<byte>();
-        protector.Protect(plaintext, buffer);
+        protector.Protect(plaintext, ref buffer);
         var protectedResult = buffer.WrittenSpan;
         Assert.Equal(protectedData.Length, protectedResult.Length);
-        Assert.True(protectedResult.SequenceEqual(protectedData));
+        // we can't sequence equal here, because the ciphertext will differ due to random IVs
 
         buffer = new ArrayBufferWriter<byte>();
-        protector.Unprotect(unprotectedData, buffer);
+        protector.Unprotect(protectedResult, ref buffer);
         var unProtectedResult = buffer.WrittenSpan;
         Assert.Equal(unprotectedData.Length, unProtectedResult.Length);
         Assert.True(unProtectedResult.SequenceEqual(unprotectedData));
@@ -83,7 +83,7 @@ internal static class RoundtripEncryptionHelpers
         var protectedByProtect = protector.Protect(plaintext.ToArray());
 
         buffer = new ArrayBufferWriter<byte>();
-        protector.Unprotect(protectedByProtect, buffer);
+        protector.Unprotect(protectedByProtect, ref buffer);
         var unProtectedResult2 = buffer.WrittenSpan;
         Assert.Equal(unprotectedData.Length, unProtectedResult.Length);
         Assert.True(unProtectedResult.SequenceEqual(unprotectedData));

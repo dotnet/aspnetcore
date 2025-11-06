@@ -74,7 +74,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
     }
 
 #if NET
-    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination)
+    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
         where TWriter : IBufferWriter<byte>, allows ref struct
     {
         try
@@ -167,7 +167,7 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
     }
 
-    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination)
+    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
         where TWriter : IBufferWriter<byte>, allows ref struct
     {
         try
@@ -289,12 +289,17 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plaintext.Count);
         var outputSize = KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes /* IV */ + cipherTextLength + _validationAlgorithmDigestLengthInBytes /* MAC */;
 
-        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
-
-        Encrypt(plaintext, additionalAuthenticatedData, refPooledBuffer);
-        CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == outputSize, "bytesWritten == size");
-
-        return refPooledBuffer.WrittenSpan.ToArray();
+        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        try
+        {
+            Encrypt(plaintext, additionalAuthenticatedData, ref refPooledBuffer);
+            CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == outputSize, "bytesWritten == size");
+            return refPooledBuffer.WrittenSpan.ToArray();
+        }
+        finally
+        {
+            refPooledBuffer.Dispose(); 
+        }
 #else
         try
         {
@@ -457,10 +462,22 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         additionalAuthenticatedData.Validate();
 
 #if NET
-        var outputSize = checked(protectedPayload.Count - (KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes));
-        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
-        Decrypt(protectedPayload, additionalAuthenticatedData, refPooledBuffer);
-        return refPooledBuffer.WrittenSpan.ToArray();
+        var outputSize = protectedPayload.Count - (KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes);
+        if (outputSize <= 0)
+        {
+            throw Error.CryptCommon_PayloadInvalid();
+        }
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        try
+        {
+            Decrypt(protectedPayload, additionalAuthenticatedData, ref refPooledBuffer);
+            return refPooledBuffer.WrittenSpan.ToArray();
+        }
+        finally
+        {
+            refPooledBuffer.Dispose();
+        }
 #else
         // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
         if (protectedPayload.Count < checked(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + _validationAlgorithmDigestLengthInBytes))

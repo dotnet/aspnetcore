@@ -110,6 +110,9 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
         return _buffer.AsSpan(_index);
     }
 
+    public void Advance(uint count)
+        => Advance((int)count);
+
     /// <summary>
     /// Advances the write position by the specified count.
     /// </summary>

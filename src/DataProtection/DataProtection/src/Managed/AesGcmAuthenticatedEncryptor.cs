@@ -65,10 +65,8 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
     }
 
-    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) where TWriter : IBufferWriter<byte>
-#if NET
-        , allows ref struct
-#endif
+    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
+        where TWriter : IBufferWriter<byte>, allows ref struct
     {
         try
         {
@@ -150,15 +148,21 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         additionalAuthenticatedData.Validate();
 
         var outputSize = ciphertext.Count - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES);
-#if NET
-        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
-        Decrypt(ciphertext, additionalAuthenticatedData, refPooledBuffer);
-        return refPooledBuffer.WrittenSpan.ToArray();
-#else
-        using var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
-        Decrypt(ciphertext, additionalAuthenticatedData, pooledArrayBuffer);
-        return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
-#endif
+        if (outputSize < 0)
+        {
+            throw Error.CryptCommon_PayloadInvalid();
+        }
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        try
+        {
+            Decrypt(ciphertext, additionalAuthenticatedData, ref refPooledBuffer);
+            return refPooledBuffer.WrittenSpan.ToArray();
+        }
+        finally
+        {
+            refPooledBuffer.Dispose();
+        }
     }
 
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
@@ -171,27 +175,21 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
 
         var size = checked(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Count + TAG_SIZE_IN_BYTES);
         var outputSize = (int)(preBufferSize + size + postBufferSize);
-#if NET
-        using var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
-
-        Encrypt(plaintext, additionalAuthenticatedData, refPooledBuffer);
-        CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == size, "bytesWritten == size");
-
-        return refPooledBuffer.WrittenSpan.ToArray();
-#else
-        using var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
-
-        Encrypt(plaintext, additionalAuthenticatedData, pooledArrayBuffer);
-        CryptoUtil.Assert(pooledArrayBuffer.WrittenCount == size, "bytesWritten == size");
-
-        return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
-#endif
+        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        try
+        {
+            Encrypt(plaintext, additionalAuthenticatedData, ref refPooledBuffer);
+            CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == size, "bytesWritten == size");
+            return refPooledBuffer.WrittenSpan.ToArray();
+        }
+        finally
+        {
+            refPooledBuffer.Dispose();
+        }
     }
 
-    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, TWriter destination) where TWriter : IBufferWriter<byte>
-#if NET
-    , allows ref struct
-#endif
+    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
+        where TWriter : IBufferWriter<byte>, allows ref struct
     {
         try
         {

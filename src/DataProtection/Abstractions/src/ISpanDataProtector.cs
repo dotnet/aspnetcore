@@ -28,7 +28,7 @@ public interface ISpanDataProtector : IDataProtector
     /// buffer writer, which can improve performance and reduce memory allocation pressure.
     /// The buffer writer is advanced by the total number of bytes written to it.
     /// </remarks>
-    void Protect<TWriter>(ReadOnlySpan<byte> plaintext, TWriter destination)
+    void Protect<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination)
         where TWriter : IBufferWriter<byte>
 #if NET
         , allows ref struct
@@ -47,7 +47,7 @@ public interface ISpanDataProtector : IDataProtector
     /// buffer writer, which can improve performance and reduce memory allocation pressure.
     /// The buffer writer is advanced by the total number of bytes written to it.
     /// </remarks>
-    void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, TWriter destination)
+    void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, ref TWriter destination)
         where TWriter : IBufferWriter<byte>
 #if NET
         , allows ref struct
