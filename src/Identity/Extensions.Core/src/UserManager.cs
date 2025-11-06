@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
@@ -85,7 +86,9 @@ public class UserManager<TUser> : IDisposable where TUser : class
         ErrorDescriber = errors;
         Logger = logger;
         ServiceProvider = services;
-        _metrics = services?.GetService<UserManagerMetrics>();
+        
+        var meterFactory = services?.GetService<IMeterFactory>();
+        _metrics = meterFactory != null ? new UserManagerMetrics(meterFactory) : null;
 
         if (userValidators != null)
         {

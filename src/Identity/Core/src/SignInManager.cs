@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -63,7 +64,9 @@ public class SignInManager<TUser> where TUser : class
         Logger = logger;
         _schemes = schemes;
         _confirmation = confirmation;
-        _metrics = userManager.ServiceProvider?.GetService<SignInManagerMetrics>();
+        
+        var meterFactory = userManager.ServiceProvider?.GetService<IMeterFactory>();
+        _metrics = meterFactory != null ? new SignInManagerMetrics(meterFactory) : null;
         _passkeyHandler = userManager.ServiceProvider?.GetService<IPasskeyHandler<TUser>>();
     }
 
