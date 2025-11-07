@@ -380,7 +380,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
             refPooledBuffer.Advance(postBufferSize);
 
             var resultSpan = refPooledBuffer.WrittenSpan.ToArray();
-            CryptoUtil.Assert(resultSpan.Length == outputSize, "bytesWritten == size");
+            CryptoUtil.Assert(resultSpan.Length == outputSize, "writtenSpan length should equal calculated outputSize");
             return resultSpan;
         }
         finally
