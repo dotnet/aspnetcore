@@ -193,12 +193,6 @@ public class SignInManager<TUser> where TUser : class
     private async Task<(bool success, bool? isPersistent)> RefreshSignInCoreAsync(TUser user)
     {
         var auth = await Context.AuthenticateAsync(AuthenticationScheme);
-        if (auth == null)
-        {
-            Logger.LogError("RefreshSignInAsync prevented because authentication result is null.");
-            return (false, null);
-        }
-
         if (!auth.Succeeded || auth.Principal?.Identity?.IsAuthenticated != true)
         {
             Logger.LogError("RefreshSignInAsync prevented because the user is not currently authenticated. Use SignInAsync instead for initial sign in.");
