@@ -87,9 +87,7 @@ public class UserManager<TUser> : IDisposable where TUser : class
         Logger = logger;
         ServiceProvider = services;
         
-        var meterFactory = services?.GetService<IMeterFactory>();
-        _metrics = meterFactory != null ? new UserManagerMetrics(meterFactory) : null;
-
+        _metrics = services?.GetService<IMeterFactory>() is { } factory ? new UserManagerMetrics(factory) : null;
         if (userValidators != null)
         {
             foreach (var v in userValidators)
