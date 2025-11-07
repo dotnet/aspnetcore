@@ -64,7 +64,7 @@ public class SignInManager<TUser> where TUser : class
         Logger = logger;
         _schemes = schemes;
         _confirmation = confirmation;
-        
+        // SignInManagerMetrics created from constructor because of difficulties registering internal type.
         _metrics = userManager.ServiceProvider?.GetService<IMeterFactory>() is { } factory ? new SignInManagerMetrics(factory) : null;
         _passkeyHandler = userManager.ServiceProvider?.GetService<IPasskeyHandler<TUser>>();
     }
