@@ -170,7 +170,7 @@ public class SignInManager<TUser> where TUser : class
     /// </summary>
     /// <remarks>
     /// The user must already be signed in, and the user ID must match the currently authenticated user.
-    /// If the user is not signed in, use <see cref="SignInAsync(TUser, bool, string)"/> instead.
+    /// If the user is not signed in, use <see cref="SignInAsync(TUser, bool, string?)"/> instead.
     /// </remarks>
     /// <param name="user">The user to refresh the sign-in for.</param>
     /// <returns>The task object representing the asynchronous operation.</returns>
