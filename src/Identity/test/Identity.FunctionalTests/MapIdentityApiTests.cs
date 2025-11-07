@@ -1281,13 +1281,12 @@ public class MapIdentityApiTests : LoggedTest
     public async Task MetricsAreRecordedForUserManagerAndSignInManager()
     {
         // Arrange
-        var meterFactory = new TestMeterFactory();
-        
         await using var app = await CreateAppAsync(services =>
         {
             AddIdentityApiEndpoints(services);
-            services.AddSingleton<IMeterFactory>(meterFactory);
         });
+        var meterFactory = app.Services.GetRequiredService<IMeterFactory>();
+
         using var client = app.GetTestClient();
 
         using var userCreateCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Identity", "aspnetcore.identity.user.create.duration");
