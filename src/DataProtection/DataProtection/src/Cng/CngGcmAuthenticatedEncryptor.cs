@@ -163,7 +163,7 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         try
         {
             Decrypt(ciphertext, additionalAuthenticatedData, ref pooledArrayBuffer);
-            return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+            return pooledArrayBuffer.WrittenSpan.ToArray();
         }
         finally
         {
@@ -310,9 +310,13 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
         try
         {
+            pooledArrayBuffer.Advance((int)preBufferSize);
             Encrypt(plaintext, additionalAuthenticatedData, ref pooledArrayBuffer);
-            CryptoUtil.Assert(pooledArrayBuffer.WrittenCount == size, "bytesWritten == size");
-            return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+            pooledArrayBuffer.Advance((int)postBufferSize);
+
+            var resultSpan = pooledArrayBuffer.WrittenSpan.ToArray();
+            CryptoUtil.Assert(resultSpan.Length == outputSize, "writtenSpan length should equal calculated outputSize");
+            return resultSpan;
         }
         finally
         {

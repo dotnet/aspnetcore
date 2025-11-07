@@ -197,7 +197,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         try
         {
             Decrypt(ciphertext, additionalAuthenticatedData, ref pooledArrayBuffer);
-            return pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
+            return pooledArrayBuffer.WrittenSpan.ToArray();
         }
         finally
         {
@@ -395,8 +395,8 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
             Encrypt(plaintext, additionalAuthenticatedData, ref pooledArrayBuffer);
             pooledArrayBuffer.Advance(postBufferSize);
 
-            var resultSpan = pooledArrayBuffer.GetSpan(pooledArrayBuffer.WrittenCount).ToArray();
-            CryptoUtil.Assert(resultSpan.Length == outputSize, "bytesWritten == size");
+            var resultSpan = pooledArrayBuffer.WrittenSpan.ToArray();
+            CryptoUtil.Assert(resultSpan.Length == outputSize, "writtenSpan length should equal calculated outputSize");
 
             return resultSpan;
         }
