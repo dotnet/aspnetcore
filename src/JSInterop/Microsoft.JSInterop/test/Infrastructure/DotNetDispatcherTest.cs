@@ -886,6 +886,34 @@ public class DotNetDispatcherTest
         Assert.Equal(byteArray, jsRuntime.ByteArraysToBeRevived.Buffer[0]);
     }
 
+    [Fact]
+    public void CannotInvokeAsyncMethodSynchronously()
+    {
+        // Arrange: Track some instance plus another object we'll pass as a param
+        var jsRuntime = new TestJSRuntime();
+        var targetInstance = new SomePublicType();
+        var arg2 = new TestDTO { IntVal = 1234, StringVal = "My string" };
+        var arg1Ref = DotNetObjectReference.Create(targetInstance);
+        var arg2Ref = DotNetObjectReference.Create(arg2);
+        jsRuntime.Invoke<object>("unimportant", arg1Ref, arg2Ref);
+
+        // Arrange: all args
+        var argsJson = JsonSerializer.Serialize(new object[]
+        {
+                new TestDTO { IntVal = 1000, StringVal = "String via JSON" },
+                arg2Ref,
+        }, jsRuntime.JsonSerializerOptions);
+
+        var callId = "123";
+
+        // Act/Assert
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+        {
+            DotNetDispatcher.Invoke(jsRuntime, new DotNetInvocationInfo(null, "InvokableAsyncMethod", 1, callId), argsJson);
+        });
+
+        Assert.Equal($"The method 'InvokableAsyncMethod' cannot be invoked synchronously because it is asynchronous. Use '{nameof(DotNetDispatcher.BeginInvokeDotNet)}' instead.", ex.Message);
+    }
     internal class SomeInteralType
     {
         [JSInvokable("MethodOnInternalType")] public void MyMethod() { }
