@@ -20,7 +20,7 @@ internal static class StartupFacts
             throw new ArgumentNullException(nameof(type));
         }
 
-        // It's not good enough to just look for a method called ConfigureServices or Configure as a hueristic.
+        // It's not good enough to just look for a method called ConfigureServices or Configure as a heuristic.
         // ConfigureServices might not appear in trivial cases, and Configure might be named ConfigureDevelopment
         // or something similar.
         //

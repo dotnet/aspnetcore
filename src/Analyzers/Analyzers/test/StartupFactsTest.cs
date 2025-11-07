@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupFactsTest
         {
         }
 
-        // Yes, this is technically a Configure method - if you have an Enviroment called DevelopmentServices2.
+        // Yes, this is technically a Configure method - if you have an Environment called DevelopmentServices2.
         public static void ConfigureDevelopmentServices2(IConfiguration configuration, ILogger logger, IApplicationBuilder app)
         {
         }
