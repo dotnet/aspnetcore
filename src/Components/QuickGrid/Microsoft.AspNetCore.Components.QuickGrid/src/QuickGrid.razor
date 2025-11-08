@@ -48,8 +48,7 @@
 
         // When pagination is enabled, by default ensure we render the exact number of expected rows per page,
         // even if there aren't enough data items. This avoids the layout jumping on the last page.
-        // Consider making this optional.
-        if (Pagination is not null)
+        if (Pagination is not null && Pagination.RenderFillerRows)
         {
             while (rowIndex++ < initialRowIndex + Pagination.ItemsPerPage)
             {
