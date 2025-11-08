@@ -20,12 +20,13 @@
                 @if (Virtualize)
                 {
                     <Virtualize @ref="@_virtualizeComponent"
-                        TItem="(int RowIndex, TGridItem Data)"
-                        ItemSize="@ItemSize"
-                        OverscanCount="@OverscanCount"
-                        ItemsProvider="@ProvideVirtualizedItems"
-                        ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
-                        Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                                TItem="(int RowIndex, TGridItem Data)"
+                                ItemSize="@ItemSize"
+                                OverscanCount="@OverscanCount"
+                                ItemsProvider="@ProvideVirtualizedItems"
+                                ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
+                                EmptyContent="@EmptyContent"
+                                Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
                 }
                 else
                 {
@@ -41,9 +42,17 @@
     {
         var initialRowIndex = 2; // aria-rowindex is 1-based, plus the first row is the header
         var rowIndex = initialRowIndex;
-        foreach (var item in _currentNonVirtualizedViewItems)
+
+        if (EmptyContent != null && _currentNonVirtualizedViewItems.Count == 0)
         {
-            RenderRow(__builder, rowIndex++, item);
+            RenderEmptyRow(__builder, rowIndex++);
+        }
+        else
+        {
+            foreach (var item in _currentNonVirtualizedViewItems)
+            {
+                RenderRow(__builder, rowIndex++, item);
+            }
         }
 
         // When pagination is enabled, by default ensure we render the exact number of expected rows per page,
@@ -61,6 +70,15 @@
                 </tr>
             }
         }
+    }
+
+    private void RenderEmptyRow(RenderTreeBuilder __builder, int rowIndex)
+    {
+        <tr aria-rowindex="@rowIndex">
+            <td colspan="@_columns.Count">
+                @EmptyContent
+            </td>
+        </tr>
     }
 
     private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
