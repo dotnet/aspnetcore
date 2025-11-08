@@ -213,6 +213,13 @@ public sealed class DefaultHttpContext : HttpContext
         }
     }
 
+    /// <inheritdoc/>
+    public override Endpoint? Endpoint
+    {
+        get { return this.GetEndpoint(); }
+        set { this.SetEndpoint(value); }
+    }
+
     // This property exists because of backwards compatibility.
     // We send an anonymous object with an HttpContext property
     // via DiagnosticListener in various events throughout the pipeline. Instead
