@@ -455,7 +455,10 @@ internal static class JsonNodeSchemaExtensions
             && schemaIdNode.GetValueKind() == JsonValueKind.String)
         {
             schemaId = schemaIdNode.GetValue<string>();
-            return true;
+            if (!string.IsNullOrEmpty(schemaId))
+            {
+                return true;
+            }
         }
         schemaId = null;
         return false;
