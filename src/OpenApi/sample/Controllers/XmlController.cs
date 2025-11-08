@@ -22,7 +22,7 @@ public class XmlController : ControllerBase
 
     /// <param name="name">The name of the person.</param>
     /// <response code="200">Returns the greeting.</response>
-    [HttpGet]
+    [HttpGet("{name}")]
     public string Get1(string name)
     {
         return $"Hello, {name}!";

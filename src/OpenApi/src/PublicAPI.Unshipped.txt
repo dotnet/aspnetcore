@@ -19,6 +19,8 @@ Microsoft.AspNetCore.OpenApi.OpenApiDocumentTransformerContext.GetOrCreateSchema
 Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.Document.get -> Microsoft.OpenApi.OpenApiDocument?
 Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.Document.init -> void
 Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.GetOrCreateSchemaAsync(System.Type! type, Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription? parameterDescription = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.OpenApi.OpenApiSchema!>!
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.AllDescriptions.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription!>!
+Microsoft.AspNetCore.OpenApi.OpenApiOperationTransformerContext.AllDescriptions.init -> void
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.Document.get -> Microsoft.OpenApi.OpenApiDocument?
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.Document.init -> void
 Microsoft.AspNetCore.OpenApi.OpenApiSchemaTransformerContext.GetOrCreateSchemaAsync(System.Type! type, Microsoft.AspNetCore.Mvc.ApiExplorer.ApiParameterDescription? parameterDescription = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.OpenApi.OpenApiSchema!>!

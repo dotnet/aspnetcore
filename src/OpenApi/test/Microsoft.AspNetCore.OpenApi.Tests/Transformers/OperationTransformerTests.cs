@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -654,6 +655,55 @@ public class OperationTransformerTests : OpenApiDocumentServiceTestBase
         // Verify transformers executed in the correct order, once for each transformer
         // since there is a single operation in the document.
         Assert.Equal([1, 2, 3], transformerOrder);
+    }
+
+    [Fact]
+    public async Task OperationTransformer_ExecutesOncePerSetOfMergedEndpoints()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapPost("/overload", [Consumes("application/json")] (TodoWithDueDate name) => { });
+        builder.MapPost("/overload", [Consumes("application/x-www-form-urlencoded")] ([FromForm] TodoWithDueDate name) => { });
+
+        var options = new OpenApiOptions();
+        int executionCount = 0;
+        options.AddOperationTransformer((operation, context, cancellationToken) =>
+        {
+            executionCount++;
+
+            Assert.Collection(context.AllDescriptions,
+                description =>
+                {
+                    Assert.Equal("application/json", description.SupportedRequestFormats.Single().MediaType);
+                    // The primary description (the first declared endpoint) should be first in AllDescriptions.
+                    Assert.Equal(context.Description, description);
+                },
+                description =>
+                {
+                    Assert.Equal("application/x-www-form-urlencoded", description.SupportedRequestFormats.Single().MediaType);
+                });
+
+            operation.Description = "overloaded x" + context.AllDescriptions.Count;
+            return Task.CompletedTask;
+        });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, options, document =>
+        {
+            Assert.Equal(1, executionCount);
+
+            var path = Assert.Single(document.Paths.Values);
+            var operation = Assert.Single(path.Operations.Values);
+            Assert.NotNull(operation.RequestBody);
+
+            Assert.Equal("overloaded x2", operation.Description);
+            Assert.Collection(operation.RequestBody.Content,
+                pair => Assert.Equal("application/json", pair.Key),
+                pair => Assert.Equal("application/x-www-form-urlencoded", pair.Key)
+            );
+        });
     }
 
     private class ActivatedTransformer : IOpenApiOperationTransformer
