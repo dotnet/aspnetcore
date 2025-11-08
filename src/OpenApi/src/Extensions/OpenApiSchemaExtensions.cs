@@ -28,7 +28,8 @@ internal static class OpenApiSchemaExtensions
     {
         if(schema.Metadata is not null
             && schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var schemaIdAsObject)
-            && schemaIdAsObject is string schemaIdString)
+            && schemaIdAsObject is string schemaIdString
+            && !string.IsNullOrEmpty(schemaIdString))
         {
             schemaId = schemaIdString;
             return true;
