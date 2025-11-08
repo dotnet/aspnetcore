@@ -43,11 +43,11 @@ internal static class Helpers
 
         for (i = 0; i < 8; i++, size <<= 4)
         {
-            // offset == -1 means that we haven't found a non-zero nibble
+            // offset == -1 (or offset < 0) means that we haven't found a non-zero nibble
             // yet. If we haven't found one, and the current one is zero,
             // don't do anything.
 
-            if (offset == -1)
+            if (offset < 0)
             {
                 if ((size & mask) == 0)
                 {
@@ -72,7 +72,7 @@ internal static class Helpers
             // If we haven't found a non-zero nibble yet, we've found one
             // now, so remember that.
 
-            if (offset == -1)
+            if (offset < 0)
             {
                 offset = i;
             }

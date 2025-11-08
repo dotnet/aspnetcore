@@ -16,7 +16,7 @@ internal static class TextMessageParser
         {
             var span = buffer.First.Span;
             var index = span.IndexOf(TextMessageFormatter.RecordSeparator);
-            if (index == -1)
+            if (index < 0)
             {
                 payload = default;
                 return false;
