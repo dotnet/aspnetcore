@@ -15,7 +15,7 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.Cng;
 
-public class CbcAuthenticatedEncryptorTests(ITestOutputHelper outputHelper)
+public class CbcAuthenticatedEncryptorTests
 {
     [ConditionalFact]
     [ConditionalRunTestOnlyOnWindows]

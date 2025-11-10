@@ -3,6 +3,7 @@
 
 // Copied from https://github.com/dotnet/corefx/blob/b0751dcd4a419ba6731dcaa7d240a8a1946c934c/src/System.Text.Json/src/System/Text/Json/Serialization/ArrayBufferWriter.cs
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace System.Buffers;
@@ -11,23 +12,24 @@ namespace System.Buffers;
 /// A high-performance struct-based IBufferWriter&lt;byte&gt; implementation that uses ArrayPool for allocations.
 /// Designed for zero-allocation scenarios when used with generic methods via `allows ref struct` constraint.
 /// </summary>
-internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposable
+internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 {
-    private byte[] _buffer;
+    private T[] _rentedBuffer;
+    private Span<T> _buffer;
     private int _index;
 
-    /// <summary>
-    /// Initializes a new instance of StructArrayBufferWriter with a specified initial capacity.
-    /// </summary>
-    /// <param name="initialCapacity">The initial capacity to rent from the ArrayPool.</param>
-    public RefPooledArrayBufferWriter(int initialCapacity)
-    {
-        if (initialCapacity < 1)
-        {
-            throw new ArgumentOutOfRangeException(nameof(initialCapacity), "Initial capacity should be positive.");
-        }
+    private const int MinimumBufferSize = 256;
 
-        _buffer = ArrayPool<byte>.Shared.Rent(initialCapacity);
+    /// <summary>
+    /// Initializes the <see cref="RefPooledArrayBufferWriter{T}"/> with initial buffer. 
+    /// </summary>
+    /// <param name="initialBuffer">The initial buffer to start writer with.</param>
+    public RefPooledArrayBufferWriter(Span<T> initialBuffer)
+    {
+        // no rented buffer initially - only if we need to grow over the limits of initialBuffer
+        _rentedBuffer = null!;
+
+        _buffer = initialBuffer;
         _index = 0;
     }
 
@@ -37,17 +39,18 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
     /// </summary>
     public void Dispose()
     {
-        if (_buffer == null)
+        // to avoid `bool isDisposed` field, we can use negative index as disposed marker
+        _index = -1;
+
+        if (_rentedBuffer is not null)
         {
-            return;
+            // Optionally clear the buffer before returning to pool (security)
+            // Uncomment if needed for sensitive data:
+            // _buffer.AsSpan(0, _index).Clear();
+
+            ArrayPool<T>.Shared.Return(_rentedBuffer, clearArray: false);
+            _buffer = null!;
         }
-
-        // Optionally clear the buffer before returning to pool (security)
-        // Uncomment if needed for sensitive data:
-        // _buffer.AsSpan(0, _index).Clear();
-
-        ArrayPool<byte>.Shared.Return(_buffer, clearArray: false);
-        _buffer = null!;
     }
 
     /// <summary>
@@ -70,7 +73,7 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
         get
         {
             ThrowIfDisposed();
-            return _buffer.Length;
+            return _rentedBuffer is not null ? _rentedBuffer.Length : _buffer.Length;
         }
     }
 
@@ -82,7 +85,39 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
         get
         {
             ThrowIfDisposed();
-            return _buffer.Length - _index;
+            var length = _rentedBuffer is not null ? _rentedBuffer.Length : _buffer.Length;
+            return length - _index;
+        }
+    }
+
+    /// <summary>
+    /// Gets a span of the written data.
+    /// </summary>
+    public ReadOnlySpan<T> WrittenSpan
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return _rentedBuffer is not null ? _rentedBuffer.AsSpan(0, _index) : _buffer.Slice(0, _index);
+        }
+    }
+
+    /// <summary>
+    /// Gets a memory segment of the written data.
+    /// </summary>
+    public ReadOnlyMemory<T> WrittenMemory
+    {
+        get
+        {
+            ThrowIfDisposed();
+            if (_rentedBuffer is not null)
+            {
+                return _rentedBuffer.AsMemory(0, _index);
+            }
+
+            // either we throw, or copy the Span<T> data into a heap-allocated array (via pooling), and then return Memory<T>.
+            // For demonstration, that it should not be used with Memory<T> unless done something specific, we throw here.
+            throw new InvalidOperationException("Cannot convert Span<T> to Memory<T>");
         }
     }
 
@@ -92,10 +127,18 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
     /// <param name="sizeHint">A hint about the minimum size needed. Ignored in this implementation as resizing is not performed.</param>
     /// <returns>A Memory&lt;byte&gt; segment for the available space.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Memory<byte> GetMemory(int sizeHint = 0)
+    public Memory<T> GetMemory(int sizeHint = 0)
     {
         ThrowIfDisposed();
-        return _buffer.AsMemory(_index);
+        CheckAndResizeBuffer(sizeHint);
+        if (_rentedBuffer is not null)
+        {
+            return _rentedBuffer.AsMemory(_index);
+        }
+
+        // either we throw, or copy the Span<T> data into a heap-allocated array (via pooling), and then return Memory<T>.
+        // For demonstration, that it should not be used with Memory<T> unless done something specific, we throw here.
+        throw new InvalidOperationException("Cannot convert Span<T> to Memory<T>");
     }
 
     /// <summary>
@@ -104,10 +147,13 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
     /// <param name="sizeHint">A hint about the minimum size needed. Ignored in this implementation as resizing is not performed.</param>
     /// <returns>A Span&lt;byte&gt; for the available space.</returns>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<byte> GetSpan(int sizeHint = 0)
+    public Span<T> GetSpan(int sizeHint = 0)
     {
         ThrowIfDisposed();
-        return _buffer.AsSpan(_index);
+        CheckAndResizeBuffer(sizeHint);
+        return _rentedBuffer is not null
+            ? _rentedBuffer.AsSpan(_index)
+            : _buffer.Slice(_index);
     }
 
     public void Advance(uint count)
@@ -123,42 +169,72 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
     public void Advance(int count)
     {
         ThrowIfDisposed();
-
         if (count < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be negative.");
         }
 
-        if (_index > _buffer.Length - count)
+        var canAdvance = _rentedBuffer is not null
+            ? _index + count < _rentedBuffer.Length
+            : _index + count < _buffer.Length;
+
+        if (!canAdvance)
         {
             throw new InvalidOperationException($"Cannot advance past the end of the buffer. Current position: {_index}, Capacity: {_buffer.Length}, Requested advance: {count}.");
         }
-
         _index += count;
     }
 
-    /// <summary>
-    /// Gets a span of the written data.
-    /// </summary>
-    public ReadOnlySpan<byte> WrittenSpan
+    private void CheckAndResizeBuffer(int sizeHint)
     {
-        get
+        if (sizeHint <= 0)
         {
-            ThrowIfDisposed();
-            return _buffer.AsSpan(0, _index);
+            throw new ArgumentOutOfRangeException(nameof(sizeHint), actualValue: sizeHint, $"{nameof(sizeHint)} ('{sizeHint}') must be a non-negative value.");
         }
-    }
+        if (sizeHint == 0)
+        {
+            sizeHint = MinimumBufferSize;
+        }
 
-    /// <summary>
-    /// Gets a memory segment of the written data.
-    /// </summary>
-    public ReadOnlyMemory<byte> WrittenMemory
-    {
-        get
+        if (_rentedBuffer is null)
         {
-            ThrowIfDisposed();
-            return _buffer.AsMemory(0, _index);
+            var bufferSpace = _buffer.Length - _index;
+            if (bufferSpace < sizeHint)
+            {
+                // initial buffer is not enough, we need to start renting from the pool
+                var rentedInitialSize = _buffer.Length + Math.Max(sizeHint, _buffer.Length);
+                _rentedBuffer = ArrayPool<T>.Shared.Rent(rentedInitialSize);
+
+                _buffer.CopyTo(_rentedBuffer);
+                _buffer.Clear();
+
+                Debug.Assert(_rentedBuffer.Length - _index > 0);
+                Debug.Assert(_rentedBuffer.Length - _index >= sizeHint);
+            }
+
+            return;
         }
+
+        // we are already using rented buffer, so grow it if needed
+        var availableSpace = _rentedBuffer.Length - _index;
+        if (sizeHint > availableSpace)
+        {
+            var growBy = Math.Max(sizeHint, _rentedBuffer.Length);
+            var newSize = checked(_rentedBuffer.Length + growBy);
+
+            var oldBuffer = _rentedBuffer;
+            _rentedBuffer = ArrayPool<T>.Shared.Rent(newSize);
+
+            Debug.Assert(oldBuffer.Length >= _index);
+            Debug.Assert(_rentedBuffer.Length >= _index);
+
+            var previousBuffer = oldBuffer.AsSpan(0, _index);
+            previousBuffer.CopyTo(_rentedBuffer);
+            previousBuffer.Clear();
+            ArrayPool<T>.Shared.Return(oldBuffer);
+        }
+        Debug.Assert(_rentedBuffer.Length - _index > 0);
+        Debug.Assert(_rentedBuffer.Length - _index >= sizeHint);
     }
 
     /// <summary>
@@ -168,25 +244,23 @@ internal ref struct RefPooledArrayBufferWriter : IBufferWriter<byte>, IDisposabl
     public void Clear()
     {
         ThrowIfDisposed();
-        _index = 0;
-    }
-
-    /// <summary>
-    /// Resets the writer state, returning the buffer to the pool if it exists.
-    /// Useful when reusing the struct in a loop.
-    /// </summary>
-    public void Reset()
-    {
-        Dispose();
+        if (_rentedBuffer is not null)
+        {
+            _rentedBuffer?.AsSpan(0, _index).Clear();
+        }
+        else
+        {
+            _buffer.Slice(0, _index).Clear();
+        }
         _index = 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void ThrowIfDisposed()
     {
-        if (_buffer is null)
+        if (_index < 0)
         {
-            throw new ObjectDisposedException(nameof(RefPooledArrayBufferWriter), "The buffer writer has been disposed.");
+            throw new ObjectDisposedException(nameof(IBufferWriter<>), "The buffer writer has been disposed.");
         }
     }
 }

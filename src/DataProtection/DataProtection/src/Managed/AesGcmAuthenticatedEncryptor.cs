@@ -153,7 +153,12 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
             throw Error.CryptCommon_PayloadInvalid();
         }
 
-        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
         try
         {
             Decrypt(ciphertext, additionalAuthenticatedData, ref refPooledBuffer);
@@ -162,6 +167,10 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         finally
         {
             refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
         }
     }
 
@@ -175,7 +184,13 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
 
         var size = checked(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Count + TAG_SIZE_IN_BYTES);
         var outputSize = (int)(preBufferSize + size + postBufferSize);
-        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
         try
         {
             // arrays are pooled. and they MAY contain non-zeros in the pre-buffer and post-buffer regions.
@@ -191,6 +206,10 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         finally
         {
             refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
         }
     }
 

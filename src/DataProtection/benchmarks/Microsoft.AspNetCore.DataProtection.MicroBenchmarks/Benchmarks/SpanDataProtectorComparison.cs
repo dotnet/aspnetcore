@@ -20,26 +20,32 @@ namespace Microsoft.AspNetCore.DataProtection.MicroBenchmarks.Benchmarks;
 
 |                                 Method |        Job |      Toolchain | RunStrategy | PlaintextLength |     Mean |     Error |    StdDev |   Median |      Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
 |--------------------------------------- |----------- |--------------- |------------ |---------------- |---------:|----------:|----------:|---------:|----------:|-------:|------:|------:|----------:|
-|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.643 us | 0.0397 us | 0.0372 us | 3.637 us | 274,473.3 |      - |     - |     - |     360 B |
-| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.490 us | 0.0265 us | 0.0207 us | 3.490 us | 286,505.4 | 0.0038 |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.958 us | 0.1572 us | 0.4585 us | 3.791 us | 252,681.2 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | Job-UEQIYD | .NET Core 10.0 |  Throughput |               5 | 3.896 us | 0.0708 us | 0.1163 us | 3.847 us | 256,706.2 |      - |     - |     - |     360 B |
-| PooledWriter_ProtectUnprotectRoundtrip | Job-UEQIYD | .NET Core 10.0 |  Throughput |               5 | 3.715 us | 0.0242 us | 0.0189 us | 3.716 us | 269,177.8 |      - |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | Job-UEQIYD | .NET Core 10.0 |  Throughput |               5 | 3.735 us | 0.0741 us | 0.1153 us | 3.709 us | 267,729.7 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 4.020 us | 0.0790 us | 0.0700 us | 3.998 us | 248,760.2 | 0.0076 |     - |     - |     456 B |
-| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 3.750 us | 0.0507 us | 0.0423 us | 3.761 us | 266,700.7 |      - |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 3.856 us | 0.0737 us | 0.1231 us | 3.875 us | 259,344.1 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | Job-UEQIYD | .NET Core 10.0 |  Throughput |              50 | 4.347 us | 0.1277 us | 0.3764 us | 4.207 us | 230,042.8 |      - |     - |     - |     456 B |
-| PooledWriter_ProtectUnprotectRoundtrip | Job-UEQIYD | .NET Core 10.0 |  Throughput |              50 | 3.938 us | 0.0785 us | 0.1454 us | 3.903 us | 253,935.7 |      - |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | Job-UEQIYD | .NET Core 10.0 |  Throughput |              50 | 3.898 us | 0.0780 us | 0.2286 us | 3.828 us | 256,567.4 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 4.088 us | 0.0816 us | 0.2329 us | 4.051 us | 244,610.9 | 0.0076 |     - |     - |     552 B |
-| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 3.895 us | 0.0779 us | 0.0765 us | 3.877 us | 256,752.7 | 0.0038 |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 4.041 us | 0.0843 us | 0.2377 us | 3.981 us | 247,485.8 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | Job-UEQIYD | .NET Core 10.0 |  Throughput |             100 | 4.352 us | 0.0835 us | 0.2001 us | 4.280 us | 229,762.9 |      - |     - |     - |     552 B |
-| PooledWriter_ProtectUnprotectRoundtrip | Job-UEQIYD | .NET Core 10.0 |  Throughput |             100 | 3.960 us | 0.0768 us | 0.1051 us | 3.961 us | 252,506.3 |      - |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | Job-UEQIYD | .NET Core 10.0 |  Throughput |             100 | 3.980 us | 0.0788 us | 0.1227 us | 3.939 us | 251,236.0 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.802 us | 0.0716 us | 0.0669 us | 3.777 us | 263,047.7 |      - |     - |     - |     360 B |
+| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.510 us | 0.0252 us | 0.0210 us | 3.516 us | 284,935.8 | 0.0038 |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.445 us | 0.0247 us | 0.0219 us | 3.455 us | 290,263.1 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |               5 | 3.734 us | 0.0221 us | 0.0196 us | 3.727 us | 267,834.2 |      - |     - |     - |     360 B |
+| PooledWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |               5 | 3.565 us | 0.0216 us | 0.0191 us | 3.556 us | 280,493.6 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |               5 | 3.487 us | 0.0191 us | 0.0178 us | 3.484 us | 286,810.2 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 3.783 us | 0.0069 us | 0.0054 us | 3.784 us | 264,364.6 | 0.0076 |     - |     - |     456 B |
+| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 3.558 us | 0.0114 us | 0.0101 us | 3.554 us | 281,052.4 | 0.0038 |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 3.517 us | 0.0169 us | 0.0158 us | 3.518 us | 284,303.0 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              50 | 3.853 us | 0.0309 us | 0.0274 us | 3.848 us | 259,547.1 |      - |     - |     - |     456 B |
+| PooledWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              50 | 3.715 us | 0.0704 us | 0.1270 us | 3.650 us | 269,174.9 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              50 | 3.560 us | 0.0246 us | 0.0218 us | 3.552 us | 280,872.1 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              80 | 3.823 us | 0.0339 us | 0.0283 us | 3.808 us | 261,554.7 | 0.0076 |     - |     - |     512 B |
+| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              80 | 3.606 us | 0.0286 us | 0.0267 us | 3.597 us | 277,308.2 | 0.0038 |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              80 | 3.583 us | 0.0143 us | 0.0120 us | 3.581 us | 279,067.2 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              80 | 3.833 us | 0.0243 us | 0.0215 us | 3.825 us | 260,922.1 |      - |     - |     - |     512 B |
+| PooledWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              80 | 3.664 us | 0.0284 us | 0.0221 us | 3.664 us | 272,954.0 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              80 | 3.612 us | 0.0190 us | 0.0178 us | 3.605 us | 276,892.3 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 3.827 us | 0.0176 us | 0.0147 us | 3.825 us | 261,281.5 | 0.0076 |     - |     - |     552 B |
+| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 3.687 us | 0.0380 us | 0.0297 us | 3.685 us | 271,208.3 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 4.503 us | 0.1894 us | 0.5583 us | 4.465 us | 222,075.1 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |             100 | 4.758 us | 0.2173 us | 0.6409 us | 4.608 us | 210,150.6 |      - |     - |     - |     552 B |
+| PooledWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |             100 | 4.282 us | 0.1473 us | 0.4178 us | 4.075 us | 233,544.8 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |             100 | 3.941 us | 0.0735 us | 0.1565 us | 3.921 us | 253,712.1 |      - |     - |     - |     160 B |
 
- */
+*/
 
 [SimpleJob, MemoryDiagnoser]
 public class SpanDataProtectorComparison
@@ -47,11 +53,9 @@ public class SpanDataProtectorComparison
     private IDataProtector _dataProtector = null!;
     private ISpanDataProtector _spanDataProtector = null!;
 
-    private byte[] _plaintext5 = null!;
-    private byte[] _plaintext50 = null!;
-    private byte[] _plaintext100 = null!;
+    private byte[] _plaintext = null!;
 
-    [Params(5, 50, 100)]
+    [Params(5, 50, 80, 100)]
     public int PlaintextLength { get; set; }
 
     [GlobalSetup]
@@ -68,34 +72,15 @@ public class SpanDataProtectorComparison
         // Setup test data for different lengths
         var random = new Random(42); // Fixed seed for consistent results
 
-        _plaintext5 = new byte[5];
-        random.NextBytes(_plaintext5);
-
-        _plaintext50 = new byte[50];
-        random.NextBytes(_plaintext50);
-
-        _plaintext100 = new byte[100];
-        random.NextBytes(_plaintext100);
-    }
-
-    private byte[] GetPlaintext()
-    {
-        return PlaintextLength switch
-        {
-            5 => _plaintext5,
-            50 => _plaintext50,
-            100 => _plaintext100,
-            _ => throw new ArgumentException("Invalid plaintext length")
-        };
+        _plaintext = new byte[PlaintextLength];
+        random.NextBytes(_plaintext);
     }
 
     [Benchmark]
     public int ByteArray_ProtectUnprotectRoundtrip()
     {
-        var plaintext = GetPlaintext();
-
         // Traditional approach with allocations
-        var protectedData = _dataProtector.Protect(plaintext);
+        var protectedData = _dataProtector.Protect(_plaintext);
         var unprotectedData = _dataProtector.Unprotect(protectedData);
         return protectedData.Length + unprotectedData.Length;
     }
@@ -103,13 +88,11 @@ public class SpanDataProtectorComparison
     [Benchmark]
     public int PooledWriter_ProtectUnprotectRoundtrip()
     {
-        var plaintext = GetPlaintext();
-
         var protectBuffer = new PooledArrayBufferWriter<byte>(initialCapacity: 255);
         var unprotectBuffer = new PooledArrayBufferWriter<byte>(initialCapacity: PlaintextLength);
         try
         {
-            _spanDataProtector.Protect(plaintext, ref protectBuffer);
+            _spanDataProtector.Protect(_plaintext, ref protectBuffer);
             var protectedSpan = protectBuffer.WrittenSpan;
 
             _spanDataProtector.Unprotect(protectedSpan, ref unprotectBuffer);
@@ -125,15 +108,13 @@ public class SpanDataProtectorComparison
     }
 
     [Benchmark]
-    public int RefWriter_ProtectUnprotectRoundtrip()
+    public unsafe int RefWriter_ProtectUnprotectRoundtrip()
     {
-        var plaintext = GetPlaintext();
-
-        var protectBuffer = new RefPooledArrayBufferWriter(initialCapacity: 255);
-        var unprotectBuffer = new RefPooledArrayBufferWriter(initialCapacity: PlaintextLength);
+        var protectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
+        var unprotectBuffer = new RefPooledArrayBufferWriter<byte>(stackalloc byte[255]);
         try
         {
-            _spanDataProtector.Protect(plaintext, ref protectBuffer);
+            _spanDataProtector.Protect(_plaintext, ref protectBuffer);
             var protectedSpan = protectBuffer.WrittenSpan;
 
             _spanDataProtector.Unprotect(protectedSpan, ref unprotectBuffer);

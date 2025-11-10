@@ -148,7 +148,12 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         }
 
 #if NET
-        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
         try
         {
             Decrypt(ciphertext, additionalAuthenticatedData, ref refPooledBuffer);
@@ -157,6 +162,10 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         finally
         {
             refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
         }
 #else
         var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
@@ -288,7 +297,12 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         var size = checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Count + TAG_SIZE_IN_BYTES));
         var outputSize = (int)(preBufferSize + size + postBufferSize);
 #if NET
-        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
         try
         {
             // arrays are pooled. and they MAY contain non-zeros in the pre-buffer and post-buffer regions.
@@ -305,6 +319,10 @@ internal sealed unsafe class CngGcmAuthenticatedEncryptor : IOptimizedAuthentica
         finally
         {
             refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
         }
 #else
         var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);

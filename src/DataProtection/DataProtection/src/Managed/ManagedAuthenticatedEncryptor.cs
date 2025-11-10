@@ -289,7 +289,12 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         var cipherTextLength = symmetricAlgorithm.GetCiphertextLengthCbc(plaintext.Count);
         var outputSize = KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes /* IV */ + cipherTextLength + _validationAlgorithmDigestLengthInBytes /* MAC */;
 
-        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
         try
         {
             Encrypt(plaintext, additionalAuthenticatedData, ref refPooledBuffer);
@@ -298,7 +303,11 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         }
         finally
         {
-            refPooledBuffer.Dispose(); 
+            refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
         }
 #else
         try
@@ -468,7 +477,12 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
             throw Error.CryptCommon_PayloadInvalid();
         }
 
-        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
         try
         {
             Decrypt(protectedPayload, additionalAuthenticatedData, ref refPooledBuffer);
@@ -477,6 +491,10 @@ internal sealed unsafe class ManagedAuthenticatedEncryptor : IAuthenticatedEncry
         finally
         {
             refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
         }
 #else
         // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC

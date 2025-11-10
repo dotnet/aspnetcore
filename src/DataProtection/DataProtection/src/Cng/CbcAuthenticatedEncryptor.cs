@@ -181,7 +181,12 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         }
 
 #if NET
-        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
         try
         {
             Decrypt(ciphertext, additionalAuthenticatedData, ref refPooledBuffer);
@@ -190,6 +195,10 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         finally
         {
             refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
         }
 
 #else
@@ -369,7 +378,12 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         var outputSize = (int)(preBufferSize + size + postBufferSize);
 
 #if NET
-        var refPooledBuffer = new RefPooledArrayBufferWriter(outputSize);
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
         try
         {
             // arrays are pooled. and they MAY contain non-zeros in the pre-buffer and post-buffer regions.
@@ -386,6 +400,10 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         finally
         {
             refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
         }
 #else
         var pooledArrayBuffer = new PooledArrayBufferWriter<byte>(outputSize);
