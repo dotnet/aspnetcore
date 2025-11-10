@@ -59,7 +59,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
 
     public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : IBufferWriter<byte>
 #if NET
-        , allows ref struct
+    , allows ref struct
 #endif
     {
         // Argument checking - input must at the absolute minimum contain a key modifier, IV, and MAC
@@ -113,43 +113,28 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
                 // If the integrity check succeeded, decrypt the payload.
                 using (var decryptionSubkeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
                 {
-                    // BCryptDecrypt mutates the provided IV; we need to clone it to prevent mutation of the original value
-                    byte* pbClonedIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
-                    UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV, byteCount: _symmetricAlgorithmBlockSizeInBytes);
+                    // For CBC mode with PKCS7 padding, the maximum plaintext size is equal to the ciphertext size
+                    // We allocate the maximum possible size and let BCryptDecrypt tell us the actual size
+                    var buffer = destination.GetSpan(cbEncryptedDataLength);
 
-                    // First, query the output size needed
-                    var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
-                        hKey: decryptionSubkeyHandle,
-                        pbInput: pbEncryptedData,
-                        cbInput: (uint)cbEncryptedDataLength,
-                        pPaddingInfo: null,
-                        pbIV: pbClonedIV,
-                        cbIV: _symmetricAlgorithmBlockSizeInBytes,
-                        pbOutput: null,  // NULL output = size query only
-                        cbOutput: 0,
-                        pcbResult: out var dwRequiredSize,
-                        dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
-                    UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
-
-                    // Get buffer from writer with the required size
-                    var buffer = destination.GetSpan(checked((int)dwRequiredSize));
-
-                    // Clone IV again for the actual decryption call
-                    byte* pbClonedIV2 = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
-                    UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV2, byteCount: _symmetricAlgorithmBlockSizeInBytes);
-
-                    // Perform the actual decryption
                     fixed (byte* pbBuffer = buffer)
                     {
                         byte dummy;
-                        ntstatus = UnsafeNativeMethods.BCryptDecrypt(
+                        byte* pbPlaintext = (buffer.Length > 0) ? pbBuffer : &dummy;
+
+                        // BCryptDecrypt mutates the provided IV; we need to clone it
+                        byte* pbClonedIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
+                        UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV, byteCount: _symmetricAlgorithmBlockSizeInBytes);
+
+                        // Single BCryptDecrypt call (no size query needed)
+                        var ntstatus = UnsafeNativeMethods.BCryptDecrypt(
                             hKey: decryptionSubkeyHandle,
                             pbInput: pbEncryptedData,
                             cbInput: (uint)cbEncryptedDataLength,
                             pPaddingInfo: null,
-                            pbIV: pbClonedIV2,
+                            pbIV: pbClonedIV,
                             cbIV: _symmetricAlgorithmBlockSizeInBytes,
-                            pbOutput: (buffer.Length > 0) ? pbBuffer : &dummy,
+                            pbOutput: pbPlaintext,
                             cbOutput: (uint)buffer.Length,
                             pcbResult: out var dwActualDecryptedByteCount,
                             dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
@@ -240,9 +225,20 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         CryptoUtil.Assert(dwEncryptedBytes == cbOutput, "dwEncryptedBytes == cbOutput");
     }
 
+    /// <summary>
+    /// Calculates CBC-padded ciphertext size deterministically without BCryptEncrypt calls.
+    /// For CBC mode with PKCS7 padding: paddedSize = RoundUpToBlockSize(plaintextLength)
+    /// </summary>
+    private uint CalculateCbcPaddedSize(uint cbPlaintext)
+    {
+        // PKCS7 padding: round up to the next multiple of block size
+        // This is equivalent to: ((plaintextLength + blockSize - 1) / blockSize) * blockSize
+        return checked((uint)(((cbPlaintext + _symmetricAlgorithmBlockSizeInBytes - 1) / _symmetricAlgorithmBlockSizeInBytes) * _symmetricAlgorithmBlockSizeInBytes));
+    }
+
     public int GetEncryptedSize(int plainTextLength)
     {
-        uint paddedCiphertextLength = GetCbcEncryptedOutputSizeWithPadding((uint)plainTextLength);
+        uint paddedCiphertextLength = CalculateCbcPaddedSize((uint)plainTextLength);
         return checked((int)(KEY_MODIFIER_SIZE_IN_BYTES + _symmetricAlgorithmBlockSizeInBytes + paddedCiphertextLength + _hmacAlgorithmDigestLengthInBytes));
     }
 
@@ -286,25 +282,13 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
 
             using (var symmetricKeyHandle = _symmetricAlgorithmHandle.GenerateSymmetricKey(pbSymmetricEncryptionSubkey, _symmetricAlgorithmSubkeyLengthInBytes))
             {
-                // Query the padded ciphertext output size
                 byte dummy;
                 fixed (byte* pbPlaintextArray = plaintext)
                 {
                     var pbPlaintext = (pbPlaintextArray != null) ? pbPlaintextArray : &dummy;
 
-                    // First, query the size needed for ciphertext
-                    var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
-                        hKey: symmetricKeyHandle,
-                        pbInput: pbPlaintext,
-                        cbInput: (uint)plaintext.Length,
-                        pPaddingInfo: null,
-                        pbIV: pbIV,
-                        cbIV: _symmetricAlgorithmBlockSizeInBytes,
-                        pbOutput: null,  // NULL output = size query only
-                        cbOutput: 0,
-                        pcbResult: out var dwCiphertextSize,
-                        dwFlags: BCryptEncryptFlags.BCRYPT_BLOCK_PADDING);
-                    UnsafeNativeMethods.ThrowExceptionForBCryptStatus(ntstatus);
+                    // Calculate the padded ciphertext size deterministically without BCryptEncrypt
+                    uint dwCiphertextSize = CalculateCbcPaddedSize((uint)plaintext.Length);
 
                     // Calculate total required size
                     var totalRequiredSize = checked((int)(cbKeyModifierAndIV + dwCiphertextSize + _hmacAlgorithmDigestLengthInBytes));
@@ -327,8 +311,8 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
                         byte* pbClonedIV = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
                         UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV, byteCount: _symmetricAlgorithmBlockSizeInBytes);
 
-                        // Perform encryption
-                        ntstatus = UnsafeNativeMethods.BCryptEncrypt(
+                        // Single BCryptEncrypt call (no size query needed)
+                        var ntstatus = UnsafeNativeMethods.BCryptEncrypt(
                             hKey: symmetricKeyHandle,
                             pbInput: pbPlaintext,
                             cbInput: (uint)plaintext.Length,
