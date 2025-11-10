@@ -18,32 +18,35 @@ namespace Microsoft.AspNetCore.DataProtection.MicroBenchmarks.Benchmarks;
 
     Server=True
 
+### Numbers before improving the code flow (only span<byte> API related changes)
 |                                 Method |        Job |      Toolchain | RunStrategy | PlaintextLength |     Mean |     Error |    StdDev |   Median |      Op/s |  Gen 0 | Gen 1 | Gen 2 | Allocated |
 |--------------------------------------- |----------- |--------------- |------------ |---------------- |---------:|----------:|----------:|---------:|----------:|-------:|------:|------:|----------:|
-|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.802 us | 0.0716 us | 0.0669 us | 3.777 us | 263,047.7 |      - |     - |     - |     360 B |
-| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.510 us | 0.0252 us | 0.0210 us | 3.516 us | 284,935.8 | 0.0038 |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.445 us | 0.0247 us | 0.0219 us | 3.455 us | 290,263.1 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |               5 | 3.734 us | 0.0221 us | 0.0196 us | 3.727 us | 267,834.2 |      - |     - |     - |     360 B |
-| PooledWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |               5 | 3.565 us | 0.0216 us | 0.0191 us | 3.556 us | 280,493.6 |      - |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |               5 | 3.487 us | 0.0191 us | 0.0178 us | 3.484 us | 286,810.2 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 3.783 us | 0.0069 us | 0.0054 us | 3.784 us | 264,364.6 | 0.0076 |     - |     - |     456 B |
-| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 3.558 us | 0.0114 us | 0.0101 us | 3.554 us | 281,052.4 | 0.0038 |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 3.517 us | 0.0169 us | 0.0158 us | 3.518 us | 284,303.0 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              50 | 3.853 us | 0.0309 us | 0.0274 us | 3.848 us | 259,547.1 |      - |     - |     - |     456 B |
-| PooledWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              50 | 3.715 us | 0.0704 us | 0.1270 us | 3.650 us | 269,174.9 |      - |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              50 | 3.560 us | 0.0246 us | 0.0218 us | 3.552 us | 280,872.1 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              80 | 3.823 us | 0.0339 us | 0.0283 us | 3.808 us | 261,554.7 | 0.0076 |     - |     - |     512 B |
-| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              80 | 3.606 us | 0.0286 us | 0.0267 us | 3.597 us | 277,308.2 | 0.0038 |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              80 | 3.583 us | 0.0143 us | 0.0120 us | 3.581 us | 279,067.2 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              80 | 3.833 us | 0.0243 us | 0.0215 us | 3.825 us | 260,922.1 |      - |     - |     - |     512 B |
-| PooledWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              80 | 3.664 us | 0.0284 us | 0.0221 us | 3.664 us | 272,954.0 |      - |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |              80 | 3.612 us | 0.0190 us | 0.0178 us | 3.605 us | 276,892.3 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 3.827 us | 0.0176 us | 0.0147 us | 3.825 us | 261,281.5 | 0.0076 |     - |     - |     552 B |
-| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 3.687 us | 0.0380 us | 0.0297 us | 3.685 us | 271,208.3 |      - |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 4.503 us | 0.1894 us | 0.5583 us | 4.465 us | 222,075.1 |      - |     - |     - |     160 B |
-|    ByteArray_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |             100 | 4.758 us | 0.2173 us | 0.6409 us | 4.608 us | 210,150.6 |      - |     - |     - |     552 B |
-| PooledWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |             100 | 4.282 us | 0.1473 us | 0.4178 us | 4.075 us | 233,544.8 |      - |     - |     - |     224 B |
-|    RefWriter_ProtectUnprotectRoundtrip | Job-RLSKMM | .NET Core 10.0 |  Throughput |             100 | 3.941 us | 0.0735 us | 0.1565 us | 3.921 us | 253,712.1 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 4.097 us | 0.0598 us | 0.0530 us | 4.079 us | 244,090.2 |      - |     - |     - |     360 B |
+| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.886 us | 0.0211 us | 0.0176 us | 3.880 us | 257,339.0 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |               5 | 3.844 us | 0.0507 us | 0.0423 us | 3.823 us | 260,122.2 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |               5 | 4.178 us | 0.0825 us | 0.1356 us | 4.134 us | 239,344.6 |      - |     - |     - |     360 B |
+| PooledWriter_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |               5 | 3.902 us | 0.0258 us | 0.0202 us | 3.896 us | 256,296.9 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |               5 | 3.943 us | 0.0635 us | 0.0731 us | 3.909 us | 253,595.7 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 4.230 us | 0.0809 us | 0.0831 us | 4.190 us | 236,415.8 | 0.0076 |     - |     - |     456 B |
+| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 4.019 us | 0.0734 us | 0.0816 us | 3.991 us | 248,798.9 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              50 | 4.036 us | 0.0802 us | 0.1778 us | 3.971 us | 247,794.0 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |              50 | 4.244 us | 0.0839 us | 0.0744 us | 4.208 us | 235,623.3 |      - |     - |     - |     456 B |
+| PooledWriter_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |              50 | 4.000 us | 0.0889 us | 0.2579 us | 4.005 us | 249,994.1 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |              50 | 3.679 us | 0.0692 us | 0.0740 us | 3.654 us | 271,839.1 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              80 | 3.862 us | 0.0741 us | 0.0728 us | 3.857 us | 258,957.3 | 0.0076 |     - |     - |     512 B |
+| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              80 | 3.725 us | 0.0743 us | 0.1242 us | 3.677 us | 268,484.2 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |              80 | 3.727 us | 0.0745 us | 0.1539 us | 3.665 us | 268,320.4 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |              80 | 4.039 us | 0.0805 us | 0.2078 us | 3.939 us | 247,555.9 |      - |     - |     - |     512 B |
+| PooledWriter_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |              80 | 3.809 us | 0.0751 us | 0.0835 us | 3.783 us | 262,504.4 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |              80 | 3.718 us | 0.0711 us | 0.0665 us | 3.717 us | 268,936.9 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 4.086 us | 0.0796 us | 0.2054 us | 4.011 us | 244,726.7 | 0.0076 |     - |     - |     552 B |
+| PooledWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 3.922 us | 0.0773 us | 0.1613 us | 3.877 us | 254,955.2 | 0.0038 |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | DefaultJob |        Default |     Default |             100 | 3.658 us | 0.0521 us | 0.0435 us | 3.658 us | 273,341.9 |      - |     - |     - |     160 B |
+|    ByteArray_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |             100 | 4.088 us | 0.0805 us | 0.1018 us | 4.046 us | 244,641.5 |      - |     - |     - |     552 B |
+| PooledWriter_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |             100 | 3.800 us | 0.0351 us | 0.0293 us | 3.805 us | 263,132.8 |      - |     - |     - |     224 B |
+|    RefWriter_ProtectUnprotectRoundtrip | Job-REJWKR | .NET Core 10.0 |  Throughput |             100 | 3.797 us | 0.0735 us | 0.1031 us | 3.752 us | 263,344.2 |      - |     - |     - |     160 B |
+
+### 
 
 */
 
