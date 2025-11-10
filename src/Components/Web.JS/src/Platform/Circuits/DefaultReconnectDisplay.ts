@@ -133,9 +133,10 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       this.status.innerHTML = 'Failed to rejoin.<br />Please retry or reload the page.';
       this.document.addEventListener('visibilitychange', this.retryWhenDocumentBecomesVisible);
     } else {
-      this.status.innerHTML = 'Failed to resume the session.<br />Please reload the page.';
-      this.resumeButton.style.display = 'none';
-      this.reloadButton.style.display = 'none';
+      // Resuming circuit failed, last resort is to reload the page.
+      // This enables automatic reconnection (with empty state) when the server is restarted,
+      // e.g. during local development.
+      location.reload();
     }
   }
 
