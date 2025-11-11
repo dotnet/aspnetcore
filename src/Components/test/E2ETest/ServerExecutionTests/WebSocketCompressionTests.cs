@@ -7,6 +7,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using TestServer;
@@ -96,6 +97,7 @@ public abstract partial class BlockedWebSocketCompressionTests(
     : ServerTestBase<BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>>>(browserFixture, serverFixture, output)
 {
     [Fact]
+    [QuarantinedTest("https://github.com/dotnet/aspnetcore/issues/64305")]
     public void EmbeddingServerAppInsideIframe_WithCompressionEnabled_Fails()
     {
         Navigate("/subdir/iframe");
