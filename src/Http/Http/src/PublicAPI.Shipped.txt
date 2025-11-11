@@ -4,8 +4,8 @@ const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultMemoryBufferThreshol
 const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultMultipartBodyLengthLimit = 134217728 -> long
 const Microsoft.AspNetCore.Http.Features.FormOptions.DefaultMultipartBoundaryLengthLimit = 128 -> int
 Microsoft.AspNetCore.Builder.ApplicationBuilder
-Microsoft.AspNetCore.Builder.ApplicationBuilder.ApplicationBuilder(System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Builder.ApplicationBuilder.ApplicationBuilder(System.IServiceProvider! serviceProvider, object! server) -> void
+Microsoft.AspNetCore.Builder.ApplicationBuilder.ApplicationBuilder(System.IServiceProvider! serviceProvider) -> void
 Microsoft.AspNetCore.Builder.ApplicationBuilder.ApplicationServices.get -> System.IServiceProvider!
 Microsoft.AspNetCore.Builder.ApplicationBuilder.ApplicationServices.set -> void
 Microsoft.AspNetCore.Builder.ApplicationBuilder.Build() -> Microsoft.AspNetCore.Http.RequestDelegate!
@@ -46,8 +46,8 @@ Microsoft.AspNetCore.Http.Features.DefaultSessionFeature.Session.set -> void
 Microsoft.AspNetCore.Http.Features.FormFeature
 Microsoft.AspNetCore.Http.Features.FormFeature.Form.get -> Microsoft.AspNetCore.Http.IFormCollection?
 Microsoft.AspNetCore.Http.Features.FormFeature.Form.set -> void
-Microsoft.AspNetCore.Http.Features.FormFeature.FormFeature(Microsoft.AspNetCore.Http.HttpRequest! request) -> void
 Microsoft.AspNetCore.Http.Features.FormFeature.FormFeature(Microsoft.AspNetCore.Http.HttpRequest! request, Microsoft.AspNetCore.Http.Features.FormOptions! options) -> void
+Microsoft.AspNetCore.Http.Features.FormFeature.FormFeature(Microsoft.AspNetCore.Http.HttpRequest! request) -> void
 Microsoft.AspNetCore.Http.Features.FormFeature.FormFeature(Microsoft.AspNetCore.Http.IFormCollection! form) -> void
 Microsoft.AspNetCore.Http.Features.FormFeature.HasFormContentType.get -> bool
 Microsoft.AspNetCore.Http.Features.FormFeature.ReadForm() -> Microsoft.AspNetCore.Http.IFormCollection!
@@ -154,8 +154,8 @@ Microsoft.AspNetCore.Http.Features.RequestServicesFeature.RequestServices.set ->
 Microsoft.AspNetCore.Http.Features.RequestServicesFeature.RequestServicesFeature(Microsoft.AspNetCore.Http.HttpContext! context, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory? scopeFactory) -> void
 Microsoft.AspNetCore.Http.Features.ResponseCookiesFeature
 Microsoft.AspNetCore.Http.Features.ResponseCookiesFeature.Cookies.get -> Microsoft.AspNetCore.Http.IResponseCookies!
-Microsoft.AspNetCore.Http.Features.ResponseCookiesFeature.ResponseCookiesFeature(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features) -> void
 Microsoft.AspNetCore.Http.Features.ResponseCookiesFeature.ResponseCookiesFeature(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features, Microsoft.Extensions.ObjectPool.ObjectPool<System.Text.StringBuilder!>? builderPool) -> void
+Microsoft.AspNetCore.Http.Features.ResponseCookiesFeature.ResponseCookiesFeature(Microsoft.AspNetCore.Http.Features.IFeatureCollection! features) -> void
 Microsoft.AspNetCore.Http.Features.RouteValuesFeature
 Microsoft.AspNetCore.Http.Features.RouteValuesFeature.RouteValues.get -> Microsoft.AspNetCore.Routing.RouteValueDictionary!
 Microsoft.AspNetCore.Http.Features.RouteValuesFeature.RouteValues.set -> void
@@ -261,8 +261,8 @@ Microsoft.AspNetCore.Http.StreamResponseBodyFeature
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Dispose() -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.PriorFeature.get -> Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature?
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Stream.get -> System.IO.Stream!
-Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream) -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream, Microsoft.AspNetCore.Http.Features.IHttpResponseBodyFeature? priorFeature) -> void
+Microsoft.AspNetCore.Http.StreamResponseBodyFeature.StreamResponseBodyFeature(System.IO.Stream! stream) -> void
 Microsoft.AspNetCore.Http.StreamResponseBodyFeature.Writer.get -> System.IO.Pipelines.PipeWriter!
 Microsoft.AspNetCore.Http.Timeouts.DisableRequestTimeoutAttribute
 Microsoft.AspNetCore.Http.Timeouts.DisableRequestTimeoutAttribute.DisableRequestTimeoutAttribute() -> void
@@ -319,15 +319,15 @@ static Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExt
 static Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExtensions.WithRequestTimeout(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder, string! policyName) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
 static Microsoft.AspNetCore.Builder.RequestTimeoutsIEndpointConventionBuilderExtensions.WithRequestTimeout(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder! builder, System.TimeSpan timeout) -> Microsoft.AspNetCore.Builder.IEndpointConventionBuilder!
 static Microsoft.AspNetCore.Http.BindingAddress.Parse(string! address) -> Microsoft.AspNetCore.Http.BindingAddress!
-static Microsoft.AspNetCore.Http.HttpRequestRewindExtensions.EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest! request) -> void
-static Microsoft.AspNetCore.Http.HttpRequestRewindExtensions.EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest! request, int bufferThreshold) -> void
 static Microsoft.AspNetCore.Http.HttpRequestRewindExtensions.EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest! request, int bufferThreshold, long bufferLimit) -> void
+static Microsoft.AspNetCore.Http.HttpRequestRewindExtensions.EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest! request, int bufferThreshold) -> void
 static Microsoft.AspNetCore.Http.HttpRequestRewindExtensions.EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest! request, long bufferLimit) -> void
+static Microsoft.AspNetCore.Http.HttpRequestRewindExtensions.EnableBuffering(this Microsoft.AspNetCore.Http.HttpRequest! request) -> void
 static Microsoft.AspNetCore.Http.RequestFormReaderExtensions.ReadFormAsync(this Microsoft.AspNetCore.Http.HttpRequest! request, Microsoft.AspNetCore.Http.Features.FormOptions! options, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<Microsoft.AspNetCore.Http.IFormCollection!>!
 static Microsoft.AspNetCore.Http.SendFileFallback.SendFileAsync(System.IO.Stream! destination, string! filePath, long offset, long? count, System.Threading.CancellationToken cancellationToken) -> System.Threading.Tasks.Task!
 static Microsoft.Extensions.DependencyInjection.HttpServiceCollectionExtensions.AddHttpContextAccessor(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
-static Microsoft.Extensions.DependencyInjection.RequestTimeoutsIServiceCollectionExtensions.AddRequestTimeouts(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.RequestTimeoutsIServiceCollectionExtensions.AddRequestTimeouts(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutOptions!>! configure) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.RequestTimeoutsIServiceCollectionExtensions.AddRequestTimeouts(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static readonly Microsoft.AspNetCore.Http.FormCollection.Empty -> Microsoft.AspNetCore.Http.FormCollection!
 static readonly Microsoft.AspNetCore.Http.QueryCollection.Empty -> Microsoft.AspNetCore.Http.QueryCollection!
 virtual Microsoft.AspNetCore.Http.Features.HttpResponseFeature.HasStarted.get -> bool
