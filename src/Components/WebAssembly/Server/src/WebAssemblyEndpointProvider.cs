@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Endpoints;
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Http;
@@ -41,7 +42,8 @@ internal class WebAssemblyEndpointProvider(IServiceProvider services) : RenderMo
                 context.SetEndpoint(null);
 
                 return app(context);
-            });
+            })
+            .WithMetadata(new ComponentFrameworkEndpointMetadata());
 
             return endpointRouteBuilder.GetEndpoints();
         }
@@ -73,6 +75,22 @@ internal class WebAssemblyEndpointProvider(IServiceProvider services) : RenderMo
                     {
                         var metadata = routeEndpoint.Metadata[i];
                         builder.Metadata.Add(metadata);
+                    }
+
+                    // Add framework endpoint metadata if not already present
+                    var hasFrameworkMetadata = false;
+                    for (var i = 0; i < builder.Metadata.Count; i++)
+                    {
+                        if (builder.Metadata[i] is ComponentFrameworkEndpointMetadata)
+                        {
+                            hasFrameworkMetadata = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!hasFrameworkMetadata)
+                    {
+                        builder.Metadata.Add(new ComponentFrameworkEndpointMetadata());
                     }
 
                     yield return builder;
