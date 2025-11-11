@@ -139,8 +139,9 @@ public abstract class SqlStoreTestBase<TUser, TRole, TKey> : IdentitySpecificati
             Assert.True(DbUtil.VerifyColumns(db, "AspNetRoles", "Id", "Name", "NormalizedName", "ConcurrencyStamp"));
             Assert.True(DbUtil.VerifyColumns(db, "AspNetUserRoles", "UserId", "RoleId"));
             Assert.True(DbUtil.VerifyColumns(db, "AspNetUserClaims", "Id", "UserId", "ClaimType", "ClaimValue"));
-            Assert.True(DbUtil.VerifyColumns(db, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
-            Assert.True(DbUtil.VerifyColumns(db, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
+            // V3 schema includes Id column for UserLogins and UserTokens
+            Assert.True(DbUtil.VerifyColumns(db, "AspNetUserLogins", "Id", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
+            Assert.True(DbUtil.VerifyColumns(db, "AspNetUserTokens", "Id", "UserId", "LoginProvider", "Name", "Value"));
 
             Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetUsers", 256, "UserName", "Email", "NormalizedUserName", "NormalizedEmail"));
             Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetRoles", 256, "Name", "NormalizedName"));

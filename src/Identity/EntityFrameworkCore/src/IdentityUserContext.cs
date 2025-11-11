@@ -191,6 +191,7 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
     {
         // Differences from Version 2:
         // - Add a passkey entity
+        // - Changes added to IdentityUserToken and IdentityUserLogin to add a unique id field.
 
         var storeOptions = GetStoreOptions();
         var maxKeyLength = storeOptions?.MaxLengthForKeys ?? 0;
@@ -244,7 +245,8 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
 
         builder.Entity<TUserLogin>(b =>
         {
-            b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
+            b.HasKey(l => l.Id);
+            b.HasIndex(l => new { l.LoginProvider, l.ProviderKey }).IsUnique();
 
             if (maxKeyLength > 0)
             {
@@ -257,7 +259,8 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
 
         builder.Entity<TUserToken>(b =>
         {
-            b.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
+            b.HasKey(t => t.Id);
+            b.HasIndex(t => new { t.UserId, t.LoginProvider, t.Name }).IsUnique();
 
             if (maxKeyLength > 0)
             {
@@ -356,6 +359,9 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
         {
             b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
 
+            // V2 schema uses composite key, ignore the Id property added for V3
+            b.Ignore(l => l.Id);
+
             if (maxKeyLength > 0)
             {
                 b.Property(l => l.LoginProvider).HasMaxLength(maxKeyLength);
@@ -368,6 +374,9 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
         builder.Entity<TUserToken>(b =>
         {
             b.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
+
+            // V2 schema uses composite key, ignore the Id property added for V3
+            b.Ignore(t => t.Id);
 
             if (maxKeyLength > 0)
             {
@@ -451,6 +460,9 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
         {
             b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
 
+            // V1 schema uses composite key, ignore the Id property added for V3
+            b.Ignore(l => l.Id);
+
             if (maxKeyLength > 0)
             {
                 b.Property(l => l.LoginProvider).HasMaxLength(maxKeyLength);
@@ -463,6 +475,9 @@ public abstract class IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, T
         builder.Entity<TUserToken>(b =>
         {
             b.HasKey(t => new { t.UserId, t.LoginProvider, t.Name });
+
+            // V1 schema uses composite key, ignore the Id property added for V3
+            b.Ignore(t => t.Id);
 
             if (maxKeyLength > 0)
             {

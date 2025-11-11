@@ -56,14 +56,23 @@ public class VersionThreeSchemaTest : IClassFixture<ScratchDatabaseFixture>
         Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetRoles", "Id", "Name", "NormalizedName", "ConcurrencyStamp"));
         Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserRoles", "UserId", "RoleId"));
         Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserClaims", "Id", "UserId", "ClaimType", "ClaimValue"));
-        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
-        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
+
+        // V3 Schema: UserLogins now has Id primary key with unique index on (LoginProvider, ProviderKey)
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserLogins", "Id", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
+
+        // V3 Schema: UserTokens now has Id primary key with unique index on (UserId, LoginProvider, Name)
+        Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserTokens", "Id", "UserId", "LoginProvider", "Name", "Value"));
+
         Assert.True(DbUtil.VerifyColumns(sqlConn, "AspNetUserPasskeys", "UserId", "CredentialId", "Data"));
 
         Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetUsers", 256, "UserName", "Email", "NormalizedUserName", "NormalizedEmail", "PhoneNumber"));
         Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetRoles", 256, "Name", "NormalizedName"));
         Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetUserLogins", 128, "LoginProvider", "ProviderKey"));
         Assert.True(DbUtil.VerifyMaxLength(dbContext, "AspNetUserTokens", 128, "LoginProvider", "Name"));
+
+        // V3 Schema unique indexes
+        DbUtil.VerifyIndex(sqlConn, "AspNetUserLogins", "IX_AspNetUserLogins_LoginProvider_ProviderKey", isUnique: true);
+        DbUtil.VerifyIndex(sqlConn, "AspNetUserTokens", "IX_AspNetUserTokens_UserId_LoginProvider_Name", isUnique: true);
 
         DbUtil.VerifyIndex(sqlConn, "AspNetRoles", "RoleNameIndex", isUnique: true);
         DbUtil.VerifyIndex(sqlConn, "AspNetUsers", "UserNameIndex", isUnique: true);

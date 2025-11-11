@@ -15,7 +15,7 @@ public class IdentityUserClaim<TKey> where TKey : IEquatable<TKey>
     /// <summary>
     /// Gets or sets the identifier for this user claim.
     /// </summary>
-    public virtual int Id { get; set; } = default!;
+    public virtual TKey Id { get; set; } = default!;
 
     /// <summary>
     /// Gets or sets the primary key of the user associated with this claim.

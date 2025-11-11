@@ -41,7 +41,7 @@ public class CustomSchemaTest : IClassFixture<ScratchDatabaseFixture>
     {
         using var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<CustomVersionDbContext>();
-        VersionTwoSchemaTest.VerifyVersion2Schema(db);
+        VersionThreeSchemaTest.VerifyVersion3Schema(db);
         using var sqlConn = (SqliteConnection)db.Database.GetDbConnection();
         sqlConn.Open();
         Assert.True(DbUtil.VerifyColumns(sqlConn, "CustomColumns", "Id"));
