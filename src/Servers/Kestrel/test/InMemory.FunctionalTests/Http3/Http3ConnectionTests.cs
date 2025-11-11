@@ -18,7 +18,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 using Http3SettingType = Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http3.Http3SettingType;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests;
 
@@ -766,6 +765,59 @@ public class Http3ConnectionTests : Http3TestBase
 
         var errorCodeFeature = Http3Api.MultiplexedConnectionContext.Features.Get<IProtocolErrorCodeFeature>();
         Assert.InRange(errorCodeFeature.Error, 0, (1L << 62) - 1); // Valid range for HTTP/3 error codes
+    }
+
+    [Theory]
+    [InlineData(2)] // encoder
+    [InlineData(3)] // decoder
+    public async Task IgnoredControlStreams_CloseConnectionOnEndStream(int streamType)
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var stream = await Http3Api.CreateControlStream(streamType);
+
+        // PipeWriter will be completed when end of stream is received. Should exit read loop and close stream
+        // which will cause the connection to close with an error.
+        await stream.SendFrameAsync(Http3FrameType.Data, Memory<byte>.Empty, endStream: true);
+
+        await stream.OnStreamCompletedTask.DefaultTimeout();
+
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(TimeSpan.FromSeconds(1));
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
+    }
+
+    [Theory]
+    [InlineData(2)] // encoder
+    [InlineData(3)] // decoder
+    public async Task IgnoredControlStreams_CloseConnectionOnStreamClose(int streamType)
+    {
+        await Http3Api.InitializeConnectionAsync(_noopApplication);
+
+        var stream = await Http3Api.CreateControlStream(streamType);
+
+        await (streamType == 2 ? stream.OnEncoderStreamCreatedTask : stream.OnDecoderStreamCreatedTask).DefaultTimeout();
+
+        // Simulate quic layer closing the stream
+        stream.StreamContext.Close();
+
+        Http3Api.TriggerTick();
+        Http3Api.TriggerTick(TimeSpan.FromSeconds(1));
+
+        await Http3Api.WaitForConnectionErrorAsync<Http3ConnectionErrorException>(
+            ignoreNonGoAwayFrames: true,
+            expectedLastStreamId: 0,
+            expectedErrorCode: Http3ErrorCode.ClosedCriticalStream,
+            matchExpectedErrorMessage: AssertExpectedErrorMessages,
+            expectedErrorMessage: CoreStrings.Http3ErrorControlStreamClosed);
+        MetricsAssert.Equal(ConnectionEndReason.ClosedCriticalStream, Http3Api.ConnectionTags);
     }
 
     private sealed class ThrowingMultiplexedConnectionContext : TestMultiplexedConnectionContext
