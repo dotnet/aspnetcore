@@ -268,7 +268,7 @@
 ~override Microsoft.AspNetCore.Mvc.TagHelpers.PersistComponentStateTagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Mvc.TagHelpers.RenderAtEndOfFormTagHelper.Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) -> void
 ~override Microsoft.AspNetCore.Mvc.TagHelpers.RenderAtEndOfFormTagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
-~override Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void
+~override Microsoft.AspNetCore.Mvc.TagHelpers.ScriptTagHelper.ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> System.Threading.Tasks.Task
 ~override Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper.Init(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context) -> void
 ~override Microsoft.AspNetCore.Mvc.TagHelpers.SelectTagHelper.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void
 ~override Microsoft.AspNetCore.Mvc.TagHelpers.TextAreaTagHelper.Process(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) -> void

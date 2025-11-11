@@ -23,8 +23,8 @@ Microsoft.Extensions.Localization.ResourceNamesCache.ResourceNamesCache() -> voi
 Microsoft.Extensions.Localization.RootNamespaceAttribute
 Microsoft.Extensions.Localization.RootNamespaceAttribute.RootNamespace.get -> string!
 Microsoft.Extensions.Localization.RootNamespaceAttribute.RootNamespaceAttribute(string! rootNamespace) -> void
-static Microsoft.Extensions.DependencyInjection.LocalizationServiceCollectionExtensions.AddLocalization(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 static Microsoft.Extensions.DependencyInjection.LocalizationServiceCollectionExtensions.AddLocalization(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services, System.Action<Microsoft.Extensions.Localization.LocalizationOptions!>! setupAction) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
+static Microsoft.Extensions.DependencyInjection.LocalizationServiceCollectionExtensions.AddLocalization(this Microsoft.Extensions.DependencyInjection.IServiceCollection! services) -> Microsoft.Extensions.DependencyInjection.IServiceCollection!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizer.GetAllStrings(bool includeParentCultures) -> System.Collections.Generic.IEnumerable<Microsoft.Extensions.Localization.LocalizedString!>!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizer.this[string! name, params object![]! arguments].get -> Microsoft.Extensions.Localization.LocalizedString!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizer.this[string! name].get -> Microsoft.Extensions.Localization.LocalizedString!
@@ -32,6 +32,6 @@ virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourceLocationAttribute(System.Reflection.Assembly! assembly) -> Microsoft.Extensions.Localization.ResourceLocationAttribute?
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(string! baseResourceName, string! baseNamespace) -> string!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(string! location, string! baseName, string! resourceLocation) -> string!
-virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(System.Reflection.TypeInfo! typeInfo) -> string!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(System.Reflection.TypeInfo! typeInfo, string? baseNamespace, string? resourcesRelativePath) -> string!
+virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetResourcePrefix(System.Reflection.TypeInfo! typeInfo) -> string!
 virtual Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory.GetRootNamespaceAttribute(System.Reflection.Assembly! assembly) -> Microsoft.Extensions.Localization.RootNamespaceAttribute?
