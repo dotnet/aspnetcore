@@ -184,7 +184,7 @@ public partial class NoneAncestorWebSocketCompressionTests : BlockedWebSocketCom
 
 public partial class NoneAncestorWebSocketAppliesPolicyOnCallbackCompressionTests : BlockedWebSocketCompressionTests
 {
-    public NoneAncestorWebSocketAppliesPolicyOnCallback`CompressionTests(
+    public NoneAncestorWebSocketAppliesPolicyOnCallbackCompressionTests(
         BrowserFixture browserFixture,
         BasicTestAppServerSiteFixture<RazorComponentEndpointsStartup<App>> serverFixture,
         ITestOutputHelper output)
