@@ -44,10 +44,10 @@
     <UsagePattern IdentityGlob="System.Formats.Asn1/6.0.0" />
 
     <!-- Used only for RepoTasks -->
-    <UsagePattern IdentityGlob="Microsoft.Build.Framework/17.8.29" />
-    <UsagePattern IdentityGlob="Microsoft.Build.Tasks.Core/17.8.29" />
-    <UsagePattern IdentityGlob="Microsoft.Build.Utilities.Core/17.8.29" />
-    <UsagePattern IdentityGlob="Microsoft.NET.StringTools/17.8.29" />
+    <UsagePattern IdentityGlob="Microsoft.Build.Framework/17.8.43" />
+    <UsagePattern IdentityGlob="Microsoft.Build.Tasks.Core/17.8.43" />
+    <UsagePattern IdentityGlob="Microsoft.Build.Utilities.Core/17.8.43" />
+    <UsagePattern IdentityGlob="Microsoft.NET.StringTools/17.8.43" />
     <UsagePattern IdentityGlob="Microsoft.VisualStudio.Setup.Configuration.Interop/3.2.2146" />
   </IgnorePatterns>
 </UsageData>
