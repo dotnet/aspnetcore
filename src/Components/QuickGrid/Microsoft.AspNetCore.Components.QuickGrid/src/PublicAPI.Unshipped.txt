@@ -1,4 +1,14 @@
 #nullable enable
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.GetSortColumnProperties() -> System.Collections.Generic.IEnumerable<System.Collections.Generic.IReadOnlyCollection<Microsoft.AspNetCore.Components.QuickGrid.SortedProperty>!>!
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortColumns.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>!>!
+Microsoft.AspNetCore.Components.QuickGrid.GridItemsProviderRequest<TGridItem>.SortColumns.init -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.AddUpdateSortByColumnAsync(Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>! column, Microsoft.AspNetCore.Components.QuickGrid.SortDirection direction = Microsoft.AspNetCore.Components.QuickGrid.SortDirection.Auto) -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.HideColumnOptionsAsync() -> System.Threading.Tasks.Task!
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RowClass.get -> System.Func<TGridItem, string?>?
 Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.RowClass.set -> void
+Microsoft.AspNetCore.Components.QuickGrid.QuickGrid<TGridItem>.SortColumns.get -> System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>!>!
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>.Ascending.get -> bool
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>.Column.get -> Microsoft.AspNetCore.Components.QuickGrid.ColumnBase<TGridItem>?
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>.Column.init -> void
+Microsoft.AspNetCore.Components.QuickGrid.SortColumn<TGridItem>.SortColumn() -> void
