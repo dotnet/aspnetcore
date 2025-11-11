@@ -1,6 +1,7 @@
 # This script adds internal feeds required to build commits that depend on internal package sources. For instance,
-# dotnet6-internal would be added automatically if dotnet6 was found in the nuget.config file. In addition also enables
-# disabled internal Maestro (darc-int*) feeds.
+# dotnet6-internal would be added automatically if dotnet6 was found in the nuget.config file. Similarly,
+# dotnet-eng-internal and dotnet-tools-internal are added if dotnet-eng and dotnet-tools are present.
+# In addition, this script also enables disabled internal Maestro (darc-int*) feeds.
 #
 # Optionally, this script also adds a credential entry for each of the internal feeds if supplied.
 #
@@ -171,6 +172,18 @@ foreach ($dotnetVersion in $dotnetVersions) {
         AddOrEnablePackageSource -Sources $sources -DisabledPackageSources $disabledSources -SourceName "$feedPrefix-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/internal/_packaging/$feedPrefix-internal/nuget/$feedSuffix" -Creds $creds -Username $userName -pwd $Password
         AddOrEnablePackageSource -Sources $sources -DisabledPackageSources $disabledSources -SourceName "$feedPrefix-internal-transport" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/internal/_packaging/$feedPrefix-internal-transport/nuget/$feedSuffix" -Creds $creds -Username $userName -pwd $Password
     }
+}
+
+# Check for dotnet-eng and add dotnet-eng-internal if present
+$dotnetEngSource = $sources.SelectSingleNode("add[@key='dotnet-eng']")
+if ($dotnetEngSource -ne $null) {
+    AddOrEnablePackageSource -Sources $sources -DisabledPackageSources $disabledSources -SourceName "dotnet-eng-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-eng-internal/nuget/$feedSuffix" -Creds $creds -Username $userName -pwd $Password
+}
+
+# Check for dotnet-tools and add dotnet-tools-internal if present
+$dotnetToolsSource = $sources.SelectSingleNode("add[@key='dotnet-tools']")
+if ($dotnetToolsSource -ne $null) {
+    AddOrEnablePackageSource -Sources $sources -DisabledPackageSources $disabledSources -SourceName "dotnet-tools-internal" -SourceEndPoint "https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/$feedSuffix" -Creds $creds -Username $userName -pwd $Password
 }
 
 $doc.Save($filename)
