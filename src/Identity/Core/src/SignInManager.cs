@@ -225,7 +225,7 @@ public class SignInManager<TUser> where TUser : class
         }
 
         await SignInWithClaimsAsync(user, auth.Properties, claims);
-        return (true, auth.Properties.IsPersistent);
+        return (true, auth.Properties?.IsPersistent);
     }
 
     /// <summary>
