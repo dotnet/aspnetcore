@@ -768,6 +768,33 @@ public class EndpointMetadataApiDescriptionProviderTest
     }
 
     [Fact]
+    public void AddsFromRouteParameterAsPathWhenOmittedInHandler()
+    {
+        static void AssertPathParameter(ApiDescription apiDescription)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal("foo", param.Name);
+            Assert.Equal(BindingSource.Path, param.Source);
+        }
+
+        AssertPathParameter(GetApiDescription(() => { }, "/{foo}"));
+    }
+
+    [Fact]
+    public void AddsFromRouteParameterAsPathOnceRegardlessOfCasing()
+    {
+        static void AssertPathParameter(ApiDescription apiDescription)
+        {
+            var param = Assert.Single(apiDescription.ParameterDescriptions);
+            Assert.Equal(typeof(int), param.Type);
+            Assert.Equal(typeof(int), param.ModelMetadata.ModelType);
+            Assert.Equal(BindingSource.Path, param.Source);
+        }
+
+        AssertPathParameter(GetApiDescription((int foo) => { }, "/{FOO}"));
+    }
+
+    [Fact]
     public void AddsFromQueryParameterAsQuery()
     {
         static void AssertQueryParameter<T>(ApiDescription apiDescription)
