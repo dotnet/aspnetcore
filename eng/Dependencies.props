@@ -4,8 +4,6 @@ This file contains a list of all the external dependencies used in ASP.NET Core.
 are expressed as `<LatestPackageReference>`. These are used as inputs reference resolution, and
 may be turned into `<PackageReference>` items in projects.
 
-`<BaselinePackageReference>` items should not be in this file. Those items appear in Baseline.Designer.props
-and are generated based on the last package release.
 -->
 <Project>
   <PropertyGroup>
