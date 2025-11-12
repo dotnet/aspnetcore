@@ -108,7 +108,7 @@ public abstract partial class BlockedWebSocketCompressionTests(
         Assert.True(
             ParseErrorMessageRegexOld.IsMatch(logs[0].Message) ||
             ParseErrorMessageRegexNew.IsMatch(logs[0].Message),
-            $"Expected log message to match one of the CSP error patterns. Actual: {logs[0].Message}");
+            $"Expected log message to match one of the CSP error patterns: {ParseErrorMessageRegexOld} or {ParseErrorMessageRegexNew}. Actual: {logs[0].Message}");
     }
 
     [GeneratedRegex(@"security - Refused to frame 'http://\d+\.\d+\.\d+\.\d+:\d+/' because an ancestor violates the following Content Security Policy directive: ""frame-ancestors 'none'"".")]
