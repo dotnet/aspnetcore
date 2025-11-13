@@ -36,6 +36,8 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   remote = false;
 
+  graceful = false;
+
   retryWhenDocumentBecomesVisible: () => void;
 
   constructor(dialogId: string, private readonly document: Document, private readonly logger: Logger) {
@@ -95,6 +97,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     }
 
     this.operation = options?.type ?? 'reconnect';
+    this.graceful = (options?.type === 'pause') ? options.graceful : false;
 
     this.retryButton.style.display = 'none';
     this.rejoiningAnimation.style.display = 'block';
@@ -105,6 +108,8 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   update(options: ReconnectDisplayUpdateOptions): void {
     this.operation = options.type;
+    this.graceful = (options.type === 'pause') ? options.graceful : false;
+
     if (this.operation === 'pause') {
       this.retryButton.style.display = 'none';
       this.rejoiningAnimation.style.display = 'none';
@@ -129,10 +134,16 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   failed(): void {
     this.rejoiningAnimation.style.display = 'none';
     if (this.operation === 'pause') {
-      // The client expected to be able to resume the circuit and it failed.
-      // This typically happens when the server has been restarted and the circuit state is lost.
-      // This is effectively the same as the circuit being rejected during reconnect.
-      this.rejected();
+      if (this.graceful) {
+        // Circuit failed to resume after a graceful (client-requested) pause.
+        // We show a retry UI to allow the user to try to continue without losing the state.
+        this.resumeButton.style.display = 'block';
+        this.status.innerHTML = 'Failed to resume.<br />Please retry or reload the page.';
+      } else {
+        // Circuit failed to resume after an ungraceful pause (e.g., server restart).
+        // We treat this as non-recoverable rejection.
+        this.rejected();
+      }
     } else {
       this.retryButton.style.display = 'block';
       this.status.innerHTML = 'Failed to rejoin.<br />Please retry or reload the page.';
@@ -158,7 +169,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       const successful = await Blazor.reconnect!();
       if (!successful) {
         // Try to resume the circuit if the reconnect failed
-        this.update({ type: 'pause', remote: this.remote });
+        this.update({ type: 'pause', remote: this.remote, graceful: this.graceful });
         const resumeSuccessful = await Blazor.resumeCircuit!();
         if (!resumeSuccessful) {
           this.failed();

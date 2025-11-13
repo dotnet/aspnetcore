@@ -71,9 +71,10 @@ export class UserSpecifiedDisplay implements ReconnectDisplay {
     }
     if (options.type === 'pause') {
       const remote = options.remote;
+      const graceful = options.graceful;
       this.dialog.classList.remove(UserSpecifiedDisplay.ShowClassName, UserSpecifiedDisplay.RetryingClassName);
       this.dialog.classList.add(UserSpecifiedDisplay.PausedClassName);
-      this.dispatchReconnectStateChangedEvent({ state: 'paused', remote: remote });
+      this.dispatchReconnectStateChangedEvent({ state: 'paused', remote: remote, graceful: graceful });
     }
   }
 
