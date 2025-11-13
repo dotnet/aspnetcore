@@ -101,17 +101,6 @@
     <PackageOverridesFile Include="$(ReferencePackageOverridesPath)" />
   </ItemGroup>
 
-  <!--
-    COMPAT: Remove the System.Security.Cryptography.Pkcs reference from the project.
-    We don't package System.Security.Cryptography.Pkcs into the reference pack for ASP.NET Core.
-  -->
-  <Target Name="_RemovePkcsReference" AfterTargets="ResolveReferences">
-    <ItemGroup>
-      <ReferencePath Remove="@(ReferencePath)" Condition="'%(FileName)' == 'System.Security.Cryptography.Pkcs'" />
-      <IgnoredReference Include="System.Security.Cryptography.Pkcs" />
-    </ItemGroup>
-  </Target>
-
   <Target Name="_AddAnalyzersToRefPack" BeforeTargets="GetFilesToPackage">
     <ItemGroup>
       <!-- Include analyzers from dotnet/runtime. Start with the non-Roslyn-versioned ones -->
@@ -173,6 +162,13 @@
 
       <!-- Include Microsoft.AspNetCore.App for Package Pruning -->
       <_AspNetCoreAppPackageOverrides Include="$(SharedFrameworkName)|$(ReferencePackSharedFxVersion)" />
+
+      <!--
+        Exclude Microsoft.Extensions.FileProviders.Embedded from pruning because it contains build logic
+        required to generate the embedded files manifest. The package's build targets are not in the SDK,
+        so they must be available from the package itself. See https://github.com/dotnet/aspnetcore/issues/63719
+      -->
+      <_AspNetCoreAppPackageOverrides Remove="Microsoft.Extensions.FileProviders.Embedded|$(ReferencePackSharedFxVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile

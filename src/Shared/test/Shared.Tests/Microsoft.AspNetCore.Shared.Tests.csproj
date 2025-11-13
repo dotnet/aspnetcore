@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)ActivatorUtilities\**\*.cs" Link="Shared\ActivatorUtilities\%(Filename)%(Extension)" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" Link="Shared\CertificateGeneration\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)CommandLineUtils\**\*.cs" Link="Shared\CommandLineUtils\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)ClosedGenericMatcher\*.cs" Link="Shared\ClosedGenericMatcher\%(Filename)%(Extension)" />
     <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" Link="Shared\CopyOnWriteDictionary\%(Filename)%(Extension)" />

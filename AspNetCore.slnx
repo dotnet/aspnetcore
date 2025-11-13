@@ -7,7 +7,6 @@
   </Configurations>
   <Folder Name="/eng/" />
   <Folder Name="/eng/tools/">
-    <Project Path="eng/tools/BaselineGenerator/BaselineGenerator.csproj" />
     <Project Path="eng/tools/RepoTasks/RepoTasks.csproj" />
   </Folder>
   <Folder Name="/src/" />
@@ -469,14 +468,6 @@
     <Project Path="src/Logging.AzureAppServices/test/Microsoft.Extensions.Logging.AzureAppServices.Tests.csproj" />
   </Folder>
   <Folder Name="/src/Middleware/" />
-  <Folder Name="/src/Middleware/ConcurrencyLimiter/">
-    <Project Path="src/Middleware/ConcurrencyLimiter/sample/ConcurrencyLimiterSample.csproj" />
-    <Project Path="src/Middleware/ConcurrencyLimiter/src/Microsoft.AspNetCore.ConcurrencyLimiter.csproj" />
-    <Project Path="src/Middleware/ConcurrencyLimiter/test/Microsoft.AspNetCore.ConcurrencyLimiter.Tests.csproj" />
-  </Folder>
-  <Folder Name="/src/Middleware/ConcurrencyLimiter/perf/">
-    <Project Path="src/Middleware/ConcurrencyLimiter/perf/Microbenchmarks/Microsoft.AspNetCore.ConcurrencyLimiter.Microbenchmarks.csproj" />
-  </Folder>
   <Folder Name="/src/Middleware/CORS/">
     <Project Path="src/Middleware/CORS/src/Microsoft.AspNetCore.Cors.csproj" />
   </Folder>

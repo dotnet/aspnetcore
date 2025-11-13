@@ -1,9 +1,4 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Forms.InputHidden
-Microsoft.AspNetCore.Components.Forms.InputHidden.Element.get -> Microsoft.AspNetCore.Components.ElementReference?
-Microsoft.AspNetCore.Components.Forms.InputHidden.Element.set -> void
-Microsoft.AspNetCore.Components.Forms.InputHidden.InputHidden() -> void
-Microsoft.AspNetCore.Components.Web.Internal.IInternalWebJSInProcessRuntime.InvokeJS(in Microsoft.JSInterop.Infrastructure.JSInvocationInfo invocationInfo) -> string!
 Microsoft.AspNetCore.Components.Web.Media.FileDownload
 Microsoft.AspNetCore.Components.Web.Media.FileDownload.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Media.FileDownloadContext!>?
 Microsoft.AspNetCore.Components.Web.Media.FileDownload.ChildContent.set -> void
@@ -45,6 +40,3 @@ Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(byte[]! data, 
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MimeType.get -> string!
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.Stream.get -> System.IO.Stream!
-override Microsoft.AspNetCore.Components.Forms.InputHidden.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
-override Microsoft.AspNetCore.Components.Forms.InputHidden.TryParseValueFromString(string? value, out string? result, out string? validationErrorMessage) -> bool
-virtual Microsoft.AspNetCore.Components.Routing.NavLink.ShouldMatch(string! uriAbsolute) -> bool

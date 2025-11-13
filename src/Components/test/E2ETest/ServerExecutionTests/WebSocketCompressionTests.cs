@@ -7,6 +7,7 @@ using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.InternalTesting;
 using Microsoft.Extensions.DependencyInjection;
 using OpenQA.Selenium;
 using TestServer;
@@ -104,11 +105,17 @@ public abstract partial class BlockedWebSocketCompressionTests(
 
         Assert.True(logs.Count > 0);
 
-        Assert.Matches(ParseErrorMessageRegex, logs[0].Message);
+        Assert.True(
+            ParseErrorMessageRegexOld.IsMatch(logs[0].Message) ||
+            ParseErrorMessageRegexNew.IsMatch(logs[0].Message),
+            $"Expected log message to match one of the CSP error patterns: {ParseErrorMessageRegexOld} or {ParseErrorMessageRegexNew}. Actual: {logs[0].Message}");
     }
 
     [GeneratedRegex(@"security - Refused to frame 'http://\d+\.\d+\.\d+\.\d+:\d+/' because an ancestor violates the following Content Security Policy directive: ""frame-ancestors 'none'"".")]
-    private static partial Regex ParseErrorMessageRegex { get; }
+    private static partial Regex ParseErrorMessageRegexOld { get; }
+
+    [GeneratedRegex(@"security - Framing 'http://\d+\.\d+\.\d+\.\d+:\d+/' violates the following Content Security Policy directive: ""frame-ancestors 'none'"".")]
+    private static partial Regex ParseErrorMessageRegexNew { get; }
 }
 
 public partial class DefaultConfigurationWebSocketCompressionTests : AllowedWebSocketCompressionTests

@@ -740,4 +740,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="Http3ControlStreamFrameTooLarge" xml:space="preserve">
     <value>The client sent a {frameType} frame to a control stream that was too large.</value>
   </data>
+  <data name="BadRequest_BadChunkExtension" xml:space="preserve">
+    <value>Bad chunk extension.</value>
+  </data>
 </root>

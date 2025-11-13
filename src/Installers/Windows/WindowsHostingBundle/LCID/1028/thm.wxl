@@ -1,78 +1,87 @@
 ﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   
-  <String Id="Caption" Value="[WixBundleName] Setup"/>
+  <String Id="Caption" Value="[WixBundleName] 設定"/>
   
   <String Id="Title" Value="[BundleNameShort]"/>
   
   <String Id="SubTitle" Value="[BundleNameSub]"/>
   
-  <String Id="InstallVersion" Value="Version [WixBundleVersion]"/>
-  <String Id="ConfirmCancelMessage" Value="Are you sure you want to cancel?"/>
-  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Previous version"/>
-  <String Id="HelpHeader" Value="Setup Help"/>
+  <String Id="InstallVersion" Value="版本 [WixBundleVersion]"/>
+  <String Id="ConfirmCancelMessage" Value="您確定要取消嗎?"/>
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="先前的版本"/>
+  <String Id="HelpHeader" Value="安裝程式說明"/>
   
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default. /passive | /quiet - displays minimal UI with no prompts or displays no UI and no prompts. By default UI and all prompts are displayed. /norestart - suppress any attempts to restart. By default UI will prompt before restart. /log log.txt - logs to a specific file. By default a log file is created in %TEMP%."/>
-  <String Id="HelpCloseButton" Value="&amp;Close"/>
-  <String Id="InstallAcceptCheckbox" Value="I &amp;agree to the license terms and conditions"/>
-  <String Id="InstallInstallButton" Value="&amp;Install"/>
-  <String Id="InstallCloseButton" Value="&amp;Close"/>
-  <String Id="ProgressHeader" Value="Setup Progress"/>
-  <String Id="ProgressLabel" Value="Processing:"/>
-  <String Id="OverallProgressPackageText" Value="Initializing..."/>
-  <String Id="ProgressCancelButton" Value="&amp;Cancel"/>
-  <String Id="ModifyHeader" Value="Modify Setup"/>
-  <String Id="ModifyRepairButton" Value="&amp;Repair"/>
-  <String Id="ModifyUninstallButton" Value="&amp;Uninstall"/>
-  <String Id="ModifyCloseButton" Value="&amp;Close"/>
-  <String Id="SuccessCacheHeader" Value="Cache Successfully Completed"/>
-  <String Id="SuccessModifyHeader" Value="Modify Successfully Completed"/>
-  <String Id="SuccessRepairHeader" Value="Repair Successfully Completed"/>
-  <String Id="SuccessUninstallHeader" Value="Uninstall Successfully Completed"/>
-  <String Id="SuccessUnsafeUninstallHeader" Value="Uninstall Successfully Completed"/>
-  <String Id="SuccessInstallHeader" Value="Installation Successfully Completed"/>
-  <String Id="SuccessHeader" Value="Setup Successful"/>
-  <String Id="SuccessLaunchButton" Value="&amp;Launch"/>
-  <String Id="SuccessLayoutHeader" Value="Layout Successfully Completed"/>
-  <String Id="SuccessRestartText" Value="You must restart your computer before you can use the software."/>
-  <String Id="SuccessUninstallRestartText" Value="You must restart your computer to complete the removal of the software."/>
-  <String Id="SuccessRestartButton" Value="&amp;Restart"/>
-  <String Id="SuccessCloseButton" Value="&amp;Close"/>
-  <String Id="FailureHeader" Value="Setup Failed"/>
-  <String Id="FailureCacheHeader" Value="Cache Failed"/>
-  <String Id="FailureLayoutHeader" Value="Layout Failed"/>
-  <String Id="FailureModifyHeader" Value="Modify Failed"/>
-  <String Id="FailureInstallHeader" Value="Setup Failed"/>
-  <String Id="FailureUnsafeUninstallHeader" Value="Uninstall Failed"/>
-  <String Id="FailureUninstallHeader" Value="Uninstall Failed"/>
-  <String Id="FailureRepairHeader" Value="Repair Failed"/>
-  <String Id="FailureHyperlinkLogText" Value="One or more issues caused the setup to fail. Please fix the issues and then retry setup. For more information see the &lt;a href=&quot;#&quot;&gt;log file&lt;/a&gt;."/>
-  <String Id="FailureRestartText" Value="You must restart your computer to complete the rollback of the software."/>
-  <String Id="FailureRestartButton" Value="&amp;Restart"/>
-  <String Id="FailureCloseButton" Value="&amp;Close"/>
-  <String Id="FilesInUseHeader" Value="Files In Use"/>
-  <String Id="FilesInUseLabel" Value="The following applications are using files that need to be updated:"/>
-  <String Id="FilesInUseCloseRadioButton" Value="Close the &amp;applications and attempt to restart them."/>
-  <String Id="FilesInUseNetfxCloseRadioButton" Value="Close the &amp;applications."/>
-  <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required."/>
-  <String Id="FilesInUseOkButton" Value="&amp;OK"/>
-  <String Id="FilesInUseCancelButton" Value="&amp;Cancel"/>
-  <String Id="FilesInUseRetryButton" Value="&amp;Retry"/>
-  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignore"/>
-  <String Id="FilesInUseExitButton" Value="E&amp;xit"/>
-  <String Id="FilesInUseTitle" Value="Files In Use"/>
-  <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:"/>
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]directory[\]] - 安裝、修復、解除安裝或在目錄中建立搭售方案的完整本機複本。預設會進行安裝。
+
+/passive | /quiet - 顯示最基本的 UI 且不出現提示，或是不顯示任何 UI 且不出現提示。預設會顯示 UI 及所有提示。
+
+/norestart - 抑制任何重新啟動嘗試。根據預設，UI 在重新啟動前會先提示。
+
+/log &lt;LOG_FILE&gt; - 記錄到特定檔案。預設會在 %TEMP% 中建立記錄檔。"/>
+  <String Id="HelpCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="InstallAcceptCheckbox" Value="我同意授權條款和條件(&amp;A)"/>
+  <String Id="InstallInstallButton" Value="安裝(&amp;I)"/>
+  <String Id="InstallCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="ProgressHeader" Value="安裝程式進度"/>
+  <String Id="ProgressLabel" Value="正在處理:"/>
+  <String Id="OverallProgressPackageText" Value="正在初始化..."/>
+  <String Id="ProgressCancelButton" Value="取消(&amp;C)"/>
+  <String Id="ModifyHeader" Value="修改安裝程式"/>
+  <String Id="ModifyRepairButton" Value="修復(&amp;R)"/>
+  <String Id="ModifyUninstallButton" Value="解除安裝(&amp;U)"/>
+  <String Id="ModifyCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="SuccessCacheHeader" Value="快取已成功完成"/>
+  <String Id="SuccessModifyHeader" Value="修改已成功完成"/>
+  <String Id="SuccessRepairHeader" Value="修復已成功完成"/>
+  <String Id="SuccessUninstallHeader" Value="解除安裝已成功完成"/>
+  <String Id="SuccessUnsafeUninstallHeader" Value="解除安裝已成功完成"/>
+  <String Id="SuccessInstallHeader" Value="安裝已成功完成"/>
+  <String Id="SuccessHeader" Value="安裝程式成功"/>
+  <String Id="SuccessLaunchButton" Value="啟動(&amp;L)"/>
+  <String Id="SuccessLayoutHeader" Value="配置已成功完成"/>
+  <String Id="SuccessRestartText" Value="必須重新啟動電腦，才能使用此軟體。"/>
+  <String Id="SuccessUninstallRestartText" Value="您必須重新啟動電腦，才能完成軟體移除。"/>
+  <String Id="SuccessRestartButton" Value="重新啟動(&amp;R)"/>
+  <String Id="SuccessCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="FailureHeader" Value="安裝程式失敗"/>
+  <String Id="FailureCacheHeader" Value="快取失敗"/>
+  <String Id="FailureLayoutHeader" Value="配置失敗"/>
+  <String Id="FailureModifyHeader" Value="修改失敗"/>
+  <String Id="FailureInstallHeader" Value="安裝程式失敗"/>
+  <String Id="FailureUnsafeUninstallHeader" Value="解除安裝失敗"/>
+  <String Id="FailureUninstallHeader" Value="解除安裝失敗"/>
+  <String Id="FailureRepairHeader" Value="修復失敗"/>
+  <String Id="FailureHyperlinkLogText" Value="一或多個問題導致設定失敗。請修正問題，然後重試安裝程式。如需詳細資訊，請參考&lt;a href=&quot;#&quot;&gt;記錄檔&lt;/a&gt;。"/>
+  <String Id="FailureRestartText" Value="必須重新啟動電腦，才能完成軟體的復原。"/>
+  <String Id="FailureRestartButton" Value="重新啟動(&amp;R)"/>
+  <String Id="FailureCloseButton" Value="關閉(&amp;C)"/>
+  <String Id="FilesInUseHeader" Value="使用中的檔案"/>
+  <String Id="FilesInUseLabel" Value="以下應用程式正在使用需要進行更新的檔案:"/>
+  <String Id="FilesInUseCloseRadioButton" Value="請關閉應用程式然後嘗試重新啟動。(&amp;A)"/>
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="關閉應用程式(&amp;A)。"/>
+  <String Id="FilesInUseDontCloseRadioButton" Value="不要關閉應用程式(&amp;D)。需要重新啟動。"/>
+  <String Id="FilesInUseOkButton" Value="確定(&amp;O)"/>
+  <String Id="FilesInUseCancelButton" Value="取消(&amp;C)"/>
+  <String Id="FilesInUseRetryButton" Value="重試(&amp;R)"/>
+  <String Id="FilesInUseIgnoreButton" Value="略過(&amp;I)"/>
+  <String Id="FilesInUseExitButton" Value="結束(&amp;X)"/>
+  <String Id="FilesInUseTitle" Value="使用中的檔案"/>
+  <String Id="LicenseAssent" Value="按一下 “安裝” 即表示您同意下列條款:"/>
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;隱私權聲明&lt;/A&gt;"/>
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET 授權資訊&lt;/A&gt;"/>
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;遙測收集和選擇退出&lt;/A&gt;"/>
 
   <!-- Custom UI strings -->
   
-  <String Id="Welcome" Value="Welcome to the [WixBundleName] Setup."/>
+  <String Id="Welcome" Value="歡迎使用 [WixBundleName] 安裝程式。"/>
   
-  <String Id="InstallResetIIS" Value="Please restart IIS after the installation completes. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="InstallResetIIS" Value="請在安裝完成後重新啟動 IIS。如需其他資訊，請參閱&lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;此處&lt;/a&gt; (部分內容可能是機器或 AI 翻譯)。"/>
   
-  <String Id="InstallNoIIS" Value="IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="InstallNoIIS" Value="這部電腦上未啟用 IIS。如果您要使用 IIS 執行 ASP.NET Core 應用程式，就必須先安裝 IIS 才能執行此安裝程式。如需其他資訊，請參閱&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;此處&lt;/a&gt; (部分內容可能是機器或 AI 翻譯)。"/>
   
-  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;license terms&lt;/a&gt; and &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;privacy statement&lt;/a&gt;."/>
+  <String Id="EulaPrivacy" Value="[WixBundleName] &lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=329770&quot;&gt;授權條款&lt;/a&gt; (英文) 和&lt;a href=&quot;https://go.microsoft.com/fwlink/?LinkId=786378&quot;&gt;隱私權聲明&lt;/a&gt;。"/>
   
-  <String Id="ModifyResetIIS" Value="Please restart IIS after the installation completes. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="ModifyResetIIS" Value="請在安裝完成後重新啟動 IIS。如需其他資訊，請參閱&lt;a href=&quot;https://aka.ms/aspnet/host-and-deploy-with-iis&quot;&gt;此處&lt;/a&gt; (部分內容可能是機器或 AI 翻譯)。"/>
   
-  <String Id="ModifyNoIIS" Value="IIS is not enabled on this machine. If you intend to run ASP.NET Core applications with IIS, you must install IIS before running this installer. You can find additional information &lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;here&lt;/a&gt;."/>
+  <String Id="ModifyNoIIS" Value="這部電腦上未啟用 IIS。如果您要使用 IIS 執行 ASP.NET Core 應用程式，就必須先安裝 IIS 才能執行此安裝程式。如需其他資訊，請參閱&lt;a href=&quot;https://aka.ms/aspnet/8.0/host-and-deploy-with-iis&quot;&gt;此處&lt;/a&gt; (部分內容可能是機器或 AI 翻譯)。"/>
 </WixLocalization>

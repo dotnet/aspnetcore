@@ -23,6 +23,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.BearerToken" />
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="Microsoft.AspNetCore.Http.Results" />
+    <Reference Include="Microsoft.Extensions.Diagnostics" />
     <Reference Include="Microsoft.Extensions.Identity.Core" />
     <Reference Include="System.Formats.Cbor" />
   </ItemGroup>
