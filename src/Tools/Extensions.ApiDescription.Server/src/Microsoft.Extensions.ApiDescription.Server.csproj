@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <!-- Included primarily to ensure dotnet-getdocument and GetDocument.Insider can be referenced. -->
-    <TargetFrameworks>(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(DefaultNetFxTargetFramework)</TargetFrameworks>
 
     <Description>MSBuild tasks and targets for build-time Swagger and OpenApi document generation</Description>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
