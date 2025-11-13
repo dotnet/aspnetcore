@@ -2,8 +2,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using Microsoft.AspNetCore.Http;
@@ -652,6 +650,22 @@ internal static unsafe class HttpApiTypes
     {
         internal HTTP_FLAGS Flags;
         internal IntPtr RequestQueueHandle;
+    }
+
+    internal enum HTTP_AUTHENTICATION_HARDENING_LEVELS
+    {
+        HttpAuthenticationHardeningLegacy = 0,
+        HttpAuthenticationHardeningMedium,
+        HttpAuthenticationHardeningStrict
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct HTTP_CHANNEL_BIND_INFO
+    {
+        internal HTTP_AUTHENTICATION_HARDENING_LEVELS Hardening;
+        internal uint Flags;
+        internal /*PHTTP_SERVICE_BINDING_BASE**/ IntPtr ServiceNames;
+        internal uint NumberOfServiceNames;
     }
 
     [StructLayout(LayoutKind.Sequential)]
