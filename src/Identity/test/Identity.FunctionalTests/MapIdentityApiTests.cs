@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Diagnostics.Metrics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -23,6 +24,8 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.Metrics;
+using Microsoft.Extensions.Diagnostics.Metrics.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 using Microsoft.Net.Http.Headers;
@@ -1272,6 +1275,44 @@ public class MapIdentityApiTests : LoggedTest
 
         // We can now login with the new email too.
         AssertOk(await client.PostAsJsonAsync("/identity/login", new { Email = newEmail, Password = newPassword }));
+    }
+
+    [Fact]
+    public async Task MetricsAreRecordedForUserManagerAndSignInManager()
+    {
+        // Arrange
+        await using var app = await CreateAppAsync(services =>
+        {
+            AddIdentityApiEndpoints(services);
+        });
+        var meterFactory = app.Services.GetRequiredService<IMeterFactory>();
+
+        using var client = app.GetTestClient();
+
+        using var userCreateCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Identity", "aspnetcore.identity.user.create.duration");
+        using var signInAuthenticateCollector = new MetricCollector<double>(meterFactory, "Microsoft.AspNetCore.Identity", "aspnetcore.identity.sign_in.authenticate.duration");
+
+        // Act - Register a new user
+        AssertOkAndEmpty(await client.PostAsJsonAsync("/identity/register", new { Email, Password }));
+
+        // Assert - UserManager metrics are recorded
+        var userCreateMeasurement = Assert.Single(userCreateCollector.GetMeasurementSnapshot());
+        Assert.True(userCreateMeasurement.Value > 0);
+        Assert.Equal("Identity.DefaultUI.WebSite.ApplicationUser", (string?)userCreateMeasurement.Tags["aspnetcore.identity.user_type"]);
+        Assert.Equal("success", (string?)userCreateMeasurement.Tags["aspnetcore.identity.result"]);
+
+        // Act - Login with the user
+        AssertOk(await client.PostAsJsonAsync("/identity/login", new { Email, Password }));
+
+        // Assert - SignInManager metrics are recorded
+        var signInMeasurements = signInAuthenticateCollector.GetMeasurementSnapshot();
+        Assert.NotEmpty(signInMeasurements);
+        var signInMeasurement = signInMeasurements.Last();
+        Assert.True(signInMeasurement.Value > 0);
+        Assert.Equal("Identity.DefaultUI.WebSite.ApplicationUser", (string?)signInMeasurement.Tags["aspnetcore.identity.user_type"]);
+        Assert.Equal("Identity.Bearer", (string?)signInMeasurement.Tags["aspnetcore.authentication.scheme"]);
+        Assert.Equal("success", (string?)signInMeasurement.Tags["aspnetcore.identity.sign_in.result"]);
+        Assert.Equal("password", (string?)signInMeasurement.Tags["aspnetcore.identity.sign_in.type"]);
     }
 
     private async Task<WebApplication> CreateAppAsync<TUser, TContext>(Action<IServiceCollection>? configureServices, bool autoStart = true)
