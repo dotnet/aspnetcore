@@ -81,8 +81,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         HttpContext httpContext,
         [DynamicallyAccessedMembers(Component)] Type? componentType = null,
         string? handler = null,
-        IFormCollection? form = null,
-        bool allowRenderingDuringPendingNavigation = false)
+        IFormCollection? form = null)
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
@@ -134,10 +133,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             // Saving RouteData to avoid routing twice in Router component
             var routingStateProvider = httpContext.RequestServices.GetRequiredService<EndpointRoutingStateProvider>();
             var routeValues = new RouteValueDictionary(httpContext.GetRouteData().Values);
-            if (allowRenderingDuringPendingNavigation)
-            {
-                routeValues[ComponentsConstants.AllowRenderDuringPendingNavigationKey] = true;
-            }
 
             routingStateProvider.RouteData = new RouteData(componentType, routeValues);
             if (httpContext.GetEndpoint() is RouteEndpoint routeEndpoint)

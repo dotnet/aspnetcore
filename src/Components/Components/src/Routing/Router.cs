@@ -38,6 +38,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private Task _previousOnNavigateTask = Task.CompletedTask;
 
+    private Type? _previousOnNavigateTaskPageType;
+
     private RouteKey _routeTableLastBuiltForRouteKey;
 
     private bool _onNavigateCalled;
@@ -221,12 +223,19 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     internal virtual void Refresh(bool isNavigationIntercepted)
     {
         var providerRouteData = RoutingStateProvider?.RouteData;
-        var allowRenderDuringPendingNavigation = TryConsumeAllowRenderDuringPendingNavigation(providerRouteData);
 
         // If an `OnNavigateAsync` task is currently in progress, then wait
         // for it to complete before rendering. Note: because _previousOnNavigateTask
         // is initialized to a CompletedTask on initialization, this will still
         // allow first-render to complete successfully.
+        // Exception: if the current route's component type differs from the type that triggered
+        // the pending navigation, allow rendering (this handles 404 re-execution scenarios where
+        // we navigate away from a failed route to render the NotFound page). In cases of same-page navigation,
+        // the lazy-loaded assemblies are already loaded, so we don't risk exceptions and can proceed to render.
+        var allowRenderDuringPendingNavigation = providerRouteData != null &&
+            _previousOnNavigateTaskPageType != null &&
+            providerRouteData.PageType != _previousOnNavigateTaskPageType;
+
         if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion && !allowRenderDuringPendingNavigation)
         {
             if (Navigating != null)
@@ -315,17 +324,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         _renderHandle.ComponentActivitySource?.StopNavigateActivity(activityHandle, null);
     }
 
-    private static bool TryConsumeAllowRenderDuringPendingNavigation(RouteData? routeData)
-    {
-        if (routeData?.RouteValues.TryGetValue(ComponentsConstants.AllowRenderDuringPendingNavigationKey, out var value) == true && value is true)
-        {
-            (routeData.RouteValues as IDictionary<string, object?>)?.Remove(ComponentsConstants.AllowRenderDuringPendingNavigationKey);
-            return true;
-        }
-
-        return false;
-    }
-
     private ComponentsActivityHandle RecordDiagnostics(string componentType, string template)
     {
         ComponentsActivityHandle activityHandle = default;
@@ -372,6 +370,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             Refresh(isNavigationIntercepted);
         }
+
+        // Store the current page type so we can detect if a re-execution changes the target component
+        _previousOnNavigateTaskPageType = RoutingStateProvider?.RouteData?.PageType;
 
         _onNavigateCts = new CancellationTokenSource();
         var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
