@@ -60,8 +60,8 @@ override Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator.OnParame
 override Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Equals(object? obj) -> bool
 override Microsoft.AspNetCore.Components.Forms.FieldIdentifier.GetHashCode() -> int
 static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.AddDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> Microsoft.AspNetCore.Components.Forms.EditContext!
-static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> System.IDisposable!
 static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext, System.IServiceProvider! serviceProvider) -> System.IDisposable!
+static Microsoft.AspNetCore.Components.Forms.EditContextDataAnnotationsExtensions.EnableDataAnnotationsValidation(this Microsoft.AspNetCore.Components.Forms.EditContext! editContext) -> System.IDisposable!
 static Microsoft.AspNetCore.Components.Forms.FieldIdentifier.Create<TField>(System.Linq.Expressions.Expression<System.Func<TField>!>! accessor) -> Microsoft.AspNetCore.Components.Forms.FieldIdentifier
 static readonly Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs.Empty -> Microsoft.AspNetCore.Components.Forms.ValidationRequestedEventArgs!
 static readonly Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs.Empty -> Microsoft.AspNetCore.Components.Forms.ValidationStateChangedEventArgs!

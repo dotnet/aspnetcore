@@ -7,7 +7,6 @@
   </Configurations>
   <Folder Name="/eng/" />
   <Folder Name="/eng/tools/">
-    <Project Path="eng/tools/BaselineGenerator/BaselineGenerator.csproj" />
     <Project Path="eng/tools/RepoTasks/RepoTasks.csproj" />
   </Folder>
   <Folder Name="/src/" />
