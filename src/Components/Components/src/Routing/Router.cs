@@ -38,6 +38,8 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private Task _previousOnNavigateTask = Task.CompletedTask;
 
+    private Type? _previousOnNavigateTaskPageType;
+
     private RouteKey _routeTableLastBuiltForRouteKey;
 
     private bool _onNavigateCalled;
@@ -220,11 +222,21 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     internal virtual void Refresh(bool isNavigationIntercepted)
     {
+        var providerRouteData = RoutingStateProvider?.RouteData;
+
         // If an `OnNavigateAsync` task is currently in progress, then wait
         // for it to complete before rendering. Note: because _previousOnNavigateTask
         // is initialized to a CompletedTask on initialization, this will still
         // allow first-render to complete successfully.
-        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion)
+        // Exception: if the current route's component type differs from the type that triggered
+        // the pending navigation, allow rendering (this handles 404 re-execution scenarios where
+        // we navigate away from a failed route to render the NotFound page). In cases of same-page navigation,
+        // the lazy-loaded assemblies are already loaded, so we don't risk exceptions and can proceed to render.
+        var allowRenderDuringPendingNavigation = providerRouteData != null &&
+            _previousOnNavigateTaskPageType != null &&
+            providerRouteData.PageType != _previousOnNavigateTaskPageType;
+
+        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion && !allowRenderDuringPendingNavigation)
         {
             if (Navigating != null)
             {
@@ -239,7 +251,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         ComponentsActivityHandle activityHandle;
 
         // In order to avoid routing twice we check for RouteData
-        if (RoutingStateProvider?.RouteData is { } endpointRouteData)
+        if (providerRouteData is { } endpointRouteData)
         {
             activityHandle = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
 
@@ -358,6 +370,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             Refresh(isNavigationIntercepted);
         }
+
+        // Store the current page type so we can detect if it's safe to render when on navigation task is pending
+        _previousOnNavigateTaskPageType = RoutingStateProvider?.RouteData?.PageType;
 
         _onNavigateCts = new CancellationTokenSource();
         var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
