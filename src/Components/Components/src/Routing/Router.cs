@@ -371,7 +371,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             Refresh(isNavigationIntercepted);
         }
 
-        // Store the current page type so we can detect if a re-execution changes the target component
+        // Store the current page type so we can detect if it's safe to render when on navigation task is pending
         _previousOnNavigateTaskPageType = RoutingStateProvider?.RouteData?.PageType;
 
         _onNavigateCts = new CancellationTokenSource();
