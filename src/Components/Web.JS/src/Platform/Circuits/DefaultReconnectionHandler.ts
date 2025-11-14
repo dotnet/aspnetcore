@@ -75,6 +75,7 @@ class ReconnectionProcess {
     const displayOptions: ReconnectDisplayUpdateOptions = {
       type: isGracefulPause ? 'pause' : 'reconnect',
       remote: this.isRemote,
+      graceful: !!isGracefulPause,
       currentAttempt: 0,
       secondsToNextAttempt: 0,
     };
@@ -85,6 +86,7 @@ class ReconnectionProcess {
       this.reconnectDisplay.update({
         type: 'pause',
         remote: this.isRemote,
+        graceful: true,
       });
     }
   }
@@ -126,7 +128,7 @@ class ReconnectionProcess {
         if (!result) {
           // Try to resume the circuit if the reconnect failed
           // If the server responded and refused to reconnect, stop auto-retrying.
-          this.reconnectDisplay.update({ type: 'pause', remote: true });
+          this.reconnectDisplay.update({ type: 'pause', remote: true, graceful: false });
           const resumeResult = await this.resumeCallback();
           if (resumeResult) {
             return;
