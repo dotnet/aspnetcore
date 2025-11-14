@@ -361,7 +361,7 @@ public class RequestTests : LoggedTest
         }
     }
 
-    [Fact]
+    [ConditionalFact]
     public async Task Latin1UrlIsRejected()
     {
         string root;
