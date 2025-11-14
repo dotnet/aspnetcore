@@ -85,8 +85,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
-            GetContextBaseUri(httpContext.Request),
-            GetFullUri(httpContext.Request),
+            GetContextBaseUri(httpContext.Request), 
+            GetFullUri(httpContext.Request), 
             uri => GetErrorHandledTask(OnNavigateTo(uri)));
 
         navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
@@ -132,9 +132,7 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
         {
             // Saving RouteData to avoid routing twice in Router component
             var routingStateProvider = httpContext.RequestServices.GetRequiredService<EndpointRoutingStateProvider>();
-            var routeValues = new RouteValueDictionary(httpContext.GetRouteData().Values);
-
-            routingStateProvider.RouteData = new RouteData(componentType, routeValues);
+            routingStateProvider.RouteData = new RouteData(componentType, httpContext.GetRouteData().Values);
             if (httpContext.GetEndpoint() is RouteEndpoint routeEndpoint)
             {
                 routingStateProvider.RouteData.Template = routeEndpoint.RoutePattern.RawText;
