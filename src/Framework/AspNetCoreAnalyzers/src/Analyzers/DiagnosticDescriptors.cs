@@ -248,4 +248,13 @@ internal static class DiagnosticDescriptors
         DiagnosticSeverity.Info,
         isEnabledByDefault: true,
         helpLinkUri: AnalyzersLink);
+
+    internal static readonly DiagnosticDescriptor DoNotUseLocalFunctionsInMarkup = new(
+        "ASP0029",
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_DoNotUseLocalFunctionsInMarkup_Title)),
+        CreateLocalizableResourceString(nameof(Resources.Analyzer_DoNotUseLocalFunctionsInMarkup_Message)),
+        Usage,
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        helpLinkUri: AnalyzersLink);
 }
