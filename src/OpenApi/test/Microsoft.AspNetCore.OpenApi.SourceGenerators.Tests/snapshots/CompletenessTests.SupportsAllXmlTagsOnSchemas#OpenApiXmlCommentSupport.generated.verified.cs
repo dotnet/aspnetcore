@@ -524,7 +524,10 @@ T", null, null, false, null, null, null));
                                     }
                                     foreach (var mediaType in content)
                                     {
-                                        mediaType.Example = jsonString.Parse();
+                                        if (mediaType is OpenApiMediaType concrete)
+                                        {
+                                            concrete.Example = jsonString.Parse();
+                                        }
                                     }
                                 }
                             }
@@ -585,7 +588,10 @@ T", null, null, false, null, null, null));
                                     var parsedExample = jsonString.Parse();
                                     foreach (var mediaType in content)
                                     {
-                                        mediaType.Example = parsedExample;
+                                        if (mediaType is OpenApiMediaType concrete)
+                                        {
+                                            concrete.Example = parsedExample;
+                                        }
                                     }
                                 }
                             }

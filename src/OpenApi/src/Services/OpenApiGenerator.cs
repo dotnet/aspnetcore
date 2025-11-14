@@ -197,7 +197,7 @@ internal sealed class OpenApiGenerator
 
             // TODO: Use the discarded response Type for schema generation
             var (_, contentTypes) = annotation.Value;
-            var responseContent = new Dictionary<string, OpenApiMediaType>();
+            var responseContent = new Dictionary<string, IOpenApiMediaType>();
 
             foreach (var contentType in contentTypes)
             {
@@ -269,7 +269,7 @@ internal sealed class OpenApiGenerator
         }
 
         var acceptsMetadata = metadata.GetMetadata<IAcceptsMetadata>();
-        var requestBodyContent = new Dictionary<string, OpenApiMediaType>();
+        var requestBodyContent = new Dictionary<string, IOpenApiMediaType>();
 
         if (acceptsMetadata is not null)
         {
