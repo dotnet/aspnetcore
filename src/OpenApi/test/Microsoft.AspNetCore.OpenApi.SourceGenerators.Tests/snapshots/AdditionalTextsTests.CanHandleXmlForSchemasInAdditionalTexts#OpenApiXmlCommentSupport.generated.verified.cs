@@ -426,7 +426,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                     }
                                     foreach (var mediaType in content)
                                     {
-                                        mediaType.Example = jsonString.Parse();
+                                        if (mediaType is OpenApiMediaType concrete)
+                                        {
+                                            concrete.Example = jsonString.Parse();
+                                        }
                                     }
                                 }
                             }
@@ -487,7 +490,10 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                                     var parsedExample = jsonString.Parse();
                                     foreach (var mediaType in content)
                                     {
-                                        mediaType.Example = parsedExample;
+                                        if (mediaType is OpenApiMediaType concrete)
+                                        {
+                                            concrete.Example = parsedExample;
+                                        }
                                     }
                                 }
                             }
