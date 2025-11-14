@@ -29,7 +29,7 @@ public sealed class OpenApiOptions
     /// </summary>
     public OpenApiOptions()
     {
-        ShouldInclude = (description) => description.GroupName == null || description.GroupName == DocumentName;
+        ShouldInclude = (description) => description.GroupName == null || string.Equals(description.GroupName, DocumentName, StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
