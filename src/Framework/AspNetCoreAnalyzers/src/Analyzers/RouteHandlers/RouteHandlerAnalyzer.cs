@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Microsoft.AspNetCore.App.Analyzers.Infrastructure;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.AspNetCore.Analyzers.RouteHandlers;
 
@@ -20,7 +22,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 {
     private const int DelegateParameterOrdinal = 2;
 
-    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
+    [
         DiagnosticDescriptors.DoNotUseModelBindingAttributesOnRouteHandlerParameters,
         DiagnosticDescriptors.DoNotReturnActionResultsFromRouteHandlers,
         DiagnosticDescriptors.DetectMisplacedLambdaAttribute,
@@ -28,8 +31,9 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
         DiagnosticDescriptors.RouteParameterComplexTypeIsNotParsable,
         DiagnosticDescriptors.BindAsyncSignatureMustReturnValueTaskOfT,
         DiagnosticDescriptors.AmbiguousRouteHandlerRoute,
-        DiagnosticDescriptors.AtMostOneFromBodyAttribute
-    );
+        DiagnosticDescriptors.AtMostOneFromBodyAttribute,
+        DiagnosticDescriptors.InvalidRouteConstraintForParameterType
+    ];
 
     public override void Initialize(AnalysisContext context)
     {
@@ -74,15 +78,9 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                     return;
                 }
 
-                IDelegateCreationOperation? delegateCreation = null;
-                foreach (var argument in invocation.Arguments)
-                {
-                    if (argument.Parameter?.Ordinal == DelegateParameterOrdinal)
-                    {
-                        delegateCreation = argument.Descendants().OfType<IDelegateCreationOperation>().FirstOrDefault();
-                        break;
-                    }
-                }
+                // Already checked there are 3 arguments
+                var deleateArg = invocation.Arguments[DelegateParameterOrdinal];
+                var delegateCreation = (IDelegateCreationOperation?)deleateArg.Descendants().FirstOrDefault(static d => d is IDelegateCreationOperation);
 
                 if (delegateCreation is null)
                 {
@@ -99,6 +97,8 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
                 {
                     return;
                 }
+
+                AnalyzeRouteConstraints(routeUsage, wellKnownTypes, context);
 
                 mapOperations.TryAdd(MapOperation.Create(invocation, routeUsage), value: default);
 
@@ -172,23 +172,16 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
     private static bool TryGetStringToken(IInvocationOperation invocation, out SyntaxToken token)
     {
-        IArgumentOperation? argumentOperation = null;
-        foreach (var argument in invocation.Arguments)
-        {
-            if (argument.Parameter?.Ordinal == 1)
-            {
-                argumentOperation = argument;
-            }
-        }
+        var argumentOperation = invocation.Arguments[1];
 
-        if (argumentOperation?.Syntax is not ArgumentSyntax routePatternArgumentSyntax ||
-            routePatternArgumentSyntax.Expression is not LiteralExpressionSyntax routePatternArgumentLiteralSyntax)
+        if (argumentOperation.Value is not ILiteralOperation literal)
         {
             token = default;
             return false;
         }
 
-        token = routePatternArgumentLiteralSyntax.Token;
+        var syntax = (LiteralExpressionSyntax)literal.Syntax;
+        token = syntax.Token;
         return true;
     }
 
@@ -216,6 +209,133 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
             }
             return false;
         }
+    }
+
+    private static void AnalyzeRouteConstraints(RouteUsageModel routeUsage, WellKnownTypes wellKnownTypes, OperationAnalysisContext context)
+    {
+        foreach (var routeParam in routeUsage.RoutePattern.RouteParameters)
+        {
+            var handlerParam = GetHandlerParam(routeParam.Name, routeUsage);
+
+            if (handlerParam is null)
+            {
+                continue;
+            }
+
+            foreach (var policy in routeParam.Policies)
+            {
+                if (IsConstraintInvalidForType(policy, handlerParam.Type, wellKnownTypes))
+                {
+                    var descriptor = DiagnosticDescriptors.InvalidRouteConstraintForParameterType;
+                    var start = routeParam.Span.Start + routeParam.Name.Length + 2; // including '{' and ':'
+                    var textSpan = new TextSpan(start, routeParam.Span.End - start - 1); // excluding '}'
+                    var location = Location.Create(context.FilterTree, textSpan);
+                    var diagnostic = Diagnostic.Create(descriptor, location, policy.AsMemory(1), routeParam.Name, handlerParam.Type.ToString());
+
+                    context.ReportDiagnostic(diagnostic);
+                }
+            }
+        }
+    }
+
+    private static bool IsConstraintInvalidForType(string policy, ITypeSymbol type, WellKnownTypes wellKnownTypes)
+    {
+        if (policy.EndsWith(")", StringComparison.Ordinal)) // Parameterized constraint
+        {
+            var braceIndex = policy.IndexOf('(');
+
+            if (braceIndex == -1)
+            {
+                return false;
+            }
+
+            var constraint = policy.AsSpan(1, braceIndex - 1);
+
+            return constraint switch
+            {
+                "length" or "minlength" or "maxlength" or "regex" when type.SpecialType is not SpecialType.System_String => true,
+                "min" or "max" or "range" when !IsIntegerType(type) && !IsNullableIntegerType(type) => true,
+                _ => false
+            };
+        }
+        else // Simple constraint
+        {
+            var constraint = policy.AsSpan(1);
+
+            return constraint switch
+            {
+                "int" when !IsIntegerType(type) && !IsNullableIntegerType(type) => true,
+                "bool" when !IsValueTypeOrNullableValueType(type, SpecialType.System_Boolean) => true,
+                "datetime" when !IsValueTypeOrNullableValueType(type, SpecialType.System_DateTime) => true,
+                "double" when !IsValueTypeOrNullableValueType(type, SpecialType.System_Double) => true,
+                "guid" when !IsGuidType(type, wellKnownTypes) && !IsNullableGuidType(type, wellKnownTypes) => true,
+                "long" when !IsLongType(type) && !IsNullableLongType(type) => true,
+                "decimal" when !IsValueTypeOrNullableValueType(type, SpecialType.System_Decimal) => true,
+                "float" when !IsValueTypeOrNullableValueType(type, SpecialType.System_Single) => true,
+                "alpha" when type.SpecialType is not SpecialType.System_String => true,
+                "file" or "nonfile" when type.SpecialType is not SpecialType.System_String => true,
+                _ => false
+            };
+        }
+    }
+
+    private static IParameterSymbol? GetHandlerParam(string name, RouteUsageModel routeUsage)
+    {
+        foreach (var param in routeUsage.UsageContext.Parameters)
+        {
+            if (param.Name.Equals(name, StringComparison.Ordinal))
+            {
+                return (IParameterSymbol)param;
+            }
+        }
+
+        return null;
+    }
+
+    private static bool IsGuidType(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+    {
+        return type.Equals(wellKnownTypes.Get(WellKnownType.System_Guid), SymbolEqualityComparer.Default);
+    }
+
+    private static bool IsIntegerType(ITypeSymbol type)
+    {
+        return type.SpecialType >= SpecialType.System_SByte && type.SpecialType <= SpecialType.System_UInt64;
+    }
+
+    private static bool IsLongType(ITypeSymbol type)
+    {
+        return type.SpecialType is SpecialType.System_Int64 or SpecialType.System_UInt64;
+    }
+
+    private static bool IsNullableGuidType(ITypeSymbol type, WellKnownTypes wellKnownTypes)
+    {
+        return IsNullableType(type, out var namedType) && IsGuidType(namedType.TypeArguments[0], wellKnownTypes);
+    }
+
+    private static bool IsNullableIntegerType(ITypeSymbol type)
+    {
+        return IsNullableType(type, out var namedType) && IsIntegerType(namedType.TypeArguments[0]);
+    }
+
+    private static bool IsNullableLongType(ITypeSymbol type)
+    {
+        return IsNullableType(type, out var namedType) && IsLongType(namedType.TypeArguments[0]);
+    }
+
+    public static bool IsNullableType(ITypeSymbol type, [NotNullWhen(true)] out INamedTypeSymbol? namedType)
+    {
+        namedType = type as INamedTypeSymbol;
+        return namedType != null && namedType.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T;
+    }
+
+    private static bool IsNullableValueType(ITypeSymbol type, SpecialType specialType)
+    {
+        return IsNullableType(type, out var namedType) && namedType.TypeArguments[0].SpecialType == specialType;
+    }
+
+    private static bool IsValueTypeOrNullableValueType(ITypeSymbol type, SpecialType specialType)
+    {
+        return type.SpecialType == specialType || IsNullableValueType(type, specialType);
     }
 
     private record struct MapOperation(IOperation? Builder, IInvocationOperation Operation, RouteUsageModel RouteUsageModel)
