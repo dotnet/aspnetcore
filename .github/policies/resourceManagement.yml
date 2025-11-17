@@ -352,7 +352,7 @@ configuration:
           - src/Shared/Runtime
       then:
       - addReply:
-          reply: Greetings human! You've submitted a PR that modifies code that is shared with https://github.com/dotnet/runtime . Please make sure you synchronize this code with the changes in that repo!
+          reply: Greetings! You've submitted a PR that modifies code that is shared with https://github.com/dotnet/runtime . Please make sure you synchronize this code with the changes in that repo!
       - addLabel:
           label: 'Attention: Shared Code Modified'
       description: '[Shared Code PRs] Flag PRs that affect shared code src/Shared/Runtime'
