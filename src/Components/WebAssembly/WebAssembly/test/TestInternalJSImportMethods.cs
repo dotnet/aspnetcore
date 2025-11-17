@@ -16,6 +16,9 @@ internal sealed class TestInternalJSImportMethods : IInternalJSImportMethods
 
     public string GetApplicationEnvironment()
         => _environment;
+    
+    public string GetApplicationCulture()
+        => "en-US";
 
     public string GetPersistedState()
         => null;

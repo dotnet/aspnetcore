@@ -24,6 +24,10 @@
     <InstallDir>$(ProductName)</InstallDir>
     <DepProviderKey>Microsoft.$(ProductNameShort)_$(Platform)_$(Lang),v$(_GeneratedPackageVersion)</DepProviderKey>
     <DefineConstants>$(DefineConstants);DepProviderKey=$(DepProviderKey)</DefineConstants>
+    <!-- Everything built in those projects _except_ the final package & MSI are shipping assets. -->
+    <_GeneratedPackageVersion>$(PackageVersion)</_GeneratedPackageVersion>
+    <_GeneratedPackageVersion
+        Condition="! $(PackageVersion.Contains('$(_BuildNumberLabels)'))">$(VersionPrefix)-$(_PreReleaseLabel)$(_BuildNumberLabels)</_GeneratedPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -44,17 +48,17 @@
   <Target Name="GenerateGUIDs" BeforeTargets="BeforeBuild" DependsOnTargets="_GeneratePackageGuids;_GenerateBundleGuids" Condition=" '$(DisableGuidGeneration)' != 'true' " />
 
   <Target Name="_GeneratePackageGuids" Condition="'$(OutputType)' == 'package'">
-    <GenerateGuid Condition="'$(OutputName)' != '$(HostOptionsName)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs)">
+    <GenerateGuid Condition="'$(ProductNameShort)' != '$(HostOptionsNameShort)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs)">
       <Output TaskParameter="Guid" PropertyName="ProductCode" />
     </GenerateGuid>
-    <GenerateGuid Condition="'$(OutputName)' != '$(HostOptionsName)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs);$(OutputType)">
+    <GenerateGuid Condition="'$(ProductNameShort)' != '$(HostOptionsNameShort)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(GuidInputs);$(OutputType)">
       <Output TaskParameter="Guid" PropertyName="UpgradeCode" />
     </GenerateGuid>
 
-    <GenerateGuid Condition="'$(OutputName)' == '$(HostOptionsName)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(Version)">
+    <GenerateGuid Condition="'$(ProductNameShort)' == '$(HostOptionsNameShort)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(Version)">
       <Output TaskParameter="Guid" PropertyName="ProductCode" />
     </GenerateGuid>
-    <GenerateGuid Condition="'$(OutputName)' == '$(HostOptionsName)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(AspNetCoreMajorMinorVersion);$(OutputType)">
+    <GenerateGuid Condition="'$(ProductNameShort)' == '$(HostOptionsNameShort)'" NamespaceGuid="$(NamespaceGuid)" Values="$(ProductNameShort);$(AspNetCoreMajorMinorVersion);$(OutputType)">
       <Output TaskParameter="Guid" PropertyName="UpgradeCode" />
     </GenerateGuid>
 
@@ -82,6 +86,16 @@
     </PropertyGroup>
   </Target>
 
+  <Target Name="_GenerateANCMGuids" Condition="'$(ANCMDepProviderKey)' != ''" BeforeTargets="CoreCompile">
+    <GenerateGuid NamespaceGuid="$(ANCMNamespaceGuid)" Values="$(ANCMDepProviderKey)">
+      <Output TaskParameter="Guid" PropertyName="DepProviderGuid" />
+    </GenerateGuid>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);DepProviderGuid=$(DepProviderGuid)</DefineConstants>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="_CheckPackageFileNameIsSet" BeforeTargets="PrepareForBuild">
     <Error Text="Missing required property: PackageFileName" Condition="'$(PackageFileName)' == ''" />
   </Target>
@@ -96,28 +110,40 @@
     <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
-  <Target Name="CreateWixPackageDrop" AfterTargets="CopyToArtifactsDirectory">
-    <MakeDir Directories="$(WixCommandPackagesDir)" />
-    <ItemGroup>
-      <WixInstallerFilesToProcess Include="$(TargetPath)" />
-      <WixInstallerFilesToProcess Include="$(InstallersOutputPath)$(PackageFileName)"
-        Condition=" '$(IsShipping)' == 'true' AND '$(SkipCopyToArtifactsDirectory)' != 'true' " />
-    </ItemGroup>
-    <CreateLightCommandPackageDrop
-      LightCommandWorkingDir="$(WixCommandObjDir)"
-      OutputFolder="$(WixCommandPackagesDir)"
-      NoLogo="true"
-      Cultures="en-us"
-      InstallerFile="%(WixInstallerFilesToProcess.Identity)"
-      AdditionalBasePaths="$(MSBuildProjectDirectory);$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle"
-      WixExtensions="@(WixExtension)"
-      Loc="@(EmbeddedResource)"
-      Sice="$(SuppressIces)"
-      WixProjectFile="$(MSBuildProjectFile)"
-      Fv="true"
-      WixSrcFiles="@(CompileObjOutput);@(WixObject);@(WixLibProjects);@(_ResolvedWixLibraryPaths)">
-      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
-    </CreateLightCommandPackageDrop>
+  <!-- This target can be used to set additional Wix options. -->
+  <Target Name="SetAdditionalWixOptions" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <!-- Use backwards compatible GUID generation. -->
+      <CompilerAdditionalOptions>$(CompilerAdditionalOptions) -bcgg</CompilerAdditionalOptions>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="GenerateWixpackPackage" AfterTargets="CoreCompile">
+    <PropertyGroup>
+      <WixpackWorkingDir>$(IntermediateOutputPath)wixpack</WixpackWorkingDir>
+      <WixpackOutputDir>$(ArtifactsNonShippingPackagesDir)</WixpackOutputDir>
+    </PropertyGroup>
+
+    <CreateWixBuildWixpack
+      AdditionalOptions="$(CompilerAdditionalOptions) $(LinkerAdditionalOptions)"
+      BindTrackingFile="$(IntermediateOutputPath)$(BindTrackingFilePrefix)%(CultureGroup.OutputSuffix)$(BindTrackingFileExtension)"
+      Cultures="%(CultureGroup.Identity)"
+      DefineConstants="$(DefineConstants);$(SolutionDefineConstants);$(ProjectDefineConstants);$(ProjectReferenceDefineConstants)"
+      Extensions="@(_ResolvedWixExtensionPaths)"
+      InstallerPlatform="$(InstallerPlatform)"
+      InstallerFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetFileName)"
+      IntermediateDirectory="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)"
+      OutputFolder="$(WixpackOutputDir)"
+      OutputType="$(OutputType)"
+      PdbFile="$(IntermediateOutputPath)%(CultureGroup.OutputFolder)$(TargetPdbFileName)"
+      PdbType="$(DebugType)"
+      SourceFiles="@(Compile)"
+      SuppressSpecificWarnings="$(SuppressSpecificWarnings)"
+      LocalizationFiles="@(_WixLocalizationFile)"
+      BindPaths="@(BindPath)"
+      WixpackWorkingDir="$(WixpackWorkingDir)">
+      <Output TaskParameter="OutputFile" PropertyName="_WixBuildCommandPackageNameOutput" />
+    </CreateWixBuildWixpack>
   </Target>
 
   <!-- wixprojs don't do any packaging but the target is called from Arcade's Build.proj. -->
