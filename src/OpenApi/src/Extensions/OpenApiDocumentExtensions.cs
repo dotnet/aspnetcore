@@ -14,14 +14,15 @@ internal static class OpenApiDocumentExtensions
     /// <param name="document">The <see cref="OpenApiDocument"/> to register the schema onto.</param>
     /// <param name="schemaId">The ID that serves as the key for the schema in the schema store.</param>
     /// <param name="schema">The <see cref="IOpenApiSchema" /> to register into the document.</param>
-    /// <returns>An <see cref="IOpenApiSchema"/> with a reference to the stored schema.</returns>
-    public static IOpenApiSchema AddOpenApiSchemaByReference(this OpenApiDocument document, string schemaId, IOpenApiSchema schema)
+    /// <param name="schemaReference">An <see cref="IOpenApiSchema"/> with a reference to the stored schema.</param>
+    /// <returns>Whether the schema was added or already existed</returns>
+    public static bool AddOpenApiSchemaByReference(this OpenApiDocument document, string schemaId, IOpenApiSchema schema, out OpenApiSchemaReference schemaReference)
     {
         // Make sure the document has a workspace,
         // AddComponent will add it to the workspace when adding the component.
         document.Workspace ??= new();
         // AddComponent will only add the schema if it doesn't already exist.
-        document.AddComponent(schemaId, schema);
+        var schemaAdded = document.AddComponent(schemaId, schema);
 
         object? description = null;
         object? example = null;
@@ -33,11 +34,13 @@ internal static class OpenApiDocumentExtensions
             actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out defaultAnnotation);
         }
 
-        return new OpenApiSchemaReference(schemaId, document)
+        schemaReference = new OpenApiSchemaReference(schemaId, document)
         {
             Description = description as string,
             Examples = example is JsonNode exampleJson ? [exampleJson] : null,
             Default = defaultAnnotation as JsonNode,
         };
+
+        return schemaAdded;
     }
 }
