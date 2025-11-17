@@ -170,4 +170,41 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             );
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiPaths_HandlesRoutesStartingWithTilde()
+    {
+        // Arrange
+        var builder = CreateBuilder();
+
+        // Act
+        builder.MapGet("/~health", () => "Healthy");
+        builder.MapGet("/~api/todos", () => { });
+        builder.MapGet("/~api/todos/{id}", () => { });
+
+        // Assert
+        await VerifyOpenApiDocument(builder, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/~api/todos", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                },
+                path =>
+                {
+                    Assert.Equal("/~api/todos/{id}", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                },
+                path =>
+                {
+                    Assert.Equal("/~health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                }
+            );
+        });
+    }
 }
