@@ -14,7 +14,7 @@ namespace System.Buffers;
 /// </summary>
 internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
 {
-    private T[] _rentedBuffer;
+    private T[]? _rentedBuffer;
     private Span<T> _buffer;
     private int _index;
 
@@ -27,7 +27,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     public RefPooledArrayBufferWriter(Span<T> initialBuffer)
     {
         // no rented buffer initially - only if we need to grow over the limits of initialBuffer
-        _rentedBuffer = null!;
+        _rentedBuffer = null;
 
         _buffer = initialBuffer;
         _index = 0;
@@ -44,24 +44,8 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
 
         if (_rentedBuffer is not null)
         {
-            // Optionally clear the buffer before returning to pool (security)
-            // Uncomment if needed for sensitive data:
-            // _buffer.AsSpan(0, _index).Clear();
-
             ArrayPool<T>.Shared.Return(_rentedBuffer, clearArray: false);
             _buffer = null!;
-        }
-    }
-
-    /// <summary>
-    /// Gets the number of bytes written to the buffer.
-    /// </summary>
-    public int WrittenCount
-    {
-        get
-        {
-            ThrowIfDisposed();
-            return _index;
         }
     }
 
@@ -99,25 +83,6 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
         {
             ThrowIfDisposed();
             return _rentedBuffer is not null ? _rentedBuffer.AsSpan(0, _index) : _buffer.Slice(0, _index);
-        }
-    }
-
-    /// <summary>
-    /// Gets a memory segment of the written data.
-    /// </summary>
-    public ReadOnlyMemory<T> WrittenMemory
-    {
-        get
-        {
-            ThrowIfDisposed();
-            if (_rentedBuffer is not null)
-            {
-                return _rentedBuffer.AsMemory(0, _index);
-            }
-
-            // either we throw, or copy the Span<T> data into a heap-allocated array (via pooling), and then return Memory<T>.
-            // For demonstration, that it should not be used with Memory<T> unless done something specific, we throw here.
-            throw new InvalidOperationException("Cannot convert Span<T> to Memory<T>");
         }
     }
 
@@ -230,29 +195,10 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
 
             var previousBuffer = oldBuffer.AsSpan(0, _index);
             previousBuffer.CopyTo(_rentedBuffer);
-            previousBuffer.Clear();
             ArrayPool<T>.Shared.Return(oldBuffer);
         }
         Debug.Assert(_rentedBuffer.Length - _index > 0);
         Debug.Assert(_rentedBuffer.Length - _index >= sizeHint);
-    }
-
-    /// <summary>
-    /// Clears the buffer, resetting the write position to zero without deallocating.
-    /// </summary>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public void Clear()
-    {
-        ThrowIfDisposed();
-        if (_rentedBuffer is not null)
-        {
-            _rentedBuffer?.AsSpan(0, _index).Clear();
-        }
-        else
-        {
-            _buffer.Slice(0, _index).Clear();
-        }
-        _index = 0;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
