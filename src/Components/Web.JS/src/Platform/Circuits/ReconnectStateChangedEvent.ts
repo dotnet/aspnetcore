@@ -3,5 +3,4 @@ export interface ReconnectStateChangedEvent {
   currentAttempt?: number;
   secondsToNextAttempt?: number;
   remote?: boolean;
-  graceful?: boolean;
 }

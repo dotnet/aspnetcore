@@ -13,8 +13,7 @@ export type ReconnectDisplayUpdateOptions = ReconnectOptions | PauseOptions;
 
 export type PauseOptions = {
   type: 'pause',
-  remote: boolean,
-  graceful: boolean
+  remote: boolean
 };
 
 export type ReconnectOptions = {
