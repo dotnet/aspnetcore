@@ -553,7 +553,8 @@ T", null, null, false, null, null, null));
             foreach (var parameterDescription in context.Description.ParameterDescriptions)
             {
                 var metadata = parameterDescription.ModelMetadata;
-                if (metadata.MetadataKind == ModelMetadataKind.Property
+                if (metadata is not null
+                    && metadata.MetadataKind == ModelMetadataKind.Property
                     && metadata.ContainerType is { } containerType
                     && metadata.PropertyName is { } propertyName)
                 {
