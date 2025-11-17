@@ -1,6 +1,6 @@
 {
-    "channelUri": "https://aka.ms/vs/19/intpreview/channel",
-    "channelId": "VisualStudio.19.IntPreview",
+    "channelUri": "https://aka.ms/vs/18/pre/channel",
+    "channelId": "VisualStudio.18.Preview",
     "includeRecommended": false,
     "addProductLang": [
         "en-US"

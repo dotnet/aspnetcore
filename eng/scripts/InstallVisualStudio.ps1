@@ -69,7 +69,7 @@ if ("$Version" -eq "2022") {
     $vsversion = 17;
 }
 elseif ("$Version" -eq "2026") {
-    $vsversion = 19;
+    $vsversion = 18;
 }
 $channelUri = "https://aka.ms/vs/$vsversion/release"
 $responseFileName = "vs.$vsversion"
@@ -111,7 +111,7 @@ if (-not $InstallPath) {
 }
 
 if (-not $InstallPath) {
-    if (($vsversion -eq "17") -or ($vsversion -eq "19")) {
+    if (($vsversion -eq "17") -or ($vsversion -eq "18")) {
         $pathPrefix = "${env:ProgramFiles}";
     }
     if ("$Channel" -eq "Preview") {
