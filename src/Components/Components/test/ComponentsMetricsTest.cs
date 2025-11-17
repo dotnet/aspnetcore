@@ -77,7 +77,7 @@ public class ComponentsMetricsTest
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
-        await Task.Delay(10); // Small delay to ensure measureable duration
+        await Task.Delay(10); // Small delay to ensure measurable duration
         await componentsMetrics.CaptureEventDuration(Task.CompletedTask, startTimestamp,
             "TestComponent", "OnClick", "onclick");
 
@@ -102,7 +102,7 @@ public class ComponentsMetricsTest
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
-        await Task.Delay(10); // Small delay to ensure measureable duration
+        await Task.Delay(10); // Small delay to ensure measurable duration
         await componentsMetrics.CaptureEventDuration(Task.FromException(new InvalidOperationException()),
             startTimestamp, "TestComponent", "OnClick", "onclick");
 
@@ -166,7 +166,7 @@ public class ComponentsMetricsTest
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
-        await Task.Delay(10); // Small delay to ensure measureable duration
+        await Task.Delay(10); // Small delay to ensure measurable duration
         await componentsMetrics.CaptureParametersDuration(Task.CompletedTask, startTimestamp, "TestComponent");
 
         // Assert
@@ -188,7 +188,7 @@ public class ComponentsMetricsTest
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
-        await Task.Delay(10); // Small delay to ensure measureable duration
+        await Task.Delay(10); // Small delay to ensure measurable duration
         await componentsMetrics.CaptureParametersDuration(Task.FromException(new InvalidOperationException()),
             startTimestamp, "TestComponent");
 
@@ -247,7 +247,7 @@ public class ComponentsMetricsTest
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
-        await Task.Delay(10); // Small delay to ensure measureable duration
+        await Task.Delay(10); // Small delay to ensure measurable duration
         await componentsMetrics.CaptureBatchDuration(Task.CompletedTask, startTimestamp, 25);
 
         // Assert
@@ -268,7 +268,7 @@ public class ComponentsMetricsTest
 
         // Act
         var startTimestamp = Stopwatch.GetTimestamp();
-        await Task.Delay(10); // Small delay to ensure measureable duration
+        await Task.Delay(10); // Small delay to ensure measurable duration
         await componentsMetrics.CaptureBatchDuration(Task.FromException(new InvalidOperationException()),
             startTimestamp, 25);
 
