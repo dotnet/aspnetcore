@@ -215,8 +215,8 @@ try {
         }
 
         # Check for relevant changes to SignalR typescript files
-        $tsChanges = $changedFilesFromTarget | Where-Object { $_ -like "src/SignalR/clients/ts/*" -and $_ -ne "src/SignalR/clients/ts/changelog.md" }
-        $changelogChanged = $changedFilesFromTarget -contains "src/SignalR/clients/ts/changelog.md"
+        $tsChanges = $changedFilesFromTarget | Where-Object { $_ -like "src/SignalR/clients/ts/*" -and $_ -ne "src/SignalR/clients/ts/CHANGELOG.md" }
+        $changelogChanged = $changedFilesFromTarget -contains "src/SignalR/clients/ts/CHANGELOG.md"
         $signalrChangelogOverrideMarker = "[no changelog]"
 
         # Only enforce changelog rule if there are relevant TS changes
@@ -225,8 +225,8 @@ try {
             $hasOverride = git log origin/$targetBranch..HEAD --pretty=%B | Select-String -Pattern $signalrChangelogOverrideMarker -Quiet
 
             if (-not $hasOverride) {
-                LogError "Changes were made to 'src/SignalR/clients/ts/', but no update to 'changelog.md' was found."
-                LogError "Either update 'src/SignalR/clients/ts/changelog.md' or include '$signalrChangelogOverrideMarker' in your commit message."
+                LogError "Changes were made to 'src/SignalR/clients/ts/', but no update to 'CHANGELOG.md' was found."
+                LogError "Either update 'src/SignalR/clients/ts/CHANGELOG.md' or include '$signalrChangelogOverrideMarker' in your commit message."
                 exit 1
             } else {
                 Write-Host "SignalR Changelog update skipped due to override marker in commit message."
