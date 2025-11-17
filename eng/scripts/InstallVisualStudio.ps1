@@ -16,6 +16,7 @@
 .PARAMETER Version
     Selects which version of Visual Studio to install. Must be one of these values:
         2022
+        2026
 .PARAMETER InstallPath
     The location on disk where Visual Studio should be installed or updated. Default path is location of latest
     existing installation of the specified edition, if any. If that VS edition is not currently installed, default
@@ -37,7 +38,7 @@ param(
     [string]$Edition = 'Community',
     [ValidateSet('Release', 'Preview', 'IntPreview', 'Dogfood')]
     [string]$Channel = 'Release',
-    [ValidateSet('2022')]
+    [ValidateSet('2022', '2026')]
     [string]$Version = '2022',
     [string]$InstallPath,
     [switch]$Passive,
@@ -66,6 +67,9 @@ $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 
 if ("$Version" -eq "2022") {
     $vsversion = 17;
+}
+elseif ("$Version" -eq "2026") {
+    $vsversion = 19;
 }
 $channelUri = "https://aka.ms/vs/$vsversion/release"
 $responseFileName = "vs.$vsversion"
@@ -107,7 +111,7 @@ if (-not $InstallPath) {
 }
 
 if (-not $InstallPath) {
-    if ($vsversion -eq "17") {
+    if (($vsversion -eq "17") -or ($vsversion -eq "19")) {
         $pathPrefix = "${env:ProgramFiles}";
     }
     if ("$Channel" -eq "Preview") {
