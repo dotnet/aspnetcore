@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -29,11 +31,7 @@ public interface ISpanDataProtector : IDataProtector
     /// The buffer writer is advanced by the total number of bytes written to it.
     /// </remarks>
     void Protect<TWriter>(ReadOnlySpan<byte> plaintext, ref TWriter destination)
-        where TWriter : IBufferWriter<byte>
-#if NET
-        , allows ref struct
-#endif
-        ;
+        where TWriter : IBufferWriter<byte>, allows ref struct;
 
     /// <summary>
     /// Cryptographically unprotects a piece of protected data and writes the result to a buffer writer.
@@ -48,9 +46,7 @@ public interface ISpanDataProtector : IDataProtector
     /// The buffer writer is advanced by the total number of bytes written to it.
     /// </remarks>
     void Unprotect<TWriter>(ReadOnlySpan<byte> protectedData, ref TWriter destination)
-        where TWriter : IBufferWriter<byte>
-#if NET
-        , allows ref struct
-#endif
-        ;
+        where TWriter : IBufferWriter<byte>, allows ref struct;
 }
+
+#endif

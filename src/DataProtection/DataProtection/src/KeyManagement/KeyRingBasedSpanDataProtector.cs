@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
+
 using System;
 using System.Buffers;
 using System.Buffers.Binary;
@@ -164,3 +166,5 @@ internal unsafe class KeyRingBasedSpanDataProtector : KeyRingBasedDataProtector,
         }
     }
 }
+
+#endif

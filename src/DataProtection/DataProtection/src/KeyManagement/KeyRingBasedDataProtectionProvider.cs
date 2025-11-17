@@ -26,6 +26,8 @@ internal sealed unsafe class KeyRingBasedDataProtectionProvider : IDataProtectio
 
         var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
         var encryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
+
+#if NET
         if (encryptor is ISpanAuthenticatedEncryptor)
         {
             // allows caller to check if dataProtector supports Span APIs
@@ -36,6 +38,7 @@ internal sealed unsafe class KeyRingBasedDataProtectionProvider : IDataProtectio
                 originalPurposes: null,
                 newPurpose: purpose);
         }
+#endif
 
         return new KeyRingBasedDataProtector(
             logger: _logger,

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if NET
+
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -33,11 +35,7 @@ public interface ISpanAuthenticatedEncryptor : IAuthenticatedEncryptor
     /// The buffer writer is advanced by the total number of bytes written to it.
     /// </remarks>
     void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
-        where TWriter : IBufferWriter<byte>
-#if NET
-        , allows ref struct
-#endif
-        ;
+        where TWriter : IBufferWriter<byte>, allows ref struct;
 
     /// <summary>
     /// Validates the authentication tag of and decrypts a blob of encrypted data, writing the result to a buffer writer.
@@ -56,9 +54,7 @@ public interface ISpanAuthenticatedEncryptor : IAuthenticatedEncryptor
     /// The buffer writer is advanced by the total number of bytes written to it.
     /// </remarks>
     void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
-        where TWriter : IBufferWriter<byte>
-#if NET
-        , allows ref struct
-#endif
-        ;
+        where TWriter : IBufferWriter<byte>, allows ref struct;
 }
+
+#endif
