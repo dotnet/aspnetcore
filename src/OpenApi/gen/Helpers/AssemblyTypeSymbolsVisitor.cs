@@ -43,6 +43,11 @@ internal sealed class AssemblyTypeSymbolsVisitor(IAssemblySymbol assemblySymbol,
     public override void VisitNamedType(INamedTypeSymbol type)
     {
         _cancellationToken.ThrowIfCancellationRequested();
+        if (type.IsGenericType)
+        {
+            // Because type comments are based on the Unbound generic type, i.e. List`1, we want to use the unbound generic type
+            type = type.ConstructUnboundGenericType();
+        }
 
         if (!IsAccessibleType(type) || !_exportedTypes.Add(type))
         {

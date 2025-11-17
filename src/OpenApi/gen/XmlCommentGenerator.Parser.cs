@@ -110,7 +110,7 @@ public sealed partial class XmlCommentGenerator
         return comments;
     }
 
-    internal static IEnumerable<(string, XmlComment?)> ParseComments(
+    internal static IEnumerable<(string, XmlComment?)> ParseCommentsApplicationAssembly(
         (List<(string, string)> RawComments, Compilation Compilation) input,
         CancellationToken cancellationToken)
     {
@@ -122,6 +122,31 @@ public sealed partial class XmlCommentGenerator
                 // Only include symbols that are declared in the application assembly or are
                 // accessible from the application assembly.
                 (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, compilation.Assembly) || symbol.IsAccessibleType()) &&
+                // Skip static classes that are just containers for members with annotations
+                // since they cannot be instantiated.
+                symbol is not INamedTypeSymbol { TypeKind: TypeKind.Class, IsStatic: true })
+            {
+                var parsedComment = XmlComment.Parse(symbol, compilation, value, cancellationToken);
+                if (parsedComment is not null)
+                {
+                    comments.Add((name, parsedComment));
+                }
+            }
+        }
+        return comments;
+    }
+
+    internal static IEnumerable<(string, XmlComment?)> ParseCommentsReference(
+        (List<(string, string)> RawComments, Compilation Compilation) input,
+        CancellationToken cancellationToken)
+    {
+        var compilation = input.Compilation;
+        var comments = new List<(string, XmlComment?)>();
+        foreach (var (name, value) in input.RawComments)
+        {
+            if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol &&
+                // Only include symbols that are accessible from the application assembly.
+                symbol.IsAccessibleType() &&
                 // Skip static classes that are just containers for members with annotations
                 // since they cannot be instantiated.
                 symbol is not INamedTypeSymbol { TypeKind: TypeKind.Class, IsStatic: true })
