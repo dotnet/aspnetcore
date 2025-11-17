@@ -268,7 +268,7 @@ internal sealed class OpenApiSchemaService(
         var isComponentizedSchema = schema.IsComponentizedSchema(out var schemaId);
 
         // When we register it, this will be the resulting reference
-        IOpenApiSchema? resultSchemaReference = null;
+        OpenApiSchemaReference? resultSchemaReference = null;
         if (inputSchema is OpenApiSchema && isComponentizedSchema)
         {
             var targetReferenceId = baseSchemaId is not null
@@ -276,7 +276,11 @@ internal sealed class OpenApiSchemaService(
                 : schemaId;
             if (!string.IsNullOrEmpty(targetReferenceId))
             {
-                resultSchemaReference = document.AddOpenApiSchemaByReference(targetReferenceId, schema);
+                if (!document.AddOpenApiSchemaByReference(targetReferenceId, schema, out resultSchemaReference))
+                {
+                    // We already added this schema, so it has already been resolved.
+                    return resultSchemaReference;
+                }
             }
         }
 
