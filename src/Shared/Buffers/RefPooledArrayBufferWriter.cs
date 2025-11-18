@@ -88,9 +88,6 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
             : _buffer.Slice(_index);
     }
 
-    public void Advance(uint count)
-        => Advance((int)count);
-
     /// <summary>
     /// Advances the write position by the specified count.
     /// </summary>
@@ -119,7 +116,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
 
     private void CheckAndResizeBuffer(int sizeHint)
     {
-        if (sizeHint <= 0)
+        if (sizeHint < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(sizeHint), actualValue: sizeHint, $"{nameof(sizeHint)} ('{sizeHint}') must be a non-negative value.");
         }
