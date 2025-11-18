@@ -21,6 +21,16 @@ public readonly struct RenderHandle
         _componentId = componentId;
     }
 
+    internal void AddPendingTask(Task task)
+    {
+        if (_renderer == null)
+        {
+            ThrowNotInitialized();
+        }
+
+        _renderer.AddPendingTask(task);
+    }
+
     internal ComponentsMetrics? ComponentMetrics => _renderer?.ComponentMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _renderer?.ComponentActivitySource;
 

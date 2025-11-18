@@ -228,15 +228,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         // for it to complete before rendering. Note: because _previousOnNavigateTask
         // is initialized to a CompletedTask on initialization, this will still
         // allow first-render to complete successfully.
-        // Exception: if the current route's component type differs from the type that triggered
-        // the pending navigation, allow rendering (this handles 404 re-execution scenarios where
-        // we navigate away from a failed route to render the NotFound page). In cases of same-page navigation,
-        // the lazy-loaded assemblies are already loaded, so we don't risk exceptions and can proceed to render.
-        var allowRenderDuringPendingNavigation = providerRouteData != null &&
-            _previousOnNavigateTaskPageType != null &&
-            providerRouteData.PageType != _previousOnNavigateTaskPageType;
-
-        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion && !allowRenderDuringPendingNavigation)
+        if (_previousOnNavigateTask.Status != TaskStatus.RanToCompletion)
         {
             if (Navigating != null)
             {
@@ -383,9 +375,11 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         try
         {
+            var whenAnyTask = Task.WhenAny(OnNavigateAsync.InvokeAsync(navigateContext), cancellationTcs.Task);
+            _renderHandle.AddPendingTask(whenAnyTask);
             // Task.WhenAny returns a Task<Task> so we need to await twice to unwrap the exception
-            var task = await Task.WhenAny(OnNavigateAsync.InvokeAsync(navigateContext), cancellationTcs.Task);
-            await task;
+            var firstCompletedTask = await whenAnyTask;
+            await firstCompletedTask;
             tcs.SetResult();
             Refresh(isNavigationIntercepted);
         }
