@@ -57,7 +57,6 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
         get
         {
             CheckIfDisposed();
-
             return _index;
         }
     }
@@ -172,7 +171,7 @@ internal sealed class PooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposable
     {
         Debug.Assert(_rentedBuffer != null);
 
-        if (sizeHint <= 0)
+        if (sizeHint < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(sizeHint), actualValue: sizeHint, $"{nameof(sizeHint)} ('{sizeHint}') must be a non-negative value.");
         }
