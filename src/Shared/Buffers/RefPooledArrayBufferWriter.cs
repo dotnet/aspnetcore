@@ -41,8 +41,8 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
 
         if (_rentedBuffer is not null)
         {
-            ArrayPool<T>.Shared.Return(_rentedBuffer, clearArray: false);
-            _buffer = null!;
+            ArrayPool<T>.Shared.Return(_rentedBuffer, clearArray: true);
+            _buffer = null;
         }
     }
 
@@ -54,7 +54,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
         get
         {
             Debug.Assert(_index > 0);
-            return _rentedBuffer is not null ? _rentedBuffer.AsSpan(0, _index) : _buffer.Slice(0, _index);
+            return _buffer.Slice(0, _index);
         }
     }
 
@@ -83,9 +83,8 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     {
         Debug.Assert(_index > 0);
         CheckAndResizeBuffer(sizeHint);
-        return _rentedBuffer is not null
-            ? _rentedBuffer.AsSpan(_index)
-            : _buffer.Slice(_index);
+
+        return _buffer.Slice(_index);
     }
 
     /// <summary>
@@ -103,14 +102,11 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
             throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be negative.");
         }
 
-        var canAdvance = _rentedBuffer is not null
-            ? _index + count < _rentedBuffer.Length
-            : _index + count < _buffer.Length;
-
-        if (!canAdvance)
+        if (_index + count >= _buffer.Length)
         {
             throw new InvalidOperationException($"Cannot advance past the end of the buffer. Current position: {_index}, Capacity: {_buffer.Length}, Requested advance: {count}.");
         }
+
         _index += count;
     }
 
@@ -125,6 +121,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
             sizeHint = MinimumBufferSize;
         }
 
+        // initial buffer is still in use
         if (_rentedBuffer is null)
         {
             var bufferSpace = _buffer.Length - _index;
@@ -135,7 +132,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
                 _rentedBuffer = ArrayPool<T>.Shared.Rent(rentedInitialSize);
 
                 _buffer.CopyTo(_rentedBuffer);
-                _buffer.Clear();
+                _buffer = _rentedBuffer;
 
                 Debug.Assert(_rentedBuffer.Length - _index > 0);
                 Debug.Assert(_rentedBuffer.Length - _index >= sizeHint);
@@ -144,23 +141,28 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
             return;
         }
 
-        // we are already using rented buffer, so grow it if needed
-        var availableSpace = _rentedBuffer.Length - _index;
-        if (sizeHint > availableSpace)
+        var availableSpace = _buffer.Length - _index;
+        if (sizeHint <= availableSpace)
         {
-            var growBy = Math.Max(sizeHint, _rentedBuffer.Length);
-            var newSize = checked(_rentedBuffer.Length + growBy);
-
-            var oldBuffer = _rentedBuffer;
-            _rentedBuffer = ArrayPool<T>.Shared.Rent(newSize);
-
-            Debug.Assert(oldBuffer.Length >= _index);
-            Debug.Assert(_rentedBuffer.Length >= _index);
-
-            var previousBuffer = oldBuffer.AsSpan(0, _index);
-            previousBuffer.CopyTo(_rentedBuffer);
-            ArrayPool<T>.Shared.Return(oldBuffer);
+            return;
         }
+
+        // we are using rented buffer, so grow it if needed
+        var growBy = Math.Max(sizeHint, _buffer.Length);
+        var newSize = checked(_buffer.Length + growBy);
+
+        var oldBuffer = _rentedBuffer;
+        _rentedBuffer = ArrayPool<T>.Shared.Rent(newSize);
+
+        Debug.Assert(oldBuffer.Length >= _index);
+        Debug.Assert(_rentedBuffer.Length >= _index);
+
+        var previousBuffer = oldBuffer.AsSpan(0, _index);
+        previousBuffer.CopyTo(_rentedBuffer);
+        ArrayPool<T>.Shared.Return(oldBuffer);
+
+        _buffer = _rentedBuffer;
+
         Debug.Assert(_rentedBuffer.Length - _index > 0);
         Debug.Assert(_rentedBuffer.Length - _index >= sizeHint);
     }
