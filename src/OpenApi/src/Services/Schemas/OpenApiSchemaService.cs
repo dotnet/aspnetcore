@@ -229,10 +229,7 @@ internal sealed class OpenApiSchemaService(
 
     internal async Task<OpenApiSchema> GetOrCreateUnresolvedSchemaAsync(OpenApiDocument? document, Type type, IServiceProvider scopedServiceProvider, IOpenApiSchemaTransformer[] schemaTransformers, ApiParameterDescription? parameterDescription = null, CancellationToken cancellationToken = default)
     {
-        var key = parameterDescription?.ParameterDescriptor is IParameterInfoParameterDescriptor parameterInfoDescription
-            && parameterDescription.ModelMetadata.PropertyName is null
-            ? new OpenApiSchemaKey(type, parameterInfoDescription.ParameterInfo) : new OpenApiSchemaKey(type, null);
-        var schemaAsJsonObject = CreateSchema(key);
+        var schemaAsJsonObject = CreateSchema(type);
         if (parameterDescription is not null)
         {
             schemaAsJsonObject.ApplyParameterInfo(parameterDescription, _jsonSerializerOptions.GetTypeInfo(type));
@@ -451,9 +448,9 @@ internal sealed class OpenApiSchemaService(
         }
     }
 
-    private JsonNode CreateSchema(OpenApiSchemaKey key)
+    private JsonNode CreateSchema(Type type)
     {
-        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, key.Type, _configuration);
+        var schema = JsonSchemaExporter.GetJsonSchemaAsNode(_jsonSerializerOptions, type, _configuration);
         return ResolveReferences(schema, schema);
     }
 
