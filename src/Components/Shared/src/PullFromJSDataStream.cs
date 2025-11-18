@@ -106,10 +106,6 @@ internal sealed class PullFromJSDataStream : Stream
         }
 
         _offset += bytesRead.Length;
-        if (_offset == _totalLength)
-        {
-            Dispose(true);
-        }
         return bytesRead;
     }
 
