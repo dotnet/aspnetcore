@@ -116,6 +116,7 @@ internal sealed class PullFromJSDataStream : Stream
             return;
         }
         _streamCts?.Cancel();
+        _streamCts?.Dispose();
         try
         {
             _ = _jsStreamReference?.DisposeAsync().Preserve();
@@ -136,6 +137,8 @@ internal sealed class PullFromJSDataStream : Stream
         }
 
         _streamCts?.Cancel();
+        _streamCts?.Dispose();
+
         try
         {
             if (_jsStreamReference is not null)
