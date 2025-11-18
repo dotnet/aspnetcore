@@ -10,6 +10,7 @@ using BenchmarkDotNet.Running;
 
 namespace Microsoft.AspNetCore.BenchmarkDotNet.Runner;
 
+#nullable enable
 sealed partial class Program
 {
     private static TextWriter? _standardOutput;
