@@ -38,8 +38,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     private Task _previousOnNavigateTask = Task.CompletedTask;
 
-    private Type? _previousOnNavigateTaskPageType;
-
     private RouteKey _routeTableLastBuiltForRouteKey;
 
     private bool _onNavigateCalled;
@@ -222,8 +220,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
     internal virtual void Refresh(bool isNavigationIntercepted)
     {
-        var providerRouteData = RoutingStateProvider?.RouteData;
-
         // If an `OnNavigateAsync` task is currently in progress, then wait
         // for it to complete before rendering. Note: because _previousOnNavigateTask
         // is initialized to a CompletedTask on initialization, this will still
@@ -243,7 +239,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         ComponentsActivityHandle activityHandle;
 
         // In order to avoid routing twice we check for RouteData
-        if (providerRouteData is { } endpointRouteData)
+        if (RoutingStateProvider?.RouteData is { } endpointRouteData)
         {
             activityHandle = RecordDiagnostics(endpointRouteData.PageType.FullName, endpointRouteData.Template);
 
@@ -362,9 +358,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         {
             Refresh(isNavigationIntercepted);
         }
-
-        // Store the current page type so we can detect if it's safe to render when on navigation task is pending
-        _previousOnNavigateTaskPageType = RoutingStateProvider?.RouteData?.PageType;
 
         _onNavigateCts = new CancellationTokenSource();
         var navigateContext = new NavigationContext(path, _onNavigateCts.Token);
