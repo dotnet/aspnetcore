@@ -26,9 +26,6 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     /// <param name="initialBuffer">The initial buffer to start writer with.</param>
     public RefPooledArrayBufferWriter(Span<T> initialBuffer)
     {
-        // no rented buffer initially - only if we need to grow over the limits of initialBuffer
-        _rentedBuffer = null;
-
         _buffer = initialBuffer;
         _index = 0;
     }
@@ -50,38 +47,13 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     }
 
     /// <summary>
-    /// Gets the capacity of the underlying buffer.
-    /// </summary>
-    public int Capacity
-    {
-        get
-        {
-            ThrowIfDisposed();
-            return _rentedBuffer is not null ? _rentedBuffer.Length : _buffer.Length;
-        }
-    }
-
-    /// <summary>
-    /// Gets the available space remaining in the buffer.
-    /// </summary>
-    public int FreeCapacity
-    {
-        get
-        {
-            ThrowIfDisposed();
-            var length = _rentedBuffer is not null ? _rentedBuffer.Length : _buffer.Length;
-            return length - _index;
-        }
-    }
-
-    /// <summary>
     /// Gets a span of the written data.
     /// </summary>
-    public ReadOnlySpan<T> WrittenSpan
+    public readonly ReadOnlySpan<T> WrittenSpan
     {
         get
         {
-            ThrowIfDisposed();
+            Debug.Assert(_index > 0);
             return _rentedBuffer is not null ? _rentedBuffer.AsSpan(0, _index) : _buffer.Slice(0, _index);
         }
     }
@@ -94,16 +66,11 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Memory<T> GetMemory(int sizeHint = 0)
     {
-        ThrowIfDisposed();
-        CheckAndResizeBuffer(sizeHint);
-        if (_rentedBuffer is not null)
-        {
-            return _rentedBuffer.AsMemory(_index);
-        }
-
-        // either we throw, or copy the Span<T> data into a heap-allocated array (via pooling), and then return Memory<T>.
-        // For demonstration, that it should not be used with Memory<T> unless done something specific, we throw here.
-        throw new InvalidOperationException("Cannot convert Span<T> to Memory<T>");
+#if NET
+        throw new UnreachableException("RefPooledArrayBufferWriter does not support GetMemory");
+#else
+        throw new NotSupportedException("RefPooledArrayBufferWriter does not support GetMemory");
+#endif
     }
 
     /// <summary>
@@ -114,7 +81,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> GetSpan(int sizeHint = 0)
     {
-        ThrowIfDisposed();
+        Debug.Assert(_index > 0);
         CheckAndResizeBuffer(sizeHint);
         return _rentedBuffer is not null
             ? _rentedBuffer.AsSpan(_index)
@@ -133,7 +100,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Advance(int count)
     {
-        ThrowIfDisposed();
+        Debug.Assert(_index > 0);
         if (count < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be negative.");
@@ -199,14 +166,5 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
         }
         Debug.Assert(_rentedBuffer.Length - _index > 0);
         Debug.Assert(_rentedBuffer.Length - _index >= sizeHint);
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void ThrowIfDisposed()
-    {
-        if (_index < 0)
-        {
-            throw new ObjectDisposedException(nameof(IBufferWriter<>), "The buffer writer has been disposed.");
-        }
     }
 }
