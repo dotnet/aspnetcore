@@ -281,10 +281,10 @@ sealed class MockAuthenticatedEncryptor : ISpanAuthenticatedEncryptor
 {
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> _additionalAuthenticatedData) => plaintext.ToArray();
 
-    public void Encrypt<TWriter>(ReadOnlySpan<byte> plainttext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : System.Buffers.IBufferWriter<byte>, allows ref struct
+    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination) where TWriter : System.Buffers.IBufferWriter<byte>, allows ref struct
     {
-        var destinationSpan = destination.GetSpan(plainttext.Length);
-        plainttext.CopyTo(destinationSpan);
+        var destinationSpan = destination.GetSpan(plaintext.Length);
+        plaintext.CopyTo(destinationSpan);
         destination.Advance(destinationSpan.Length);
     }
 

@@ -138,7 +138,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
                     var buffer = destination.GetSpan(checked((int)dwRequiredSize));
 
                     // Clone IV again for the actual decryption call
-                    byte* pbClonedIV2 = stackalloc byte[checked((int)_symmetricAlgorithmBlockSizeInBytes)];
+                    byte* pbClonedIV2 = stackalloc byte[(int)_symmetricAlgorithmBlockSizeInBytes];
                     UnsafeBufferUtil.BlockCopy(from: pbIV, to: pbClonedIV2, byteCount: _symmetricAlgorithmBlockSizeInBytes);
 
                     // Perform the actual decryption
@@ -184,7 +184,7 @@ internal sealed unsafe class CbcAuthenticatedEncryptor : IOptimizedAuthenticated
         }
 
 #if NET
-        byte[] rentedBuffer = null!;
+        byte[]? rentedBuffer = null;
         var buffer = outputSize < 256
             ? stackalloc byte[255]
             : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));

@@ -68,6 +68,8 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
 
         var currentKeyRing = _keyRingProvider.GetCurrentKeyRing();
         var encryptor = currentKeyRing.DefaultAuthenticatedEncryptor;
+
+#if NET
         if (encryptor is ISpanAuthenticatedEncryptor)
         {
             // allows caller to check if dataProtector supports Span APIs
@@ -78,6 +80,7 @@ internal unsafe class KeyRingBasedDataProtector : IDataProtector, IPersistedData
                 originalPurposes: Purposes,
                 newPurpose: purpose);
         }
+#endif
 
         return new KeyRingBasedDataProtector(
             logger: _logger,
