@@ -27,6 +27,11 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
   </ItemGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI/$(TargetFramework)/PublicAPI.Unshipped.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.AspNetCore.DataProtection.Abstractions.Tests" />
   </ItemGroup>
 </Project>
