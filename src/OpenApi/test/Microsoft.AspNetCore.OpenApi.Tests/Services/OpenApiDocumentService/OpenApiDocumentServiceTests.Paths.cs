@@ -3,6 +3,7 @@
 
 using System.Net.Http;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.AspNetCore.Routing;
 
@@ -207,4 +208,27 @@ public partial class OpenApiDocumentServiceTests : OpenApiDocumentServiceTestBas
             );
         });
     }
+
+    [Fact]
+    public async Task GetOpenApiPaths_HandlesRoutesStartingWithTilde_MvcAction()
+    {
+        // Arrange
+        var action = CreateActionDescriptor(nameof(ActionWithTildeRoute));
+
+        // Assert
+        await VerifyOpenApiDocument(action, document =>
+        {
+            Assert.Collection(document.Paths.OrderBy(p => p.Key),
+                path =>
+                {
+                    Assert.Equal("/~health", path.Key);
+                    Assert.Single(path.Value.Operations);
+                    Assert.Contains(HttpMethod.Get, path.Value.Operations);
+                }
+            );
+        });
+    }
+
+    [Route("/~health")]
+    private void ActionWithTildeRoute() { }
 }
