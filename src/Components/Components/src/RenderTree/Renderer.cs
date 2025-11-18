@@ -673,13 +673,6 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         // The pendingTasks collection is only used during prerendering to track quiescence,
         // so will be null at other times.
-        AddPendingTask(task);
-    }
-
-    internal void AddPendingTask(Task task)
-    {
-        // The pendingTasks collection is only used during prerendering to track quiescence,
-        // so will be null at other times.
         if (_pendingTasks is { } tasks)
         {
             Dispatcher.AssertAccess();

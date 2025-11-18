@@ -368,11 +368,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         try
         {
-            var whenAnyTask = Task.WhenAny(OnNavigateAsync.InvokeAsync(navigateContext), cancellationTcs.Task);
-            _renderHandle.AddPendingTask(whenAnyTask);
             // Task.WhenAny returns a Task<Task> so we need to await twice to unwrap the exception
-            var firstCompletedTask = await whenAnyTask;
-            await firstCompletedTask;
+            var task = await Task.WhenAny(OnNavigateAsync.InvokeAsync(navigateContext), cancellationTcs.Task);
+            await task;
             tcs.SetResult();
             Refresh(isNavigationIntercepted);
         }
