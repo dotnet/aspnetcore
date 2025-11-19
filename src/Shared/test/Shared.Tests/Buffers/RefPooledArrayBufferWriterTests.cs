@@ -131,7 +131,7 @@ public class RefPooledArrayBufferWriterTests
         var writer = new RefPooledArrayBufferWriter<byte>(buffer);
 
         var span = writer.GetSpan(sizeHint);
-        Assert.True(span.Length >= sizeHint);
+        Assert.True(span.Length >= sizeHint && span.Length > 0);
 
         writer.Dispose();
     }
