@@ -53,7 +53,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     {
         get
         {
-            Debug.Assert(_index > 0);
+            Debug.Assert(_index >= 0);
             return _buffer.Slice(0, _index);
         }
     }
@@ -81,7 +81,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<T> GetSpan(int sizeHint = 0)
     {
-        Debug.Assert(_index > 0);
+        Debug.Assert(_index >= 0);
         CheckAndResizeBuffer(sizeHint);
 
         return _buffer.Slice(_index);
@@ -96,7 +96,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public void Advance(int count)
     {
-        Debug.Assert(_index > 0);
+        Debug.Assert(_index >= 0);
         if (count < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be negative.");
