@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Tracing;
 using System.Linq;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -697,8 +698,8 @@ internal abstract class CertificateManager
         sanBuilder.AddDnsName(InternalWildcardHttpsDnsName);
         sanBuilder.AddDnsName(LocalhostDockerHttpsDnsName);
         sanBuilder.AddDnsName(ContainersDockerHttpsDnsName);
-        sanBuilder.AddIpAddress(System.Net.IPAddress.Loopback);
-        sanBuilder.AddIpAddress(System.Net.IPAddress.IPv6Loopback);
+        sanBuilder.AddIpAddress(IPAddress.Loopback);
+        sanBuilder.AddIpAddress(IPAddress.IPv6Loopback);
 
         var keyUsage = new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature, critical: true);
         var enhancedKeyUsage = new X509EnhancedKeyUsageExtension(
