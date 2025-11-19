@@ -188,6 +188,17 @@ public class RefPooledArrayBufferWriterTests
     }
 
     [Fact]
+    public void Buffer_AdvancesOnBoundaryLimits()
+    {
+        Span<byte> initialBuffer = stackalloc byte[256];
+        var writer = new RefPooledArrayBufferWriter<byte>(initialBuffer);
+
+        _ = writer.GetSpan();
+        writer.Advance(256); // should not throw
+        Assert.Equal(256, writer.WrittenSpan.Length);
+    }
+
+    [Fact]
     public void BufferPreservesContentOnGrowth_PooledToLargerPooledBuffer()
     {
         Span<byte> initialBuffer = stackalloc byte[16];

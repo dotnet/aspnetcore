@@ -5,7 +5,11 @@ using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.Tests;
 using Microsoft.AspNetCore.DataProtection.Tests.Internal;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.Managed;
 
@@ -134,5 +138,35 @@ public class ManagedAuthenticatedEncryptorTests
         ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
 
         RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
+    }
+
+    [Fact]
+    public void TimeLimitedDataProtector_WithJsonPayloadNearBufferBoundary_SucceedsWithoutBufferException()
+    {
+        // This test reproduces the issue from ServerComponentDeserializerTest.DoesNotParseMarkersWithUnknownComponentTypeAssembly
+        // which uses ITimeLimitedDataProtector with ManagedAuthenticatedEncryptor under the hood.
+        // The buffer boundary condition occurs when the output size calculation results in a value
+        // that is close to or exceeds 255 bytes (the initial stackalloc size).
+
+        // Arrange
+        var dataProtectionProvider = new TestsDataProtectionProvider<ManagedAuthenticatedEncryptorConfiguration>();
+        var protector = dataProtectionProvider
+            .CreateProtector("test-purpose")
+            .ToTimeLimitedDataProtector();
+
+        // The exact JSON payload from the failing test scenario
+        var jsonPayload = @"{""sequence"":0,""assemblyName"":""UnknownAssembly"",""typeName"":""System.String"",""parameterDefinitions"":[],""parameterValues"":[],""invocationId"":""0db30695-0ec3-4289-b3cd-247cbe91ccc3""}";
+
+        // Act - This should not throw "Cannot advance past the end of the buffer"
+        var protectedData = protector.Protect(jsonPayload, TimeSpan.FromSeconds(30));
+
+        // Assert
+        Assert.NotNull(protectedData);
+        Assert.NotEmpty(protectedData);
+
+        // Verify the round-trip works
+        var unprotectedData = protector.Unprotect(protectedData, out var expiration);
+        Assert.Equal(jsonPayload, unprotectedData);
+        Assert.True(expiration > DateTimeOffset.UtcNow, "Expiration should be in the future");
     }
 }

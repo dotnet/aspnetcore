@@ -102,7 +102,7 @@ internal ref struct RefPooledArrayBufferWriter<T> : IBufferWriter<T>, IDisposabl
             throw new ArgumentOutOfRangeException(nameof(count), "Count cannot be negative.");
         }
 
-        if (_index + count >= _buffer.Length)
+        if (_index + count > _buffer.Length)
         {
             throw new InvalidOperationException($"Cannot advance past the end of the buffer. Current position: {_index}, Capacity: {_buffer.Length}, Requested advance: {count}.");
         }
