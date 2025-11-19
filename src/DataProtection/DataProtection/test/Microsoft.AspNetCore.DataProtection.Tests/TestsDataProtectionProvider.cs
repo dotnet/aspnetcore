@@ -55,11 +55,11 @@ internal class TestsDataProtectionProvider<T> : IDataProtectionProvider
             DefaultAuthenticatedEncryptor = GetDefaultEncryptor(loggerFactory);
         }
 
-        public IAuthenticatedEncryptor? DefaultAuthenticatedEncryptor { get; }
+        public IAuthenticatedEncryptor DefaultAuthenticatedEncryptor { get; }
 
         public Guid DefaultKeyId { get; }
 
-        public IAuthenticatedEncryptor? GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
+        public IAuthenticatedEncryptor GetAuthenticatedEncryptorByKeyId(Guid keyId, out bool isRevoked)
         {
             isRevoked = false;
             return (keyId == default(Guid)) ? DefaultAuthenticatedEncryptor : null;
@@ -70,7 +70,7 @@ internal class TestsDataProtectionProvider<T> : IDataProtectionProvider
             return this;
         }
 
-        private static IAuthenticatedEncryptor? GetDefaultEncryptor(ILoggerFactory loggerFactory)
+        private static IAuthenticatedEncryptor GetDefaultEncryptor(ILoggerFactory loggerFactory)
         {
             var configuration = new T();
             if (configuration is CngGcmAuthenticatedEncryptorConfiguration cngConfiguration)
