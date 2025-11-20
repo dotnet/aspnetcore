@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TestContentPackage;
 using TestContentPackage.Services;
@@ -104,35 +103,21 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                         await context.Response.WriteAsync("Triggered a 404 status code.");
                     });
                 });
-                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute");
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
                 reexecutionApp.UseRouting();
+
                 reexecutionApp.UseAntiforgery();
                 ConfigureEndpoints(reexecutionApp, env);
             });
             app.Map("/interactive-reexecution", reexecutionApp =>
             {
-                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute-interactive");
+                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute-interactive", createScopeForStatusCodePages: true);
                 reexecutionApp.UseRouting();
                 reexecutionApp.UseAntiforgery();
                 ConfigureEndpoints(reexecutionApp, env);
             });
 
             ConfigureSubdirPipeline(app, env);
-        });
-    }
-
-    private void ConfigureReexecutionPipeline(IApplicationBuilder pipeline, string pathFormat)
-    {
-        pipeline.UseStatusCodePagesWithReExecute(pathFormat, createScopeForStatusCodePages: true);
-        pipeline.Use(async (context, next) =>
-        {
-            var reexecute = context.Features.Get<IStatusCodeReExecuteFeature>();
-            if (reexecute is not null && !string.IsNullOrEmpty(reexecute.OriginalQueryString))
-            {
-                context.Request.QueryString = new QueryString(reexecute.OriginalQueryString);
-            }
-
-            await next();
         });
     }
 
