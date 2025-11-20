@@ -172,7 +172,7 @@ jobs:
             artifactName: AssetManifests
             displayName: 'Publish Merged Manifest'
             retryCountOnTaskFailure: 10 # for any logs being locked
-            sbomEnabled: false # we don't need SBOM for logs
+            isProduction: false
 
     - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
       parameters:
