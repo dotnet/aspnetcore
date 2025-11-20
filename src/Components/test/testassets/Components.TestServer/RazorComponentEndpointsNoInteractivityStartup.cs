@@ -8,6 +8,7 @@ using System.Web;
 using Components.TestServer.RazorComponents;
 using Components.TestServer.RazorComponents.Pages.Forms;
 using Components.TestServer.Services;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TestServer;
@@ -64,7 +65,7 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                     app.UseExceptionHandler("/Error", createScopeForErrors: true);
                 }
 
-                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
+                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute");
                 reexecutionApp.UseStaticFiles();
                 reexecutionApp.UseRouting();
                 RazorComponentEndpointsStartup<TRootComponent>.UseFakeAuthState(reexecutionApp);
@@ -75,8 +76,34 @@ public class RazorComponentEndpointsNoInteractivityStartup<TRootComponent>
                         .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
                 });
             });
+            app.Map("/streaming-reexecution", reexecutionApp =>
+            {
+                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute-streaming");
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                reexecutionApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapRazorComponents<TRootComponent>()
+                        .AddAdditionalAssemblies(Assembly.Load("TestContentPackage"));
+                });
+            });
 
             ConfigureSubdirPipeline(app, env);
+        });
+    }
+
+    private void ConfigureReexecutionPipeline(IApplicationBuilder pipeline, string pathFormat)
+    {
+        pipeline.UseStatusCodePagesWithReExecute(pathFormat, createScopeForStatusCodePages: true);
+        pipeline.Use(async (context, next) =>
+        {
+            var reexecute = context.Features.Get<IStatusCodeReExecuteFeature>();
+            if (reexecute is not null && !string.IsNullOrEmpty(reexecute.OriginalQueryString))
+            {
+                context.Request.QueryString = new QueryString(reexecute.OriginalQueryString);
+            }
+
+            await next();
         });
     }
 

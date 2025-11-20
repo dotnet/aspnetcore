@@ -106,20 +106,12 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                 });
                 ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute");
                 reexecutionApp.UseRouting();
-
                 reexecutionApp.UseAntiforgery();
                 ConfigureEndpoints(reexecutionApp, env);
             });
             app.Map("/interactive-reexecution", reexecutionApp =>
             {
                 ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute-interactive");
-                reexecutionApp.UseRouting();
-                reexecutionApp.UseAntiforgery();
-                ConfigureEndpoints(reexecutionApp, env);
-            });
-            app.Map("/streaming-reexecution", reexecutionApp =>
-            {
-                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute-streaming");
                 reexecutionApp.UseRouting();
                 reexecutionApp.UseAntiforgery();
                 ConfigureEndpoints(reexecutionApp, env);
