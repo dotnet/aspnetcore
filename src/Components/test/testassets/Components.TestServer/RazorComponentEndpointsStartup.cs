@@ -104,18 +104,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                         await context.Response.WriteAsync("Triggered a 404 status code.");
                     });
                 });
-                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
-                // restore the original query string after re-execution, for test purposes
-                reexecutionApp.Use(async (context, next) =>
-                {
-                    var reexecute = context.Features.Get<IStatusCodeReExecuteFeature>();
-                    if (reexecute is not null && !string.IsNullOrEmpty(reexecute.OriginalQueryString))
-                    {
-                        context.Request.QueryString = new QueryString(reexecute.OriginalQueryString);
-                    }
-
-                    await next();
-                });
+                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute");
                 reexecutionApp.UseRouting();
 
                 reexecutionApp.UseAntiforgery();
@@ -123,13 +112,35 @@ public class RazorComponentEndpointsStartup<TRootComponent>
             });
             app.Map("/interactive-reexecution", reexecutionApp =>
             {
-                reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute-interactive", createScopeForStatusCodePages: true);
+                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute-interactive");
+                reexecutionApp.UseRouting();
+                reexecutionApp.UseAntiforgery();
+                ConfigureEndpoints(reexecutionApp, env);
+            });
+            app.Map("/streaming-reexecution", reexecutionApp =>
+            {
+                ConfigureReexecutionPipeline(reexecutionApp, "/not-found-reexecute-streaming");
                 reexecutionApp.UseRouting();
                 reexecutionApp.UseAntiforgery();
                 ConfigureEndpoints(reexecutionApp, env);
             });
 
             ConfigureSubdirPipeline(app, env);
+        });
+    }
+
+    private void ConfigureReexecutionPipeline(IApplicationBuilder pipeline, string pathFormat)
+    {
+        pipeline.UseStatusCodePagesWithReExecute(pathFormat, createScopeForStatusCodePages: true);
+        pipeline.Use(async (context, next) =>
+        {
+            var reexecute = context.Features.Get<IStatusCodeReExecuteFeature>();
+            if (reexecute is not null && !string.IsNullOrEmpty(reexecute.OriginalQueryString))
+            {
+                context.Request.QueryString = new QueryString(reexecute.OriginalQueryString);
+            }
+
+            await next();
         });
     }
 

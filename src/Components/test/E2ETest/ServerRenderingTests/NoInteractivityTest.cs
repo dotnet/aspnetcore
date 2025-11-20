@@ -133,6 +133,15 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
         AssertReExecutionPageRendered();
     }
 
+    [Fact]
+    public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404_CanStream()
+    {
+        AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
+        Navigate($"{ServerPathBase}/streaming-reexecution/not-existing-page?useOnNavigateAsync=true");
+        AssertReExecutionPageRendered();
+        Browser.Equal("Streaming completed.", () => Browser.Exists(By.Id("reexecute-streaming-status")).Text);
+    }
+
     private void AssertReExecutionPageRendered() =>
         Browser.Equal("Welcome On Page Re-executed After Not Found Event", () => Browser.Exists(By.Id("test-info")).Text);
 
