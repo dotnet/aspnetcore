@@ -21,12 +21,12 @@
     [SupplyParameterFromQuery(Name = "appSetsEventArgsPath")]
     public bool AppSetsEventArgsPath { get; set; }
 
-    private const string UseOnNavigateAsyncSwitchName = "Components.TestServer.RazorComponents.UseOnNavigateAsync";
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "useOnNavigateAsync")]
+    public bool ShouldDelayOnNavigateAsync { get; set; }
 
     private Type? NotFoundPageType { get; set; }
     private NavigationManager _navigationManager = default!;
-    private bool ShouldDelayOnNavigateAsync =>
-        AppContext.TryGetSwitch(UseOnNavigateAsyncSwitchName, out var switchEnabled) && switchEnabled;
 
     [Inject]
     private NavigationManager NavigationManager
@@ -81,11 +81,6 @@
 
     private Task HandleOnNavigateAsync(NavigationContext args)
     {
-        if (NavigationCompletionTracker.TryGetGuardTask(args.Path, out var guardTask))
-        {
-            return guardTask;
-        }
-
         if (!ShouldDelayOnNavigateAsync)
         {
             return Task.CompletedTask;

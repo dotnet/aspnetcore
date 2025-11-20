@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Net.Http;
 using System;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest;
@@ -130,36 +129,8 @@ public class NoInteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<
     public void BrowserNavigationToNotExistingPath_WithOnNavigateAsync_ReExecutesTo404()
     {
         AppContext.SetSwitch("Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException", isEnabled: true);
-
-        // using query for controlling router parameters does not work in re-execution scenario, we have to rely on other communication channel
-        const string useOnNavigateAsyncSwitch = "Components.TestServer.RazorComponents.UseOnNavigateAsync";
-        AppContext.SetSwitch(useOnNavigateAsyncSwitch, true);
-        try
-        {
-            Navigate($"{ServerPathBase}/reexecution/not-existing-page");
-            AssertReExecutionPageRendered();
-        }
-        finally
-        {
-            AppContext.SetSwitch(useOnNavigateAsyncSwitch, false);
-        }
-    }
-
-    [Fact]
-    public void BrowserNavigationToLazyLoadedRoute_WaitsForOnNavigateAsyncGuard()
-    {
-        const string navigationGuardSwitch = "Components.TestServer.RazorComponents.UseNavigationCompletionGuard";
-        AppContext.SetSwitch(navigationGuardSwitch, true);
-
-        try
-        {
-            Navigate($"{ServerPathBase}/routing/with-lazy-assembly");
-            Browser.Equal("Lazy route rendered", () => Browser.Exists(By.Id("lazy-route-status")).Text);
-        }
-        finally
-        {
-            AppContext.SetSwitch(navigationGuardSwitch, false);
-        }
+        Navigate($"{ServerPathBase}/reexecution/not-existing-page?useOnNavigateAsync=true");
+        AssertReExecutionPageRendered();
     }
 
     private void AssertReExecutionPageRendered() =>

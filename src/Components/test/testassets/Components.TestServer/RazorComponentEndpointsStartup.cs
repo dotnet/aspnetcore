@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Server;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using TestContentPackage;
 using TestContentPackage.Services;
@@ -82,6 +83,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+        //StatusCodePagesExtensions.UseStatusCodePagesWithRedirects(app, "en-US");
         var enUs = new CultureInfo("en-US");
         CultureInfo.DefaultThreadCurrentCulture = enUs;
         CultureInfo.DefaultThreadCurrentUICulture = enUs;
@@ -104,6 +106,17 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     });
                 });
                 reexecutionApp.UseStatusCodePagesWithReExecute("/not-found-reexecute", createScopeForStatusCodePages: true);
+                // restore the original query string after re-execution, for test purposes
+                reexecutionApp.Use(async (context, next) =>
+                {
+                    var reexecute = context.Features.Get<IStatusCodeReExecuteFeature>();
+                    if (reexecute is not null && !string.IsNullOrEmpty(reexecute.OriginalQueryString))
+                    {
+                        context.Request.QueryString = new QueryString(reexecute.OriginalQueryString);
+                    }
+
+                    await next();
+                });
                 reexecutionApp.UseRouting();
 
                 reexecutionApp.UseAntiforgery();
