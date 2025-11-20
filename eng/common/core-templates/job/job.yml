@@ -31,7 +31,6 @@ parameters:
   testRunTitle: ''
   testResultsFormat: ''
   name: ''
-  componentGovernanceSteps: []
   preSteps: []
   artifactPublishSteps: []
   runAsPublic: false
@@ -148,9 +147,6 @@ jobs:
         itemPattern: ${{ coalesce(parameters.artifacts.download.pattern, '**') }}
 
   - ${{ each step in parameters.steps }}:
-    - ${{ step }}
-
-  - ${{ each step in parameters.componentGovernanceSteps }}:
     - ${{ step }}
 
   - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
