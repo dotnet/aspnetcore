@@ -55,9 +55,9 @@ public partial class Startup
         serviceCollection.AddHttpContextAccessor();
     }
 #if FORWARDCOMPAT
-    private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().ContentRootPath);
+    private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IWebHostEnvironment>().ContentRootPath);
 
-    private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>().WebRootPath);
+    private async Task WebRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IWebHostEnvironment>().WebRootPath);
 #else
     private async Task ContentRootPath(HttpContext ctx) => await ctx.Response.WriteAsync(ctx.RequestServices.GetService<IWebHostEnvironment>().ContentRootPath);
 
@@ -175,7 +175,7 @@ public partial class Startup
     public Task CreateFile(HttpContext context)
     {
 #if FORWARDCOMPAT
-        var hostingEnv = context.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IHostingEnvironment>();
+        var hostingEnv = context.RequestServices.GetService<IWebHostEnvironment>();
 #else
         var hostingEnv = context.RequestServices.GetService<IWebHostEnvironment>();
 #endif
@@ -474,6 +474,8 @@ public partial class Startup
                 return ctx.Response.WriteAsync($"Failure: '{headerName}' TryGetValue");
             }
 
+            // ASP0019 recommends using Append or the indexer over Add, because it throws, but we're testing that behavior here.
+#pragma warning disable ASP0019 // Use IHeaderDictionary.Append or the indexer to append or set headers
             // Both default and StringValues.Empty should unset the header, allowing it to be added again.
             ArgumentException duplicateKeyException = null;
             ctx.Request.Headers.Add(headerName, "test");
@@ -492,6 +494,7 @@ public partial class Startup
                 duplicateKeyException = ex;
                 ctx.Request.Headers[headerName] = default;
             }
+#pragma warning restore ASP0019 // Use IHeaderDictionary.Append or the indexer to append or set headers
 
             if (duplicateKeyException is null)
             {
@@ -597,7 +600,7 @@ public partial class Startup
     {
         await ctx.Response.WriteAsync("test1");
 #if FORWARDCOMPAT
-        var lifetime = ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>();
+        var lifetime = ctx.RequestServices.GetService<IHostApplicationLifetime>();
 #else
         var lifetime = ctx.RequestServices.GetService<IHostApplicationLifetime>();
 #endif
@@ -680,8 +683,9 @@ public partial class Startup
     private async Task ReadAndWriteEchoLinesNoBuffering(HttpContext ctx)
     {
 #if FORWARDCOMPAT
-        var feature = ctx.Features.Get<IHttpBufferingFeature>();
-        feature.DisableResponseBuffering();
+        var feature = ctx.Features.Get<IHttpResponseBodyFeature>();
+        feature.DisableBuffering();
+        Assert.True(ctx.Request.CanHaveBody());
 #else
         var feature = ctx.Features.Get<IHttpResponseBodyFeature>();
         feature.DisableBuffering();
@@ -993,7 +997,7 @@ public partial class Startup
     {
         await ctx.Response.WriteAsync("Shutting down");
 #if FORWARDCOMPAT
-        ctx.RequestServices.GetService<Microsoft.AspNetCore.Hosting.IApplicationLifetime>().StopApplication();
+        ctx.RequestServices.GetService<IHostApplicationLifetime>().StopApplication();
 #else
         ctx.RequestServices.GetService<IHostApplicationLifetime>().StopApplication();
 #endif
