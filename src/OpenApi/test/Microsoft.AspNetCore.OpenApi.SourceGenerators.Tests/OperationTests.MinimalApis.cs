@@ -530,4 +530,45 @@ public class SummaryValueParametersClass
             Assert.Equal("Property with only value documentation.", valueOnlyParam2.Description);
         });
     }
+
+    [Fact]
+    public async Task SupportsRouteParametersFromMinimalApis()
+    {
+        var source = """
+using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Http;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+app.MapGet("/{userId}", RouteHandlerExtensionMethods.Get);
+
+app.Run();
+
+public static class RouteHandlerExtensionMethods
+{
+    /// <param name="userId">The id of the user.</param>
+    public static string Get()
+    {
+        return "Hello, World!";
+    }
+}
+""";
+
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var path = document.Paths["/{userId}"].Operations[HttpMethod.Get];
+            Assert.NotEmpty(path.Parameters);
+            Assert.Equal("The id of the user.", path.Parameters[0].Description);
+        });
+    }
 }
