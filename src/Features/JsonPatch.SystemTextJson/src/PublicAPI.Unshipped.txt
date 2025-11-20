@@ -1,1 +1,4 @@
 #nullable enable
+
+Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.from.get -> string?
+Microsoft.AspNetCore.JsonPatch.SystemTextJson.Operations.OperationBase.from.set -> void
