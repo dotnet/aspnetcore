@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.OutputCaching;
 
@@ -12,9 +11,6 @@ namespace Microsoft.AspNetCore.OutputCaching;
 internal sealed class NamedPolicy : IOutputCachePolicy
 {
     private readonly string _policyName;
-    private IOptions<OutputCacheOptions>? _options;
-    private readonly object _synLock = new();
-
     /// <summary>
     /// Create a new <see cref="NamedPolicy"/> instance.
     /// </summary>
@@ -25,58 +21,52 @@ internal sealed class NamedPolicy : IOutputCachePolicy
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
+    async ValueTask IOutputCachePolicy.ServeResponseAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        var policy = GetProfilePolicy(context);
+        var policy = await GetProfilePolicy(context);
 
         if (policy == null)
         {
-            return ValueTask.CompletedTask;
+            return;
         }
 
-        return policy.ServeResponseAsync(context, cancellationToken);
+        await policy.ServeResponseAsync(context, cancellationToken);
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
+    async ValueTask IOutputCachePolicy.ServeFromCacheAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        var policy = GetProfilePolicy(context);
+        var policy = await GetProfilePolicy(context);
 
         if (policy == null)
         {
-            return ValueTask.CompletedTask;
+            return;
         }
 
-        return policy.ServeFromCacheAsync(context, cancellationToken);
+        await policy.ServeFromCacheAsync(context, cancellationToken);
     }
 
     /// <inheritdoc />
-    ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
+    async ValueTask IOutputCachePolicy.CacheRequestAsync(OutputCacheContext context, CancellationToken cancellationToken)
     {
-        var policy = GetProfilePolicy(context);
+        var policy = await GetProfilePolicy(context);
 
         if (policy == null)
         {
-            return ValueTask.CompletedTask;
+            return;
         }
 
-        return policy.CacheRequestAsync(context, cancellationToken);
+        await policy.CacheRequestAsync(context, cancellationToken);
     }
 
-    internal IOutputCachePolicy? GetProfilePolicy(OutputCacheContext context)
+    internal ValueTask<IOutputCachePolicy?> GetProfilePolicy(OutputCacheContext context)
     {
-        if (_options == null)
+        var provider = context.HttpContext.RequestServices.GetRequiredService<IOutputCachePolicyProvider>();
+        if (provider == null)
         {
-            lock (_synLock)
-            {
-                _options ??= context.HttpContext.RequestServices.GetRequiredService<IOptions<OutputCacheOptions>>();
-            }
+            return ValueTask.FromResult<IOutputCachePolicy?>(null);
         }
 
-        var policies = _options!.Value.NamedPolicies;
-
-        return policies != null && policies.TryGetValue(_policyName, out var cacheProfile)
-            ? cacheProfile
-            : null;
+        return provider.GetPolicyAsync(_policyName);
     }
 }
