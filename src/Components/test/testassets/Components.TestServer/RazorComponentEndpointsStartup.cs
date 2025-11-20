@@ -83,7 +83,6 @@ public class RazorComponentEndpointsStartup<TRootComponent>
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        //StatusCodePagesExtensions.UseStatusCodePagesWithRedirects(app, "en-US");
         var enUs = new CultureInfo("en-US");
         CultureInfo.DefaultThreadCurrentCulture = enUs;
         CultureInfo.DefaultThreadCurrentUICulture = enUs;
