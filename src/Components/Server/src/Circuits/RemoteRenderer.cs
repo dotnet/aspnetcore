@@ -50,6 +50,7 @@ internal partial class RemoteRenderer : WebRenderer
         ResourceAssetCollection resourceCollection = null)
         : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
     {
+        jsComponentInterop.SetRenderer(this);
         _client = client;
         _options = options;
         _serverComponentDeserializer = serverComponentDeserializer;
