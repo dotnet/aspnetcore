@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Linq;
 using Components.TestServer.RazorComponents;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -353,6 +354,18 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             streamingId: streaming,
             streamingCompleted: true,
             interactiveRuntime: interactiveRuntime);
+    }
+
+    [Fact]
+    public void JsAddedPersistentStateRootComponentDoesNotTriggerCircuitError()
+    {
+        Navigate("subdir/persistent-state-js-root-component.html");
+
+        Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
+        Browser.Equal("Current count: 0", () => Browser.Exists(By.CssSelector("p[role='status']")).Text);
+
+        Browser.Click(By.CssSelector("button.btn-primary"));
+        Browser.Equal("Current count: 1", () => Browser.Exists(By.CssSelector("p[role='status']")).Text);
     }
 
     private void AssertPageState(
