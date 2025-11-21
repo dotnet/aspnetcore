@@ -355,10 +355,12 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
             interactiveRuntime: interactiveRuntime);
     }
 
-    [Fact]
-    public void PersistentStateIsSupportedInDynamicJSRoots()
+    [Theory]
+    [InlineData("ServerNonPrerendered")]
+    [InlineData("WebAssemblyNonPrerendered")]
+    public void PersistentStateIsSupportedInDynamicJSRoots(string renderMode)
     {
-        Navigate("subdir/dynamic-js-root.html");
+        Navigate($"subdir/WasmMinimal/dynamic-js-root.html?renderMode={renderMode}");
 
         Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.Equal("Current count: 0", () => Browser.Exists(By.CssSelector("p[role='status']")).Text);

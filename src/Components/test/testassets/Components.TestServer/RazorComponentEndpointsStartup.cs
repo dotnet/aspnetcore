@@ -51,7 +51,7 @@ public class RazorComponentEndpointsStartup<TRootComponent>
                     options.DisconnectedCircuitMaxRetained = 0;
                     options.DetailedErrors = true;
                 }
-                options.RootComponents.RegisterForJavaScript<CounterWithPersistentState>("dynamic-js-root-counter");
+                options.RootComponents.RegisterForJavaScript<TestContentPackage.PersistentComponents.ComponentWithPersistentState>("dynamic-js-root-counter");
             })
             .AddAuthenticationStateSerialization(options =>
             {
