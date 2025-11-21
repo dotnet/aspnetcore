@@ -97,13 +97,49 @@ function init(dotNetHelper: DotNet.DotNetObject, spacerBefore: HTMLElement, spac
       const spacerSeparation = rangeBetweenSpacers.getBoundingClientRect().height;
       const containerSize = entry.rootBounds?.height;
 
+      // Accumulate scale factors from all parent elements as they multiply together
+      let scaleFactor = 1.0;
+
+      // Check for CSS scale/zoom/transform properties on parent elements (including body and html)
+      let element = spacerBefore.parentElement;
+      while (element) {
+        const computedStyle = getComputedStyle(element);
+
+        // Check for zoom property (applies uniform scaling)
+        if (computedStyle.zoom && computedStyle.zoom !== '1') {
+          scaleFactor *= parseFloat(computedStyle.zoom);
+        }
+
+        // Check for scale property (can have separate X/Y values)
+        if (computedStyle.scale && computedStyle.scale !== 'none' && computedStyle.scale !== '1') {
+          const parts = computedStyle.scale.split(' ');
+          const scaleY = parts.length > 1 ? parseFloat(parts[1]) : parseFloat(parts[0]);
+          scaleFactor *= scaleY; // Use vertical scale for vertical scrolling
+        }
+
+        // Check for transform property (matrix form)
+        if (computedStyle.transform && computedStyle.transform !== 'none') {
+          const matrix = new DOMMatrix(computedStyle.transform);
+          scaleFactor *= matrix.d;
+        }
+        element = element.parentElement;
+      }
+
+      // Divide by scale factor to convert from physical pixels to logical pixels.
+      const unscaledSpacerSeparation = spacerSeparation / scaleFactor;
+      const unscaledContainerSize = containerSize !== null && containerSize !== undefined ? containerSize / scaleFactor : null;
+
       if (entry.target === spacerBefore) {
-        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', entry.intersectionRect.top - entry.boundingClientRect.top, spacerSeparation, containerSize);
+        const spacerSize = entry.intersectionRect.top - entry.boundingClientRect.top;
+        const unscaledSpacerSize = spacerSize / scaleFactor;
+        dotNetHelper.invokeMethodAsync('OnSpacerBeforeVisible', unscaledSpacerSize, unscaledSpacerSeparation, unscaledContainerSize);
       } else if (entry.target === spacerAfter && spacerAfter.offsetHeight > 0) {
         // When we first start up, both the "before" and "after" spacers will be visible, but it's only relevant to raise a
         // single event to load the initial data. To avoid raising two events, skip the one for the "after" spacer if we know
         // it's meaningless to talk about any overlap into it.
-        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', entry.boundingClientRect.bottom - entry.intersectionRect.bottom, spacerSeparation, containerSize);
+        const spacerSize = entry.boundingClientRect.bottom - entry.intersectionRect.bottom;
+        const unscaledSpacerSize = spacerSize / scaleFactor;
+        dotNetHelper.invokeMethodAsync('OnSpacerAfterVisible', unscaledSpacerSize, unscaledSpacerSeparation, unscaledContainerSize);
       }
     });
   }
