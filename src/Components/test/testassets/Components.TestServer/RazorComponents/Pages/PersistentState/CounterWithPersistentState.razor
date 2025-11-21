@@ -10,7 +10,7 @@
 <button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
 
 @code {
-    [PersistentState] public int currentCount {get; set;}
+    [PersistentState] public int currentCount { get; set; }
 
     private void IncrementCount()
     {
