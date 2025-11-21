@@ -85,8 +85,8 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     {
         var navigationManager = httpContext.RequestServices.GetRequiredService<NavigationManager>();
         ((IHostEnvironmentNavigationManager)navigationManager)?.Initialize(
-            GetContextBaseUri(httpContext.Request), 
-            GetFullUri(httpContext.Request), 
+            GetContextBaseUri(httpContext.Request),
+            GetFullUri(httpContext.Request),
             uri => GetErrorHandledTask(OnNavigateTo(uri)));
 
         navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
@@ -168,11 +168,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     protected override void AddPendingTask(ComponentState? componentState, Task task)
     {
-        if (_isReExecuted)
-        {
-            return;
-        }
-
         var streamRendering = componentState is null
             ? false
             : ((EndpointComponentState)componentState).StreamRendering;
