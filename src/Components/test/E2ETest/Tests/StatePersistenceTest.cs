@@ -357,9 +357,9 @@ public class StatePersistenceTest : ServerTestBase<BasicTestAppServerSiteFixture
     }
 
     [Fact]
-    public void JsAddedPersistentStateRootComponentDoesNotTriggerCircuitError()
+    public void PersistentStateIsSupportedInDynamicJSRoots()
     {
-        Navigate("subdir/persistent-state-js-root-component.html");
+        Navigate("subdir/dynamic-js-root.html");
 
         Browser.Equal("Counter", () => Browser.Exists(By.TagName("h1")).Text);
         Browser.Equal("Current count: 0", () => Browser.Exists(By.CssSelector("p[role='status']")).Text);
