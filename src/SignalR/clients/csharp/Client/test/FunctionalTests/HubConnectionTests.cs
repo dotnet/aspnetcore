@@ -1244,7 +1244,7 @@ public partial class HubConnectionTests : FunctionalTestBase
 
                 var channel = await connection.StreamAsChannelAsync<int>("Stream", "xyz");
                 var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync().DefaultTimeout());
-                Assert.Equal("Failed to invoke 'Stream' due to an error on the server. InvalidDataException: Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
+                Assert.Equal("Failed to invoke 'Stream' due to an error on the server. InvalidDataException: Error binding argument 1. Make sure that the types of the provided values match the types of the hub method being invoked.", ex.Message);
             }
             catch (Exception ex)
             {
