@@ -50,6 +50,7 @@ internal partial class RemoteRenderer : WebRenderer
         ResourceAssetCollection resourceCollection = null)
         : base(serviceProvider, loggerFactory, jsRuntime.ReadJsonSerializerOptions(), jsComponentInterop)
     {
+        jsComponentInterop.SetRenderer(this);
         _client = client;
         _options = options;
         _serverComponentDeserializer = serverComponentDeserializer;
@@ -326,8 +327,7 @@ internal partial class RemoteRenderer : WebRenderer
             return default;
         }
 
-        var webRootComponentManager = _webRootComponentManager ?? GetOrCreateWebRootComponentManager();
-        return webRootComponentManager.GetRootComponentKey(remoteComponentState.ComponentId);
+        return _webRootComponentManager!.GetRootComponentKey(remoteComponentState.ComponentId);
     }
 
     private void ProcessPendingBatch(string? errorMessageOrNull, UnacknowledgedRenderBatch entry)
