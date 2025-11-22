@@ -26,6 +26,6 @@ internal sealed class JsonArrayPool<T> : IArrayPool<T>
     {
         ArgumentNullException.ThrowIfNull(array);
 
-        _inner.Return(array);
+        _inner.ReturnAndClearReferences(array, array.Length);
     }
 }
