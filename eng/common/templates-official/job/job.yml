@@ -1,14 +1,23 @@
 parameters:
+# Sbom related params
+  enableSbom: true
   runAsPublic: false
-# Sbom related params, unused now and can eventually be removed
-  enableSbom: unused
-  PackageVersion: unused
-  BuildDropPath: unused
+  PackageVersion: 9.0.0
+  BuildDropPath: '$(System.DefaultWorkingDirectory)/artifacts'
 
 jobs:
 - template: /eng/common/core-templates/job/job.yml
   parameters:
     is1ESPipeline: true
+
+    componentGovernanceSteps:
+    - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
+      - template: /eng/common/templates/steps/generate-sbom.yml
+        parameters:
+          PackageVersion: ${{ parameters.packageVersion }}
+          BuildDropPath: ${{ parameters.buildDropPath }}
+          ManifestDirPath: $(Build.ArtifactStagingDirectory)/sbom
+          publishArtifacts: false
 
     # publish artifacts
     # for 1ES managed templates, use the templateContext.output to handle multiple outputs.
@@ -32,7 +41,7 @@ jobs:
             continueOnError: true
             condition: always()
             retryCountOnTaskFailure: 10 # for any logs being locked
-            isProduction: false
+            sbomEnabled: false  # we don't need SBOM for logs
 
       - ${{ if eq(parameters.enablePublishBuildArtifacts, true) }}:
         - output: buildArtifacts
@@ -42,7 +51,7 @@ jobs:
           ArtifactName: ${{ coalesce(parameters.enablePublishBuildArtifacts.artifactName, '$(Agent.Os)_$(Agent.JobName)_Attempt$(System.JobAttempt)' ) }}
           continueOnError: true
           condition: always()
-          #isProduction: false
+          sbomEnabled: false  # we don't need SBOM for logs
 
       - ${{ if eq(parameters.enableBuildRetry, 'true') }}:
         - output: pipelineArtifact
@@ -50,7 +59,14 @@ jobs:
           artifactName: 'BuildConfiguration'
           displayName: 'Publish build retry configuration'
           continueOnError: true
-          isProduction: false
+          sbomEnabled: false  # we don't need SBOM for BuildConfiguration
+
+      - ${{ if and(eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest'), eq(parameters.enableSbom, 'true')) }}:
+        - output: pipelineArtifact
+          displayName: Publish SBOM manifest
+          continueOnError: true
+          targetPath: $(Build.ArtifactStagingDirectory)/sbom
+          artifactName: $(ARTIFACT_NAME)
 
       # add any outputs provided via root yaml
       - ${{ if ne(parameters.templateContext.outputs, '') }}:
