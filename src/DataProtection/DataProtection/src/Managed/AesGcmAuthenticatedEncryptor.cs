@@ -3,6 +3,7 @@
 
 #if NETCOREAPP
 using System;
+using System.Buffers;
 using System.IO;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
@@ -13,7 +14,7 @@ using Microsoft.AspNetCore.DataProtection.SP800_108;
 namespace Microsoft.AspNetCore.DataProtection.Managed;
 
 // An encryptor that uses AesGcm to do encryption
-internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthenticatedEncryptor, IDisposable
+internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthenticatedEncryptor, ISpanAuthenticatedEncryptor, IDisposable
 {
     // Having a key modifier ensures with overwhelming probability that no two encryption operations
     // will ever derive the same (encryption subkey, MAC subkey) pair. This limits an attacker's
@@ -64,73 +65,73 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         _genRandom = genRandom ?? ManagedGenRandomImpl.Instance;
     }
 
-    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
+    public void Decrypt<TWriter>(ReadOnlySpan<byte> ciphertext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
+        where TWriter : IBufferWriter<byte>, allows ref struct
     {
-        ciphertext.Validate();
-        additionalAuthenticatedData.Validate();
-
-        // Argument checking: input must at the absolute minimum contain a key modifier, nonce, and tag
-        if (ciphertext.Count < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
-        {
-            throw Error.CryptCommon_PayloadInvalid();
-        }
-
-        // Assumption: pbCipherText := { keyModifier || nonce || encryptedData || authenticationTag }
-        var plaintextBytes = ciphertext.Count - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES);
-        var plaintext = new byte[plaintextBytes];
-
         try
         {
-            // Step 1: Extract the key modifier from the payload.
-
-            int keyModifierOffset; // position in ciphertext.Array where key modifier begins
-            int nonceOffset; // position in ciphertext.Array where key modifier ends / nonce begins
-            int encryptedDataOffset; // position in ciphertext.Array where nonce ends / encryptedData begins
-            int tagOffset; // position in ciphertext.Array where encrypted data ends
-
-            checked
+            // Argument checking: input must at the absolute minimum contain a key modifier, nonce, and tag
+            if (ciphertext.Length < KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES)
             {
-                keyModifierOffset = ciphertext.Offset;
-                nonceOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
-                encryptedDataOffset = nonceOffset + NONCE_SIZE_IN_BYTES;
-                tagOffset = encryptedDataOffset + plaintextBytes;
+                throw Error.CryptCommon_PayloadInvalid();
             }
 
-            var keyModifier = new ArraySegment<byte>(ciphertext.Array!, keyModifierOffset, KEY_MODIFIER_SIZE_IN_BYTES);
+            var plaintextBytes = ciphertext.Length - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES);
 
-            // Step 2: Decrypt the KDK and use it to restore the original encryption and MAC keys.
-            // We pin all unencrypted keys to limit their exposure via GC relocation.
+            // Calculate offsets in the ciphertext
+            var keyModifierOffset = 0;
+            var nonceOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
+            var encryptedDataOffset = nonceOffset + NONCE_SIZE_IN_BYTES;
+            var tagOffset = encryptedDataOffset + plaintextBytes;
 
-            var decryptedKdk = new byte[_keyDerivationKey.Length];
-            var derivedKey = new byte[_derivedkeySizeInBytes];
+            // Extract spans for each component
+            var keyModifier = ciphertext.Slice(keyModifierOffset, KEY_MODIFIER_SIZE_IN_BYTES);
+            var nonce = ciphertext.Slice(nonceOffset, NONCE_SIZE_IN_BYTES);
+            var encrypted = ciphertext.Slice(encryptedDataOffset, plaintextBytes);
+            var tag = ciphertext.Slice(tagOffset, TAG_SIZE_IN_BYTES);
 
-            fixed (byte* __unused__1 = decryptedKdk)
-            fixed (byte* __unused__2 = derivedKey)
+            // Get buffer from writer with the plaintext size
+            var buffer = destination.GetSpan(plaintextBytes);
+
+            // Get the plaintext destination
+            var plaintext = buffer.Slice(0, plaintextBytes);
+
+            // Decrypt the KDK and use it to restore the original encryption key
+            // We pin all unencrypted keys to limit their exposure via GC relocation
+            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
+                ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
+                : new byte[_keyDerivationKey.Length];
+
+            Span<byte> derivedKey = _derivedkeySizeInBytes <= 256
+                ? stackalloc byte[256].Slice(0, _derivedkeySizeInBytes)
+                : new byte[_derivedkeySizeInBytes];
+
+            fixed (byte* decryptedKdkUnsafe = decryptedKdk)
+            fixed (byte* derivedKeyUnsafe = derivedKey)
             {
                 try
                 {
-                    _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
+                    _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
                     ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
                         kdk: decryptedKdk,
                         label: additionalAuthenticatedData,
                         contextHeader: _contextHeader,
                         contextData: keyModifier,
                         operationSubkey: derivedKey,
-                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */ );
+                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */);
 
-                    // Perform the decryption operation
-                    var nonce = new Span<byte>(ciphertext.Array, nonceOffset, NONCE_SIZE_IN_BYTES);
-                    var tag = new Span<byte>(ciphertext.Array, tagOffset, TAG_SIZE_IN_BYTES);
-                    var encrypted = new Span<byte>(ciphertext.Array, encryptedDataOffset, plaintextBytes);
+                    // Perform the decryption operation directly into destination
                     using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
                     aes.Decrypt(nonce, encrypted, tag, plaintext);
-                    return plaintext;
+
+                    // Advance the writer by the number of bytes written
+                    destination.Advance(plaintextBytes);
                 }
                 finally
                 {
                     // delete since these contain secret material
-                    Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
-                    Array.Clear(derivedKey, 0, derivedKey.Length);
+                    decryptedKdk.Clear();
+                    derivedKey.Clear();
                 }
             }
         }
@@ -141,85 +142,150 @@ internal sealed unsafe class AesGcmAuthenticatedEncryptor : IOptimizedAuthentica
         }
     }
 
-    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
+    public byte[] Decrypt(ArraySegment<byte> ciphertext, ArraySegment<byte> additionalAuthenticatedData)
     {
-        plaintext.Validate();
+        ciphertext.Validate();
         additionalAuthenticatedData.Validate();
 
+        var outputSize = ciphertext.Count - (KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + TAG_SIZE_IN_BYTES);
+        if (outputSize < 0)
+        {
+            throw Error.CryptCommon_PayloadInvalid();
+        }
+
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
         try
         {
-            // Allocate a buffer to hold the key modifier, nonce, encrypted data, and tag.
-            // In GCM, the encrypted output will be the same length as the plaintext input.
-            var retVal = new byte[checked(preBufferSize + KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Count + TAG_SIZE_IN_BYTES + postBufferSize)];
-            int keyModifierOffset; // position in ciphertext.Array where key modifier begins
-            int nonceOffset; // position in ciphertext.Array where key modifier ends / nonce begins
-            int encryptedDataOffset; // position in ciphertext.Array where nonce ends / encryptedData begins
-            int tagOffset; // position in ciphertext.Array where encrypted data ends
-
-            checked
-            {
-                keyModifierOffset = plaintext.Offset + (int)preBufferSize;
-                nonceOffset = keyModifierOffset + KEY_MODIFIER_SIZE_IN_BYTES;
-                encryptedDataOffset = nonceOffset + NONCE_SIZE_IN_BYTES;
-                tagOffset = encryptedDataOffset + plaintext.Count;
-            }
-
-            // Randomly generate the key modifier and nonce
-            var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
-            var nonceBytes = _genRandom.GenRandom(NONCE_SIZE_IN_BYTES);
-
-            Buffer.BlockCopy(keyModifier, 0, retVal, (int)preBufferSize, keyModifier.Length);
-            Buffer.BlockCopy(nonceBytes, 0, retVal, (int)preBufferSize + keyModifier.Length, nonceBytes.Length);
-
-            // At this point, retVal := { preBuffer | keyModifier | nonce | _____ | _____ | postBuffer }
-
-            // Use the KDF to generate a new symmetric block cipher key
-            // We'll need a temporary buffer to hold the symmetric encryption subkey
-            var decryptedKdk = new byte[_keyDerivationKey.Length];
-            var derivedKey = new byte[_derivedkeySizeInBytes];
-            fixed (byte* __unused__1 = decryptedKdk)
-            fixed (byte* __unused__2 = derivedKey)
-            {
-                try
-                {
-                    _keyDerivationKey.WriteSecretIntoBuffer(new ArraySegment<byte>(decryptedKdk));
-                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
-                        kdk: decryptedKdk,
-                        label: additionalAuthenticatedData,
-                        contextHeader: _contextHeader,
-                        contextData: keyModifier,
-                        operationSubkey: derivedKey,
-                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */ );
-
-                    // do gcm
-                    var nonce = new Span<byte>(retVal, nonceOffset, NONCE_SIZE_IN_BYTES);
-                    var tag = new Span<byte>(retVal, tagOffset, TAG_SIZE_IN_BYTES);
-                    var encrypted = new Span<byte>(retVal, encryptedDataOffset, plaintext.Count);
-                    using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
-                    aes.Encrypt(nonce, plaintext, encrypted, tag);
-
-                    // At this point, retVal := { preBuffer | keyModifier | nonce | encryptedData | authenticationTag | postBuffer }
-                    // And we're done!
-                    return retVal;
-                }
-                finally
-                {
-                    // delete since these contain secret material
-                    Array.Clear(decryptedKdk, 0, decryptedKdk.Length);
-                    Array.Clear(derivedKey, 0, derivedKey.Length);
-                }
-            }
+            Decrypt(ciphertext, additionalAuthenticatedData, ref refPooledBuffer);
+            return refPooledBuffer.WrittenSpan.ToArray();
         }
-        catch (Exception ex) when (ex.RequiresHomogenization())
+        finally
         {
-            // Homogenize all exceptions to CryptographicException.
-            throw Error.CryptCommon_GenericError(ex);
+            refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
         }
     }
 
     public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData)
         => Encrypt(plaintext, additionalAuthenticatedData, 0, 0);
 
+    public byte[] Encrypt(ArraySegment<byte> plaintext, ArraySegment<byte> additionalAuthenticatedData, uint preBufferSize, uint postBufferSize)
+    {
+        plaintext.Validate();
+        additionalAuthenticatedData.Validate();
+
+        var size = checked(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Count + TAG_SIZE_IN_BYTES);
+        var outputSize = (int)(preBufferSize + size + postBufferSize);
+
+        byte[] rentedBuffer = null!;
+        var buffer = outputSize < 256
+            ? stackalloc byte[255]
+            : (rentedBuffer = ArrayPool<byte>.Shared.Rent(outputSize));
+
+        var refPooledBuffer = new RefPooledArrayBufferWriter<byte>(buffer);
+        try
+        {
+            // arrays are pooled. and they MAY contain non-zeros in the pre-buffer and post-buffer regions.
+            // we could clean them up, but it's not strictly necessary - the important part is that output array
+            // has those pre/post buffer regions, which will be used by the caller.
+            refPooledBuffer.Advance((int)preBufferSize);
+            Encrypt(plaintext, additionalAuthenticatedData, ref refPooledBuffer);
+            refPooledBuffer.Advance((int)postBufferSize);
+
+            CryptoUtil.Assert(refPooledBuffer.WrittenSpan.Length == outputSize, "writtenSpan length should equal calculated outputSize");
+            return refPooledBuffer.WrittenSpan.ToArray();
+        }
+        finally
+        {
+            refPooledBuffer.Dispose();
+            if (rentedBuffer is not null)
+            {
+                ArrayPool<byte>.Shared.Return(rentedBuffer, clearArray: true);
+            }
+        }
+    }
+
+    public void Encrypt<TWriter>(ReadOnlySpan<byte> plaintext, ReadOnlySpan<byte> additionalAuthenticatedData, ref TWriter destination)
+        where TWriter : IBufferWriter<byte>, allows ref struct
+    {
+        try
+        {
+            // Calculate total required size: keyModifier + nonce + plaintext + tag
+            // In GCM, ciphertext length equals plaintext length
+            var totalRequiredSize = checked(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Length + TAG_SIZE_IN_BYTES);
+
+            // Get buffer from writer with the required total size
+            var buffer = destination.GetSpan(totalRequiredSize);
+
+            // Generate random key modifier and nonce
+            var keyModifier = _genRandom.GenRandom(KEY_MODIFIER_SIZE_IN_BYTES);
+            var nonceBytes = _genRandom.GenRandom(NONCE_SIZE_IN_BYTES);
+
+            // Copy keyModifier and nonce to buffer
+            keyModifier.CopyTo(buffer.Slice(0, KEY_MODIFIER_SIZE_IN_BYTES));
+            nonceBytes.CopyTo(buffer.Slice(KEY_MODIFIER_SIZE_IN_BYTES, NONCE_SIZE_IN_BYTES));
+
+            // At this point, buffer := { keyModifier | nonce | _____ | _____ }
+
+            // Use the KDF to generate a new symmetric block cipher key
+            // We'll need a temporary buffer to hold the symmetric encryption subkey
+            Span<byte> decryptedKdk = _keyDerivationKey.Length <= 256
+                ? stackalloc byte[256].Slice(0, _keyDerivationKey.Length)
+                : new byte[_keyDerivationKey.Length];
+
+            Span<byte> derivedKey = _derivedkeySizeInBytes <= 256
+                ? stackalloc byte[256].Slice(0, _derivedkeySizeInBytes)
+                : new byte[_derivedkeySizeInBytes];
+
+            fixed (byte* decryptedKdkUnsafe = decryptedKdk)
+            fixed (byte* __unused__2 = derivedKey)
+            {
+                try
+                {
+                    _keyDerivationKey.WriteSecretIntoBuffer(decryptedKdkUnsafe, decryptedKdk.Length);
+                    ManagedSP800_108_CTR_HMACSHA512.DeriveKeys(
+                        kdk: decryptedKdk,
+                        label: additionalAuthenticatedData,
+                        contextHeader: _contextHeader,
+                        contextData: keyModifier,
+                        operationSubkey: derivedKey,
+                        validationSubkey: Span<byte>.Empty /* filling in derivedKey only */);
+
+                    // Perform GCM encryption. Buffer expected structure:
+                    // { keyModifier | nonce | encryptedData | authenticationTag }
+                    var nonce = buffer.Slice(KEY_MODIFIER_SIZE_IN_BYTES, NONCE_SIZE_IN_BYTES);
+                    var encrypted = buffer.Slice(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES, plaintext.Length);
+                    var tag = buffer.Slice(KEY_MODIFIER_SIZE_IN_BYTES + NONCE_SIZE_IN_BYTES + plaintext.Length, TAG_SIZE_IN_BYTES);
+
+                    using var aes = new AesGcm(derivedKey, TAG_SIZE_IN_BYTES);
+                    aes.Encrypt(nonce, plaintext, encrypted, tag);
+
+                    // At this point, buffer := { keyModifier | nonce | encryptedData | authenticationTag }
+                    // And we're done!
+                    destination.Advance(totalRequiredSize);
+                }
+                finally
+                {
+                    // delete since these contain secret material
+                    decryptedKdk.Clear();
+                    derivedKey.Clear();
+                }
+            }
+        }
+        catch (Exception ex) when (ex.RequiresHomogenization())
+        {
+            // Homogenize all exceptions to CryptographicException.
+            throw Error.CryptCommon_GenericError(ex);
+        }
+    }
     public void Dispose()
     {
         _keyDerivationKey.Dispose();
