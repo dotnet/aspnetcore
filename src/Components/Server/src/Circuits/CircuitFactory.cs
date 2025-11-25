@@ -93,6 +93,7 @@ internal sealed partial class CircuitFactory : ICircuitFactory
             resourceCollection);
 
         circuitActivitySource.Init(new Infrastructure.Server.ComponentsActivityLinkStore(renderer));
+        renderer.GetOrCreateWebRootComponentManager();
 
         // In Blazor Server we have already restored the app state, so we can get the handlers from DI.
         // In Blazor Web the state is provided in the first call to UpdateRootComponents, so we need to
