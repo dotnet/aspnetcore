@@ -224,14 +224,9 @@ internal sealed partial class WebAssemblyRenderer : WebRenderer
 
     internal ComponentMarkerKey GetMarkerKey(WebAssemblyComponentState webAssemblyComponentState)
     {
-        if (webAssemblyComponentState.ParentComponentState != null)
-        {
-            return default;
-        }
-
-        var webRootComponentManager = _webRootComponentManager ?? GetOrCreateWebRootComponentManager();
-
-        return webRootComponentManager.GetRootComponentKey(webAssemblyComponentState.ComponentId);
+        return webAssemblyComponentState.ParentComponentState != null ?
+            default :
+            _webRootComponentManager!.GetRootComponentKey(webAssemblyComponentState.ComponentId);
     }
 
     private static partial class Log
