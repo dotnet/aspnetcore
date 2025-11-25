@@ -321,9 +321,13 @@ internal partial class RemoteRenderer : WebRenderer
 
     internal ComponentMarkerKey GetMarkerKey(RemoteComponentState remoteComponentState)
     {
-        return remoteComponentState.ParentComponentState != null ?
-            default :
-            _webRootComponentManager!.GetRootComponentKey(remoteComponentState.ComponentId);
+        if (remoteComponentState.ParentComponentState != null)
+        {
+            return default;
+        }
+
+        var webRootComponentManager = _webRootComponentManager ?? GetOrCreateWebRootComponentManager();
+        return webRootComponentManager.GetRootComponentKey(remoteComponentState.ComponentId);
     }
 
     private void ProcessPendingBatch(string? errorMessageOrNull, UnacknowledgedRenderBatch entry)
