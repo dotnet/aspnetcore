@@ -37,8 +37,10 @@ public static class SchemasEndpointsExtensions
         schemas.MapPost("/location", (LocationContainer location) => { });
         schemas.MapPost("/parent", (ParentObject parent) => Results.Ok(parent));
         schemas.MapPost("/child", (ChildObject child) => Results.Ok(child));
-        schemas.MapPatch("/json-patch", (JsonPatchDocument patchDoc) => Results.NoContent());
-        schemas.MapPatch("/json-patch-generic", (JsonPatchDocument<ParentObject> patchDoc) => Results.NoContent());
+        schemas.MapPatch("/json-patch", (JsonPatchDocument patchDoc) => Results.NoContent())
+            .Accepts<JsonPatchDocument>("application/json-patch+json");
+        schemas.MapPatch("/json-patch-generic", (JsonPatchDocument<ParentObject> patchDoc) => Results.NoContent())
+            .Accepts<JsonPatchDocument<ParentObject>>("application/json-patch+json");
         schemas.MapGet("/custom-iresult", () => new CustomIResultImplementor { Content = "Hello world!" })
             .Produces<CustomIResultImplementor>(200);
 
