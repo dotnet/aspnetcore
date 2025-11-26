@@ -57,6 +57,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.OpenApi;
     using Microsoft.AspNetCore.Mvc.Controllers;
+    using Microsoft.AspNetCore.Mvc.ModelBinding;
     using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.OpenApi;
@@ -389,7 +390,12 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     foreach (var parameterComment in methodComment.Parameters)
                     {
                         var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
-                        var operationParameter = operation.Parameters?.SingleOrDefault(parameter => parameter.Name == parameterComment.Name);
+                        if (parameterInfo is null)
+                        {
+                            continue;
+                        }
+
+                        var operationParameter = GetOperationParameter(operation, parameterInfo);
                         if (operationParameter is not null)
                         {
                             var targetOperationParameter = UnwrapOpenApiParameter(operationParameter);
@@ -497,6 +503,40 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             }
 
             return Task.CompletedTask;
+        }
+
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ParameterInfo parameterInfo)
+        {
+            var parameters = operation.Parameters;
+            if (parameters is null)
+            {
+                return null;
+            }
+
+            var modelNames = parameterInfo
+                .GetCustomAttributes(inherit: false)
+                .OfType<IModelNameProvider>()
+                .Select(p => p.Name)
+                .Append(parameterInfo.Name)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .ToHashSet();
+
+            foreach (var parameter in parameters)
+            {
+                var parameterName = parameter.Name;
+
+                if (string.IsNullOrEmpty(parameterName))
+                {
+                    continue;
+                }
+
+                if (modelNames.Contains(parameterName))
+                {
+                    return parameter;
+                }
+            }
+
+            return null;
         }
 
         private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
