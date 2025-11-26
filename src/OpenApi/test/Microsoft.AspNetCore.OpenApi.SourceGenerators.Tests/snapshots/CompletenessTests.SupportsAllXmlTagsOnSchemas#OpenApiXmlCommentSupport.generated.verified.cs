@@ -475,7 +475,7 @@ T", null, null, false, null, null, null));
                     foreach (var parameterComment in methodComment.Parameters)
                     {
                         var parameterInfo = methodInfo.GetParameters().SingleOrDefault(info => info.Name == parameterComment.Name);
-                        if (parameterInfo is null)
+                        if (parameterInfo is null || parameterInfo.ParameterType == typeof(CancellationToken))
                         {
                             continue;
                         }
