@@ -255,7 +255,7 @@ public record Person(int Id, string Name);
         await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
         {
             var getOperation = document.Paths["/Test"].Operations[HttpMethod.Get];
-            Assert.NotEqual("The cancellation token.", getOperation.RequestBody.Description);
+            Assert.Null(getOperation.RequestBody.Description);
         });
     }
 }
