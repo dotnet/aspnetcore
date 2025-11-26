@@ -622,13 +622,7 @@ T", null, null, false, null, null, null));
                 return null;
             }
 
-            var modelNames = parameterInfo
-                .GetCustomAttributes(inherit: false)
-                .OfType<IModelNameProvider>()
-                .Select(p => p.Name)
-                .Append(parameterInfo.Name)
-                .Where(n => !string.IsNullOrEmpty(n))
-                .ToHashSet();
+            var modelNames = GetModelNames(parameterInfo);
 
             foreach (var parameter in parameters)
             {
@@ -646,6 +640,17 @@ T", null, null, false, null, null, null));
             }
 
             return null;
+        }
+
+        private static IReadOnlySet<string> GetModelNames(ParameterInfo parameterInfo)
+        {
+            return parameterInfo
+                .GetCustomAttributes(inherit: false)
+                .OfType<IModelNameProvider>()
+                .Select(p => p.Name!)
+                .Append(parameterInfo.Name!)
+                .Where(n => !string.IsNullOrEmpty(n))
+                .ToHashSet();
         }
 
         private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
