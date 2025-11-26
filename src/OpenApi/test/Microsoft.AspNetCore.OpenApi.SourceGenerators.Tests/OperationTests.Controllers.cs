@@ -143,47 +143,70 @@ public partial class Program {}
     }
 
     [Fact]
-    public async Task SupportsRouteParametersWithCustomNamesFromControllers()
+    public async Task SupportsParametersWithCustomNamesFromControllers()
     {
-        var source = """
-                     using Microsoft.AspNetCore.Builder;
-                     using Microsoft.AspNetCore.Mvc;
-                     using Microsoft.Extensions.DependencyInjection;
+        var source =
+"""
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
-                     var builder = WebApplication.CreateBuilder();
+var builder = WebApplication.CreateBuilder();
 
-                     builder.Services
-                         .AddControllers()
-                         .AddApplicationPart(typeof(TestController).Assembly);
-                     builder.Services.AddOpenApi();
+builder.Services
+    .AddControllers()
+    .AddApplicationPart(typeof(TestController).Assembly);
+builder.Services.AddOpenApi();
 
-                     var app = builder.Build();
+var app = builder.Build();
 
-                     app.MapControllers();
+app.MapControllers();
 
-                     app.Run();
+app.Run();
 
-                     [ApiController]
-                     [Route("[controller]")]
-                     public class TestController : ControllerBase
-                     {
-                         /// <param name="userId">The id of the user.</param>
-                         [HttpGet("{user_id}")]
-                         public string Get([FromRoute(Name = "user_id")] int userId)
-                         {
-                             return "Hello, World!";
-                         }
-                     }
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase
+{
+    /// <param name="userId">The id of the user.</param>
+    [HttpGet("{user_id}")]
+    public string Get([FromRoute(Name = "user_id")] int userId)
+    {
+        return "Hello, World!";
+    }
 
-                     public partial class Program {}
+    [HttpGet]
+    public IEnumerable<Person> Search(Query query)
+    {
+        return [];
+    }
+}
 
-                     """;
+public partial class Program {}
+
+public record Person(int Id, string Name);
+
+public class Query
+{
+    /// <summary>
+    /// The full name of the person.
+    /// </summary>
+    [FromQuery(Name = "full_name")]
+    public string? Name { get; init; }
+}
+""";
         var generator = new XmlCommentGenerator();
         await SnapshotTestHelper.Verify(source, generator, out var compilation);
         await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
         {
-            var path = document.Paths["/Test/{user_id}"].Operations[HttpMethod.Get];
-            Assert.Equal("The id of the user.", path.Parameters[0].Description);
+            var getOperation = document.Paths["/Test/{user_id}"].Operations[HttpMethod.Get];
+            Assert.Equal("user_id", getOperation.Parameters[0].Name);
+            Assert.Equal("The id of the user.", getOperation.Parameters[0].Description);
+
+            var searchOperation = document.Paths["/Test"].Operations[HttpMethod.Get];
+            Assert.Equal("full_name", searchOperation.Parameters[0].Name);
+            Assert.Equal("The full name of the person.", searchOperation.Parameters[0].Description);
         });
     }
 }
