@@ -993,40 +993,30 @@ public static partial class RequestDelegateFactory
 
         localVariables[factoryContext.ExtraLocals.Count] = WasParamCheckFailureExpr;
 
-        // If filters have been registered, we set the `wasParamCheckFailure` property
-        // but do not return from the invocation to allow the filters to run.
-        if (factoryContext.EndpointBuilder.FilterFactories.Count > 0)
+        // On parameter binding failure:
+        //  - If filters are present (pipeline built -> returnType ValueTask<object?>), run the filter pipeline so that
+        //    filters can observe/modify the 400 response. The handler itself will be skipped by the StatusCode >= 400
+        //    check embedded in the pipeline (see CreateFilterPipeline), allowing filters to customize the error.
+        //  - If no filters are present, just set 400 and short-circuit.
+        Expression failureBranch;
+        if (factoryContext.EndpointBuilder.FilterFactories.Count > 0 && returnType == typeof(ValueTask<object?>))
         {
-            // if (wasParamCheckFailure)
-            // {
-            //   httpContext.Response.StatusCode = 400;
-            // }
-            // return RequestDelegateFactory.ExecuteObjectReturn(invocationPipeline.Invoke(context) as object);
-            var checkWasParamCheckFailureWithFilters = Expression.Block(
-                Expression.IfThen(
-                    WasParamCheckFailureExpr,
-                    Expression.Assign(StatusCodeExpr, Expression.Constant(400))),
-                AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType, factoryContext)
-            );
-
-            checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailureWithFilters;
+            failureBranch = Expression.Block(
+                Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
+                AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType, factoryContext));
         }
         else
         {
-            // wasParamCheckFailure ? {
-            //  httpContext.Response.StatusCode = 400;
-            //  return Task.CompletedTask;
-            // } : {
-            //  return RequestDelegateFactory.ExecuteObjectReturn(invocationPipeline.Invoke(context) as object);
-            // }
-            var checkWasParamCheckFailure = Expression.Condition(
-                WasParamCheckFailureExpr,
-                Expression.Block(
-                    Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
-                    CompletedTaskExpr),
-                AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType, factoryContext));
-            checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
+            failureBranch = Expression.Block(
+                Expression.Assign(StatusCodeExpr, Expression.Constant(400)),
+                CompletedTaskExpr);
         }
+
+        var checkWasParamCheckFailure = Expression.Condition(
+            WasParamCheckFailureExpr,
+            failureBranch,
+            AddResponseWritingToMethodCall(factoryContext.MethodCall!, returnType, factoryContext));
+        checkParamAndCallMethod[factoryContext.ParamCheckExpressions.Count] = checkWasParamCheckFailure;
 
         return Expression.Block(localVariables, checkParamAndCallMethod);
     }
