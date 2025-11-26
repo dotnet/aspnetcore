@@ -146,30 +146,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         }
 
         /// <summary>
-        /// Generates a documentation comment ID for a property given its container type and property name.
-        /// Example: P:Namespace.ContainingType.PropertyName
-        /// </summary>
-        public static string CreateDocumentationId(Type containerType, string propertyName)
-        {
-            if (containerType == null)
-            {
-                throw new ArgumentNullException(nameof(containerType));
-            }
-            if (string.IsNullOrEmpty(propertyName))
-            {
-                throw new ArgumentException("Property name cannot be null or empty.", nameof(propertyName));
-            }
-
-            var sb = new StringBuilder();
-            sb.Append("P:");
-            sb.Append(GetTypeDocId(containerType, includeGenericArguments: false, omitGenericArity: false));
-            sb.Append('.');
-            sb.Append(propertyName);
-
-            return sb.ToString();
-        }
-
-        /// <summary>
         /// Generates a documentation comment ID for a method (or constructor).
         /// For example:
         ///   M:Namespace.ContainingType.MethodName(ParamType1,ParamType2)~ReturnType
@@ -446,10 +422,14 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                     && metadata.ContainerType is { } containerType
                     && metadata.PropertyName is { } propertyName)
                 {
-                    var propertyDocId = DocumentationCommentIdHelper.CreateDocumentationId(containerType, propertyName);
-                    if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyDocId), out var propertyComment))
+                    var propertyInfo = containerType.GetProperty(propertyName);
+                    if (propertyInfo is null)
                     {
-                        var parameter = operation.Parameters?.SingleOrDefault(p => p.Name == metadata.Name);
+                        continue;
+                    }
+                    if (XmlCommentCache.Cache.TryGetValue(DocumentationCommentIdHelper.NormalizeDocId(propertyInfo.CreateDocumentationId()), out var propertyComment))
+                    {
+                        var parameter = GetOperationParameter(operation, propertyInfo);
                         var description = propertyComment.Summary;
                         if (!string.IsNullOrEmpty(description) && !string.IsNullOrEmpty(propertyComment.Value))
                         {
@@ -496,7 +476,17 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return Task.CompletedTask;
         }
 
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, PropertyInfo propertyInfo)
+        {
+            return GetOperationParameter(operation, propertyInfo, propertyInfo.Name!);
+        }
+
         private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ParameterInfo parameterInfo)
+        {
+            return GetOperationParameter(operation, parameterInfo, parameterInfo.Name!);
+        }
+
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ICustomAttributeProvider attributeProvider, string name)
         {
             var parameters = operation.Parameters;
             if (parameters is null)
@@ -504,7 +494,7 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                 return null;
             }
 
-            var modelNames = GetModelNames(parameterInfo);
+            var modelNames = GetModelNames(attributeProvider, name);
 
             foreach (var parameter in parameters)
             {
@@ -524,13 +514,13 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return null;
         }
 
-        private static IReadOnlySet<string> GetModelNames(ParameterInfo parameterInfo)
+        private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider attributeProvider, string name)
         {
-            return parameterInfo
+            return attributeProvider
                 .GetCustomAttributes(inherit: false)
                 .OfType<IModelNameProvider>()
                 .Select(p => p.Name!)
-                .Append(parameterInfo.Name!)
+                .Append(name)
                 .Where(n => !string.IsNullOrEmpty(n))
                 .ToHashSet();
         }
