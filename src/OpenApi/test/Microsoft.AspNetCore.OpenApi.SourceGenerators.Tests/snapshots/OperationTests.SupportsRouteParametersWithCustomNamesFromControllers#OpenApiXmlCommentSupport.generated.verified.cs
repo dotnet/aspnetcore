@@ -490,33 +490,32 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
         private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ParameterInfo parameterInfo)
         {
-            if (operation.Parameters is null)
+            var parameters = operation.Parameters;
+            if (parameters is null)
             {
                 return null;
             }
 
-            var names = parameterInfo.GetCustomAttributes(inherit: false)
+            var modelNames = parameterInfo
+                .GetCustomAttributes(inherit: false)
                 .OfType<IModelNameProvider>()
-                .Select(x => x.Name)
+                .Select(p => p.Name)
                 .Append(parameterInfo.Name)
+                .Where(n => !string.IsNullOrEmpty(n))
                 .ToHashSet();
 
-            foreach (var operationParameter in operation.Parameters)
+            foreach (var parameter in parameters)
             {
-                // Optimize for the most common case
-                if (operationParameter.Name == parameterInfo.Name)
+                var parameterName = parameter.Name;
+
+                if (string.IsNullOrEmpty(parameterName))
                 {
-                    return operationParameter;
+                    continue;
                 }
 
-                // Check all attributes implementing IModelNameProvider for custom names
-                foreach (var modelNameProvider in parameterInfo.GetCustomAttributes(inherit: false).OfType<IModelNameProvider>())
+                if (modelNames.Contains(parameterName))
                 {
-                    var modelName = modelNameProvider.Name;
-                    if (!string.IsNullOrEmpty(modelName) && operationParameter.Name == modelName)
-                    {
-                        return operationParameter;
-                    }
+                    return parameter;
                 }
             }
 
