@@ -122,8 +122,9 @@ jobs:
 
     # Populate internal runtime variables.
     - template: /eng/common/templates/steps/enable-internal-sources.yml
-      parameters:
-        legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+      ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
+        parameters:
+            legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
 
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
@@ -172,7 +173,7 @@ jobs:
             artifactName: AssetManifests
             displayName: 'Publish Merged Manifest'
             retryCountOnTaskFailure: 10 # for any logs being locked
-            isProduction: false
+            sbomEnabled: false # we don't need SBOM for logs
 
     - template: /eng/common/core-templates/steps/publish-build-artifacts.yml
       parameters:
