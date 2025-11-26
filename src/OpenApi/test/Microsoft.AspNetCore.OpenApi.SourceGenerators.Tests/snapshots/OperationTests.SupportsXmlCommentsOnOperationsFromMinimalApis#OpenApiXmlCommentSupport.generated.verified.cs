@@ -400,7 +400,6 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
                         {
                             continue;
                         }
-
                         var operationParameter = GetOperationParameter(operation, parameterInfo);
                         if (operationParameter is not null)
                         {
@@ -517,15 +516,15 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
 
         private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, PropertyInfo propertyInfo)
         {
-            return GetOperationParameter(operation, propertyInfo, propertyInfo.Name!);
+            return GetOperationParameter(operation, propertyInfo, propertyInfo.Name);
         }
 
         private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ParameterInfo parameterInfo)
         {
-            return GetOperationParameter(operation, parameterInfo, parameterInfo.Name!);
+            return GetOperationParameter(operation, parameterInfo, parameterInfo.Name);
         }
 
-        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ICustomAttributeProvider attributeProvider, string name)
+        private static IOpenApiParameter? GetOperationParameter(OpenApiOperation operation, ICustomAttributeProvider attributeProvider, string? name)
         {
             var parameters = operation.Parameters;
             if (parameters is null)
@@ -553,15 +552,21 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
             return null;
         }
 
-        private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider attributeProvider, string name)
+        private static IReadOnlySet<string> GetModelNames(ICustomAttributeProvider attributeProvider, string? name)
         {
-            return attributeProvider
+            var modelNames = attributeProvider
                 .GetCustomAttributes(inherit: false)
                 .OfType<IModelNameProvider>()
+                .Where(p => !string.IsNullOrEmpty(p.Name))
                 .Select(p => p.Name!)
-                .Append(name)
-                .Where(n => !string.IsNullOrEmpty(n))
                 .ToHashSet();
+
+            if (!string.IsNullOrEmpty(name))
+            {
+                modelNames.Add(name);
+            }
+
+            return modelNames;
         }
 
         private static OpenApiParameter UnwrapOpenApiParameter(IOpenApiParameter sourceParameter)
