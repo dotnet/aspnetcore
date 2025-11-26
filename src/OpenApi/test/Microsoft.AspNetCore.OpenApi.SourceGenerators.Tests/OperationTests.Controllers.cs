@@ -211,4 +211,53 @@ public class Query
             Assert.Equal("The full name of the person.", searchOperation.Parameters[0].Description);
         });
     }
+
+    [Fact]
+    public async Task ShouldNotApplyCancellationTokenDocumentationToRequestBody()
+    {
+        var source =
+"""
+using System.Collections.Generic;
+using System.Threading;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+
+var builder = WebApplication.CreateBuilder();
+
+builder.Services
+    .AddControllers()
+    .AddApplicationPart(typeof(TestController).Assembly);
+builder.Services.AddOpenApi();
+
+var app = builder.Build();
+
+app.MapControllers();
+
+app.Run();
+
+[ApiController]
+[Route("[controller]")]
+public class TestController : ControllerBase
+{
+    /// <param name="cancellationToken">The cancellation token.</param>
+    [HttpGet]
+    public ActionResult Create(Person person, CancellationToken cancellationToken)
+    {
+        return Created();
+    }
+}
+
+public partial class Program {}
+
+public record Person(int Id, string Name);
+""";
+        var generator = new XmlCommentGenerator();
+        await SnapshotTestHelper.Verify(source, generator, out var compilation);
+        await SnapshotTestHelper.VerifyOpenApi(compilation, document =>
+        {
+            var getOperation = document.Paths["/Test"].Operations[HttpMethod.Get];
+            Assert.NotEqual("The cancellation token.", getOperation.RequestBody.Description);
+        });
+    }
 }
