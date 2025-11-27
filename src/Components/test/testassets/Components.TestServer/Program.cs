@@ -24,7 +24,6 @@ public class Program
             ["CORS (WASM)"] = (BuildWebHost<CorsStartup>(CreateAdditionalArgs(args)), "/subdir"),
             ["Prerendering (Server-side)"] = (BuildWebHost<PrerenderedStartup>(CreateAdditionalArgs(args)), "/prerendered"),
             ["Razor Component Endpoints"] = (BuildWebHost<RazorComponentEndpointsStartup<App>>(CreateAdditionalArgs(args)), "/subdir"),
-            ["Razor Component Endpoints with JS Root Component"] = (BuildWebHost<RazorComponentEndpointsStartup<App>>(CreateAdditionalArgs([.. args, "--RegisterDynamicJSRootComponent", "true"])), "/subdir"),
             ["Deferred component content (Server-side)"] = (BuildWebHost<DeferredComponentContentStartup>(CreateAdditionalArgs(args)), "/deferred-component-content"),
             ["Locked navigation (Server-side)"] = (BuildWebHost<LockedNavigationStartup>(CreateAdditionalArgs(args)), "/locked-navigation"),
             ["Client-side with fallback"] = (BuildWebHost<StartupWithMapFallbackToClientSideBlazor>(CreateAdditionalArgs(args)), "/fallback"),
