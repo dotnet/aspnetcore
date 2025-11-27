@@ -15,6 +15,7 @@ public partial class ValidationsGeneratorTests : ValidationsGeneratorTestBase
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -31,6 +32,7 @@ builder.Services.AddSingleton<TestService>();
 var app = builder.Build();
 
 app.MapPost("/validatable-record", (ValidatableRecord validatableRecord) => Results.Ok("Passed"!));
+app.MapPost("/validatable-record-with-json-property-name", (ValidatableRecordWithJsonPropertyNames validatableRecord) => Results.Ok("Passed"!));
 
 app.Run();
 
@@ -95,7 +97,20 @@ public record ValidatableRecord(
     [DerivedValidation, Range(10, 100)]
     int PropertyWithMultipleAttributes = 10,
     [FromServices] [Required] TestService ServiceProperty = null!, // This should be ignored because of [FromServices]
-    [FromKeyedServices("serviceKey")] [Range(10, 100)] int KeyedServiceProperty = 5 // This should be ignored because of [FromKeyedServices]
+    [FromKeyedServices("serviceKey")] [Range(10, 100)] int KeyedServiceProperty = 5, // This should be ignored because of [FromKeyedServices]
+    [Display(Name = "display-name")] [Range(10, 100)] int IntegerWithRangeAndDisplay = 10
+);
+
+public record ValidatableRecordWithJsonPropertyNames(
+    [Range(10, 100)]
+    int DefaultPropertyName = 10,
+    [Range(10, 100)]
+    [property: JsonPropertyName("custom-property-name")]
+    int CustomJsonPropertyName = 20,
+    [Display(Name = "display-name")]
+    [Range(10, 100)]
+    [property: JsonPropertyName("custom-property-name-with-display-name")]
+    int CustomJsonPropertyNameWithDisplayName = 30
 );
 """;
         await Verify(source, out var compilation);
