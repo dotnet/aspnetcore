@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Components.TestServer.RazorComponents;
+using Microsoft.AspNetCore.Components.E2ETest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests;
@@ -1308,7 +1309,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
         // Verify the elements were preserved if and only if they should be
         var shouldPreserveElements = !suppressEnhancedNavigation && !forceLoad;
-        Assert.Equal(shouldPreserveElements, !EnhancedNavigationTestUtil.IsElementStale(originalNavElem));
+        Assert.Equal(shouldPreserveElements, !originalNavElem.IsStale());
     }
 
     private void BlockWebAssemblyResourceLoad()
