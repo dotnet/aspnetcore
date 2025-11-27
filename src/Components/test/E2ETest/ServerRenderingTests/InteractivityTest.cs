@@ -1308,7 +1308,7 @@ public class InteractivityTest : ServerTestBase<BasicTestAppServerSiteFixture<Ra
 
         // Verify the elements were preserved if and only if they should be
         var shouldPreserveElements = !suppressEnhancedNavigation && !forceLoad;
-        Assert.Equal(shouldPreserveElements, !EnhancedNavigationTestUtil.IsElementStale(originalNavElem));
+        Assert.Equal(shouldPreserveElements, !originalNavElem.IsStale());
     }
 
     private void BlockWebAssemblyResourceLoad()
