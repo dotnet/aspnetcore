@@ -29,8 +29,6 @@ internal sealed class Startup
         app.UseDeveloperExceptionPage();
         EnableConfiguredPathbase(app, configuration);
 
-        app.UseWebAssemblyDebugging();
-
         var webHostEnvironment = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
         var applyCopHeaders = configuration.GetValue<bool>("ApplyCopHeaders");
 
