@@ -1,8 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
+using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
+using Microsoft.AspNetCore.DataProtection.Tests;
+using Microsoft.AspNetCore.DataProtection.Tests.Internal;
+using Microsoft.AspNetCore.InternalTesting;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.Managed;
 
@@ -102,5 +109,64 @@ public class ManagedAuthenticatedEncryptorTests
 
         string retValAsString = Convert.ToBase64String(retVal);
         Assert.Equal("AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh+36j4yWJOjBgOJxmYDYwhLnYqFxw+9mNh/cudyPrWmJmw4d/dmGaLJLLut2udiAAA=", retValAsString);
+    }
+
+    [Theory]
+    [InlineData(128, "SHA256")]
+    [InlineData(192, "SHA256")]
+    [InlineData(256, "SHA256")]
+    [InlineData(128, "SHA512")]
+    [InlineData(192, "SHA512")]
+    [InlineData(256, "SHA512")]
+    public void Roundtrip_TryEncryptDecrypt_CorrectlyEstimatesDataLength(int symmetricKeySizeBits, string hmacAlgorithm)
+    {
+        Secret kdk = new Secret(new byte[512 / 8]);
+
+        Func<KeyedHashAlgorithm> validationAlgorithmFactory = hmacAlgorithm switch
+        {
+            "SHA256" => () => new HMACSHA256(),
+            "SHA512" => () => new HMACSHA512(),
+            _ => throw new ArgumentException($"Unsupported HMAC algorithm: {hmacAlgorithm}")
+        };
+
+        IAuthenticatedEncryptor encryptor = new ManagedAuthenticatedEncryptor(kdk,
+            symmetricAlgorithmFactory: Aes.Create,
+            symmetricAlgorithmKeySizeInBytes: symmetricKeySizeBits / 8,
+            validationAlgorithmFactory: validationAlgorithmFactory);
+
+        ArraySegment<byte> plaintext = new ArraySegment<byte>(Encoding.UTF8.GetBytes("plaintext"));
+        ArraySegment<byte> aad = new ArraySegment<byte>(Encoding.UTF8.GetBytes("aad"));
+
+        RoundtripEncryptionHelpers.AssertTryEncryptTryDecryptParity(encryptor, plaintext, aad);
+    }
+
+    [Fact]
+    public void TimeLimitedDataProtector_WithJsonPayloadNearBufferBoundary_SucceedsWithoutBufferException()
+    {
+        // This test reproduces the issue from ServerComponentDeserializerTest.DoesNotParseMarkersWithUnknownComponentTypeAssembly
+        // which uses ITimeLimitedDataProtector with ManagedAuthenticatedEncryptor under the hood.
+        // The buffer boundary condition occurs when the output size calculation results in a value
+        // that is close to or exceeds 255 bytes (the initial stackalloc size).
+
+        // Arrange
+        var dataProtectionProvider = new TestsDataProtectionProvider<ManagedAuthenticatedEncryptorConfiguration>();
+        var protector = dataProtectionProvider
+            .CreateProtector("test-purpose")
+            .ToTimeLimitedDataProtector();
+
+        // The exact JSON payload from the failing test scenario
+        var jsonPayload = @"{""sequence"":0,""assemblyName"":""UnknownAssembly"",""typeName"":""System.String"",""parameterDefinitions"":[],""parameterValues"":[],""invocationId"":""0db30695-0ec3-4289-b3cd-247cbe91ccc3""}";
+
+        // Act - This should not throw "Cannot advance past the end of the buffer"
+        var protectedData = protector.Protect(jsonPayload, TimeSpan.FromSeconds(30));
+
+        // Assert
+        Assert.NotNull(protectedData);
+        Assert.NotEmpty(protectedData);
+
+        // Verify the round-trip works
+        var unprotectedData = protector.Unprotect(protectedData, out var expiration);
+        Assert.Equal(jsonPayload, unprotectedData);
+        Assert.True(expiration > DateTimeOffset.UtcNow, "Expiration should be in the future");
     }
 }
