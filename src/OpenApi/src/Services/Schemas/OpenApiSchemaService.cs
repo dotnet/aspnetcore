@@ -12,6 +12,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Schema;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Http.Json;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -58,9 +59,11 @@ internal sealed class OpenApiSchemaService(
         TransformSchemaNode = (context, schema) =>
         {
             var type = context.TypeInfo.Type;
-            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader and FileContentResult
+            // Fix up schemas generated for IFormFile, IFormFileCollection, Stream, PipeReader,
+            // FileContentResult, FileStreamResult, FileContentHttpResult and FileContentHttpResult
             // that appear as properties within complex types.
-            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader) || type == typeof(Mvc.FileContentResult))
+            if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
+                || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult) || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
             {
                 schema = new JsonObject
                 {
