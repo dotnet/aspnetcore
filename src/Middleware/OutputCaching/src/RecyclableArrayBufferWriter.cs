@@ -32,11 +32,12 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
     public void Dispose()
     {
         var tmp = _buffer;
+        var count = _index;
         _index = 0;
         _buffer = Array.Empty<T>();
         if (tmp.Length != 0)
         {
-            ArrayPool<T>.Shared.Return(tmp);
+            ArrayPool<T>.Shared.ReturnAndClearReferences(tmp, count);
         }
     }
 
@@ -120,7 +121,7 @@ internal sealed class RecyclableArrayBufferWriter<T> : IBufferWriter<T>, IDispos
             oldArray.AsSpan(0, _index).CopyTo(_buffer);
             if (oldArray.Length != 0)
             {
-                ArrayPool<T>.Shared.Return(oldArray);
+                ArrayPool<T>.Shared.ReturnAndClearReferences(oldArray, _index);
             }
         }
 

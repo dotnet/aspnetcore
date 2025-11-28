@@ -17,7 +17,7 @@ internal abstract class ArrayPoolBufferAdapter<TCollection, TCollectionFactory, 
         {
             var newBuffer = ArrayPool<TElement>.Shared.Rent(buffer.Data.Length * 2);
             Array.Copy(buffer.Data, newBuffer, buffer.Data.Length);
-            ArrayPool<TElement>.Shared.Return(buffer.Data);
+            ArrayPool<TElement>.Shared.ReturnAndClearReferences(buffer.Data, buffer.Count);
             buffer.Data = newBuffer;
         }
 
@@ -28,7 +28,7 @@ internal abstract class ArrayPoolBufferAdapter<TCollection, TCollectionFactory, 
     public static TCollection ToResult(PooledBuffer buffer)
     {
         var result = TCollectionFactory.ToResultCore(buffer.Data, buffer.Count);
-        ArrayPool<TElement>.Shared.Return(buffer.Data);
+        ArrayPool<TElement>.Shared.ReturnAndClearReferences(buffer.Data, buffer.Count);
         return result;
     }
 
