@@ -63,7 +63,8 @@ internal sealed class OpenApiSchemaService(
             // FileContentResult, FileStreamResult, FileContentHttpResult and FileStreamHttpResult
             // that appear as properties within complex types.
             if (type == typeof(IFormFile) || type == typeof(Stream) || type == typeof(PipeReader)
-                || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult) || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
+                || type == typeof(Mvc.FileContentResult) || type == typeof(Mvc.FileStreamResult)
+                || type == typeof(FileContentHttpResult) || type == typeof(FileStreamHttpResult))
             {
                 schema = new JsonObject
                 {

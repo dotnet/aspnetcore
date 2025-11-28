@@ -1103,7 +1103,7 @@ public partial class OpenApiSchemaServiceTests : OpenApiDocumentServiceTestBase
     }
 
     [Fact]
-    public async Task GetOpenApiResponse_HandlesFileContentStreamResultTypeResponse()
+    public async Task GetOpenApiResponse_HandlesFileStreamHttpResultTypeResponse()
     {
         // Arrange
         var builder = CreateBuilder();
