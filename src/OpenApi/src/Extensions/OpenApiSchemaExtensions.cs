@@ -18,4 +18,21 @@ internal static class OpenApiSchemaExtensions
             ]
         };
     }
+
+    public static bool IsComponentizedSchema(this OpenApiSchema schema)
+        => schema.IsComponentizedSchema(out _);
+
+    public static bool IsComponentizedSchema(this OpenApiSchema schema, out string schemaId)
+    {
+        if(schema.Metadata is not null
+            && schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var schemaIdAsObject)
+            && schemaIdAsObject is string schemaIdString
+            && !string.IsNullOrEmpty(schemaIdString))
+        {
+            schemaId = schemaIdString;
+            return true;
+        }
+        schemaId = string.Empty;
+        return false;
+    }
 }
