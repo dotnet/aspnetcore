@@ -8,7 +8,6 @@
       Client caching isn't part of our performance measurement, so we'll skip it.
     -->
     <BlazorCacheBootResources>false</BlazorCacheBootResources>
-    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
   </PropertyGroup>
 
   <ItemGroup>
