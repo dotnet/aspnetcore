@@ -191,7 +191,8 @@ internal class TestUtils
         IOutputCacheStore? cache = null,
         OutputCacheOptions? options = null,
         TestSink? testSink = null,
-        IOutputCacheKeyProvider? keyProvider = null
+        IOutputCacheKeyProvider? keyProvider = null,
+        IOutputCachePolicyProvider? policyProvider = null
         )
     {
         if (next == null)
@@ -210,21 +211,28 @@ internal class TestUtils
         {
             keyProvider = new OutputCacheKeyProvider(new DefaultObjectPoolProvider(), Options.Create(options));
         }
+        if (policyProvider == null)
+        {
+            policyProvider = new DefaultOutputCachePolicyProvider(Options.Create(options));
+        }
 
         return new OutputCacheMiddleware(
             next,
             Options.Create(options),
             testSink == null ? NullLoggerFactory.Instance : new TestLoggerFactory(testSink, true),
             cache,
+            policyProvider,
             keyProvider);
     }
 
     internal static OutputCacheContext CreateTestContext(HttpContext? httpContext = null, IOutputCacheStore? cache = null, OutputCacheOptions? options = null, ITestSink? testSink = null)
     {
+        var actualOptions = options ?? new OutputCacheOptions();
         var serviceProvider = new Mock<IServiceProvider>();
         serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new SimpleTestOutputCache());
-        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(options ?? new OutputCacheOptions()));
+        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(actualOptions));
         serviceProvider.Setup(x => x.GetService(typeof(ILogger<OutputCacheMiddleware>))).Returns(testSink == null ? NullLogger.Instance : new TestLogger("OutputCachingTests", testSink, true));
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCachePolicyProvider))).Returns(new DefaultOutputCachePolicyProvider(Options.Create(actualOptions)));
 
         httpContext ??= new DefaultHttpContext();
         httpContext.RequestServices = serviceProvider.Object;
@@ -241,10 +249,12 @@ internal class TestUtils
 
     internal static OutputCacheContext CreateUninitializedContext(HttpContext? httpContext = null, IOutputCacheStore? cache = null, OutputCacheOptions? options = null, ITestSink? testSink = null)
     {
+        var actualOptions = options ?? new OutputCacheOptions();
         var serviceProvider = new Mock<IServiceProvider>();
         serviceProvider.Setup(x => x.GetService(typeof(IOutputCacheStore))).Returns(cache ?? new SimpleTestOutputCache());
-        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(options ?? new OutputCacheOptions()));
+        serviceProvider.Setup(x => x.GetService(typeof(IOptions<OutputCacheOptions>))).Returns(Options.Create(actualOptions));
         serviceProvider.Setup(x => x.GetService(typeof(ILogger<OutputCacheMiddleware>))).Returns(testSink == null ? NullLogger.Instance : new TestLogger("OutputCachingTests", testSink, true));
+        serviceProvider.Setup(x => x.GetService(typeof(IOutputCachePolicyProvider))).Returns(new DefaultOutputCachePolicyProvider(Options.Create(actualOptions)));
 
         httpContext ??= new DefaultHttpContext();
         httpContext.RequestServices = serviceProvider.Object;
