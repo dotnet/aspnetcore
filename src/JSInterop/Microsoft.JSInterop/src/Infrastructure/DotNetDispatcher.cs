@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Text.Json;
@@ -55,7 +56,7 @@ public static class DotNetDispatcher
             targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
         }
 
-        var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson);
+        var syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, isAsyncContext: false);
         if (syncResult == null)
         {
             return null;
@@ -94,7 +95,7 @@ public static class DotNetDispatcher
                 targetInstance = jsRuntime.GetObjectReference(invocationInfo.DotNetObjectId);
             }
 
-            syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson);
+            syncResult = InvokeSynchronously(jsRuntime, invocationInfo, targetInstance, argsJson, isAsyncContext: true);
         }
         catch (Exception ex)
         {
@@ -153,7 +154,7 @@ public static class DotNetDispatcher
         jsRuntime.EndInvokeDotNet(invocationInfo, new DotNetInvocationResult(resultJson));
     }
 
-    private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson)
+    private static object? InvokeSynchronously(JSRuntime jsRuntime, in DotNetInvocationInfo callInfo, IDotNetObjectReference? objectReference, string argsJson, bool isAsyncContext)
     {
         var assemblyName = callInfo.AssemblyName;
         var methodIdentifier = callInfo.MethodIdentifier;
@@ -183,6 +184,13 @@ public static class DotNetDispatcher
             (methodInfo, parameterTypes) = GetCachedMethodInfo(objectReference, methodIdentifier);
         }
 
+        // If the method is async but is not called asynchronously, throw to indicate the misuse
+        // We need to check the asyncContext flag since this method is used for both sync and async calls
+        if (!isAsyncContext && IsAsyncMethod(methodInfo))
+        {
+            throw new InvalidOperationException($"The method '{methodIdentifier}' cannot be invoked synchronously because it is asynchronous. Use '{nameof(BeginInvokeDotNet)}' instead.");
+        }
+
         var suppliedArgs = ParseArguments(jsRuntime, methodIdentifier, argsJson, parameterTypes);
 
         try
@@ -210,6 +218,8 @@ public static class DotNetDispatcher
             jsRuntime.ByteArraysToBeRevived.Clear();
         }
     }
+
+    private static bool IsAsyncMethod(MethodInfo methodInfo) => methodInfo.GetCustomAttribute<AsyncStateMachineAttribute>() != null;
 
     [UnconditionalSuppressMessage("Trimming", "IL2026", Justification = "We expect application code is configured to ensure return types of JSInvokable methods are retained.")]
     internal static object?[] ParseArguments(JSRuntime jsRuntime, string methodIdentifier, string arguments, Type[] parameterTypes)
