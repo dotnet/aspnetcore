@@ -31,6 +31,7 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     /// Creates a new <see cref="RemoteNavigationManager"/> instance.
     /// </summary>
     /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
+    /// <param name="options">The configured <see cref="NavigationManagerOptions"/>.</param>
     public RemoteNavigationManager(ILogger<RemoteNavigationManager> logger, IOptions<NavigationManagerOptions> options)
     {
         _logger = logger;
