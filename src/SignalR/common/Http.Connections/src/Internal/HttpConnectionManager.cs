@@ -26,6 +26,9 @@ internal sealed partial class HttpConnectionManager
     private readonly ILogger<HttpConnectionContext> _connectionLogger;
     private readonly TimeSpan _disconnectTimeout;
     private readonly HttpConnectionsMetrics _metrics;
+    private readonly IHostApplicationLifetime _applicationLifetime;
+    private readonly Lock _closeLock = new();
+    private bool _closed;
 
     public HttpConnectionManager(ILoggerFactory loggerFactory, IHostApplicationLifetime appLifetime, IOptions<ConnectionOptions> connectionOptions, HttpConnectionsMetrics metrics)
     {
@@ -34,6 +37,7 @@ internal sealed partial class HttpConnectionManager
         _nextHeartbeat = new PeriodicTimer(_heartbeatTickRate);
         _disconnectTimeout = connectionOptions.Value.DisconnectTimeout ?? ConnectionOptionsSetup.DefaultDisconectTimeout;
         _metrics = metrics;
+        _applicationLifetime = appLifetime;
 
         // Register these last as the callbacks could run immediately
         appLifetime.ApplicationStarted.Register(Start);
@@ -81,6 +85,12 @@ internal sealed partial class HttpConnectionManager
         var connection = new HttpConnectionContext(id, connectionToken, _connectionLogger, metricsContext, pair.Application, pair.Transport, options, useStatefulReconnect);
 
         _connections.TryAdd(connectionToken, connection);
+
+        // If the application is stopping don't allow new connections to be created
+        if (_applicationLifetime.ApplicationStopping.IsCancellationRequested || _closed)
+        {
+            CloseConnections();
+        }
 
         return connection;
     }
@@ -184,20 +194,28 @@ internal sealed partial class HttpConnectionManager
 
     public void CloseConnections()
     {
-        // Stop firing the timer
-        _nextHeartbeat.Dispose();
-
-        var tasks = new List<Task>(_connections.Count);
-
-        // REVIEW: In the future we can consider a hybrid where we first try to wait for shutdown
-        // for a certain time frame then after some grace period we shutdown more aggressively
-        foreach (var c in _connections)
+        lock (_closeLock)
         {
-            // We're shutting down so don't wait for closing the application
-            tasks.Add(DisposeAndRemoveAsync(c.Value, closeGracefully: false, HttpConnectionStopStatus.AppShutdown));
-        }
+            if (!_closed)
+            {
+                // Stop firing the timer
+                _nextHeartbeat.Dispose();
 
-        Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
+                _closed = true;
+            }
+
+            var tasks = new List<Task>(_connections.Count);
+
+            // REVIEW: In the future we can consider a hybrid where we first try to wait for shutdown
+            // for a certain time frame then after some grace period we shutdown more aggressively
+            foreach (var c in _connections)
+            {
+                // We're shutting down so don't wait for closing the application
+                tasks.Add(DisposeAndRemoveAsync(c.Value, closeGracefully: false, HttpConnectionStopStatus.AppShutdown));
+            }
+
+            Task.WaitAll(tasks.ToArray(), TimeSpan.FromSeconds(5));
+        }
     }
 
     internal async Task DisposeAndRemoveAsync(HttpConnectionContext connection, bool closeGracefully, HttpConnectionStopStatus status)
