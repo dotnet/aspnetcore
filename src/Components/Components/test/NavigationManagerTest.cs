@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.Net.Http;
@@ -82,6 +83,21 @@ public class NavigationManagerTest
         Assert.Equal(
             $"The URI '{absoluteUri}' is not contained by the base URI '{baseUri}'.",
             ex.Message);
+    }
+
+    [Fact]
+    public void ToBaseRelativePath_HonorsConfiguredPathBaseComparison()
+    {
+        var navigationManager = new TestNavigationManager("https://example.com/dashboard/", "https://example.com/dashboard/");
+
+        var ex = Assert.Throws<ArgumentException>(() => navigationManager.ToBaseRelativePath("https://example.com/DaShBoArD"));
+        Assert.Equal("The URI 'https://example.com/DaShBoArD' is not contained by the base URI 'https://example.com/dashboard/'.", ex.Message);
+
+        navigationManager.SetPathBaseComparison(StringComparison.OrdinalIgnoreCase);
+
+        var result = navigationManager.ToBaseRelativePath("https://example.com/DaShBoArD");
+
+        Assert.Equal(string.Empty, result);
     }
 
     [Theory]
@@ -905,6 +921,11 @@ public class NavigationManagerTest
 
         public async Task<bool> RunNotifyLocationChangingAsync(string uri, string state, bool isNavigationIntercepted)
             => await NotifyLocationChangingAsync(uri, state, isNavigationIntercepted);
+
+        public void SetPathBaseComparison(StringComparison comparison)
+        {
+            PathBaseComparison = comparison;
+        }
 
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
