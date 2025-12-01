@@ -52,6 +52,11 @@ public sealed class WebAssemblyHostBuilder
 
         WebAssemblyCultureProvider.Initialize();
 
+        // Add environment variables to configuration by default.
+        // This aligns WebAssembly behavior with server-side ASP.NET Core applications
+        // where environment variables are automatically included in IConfiguration.
+        builder.Configuration.AddEnvironmentVariables();
+
         // Right now we don't have conventions or behaviors that are specific to this method
         // however, making this the default for the template allows us to add things like that
         // in the future, while giving `new WebAssemblyHostBuilder` as an opt-out of opinionated

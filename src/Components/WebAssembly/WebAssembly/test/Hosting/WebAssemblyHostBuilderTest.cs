@@ -310,4 +310,35 @@ public class WebAssemblyHostBuilderTest
     {
         public CircularServiceB(CircularServiceA serviceA) { }
     }
+
+    [Fact]
+    public void Configuration_IncludesEnvironmentVariables_WhenAddedExplicitly()
+    {
+        // Arrange
+        var testEnvVarKey = $"TEST_WASM_CONFIG_{Guid.NewGuid():N}";
+        var testEnvVarValue = "test-value-12345";
+
+        try
+        {
+            // Set an environment variable before creating the builder
+            Environment.SetEnvironmentVariable(testEnvVarKey, testEnvVarValue);
+
+            var builder = new WebAssemblyHostBuilder(new TestInternalJSImportMethods());
+
+            // This mimics what CreateDefault now does
+            builder.Configuration.AddEnvironmentVariables();
+
+            // Act
+            var host = builder.Build();
+
+            // Assert
+            var configuration = host.Services.GetRequiredService<IConfiguration>();
+            Assert.Equal(testEnvVarValue, configuration[testEnvVarKey]);
+        }
+        finally
+        {
+            // Clean up the environment variable
+            Environment.SetEnvironmentVariable(testEnvVarKey, null);
+        }
+    }
 }
