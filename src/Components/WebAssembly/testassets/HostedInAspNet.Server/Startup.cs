@@ -3,6 +3,9 @@
 
 namespace HostedInAspNet.Server;
 
+using System;
+using Microsoft.AspNetCore.Components;
+
 public class Startup
 {
     public Startup(IConfiguration configuration)
@@ -16,6 +19,14 @@ public class Startup
     // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
     public void ConfigureServices(IServiceCollection services)
     {
+        var mapAlternativePathApp = Configuration.GetValue<bool>("UseAlternativeBasePath");
+        if (mapAlternativePathApp)
+        {
+            services.Configure<NavigationManagerOptions>(options =>
+            {
+                options.PathBaseComparison = StringComparison.OrdinalIgnoreCase;
+            });
+        }
         services.AddSingleton<BootResourceRequestLog>();
     }
 

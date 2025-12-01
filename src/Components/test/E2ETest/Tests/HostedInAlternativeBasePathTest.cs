@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Tests;
@@ -22,15 +23,14 @@ public class HostedInAlternativeBasePathTest : ServerTestBase<AspNetSiteServerFi
         serverFixture.Environment = AspNetEnvironment.Development;
     }
 
-    protected override void InitializeAsyncCore()
+    [Theory]
+    [InlineData("/app/")]
+    [InlineData("/APP/")]
+    public void CanLoadBlazorAppFromSubPath(string path)
     {
-        Navigate("/app/");
+        Navigate(path);
         WaitUntilLoaded();
-    }
 
-    [Fact]
-    public void CanLoadBlazorAppFromSubPath()
-    {
         Assert.Equal("App loaded on custom path", Browser.Title);
         Assert.Empty(Browser.GetBrowserLogs(LogLevel.Severe));
     }
