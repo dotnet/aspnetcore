@@ -256,15 +256,26 @@ public abstract class NavigationManager
         return new Uri(_baseUri!, relativeUri);
     }
 
+    /// <summary>Holds the active <see cref="StringComparison"/> used for base URI matching.</summary>
+    private StringComparison _pathBaseComparison = StringComparison.Ordinal;
+
+    /// <summary>
+    /// Sets the string comparison used for base URI matching.
+    /// </summary>
+    protected internal StringComparison PathBaseComparison
+    {
+        set => _pathBaseComparison = value;
+    }
+
     /// <summary>
     /// Given a base URI (e.g., one previously returned by <see cref="BaseUri"/>),
     /// converts an absolute URI into one relative to the base URI prefix.
     /// </summary>
     /// <param name="uri">An absolute URI that is within the space of the base URI.</param>
-    /// <returns>A relative URI path.</returns>
+    /// <returns>The portion of <paramref name="uri"/> that follows the <see cref="BaseUri"/> prefix.</returns>
     public string ToBaseRelativePath(string uri)
     {
-        if (uri.StartsWith(_baseUri!.OriginalString, StringComparison.Ordinal))
+        if (uri.StartsWith(_baseUri!.OriginalString, _pathBaseComparison))
         {
             // The absolute URI must be of the form "{baseUri}something" (where
             // baseUri ends with a slash), and from that we return "something"
@@ -273,7 +284,7 @@ public abstract class NavigationManager
 
         var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
         var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
-        if (_baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(_baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
+        if (_baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(_baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), _pathBaseComparison))
         {
             // Special case: for the base URI "/something/", if you're at
             // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -290,7 +301,7 @@ public abstract class NavigationManager
 
     internal ReadOnlySpan<char> ToBaseRelativePath(ReadOnlySpan<char> uri)
     {
-        if (MemoryExtensions.StartsWith(uri, _baseUri!.OriginalString.AsSpan(), StringComparison.Ordinal))
+        if (MemoryExtensions.StartsWith(uri, _baseUri!.OriginalString.AsSpan(), _pathBaseComparison))
         {
             // The absolute URI must be of the form "{baseUri}something" (where
             // baseUri ends with a slash), and from that we return "something"
@@ -299,7 +310,7 @@ public abstract class NavigationManager
 
         var pathEndIndex = uri.IndexOfAny('#', '?');
         var uriPathOnly = pathEndIndex < 0 ? uri : uri[..pathEndIndex];
-        if (_baseUri.OriginalString.EndsWith('/') && MemoryExtensions.Equals(uriPathOnly, _baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
+        if (_baseUri.OriginalString.EndsWith('/') && MemoryExtensions.Equals(uriPathOnly, _baseUri.OriginalString.AsSpan(0, _baseUri.OriginalString.Length - 1), _pathBaseComparison))
         {
             // Special case: for the base URI "/something/", if you're at
             // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -553,9 +564,9 @@ public abstract class NavigationManager
         }
     }
 
-    private static bool TryGetLengthOfBaseUriPrefix(Uri baseUri, string uri, out int length)
+    private bool TryGetLengthOfBaseUriPrefix(Uri baseUri, string uri, out int length)
     {
-        if (uri.StartsWith(baseUri.OriginalString, StringComparison.Ordinal))
+        if (uri.StartsWith(baseUri.OriginalString, _pathBaseComparison))
         {
             // The absolute URI must be of the form "{baseUri}something" (where
             // baseUri ends with a slash), and from that we return "something"
@@ -565,7 +576,7 @@ public abstract class NavigationManager
 
         var pathEndIndex = uri.AsSpan().IndexOfAny('#', '?');
         var uriPathOnly = pathEndIndex < 0 ? uri : uri.AsSpan(0, pathEndIndex);
-        if (baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(baseUri.OriginalString.AsSpan(0, baseUri.OriginalString.Length - 1), StringComparison.Ordinal))
+        if (baseUri.OriginalString.EndsWith('/') && uriPathOnly.Equals(baseUri.OriginalString.AsSpan(0, baseUri.OriginalString.Length - 1), _pathBaseComparison))
         {
             // Special case: for the base URI "/something/", if you're at
             // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -581,7 +592,7 @@ public abstract class NavigationManager
         return false;
     }
 
-    private static void Validate(Uri? baseUri, string uri)
+    private void Validate(Uri? baseUri, string uri)
     {
         if (baseUri == null || uri == null)
         {

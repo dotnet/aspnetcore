@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using Interop = Microsoft.AspNetCore.Components.Web.BrowserNavigationManagerInterop;
 
@@ -30,9 +31,10 @@ internal sealed partial class RemoteNavigationManager : NavigationManager, IHost
     /// Creates a new <see cref="RemoteNavigationManager"/> instance.
     /// </summary>
     /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
-    public RemoteNavigationManager(ILogger<RemoteNavigationManager> logger)
+    public RemoteNavigationManager(ILogger<RemoteNavigationManager> logger, IOptions<NavigationManagerOptions> options)
     {
         _logger = logger;
+        PathBaseComparison = options.Value.PathBaseComparison;
     }
 
     /// <summary>

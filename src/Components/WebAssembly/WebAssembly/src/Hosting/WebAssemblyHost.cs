@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
@@ -53,6 +54,12 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         _configuration = builder.Configuration;
         _rootComponents = builder.RootComponents;
         _persistedState = persistedState;
+
+        var navigationManagerOptions = services.GetService<IOptions<NavigationManagerOptions>>();
+        if (navigationManagerOptions is not null)
+        {
+            WebAssemblyNavigationManager.Instance.ApplyOptions(navigationManagerOptions.Value);
+        }
     }
 
     /// <summary>

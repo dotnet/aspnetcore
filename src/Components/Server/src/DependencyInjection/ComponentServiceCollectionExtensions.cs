@@ -38,6 +38,7 @@ public static class ComponentServiceCollectionExtensions
         var builder = new DefaultServerSideBlazorBuilder(services);
 
         services.AddDataProtection();
+        services.AddOptions<NavigationManagerOptions>();
 
         services.TryAddScoped<ProtectedLocalStorage>();
         services.TryAddScoped<ProtectedSessionStorage>();

@@ -26,6 +26,11 @@ internal sealed partial class WebAssemblyNavigationManager : NavigationManager
         Initialize(baseUri, uri);
     }
 
+    public void ApplyOptions(NavigationManagerOptions options)
+    {
+        PathBaseComparison = options.PathBaseComparison;
+    }
+
     public void CreateLogger(ILoggerFactory loggerFactory)
     {
         if (_logger is not null)

@@ -318,6 +318,7 @@ public sealed class WebAssemblyHostBuilder
     internal void InitializeDefaultServices()
     {
         Services.AddSingleton<IJSRuntime>(DefaultWebAssemblyJSRuntime.Instance);
+        Services.AddOptions<NavigationManagerOptions>();
         Services.AddSingleton<NavigationManager>(WebAssemblyNavigationManager.Instance);
         Services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
         Services.AddSingleton<IScrollToLocationHash>(WebAssemblyScrollToLocationHash.Instance);

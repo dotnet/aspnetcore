@@ -1,1 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Components.NavigationManagerOptions
+Microsoft.AspNetCore.Components.NavigationManagerOptions.NavigationManagerOptions() -> void
+Microsoft.AspNetCore.Components.NavigationManagerOptions.PathBaseComparison.get -> System.StringComparison
+Microsoft.AspNetCore.Components.NavigationManagerOptions.PathBaseComparison.set -> void
+Microsoft.AspNetCore.Components.NavigationManager.PathBaseComparison.set -> void
