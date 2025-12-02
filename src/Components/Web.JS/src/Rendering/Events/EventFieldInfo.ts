@@ -33,5 +33,10 @@ function getFormFieldData(elem: Element) {
     return { value: elem.value };
   }
 
+  // Support contenteditable elements - use textContent as the value
+  if (elem instanceof HTMLElement && elem.isContentEditable) {
+    return { value: elem.textContent || '' };
+  }
+
   return null;
 }
