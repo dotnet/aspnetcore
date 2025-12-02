@@ -1,31 +1,34 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.Components.Rendering;
-
 namespace Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.Rendering;
 
 /// <summary>
 /// Renders a &lt;base&gt; element whose <c>href</c> value matches the current request path base.
 /// </summary>
-public sealed class BasePath : ComponentBase
+public sealed class BasePath : IComponent
 {
-    private string _href = "/";
+    private RenderHandle _renderHandle;
 
     [Inject]
     private NavigationManager NavigationManager { get; set; } = default!;
 
-    /// <inheritdoc />
-    protected override void OnParametersSet()
+    void IComponent.Attach(RenderHandle renderHandle)
     {
-        _href = ComputeHref();
+        _renderHandle = renderHandle;
     }
 
-    /// <inheritdoc />
-    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    Task IComponent.SetParametersAsync(ParameterView parameters)
+    {
+        _renderHandle.Render(Render);
+        return Task.CompletedTask;
+    }
+
+    private void Render(RenderTreeBuilder builder)
     {
         builder.OpenElement(0, "base");
-        builder.AddAttribute(1, "href", _href);
+        builder.AddAttribute(1, "href", ComputeHref());
         builder.CloseElement();
     }
 
