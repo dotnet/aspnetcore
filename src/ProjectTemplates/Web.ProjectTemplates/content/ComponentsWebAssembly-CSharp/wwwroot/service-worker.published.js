@@ -55,10 +55,11 @@ async function onFetch(event) {
     // to avoid errors when responding to navigation requests with a cached redirected response.
     // For more information see: https://github.com/nicell/service-worker-redirect-workaround
     if (cachedResponse && cachedResponse.redirected) {
-        cachedResponse = new Response(cachedResponse.body, {
-            headers: cachedResponse.headers,
-            status: cachedResponse.status,
-            statusText: cachedResponse.statusText
+        const clonedResponse = cachedResponse.clone();
+        cachedResponse = new Response(clonedResponse.body, {
+            headers: clonedResponse.headers,
+            status: clonedResponse.status,
+            statusText: clonedResponse.statusText
         });
     }
 
