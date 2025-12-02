@@ -1,0 +1,6 @@
+@NativeOpenSslSocketsSampleApp_HostAddress = https://localhost:5000
+
+GET {{NativeOpenSslSocketsSampleApp_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

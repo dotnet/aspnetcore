@@ -76,6 +76,53 @@ public static class WebHostBuilderKestrelExtensions
     /// <returns>
     /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
     /// </returns>
+    /// <summary>
+    /// Specify Kestrel as the server with Direct Socket Transport (native OpenSSL integration) to be used by the web host.
+    /// This bypasses SslStream and integrates OpenSSL directly at the socket transport layer for zero-copy TLS processing.
+    /// Includes less automatic functionality than <see cref="UseKestrel(IWebHostBuilder)"/> to make trimming more effective.
+    /// </summary>
+    /// <param name="hostBuilder">
+    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
+    /// </param>
+    /// <returns>
+    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
+    /// </returns>
+    /// <remarks>
+    /// This transport is experimental and bypasses the traditional HttpsConnectionMiddleware.
+    /// It requires OpenSSL (libssl) to be available on the system.
+    /// For HTTPS endpoints, you must call ConfigureHttpsDefaults or set certificates on endpoints manually.
+    /// 
+    /// Example:
+    /// <code>
+    /// var host = new HostBuilder()
+    ///     .UseKestrelDirectSocket()
+    ///     .Build();
+    /// </code>
+    /// </remarks>
+    public static IWebHostBuilder UseKestrelDirectSocket(this IWebHostBuilder hostBuilder)
+    {
+        hostBuilder.UseDirectSocketTransport();
+        hostBuilder.ConfigureServices(services =>
+        {
+            services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
+            services.AddSingleton<IHttpsConfigurationService, HttpsConfigurationService>();
+            services.AddSingleton<IServer, KestrelServerImpl>();
+            services.AddSingleton<KestrelMetrics>();
+
+            services.AddSingleton<PinnedBlockMemoryPoolFactory>();
+            services.AddSingleton<MemoryPoolMetrics>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHeartbeatHandler, PinnedBlockMemoryPoolFactory>(sp => sp.GetRequiredService<PinnedBlockMemoryPoolFactory>()));
+            services.AddSingleton<IMemoryPoolFactory<byte>>(sp => sp.GetRequiredService<PinnedBlockMemoryPoolFactory>());
+        });
+
+        if (OperatingSystem.IsWindows())
+        {
+            hostBuilder.UseNamedPipes();
+        }
+
+        return hostBuilder;
+    }
+
     public static IWebHostBuilder UseKestrelCore(this IWebHostBuilder hostBuilder)
     {
         hostBuilder.UseSockets();

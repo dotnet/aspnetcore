@@ -49,6 +49,7 @@
       "src\\Servers\\Kestrel\\samples\\Http3SampleApp\\Http3SampleApp.csproj",
       "src\\Servers\\Kestrel\\samples\\HttpClientApp\\HttpClientApp.csproj",
       "src\\Servers\\Kestrel\\samples\\LargeResponseApp\\LargeResponseApp.csproj",
+      "src\\Servers\\Kestrel\\samples\\NativeOpenSslSocketsSampleApp\\NativeOpenSslSocketsSampleApp.csproj",
       "src\\Servers\\Kestrel\\samples\\PlaintextApp\\PlaintextApp.csproj",
       "src\\Servers\\Kestrel\\samples\\SampleApp\\Kestrel.SampleApp.csproj",
       "src\\Servers\\Kestrel\\samples\\SystemdTestApp\\SystemdTestApp.csproj",

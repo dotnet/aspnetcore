@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using Microsoft.AspNetCore.Connections;
@@ -10,12 +12,12 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
-internal sealed class SocketConnectionListener : IConnectionListener
+internal class SocketConnectionListener : IConnectionListener
 {
     private readonly SocketConnectionContextFactory _factory;
-    private readonly ILogger _logger;
+    protected readonly ILogger _logger;
     private Socket? _listenSocket;
-    private readonly SocketTransportOptions _options;
+    protected readonly SocketTransportOptions Options;
 
     public EndPoint EndPoint { get; private set; }
 
@@ -25,7 +27,7 @@ internal sealed class SocketConnectionListener : IConnectionListener
         ILoggerFactory loggerFactory)
     {
         EndPoint = endpoint;
-        _options = options;
+        Options = options;
         var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
         _logger = logger;
         _factory = new SocketConnectionContextFactory(new SocketConnectionFactoryOptions(options), logger);
@@ -41,7 +43,7 @@ internal sealed class SocketConnectionListener : IConnectionListener
         Socket listenSocket;
         try
         {
-            listenSocket = _options.CreateBoundListenSocket(EndPoint);
+            listenSocket = Options.CreateBoundListenSocket(EndPoint);
         }
         catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
         {
@@ -51,7 +53,7 @@ internal sealed class SocketConnectionListener : IConnectionListener
         Debug.Assert(listenSocket.LocalEndPoint != null);
         EndPoint = listenSocket.LocalEndPoint;
 
-        listenSocket.Listen(_options.Backlog);
+        listenSocket.Listen(Options.Backlog);
 
         _listenSocket = listenSocket;
     }
@@ -69,10 +71,10 @@ internal sealed class SocketConnectionListener : IConnectionListener
                 // Only apply no delay to Tcp based endpoints
                 if (acceptSocket.LocalEndPoint is IPEndPoint)
                 {
-                    acceptSocket.NoDelay = _options.NoDelay;
+                    acceptSocket.NoDelay = Options.NoDelay;
                 }
 
-                return _factory.Create(acceptSocket);
+                return CreateConnectionFromSocket(acceptSocket, _factory);
             }
             catch (ObjectDisposedException)
             {
@@ -90,6 +92,41 @@ internal sealed class SocketConnectionListener : IConnectionListener
                 SocketsLog.ConnectionReset(_logger, connectionId: "(null)");
             }
         }
+    }
+
+    /// <summary>
+    /// Creates a connection from an accepted socket.
+    /// This method can be overridden by derived classes to customize connection creation.
+    /// </summary>
+    protected virtual ConnectionContext CreateConnectionFromSocket(Socket socket, SocketConnectionContextFactory factory)
+    {
+        return factory.Create(socket);
+    }
+
+    /// <summary>
+    /// Creates a connection from an accepted socket with direct customization support.
+    /// This version provides access to all the factory internals for maximum flexibility.
+    /// </summary>
+    protected virtual ConnectionContext CreateConnectionFromSocket(
+        Socket socket,
+        MemoryPool<byte> memoryPool,
+        PipeScheduler socketScheduler,
+        SocketSenderPool socketSenderPool,
+        PipeOptions inputOptions,
+        PipeOptions outputOptions,
+        ILogger logger)
+    {
+        // Base implementation: create standard SocketConnection
+        return new SocketConnection(
+            socket,
+            memoryPool,
+            socketScheduler,
+            logger,
+            socketSenderPool,
+            inputOptions,
+            outputOptions,
+            waitForData: Options.WaitForDataBeforeAllocatingBuffer,
+            finOnError: Options.FinOnError);
     }
 
     public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
