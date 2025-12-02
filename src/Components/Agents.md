@@ -8,7 +8,7 @@ This guide provides step-by-step instructions for working on issues in the ASP.N
 
 The workflow for implementing new features in the Components area follows these steps:
 
-1. **Create a sample scenario first** - This is the most important first step. Update code in one of the projects in `src/Components/Samples` folder to include the scenarios for the feature you want to build. This allows you to develop and test the feature interactively before writing formal tests.
+1. **Create a sample scenario first** - This is the most important first step. Update code in one of the projects in the `src/Components/Samples` folder to include the scenarios for the feature you want to build. This allows you to develop and test the feature interactively before writing formal tests.
 
 2. **Build and test interactively** - Build the feature and use Playwright to test it in the browser, ensuring it works end-to-end at a basic level.
 
@@ -122,12 +122,12 @@ dotnet build src\Components\Endpoints\src\Microsoft.AspNetCore.Components.Endpoi
 
 Tests live in `src/Components/test`. The structure includes:
 
-- **TestAssets folder** - Contains test assets and scenarios
+- **testassets folder** - Contains test assets and scenarios
 - **Components.TestServer project** - A web application that launches multiple web servers with different scenarios (different project startups). Avoid adding new startup files unless strictly necessary.
 
 ### Running E2E Tests Manually
 
-1. **Build the repository** first with `.\eng\build.cmd` from the repo root
+1. **Build the tests**: Follow the build instructions to build the E2E test project and its dependencies.
 2. **Start Components.TestServer**:
    ```bash
    cd src\Components\test\testassets\Components.TestServer
