@@ -3,11 +3,10 @@
 
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
-using Microsoft.AspNetCore.Components.Web;
 
 #nullable enable
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Endpoints;
 
 public class BasePathTest
 {

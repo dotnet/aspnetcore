@@ -40,5 +40,3 @@ Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(byte[]! data, 
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MimeType.get -> string!
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.Stream.get -> System.IO.Stream!
-Microsoft.AspNetCore.Components.Web.BasePath
-Microsoft.AspNetCore.Components.Web.BasePath.BasePath() -> void
