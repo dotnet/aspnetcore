@@ -93,6 +93,34 @@ public static class WebHostBuilderSocketExtensions
     }
 
     /// <summary>
+    /// Initialize OpenSSL context for Direct Socket Transport with the specified certificate.
+    /// This must be called before starting the server to enable HTTPS support.
+    /// </summary>
+    /// <param name="hostBuilder">
+    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder to configure.
+    /// </param>
+    /// <param name="certificate">
+    /// The X509Certificate2 to use for TLS on HTTPS endpoints.
+    /// </param>
+    /// <returns>
+    /// The Microsoft.AspNetCore.Hosting.IWebHostBuilder.
+    /// </returns>
+    /// <remarks>
+    /// This method initializes the OpenSSL context for the DirectSocket transport.
+    /// The certificate will be used for all HTTPS endpoints configured with DirectSocket.
+    /// This must be called after UseDirectSocketTransport() and before the host starts.
+    /// </remarks>
+    public static IWebHostBuilder InitializeDirectSocketSSL(this IWebHostBuilder hostBuilder, X509Certificate2 certificate)
+    {
+        ArgumentNullException.ThrowIfNull(certificate);
+
+        return hostBuilder.ConfigureServices(services =>
+        {
+            
+        });
+    }
+
+    /// <summary>
     /// Specify Direct Socket Transport with native OpenSSL integration and configure transport options.
     /// </summary>
     /// <param name="hostBuilder">

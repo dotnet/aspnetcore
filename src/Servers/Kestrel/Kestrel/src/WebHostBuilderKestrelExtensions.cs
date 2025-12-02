@@ -2,11 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -99,7 +101,7 @@ public static class WebHostBuilderKestrelExtensions
     ///     .Build();
     /// </code>
     /// </remarks>
-    public static IWebHostBuilder UseKestrelDirectSocket(this IWebHostBuilder hostBuilder)
+    public static IWebHostBuilder UseKestrelDirectSocket(this IWebHostBuilder hostBuilder, X509Certificate2 certificate)
     {
         hostBuilder.UseDirectSocketTransport();
         hostBuilder.ConfigureServices(services =>
