@@ -1241,6 +1241,39 @@ public class UserManagerTest
     }
 
     [Fact]
+    public async Task IsLockedOutAsyncUsesTimeProvider()
+    {
+        var isLockoutEnabled = true;
+        var user = new PocoUser();
+        var currentDate = DateTimeOffset.UtcNow;
+        var lockoutEndDate = (DateTimeOffset?)currentDate.AddMinutes(-1);
+        var timeProviderDate = currentDate.AddMinutes(-2);
+        var timeProvider = new Mock<TimeProvider>();
+        timeProvider.Setup(provider => provider.GetUtcNow())
+            .Returns(timeProviderDate);
+
+        var userLockoutStore = new Mock<IUserLockoutStore<PocoUser>>();
+        userLockoutStore.Setup(store =>
+            store.GetLockoutEnabledAsync(user, It.IsAny<CancellationToken>()))
+            .Returns(() => Task.FromResult(isLockoutEnabled));
+
+        userLockoutStore.Setup(store =>
+            store.GetLockoutEndDateAsync(user, It.IsAny<CancellationToken>()))
+            .Returns(() => Task.FromResult(lockoutEndDate));
+
+        var services = new ServiceCollection()
+            .AddSingleton(timeProvider.Object)
+            .AddSingleton<IUserStore<PocoUser>>(userLockoutStore.Object)
+            .AddLogging();
+
+        services.AddIdentity<PocoUser, PocoRole>();
+
+        var manager = services.BuildServiceProvider().GetService<UserManager<PocoUser>>();
+
+        Assert.True(await manager.IsLockedOutAsync(user));
+    }
+
+    [Fact]
     public async Task LockoutStoreMethodsFailWhenStoreNotImplemented()
     {
         var manager = MockHelpers.TestUserManager(new NoopUserStore());
