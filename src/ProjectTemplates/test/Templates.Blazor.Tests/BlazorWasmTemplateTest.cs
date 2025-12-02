@@ -122,6 +122,10 @@ public class BlazorWasmTemplateTest(ProjectFactoryFixture projectFactory) : Blaz
         var serviceWorkerAssetsManifestVersion = JsonSerializer.Deserialize<string>(serviceWorkerAssetsManifestVersionJson);
         Assert.True(serviceWorkerContents.Contains($"/* Manifest version: {serviceWorkerAssetsManifestVersion} */", StringComparison.Ordinal));
 
+        // Service worker should handle redirected responses to support hosting providers like Cloudflare Pages
+        // See https://github.com/dotnet/aspnetcore/issues/33872
+        Assert.True(serviceWorkerContents.Contains("cachedResponse.redirected", StringComparison.Ordinal), "service-worker.js should handle redirected cached responses");
+
         static string ReadFile(string basePath, string path)
         {
             var fullPath = Path.Combine(basePath, path);

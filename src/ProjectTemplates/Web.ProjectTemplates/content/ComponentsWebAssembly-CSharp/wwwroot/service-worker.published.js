@@ -51,5 +51,16 @@ async function onFetch(event) {
         cachedResponse = await cache.match(request);
     }
 
+    // If the cached response was a redirect, create a new response without the redirected flag
+    // to avoid errors when responding to navigation requests with a cached redirected response.
+    // For more information see: https://github.com/nicell/service-worker-redirect-workaround
+    if (cachedResponse && cachedResponse.redirected) {
+        cachedResponse = new Response(cachedResponse.body, {
+            headers: cachedResponse.headers,
+            status: cachedResponse.status,
+            statusText: cachedResponse.statusText
+        });
+    }
+
     return cachedResponse || fetch(event.request);
 }
