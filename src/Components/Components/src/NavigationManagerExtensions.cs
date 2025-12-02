@@ -762,4 +762,51 @@ public static class NavigationManagerExtensions
 
         return true;
     }
+
+    /// <summary>
+    /// Returns a URI constructed from <see cref="NavigationManager.Uri"/> with a hash
+    /// added, updated, or removed.
+    /// </summary>
+    /// <param name="navigationManager">The <see cref="NavigationManager"/>.</param>
+    /// <param name="hash">The hash string. If empty or null, the hash will be removed from the URI.</param>
+    /// <returns>The URI with the specified hash.</returns>
+    /// <remarks>
+    /// <para>
+    /// If <paramref name="hash"/> does not start with <c>#</c>, then <c>#</c> will be prepended.
+    /// </para>
+    /// <para>
+    /// This method is useful when the document's <c>baseURI</c> differs from its location,
+    /// such as when a <c>&lt;base&gt;</c> element is used, since relative hash URLs are resolved
+    /// relative to the <c>baseURI</c>.
+    /// </para>
+    /// <example>
+    /// <code>
+    /// @inject NavigationManager Nav
+    /// &lt;a href="@Nav.GetUriWithHash("section1")"&gt;Go to section 1&lt;/a&gt;
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public static string GetUriWithHash(this NavigationManager navigationManager, string? hash)
+    {
+        ArgumentNullException.ThrowIfNull(navigationManager);
+
+        var uri = navigationManager.Uri;
+        var hashStartIndex = uri.IndexOf('#');
+
+        // Get URI without the existing hash
+        var uriWithoutHash = hashStartIndex < 0 ? uri : uri.Substring(0, hashStartIndex);
+
+        if (string.IsNullOrEmpty(hash))
+        {
+            return uriWithoutHash;
+        }
+
+        // Ensure hash starts with '#'
+        if (hash[0] != '#')
+        {
+            return string.Concat(uriWithoutHash, "#", hash);
+        }
+
+        return string.Concat(uriWithoutHash, hash);
+    }
 }

@@ -213,6 +213,48 @@ public class NavigationManagerTest
         Assert.StartsWith("Cannot have empty query parameter names.", exception.Message);
     }
 
+    [Theory]
+    [InlineData("scheme://host/", "section1", "scheme://host/#section1")]
+    [InlineData("scheme://host/", "#section1", "scheme://host/#section1")]
+    [InlineData("scheme://host/path", "section1", "scheme://host/path#section1")]
+    [InlineData("scheme://host/path/", "section1", "scheme://host/path/#section1")]
+    [InlineData("scheme://host/path?query=value", "section1", "scheme://host/path?query=value#section1")]
+    [InlineData("scheme://host/path?query=value#oldHash", "section1", "scheme://host/path?query=value#section1")]
+    [InlineData("scheme://host/path#oldHash", "newHash", "scheme://host/path#newHash")]
+    [InlineData("scheme://host/path#old", "#new", "scheme://host/path#new")]
+    public void GetUriWithHash_AddsOrReplacesHash(string baseUri, string hash, string expectedUri)
+    {
+        var navigationManager = new TestNavigationManager(baseUri);
+        var actualUri = navigationManager.GetUriWithHash(hash);
+
+        Assert.Equal(expectedUri, actualUri);
+    }
+
+    [Theory]
+    [InlineData("scheme://host/", "scheme://host/")]
+    [InlineData("scheme://host/path", "scheme://host/path")]
+    [InlineData("scheme://host/path#hash", "scheme://host/path")]
+    [InlineData("scheme://host/path?query=value#hash", "scheme://host/path?query=value")]
+    public void GetUriWithHash_RemovesHashWhenHashIsNullOrEmpty(string baseUri, string expectedUri)
+    {
+        var navigationManager = new TestNavigationManager(baseUri);
+
+        var actualUriWithNull = navigationManager.GetUriWithHash(null);
+        Assert.Equal(expectedUri, actualUriWithNull);
+
+        var actualUriWithEmpty = navigationManager.GetUriWithHash(string.Empty);
+        Assert.Equal(expectedUri, actualUriWithEmpty);
+    }
+
+    [Fact]
+    public void GetUriWithHash_ThrowsWhenNavigationManagerIsNull()
+    {
+        NavigationManager navigationManager = null;
+
+        var exception = Assert.Throws<ArgumentNullException>(() => navigationManager.GetUriWithHash("hash"));
+        Assert.Equal("navigationManager", exception.ParamName);
+    }
+
     [Fact]
     public void LocationChangingHandlers_CanContinueTheNavigationSynchronously_WhenOneHandlerIsRegistered()
     {
