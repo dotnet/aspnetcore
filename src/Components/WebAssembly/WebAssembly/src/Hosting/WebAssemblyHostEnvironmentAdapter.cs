@@ -32,7 +32,7 @@ internal sealed class WebAssemblyHostEnvironmentAdapter : IHostEnvironment
 
     public string ContentRootPath
     {
-        get => _webAssemblyHostEnvironment.BaseAddress;
+        get => string.Empty;
         set => throw new NotSupportedException("Setting the content root path is not supported in WebAssembly.");
     }
 
