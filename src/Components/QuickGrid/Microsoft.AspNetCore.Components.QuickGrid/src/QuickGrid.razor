@@ -66,12 +66,24 @@
     private void RenderRow(RenderTreeBuilder __builder, int rowIndex, TGridItem item)
     {
         var rowClass = RowClass?.Invoke(item);
-        <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" class="@rowClass">
-            @foreach (var col in _columns)
-            {
-                <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
-            }
-        </tr>
+        if (OnRowClick.HasDelegate)
+        {
+            <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" class="row-clickable @rowClass" @onclick="@(() => OnRowClick.InvokeAsync(item))">
+                @foreach (var col in _columns)
+                {
+                    <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
+                }
+            </tr>
+        }
+        else
+        {
+            <tr @key="@(ItemKey(item))" aria-rowindex="@rowIndex" class="@rowClass">
+                @foreach (var col in _columns)
+                {
+                    <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
+                }
+            </tr>
+        }
     }
 
     private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
