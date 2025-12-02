@@ -44,7 +44,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
 
-        // For HEAD requests, we only need to set headers and return 200 OK (same as GET but without body).
+        // For HEAD requests, return headers without body content (HTTP spec: HEAD returns same headers as GET).
         // This supports search engine crawlers that use HEAD to check page availability.
         if (HttpMethods.IsHead(context.Request.Method))
         {
