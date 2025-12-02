@@ -42,7 +42,3 @@ Microsoft.AspNetCore.Components.Web.Media.MediaSource.MimeType.get -> string!
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.Stream.get -> System.IO.Stream!
 Microsoft.AspNetCore.Components.Web.BasePath
 Microsoft.AspNetCore.Components.Web.BasePath.BasePath() -> void
-Microsoft.AspNetCore.Components.Web.BasePath.FallbackHref.get -> string?
-Microsoft.AspNetCore.Components.Web.BasePath.FallbackHref.set -> void
-Microsoft.AspNetCore.Components.Web.BasePath.Href.get -> string?
-Microsoft.AspNetCore.Components.Web.BasePath.Href.set -> void

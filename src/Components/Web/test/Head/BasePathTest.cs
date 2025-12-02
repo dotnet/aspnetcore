@@ -1,11 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.AspNetCore.Components.Web;
-using Microsoft.AspNetCore.Http;
 
 #nullable enable
 
@@ -14,109 +12,31 @@ namespace Microsoft.AspNetCore.Components;
 public class BasePathTest
 {
     [Fact]
-    public void UsesHttpContextPathBaseWhenPresent()
+    public void PreservesCasingFromNavigationManagerBaseUri()
     {
-        var services = CreateServices(out var renderer);
-
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.PathBase = "/Dashboard";
-
-        services.AddService<IHttpContextAccessor>(new HttpContextAccessor { HttpContext = httpContext });
-
+        _ = CreateServices(out var renderer, "https://example.com/Dashboard/");
         var componentId = RenderBasePath(renderer);
 
         Assert.Equal("/Dashboard/", GetHref(renderer, componentId));
     }
 
-    [Fact]
-    public void UsesFallbackWhenContextUnavailable()
-    {
-        var services = CreateServices(out var renderer);
-
-        var component = (BasePath)renderer.InstantiateComponent<BasePath>();
-        var componentId = renderer.AssignRootComponentId(component);
-
-        renderer.RenderRootComponent(componentId, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(BasePath.FallbackHref)] = "admin"
-        }));
-
-        Assert.Equal("/admin/", GetHref(renderer, componentId));
-    }
-
-    [Fact]
-    public void FallsBackToNavigationManagerBaseUri()
-    {
-        var services = CreateServices(out var renderer);
-
-        var component = (BasePath)renderer.InstantiateComponent<BasePath>();
-        var componentId = renderer.AssignRootComponentId(component);
-
-        renderer.RenderRootComponent(componentId);
-
-        Assert.Equal("/app/", GetHref(renderer, componentId));
-    }
-
-    [Fact]
-    public void ExplicitHrefOverridesOtherSources()
-    {
-        var services = CreateServices(out var renderer);
-
-        var httpContext = new DefaultHttpContext();
-        httpContext.Request.PathBase = "/Dashboard";
-        services.AddService<IHttpContextAccessor>(new HttpContextAccessor { HttpContext = httpContext });
-
-        var component = (BasePath)renderer.InstantiateComponent<BasePath>();
-        var componentId = renderer.AssignRootComponentId(component);
-
-        renderer.RenderRootComponent(componentId, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(BasePath.Href)] = "Reports"
-        }));
-
-        Assert.Equal("/Reports/", GetHref(renderer, componentId));
-    }
-
-    [Fact]
-    public void HrefOverridesFallbackWhenBothProvided()
-    {
-        var services = CreateServices(out var renderer);
-
-        var component = (BasePath)renderer.InstantiateComponent<BasePath>();
-        var componentId = renderer.AssignRootComponentId(component);
-
-        renderer.RenderRootComponent(componentId, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(BasePath.Href)] = "Reports",
-            [nameof(BasePath.FallbackHref)] = "admin"
-        }));
-
-        Assert.Equal("/Reports/", GetHref(renderer, componentId));
-    }
-
     [Theory]
-    [InlineData("/a/b")]
-    [InlineData("/a/b/")]
-    [InlineData("https://contoso.com/a/b")]
-    public void HonorsMultiSegmentHrefNormalization(string input)
+    [InlineData("https://example.com/a/b/", "/a/b/")]
+    [InlineData("https://example.com/a/b", "/a/")]
+    public void RendersBaseUriPathExactly(string baseUri, string expected)
     {
-        var services = CreateServices(out var renderer);
+        _ = CreateServices(out var renderer, baseUri);
 
-        var component = (BasePath)renderer.InstantiateComponent<BasePath>();
-        var componentId = renderer.AssignRootComponentId(component);
+        var componentId = RenderBasePath(renderer);
 
-        renderer.RenderRootComponent(componentId, ParameterView.FromDictionary(new Dictionary<string, object?>
-        {
-            [nameof(BasePath.Href)] = input
-        }));
-
-        Assert.Equal("/a/b/", GetHref(renderer, componentId));
+        Assert.Equal(expected, GetHref(renderer, componentId));
     }
 
-    private static TestServiceProvider CreateServices(out TestRenderer renderer)
+    private static TestServiceProvider CreateServices(out TestRenderer renderer, string baseUri = "https://example.com/app/")
     {
         var services = new TestServiceProvider();
-        var navigationManager = new TestNavigationManager("https://example.com/app/", "https://example.com/app/dashboard");
+        var uri = baseUri.EndsWith('/') ? baseUri + "dashboard" : baseUri + "/dashboard";
+        var navigationManager = new TestNavigationManager(baseUri, uri);
         services.AddService<NavigationManager>(navigationManager);
         services.AddService<IServiceProvider>(services);
 
