@@ -45,6 +45,19 @@ public class BasePathTest
     }
 
     [Fact]
+    public void FallsBackToNavigationManagerBaseUri()
+    {
+        var services = CreateServices(out var renderer);
+
+        var component = (BasePath)renderer.InstantiateComponent<BasePath>();
+        var componentId = renderer.AssignRootComponentId(component);
+
+        renderer.RenderRootComponent(componentId);
+
+        Assert.Equal("/app/", GetHref(renderer, componentId));
+    }
+
+    [Fact]
     public void ExplicitHrefOverridesOtherSources()
     {
         var services = CreateServices(out var renderer);
@@ -82,9 +95,10 @@ public class BasePathTest
     }
 
     [Theory]
-    [InlineData("/a/b", "/a/b/")]
-    [InlineData("/a/b/", "/a/b/")]
-    public void HonorsMultiSegmentHrefNormalization(string input, string expected)
+    [InlineData("/a/b")]
+    [InlineData("/a/b/")]
+    [InlineData("https://contoso.com/a/b")]
+    public void HonorsMultiSegmentHrefNormalization(string input)
     {
         var services = CreateServices(out var renderer);
 
@@ -96,7 +110,7 @@ public class BasePathTest
             [nameof(BasePath.Href)] = input
         }));
 
-        Assert.Equal(expected, GetHref(renderer, componentId));
+        Assert.Equal("/a/b/", GetHref(renderer, componentId));
     }
 
     private static TestServiceProvider CreateServices(out TestRenderer renderer)

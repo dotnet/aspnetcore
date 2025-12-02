@@ -25,12 +25,22 @@ public sealed class BasePath : ComponentBase
     /// Gets or sets an explicit base path to render. When provided, this value takes precedence
     /// over values inferred from the current request or fallback parameters.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// &lt;BasePath Href="/dashboard/" /&gt;
+    /// </code>
+    /// </example>
     [Parameter]
     public string? Href { get; set; }
 
     /// <summary>
     /// Gets or sets the fallback <c>href</c> value to use when the current request information isn't available.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// &lt;BasePath FallbackHref="/dashboard/" /&gt;
+    /// </code>
+    /// </example>
     [Parameter]
     public string? FallbackHref { get; set; }
 
@@ -95,16 +105,15 @@ public sealed class BasePath : ComponentBase
             return "/";
         }
 
-        if (Uri.TryCreate(value, UriKind.Absolute, out var absoluteUri))
+        var normalizedValue = Uri.TryCreate(value, UriKind.Absolute, out var absoluteUri)
+            ? absoluteUri.AbsolutePath
+            : value;
+
+        if (!normalizedValue.StartsWith('/'))
         {
-            value = absoluteUri.AbsolutePath;
+            normalizedValue = "/" + normalizedValue;
         }
 
-        if (!value.StartsWith('/'))
-        {
-            value = "/" + value;
-        }
-
-        return value.EndsWith('/') ? value : value + "/";
+        return normalizedValue.EndsWith('/') ? normalizedValue : normalizedValue + "/";
     }
 }
