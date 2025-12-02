@@ -109,6 +109,11 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
     /// </summary>
     [Parameter] public Func<TGridItem, string?>? RowClass { get; set; }
 
+    /// <summary>
+    /// Optional. A callback that is invoked when a row is clicked.
+    /// </summary>
+    [Parameter] public EventCallback<TGridItem> OnRowClick { get; set; }
+
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private IJSRuntime JS { get; set; } = default!;
 

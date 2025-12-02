@@ -215,4 +215,43 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
         app = Browser.MountTestComponent<QuickGridVirtualizeComponent>();
         Browser.Equal("1", () => app.FindElement(By.Id("items-provider-call-count")).Text);
     }
+
+    [Fact]
+    public void OnRowClickTriggersCallback()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+
+        // Verify no row has been clicked yet
+        Browser.Exists(By.Id("no-click"));
+
+        // Click on the first row (Julie Smith)
+        var firstRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(1)"));
+        firstRow.Click();
+
+        // Verify the callback was triggered with correct data
+        Browser.Equal("PersonId: 11203", () => app.FindElement(By.Id("clicked-person-id")).Text);
+        Browser.Equal("Name: Julie Smith", () => app.FindElement(By.Id("clicked-person-name")).Text);
+        Browser.Equal("Click count: 1", () => app.FindElement(By.Id("click-count")).Text);
+
+        // Click on another row (Jose Hernandez - 3rd row)
+        var thirdRow = grid.FindElement(By.CssSelector("tbody > tr:nth-child(3)"));
+        thirdRow.Click();
+
+        // Verify the callback was triggered with the new row's data
+        Browser.Equal("PersonId: 11898", () => app.FindElement(By.Id("clicked-person-id")).Text);
+        Browser.Equal("Name: Jose Hernandez", () => app.FindElement(By.Id("clicked-person-name")).Text);
+        Browser.Equal("Click count: 2", () => app.FindElement(By.Id("click-count")).Text);
+    }
+
+    [Fact]
+    public void OnRowClickAppliesCursorPointerStyle()
+    {
+        var grid = app.FindElement(By.CssSelector("#grid > table"));
+
+        // Verify the row has cursor: pointer style via the row-clickable class
+        var cursorStyle = Browser.ExecuteJavaScript<string>(@"
+            const row = document.querySelector('#grid > table > tbody > tr:nth-child(1)');
+            return row ? getComputedStyle(row).cursor : null;");
+        Assert.Equal("pointer", cursorStyle);
+    }
 }
