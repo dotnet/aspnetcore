@@ -51,6 +51,42 @@ public class RazorComponentEndpointInvokerTest
         Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
     }
 
+    [Fact]
+    public async Task Invoker_HandlesHeadRequestAsync()
+    {
+        // Arrange
+        var services = new ServiceCollection().AddRazorComponents()
+                        .Services.AddAntiforgery()
+                        .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
+                        .AddSingleton<IWebHostEnvironment>(new TestWebHostEnvironment())
+                        .BuildServiceProvider();
+
+        var invoker = new RazorComponentEndpointInvoker(
+            new EndpointHtmlRenderer(
+                services,
+                NullLoggerFactory.Instance),
+            NullLogger<RazorComponentEndpointInvoker>.Instance);
+
+        var context = new DefaultHttpContext();
+        context.SetEndpoint(new RouteEndpoint(
+            ctx => Task.CompletedTask,
+            RoutePatternFactory.Parse("/"),
+            0,
+            new EndpointMetadataCollection(
+                new ComponentTypeMetadata(typeof(AuthorizeView)),
+                new RootComponentMetadata(typeof(AuthorizeView))),
+            "test"));
+        context.Request.Method = "HEAD";
+        context.RequestServices = services;
+
+        // Act
+        await invoker.Render(context);
+
+        // Assert
+        Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
+        Assert.Equal("text/html; charset=utf-8", context.Response.ContentType);
+    }
+
     private class TestWebHostEnvironment : IWebHostEnvironment
     {
         public string WebRootPath { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
