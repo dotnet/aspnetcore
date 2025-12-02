@@ -191,11 +191,22 @@ internal sealed partial class StaticAssetDevelopmentRuntimeHandler
                 _context.Response.Headers.ETag = "";
                 // Compute the new ETag, if this is a compressed asset, RuntimeStaticAssetResponseBodyFeature will update it.
                 _context.Response.Headers.ETag = GetETag(fileInfo);
-                _context.Response.Headers.ContentLength = fileInfo.Length;
                 _context.Response.Headers.LastModified = fileInfo.LastModified.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
 
-                // Send the modified asset as is.
-                return _original.SendFileAsync(fileInfo.PhysicalPath!, 0, fileInfo.Length, cancellationToken);
+                // For range requests (206 Partial Content), we preserve the original offset and count to send the correct range.
+                // For normal requests (200 OK), we send the entire file.
+                var isRangeRequest = _context.Response.StatusCode == StatusCodes.Status206PartialContent;
+                if (isRangeRequest)
+                {
+                    // Send the requested range from the modified file.
+                    return _original.SendFileAsync(fileInfo.PhysicalPath!, offset, count, cancellationToken);
+                }
+                else
+                {
+                    // Send the entire modified file.
+                    _context.Response.Headers.ContentLength = fileInfo.Length;
+                    return _original.SendFileAsync(fileInfo.PhysicalPath!, 0, fileInfo.Length, cancellationToken);
+                }
             }
         }
 
