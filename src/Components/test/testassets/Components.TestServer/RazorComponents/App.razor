@@ -4,6 +4,7 @@
 @using TestContentPackage.NotFound
 @using Components.TestServer.RazorComponents
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Endpoints
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
 @using System.Threading.Tasks
@@ -99,7 +100,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <base href="/subdir/" />
+    <BasePath />
     <HeadOutlet />
 </head>
 <body>
