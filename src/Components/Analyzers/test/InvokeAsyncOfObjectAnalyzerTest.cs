@@ -466,4 +466,42 @@ public class InvokeAsyncOfObjectAnalyzerTest : DiagnosticVerifier
 
         VerifyCSharpDiagnostic(test, expected);
     }
+
+    [Fact]
+    public void DiagnosticForInvokeAsyncWithObjectReturnAssignedToVariable()
+    {
+        // This test confirms that the diagnostic still fires when the result is assigned to a variable.
+        // Using InvokeAsync<object> is problematic because 'object' cannot be properly deserialized from JSON -
+        // the result will either be null or cause serialization errors if JavaScript returns a non-serializable value.
+        var test = @"
+    namespace ConsoleApplication1
+    {
+        using Microsoft.JSInterop;
+        using System.Threading.Tasks;
+
+        class TestClass
+        {
+            private IJSRuntime _jsRuntime;
+
+            public async Task TestMethod()
+            {
+                var result = await _jsRuntime.InvokeAsync<object>(""myFunction"");
+                System.Console.WriteLine(result);
+            }
+        }
+    }" + JSInteropDeclarations;
+
+        var expected = new DiagnosticResult
+        {
+            Id = DiagnosticDescriptors.UseInvokeVoidAsyncForObjectReturn.Id,
+            Message = "Use 'InvokeVoidAsync' instead of 'InvokeAsync<object>'. Return values of type 'object' cannot be deserialized and may cause serialization errors if the JavaScript function returns a non-serializable value.",
+            Severity = DiagnosticSeverity.Warning,
+            Locations = new[]
+            {
+                new DiagnosticResultLocation("Test0.cs", 13, 36)
+            }
+        };
+
+        VerifyCSharpDiagnostic(test, expected);
+    }
 }

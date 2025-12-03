@@ -6,6 +6,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
+#nullable enable
+
 namespace Microsoft.AspNetCore.Components.Analyzers;
 
 /// <summary>
