@@ -2,7 +2,20 @@
 
 This guide provides step-by-step instructions for working on issues in the ASP.NET Core Components area.
 
-## Working on New Features
+## Working on issues
+
+You MUST follow this workflow when implementing new features or fixing bugs in the Components area.
+* Add the workflow to your `todos` and follow it strictly.
+- Create a sample scenario.
+- If working on a bug, use playwright to reproduce the behavior/problem first.
+- You MUST have reproduced the problem before attempting to fix it.
+- Research the problem area using the microsoft docs, existing code, git history, and logging on the sample project.
+- Implement the fix or feature in the sample project first.
+- Test the fix or feature interactively using Playwright.
+- Once the fix or feature is validated in the sample, implement E2E tests for it.
+  - When you create an E2E test. First execute it interactively with Playwright.
+  - If an E2E test is failing, debug it by running the test server manually and navigating to the scenario in a browser.
+- Only after the E2E tests are passing, remove the sample code you added in the Samples projects.
 
 ### Overview
 
