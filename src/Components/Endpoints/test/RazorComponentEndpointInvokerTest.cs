@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Endpoints.Tests.TestComponents;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -73,16 +74,23 @@ public class RazorComponentEndpointInvokerTest
             RoutePatternFactory.Parse("/"),
             0,
             new EndpointMetadataCollection(
-                new ComponentTypeMetadata(typeof(AuthorizeView)),
-                new RootComponentMetadata(typeof(AuthorizeView))),
+                new ComponentTypeMetadata(typeof(SimpleComponent)),
+                new RootComponentMetadata(typeof(SimpleComponent)),
+                new ConfiguredRenderModesMetadata(Array.Empty<IComponentRenderMode>())),
             "test"));
         context.Request.Method = "HEAD";
+        context.Request.Scheme = "https";
+        context.Request.Host = new HostString("localhost");
+        context.Request.Path = "/";
+        context.Response.Body = new MemoryStream();
         context.RequestServices = services;
 
         // Act
         await invoker.Render(context);
 
         // Assert
+        // HEAD requests should execute the full request like GET, returning 200 OK with headers.
+        // The HTTP server (Kestrel) handles suppressing the response body for HEAD requests.
         Assert.Equal(StatusCodes.Status200OK, context.Response.StatusCode);
         Assert.Equal("text/html; charset=utf-8", context.Response.ContentType);
     }

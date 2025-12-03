@@ -43,14 +43,6 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
     private async Task RenderComponentCore(HttpContext context)
     {
         context.Response.ContentType = RazorComponentResultExecutor.DefaultContentType;
-
-        // For HEAD requests, return headers without body content (HTTP spec: HEAD returns same headers as GET).
-        // This supports search engine crawlers that use HEAD to check page availability.
-        if (HttpMethods.IsHead(context.Request.Method))
-        {
-            return;
-        }
-
         var isErrorHandler = context.Features.Get<IExceptionHandlerFeature>() is not null;
         var hasStatusCodePage = context.Features.Get<IStatusCodePagesFeature>() is not null;
         var isReExecuted = context.Features.Get<IStatusCodeReExecuteFeature>() is not null;
