@@ -71,8 +71,9 @@ namespace Microsoft.AspNetCore.OpenApi.Generated
         private static Dictionary<string, XmlComment> GenerateCacheEntries()
         {
             var cache = new Dictionary<string, XmlComment>();
-            cache.Add(@"M:ReferencedLibrary.TestApi.TestMethod(System.Int32)", new XmlComment(@"This method should have its XML comment merged properly.", null, null, @"A task representing the asynchronous operation.", null, false, null, [new XmlParameterComment(@"id", @"The identifier for the test.", null, false)], null));
 
+            cache.Add(@"P:Query.Name", new XmlComment(@"The full name of the person.", null, null, null, null, false, null, null, null));
+            cache.Add(@"M:TestController.Get(System.Int32)", new XmlComment(null, null, null, null, null, false, null, [new XmlParameterComment(@"userId", @"The id of the user.", null, false)], null));
 
             return cache;
         }
