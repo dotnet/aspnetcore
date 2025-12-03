@@ -80,6 +80,13 @@ public sealed class EnvironmentBoundary : ComponentBase
 
         if (string.IsNullOrEmpty(currentEnvironmentName))
         {
+            // For consistency with MVC EnvironmentTagHelper, render content when environment name is not set
+            // and no Include/Exclude are specified.
+            if (string.IsNullOrWhiteSpace(Include) && string.IsNullOrWhiteSpace(Exclude))
+            {
+                return true;
+            }
+
             return false;
         }
 

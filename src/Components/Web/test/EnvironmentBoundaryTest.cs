@@ -189,6 +189,29 @@ public class EnvironmentBoundaryTest
             frame.TextContent == "Test Content");
     }
 
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public void ShowsContentWhenEnvironmentNameIsNullOrEmptyAndNoIncludeExcludeSpecified(string environmentName)
+    {
+        // For consistency with MVC EnvironmentTagHelper, render content when environment name is not set
+        // and no Include/Exclude are specified.
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent(environmentName);
+
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
+        {
+            { nameof(EnvironmentBoundary.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
+        });
+
+        renderer.RenderRootComponent(componentId, parameters);
+
+        var batch = renderer.Batches.Single();
+        Assert.Contains(batch.ReferenceFrames, frame =>
+            frame.FrameType == RenderTree.RenderTreeFrameType.Text &&
+            frame.TextContent == "Test Content");
+    }
+
     [Fact]
     public void RendersNothingWhenChildContentIsNull()
     {
