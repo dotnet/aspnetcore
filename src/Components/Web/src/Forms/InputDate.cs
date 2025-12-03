@@ -31,8 +31,14 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
 
     /// <summary>
     /// Gets or sets the type of HTML input to be rendered.
+    /// If not specified, the type is automatically inferred based on <typeparamref name="TValue"/>:
+    /// <list type="bullet">
+    /// <item><description><see cref="DateTime"/> and <see cref="DateTimeOffset"/> default to <see cref="InputDateType.DateTimeLocal"/></description></item>
+    /// <item><description><see cref="DateOnly"/> defaults to <see cref="InputDateType.Date"/></description></item>
+    /// <item><description><see cref="TimeOnly"/> defaults to <see cref="InputDateType.Time"/></description></item>
+    /// </list>
     /// </summary>
-    [Parameter] public InputDateType Type { get; set; } = InputDateType.Date;
+    [Parameter] public InputDateType? Type { get; set; }
 
     /// <summary>
     /// Gets or sets the error message used when displaying an a parsing error.
@@ -66,18 +72,32 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        (_typeAttributeValue, _format, var formatDescription) = Type switch
+        var effectiveType = Type ?? GetDefaultInputDateType();
+
+        (_typeAttributeValue, _format, var formatDescription) = effectiveType switch
         {
             InputDateType.Date => ("date", DateFormat, "date"),
             InputDateType.DateTimeLocal => ("datetime-local", DateTimeLocalFormat, "date and time"),
             InputDateType.Month => ("month", MonthFormat, "year and month"),
             InputDateType.Time => ("time", TimeFormat, "time"),
-            _ => throw new InvalidOperationException($"Unsupported {nameof(InputDateType)} '{Type}'.")
+            _ => throw new InvalidOperationException($"Unsupported {nameof(InputDateType)} '{effectiveType}'.")
         };
 
         _parsingErrorMessage = string.IsNullOrEmpty(ParsingErrorMessage)
             ? $"The {{0}} field must be a {formatDescription}."
             : ParsingErrorMessage;
+    }
+
+    private static InputDateType GetDefaultInputDateType()
+    {
+        var type = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
+
+        return type switch
+        {
+            Type t when t == typeof(DateOnly) => InputDateType.Date,
+            Type t when t == typeof(TimeOnly) => InputDateType.Time,
+            _ => InputDateType.DateTimeLocal, // DateTime and DateTimeOffset
+        };
     }
 
     /// <inheritdoc />
