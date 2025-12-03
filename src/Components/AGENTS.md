@@ -16,6 +16,7 @@ You MUST follow this workflow when implementing new features or fixing bugs in t
   - When you create an E2E test. First execute it interactively with Playwright.
   - If an E2E test is failing, debug it by running the test server manually and navigating to the scenario in a browser.
 - Only after the E2E tests are passing, remove the sample code you added in the Samples projects.
+  - Use `git checkout` and `git clean -fd` to remove the sample code.
 
 ### Overview
 
@@ -49,7 +50,7 @@ The `src/Components/Samples` folder contains several sample projects you can use
 
 5. **Implement E2E tests** - Only after the sample is validated, implement E2E tests for it.
 
-6. **Clean up sample code** - After your E2E tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the E2E tests now provide the permanent test coverage.
+6. **Clean up sample code** - After your E2E tests are passing, remove the sample code you added to the Samples projects. The sample was only for development and interactive testing; the E2E tests now provide the permanent test coverage. Use `git checkout -- src/Components/Samples` and `git clean -df -- src/Components/Samples` to remove the sample code.
 
 ## Build Tips
 
