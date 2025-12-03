@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 
 namespace Microsoft.AspNetCore.Components.Forms;
 
-public class DisplayNameLabelTest
+public class DisplayNameTest
 {
     [Fact]
     public async Task ThrowsIfNoForParameterProvided()
@@ -18,7 +18,7 @@ public class DisplayNameLabelTest
         {
             InnerContent = builder =>
             {
-                builder.OpenComponent<DisplayNameLabel<string>>(0);
+                builder.OpenComponent<DisplayName<string>>(0);
                 builder.CloseComponent();
             }
         };
@@ -42,7 +42,7 @@ public class DisplayNameLabelTest
         {
             InnerContent = builder =>
             {
-                builder.OpenComponent<DisplayNameLabel<string>>(0);
+                builder.OpenComponent<DisplayName<string>>(0);
                 builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PlainProperty));
                 builder.CloseComponent();
             }
@@ -64,7 +64,7 @@ public class DisplayNameLabelTest
         {
             InnerContent = builder =>
             {
-                builder.OpenComponent<DisplayNameLabel<string>>(0);
+                builder.OpenComponent<DisplayName<string>>(0);
                 builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithDisplayAttribute));
                 builder.CloseComponent();
             }
@@ -86,7 +86,7 @@ public class DisplayNameLabelTest
         {
             InnerContent = builder =>
             {
-                builder.OpenComponent<DisplayNameLabel<string>>(0);
+                builder.OpenComponent<DisplayName<string>>(0);
                 builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithDisplayNameAttribute));
                 builder.CloseComponent();
             }
@@ -108,7 +108,7 @@ public class DisplayNameLabelTest
         {
             InnerContent = builder =>
             {
-                builder.OpenComponent<DisplayNameLabel<string>>(0);
+                builder.OpenComponent<DisplayName<string>>(0);
                 builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithBothAttributes));
                 builder.CloseComponent();
             }
@@ -131,7 +131,7 @@ public class DisplayNameLabelTest
         {
             InnerContent = builder =>
             {
-                builder.OpenComponent<DisplayNameLabel<int>>(0);
+                builder.OpenComponent<DisplayName<int>>(0);
                 builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<int>>)(() => model.IntProperty));
                 builder.CloseComponent();
             }
@@ -140,7 +140,7 @@ public class DisplayNameLabelTest
         {
             InnerContent = builder =>
             {
-                builder.OpenComponent<DisplayNameLabel<DateTime>>(0);
+                builder.OpenComponent<DisplayName<DateTime>>(0);
                 builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<DateTime>>)(() => model.DateProperty));
                 builder.CloseComponent();
             }
@@ -164,7 +164,7 @@ public class DisplayNameLabelTest
         var batch = testRenderer.Batches.Single();
         var displayLabelComponentFrame = batch.ReferenceFrames
             .First(f => f.FrameType == RenderTree.RenderTreeFrameType.Component &&
-                       f.Component is DisplayNameLabel<string> or DisplayNameLabel<int> or DisplayNameLabel<DateTime>);
+                       f.Component is DisplayName<string> or DisplayName<int> or DisplayName<DateTime>);
 
         // Find the text content frame within the component
         var textFrame = batch.ReferenceFrames

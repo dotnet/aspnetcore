@@ -556,9 +556,9 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
     }
 
     [Fact]
-    public void DisplayNameLabelReadsAttributesCorrectly()
+    public void DisplayNameReadsAttributesCorrectly()
     {
-        var appElement = Browser.MountTestComponent<DisplayNameLabelComponent>();
+        var appElement = Browser.MountTestComponent<DisplayNameComponent>();
 
         // Check that DisplayAttribute.Name is displayed
         var displayNameLabel = appElement.FindElement(By.Id("product-name-label"));

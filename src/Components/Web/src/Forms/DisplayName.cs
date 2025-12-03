@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.Components.Forms;
 /// or <see cref="DisplayNameAttribute"/> if present, or falling back to the property name.
 /// </summary>
 /// <typeparam name="TValue">The type of the field.</typeparam>
-public class DisplayNameLabel<TValue> : ComponentBase
+public class DisplayName<TValue> : ComponentBase
 {
-    private Expression<Func<TValue>>? _previousFieldAccessor;
+  private Expression<Func<TValue>>? _previousFieldAccessor;
     private string? _displayName;
 
     /// <summary>
