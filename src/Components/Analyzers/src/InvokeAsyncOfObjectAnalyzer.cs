@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Components.Analyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class InvokeAsyncOfObjectAnalyzer : DiagnosticAnalyzer
 {
+    private const string JSRuntimeExtensionsTypeName = "Microsoft.JSInterop.JSRuntimeExtensions";
+    private const string JSObjectReferenceExtensionsTypeName = "Microsoft.JSInterop.JSObjectReferenceExtensions";
+    private const string JSInProcessRuntimeExtensionsTypeName = "Microsoft.JSInterop.JSInProcessRuntimeExtensions";
+    private const string JSInProcessObjectReferenceExtensionsTypeName = "Microsoft.JSInterop.JSInProcessObjectReferenceExtensions";
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
         ImmutableArray.Create(DiagnosticDescriptors.UseInvokeVoidAsyncForObjectReturn);
 
@@ -24,10 +29,15 @@ public sealed class InvokeAsyncOfObjectAnalyzer : DiagnosticAnalyzer
 
         context.RegisterCompilationStartAction(compilationContext =>
         {
+            // Cache type lookups once per compilation
             var ijsRuntimeType = compilationContext.Compilation.GetTypeByMetadataName("Microsoft.JSInterop.IJSRuntime");
             var ijsObjectReferenceType = compilationContext.Compilation.GetTypeByMetadataName("Microsoft.JSInterop.IJSObjectReference");
             var ijsInProcessRuntimeType = compilationContext.Compilation.GetTypeByMetadataName("Microsoft.JSInterop.IJSInProcessRuntime");
             var ijsInProcessObjectReferenceType = compilationContext.Compilation.GetTypeByMetadataName("Microsoft.JSInterop.IJSInProcessObjectReference");
+            var jsRuntimeExtensionsType = compilationContext.Compilation.GetTypeByMetadataName(JSRuntimeExtensionsTypeName);
+            var jsObjectReferenceExtensionsType = compilationContext.Compilation.GetTypeByMetadataName(JSObjectReferenceExtensionsTypeName);
+            var jsInProcessRuntimeExtensionsType = compilationContext.Compilation.GetTypeByMetadataName(JSInProcessRuntimeExtensionsTypeName);
+            var jsInProcessObjectReferenceExtensionsType = compilationContext.Compilation.GetTypeByMetadataName(JSInProcessObjectReferenceExtensionsTypeName);
             var objectType = compilationContext.Compilation.GetSpecialType(SpecialType.System_Object);
 
             if (ijsRuntimeType is null && ijsObjectReferenceType is null)
@@ -60,7 +70,7 @@ public sealed class InvokeAsyncOfObjectAnalyzer : DiagnosticAnalyzer
                 var receiverType = GetReceiverType(invocation);
 
                 if (!IsJSInteropType(receiverType, ijsRuntimeType, ijsObjectReferenceType, ijsInProcessRuntimeType, ijsInProcessObjectReferenceType) &&
-                    !IsJSInteropExtensionClass(containingType))
+                    !IsJSInteropExtensionClass(containingType, jsRuntimeExtensionsType, jsObjectReferenceExtensionsType, jsInProcessRuntimeExtensionsType, jsInProcessObjectReferenceExtensionsType))
                 {
                     return;
                 }
@@ -138,13 +148,17 @@ public sealed class InvokeAsyncOfObjectAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    private static bool IsJSInteropExtensionClass(INamedTypeSymbol containingType)
+    private static bool IsJSInteropExtensionClass(
+        INamedTypeSymbol containingType,
+        INamedTypeSymbol? jsRuntimeExtensionsType,
+        INamedTypeSymbol? jsObjectReferenceExtensionsType,
+        INamedTypeSymbol? jsInProcessRuntimeExtensionsType,
+        INamedTypeSymbol? jsInProcessObjectReferenceExtensionsType)
     {
-        // Check for the extension classes that provide InvokeAsync methods
-        var fullName = containingType.ToDisplayString();
-        return fullName == "Microsoft.JSInterop.JSRuntimeExtensions" ||
-               fullName == "Microsoft.JSInterop.JSObjectReferenceExtensions" ||
-               fullName == "Microsoft.JSInterop.JSInProcessRuntimeExtensions" ||
-               fullName == "Microsoft.JSInterop.JSInProcessObjectReferenceExtensions";
+        // Use symbol equality comparison instead of string comparison
+        return SymbolEqualityComparer.Default.Equals(containingType, jsRuntimeExtensionsType) ||
+               SymbolEqualityComparer.Default.Equals(containingType, jsObjectReferenceExtensionsType) ||
+               SymbolEqualityComparer.Default.Equals(containingType, jsInProcessRuntimeExtensionsType) ||
+               SymbolEqualityComparer.Default.Equals(containingType, jsInProcessObjectReferenceExtensionsType);
     }
 }
