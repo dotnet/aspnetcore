@@ -28,7 +28,7 @@ public class DisplayNameLabel<TValue> : ComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (For == null)
+        if (For is null)
         {
             throw new InvalidOperationException($"{GetType()} requires a value for the " +
                 $"{nameof(For)} parameter.");
@@ -54,13 +54,17 @@ public class DisplayNameLabel<TValue> : ComponentBase
             var member = memberExpression.Member;
 
             var displayAttribute = member.GetCustomAttribute<DisplayAttribute>();
-            if (displayAttribute?.Name != null)
+            if (displayAttribute != null)
             {
-                return displayAttribute.Name;
+                var name = displayAttribute.GetName();
+                if (name != null)
+                {
+                    return name;
+                }
             }
 
             var displayNameAttribute = member.GetCustomAttribute<DisplayNameAttribute>();
-            if (displayNameAttribute?.DisplayName != null)
+            if (displayNameAttribute?.DisplayName is not null)
             {
                 return displayNameAttribute.DisplayName;
             }
