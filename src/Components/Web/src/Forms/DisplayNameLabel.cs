@@ -20,12 +20,6 @@ public class DisplayNameLabel<TValue> : ComponentBase
     private string? _displayName;
 
     /// <summary>
-    /// Gets or sets a collection of additional attributes that will be applied to the created element.
-    /// </summary>
-    [Parameter(CaptureUnmatchedValues = true)]
-    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
-
-    /// <summary>
     /// Specifies the field for which the display name should be shown.
     /// </summary>
     [Parameter, EditorRequired]
