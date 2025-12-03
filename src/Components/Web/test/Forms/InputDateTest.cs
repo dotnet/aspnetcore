@@ -26,10 +26,10 @@ public class InputDateTest
         await inputComponent.SetCurrentValueAsStringAsync("invalidDate");
 
         // Assert
-        // DateTime defaults to DateTimeLocal, so the error message is "date and time"
+        // DateTime defaults to Date for backward compatibility
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
-        Assert.Contains("The Date property field must be a date and time.", validationMessages);
+        Assert.Contains("The Date property field must be a date.", validationMessages);
     }
 
     [Fact]
@@ -51,7 +51,7 @@ public class InputDateTest
     }
 
     [Fact]
-    public async Task DateTimeDefaultsToDateTimeLocal()
+    public async Task DateTimeDefaultsToDate()
     {
         // Arrange
         var model = new TestModel();
@@ -64,12 +64,12 @@ public class InputDateTest
         // Act
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Assert - DateTime should default to DateTimeLocal, not explicitly set Type
+        // Assert - DateTime should default to Date (Type is null, auto-detected)
         Assert.Null(inputComponent.Type);
     }
 
     [Fact]
-    public async Task DateTimeOffsetDefaultsToDateTimeLocal()
+    public async Task DateTimeOffsetDefaultsToDate()
     {
         // Arrange
         var model = new TestModelDateTimeOffset();
@@ -82,7 +82,7 @@ public class InputDateTest
         // Act
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Assert - DateTimeOffset should default to DateTimeLocal
+        // Assert - DateTimeOffset should default to Date (Type is null, auto-detected)
         Assert.Null(inputComponent.Type);
     }
 
@@ -100,7 +100,7 @@ public class InputDateTest
         // Act
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Assert - DateOnly should default to Date
+        // Assert - DateOnly should default to Date (Type is null, auto-detected)
         Assert.Null(inputComponent.Type);
     }
 
@@ -118,7 +118,7 @@ public class InputDateTest
         // Act
         var inputComponent = await InputRenderer.RenderAndGetComponent(rootComponent);
 
-        // Assert - TimeOnly should default to Time
+        // Assert - TimeOnly should default to Time (Type is null, auto-detected)
         Assert.Null(inputComponent.Type);
     }
 
@@ -133,7 +133,7 @@ public class InputDateTest
             ValueExpression = () => model.DateProperty,
             AdditionalAttributes = new Dictionary<string, object>
             {
-                { "Type", InputDateType.Date }
+                { "Type", InputDateType.DateTimeLocal }
             }
         };
         var fieldIdentifier = FieldIdentifier.Create(() => model.DateProperty);
@@ -142,10 +142,10 @@ public class InputDateTest
         // Act
         await inputComponent.SetCurrentValueAsStringAsync("invalidDate");
 
-        // Assert - Explicitly set Type=Date should produce "date" error message
+        // Assert - Explicitly set Type=DateTimeLocal should produce "date and time" error message
         var validationMessages = rootComponent.EditContext.GetValidationMessages(fieldIdentifier);
         Assert.NotEmpty(validationMessages);
-        Assert.Contains("The DateProperty field must be a date.", validationMessages);
+        Assert.Contains("The DateProperty field must be a date and time.", validationMessages);
     }
 
     [Fact]

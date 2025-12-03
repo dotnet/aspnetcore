@@ -33,9 +33,8 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
     /// Gets or sets the type of HTML input to be rendered.
     /// If not specified, the type is automatically inferred based on <typeparamref name="TValue"/>:
     /// <list type="bullet">
-    /// <item><description><see cref="DateTime"/> and <see cref="DateTimeOffset"/> default to <see cref="InputDateType.DateTimeLocal"/></description></item>
-    /// <item><description><see cref="DateOnly"/> defaults to <see cref="InputDateType.Date"/></description></item>
     /// <item><description><see cref="TimeOnly"/> defaults to <see cref="InputDateType.Time"/></description></item>
+    /// <item><description>All other types (<see cref="DateTime"/>, <see cref="DateTimeOffset"/>, <see cref="DateOnly"/>) default to <see cref="InputDateType.Date"/></description></item>
     /// </list>
     /// </summary>
     [Parameter] public InputDateType? Type { get; set; }
@@ -92,17 +91,13 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
     {
         var type = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
 
-        if (type == typeof(DateOnly))
-        {
-            return InputDateType.Date;
-        }
-
         if (type == typeof(TimeOnly))
         {
             return InputDateType.Time;
         }
 
-        return InputDateType.DateTimeLocal; // DateTime and DateTimeOffset
+        // DateTime, DateTimeOffset, and DateOnly all default to Date for backward compatibility
+        return InputDateType.Date;
     }
 
     /// <inheritdoc />
