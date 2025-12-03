@@ -6,9 +6,6 @@ using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
-/// <summary>
-/// An implementation of <see cref="IHostEnvironment"/> that wraps <see cref="IWebAssemblyHostEnvironment"/>.
-/// </summary>
 internal sealed class WebAssemblyHostEnvironmentAdapter : IHostEnvironment
 {
     private readonly IWebAssemblyHostEnvironment _webAssemblyHostEnvironment;
