@@ -69,30 +69,17 @@
         var combinedClass = OnRowClick.HasDelegate
             ? string.IsNullOrEmpty(rowClass) ? "row-clickable" : $"row-clickable {rowClass}"
             : rowClass;
+        var rowClick = OnRowClick.HasDelegate ? EventCallback.Factory.Create<MouseEventArgs>(this, () => OnRowClick.InvokeAsync(item)) : default;
 
-        if (OnRowClick.HasDelegate)
-        {
-            <tr @key="@(ItemKey(item))"
-                aria-rowindex="@rowIndex"
-                class="@combinedClass"
-                @onclick="@(() => OnRowClick.InvokeAsync(item))">
-                @foreach (var col in _columns)
-                {
-                    <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
-                }
-            </tr>
-        }
-        else
-        {
-            <tr @key="@(ItemKey(item))"
-                aria-rowindex="@rowIndex"
-                class="@combinedClass">
-                @foreach (var col in _columns)
-                {
-                    <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
-                }
-            </tr>
-        }
+        <tr @key="@(ItemKey(item))"
+            aria-rowindex="@rowIndex"
+            class="@combinedClass"
+            @onclick="@rowClick">
+            @foreach (var col in _columns)
+            {
+                <td class="@ColumnClass(col)" @key="@col">@{ col.CellContent(__builder, item); }</td>
+            }
+        </tr>
     }
 
     private void RenderPlaceholderRow(RenderTreeBuilder __builder, PlaceholderContext placeholderContext)
