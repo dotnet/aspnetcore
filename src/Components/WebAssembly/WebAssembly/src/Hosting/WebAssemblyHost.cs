@@ -149,7 +149,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
             WebAssemblyNavigationManager.Instance.CreateLogger(loggerFactory);
 
             RootComponentOperationBatch? initialOperationBatch = null;
-            if (System.Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
+            if (Environment.GetEnvironmentVariable("__BLAZOR_WEBASSEMBLY_WAIT_FOR_ROOT_COMPONENTS") == "true")
             {
                 // In Blazor web, we wait for the JS side to tell us about the components available
                 // before we render the initial set of components. Any additional update goes through

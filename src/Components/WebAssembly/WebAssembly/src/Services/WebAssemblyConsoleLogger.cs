@@ -14,7 +14,7 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
 {
     private const string _loglevelPadding = ": ";
     private static readonly string _messagePadding = new(' ', GetLogLevelString(LogLevel.Information).Length + _loglevelPadding.Length);
-    private static readonly string _newLineWithMessagePadding = System.Environment.NewLine + _messagePadding;
+    private static readonly string _newLineWithMessagePadding = Environment.NewLine + _messagePadding;
     private static readonly StringBuilder _logBuilder = new StringBuilder();
 
     private readonly string _name;
@@ -121,7 +121,7 @@ internal sealed class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
 
             var len = logBuilder.Length;
             logBuilder.Append(message);
-            logBuilder.Replace(System.Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
+            logBuilder.Replace(Environment.NewLine, _newLineWithMessagePadding, len, message.Length);
         }
 
         // Example:

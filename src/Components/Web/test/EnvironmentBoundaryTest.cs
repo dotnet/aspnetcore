@@ -3,12 +3,13 @@
 
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Hosting;
 using Moq;
 
 namespace Microsoft.AspNetCore.Components;
 
-public class EnvironmentComponentTest
+public class EnvironmentBoundaryTest
 {
     [Theory]
     [InlineData("Development", "Development")]
@@ -57,12 +58,12 @@ public class EnvironmentComponentTest
     {
         // When no Include is specified and Exclude is not specified or empty,
         // the component should render its content
-        var (renderer, componentId) = CreateEnvironmentComponent(environmentName);
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent(environmentName);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { nameof(Environment.Include), includeAttribute },
-            { nameof(Environment.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
+            { nameof(EnvironmentBoundary.Include), includeAttribute },
+            { nameof(EnvironmentBoundary.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
         });
 
         renderer.RenderRootComponent(componentId, parameters);
@@ -80,12 +81,12 @@ public class EnvironmentComponentTest
     [InlineData("Production,Staging", "Development")]
     public void ShowsContentWhenCurrentEnvironmentIsNotInExcludeList(string excludeAttribute, string environmentName)
     {
-        var (renderer, componentId) = CreateEnvironmentComponent(environmentName);
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent(environmentName);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { nameof(Environment.Exclude), excludeAttribute },
-            { nameof(Environment.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
+            { nameof(EnvironmentBoundary.Exclude), excludeAttribute },
+            { nameof(EnvironmentBoundary.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
         });
 
         renderer.RenderRootComponent(componentId, parameters);
@@ -104,12 +105,12 @@ public class EnvironmentComponentTest
     [InlineData("Production,Development", "Development")]
     public void HidesContentWhenCurrentEnvironmentIsInExcludeList(string excludeAttribute, string environmentName)
     {
-        var (renderer, componentId) = CreateEnvironmentComponent(environmentName);
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent(environmentName);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { nameof(Environment.Exclude), excludeAttribute },
-            { nameof(Environment.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
+            { nameof(EnvironmentBoundary.Exclude), excludeAttribute },
+            { nameof(EnvironmentBoundary.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
         });
 
         renderer.RenderRootComponent(componentId, parameters);
@@ -125,13 +126,13 @@ public class EnvironmentComponentTest
     [InlineData("Development,Staging", "Staging", "Staging")] // In include, also in exclude -> hide
     public void ExcludeTakesPrecedenceOverInclude(string includeAttribute, string excludeAttribute, string environmentName)
     {
-        var (renderer, componentId) = CreateEnvironmentComponent(environmentName);
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent(environmentName);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { nameof(Environment.Include), includeAttribute },
-            { nameof(Environment.Exclude), excludeAttribute },
-            { nameof(Environment.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
+            { nameof(EnvironmentBoundary.Include), includeAttribute },
+            { nameof(EnvironmentBoundary.Exclude), excludeAttribute },
+            { nameof(EnvironmentBoundary.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
         });
 
         renderer.RenderRootComponent(componentId, parameters);
@@ -147,13 +148,13 @@ public class EnvironmentComponentTest
     [InlineData("Development,Staging", "Production", "Staging")] // In include, not in exclude -> show
     public void ShowsContentWhenInIncludeButNotInExclude(string includeAttribute, string excludeAttribute, string environmentName)
     {
-        var (renderer, componentId) = CreateEnvironmentComponent(environmentName);
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent(environmentName);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { nameof(Environment.Include), includeAttribute },
-            { nameof(Environment.Exclude), excludeAttribute },
-            { nameof(Environment.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
+            { nameof(EnvironmentBoundary.Include), includeAttribute },
+            { nameof(EnvironmentBoundary.Exclude), excludeAttribute },
+            { nameof(EnvironmentBoundary.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
         });
 
         renderer.RenderRootComponent(componentId, parameters);
@@ -172,12 +173,12 @@ public class EnvironmentComponentTest
     [InlineData("\t")]
     public void HidesContentWhenEnvironmentNameIsNullOrEmpty(string environmentName)
     {
-        var (renderer, componentId) = CreateEnvironmentComponent(environmentName);
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent(environmentName);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { nameof(Environment.Include), "Development" },
-            { nameof(Environment.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
+            { nameof(EnvironmentBoundary.Include), "Development" },
+            { nameof(EnvironmentBoundary.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
         });
 
         renderer.RenderRootComponent(componentId, parameters);
@@ -191,11 +192,11 @@ public class EnvironmentComponentTest
     [Fact]
     public void RendersNothingWhenChildContentIsNull()
     {
-        var (renderer, componentId) = CreateEnvironmentComponent("Development");
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent("Development");
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { nameof(Environment.Include), "Development" },
+            { nameof(EnvironmentBoundary.Include), "Development" },
         });
 
         renderer.RenderRootComponent(componentId, parameters);
@@ -206,12 +207,12 @@ public class EnvironmentComponentTest
 
     private void ShouldShowContentWithInclude(string includeAttribute, string environmentName)
     {
-        var (renderer, componentId) = CreateEnvironmentComponent(environmentName);
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent(environmentName);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { nameof(Environment.Include), includeAttribute },
-            { nameof(Environment.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
+            { nameof(EnvironmentBoundary.Include), includeAttribute },
+            { nameof(EnvironmentBoundary.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
         });
 
         renderer.RenderRootComponent(componentId, parameters);
@@ -224,12 +225,12 @@ public class EnvironmentComponentTest
 
     private void ShouldHideContentWithInclude(string includeAttribute, string environmentName)
     {
-        var (renderer, componentId) = CreateEnvironmentComponent(environmentName);
+        var (renderer, componentId) = CreateEnvironmentBoundaryComponent(environmentName);
 
         var parameters = ParameterView.FromDictionary(new Dictionary<string, object>
         {
-            { nameof(Environment.Include), includeAttribute },
-            { nameof(Environment.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
+            { nameof(EnvironmentBoundary.Include), includeAttribute },
+            { nameof(EnvironmentBoundary.ChildContent), (RenderFragment)(builder => builder.AddContent(0, "Test Content")) },
         });
 
         renderer.RenderRootComponent(componentId, parameters);
@@ -240,7 +241,7 @@ public class EnvironmentComponentTest
             frame.TextContent == "Test Content");
     }
 
-    private static (TestRenderer Renderer, int ComponentId) CreateEnvironmentComponent(string environmentName)
+    private static (TestRenderer Renderer, int ComponentId) CreateEnvironmentBoundaryComponent(string environmentName)
     {
         var serviceProvider = new TestServiceProvider();
         var hostEnvironment = new Mock<IHostEnvironment>();
@@ -248,7 +249,7 @@ public class EnvironmentComponentTest
         serviceProvider.AddService<IHostEnvironment>(hostEnvironment.Object);
 
         var renderer = new TestRenderer(serviceProvider);
-        var component = (Environment)renderer.InstantiateComponent<Environment>();
+        var component = (EnvironmentBoundary)renderer.InstantiateComponent<EnvironmentBoundary>();
         var componentId = renderer.AssignRootComponentId(component);
 
         return (renderer, componentId);

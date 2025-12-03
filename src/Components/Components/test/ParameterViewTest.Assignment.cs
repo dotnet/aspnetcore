@@ -383,8 +383,8 @@ public partial class ParameterViewTest
         // Assert
         Assert.Equal(
             $"The property '{nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues)}' on component type '{typeof(HasCaptureUnmatchedValuesProperty).FullName}' cannot be set explicitly when " +
-            $"also used to capture unmatched values. Unmatched values:" + System.Environment.NewLine +
-            $"test1" + System.Environment.NewLine +
+            $"also used to capture unmatched values. Unmatched values:" + Environment.NewLine +
+            $"test1" + Environment.NewLine +
             $"test2",
             ex.Message);
     }
@@ -407,8 +407,8 @@ public partial class ParameterViewTest
         // Assert
         Assert.Equal(
             $"The property '{nameof(HasCaptureUnmatchedValuesProperty.CaptureUnmatchedValues)}' on component type '{typeof(HasCaptureUnmatchedValuesProperty).FullName}' cannot be set explicitly when " +
-            $"also used to capture unmatched values. Unmatched values:" + System.Environment.NewLine +
-            $"test2" + System.Environment.NewLine +
+            $"also used to capture unmatched values. Unmatched values:" + Environment.NewLine +
+            $"test2" + Environment.NewLine +
             $"test1",
             ex.Message);
     }
@@ -428,8 +428,8 @@ public partial class ParameterViewTest
             $"Multiple properties were found on component type '{typeof(HasDuplicateCaptureUnmatchedValuesProperty).FullName}' " +
             $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
             $"Only a single property per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
-            $"Properties:" + System.Environment.NewLine +
-            $"{nameof(HasDuplicateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp1)}" + System.Environment.NewLine +
+            $"Properties:" + Environment.NewLine +
+            $"{nameof(HasDuplicateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp1)}" + Environment.NewLine +
             $"{nameof(HasDuplicateCaptureUnmatchedValuesProperty.CaptureUnmatchedValuesProp2)}",
             ex.Message);
     }

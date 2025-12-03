@@ -43,7 +43,7 @@ public class WebAssemblyCultureProviderTest
     public void ThrowIfCultureChangeIsUnsupported_ThrowsIfCulturesAreDifferentAndICUShardingIsUsed()
     {
         // Arrange
-        System.Environment.SetEnvironmentVariable("__BLAZOR_SHARDED_ICU", "1");
+        Environment.SetEnvironmentVariable("__BLAZOR_SHARDED_ICU", "1");
         try
         {
             // WebAssembly is initialized with en-US
@@ -59,7 +59,7 @@ public class WebAssemblyCultureProviderTest
         }
         finally
         {
-            System.Environment.SetEnvironmentVariable("__BLAZOR_SHARDED_ICU", null);
+            Environment.SetEnvironmentVariable("__BLAZOR_SHARDED_ICU", null);
         }
     }
 }

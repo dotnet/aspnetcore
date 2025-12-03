@@ -13,7 +13,7 @@ internal sealed class WebAssemblyDispatcher : Dispatcher
     internal static int _mainManagedThreadId;
 
     // we really need the UI thread not just the right context, because JS objects have thread affinity
-    public override bool CheckAccess() => _mainManagedThreadId == System.Environment.CurrentManagedThreadId;
+    public override bool CheckAccess() => _mainManagedThreadId == Environment.CurrentManagedThreadId;
 
     public override Task InvokeAsync(Action workItem)
     {

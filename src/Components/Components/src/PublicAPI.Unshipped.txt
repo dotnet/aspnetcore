@@ -1,9 +1,1 @@
 #nullable enable
-Microsoft.AspNetCore.Components.Environment
-Microsoft.AspNetCore.Components.Environment.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment?
-Microsoft.AspNetCore.Components.Environment.ChildContent.set -> void
-Microsoft.AspNetCore.Components.Environment.Environment() -> void
-Microsoft.AspNetCore.Components.Environment.Exclude.get -> string?
-Microsoft.AspNetCore.Components.Environment.Exclude.set -> void
-Microsoft.AspNetCore.Components.Environment.Include.get -> string?
-Microsoft.AspNetCore.Components.Environment.Include.set -> void

@@ -239,8 +239,8 @@ internal static class ComponentProperties
     {
         throw new InvalidOperationException(
             $"The property '{parameterName}' on component type '{targetType.FullName}' cannot be set explicitly " +
-            $"when also used to capture unmatched values. Unmatched values:" + System.Environment.NewLine +
-            string.Join(System.Environment.NewLine, unmatched.Keys));
+            $"when also used to capture unmatched values. Unmatched values:" + Environment.NewLine +
+            string.Join(Environment.NewLine, unmatched.Keys));
     }
 
     [DoesNotReturn]
@@ -260,8 +260,8 @@ internal static class ComponentProperties
         throw new InvalidOperationException(
             $"Multiple properties were found on component type '{targetType.FullName}' with " +
             $"'{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. Only a single property " +
-            $"per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. Properties:" + System.Environment.NewLine +
-            string.Join(System.Environment.NewLine, propertyNames));
+            $"per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. Properties:" + Environment.NewLine +
+            string.Join(Environment.NewLine, propertyNames));
     }
 
     [DoesNotReturn]

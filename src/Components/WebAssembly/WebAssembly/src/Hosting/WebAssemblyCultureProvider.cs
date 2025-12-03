@@ -43,7 +43,7 @@ internal partial class WebAssemblyCultureProvider
         // It allows us to capture the initial .NET culture that is configured based on the browser language.
         // The current method is invoked as part of WebAssemblyHost.RunAsync i.e. after user code in Program.MainAsync has run
         // thus allows us to detect if the culture was changed by user code.
-        if (System.Environment.GetEnvironmentVariable("__BLAZOR_SHARDED_ICU") == "1" &&
+        if (Environment.GetEnvironmentVariable("__BLAZOR_SHARDED_ICU") == "1" &&
             (!CultureInfo.CurrentCulture.Name.Equals(InitialCulture.Name, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException("Blazor detected a change in the application's culture that is not supported with the current project configuration. " +

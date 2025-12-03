@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.Extensions.Hosting;
 
-namespace Microsoft.AspNetCore.Components;
+namespace Microsoft.AspNetCore.Components.Web;
 
 /// <summary>
 /// A component that renders its child content only when the current hosting environment
@@ -17,23 +17,23 @@ namespace Microsoft.AspNetCore.Components;
 /// <example>
 /// The following example shows how to conditionally render content based on the environment:
 /// <code>
-/// &lt;Environment Include="Development"&gt;
+/// &lt;EnvironmentBoundary Include="Development"&gt;
 ///     &lt;div class="alert alert-warning"&gt;
 ///         You are running in Development mode. Debug features are enabled.
 ///     &lt;/div&gt;
-/// &lt;/Environment&gt;
+/// &lt;/EnvironmentBoundary&gt;
 ///
-/// &lt;Environment Include="Development, Staging"&gt;
+/// &lt;EnvironmentBoundary Include="Development, Staging"&gt;
 ///     &lt;p&gt;This is a pre-production environment.&lt;/p&gt;
-/// &lt;/Environment&gt;
+/// &lt;/EnvironmentBoundary&gt;
 ///
-/// &lt;Environment Exclude="Production"&gt;
+/// &lt;EnvironmentBoundary Exclude="Production"&gt;
 ///     &lt;p&gt;Debug information: @DateTime.Now&lt;/p&gt;
-/// &lt;/Environment&gt;
+/// &lt;/EnvironmentBoundary&gt;
 /// </code>
 /// </example>
 /// </remarks>
-public sealed class Environment : ComponentBase
+public sealed class EnvironmentBoundary : ComponentBase
 {
     private static readonly char[] NameSeparator = [','];
 
