@@ -135,6 +135,11 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             _renderer.SetNotFoundWhenResponseNotStarted();
         }
 
+        if (_renderer.ForbiddenEventArgs != null)
+        {
+            _renderer.SetForbiddenWhenResponseNotStarted();
+        }
+
         if (!quiesceTask.IsCompleted)
         {
             // An incomplete QuiescenceTask indicates there may be streaming rendering updates.
@@ -167,6 +172,10 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             {
                 await _renderer.SetNotFoundWhenResponseHasStarted();
             }
+            if (_renderer.ForbiddenEventArgs != null)
+            {
+                await _renderer.SetForbiddenWhenResponseHasStarted();
+            }
         }
         else
         {
@@ -186,6 +195,17 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
         {
             // Router did not handle the NotFound event, otherwise this would not be empty.
             // Don't flush the response if we have an unhandled 404 rendering
+            // This will allow the StatusCodePages middleware to re-execute the request
+            context.Response.ContentType = null;
+            return;
+        }
+
+        if (context.Response.StatusCode == StatusCodes.Status403Forbidden &&
+            !isReExecuted &&
+            string.IsNullOrEmpty(_renderer.ForbiddenEventArgs?.Path))
+        {
+            // Router did not handle the Forbidden event, otherwise this would not be empty.
+            // Don't flush the response if we have an unhandled 403 rendering
             // This will allow the StatusCodePages middleware to re-execute the request
             context.Response.ContentType = null;
             return;

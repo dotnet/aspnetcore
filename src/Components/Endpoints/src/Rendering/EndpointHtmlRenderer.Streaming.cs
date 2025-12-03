@@ -231,6 +231,12 @@ internal partial class EndpointHtmlRenderer
         WriteResponseTemplate(writer, httpContext, notFoundUrl, useEnhancedNav: true);
     }
 
+    private static void HandleForbiddenAfterResponseStarted(TextWriter writer, HttpContext httpContext, string forbiddenUrl)
+    {
+        writer.Write("<blazor-ssr><template type=\"forbidden\"");
+        WriteResponseTemplate(writer, httpContext, forbiddenUrl, useEnhancedNav: true);
+    }
+
     private static void HandleNavigationAfterResponseStarted(TextWriter writer, HttpContext httpContext, string destinationUrl)
     {
         writer.Write("<blazor-ssr><template type=\"redirection\"");

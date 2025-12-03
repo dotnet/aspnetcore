@@ -30,6 +30,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     bool _navigationInterceptionEnabled;
     ILogger<Router> _logger;
     string _notFoundPageRoute;
+    string _forbiddenPageRoute;
 
     private string _updateScrollPositionForHashLastLocation;
     private bool _updateScrollPositionForHash;
@@ -82,6 +83,13 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     public Type? NotFoundPage { get; set; }
 
     /// <summary>
+    /// Gets or sets the page content to display when access to a page is forbidden.
+    /// </summary>
+    [Parameter]
+    [DynamicallyAccessedMembers(LinkerFlags.Component)]
+    public Type? ForbiddenPage { get; set; }
+
+    /// <summary>
     /// Gets or sets the content to display when a match is found for the requested route.
     /// </summary>
     [Parameter]
@@ -117,6 +125,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         _locationAbsolute = NavigationManager.Uri;
         NavigationManager.LocationChanged += OnLocationChanged;
         NavigationManager.OnNotFound += OnNotFound;
+        NavigationManager.OnForbidden += OnForbidden;
         RoutingStateProvider = ServiceProvider.GetService<IRoutingStateProvider>();
 
         if (HotReloadManager.Default.MetadataUpdateSupported)
@@ -171,6 +180,28 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
             }
         }
 
+        if (ForbiddenPage != null)
+        {
+            if (!typeof(IComponent).IsAssignableFrom(ForbiddenPage))
+            {
+                throw new InvalidOperationException($"The type {ForbiddenPage.FullName} " +
+                    $"does not implement {typeof(IComponent).FullName}.");
+            }
+
+            var routeAttributes = ForbiddenPage.GetCustomAttributes(typeof(RouteAttribute), inherit: true);
+            if (routeAttributes.Length == 0)
+            {
+                throw new InvalidOperationException($"The type {ForbiddenPage.FullName} " +
+                    $"does not have a {typeof(RouteAttribute).FullName} applied to it.");
+            }
+
+            var routeAttribute = (RouteAttribute)routeAttributes[0];
+            if (routeAttribute.Template != null)
+            {
+                _forbiddenPageRoute = routeAttribute.Template;
+            }
+        }
+
         if (!_onNavigateCalled)
         {
             _onNavigateCalled = true;
@@ -187,6 +218,7 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     {
         NavigationManager.LocationChanged -= OnLocationChanged;
         NavigationManager.OnNotFound -= OnNotFound;
+        NavigationManager.OnForbidden -= OnForbidden;
         if (HotReloadManager.Default.MetadataUpdateSupported)
         {
             HotReloadManager.Default.OnDeltaApplied -= ClearRouteCaches;
@@ -409,6 +441,26 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         }
     }
 
+    private void OnForbidden(object sender, ForbiddenEventArgs args)
+    {
+        bool renderContentIsProvided = ForbiddenPage != null || args.Path != null;
+        if (_renderHandle.IsInitialized && renderContentIsProvided)
+        {
+            if (!string.IsNullOrEmpty(args.Path))
+            {
+                // The path can be set by a subscriber not defined in blazor framework.
+                _renderHandle.Render(builder => RenderComponentByRoute(builder, args.Path));
+            }
+            else
+            {
+                // Having the path set signals to the endpoint renderer that router handled rendering.
+                args.Path = _forbiddenPageRoute;
+                RenderForbidden();
+            }
+            Log.DisplayingForbidden(_logger, args.Path);
+        }
+    }
+
     internal void RenderComponentByRoute(RenderTreeBuilder builder, string route)
     {
         var componentType = FindComponentTypeByRoute(route);
@@ -466,6 +518,29 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
         });
     }
 
+    private void RenderForbidden()
+    {
+        _renderHandle.Render(builder =>
+        {
+            if (ForbiddenPage != null)
+            {
+                builder.OpenComponent<RouteView>(0);
+                builder.AddAttribute(1, nameof(RouteView.RouteData),
+                    new RouteData(ForbiddenPage, _emptyParametersDictionary));
+                builder.CloseComponent();
+            }
+            else
+            {
+                DefaultForbiddenContent(builder);
+            }
+        });
+    }
+
+    private static void DefaultForbiddenContent(RenderTreeBuilder builder)
+    {
+        builder.AddContent(0, "Forbidden");
+    }
+
     async Task IHandleAfterRender.OnAfterRenderAsync()
     {
         if (!_navigationInterceptionEnabled)
@@ -495,6 +570,9 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
 
         [LoggerMessage(4, LogLevel.Debug, $"Displaying contents of {{displayedContentPath}} on request", EventName = "DisplayingNotFoundOnRequest")]
         internal static partial void DisplayingNotFound(ILogger logger, string displayedContentPath);
+
+        [LoggerMessage(5, LogLevel.Debug, $"Displaying contents of {{displayedContentPath}} on forbidden request", EventName = "DisplayingForbiddenOnRequest")]
+        internal static partial void DisplayingForbidden(ILogger logger, string displayedContentPath);
 #pragma warning restore CS0618 // Type or member is obsolete
     }
 }

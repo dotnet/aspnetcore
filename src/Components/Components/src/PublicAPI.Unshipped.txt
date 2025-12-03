@@ -1,1 +1,9 @@
 #nullable enable
+Microsoft.AspNetCore.Components.NavigationManager.Forbidden() -> void
+Microsoft.AspNetCore.Components.NavigationManager.OnForbidden -> System.EventHandler<Microsoft.AspNetCore.Components.Routing.ForbiddenEventArgs!>!
+Microsoft.AspNetCore.Components.Routing.ForbiddenEventArgs
+Microsoft.AspNetCore.Components.Routing.ForbiddenEventArgs.ForbiddenEventArgs() -> void
+Microsoft.AspNetCore.Components.Routing.ForbiddenEventArgs.Path.get -> string?
+Microsoft.AspNetCore.Components.Routing.ForbiddenEventArgs.Path.set -> void
+Microsoft.AspNetCore.Components.Routing.Router.ForbiddenPage.get -> System.Type?
+Microsoft.AspNetCore.Components.Routing.Router.ForbiddenPage.set -> void

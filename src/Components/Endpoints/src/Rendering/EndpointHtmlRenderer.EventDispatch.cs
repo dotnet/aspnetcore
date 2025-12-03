@@ -108,6 +108,35 @@ internal partial class EndpointHtmlRenderer
         SignalRendererToFinishRendering();
     }
 
+    internal void SetForbiddenWhenResponseNotStarted()
+    {
+        _httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+
+        // When the application triggers a Forbidden event, we continue rendering the current batch.
+        // However, after completing this batch, we do not want to process any further UI updates,
+        // as we are going to return a 403 status and discard the UI updates generated so far.
+        SignalRendererToFinishRendering();
+    }
+
+    internal async Task SetForbiddenWhenResponseHasStarted()
+    {
+        if (string.IsNullOrEmpty(_forbiddenUrl))
+        {
+            var baseUri = $"{_httpContext.Request.Scheme}://{_httpContext.Request.Host}{_httpContext.Request.PathBase}/";
+            _forbiddenUrl = GetForbiddenUrl(baseUri, ForbiddenEventArgs);
+        }
+        var defaultBufferSize = 16 * 1024;
+        await using var writer = new HttpResponseStreamWriter(_httpContext.Response.Body, Encoding.UTF8, defaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+        using var bufferWriter = new BufferedTextWriter(writer);
+        HandleForbiddenAfterResponseStarted(bufferWriter, _httpContext, _forbiddenUrl);
+        await bufferWriter.FlushAsync();
+
+        // When the application triggers a Forbidden event, we continue rendering the current batch.
+        // However, after completing this batch, we do not want to process any further UI updates,
+        // as we are going to return a 403 status and discard the UI updates generated so far.
+        SignalRendererToFinishRendering();
+    }
+
     private string GetNotFoundUrl(string baseUri, NotFoundEventArgs? args)
     {
         string? path = args?.Path;
@@ -117,6 +146,22 @@ internal partial class EndpointHtmlRenderer
             if (string.IsNullOrEmpty(pathFormat))
             {
                 throw new InvalidOperationException($"The {nameof(Router.NotFoundPage)} route must be specified or re-execution middleware has to be set to render not found content.");
+            }
+
+            path = pathFormat;
+        }
+        return $"{baseUri}{path.TrimStart('/')}";
+    }
+
+    private string GetForbiddenUrl(string baseUri, ForbiddenEventArgs? args)
+    {
+        string? path = args?.Path;
+        if (string.IsNullOrEmpty(path))
+        {
+            var pathFormat = _httpContext.Items[nameof(StatusCodePagesOptions)] as string;
+            if (string.IsNullOrEmpty(pathFormat))
+            {
+                throw new InvalidOperationException($"The {nameof(Router.ForbiddenPage)} route must be specified or re-execution middleware has to be set to render forbidden content.");
             }
 
             path = pathFormat;
