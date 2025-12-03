@@ -198,4 +198,13 @@
   <data name="PersistentStateShouldNotHavePropertyInitializer_Title" xml:space="preserve">
     <value>Property with [PersistentState] should not have initializer</value>
   </data>
+  <data name="UseInvokeVoidAsyncForObjectReturn_Description" xml:space="preserve">
+    <value>JavaScript interop calls that do not expect a return value should use InvokeVoidAsync instead of InvokeAsync&lt;object&gt;. Using InvokeAsync&lt;object&gt; may cause serialization issues with non-serializable JavaScript values.</value>
+  </data>
+  <data name="UseInvokeVoidAsyncForObjectReturn_Format" xml:space="preserve">
+    <value>Use 'InvokeVoidAsync' instead of 'InvokeAsync&lt;object&gt;'. Return values of type 'object' cannot be deserialized and may cause serialization errors if the JavaScript function returns a non-serializable value.</value>
+  </data>
+  <data name="UseInvokeVoidAsyncForObjectReturn_Title" xml:space="preserve">
+    <value>Use InvokeVoidAsync instead of InvokeAsync&lt;object&gt;</value>
+  </data>
 </root>
