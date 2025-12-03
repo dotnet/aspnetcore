@@ -621,7 +621,7 @@ configuration:
       then:
       - removeMilestone
       - addMilestone:
-          milestone: 10.0.1
+          milestone: 10.0.2
       description: '[Milestone Assignments] Assign Milestone to PRs merged to release/10.0 branch'
     - if:
       - payloadType: Pull_Request
@@ -760,6 +760,7 @@ configuration:
       description: '[Infrastructure PRs] Add area-infrastructure label to dependabot update Pull Requests & enable auto-merge'
 onFailure:
 onSuccess:
+
 
 
 
