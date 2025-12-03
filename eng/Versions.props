@@ -59,6 +59,8 @@
     <UsingToolVSSDK>true</UsingToolVSSDK>
     <!-- Disable XLIFF tasks -->
     <UsingToolXliff>false</UsingToolXliff>
+    <!-- Allow missing prune package data when not targeting the current .NET version -->
+    <AllowMissingPrunePackageData Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">true</AllowMissingPrunePackageData>
   </PropertyGroup>
 
   <!--
