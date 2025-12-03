@@ -216,7 +216,7 @@ internal static class JsonUtils
                 return;
             }
 
-            _inner.Return(array);
+            _inner.ReturnAndClearReferences(array, array.Length);
         }
     }
 }
