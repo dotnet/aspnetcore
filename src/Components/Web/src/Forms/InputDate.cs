@@ -92,12 +92,17 @@ public class InputDate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberType
     {
         var type = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
 
-        return type switch
+        if (type == typeof(DateOnly))
         {
-            Type t when t == typeof(DateOnly) => InputDateType.Date,
-            Type t when t == typeof(TimeOnly) => InputDateType.Time,
-            _ => InputDateType.DateTimeLocal, // DateTime and DateTimeOffset
-        };
+            return InputDateType.Date;
+        }
+
+        if (type == typeof(TimeOnly))
+        {
+            return InputDateType.Time;
+        }
+
+        return InputDateType.DateTimeLocal; // DateTime and DateTimeOffset
     }
 
     /// <inheritdoc />
