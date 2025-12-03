@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.HotReload;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.Forms;
@@ -37,13 +38,13 @@ public class DisplayName<TValue> : IComponent
     }
 
     /// <inheritdoc />
-    public void Attach(RenderHandle renderHandle)
+    void IComponent.Attach(RenderHandle renderHandle)
     {
         _renderHandle = renderHandle;
     }
 
     /// <inheritdoc />
-    public Task SetParametersAsync(ParameterView parameters)
+    Task IComponent.SetParametersAsync(ParameterView parameters)
     {
         parameters.SetParameterProperties(this);
 

@@ -44,5 +44,3 @@ Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>
 Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.DisplayName() -> void
 Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
 Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.For.set -> void
-override Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
-override Microsoft.AspNetCore.Components.Forms.DisplayName<TValue>.OnParametersSet() -> void
