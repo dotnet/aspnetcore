@@ -556,10 +556,10 @@ internal sealed class AdaptiveCapacityDictionary<TKey, TValue> : IDictionary<TKe
 
         if (_count > 0)
         {
-            var arrayStorageSpanLocal = ArrayStorageSpan; // call Span.Slice once rather than within loop
-            for (var i = 0; i < arrayStorageSpanLocal.Length; ++i)
+            var localSpan = ArrayStorageSpan; // incur slice + bounds check once upfront instead of within loop
+            for (var i = 0; i < localSpan.Length; ++i)
             {
-                if (_comparer.Equals(arrayStorageSpanLocal[i].Key, key))
+                if (_comparer.Equals(localSpan[i].Key, key))
                 {
                     return i;
                 }
