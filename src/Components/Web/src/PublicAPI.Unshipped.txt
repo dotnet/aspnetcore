@@ -40,3 +40,11 @@ Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(byte[]! data, 
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MediaSource(System.IO.Stream! stream, string! mimeType, string! cacheKey) -> void
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.MimeType.get -> string!
 Microsoft.AspNetCore.Components.Web.Media.MediaSource.Stream.get -> System.IO.Stream!
+Microsoft.AspNetCore.Components.Forms.DisplayNameLabel<TValue>
+Microsoft.AspNetCore.Components.Forms.DisplayNameLabel<TValue>.AdditionalAttributes.get -> System.Collections.Generic.IReadOnlyDictionary<string!, object!>?
+Microsoft.AspNetCore.Components.Forms.DisplayNameLabel<TValue>.AdditionalAttributes.set -> void
+Microsoft.AspNetCore.Components.Forms.DisplayNameLabel<TValue>.DisplayNameLabel() -> void
+Microsoft.AspNetCore.Components.Forms.DisplayNameLabel<TValue>.For.get -> System.Linq.Expressions.Expression<System.Func<TValue>!>?
+Microsoft.AspNetCore.Components.Forms.DisplayNameLabel<TValue>.For.set -> void
+override Microsoft.AspNetCore.Components.Forms.DisplayNameLabel<TValue>.BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder! builder) -> void
+override Microsoft.AspNetCore.Components.Forms.DisplayNameLabel<TValue>.OnParametersSet() -> void
