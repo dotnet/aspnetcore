@@ -43,15 +43,6 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     }
 
     /// <summary>
-    ///  Gets or sets a value that indicates whether there is a pending queued render.
-    /// </summary>
-    internal bool HasPendingQueuedRender
-    {
-        get => _hasPendingQueuedRender;
-        set => _hasPendingQueuedRender = value;
-    }
-
-    /// <summary>
     /// Gets the <see cref="Components.RendererInfo"/> the component is running on.
     /// </summary>
     protected RendererInfo RendererInfo => _renderHandle.RendererInfo;
@@ -133,7 +124,11 @@ public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRend
     {
         if (_hasPendingQueuedRender)
         {
-            return;
+            if (!_renderHandle.RemoveAllowNextRender())
+            {
+                return;
+            }
+            _hasPendingQueuedRender = false;
         }
 
         if (_hasNeverRendered || ShouldRender() || _renderHandle.IsRenderingOnMetadataUpdate)

@@ -56,6 +56,8 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     private bool _hotReloadInitialized;
     private HotReloadRenderHandler? _hotReloadRenderHandler;
 
+    private HashSet<int>? _componentsAllowNextRender;
+
     /// <summary>
     /// Allows the caller to handle exceptions from the SynchronizationContext when one is available.
     /// </summary>
@@ -401,6 +403,17 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
     {
         _componentStateById.Add(componentId, componentState);
         _componentStateByComponent.Add(component, componentState);
+    }
+
+    internal void AllowNextRender(int componentId)
+    {
+        _componentsAllowNextRender ??= new HashSet<int>();
+        _componentsAllowNextRender.Add(componentId);
+    }
+
+    internal bool RemoveAllowNextRender(int componentId)
+    {
+        return _componentsAllowNextRender?.Remove(componentId) ?? false;
     }
 
     /// <summary>
@@ -1176,13 +1189,7 @@ public abstract partial class Renderer : IDisposable, IAsyncDisposable
                 // making it render an empty fragment. Ensures that failed components don't continue to
                 // operate, which would be a whole new kind of edge case to support forever.
                 AddToRenderQueue(candidate.ComponentId, builder => { });
-                if (candidate.Component is ComponentBase componentBase)
-                {
-                    // If the ErrorBoundary already handled one error and caught another, there can be a bug, where
-                    // HasPendingQueuedRender is still true from the previous error handling render. Clear it to avoid
-                    // rendering empty fragment and skipping the ErrorContent.
-                    componentBase.HasPendingQueuedRender = false;
-                }
+                AllowNextRender(candidate.ComponentId);
 
                 try
                 {
