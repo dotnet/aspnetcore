@@ -488,6 +488,210 @@ public class RouterTest
         Assert.Contains("No component found for route '/nonexistent-route'", exception.Message);
     }
 
+    [Fact]
+    public async Task OnForbidden_WithForbiddenPageSet_UsesForbiddenPage()
+    {
+        // Create a new router instance for this test to control Attach() timing
+        var services = new ServiceCollection();
+        var testNavManager = new TestNavigationManager();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(testNavManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        testRenderer.ShouldHandleExceptions = true;
+        var testRouter = (Router)testRenderer.InstantiateComponent<Router>();
+        testRouter.AppAssembly = Assembly.GetExecutingAssembly();
+        testRouter.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.ForbiddenPage), typeof(ForbiddenTestComponent) }
+        };
+
+        // Assign the root component ID which will call Attach()
+        testRenderer.AssignRootComponentId(testRouter);
+
+        // Act
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            testRouter.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Trigger the NavigationManager's OnForbidden event
+        await testRenderer.Dispatcher.InvokeAsync(() => testNavManager.TriggerForbidden());
+
+        // Assert
+        var lastBatch = testRenderer.Batches.Last();
+        var renderedFrame = lastBatch.ReferenceFrames.First();
+        Assert.Equal(RenderTreeFrameType.Component, renderedFrame.FrameType);
+        Assert.Equal(typeof(RouteView), renderedFrame.ComponentType);
+
+        // Verify that the RouteData contains the ForbiddenTestComponent
+        var routeViewFrame = lastBatch.ReferenceFrames.Skip(1).First();
+        Assert.Equal(RenderTreeFrameType.Attribute, routeViewFrame.FrameType);
+        var routeData = (RouteData)routeViewFrame.AttributeValue;
+        Assert.Equal(typeof(ForbiddenTestComponent), routeData.PageType);
+    }
+
+    [Fact]
+    public async Task OnForbidden_WithArgsPathSet_RendersComponentByRoute()
+    {
+        // Create a new router instance for this test to control Attach() timing
+        var services = new ServiceCollection();
+        var testNavManager = new TestNavigationManager();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(testNavManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        testRenderer.ShouldHandleExceptions = true;
+        var testRouter = (Router)testRenderer.InstantiateComponent<Router>();
+        testRouter.AppAssembly = Assembly.GetExecutingAssembly();
+        testRouter.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly }
+        };
+
+        // Subscribe to OnForbidden event BEFORE router attaches and set args.Path
+        testNavManager.OnForbidden += (sender, args) =>
+        {
+            args.Path = "/jan"; // Point to an existing route
+        };
+
+        // Assign the root component ID which will call Attach()
+        testRenderer.AssignRootComponentId(testRouter);
+
+        // Act
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            testRouter.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Trigger the NavigationManager's OnForbidden event
+        await testRenderer.Dispatcher.InvokeAsync(() => testNavManager.TriggerForbidden());
+
+        // Assert
+        var lastBatch = testRenderer.Batches.Last();
+        var renderedFrame = lastBatch.ReferenceFrames.First();
+        Assert.Equal(RenderTreeFrameType.Component, renderedFrame.FrameType);
+        Assert.Equal(typeof(RouteView), renderedFrame.ComponentType);
+
+        // Verify that the RouteData contains the correct component type
+        var routeViewFrame = lastBatch.ReferenceFrames.Skip(1).First();
+        Assert.Equal(RenderTreeFrameType.Attribute, routeViewFrame.FrameType);
+        var routeData = (RouteData)routeViewFrame.AttributeValue;
+        Assert.Equal(typeof(JanComponent), routeData.PageType);
+    }
+
+    [Fact]
+    public async Task OnForbidden_WithoutForbiddenPage_UsesDefaultContent()
+    {
+        // Create a new router instance for this test to control Attach() timing
+        var services = new ServiceCollection();
+        var testNavManager = new TestNavigationManager();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(testNavManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var testRenderer = new TestRenderer(serviceProvider);
+        testRenderer.ShouldHandleExceptions = true;
+        var testRouter = (Router)testRenderer.InstantiateComponent<Router>();
+        testRouter.AppAssembly = Assembly.GetExecutingAssembly();
+        testRouter.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly }
+        };
+
+        // Assign the root component ID which will call Attach()
+        testRenderer.AssignRootComponentId(testRouter);
+
+        // Act
+        await testRenderer.Dispatcher.InvokeAsync(() =>
+            testRouter.SetParametersAsync(ParameterView.FromDictionary(parameters)));
+
+        // Trigger the NavigationManager's OnForbidden event
+        // Without ForbiddenPage set, it should not render anything
+        await testRenderer.Dispatcher.InvokeAsync(() => testNavManager.TriggerForbidden());
+
+        // Assert - When ForbiddenPage is not set and no args.Path is provided, nothing is rendered
+        // The number of batches should remain the same (no new batch for forbidden content)
+        Assert.Single(testRenderer.Batches);
+    }
+
+    [Fact]
+    public async Task ForbiddenPage_RequiresRouteAttribute()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(_navigationManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        renderer.ShouldHandleExceptions = true;
+        var router = (Router)renderer.InstantiateComponent<Router>();
+        router.AppAssembly = Assembly.GetExecutingAssembly();
+        router.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+        renderer.AssignRootComponentId(router);
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.ForbiddenPage), typeof(ComponentWithoutRoute) }
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await renderer.Dispatcher.InvokeAsync(() =>
+                router.SetParametersAsync(ParameterView.FromDictionary(parameters))));
+
+        Assert.Contains("does not have a", exception.Message);
+        Assert.Contains("RouteAttribute", exception.Message);
+    }
+
+    [Fact]
+    public async Task ForbiddenPage_RequiresIComponentType()
+    {
+        // Arrange
+        var services = new ServiceCollection();
+        services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+        services.AddSingleton<NavigationManager>(_navigationManager);
+        services.AddSingleton<INavigationInterception, TestNavigationInterception>();
+        services.AddSingleton<IScrollToLocationHash, TestScrollToLocationHash>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        renderer.ShouldHandleExceptions = true;
+        var router = (Router)renderer.InstantiateComponent<Router>();
+        router.AppAssembly = Assembly.GetExecutingAssembly();
+        router.Found = routeData => (builder) => builder.AddContent(0, $"Rendering route matching {routeData.PageType}");
+        renderer.AssignRootComponentId(router);
+
+        var parameters = new Dictionary<string, object>
+        {
+            { nameof(Router.AppAssembly), typeof(RouterTest).Assembly },
+            { nameof(Router.ForbiddenPage), typeof(object) } // object does not implement IComponent
+        };
+
+        // Act & Assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+            await renderer.Dispatcher.InvokeAsync(() =>
+                router.SetParametersAsync(ParameterView.FromDictionary(parameters))));
+
+        Assert.Contains("does not implement", exception.Message);
+        Assert.Contains("IComponent", exception.Message);
+    }
+
     internal class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager() =>
@@ -502,6 +706,11 @@ public class RouterTest
         public void TriggerNotFound()
         {
             base.NotFound();
+        }
+
+        public void TriggerForbidden()
+        {
+            base.Forbidden();
         }
     }
 
@@ -537,5 +746,10 @@ public class RouterTest
 
     [Route("not-found")]
     public class NotFoundTestComponent : ComponentBase { }
+
+    [Route("forbidden")]
+    public class ForbiddenTestComponent : ComponentBase { }
+
+    public class ComponentWithoutRoute : ComponentBase { }
 
 }
