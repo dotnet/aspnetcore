@@ -129,7 +129,7 @@ public partial class RouteHandlerAnalyzer : DiagnosticAnalyzer
 
             // If it is nullable and we have type arguments, unwrap it.
             // The length check aims to alleviate AD0001 warnings when referencing methods in external class libraries that contain parameters
-            if (parameterTypeSymbol!.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T &&
+            if (parameterTypeSymbol?.ConstructedFrom.SpecialType == SpecialType.System_Nullable_T &&
                 parameterTypeSymbol.TypeArguments.Length > 0)
             {
                 parameterTypeSymbol = parameterTypeSymbol.TypeArguments[0] as INamedTypeSymbol;
