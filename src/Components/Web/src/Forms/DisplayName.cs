@@ -74,7 +74,7 @@ public class DisplayName<TValue> : ComponentBase
 
         throw new ArgumentException(
             $"The provided expression contains a {expression.Body.GetType().Name} which is not supported. " +
-            $"{nameof(DisplayNameLabel<TValue>)} only supports simple member accessors (fields, properties) of an object.",
+            $"{nameof(DisplayName<TValue>)} only supports simple member accessors (fields, properties) of an object.",
             nameof(expression));
     }
 }
