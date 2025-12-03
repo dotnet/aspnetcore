@@ -204,7 +204,7 @@ internal partial class RazorComponentEndpointInvoker : IRazorComponentEndpointIn
             !isReExecuted &&
             string.IsNullOrEmpty(_renderer.ForbiddenEventArgs?.Path))
         {
-            // Router did not handle the Forbidden event, otherwise this would not be empty.
+            // Router did not handle the Forbidden event, otherwise ForbiddenEventArgs.Path would not be empty.
             // Don't flush the response if we have an unhandled 403 rendering
             // This will allow the StatusCodePages middleware to re-execute the request
             context.Response.ContentType = null;
