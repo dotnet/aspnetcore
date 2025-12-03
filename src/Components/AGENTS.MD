@@ -19,6 +19,7 @@ The `src/Components/Samples` folder contains several sample projects you can use
 - **BlazorServerApp** - A Blazor Server application for testing server-side scenarios
 - **BlazorUnitedApp** - A Blazor Web App (united/hybrid mode) for testing combined server and WebAssembly scenarios
 - **BlazorUnitedApp.Client** - The client-side portion of the BlazorUnitedApp
+- **BlazorWasmStandalone** - A standalone Blazor WebAssembly application for testing pure client-side scenarios (no ASP.NET Core backend)
 
 **Always start by adding your feature scenario to one of these sample projects first.** This allows you to:
 - Quickly iterate on the implementation
