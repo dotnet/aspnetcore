@@ -791,22 +791,44 @@ public static class NavigationManagerExtensions
         ArgumentNullException.ThrowIfNull(navigationManager);
 
         var uri = navigationManager.Uri;
-        var hashStartIndex = uri.IndexOf('#');
+        var existingHashIndex = uri.IndexOf('#');
 
-        // Get URI without the existing hash
-        var uriWithoutHash = hashStartIndex < 0 ? uri : uri.Substring(0, hashStartIndex);
+        // Determine the length of the URI without the existing hash
+        var uriWithoutHashLength = existingHashIndex < 0 ? uri.Length : existingHashIndex;
 
         if (string.IsNullOrEmpty(hash))
         {
-            return uriWithoutHash;
+            // If removing hash and there wasn't one, return original URI
+            if (existingHashIndex < 0)
+            {
+                return uri;
+            }
+
+            // Return just the URI part without hash
+            return uri.Substring(0, uriWithoutHashLength);
         }
 
-        // Ensure hash starts with '#'
-        if (hash[0] != '#')
+        var hashStartsWithSymbol = hash[0] == '#';
+
+        // Calculate the total length needed
+        var totalLength = uriWithoutHashLength + (hashStartsWithSymbol ? hash.Length : hash.Length + 1);
+
+        return string.Create(totalLength, (uri, hash, uriWithoutHashLength, hashStartsWithSymbol), static (chars, state) =>
         {
-            return string.Concat(uriWithoutHash, "#", hash);
-        }
+            var (uriValue, hashValue, uriLength, startsWithSymbol) = state;
 
-        return string.Concat(uriWithoutHash, hash);
+            // Copy URI without hash
+            uriValue.AsSpan(0, uriLength).CopyTo(chars);
+            var position = uriLength;
+
+            // Add '#' if hash doesn't start with one
+            if (!startsWithSymbol)
+            {
+                chars[position++] = '#';
+            }
+
+            // Copy hash
+            hashValue.AsSpan().CopyTo(chars[position..]);
+        });
     }
 }
