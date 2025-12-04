@@ -187,8 +187,12 @@ internal sealed class WebEventData
 
             case "cancel":
             case "close":
-            case "toggle":
                 eventArgs = EventArgs.Empty;
+                return true;
+
+            case "toggle":
+                // Toggle events return ChangeEventArgs with value=boolean to support @bind-open
+                eventArgs = ChangeEventArgsReader.Read(eventArgsJson);
                 return true;
 
             default:
