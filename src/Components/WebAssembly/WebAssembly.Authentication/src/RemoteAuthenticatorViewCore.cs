@@ -278,7 +278,7 @@ public partial class RemoteAuthenticatorViewCore<[DynamicallyAccessedMembers(Jso
 
     private async Task ProcessLogOut(string returnUrl)
     {
-        if (Navigation.HistoryEntryState == null || !ValidateSignOutRequestState())
+        if (Navigation.HistoryEntryState != null && !ValidateSignOutRequestState())
         {
             Log.LogoutOperationInitiatedExternally(Logger);
             Navigation.NavigateTo(ApplicationPaths.LogOutFailedPath, AuthenticationNavigationOptions with { HistoryEntryState = "The logout was not initiated from within the page." });
