@@ -53,7 +53,7 @@ public sealed class AuthorizeRouteView : RouteView
 
     /// <summary>
     /// The page type that will be displayed if the user is not authorized.
-    /// The page type must implement <see cref="IComponent"/> and have a <see cref="RouteAttribute"/>.
+    /// The page type must implement <see cref="IComponent"/>.
     /// </summary>
     [Parameter]
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
@@ -121,6 +121,12 @@ public sealed class AuthorizeRouteView : RouteView
     {
         if (NotAuthorizedPage is not null)
         {
+            if (!typeof(IComponent).IsAssignableFrom(NotAuthorizedPage))
+            {
+                throw new InvalidOperationException($"The type {NotAuthorizedPage.FullName} " +
+                    $"does not implement {typeof(IComponent).FullName}.");
+            }
+
             RenderPageInDefaultLayout(builder, NotAuthorizedPage);
         }
         else

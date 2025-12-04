@@ -434,6 +434,28 @@ public class AuthorizeRouteViewTest
             edit => AssertPrependText(batch, edit, "Layout ends here"));
     }
 
+    [Fact]
+    public void WhenNotAuthorized_ThrowsForInvalidNotAuthorizedPageType()
+    {
+        // Arrange: set NotAuthorizedPage to a type that doesn't implement IComponent
+        var routeData = new RouteData(typeof(TestPageRequiringAuthorization), EmptyParametersDictionary);
+        _testAuthorizationService.NextResult = AuthorizationResult.Failed();
+
+        // Act & Assert
+        var exception = Assert.Throws<InvalidOperationException>(() =>
+        {
+            _renderer.RenderRootComponent(_authorizeRouteViewComponentId, ParameterView.FromDictionary(new Dictionary<string, object>
+            {
+                { nameof(AuthorizeRouteView.RouteData), routeData },
+                { nameof(AuthorizeRouteView.DefaultLayout), typeof(TestLayout) },
+                { nameof(AuthorizeRouteView.NotAuthorizedPage), typeof(string) }, // string doesn't implement IComponent
+            }));
+        });
+
+        Assert.Contains("does not implement", exception.Message);
+        Assert.Contains("IComponent", exception.Message);
+    }
+
     private static void AssertPrependText(CapturedBatch batch, RenderTreeEdit edit, string text)
     {
         Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
