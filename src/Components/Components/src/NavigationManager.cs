@@ -54,25 +54,6 @@ public abstract class NavigationManager
 
     private EventHandler<NotFoundEventArgs>? _notFound;
 
-    /// <summary>
-    /// An event that fires when access to a page is forbidden.
-    /// </summary>
-    public event EventHandler<ForbiddenEventArgs> OnForbidden
-    {
-        add
-        {
-            AssertInitialized();
-            _forbidden += value;
-        }
-        remove
-        {
-            AssertInitialized();
-            _forbidden -= value;
-        }
-    }
-
-    private EventHandler<ForbiddenEventArgs>? _forbidden;
-
     // For the baseUri it's worth storing as a System.Uri so we can do operations
     // on that type. System.Uri gives us access to the original string anyway.
     private Uri? _baseUri;
@@ -230,24 +211,6 @@ public abstract class NavigationManager
         else
         {
             _notFound.Invoke(this, new NotFoundEventArgs());
-        }
-    }
-
-    /// <summary>
-    /// Handles setting the Forbidden state.
-    /// </summary>
-    public void Forbidden() => ForbiddenCore();
-
-    private void ForbiddenCore()
-    {
-        if (_forbidden is null)
-        {
-            // global router doesn't exist, no events were registered
-            return;
-        }
-        else
-        {
-            _forbidden.Invoke(this, new ForbiddenEventArgs());
         }
     }
 

@@ -886,44 +886,6 @@ public class NavigationManagerTest
         // Assert
         Assert.True(notFoundTriggered, "The OnNotFound event was not triggered as expected.");
     }
-
-    [Fact]
-    public void OnForbiddenSubscriptionIsTriggeredWhenForbiddenCalled()
-    {
-        // Arrange
-        var baseUri = "scheme://host/";
-        var testNavManager = new TestNavigationManager(baseUri);
-        bool forbiddenTriggered = false;
-        testNavManager.OnForbidden += (sender, args) => forbiddenTriggered = true;
-
-        // Simulate a component triggered Forbidden
-        testNavManager.Forbidden();
-
-        // Assert
-        Assert.True(forbiddenTriggered, "The OnForbidden event was not triggered as expected.");
-    }
-
-    [Fact]
-    public void OnForbiddenEventArgsPathCanBeSet()
-    {
-        // Arrange
-        var baseUri = "scheme://host/";
-        var testNavManager = new TestNavigationManager(baseUri);
-        ForbiddenEventArgs receivedArgs = null;
-
-        testNavManager.OnForbidden += (sender, args) =>
-        {
-            args.Path = "/forbidden-page";
-            receivedArgs = args;
-        };
-
-        // Simulate a component triggered Forbidden
-        testNavManager.Forbidden();
-
-        // Assert
-        Assert.NotNull(receivedArgs);
-        Assert.Equal("/forbidden-page", receivedArgs.Path);
-    }
  
     private class TestNavigationManager : NavigationManager
     {

@@ -53,7 +53,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
     private readonly List<Task> _nonStreamingPendingTasks = new();
 
     private string _notFoundUrl = string.Empty;
-    private string _forbiddenUrl = string.Empty;
 
     public EndpointHtmlRenderer(IServiceProvider serviceProvider, ILoggerFactory loggerFactory)
         : base(serviceProvider, loggerFactory)
@@ -65,7 +64,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
 
     internal HttpContext? HttpContext => _httpContext;
     internal NotFoundEventArgs? NotFoundEventArgs { get; private set; }
-    internal ForbiddenEventArgs? ForbiddenEventArgs { get; private set; }
 
     internal void SetHttpContext(HttpContext httpContext)
     {
@@ -92,7 +90,6 @@ internal partial class EndpointHtmlRenderer : StaticHtmlRenderer, IComponentPrer
             uri => GetErrorHandledTask(OnNavigateTo(uri)));
 
         navigationManager?.OnNotFound += (sender, args) => NotFoundEventArgs = args;
-        navigationManager?.OnForbidden += (sender, args) => ForbiddenEventArgs = args;
 
         var authenticationStateProvider = httpContext.RequestServices.GetService<AuthenticationStateProvider>();
         if (authenticationStateProvider is IHostEnvironmentAuthenticationStateProvider hostEnvironmentAuthenticationStateProvider)

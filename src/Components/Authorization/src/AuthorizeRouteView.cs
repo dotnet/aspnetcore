@@ -52,6 +52,14 @@ public sealed class AuthorizeRouteView : RouteView
     public RenderFragment<AuthenticationState>? NotAuthorized { get; set; }
 
     /// <summary>
+    /// The page type that will be displayed if the user is not authorized.
+    /// The page type must implement <see cref="IComponent"/> and have a <see cref="RouteAttribute"/>.
+    /// </summary>
+    [Parameter]
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
+    public Type? NotAuthorizedPage { get; set; }
+
+    /// <summary>
     /// The content that will be displayed while asynchronous authorization is in progress.
     /// </summary>
     [Parameter]
@@ -111,8 +119,33 @@ public sealed class AuthorizeRouteView : RouteView
 
     private void RenderNotAuthorizedInDefaultLayout(RenderTreeBuilder builder, AuthenticationState authenticationState)
     {
-        var content = NotAuthorized ?? _defaultNotAuthorizedContent;
-        RenderContentInDefaultLayout(builder, content(authenticationState));
+        if (NotAuthorizedPage is not null)
+        {
+            RenderPageInDefaultLayout(builder, NotAuthorizedPage);
+        }
+        else
+        {
+            var content = NotAuthorized ?? _defaultNotAuthorizedContent;
+            RenderContentInDefaultLayout(builder, content(authenticationState));
+        }
+    }
+
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2111:RequiresUnreferencedCode",
+        Justification = "OpenComponent already has the right set of attributes")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2110:RequiresUnreferencedCode",
+        Justification = "OpenComponent already has the right set of attributes")]
+    [UnconditionalSuppressMessage("ReflectionAnalysis", "IL2118:RequiresUnreferencedCode",
+        Justification = "OpenComponent already has the right set of attributes")]
+    private void RenderPageInDefaultLayout(RenderTreeBuilder builder, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] Type pageType)
+    {
+        builder.OpenComponent<LayoutView>(0);
+        builder.AddComponentParameter(1, nameof(LayoutView.Layout), DefaultLayout);
+        builder.AddComponentParameter(2, nameof(LayoutView.ChildContent), (RenderFragment)(pageBuilder =>
+        {
+            pageBuilder.OpenComponent(0, pageType);
+            pageBuilder.CloseComponent();
+        }));
+        builder.CloseComponent();
     }
 
     private void RenderAuthorizingInDefaultLayout(RenderTreeBuilder builder)
