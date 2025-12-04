@@ -1102,13 +1102,10 @@ public class StaticAssetsIntegrationTests
     [Fact]
     public void TruncateToSeconds_RemovesSubsecondComponents()
     {
-        // Arrange
         var original = new DateTimeOffset(2023, 5, 15, 10, 30, 45, 123, TimeSpan.FromHours(2));
 
-        // Act
         var truncated = StaticAssetDevelopmentRuntimeHandler.TruncateToSeconds(original);
 
-        // Assert
         Assert.Equal(2023, truncated.Year);
         Assert.Equal(5, truncated.Month);
         Assert.Equal(15, truncated.Day);
@@ -1122,13 +1119,10 @@ public class StaticAssetsIntegrationTests
     [Fact]
     public void TruncateToSeconds_PreservesUtcOffset()
     {
-        // Arrange
         var utcDateTime = new DateTimeOffset(2023, 5, 15, 10, 30, 45, 500, TimeSpan.Zero);
 
-        // Act
         var truncated = StaticAssetDevelopmentRuntimeHandler.TruncateToSeconds(utcDateTime);
 
-        // Assert
         Assert.Equal(TimeSpan.Zero, truncated.Offset);
         Assert.Equal(0, truncated.Millisecond);
     }
@@ -1136,17 +1130,13 @@ public class StaticAssetsIntegrationTests
     [Fact]
     public void TruncateToSeconds_MatchesHttpDateFormat()
     {
-        // Arrange - Create a DateTimeOffset with subsecond components
         var original = new DateTimeOffset(2023, 5, 15, 10, 30, 45, 789, TimeSpan.Zero);
 
-        // Simulate what happens when parsing from HTTP date format (no subseconds)
         var httpFormatted = original.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
         var parsed = DateTimeOffset.Parse(httpFormatted, CultureInfo.InvariantCulture);
 
-        // Act
         var truncated = StaticAssetDevelopmentRuntimeHandler.TruncateToSeconds(original);
 
-        // Assert - The truncated value should match the parsed HTTP date value
         Assert.Equal(parsed, truncated);
     }
 }
