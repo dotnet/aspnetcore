@@ -7,6 +7,7 @@
     <p id="price-label"><DisplayName For="@(() => _product.Price)" /></p>
     <p id="stock-label"><DisplayName For="@(() => _product.StockQuantity)" /></p>
     <p id="description-label"><DisplayName For="@(() => _product.Description)" /></p>
+    <p id="localized-label"><DisplayName For="@(() => _product.LocalizedName)" /></p>
 </div>
 
 @code {
@@ -26,5 +27,9 @@
 
         // No attributes - should fall back to property name
         public string Description { get; set; } = "Test";
+
+        // Uses resource file for localization - will show "Product Name" in en-US, "Nom du produit" in fr-FR
+        [Display(Name = nameof(TestResources.ProductName), ResourceType = typeof(TestResources))]
+        public string LocalizedName { get; set; } = "Localized";
     }
 }

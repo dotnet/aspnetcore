@@ -155,6 +155,24 @@ public class DisplayNameTest
         Assert.Equal("Date Value", dateOutput);
     }
 
+    [Fact]
+    public async Task SupportsLocalizationWithResourceType()
+    {
+        var model = new TestModel();
+        var rootComponent = new TestHostComponent
+        {
+            InnerContent = builder =>
+            {
+                builder.OpenComponent<DisplayName<string>>(0);
+                builder.AddComponentParameter(1, "For", (System.Linq.Expressions.Expression<Func<string>>)(() => model.PropertyWithResourceBasedDisplay));
+                builder.CloseComponent();
+            }
+        };
+
+        var output = await RenderAndGetOutput(rootComponent);
+        Assert.Equal("Localized Display Name", output);
+    }
+
     private static async Task<string> RenderAndGetOutput(TestHostComponent rootComponent)
     {
         var testRenderer = new TestRenderer();
@@ -202,5 +220,13 @@ public class DisplayNameTest
 
         [Display(Name = "Date Value")]
         public DateTime DateProperty { get; set; }
+
+        [Display(Name = nameof(TestResources.LocalizedDisplayName), ResourceType = typeof(TestResources))]
+        public string PropertyWithResourceBasedDisplay { get; set; } = string.Empty;
+    }
+
+    public static class TestResources
+    {
+        public static string LocalizedDisplayName => "Localized Display Name";
     }
 }

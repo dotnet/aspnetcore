@@ -575,6 +575,10 @@ public class FormsTest : ServerTestBase<ToggleExecutionModeServerFixture<Program
         // Check fallback to property name when no attributes present
         var descriptionLabel = appElement.FindElement(By.Id("description-label"));
         Browser.Equal("Description", () => descriptionLabel.Text);
+
+        // Check that ResourceType localization works with English resources
+        var localizedLabel = appElement.FindElement(By.Id("localized-label"));
+        Browser.Equal("Product Name", () => localizedLabel.Text);
     }
 
     [Fact]
