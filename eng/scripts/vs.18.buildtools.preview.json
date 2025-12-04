@@ -1,5 +1,5 @@
 {
-    "channelUri": "https://aka.ms/vs/18/pre/channel",
+    "channelUri": "https://aka.ms/vs/18/insiders/channel",
     "channelId": "VisualStudio.18.Preview",
     "includeRecommended": false,
     "addProductLang": [

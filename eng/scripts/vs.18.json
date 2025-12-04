@@ -1,5 +1,5 @@
 {
-    "channelUri": "https://aka.ms/vs/18/release/channel",
+    "channelUri": "https://aka.ms/vs/18/stable/channel",
     "channelId": "VisualStudio.18.Release",
     "includeRecommended": false,
     "addProductLang": [
