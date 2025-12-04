@@ -8,22 +8,10 @@
     <base href="~/" />
     <link href="style.css" rel="stylesheet" />
     <link rel="icon" href="data:,">
-
-    <!-- Used by ExternalContentPackage -->
-    <link href="_content/TestContentPackage/styles.css" rel="stylesheet" />
-    <link href="Components.TestServer.styles.css" rel="stylesheet" />
     <component type="typeof(Microsoft.AspNetCore.Components.Web.HeadOutlet)" render-mode="Server" />
 </head>
 <body>
     <root><component type="typeof(BasicTestApp.Index)" render-mode="Server" /></root>
-
-    <!-- Used for specific test cases -->
-    <script src="js/circuitContextTest.js"></script>
-    <script src="js/jsinteroptests.js"></script>
-    <script src="js/renderattributestest.js"></script>
-    <script src="js/webComponentPerformingJsInterop.js"></script>
-    <script src="js/customLinkElement.js"></script>
-    <script src="js/jsRootComponentInitializers.js"></script>
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
@@ -31,45 +19,15 @@
         <span class="dismiss">🗙</span>
     </div>
 
-    <script>
-        // Used by ElementRefComponent
-        function setElementValue(element, newValue) {
-            element.value = newValue;
-            return element.value;
-        }
-
-        function navigationManagerNavigate() {
-            Blazor.navigateTo('/subdir/some-path');
-        }
-    </script>
-
-    <script>
-        if (location.hash.indexOf('initializer') !== -1) {
-            const element = document.createElement('div');
-            element.id = 'initializers-content';
-            document.body.append(element);
-        }
-    </script>
-
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
-        // Use the blazor.web.js options format with nested circuit property
         Blazor.start({
             circuit: {
                 reconnectionOptions: {
-                    // It's easier to test the reconnection logic if we wait a bit
-                    // before attempting to reconnect
                     retryIntervalMilliseconds: Array.prototype.at.bind([5000, 5000, 5000, 10000, 30000]),
                 },
             },
         });
-    </script>
-    <script src="js/jsRootComponentInitializers.js"></script>
-
-    <!-- Used by ExternalContentPackage -->
-    <script src="_content/TestContentPackage/prompt.js"></script>
-    <script>
-        console.log('Blazor server-side with nested circuit options');
     </script>
 </body>
 </html>
