@@ -18,6 +18,11 @@
         <span class="dismiss">🗙</span>
     </div>
 
+    <script>
+        function getRuntimeBuildConfiguration() {
+            return Blazor.runtime.runtimeBuildInfo.buildConfiguration;
+        }
+    </script>
     <script src="_framework/blazor.webassembly.js" autostart="false"></script>
     <script>
         Blazor.start({
