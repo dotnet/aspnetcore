@@ -11,8 +11,8 @@
         Enterprise
 .PARAMETER Channel
     Selects which channel of Visual Studio to install. Must be one of these values:
-        Release (the default)
-        Preview
+        Release (the default) - for VS 2022: "Release", for VS 2026+: "Stable"
+        Preview - for VS 2022: "Preview", for VS 2026+: "Insiders"
 .PARAMETER Version
     Selects which version of Visual Studio to install. Must be one of these values:
         2022
@@ -71,7 +71,7 @@ if ("$Version" -eq "2022") {
 elseif ("$Version" -eq "2026") {
     $vsversion = 18;
 }
-$channelUri = "https://aka.ms/vs/$vsversion/release"
+
 $responseFileName = "vs.$vsversion"
 if ("$Edition" -eq "BuildTools") {
     $responseFileName += ".buildtools"
@@ -79,12 +79,27 @@ if ("$Edition" -eq "BuildTools") {
 if ("$Channel" -eq "Dogfood") {
     $Channel = "IntPreview"
 }
+
+# Channel URIs differ between VS 2022 and VS 2026+
+# VS 2022: release, pre, intpreview
+# VS 2026+: stable, insiders
 if ("$Channel" -eq "Preview") {
     $responseFileName += ".preview"
-    $channelUri = "https://aka.ms/vs/$vsversion/pre"
+    if ($vsversion -ge 18) {
+        $channelUri = "https://aka.ms/vs/$vsversion/insiders"
+    } else {
+        $channelUri = "https://aka.ms/vs/$vsversion/pre"
+    }
 } elseif ("$Channel" -eq "IntPreview") {
     $responseFileName += ".intpreview"
     $channelUri = "https://aka.ms/vs/$vsversion/intpreview"
+} else {
+    # Release channel
+    if ($vsversion -ge 18) {
+        $channelUri = "https://aka.ms/vs/$vsversion/stable"
+    } else {
+        $channelUri = "https://aka.ms/vs/$vsversion/release"
+    }
 }
 
 $responseFile = "$PSScriptRoot\$responseFileName.json"
@@ -115,7 +130,11 @@ if (-not $InstallPath) {
         $pathPrefix = "${env:ProgramFiles}";
     }
     if ("$Channel" -eq "Preview") {
-        $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_Pre"
+        if ($vsversion -ge 18) {
+            $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_Insiders"
+        } else {
+            $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_Pre"
+        }
     } elseif ("$Channel" -eq "IntPreview") {
         $InstallPath = "$pathPrefix\Microsoft Visual Studio\$Version\${Edition}_IntPre"
     } else {
