@@ -29,7 +29,10 @@ public class EnvironmentBoundaryTest : ServerTestBase<ToggleExecutionModeServerF
     [Fact]
     public void RendersContentWhenEnvironmentMatches()
     {
-        // By default, E2E test runs in Development environment
+        // Wait for the component to render and verify it's in Development
+        var currentEnvElement = Browser.Exists(By.Id("current-environment"));
+        Browser.Contains("Development", () => currentEnvElement.Text);
+
         var container = Browser.Exists(By.Id("environment-boundary-test"));
 
         // Verify Development-specific content is visible
@@ -48,13 +51,17 @@ public class EnvironmentBoundaryTest : ServerTestBase<ToggleExecutionModeServerF
     [Fact]
     public void HidesContentWhenEnvironmentDoesNotMatch()
     {
+        // Wait for the component to render and verify it's in Development
+        var currentEnvElement = Browser.Exists(By.Id("current-environment"));
+        Browser.Contains("Development", () => currentEnvElement.Text);
+
         var container = Browser.Exists(By.Id("environment-boundary-test"));
 
         // Production-only content should not be visible in Development
-        Browser.Empty(() => container.FindElements(By.Id("prod-only-content")));
+        Browser.DoesNotExist(By.Id("prod-only-content"));
 
         // Content excluded from Development should not be visible
-        Browser.Empty(() => container.FindElements(By.Id("non-dev-content")));
+        Browser.DoesNotExist(By.Id("non-dev-content"));
     }
 
     [Fact]
@@ -62,6 +69,6 @@ public class EnvironmentBoundaryTest : ServerTestBase<ToggleExecutionModeServerF
     {
         // Verify the environment is displayed correctly
         var currentEnvElement = Browser.Exists(By.Id("current-environment"));
-        Assert.Contains("Development", currentEnvElement.Text);
+        Browser.Contains("Development", () => currentEnvElement.Text);
     }
 }
