@@ -19,6 +19,10 @@
     </div>
 
     <script>
+        function getCurrentUrl() {
+            return location.href;
+        }
+
         function getRuntimeBuildConfiguration() {
             return Blazor.runtime.runtimeBuildInfo.buildConfiguration;
         }
