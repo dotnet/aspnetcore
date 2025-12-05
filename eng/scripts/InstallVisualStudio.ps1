@@ -86,7 +86,7 @@ if ("$Edition" -eq "BuildTools") {
 
 # Channel URIs differ between VS 2022 and VS 2026+
 # VS 2022: release, pre, intpreview
-# VS 2026+: stable, insiders
+# VS 2026+: stable, insiders, intpreview (canary)
 if ("$Channel" -eq "Preview") {
     $responseFileName += ".preview"
     if ($vsversion -ge 18) {
@@ -130,7 +130,7 @@ if (-not $InstallPath) {
 }
 
 if (-not $InstallPath) {
-    if (($vsversion -eq "17") -or ($vsversion -eq "18")) {
+    if (($vsversion -eq 17) -or ($vsversion -eq 18)) {
         $pathPrefix = "${env:ProgramFiles}";
     }
     if ("$Channel" -eq "Preview") {
