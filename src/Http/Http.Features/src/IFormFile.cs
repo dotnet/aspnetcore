@@ -38,7 +38,7 @@ public interface IFormFile
     /// </summary>
     /// <remarks>
     /// Do not use the <see cref="FileName"/> property of <see cref="IFormFile"/> other than for display and logging.
-    /// When displaying or logging, HTML encode the file name.  A cyberattacker can provide a malicious filename, including full paths or relative paths.
+    /// When displaying or logging, HTML encode the file name. A cyberattacker can provide a malicious filename, including full paths or relative paths.
     /// <para>
     /// You can use the following code to remove the path from the file name:
     /// </para>
