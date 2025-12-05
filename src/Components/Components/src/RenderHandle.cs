@@ -24,6 +24,15 @@ public readonly struct RenderHandle
     internal ComponentsMetrics? ComponentMetrics => _renderer?.ComponentMetrics;
     internal ComponentsActivitySource? ComponentActivitySource => _renderer?.ComponentActivitySource;
 
+    internal bool RemoveAllowNextRender()
+    {
+        if (_renderer == null)
+        {
+            ThrowNotInitialized();
+        }
+        return _renderer.RemoveAllowNextRender(_componentId);
+    }
+
     /// <summary>
     /// Gets the <see cref="Components.Dispatcher" /> associated with the component.
     /// </summary>
