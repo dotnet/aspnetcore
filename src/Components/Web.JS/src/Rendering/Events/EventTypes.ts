@@ -160,7 +160,11 @@ registerBuiltInEventType(['wheel', 'mousewheel'], {
   createEventArgs: e => parseWheelEvent(e as WheelEvent),
 });
 
-registerBuiltInEventType(['cancel', 'close', 'toggle'], createBlankEventArgsOptions);
+registerBuiltInEventType(['cancel', 'close'], createBlankEventArgsOptions);
+
+registerBuiltInEventType(['toggle'], {
+  createEventArgs: e => parseToggleEvent(e),
+});
 
 function parseChangeEvent(event: Event): ChangeEventArgs {
   const element = event.target as Element;
@@ -187,6 +191,18 @@ function parseWheelEvent(event: WheelEvent): WheelEventArgs {
     deltaY: event.deltaY,
     deltaZ: event.deltaZ,
     deltaMode: event.deltaMode,
+  };
+}
+
+function parseToggleEvent(event: Event): ChangeEventArgs {
+  // For <details>, <dialog>, and popover elements, return a ChangeEventArgs
+  // compatible object with the open state as a boolean value. This enables @bind-open support.
+  // We use ToggleEvent.newState which works for all element types that fire toggle events.
+  const toggleEvent = event as ToggleEvent;
+  const isOpen = toggleEvent.newState === 'open';
+
+  return {
+    value: isOpen,
   };
 }
 
