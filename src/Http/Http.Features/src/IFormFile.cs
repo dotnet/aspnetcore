@@ -43,7 +43,7 @@ public interface IFormFile
     /// You can use the following code to remove the path from the file name:
     /// </para>
     /// <code>
-    /// string untrustedFileName = Path.GetFileName(pathName);
+    /// string untrustedFileName = Path.GetFileName(formFile.FileName);
     /// </code>
     /// </remarks>
     string FileName { get; }
