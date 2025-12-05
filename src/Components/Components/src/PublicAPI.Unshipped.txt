@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.IComponentPropertyActivator
+Microsoft.AspNetCore.Components.IComponentPropertyActivator.GetActivator(System.Type! componentType) -> System.Action<System.IServiceProvider!, Microsoft.AspNetCore.Components.IComponent!>!
