@@ -344,9 +344,9 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
                 _currentNonVirtualizedViewItems = result.Items;
                 _ariaBodyRowCount = _currentNonVirtualizedViewItems.Count;
                 Pagination?.SetTotalItemCountAsync(result.TotalItemCount);
+                _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
                 _pendingDataLoadCancellationTokenSource = null;
             }
-            _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
         }
     }
 

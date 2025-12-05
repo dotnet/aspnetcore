@@ -19,7 +19,7 @@
 @code {
     PaginationState pagination = new PaginationState { ItemsPerPage = 5 };
     int itemsProviderCalls = 0;
-    GridItemsProvider<Item> itemsProvider;
+    GridItemsProvider<Item> itemsProvider = default!;
     QuickGrid<Item> gridRef;
     string filter = string.Empty;
 
@@ -33,7 +33,7 @@
         {
             await Task.CompletedTask;
 
-            itemsProviderCalls++;
+            Interlocked.Increment(ref itemsProviderCalls);
             StateHasChanged();
 
             var filteredItems = string.IsNullOrEmpty(filter)
