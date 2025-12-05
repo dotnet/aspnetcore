@@ -1,1 +1,2 @@
 #nullable enable
+static Microsoft.AspNetCore.Components.NavigationManagerExtensions.GetUriWithHash(this Microsoft.AspNetCore.Components.NavigationManager! navigationManager, string? hash) -> string!
