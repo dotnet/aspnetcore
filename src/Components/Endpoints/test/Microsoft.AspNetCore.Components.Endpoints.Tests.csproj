@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Shared\test\AutoRenderComponent.cs" Link="TestComponents\AutoRenderComponent.cs" />
     <Compile Include="$(ComponentsSharedSourceRoot)src\WebRootComponentParameters.cs" Link="Shared\WebRootComponentParameters.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)test\**\*.cs" LinkBase="Shared" />
   </ItemGroup>
 
   <ItemGroup>
