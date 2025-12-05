@@ -98,14 +98,6 @@ public partial class Router : IComponent, IHandleAfterRender, IDisposable
     /// </summary>
     [Parameter] public EventCallback<NavigationContext> OnNavigateAsync { get; set; }
 
-    /// <summary>
-    /// Gets or sets a flag to indicate whether route matching should prefer exact matches
-    /// over wildcards.
-    /// <para>This property is obsolete and configuring it does nothing.</para>
-    /// </summary>
-    [Obsolete("This property is obsolete and configuring it has no effect.")]
-    [Parameter] public bool PreferExactMatches { get; set; }
-
     private RouteTable Routes { get; set; }
 
     /// <inheritdoc />
