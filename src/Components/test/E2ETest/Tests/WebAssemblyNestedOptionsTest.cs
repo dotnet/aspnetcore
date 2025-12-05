@@ -25,7 +25,8 @@ public class WebAssemblyNestedOptionsTest : ServerTestBase<BlazorWasmTestAppFixt
     {
         base.InitializeAsyncCore();
 
-        Navigate($"{ServerPathBase}/nestedWebAssemblyOptions.html");
+        // Navigate with query parameter to trigger nested options format
+        Navigate($"{ServerPathBase}?nested-options=true");
         Browser.MountTestComponent<ConfigureRuntime>();
     }
 
