@@ -160,7 +160,34 @@ public abstract class NavigationManager
     public void NavigateTo([StringSyntax(StringSyntaxAttribute.Uri)] string uri, NavigationOptions options)
     {
         AssertInitialized();
+
+        if (options.PathRelative)
+        {
+            uri = ResolveRelativeToCurrentPath(uri);
+        }
+
         NavigateToCore(uri, options);
+    }
+
+    private string ResolveRelativeToCurrentPath(string relativeUri)
+    {
+        var currentUri = _uri!.AsSpan();
+        
+        // Find the last slash in the path portion (before any query or fragment)
+        var queryOrFragmentIndex = currentUri.IndexOfAny('?', '#');
+        var pathOnlyLength = queryOrFragmentIndex >= 0 ? queryOrFragmentIndex : currentUri.Length;
+        var lastSlashIndex = currentUri[..pathOnlyLength].LastIndexOf('/');
+        
+        if (lastSlashIndex < 0)
+        {
+            // No slash found - this shouldn't happen for valid absolute URIs
+            // In this edge case, just append to the current URI
+            return string.Concat(_uri, relativeUri);
+        }
+        
+        // Keep everything up to and including the last slash, then append the relative URI
+        var basePathLength = lastSlashIndex + 1;
+        return string.Concat(currentUri[..basePathLength], relativeUri.AsSpan());
     }
 
     /// <summary>

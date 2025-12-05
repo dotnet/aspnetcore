@@ -1,1 +1,3 @@
 #nullable enable
+Microsoft.AspNetCore.Components.NavigationOptions.PathRelative.get -> bool
+Microsoft.AspNetCore.Components.NavigationOptions.PathRelative.init -> void

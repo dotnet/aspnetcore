@@ -23,4 +23,10 @@ public readonly struct NavigationOptions
     /// Gets or sets the state to append to the history entry.
     /// </summary>
     public string? HistoryEntryState { get; init; }
+
+    /// <summary>
+    /// If true, resolves relative URIs relative to the current path instead of the base URI.
+    /// If false (default), resolves relative URIs relative to the base URI.
+    /// </summary>
+    public bool PathRelative { get; init; }
 }
