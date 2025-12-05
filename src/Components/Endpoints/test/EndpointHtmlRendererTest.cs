@@ -719,6 +719,133 @@ public class EndpointHtmlRendererTest
     }
 
     [Fact]
+    public async Task CanRender_ClosedGenericComponent()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var writer = new StringWriter();
+
+        // Act
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Value", 42 } });
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GenericComponent<int>), null, parameters);
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+        var content = writer.ToString();
+
+        // Assert
+        Assert.Equal("<p>Generic value: 42</p>", content);
+    }
+
+    [Fact]
+    public async Task CanRender_ClosedGenericComponent_ServerMode()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+            .ToTimeLimitedDataProtector();
+
+        // Act
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Value", "TestString" } });
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GenericComponent<string>), new InteractiveServerRenderMode(false), parameters);
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
+        var match = Regex.Match(content, ComponentPattern);
+
+        // Assert
+        Assert.True(match.Success);
+        var marker = JsonSerializer.Deserialize<ComponentMarker>(match.Groups[1].Value, ServerComponentSerializationSettings.JsonSerializationOptions);
+        Assert.Equal(0, marker.Sequence);
+        Assert.Null(marker.PrerenderId);
+        Assert.NotNull(marker.Descriptor);
+        Assert.Equal("server", marker.Type);
+
+        var unprotectedServerComponent = protector.Unprotect(marker.Descriptor);
+        var serverComponent = JsonSerializer.Deserialize<ServerComponent>(unprotectedServerComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
+        Assert.Equal(0, serverComponent.Sequence);
+        Assert.Equal(typeof(GenericComponent<string>).Assembly.GetName().Name, serverComponent.AssemblyName);
+        Assert.Equal(typeof(GenericComponent<string>).FullName, serverComponent.TypeName);
+        Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
+
+        var parameterDefinition = Assert.Single(serverComponent.ParameterDefinitions);
+        Assert.Equal("Value", parameterDefinition.Name);
+        Assert.Equal("System.String", parameterDefinition.TypeName);
+        Assert.Equal("System.Private.CoreLib", parameterDefinition.Assembly);
+
+        var value = Assert.Single(serverComponent.ParameterValues);
+        var rawValue = Assert.IsType<JsonElement>(value);
+        Assert.Equal("TestString", rawValue.GetString());
+    }
+
+    [Fact]
+    public async Task CanPrerender_ClosedGenericComponent_ServerMode()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var protector = _dataprotectorProvider.CreateProtector(ServerComponentSerializationSettings.DataProtectionProviderPurpose)
+            .ToTimeLimitedDataProtector();
+
+        // Act
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Value", 123 } });
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GenericComponent<int>), RenderMode.InteractiveServer, parameters);
+        var content = await renderer.Dispatcher.InvokeAsync(() => HtmlContentToString(result));
+        var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+
+        // Assert
+        Assert.True(match.Success);
+        var preamble = match.Groups["preamble"].Value;
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        Assert.Equal(0, preambleMarker.Sequence);
+        Assert.NotNull(preambleMarker.PrerenderId);
+        Assert.NotNull(preambleMarker.Descriptor);
+        Assert.Equal("server", preambleMarker.Type);
+
+        var unprotectedServerComponent = protector.Unprotect(preambleMarker.Descriptor);
+        var serverComponent = JsonSerializer.Deserialize<ServerComponent>(unprotectedServerComponent, ServerComponentSerializationSettings.JsonSerializationOptions);
+        Assert.NotEqual(default, serverComponent);
+        Assert.Equal(0, serverComponent.Sequence);
+        Assert.Equal(typeof(GenericComponent<int>).Assembly.GetName().Name, serverComponent.AssemblyName);
+        Assert.Equal(typeof(GenericComponent<int>).FullName, serverComponent.TypeName);
+        Assert.NotEqual(Guid.Empty, serverComponent.InvocationId);
+
+        var prerenderedContent = match.Groups["content"].Value;
+        Assert.Equal("<p>Generic value: 123</p>", prerenderedContent);
+
+        var epilogue = match.Groups["epilogue"].Value;
+        var epilogueMarker = JsonSerializer.Deserialize<ComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+        Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
+    }
+
+    [Fact]
+    public async Task CanPrerender_ClosedGenericComponent_ClientMode()
+    {
+        // Arrange
+        var httpContext = GetHttpContext();
+        var writer = new StringWriter();
+
+        // Act
+        var parameters = ParameterView.FromDictionary(new Dictionary<string, object> { { "Value", 456 } });
+        var result = await renderer.PrerenderComponentAsync(httpContext, typeof(GenericComponent<int>), RenderMode.InteractiveWebAssembly, parameters);
+        await renderer.Dispatcher.InvokeAsync(() => result.WriteTo(writer, HtmlEncoder.Default));
+        var content = writer.ToString();
+        content = AssertAndStripWebAssemblyOptions(content);
+        var match = Regex.Match(content, PrerenderedComponentPattern, RegexOptions.Multiline);
+
+        // Assert
+        Assert.True(match.Success);
+        var preamble = match.Groups["preamble"].Value;
+        var preambleMarker = JsonSerializer.Deserialize<ComponentMarker>(preamble, ServerComponentSerializationSettings.JsonSerializationOptions);
+        Assert.NotNull(preambleMarker.PrerenderId);
+        Assert.Equal("webassembly", preambleMarker.Type);
+        Assert.Equal(typeof(GenericComponent<int>).Assembly.GetName().Name, preambleMarker.Assembly);
+        Assert.Equal(typeof(GenericComponent<int>).FullName, preambleMarker.TypeName);
+
+        var prerenderedContent = match.Groups["content"].Value;
+        Assert.Equal("<p>Generic value: 456</p>", prerenderedContent);
+
+        var epilogue = match.Groups["epilogue"].Value;
+        var epilogueMarker = JsonSerializer.Deserialize<ComponentMarker>(epilogue, ServerComponentSerializationSettings.JsonSerializationOptions);
+        Assert.Equal(preambleMarker.PrerenderId, epilogueMarker.PrerenderId);
+    }
+
+    [Fact]
     public async Task ComponentWithInvalidRenderMode_Throws()
     {
         // Arrange
