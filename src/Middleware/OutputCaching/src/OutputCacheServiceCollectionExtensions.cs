@@ -27,6 +27,7 @@ public static class OutputCacheServiceCollectionExtensions
         services.AddTransient<IConfigureOptions<OutputCacheOptions>, OutputCacheOptionsSetup>();
 
         services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+        services.TryAddSingleton<IOutputCachePolicyProvider, DefaultOutputCachePolicyProvider>();
 
         services.TryAddSingleton<IOutputCacheStore>(sp =>
         {
