@@ -169,7 +169,7 @@ public abstract class NavigationManager
         NavigateToCore(uri, options);
     }
 
-    private string ResolveRelativeToCurrentPath(string relativeUri)
+    internal string ResolveRelativeToCurrentPath(string relativeUri)
     {
         var currentUri = _uri!.AsSpan();
         

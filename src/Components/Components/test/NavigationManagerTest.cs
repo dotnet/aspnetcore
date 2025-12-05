@@ -955,6 +955,38 @@ public class NavigationManagerTest
         Assert.Equal("scheme://host/a/b/c/d/sibling.html", testNavManager.Navigations[0].uri);
     }
 
+    [Fact]
+    public void NavigateTo_WithPathRelative_WithQueryStringPreservesPath()
+    {
+        var baseUri = "scheme://host/";
+        var currentUri = "scheme://host/folder/page.html?param=value";
+        var testNavManager = new TestNavigationManagerWithNavigationTracking(baseUri, currentUri);
+
+        testNavManager.NavigateTo("other.html?new=param", new NavigationOptions { PathRelative = true });
+
+        Assert.Single(testNavManager.Navigations);
+        Assert.Equal("scheme://host/folder/other.html?new=param", testNavManager.Navigations[0].uri);
+    }
+
+    [Fact]
+    public void ResolveRelativeToCurrentPath_NoSlashFound_EdgeCase()
+    {
+        // This tests the defensive edge case where no slash is found in the URI
+        // We use reflection to set _uri to an invalid value (bypassing validation)
+        var baseUri = "scheme://host/";
+        var testNavManager = new TestNavigationManager(baseUri, "scheme://host/page.html");
+
+        // Use reflection to set _uri to an invalid value that has no slash
+        var uriField = typeof(NavigationManager).GetField("_uri", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+        uriField.SetValue(testNavManager, "invaliduri");
+
+        // Call the internal method directly (accessible because of InternalsVisibleTo)
+        var result = testNavManager.ResolveRelativeToCurrentPath("page.html");
+
+        // When no slash is found, it concatenates to the current URI
+        Assert.Equal("invaliduripage.html", result);
+    }
+
     private class TestNavigationManager : NavigationManager
     {
         public TestNavigationManager()
