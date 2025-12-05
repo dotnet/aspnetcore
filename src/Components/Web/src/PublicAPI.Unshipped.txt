@@ -1,4 +1,6 @@
 #nullable enable
+Microsoft.AspNetCore.Components.Routing.NavLink.PathRelative.get -> bool
+Microsoft.AspNetCore.Components.Routing.NavLink.PathRelative.set -> void
 Microsoft.AspNetCore.Components.Web.Media.FileDownload
 Microsoft.AspNetCore.Components.Web.Media.FileDownload.ChildContent.get -> Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Web.Media.FileDownloadContext!>?
 Microsoft.AspNetCore.Components.Web.Media.FileDownload.ChildContent.set -> void
