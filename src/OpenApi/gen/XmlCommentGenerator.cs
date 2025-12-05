@@ -24,10 +24,10 @@ public sealed partial class XmlCommentGenerator : IIncrementalGenerator
         // and the target assembly.
         var parsedCommentsFromXmlFile = commentsFromXmlFile
             .Combine(context.CompilationProvider)
-            .Select(ParseComments);
+            .Select(ParseCommentsReference);
         var parsedCommentsFromCompilation = commentsFromTargetAssembly
             .Combine(context.CompilationProvider)
-            .Select(ParseComments);
+            .Select(ParseCommentsApplicationAssembly);
         // Discover AddOpenApi invocations so that we can intercept them with an implicit
         // registration of the transformers for mapping XML doc comments to the OpenAPI file.
         var groupedAddOpenApiInvocations = context.SyntaxProvider
