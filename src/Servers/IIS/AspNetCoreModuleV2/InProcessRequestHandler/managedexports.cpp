@@ -13,8 +13,10 @@ extern IHttpServer* g_pHttpServer;
 //
 // Add support for certain HTTP/2.0 features like trailing headers
 // and GOAWAY or RST_STREAM frames.
+// Only define if not already provided by the Windows SDK (available in SDK 10.0.22621.0+)
 //
 
+#if NTDDI_VERSION < NTDDI_WIN10_NI
 class __declspec(uuid("1a2acc57-cae2-4f28-b4ab-00c8f96b12ec"))
     IHttpResponse4 : public IHttpResponse3
 {
@@ -53,6 +55,7 @@ public:
             _In_ BOOL fReplace
         ) = 0;
 };
+#endif // NTDDI_VERSION < NTDDI_WIN10_NI
 
 //
 // Initialization export
