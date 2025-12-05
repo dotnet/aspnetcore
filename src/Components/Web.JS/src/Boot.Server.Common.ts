@@ -11,6 +11,7 @@ import { discoverServerPersistedState, ServerComponentDescriptor } from './Servi
 import { fetchAndInvokeInitializers } from './JSInitializers/JSInitializers.Server';
 import { RootComponentManager } from './Services/RootComponentManager';
 import { WebRendererId } from './Rendering/WebRendererId';
+import { addDispatchEventMiddleware } from './Rendering/WebRendererInteropMethods';
 
 let initializersPromise: Promise<void> | undefined;
 let appState: string;
@@ -50,6 +51,11 @@ async function startServerCore(components: RootComponentManager<ServerComponentD
   appState = discoverServerPersistedState(document) || '';
   logger = new ConsoleLogger(options.logLevel);
   circuit = new CircuitManager(components, appState, options, logger);
+
+  addDispatchEventMiddleware((_browserRendererId, eventHandlerId, continuation) => {
+    logger.log(LogLevel.Debug, `Dispatching event with handler id ${eventHandlerId}.`);
+    continuation();
+  });
 
   logger.log(LogLevel.Information, 'Starting up Blazor server-side application.');
 
