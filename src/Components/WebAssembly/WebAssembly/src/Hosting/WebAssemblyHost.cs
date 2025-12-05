@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Rendering;
 using Microsoft.AspNetCore.Components.WebAssembly.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -38,6 +39,7 @@ public sealed class WebAssemblyHost : IAsyncDisposable
     private bool _disposed;
     private bool _started;
     private WebAssemblyRenderer? _renderer;
+    private IEnumerable<IHostedService>? _hostedServices;
 
     internal WebAssemblyHost(
         WebAssemblyHostBuilder builder,
@@ -78,7 +80,29 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         _disposed = true;
 
-        if (_renderer != null)
+        // Stop hosted services first
+        if (_hostedServices is not null)
+        {
+            try
+            {
+                await StopHostedServicesAsync(_hostedServices, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                // Log the exception but don't fail disposal
+                try
+                {
+                    var logger = Services.GetService<ILogger<WebAssemblyHost>>();
+                    logger?.LogError(ex, "An error occurred stopping hosted services during disposal.");
+                }
+                catch
+                {
+                    // Ignore logging errors during disposal
+                }
+            }
+        }
+
+        if (_renderer is not null)
         {
             await _renderer.DisposeAsync();
         }
@@ -136,6 +160,10 @@ public sealed class WebAssemblyHost : IAsyncDisposable
 
         manager.SetPlatformRenderMode(RenderMode.InteractiveWebAssembly);
         await manager.RestoreStateAsync(store, RestoreContext.InitialValue);
+
+        // Start hosted services
+        _hostedServices = Services.GetServices<IHostedService>();
+        await StartHostedServicesAsync(_hostedServices, cancellationToken);
 
         var tcs = new TaskCompletionSource();
         using (cancellationToken.Register(() => tcs.TrySetResult()))
@@ -224,5 +252,37 @@ public sealed class WebAssemblyHost : IAsyncDisposable
         }
 
         renderer.NotifyEndUpdateRootComponents(operationBatch.BatchId);
+    }
+
+    private static async Task StartHostedServicesAsync(IEnumerable<IHostedService> hostedServices, CancellationToken cancellationToken)
+    {
+        foreach (var service in hostedServices)
+        {
+            await service.StartAsync(cancellationToken);
+        }
+    }
+
+    private static async Task StopHostedServicesAsync(IEnumerable<IHostedService> hostedServices, CancellationToken cancellationToken)
+    {
+        List<Exception>? exceptions = null;
+
+        foreach (var service in hostedServices)
+        {
+            try
+            {
+                await service.StopAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                exceptions ??= [];
+                exceptions.Add(ex);
+            }
+        }
+
+        // Throw an aggregate exception if there were any exceptions
+        if (exceptions is not null)
+        {
+            throw new AggregateException(exceptions);
+        }
     }
 }
