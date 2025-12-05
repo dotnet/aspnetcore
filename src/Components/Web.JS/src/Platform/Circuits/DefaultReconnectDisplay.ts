@@ -26,13 +26,13 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   rejoiningAnimation: HTMLDivElement;
 
-  reloadButton: HTMLButtonElement;
+  retryButton: HTMLButtonElement;
 
   resumeButton: HTMLButtonElement;
 
   status: HTMLParagraphElement;
 
-  reconnect = true;
+  operation: ReconnectDisplayUpdateOptions['type'] = 'reconnect';
 
   remote = false;
 
@@ -65,10 +65,10 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.status = document.createElement('p');
     this.status.innerHTML = '';
 
-    this.reloadButton = document.createElement('button');
-    this.reloadButton.style.display = 'none';
-    this.reloadButton.innerHTML = 'Retry';
-    this.reloadButton.addEventListener('click', this.retry.bind(this));
+    this.retryButton = document.createElement('button');
+    this.retryButton.style.display = 'none';
+    this.retryButton.innerHTML = 'Retry';
+    this.retryButton.addEventListener('click', this.retry.bind(this));
 
     this.resumeButton = document.createElement('button');
     this.resumeButton.style.display = 'none';
@@ -77,7 +77,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
     this.dialog.appendChild(this.rejoiningAnimation);
     this.dialog.appendChild(this.status);
-    this.dialog.appendChild(this.reloadButton);
+    this.dialog.appendChild(this.retryButton);
     this.dialog.appendChild(this.resumeButton);
 
     this.overlay.appendChild(this.dialog);
@@ -94,9 +94,10 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
       this.document.body.appendChild(this.host);
     }
 
-    this.reconnect = options?.type === 'reconnect';
+    this.operation = options?.type ?? 'reconnect';
+    this.remote = options?.type === 'pause' ? options?.remote : false;
 
-    this.reloadButton.style.display = 'none';
+    this.retryButton.style.display = 'none';
     this.rejoiningAnimation.style.display = 'block';
     this.status.innerHTML = 'Rejoining the server...';
     this.host.style.display = 'block';
@@ -104,8 +105,15 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
   }
 
   update(options: ReconnectDisplayUpdateOptions): void {
-    this.reconnect = options.type === 'reconnect';
-    if (this.reconnect) {
+    this.operation = options.type;
+    this.remote = options?.type === 'pause' ? options?.remote : false;
+
+    if (this.operation === 'pause') {
+      this.retryButton.style.display = 'none';
+      this.rejoiningAnimation.style.display = 'none';
+      this.status.innerHTML = 'The session has been paused by the server.';
+      this.resumeButton.style.display = 'block';
+    } else {
       const { currentAttempt, secondsToNextAttempt } = options as ReconnectOptions;
       if (currentAttempt === 1 || secondsToNextAttempt === 0) {
         this.status.innerHTML = 'Rejoining the server...';
@@ -113,11 +121,6 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
         const unitText = secondsToNextAttempt === 1 ? 'second' : 'seconds';
         this.status.innerHTML = `Rejoin failed... trying again in ${secondsToNextAttempt} ${unitText}`;
       }
-    } else {
-      this.reloadButton.style.display = 'none';
-      this.rejoiningAnimation.style.display = 'none';
-      this.status.innerHTML = 'The session has been paused by the server.';
-      this.resumeButton.style.display = 'block';
     }
   }
 
@@ -128,14 +131,23 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
   failed(): void {
     this.rejoiningAnimation.style.display = 'none';
-    if (this.reconnect) {
-      this.reloadButton.style.display = 'block';
+    if (this.operation === 'pause') {
+      // Failed to resume from pause.
+      if (this.remote) {
+        // Circuit failed to resume after an ungraceful pause (e.g., server restart).
+        // We treat this as non-recoverable rejection.
+        this.rejected();
+      } else {
+        // Circuit failed to resume after a graceful (client-requested) pause.
+        // We show a retry UI to allow the user to try to continue without losing the state.
+        this.resumeButton.style.display = 'block';
+        this.status.innerHTML = 'Failed to resume.<br />Please retry or reload the page.';
+      }
+    } else {
+      // Failed to reconnect.
+      this.retryButton.style.display = 'block';
       this.status.innerHTML = 'Failed to rejoin.<br />Please retry or reload the page.';
       this.document.addEventListener('visibilitychange', this.retryWhenDocumentBecomesVisible);
-    } else {
-      this.status.innerHTML = 'Failed to resume the session.<br />Please reload the page.';
-      this.resumeButton.style.display = 'none';
-      this.reloadButton.style.display = 'none';
     }
   }
 
@@ -160,7 +172,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
         this.update({ type: 'pause', remote: this.remote });
         const resumeSuccessful = await Blazor.resumeCircuit!();
         if (!resumeSuccessful) {
-          this.rejected();
+          this.failed();
         }
       }
     } catch (err: unknown) {
