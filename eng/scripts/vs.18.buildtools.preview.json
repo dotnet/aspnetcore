@@ -1,6 +1,6 @@
 {
-    "channelUri": "https://aka.ms/vs/17/intpreview/channel",
-    "channelId": "VisualStudio.17.IntPreview",
+    "channelUri": "https://aka.ms/vs/18/insiders/channel",
+    "channelId": "VisualStudio.18.Preview",
     "includeRecommended": false,
     "addProductLang": [
         "en-US"
@@ -16,10 +16,10 @@
         "Microsoft.VisualStudio.Component.VC.ATL.ARM64",
         "Microsoft.VisualStudio.Component.VC.Tools.ARM64",
         "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
-        "Microsoft.VisualStudio.Component.VC.14.29.16.11.ARM64",
-        "Microsoft.VisualStudio.Component.VC.14.29.16.11.x86.x64",
-        "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL.ARM64",
-        "Microsoft.VisualStudio.Component.VC.14.29.16.11.ATL",
+        "Microsoft.VisualStudio.Component.VC.14.44.17.14.ARM64",
+        "Microsoft.VisualStudio.Component.VC.14.44.17.14.x86.x64",
+        "Microsoft.VisualStudio.Component.VC.14.44.17.14.ATL.ARM64",
+        "Microsoft.VisualStudio.Component.VC.14.44.17.14.ATL",
         "Microsoft.VisualStudio.Component.Windows11SDK.22621",
         "Microsoft.VisualStudio.Workload.ManagedDesktopBuildTools",
         "Microsoft.VisualStudio.Workload.MSBuildTools",
