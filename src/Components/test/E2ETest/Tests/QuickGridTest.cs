@@ -217,6 +217,36 @@ public class QuickGridTest : ServerTestBase<ToggleExecutionModeServerFixture<Pro
     }
 
     [Fact]
+    public void FilterUsingSetCurrentPageDoesNotCauseExtraRefresh()
+    {
+        app = Browser.MountTestComponent<QuickGridFilterComponent>();
+
+        Browser.Equal("1", () => app.FindElement(By.Id("items-provider-calls")).Text);
+
+        var filterInput = app.FindElement(By.Id("filter-input"));
+        filterInput.Clear();
+        filterInput.SendKeys("Item 1");
+        app.FindElement(By.Id("apply-filter-reset-pagination-btn")).Click();
+
+        Browser.Equal("2", () => app.FindElement(By.Id("items-provider-calls")).Text);
+    }
+
+    [Fact]
+    public void FilterUsingRefreshDataDoesNotCauseExtraRefresh()
+    {
+        app = Browser.MountTestComponent<QuickGridFilterComponent>();
+
+        Browser.Equal("1", () => app.FindElement(By.Id("items-provider-calls")).Text);
+
+        var filterInput = app.FindElement(By.Id("filter-input"));
+        filterInput.Clear();
+        filterInput.SendKeys("Item 1");
+        app.FindElement(By.Id("apply-filter-refresh-data-btn")).Click();
+
+        Browser.Equal("2", () => app.FindElement(By.Id("items-provider-calls")).Text);
+    }
+    
+    [Fact]
     public void OnRowClickTriggersCallback()
     {
         var grid = app.FindElement(By.CssSelector("#grid > table"));

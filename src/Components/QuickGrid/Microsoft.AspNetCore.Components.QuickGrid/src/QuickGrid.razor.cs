@@ -340,7 +340,6 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
         else
         {
             // If we're not using Virtualize, we build and execute a request against the items provider directly
-            _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
             var startIndex = Pagination is null ? 0 : (Pagination.CurrentPageIndex * Pagination.ItemsPerPage);
             var request = new GridItemsProviderRequest<TGridItem>(
                 startIndex, Pagination?.ItemsPerPage, _sortByColumn, _sortByAscending, thisLoadCts.Token);
@@ -350,6 +349,7 @@ public partial class QuickGrid<TGridItem> : IAsyncDisposable
                 _currentNonVirtualizedViewItems = result.Items;
                 _ariaBodyRowCount = _currentNonVirtualizedViewItems.Count;
                 Pagination?.SetTotalItemCountAsync(result.TotalItemCount);
+                _lastRefreshedPaginationStateHash = Pagination?.GetHashCode();
                 _pendingDataLoadCancellationTokenSource = null;
             }
         }
