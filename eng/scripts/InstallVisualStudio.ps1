@@ -11,8 +11,8 @@
         Enterprise
 .PARAMETER Channel
     Selects which channel of Visual Studio to install. Must be one of these values:
-        Release (the default) - for VS 2022: "Release", for VS 2026+: "Stable"
-        Preview - for VS 2022: "Preview", for VS 2026+: "Insiders"
+        Release/Stable (the default)
+        Preview/Insiders
 .PARAMETER Version
     Selects which version of Visual Studio to install. Must be one of these values:
         2022
@@ -36,7 +36,7 @@
 param(
     [ValidateSet('BuildTools','Community', 'Professional', 'Enterprise')]
     [string]$Edition = 'Community',
-    [ValidateSet('Release', 'Preview', 'IntPreview', 'Dogfood')]
+    [ValidateSet('Release', 'Stable', 'Preview', 'Insiders', 'IntPreview', 'Dogfood')]
     [string]$Channel = 'Release',
     [ValidateSet('2022', '2026')]
     [string]$Version = '2022',
@@ -72,12 +72,16 @@ elseif ("$Version" -eq "2026") {
     $vsversion = 18;
 }
 
+# Normalize channel names (Stable=Release, Insiders=Preview, Dogfood=IntPreview)
+switch ($Channel) {
+    'Stable' { $Channel = 'Release' }
+    'Insiders' { $Channel = 'Preview' }
+    'Dogfood' { $Channel = 'IntPreview' }
+}
+
 $responseFileName = "vs.$vsversion"
 if ("$Edition" -eq "BuildTools") {
     $responseFileName += ".buildtools"
-}
-if ("$Channel" -eq "Dogfood") {
-    $Channel = "IntPreview"
 }
 
 # Channel URIs differ between VS 2022 and VS 2026+
