@@ -18,6 +18,8 @@
     <PublishReadyToRun Condition=" '$(PublishReadyToRun)' == '' AND '$(Configuration)' != 'Debug' ">true</PublishReadyToRun>
     <!-- Don't use ReadyToRun when explicitly opted out -->
     <PublishReadyToRun Condition="'$(CrossgenOutput)' == 'false'">false</PublishReadyToRun>
+    <!-- Disable ReadyToRun when targeting a .NET version without runtime packages (e.g., unreleased versions) -->
+    <PublishReadyToRun Condition="'$(DefaultNetCoreTargetFramework)' != '$(NetCurrent)'">false</PublishReadyToRun>
 
     <InstallerName>$(RuntimeInstallerBaseName)</InstallerName>
     <GenerateInstallers>true</GenerateInstallers>
