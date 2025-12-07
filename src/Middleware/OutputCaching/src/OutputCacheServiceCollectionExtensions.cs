@@ -25,10 +25,10 @@ public static class OutputCacheServiceCollectionExtensions
         ArgumentNullException.ThrowIfNull(services);
 
         services.AddTransient<IConfigureOptions<OutputCacheOptions>, OutputCacheOptionsSetup>();
-
-        services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-        services.TryAddSingleton<IOutputCachePolicyProvider, DefaultOutputCachePolicyProvider>();
-
+        
+        services.TryAddTransient<ObjectPoolProvider, DefaultObjectPoolProvider>();
+        services.TryAddTransient<IOutputCachePolicyProvider, DefaultOutputCachePolicyProvider>();
+    
         services.TryAddSingleton<IOutputCacheStore>(sp =>
         {
             var outputCacheOptions = sp.GetRequiredService<IOptions<OutputCacheOptions>>();

@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.OutputCaching;
 
 /// <summary>
-/// A provider to get output cache policies for a given request.
+/// A provider to get output cache policies for a particular name.
 /// </summary>
 public interface IOutputCachePolicyProvider
 {
