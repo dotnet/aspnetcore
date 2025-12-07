@@ -345,11 +345,6 @@ internal sealed partial class OpenApiJsonSchema
                 schema.Enum = ReadJsonNode(ref reader, out var constType) is { } jsonNode ? [jsonNode] : [];
                 schema.Type = constType;
                 break;
-            case OpenApiSchemaKeywords.RefKeyword:
-                reader.Read();
-                schema.Metadata ??= new Dictionary<string, object>();
-                schema.Metadata[OpenApiConstants.RefId] = reader.GetString() ?? string.Empty;
-                break;
             case OpenApiConstants.RefDescriptionAnnotation:
                 reader.Read();
                 schema.Metadata ??= new Dictionary<string, object>();
