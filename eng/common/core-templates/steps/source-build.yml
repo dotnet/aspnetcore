@@ -24,7 +24,7 @@ steps:
     # in the default public locations.
     internalRuntimeDownloadArgs=
     if [ '$(dotnetbuilds-internal-container-read-token-base64)' != '$''(dotnetbuilds-internal-container-read-token-base64)' ]; then
-      internalRuntimeDownloadArgs='/p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64) --runtimesourcefeed https://ci.dot.net/internal --runtimesourcefeedkey $(dotnetbuilds-internal-container-read-token-base64)'
+      internalRuntimeDownloadArgs='/p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64) --runtimesourcefeed https://ci.dot.net/internal --runtimesourcefeedkey '$(dotnetbuilds-internal-container-read-token-base64)''
     fi
 
     buildConfig=Release
