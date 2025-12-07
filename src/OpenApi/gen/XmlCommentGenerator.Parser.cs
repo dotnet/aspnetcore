@@ -110,43 +110,36 @@ public sealed partial class XmlCommentGenerator
         return comments;
     }
 
-    internal static IEnumerable<(string, XmlComment?)> ParseCommentsApplicationAssembly(
+    internal static IEnumerable<(string, XmlComment?)> ParseCommentsFromTargetAssembly(
         (List<(string, string)> RawComments, Compilation Compilation) input,
         CancellationToken cancellationToken)
-    {
-        var compilation = input.Compilation;
-        var comments = new List<(string, XmlComment?)>();
-        foreach (var (name, value) in input.RawComments)
-        {
-            if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol &&
-                // Only include symbols that are declared in the application assembly or are
-                // accessible from the application assembly.
-                (SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, compilation.Assembly) || symbol.IsAccessibleType()) &&
-                // Skip static classes that are just containers for members with annotations
-                // since they cannot be instantiated.
-                symbol is not INamedTypeSymbol { TypeKind: TypeKind.Class, IsStatic: true })
-            {
-                var parsedComment = XmlComment.Parse(symbol, compilation, value, cancellationToken);
-                if (parsedComment is not null)
-                {
-                    comments.Add((name, parsedComment));
-                }
-            }
-        }
-        return comments;
-    }
+        => ParseComments(
+            input,
+            cancellationToken,
+            // Only include symbols that are declared in the application assembly.
+            static (compilation, symbol) => SymbolEqualityComparer.Default.Equals(symbol.ContainingAssembly, compilation.Assembly));
 
-    internal static IEnumerable<(string, XmlComment?)> ParseCommentsReference(
+    internal static IEnumerable<(string, XmlComment?)> ParseCommentsFromXmlFiles(
         (List<(string, string)> RawComments, Compilation Compilation) input,
         CancellationToken cancellationToken)
+        => ParseComments(
+            input,
+            cancellationToken,
+            // Only include symbols that are accessible from the application assembly.
+            static (_, symbol) => symbol.IsAccessibleType());
+
+    private static IEnumerable<(string, XmlComment?)> ParseComments(
+        (List<(string, string)> RawComments, Compilation Compilation) input,
+        CancellationToken cancellationToken,
+        Func<Compilation, ISymbol, bool> symbolFilter)
     {
         var compilation = input.Compilation;
         var comments = new List<(string, XmlComment?)>();
         foreach (var (name, value) in input.RawComments)
         {
             if (DocumentationCommentId.GetFirstSymbolForDeclarationId(name, compilation) is ISymbol symbol &&
-                // Only include symbols that are accessible from the application assembly.
-                symbol.IsAccessibleType() &&
+                // Apply the provided symbol filter
+                symbolFilter(compilation, symbol) &&
                 // Skip static classes that are just containers for members with annotations
                 // since they cannot be instantiated.
                 symbol is not INamedTypeSymbol { TypeKind: TypeKind.Class, IsStatic: true })
