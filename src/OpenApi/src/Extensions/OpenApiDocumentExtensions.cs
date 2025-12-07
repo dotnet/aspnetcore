@@ -15,7 +15,7 @@ internal static class OpenApiDocumentExtensions
     /// <param name="schemaId">The ID that serves as the key for the schema in the schema store.</param>
     /// <param name="schema">The <see cref="IOpenApiSchema" /> to register into the document.</param>
     /// <param name="schemaReference">An <see cref="IOpenApiSchema"/> with a reference to the stored schema.</param>
-    /// <returns>Whether the schema was added or already existed</returns>
+    /// <returns>Whether the schema was added or already existed.</returns>
     public static bool AddOpenApiSchemaByReference(this OpenApiDocument document, string schemaId, IOpenApiSchema schema, out OpenApiSchemaReference schemaReference)
     {
         // Make sure the document has a workspace,
