@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace Microsoft.AspNetCore.OpenApi;
 
 internal static class OpenApiSchemaExtensions
@@ -22,7 +24,7 @@ internal static class OpenApiSchemaExtensions
     public static bool IsComponentizedSchema(this OpenApiSchema schema)
         => schema.IsComponentizedSchema(out _);
 
-    public static bool IsComponentizedSchema(this OpenApiSchema schema, out string schemaId)
+    public static bool IsComponentizedSchema(this OpenApiSchema schema, [NotNullWhen(true)] out string? schemaId)
     {
         if(schema.Metadata is not null
             && schema.Metadata.TryGetValue(OpenApiConstants.SchemaId, out var schemaIdAsObject)
@@ -32,7 +34,7 @@ internal static class OpenApiSchemaExtensions
             schemaId = schemaIdString;
             return true;
         }
-        schemaId = string.Empty;
+        schemaId = null;
         return false;
     }
 }
