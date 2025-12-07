@@ -27,11 +27,11 @@ internal static class OpenApiDocumentExtensions
         object? description = null;
         object? example = null;
         object? defaultAnnotation = null;
-        if (schema is OpenApiSchema actualSchema)
+        if (schema is OpenApiSchema { Metadata: not null } actualSchema)
         {
-            actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefDescriptionAnnotation, out description);
-            actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefExampleAnnotation, out example);
-            actualSchema.Metadata?.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out defaultAnnotation);
+            actualSchema.Metadata.TryGetValue(OpenApiConstants.RefDescriptionAnnotation, out description);
+            actualSchema.Metadata.TryGetValue(OpenApiConstants.RefExampleAnnotation, out example);
+            actualSchema.Metadata.TryGetValue(OpenApiConstants.RefDefaultAnnotation, out defaultAnnotation);
         }
 
         schemaReference = new OpenApiSchemaReference(schemaId, document)
