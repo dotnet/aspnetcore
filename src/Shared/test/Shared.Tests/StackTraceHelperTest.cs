@@ -15,8 +15,8 @@ namespace Microsoft.Extensions.Internal;
 
 public class StackTraceHelperTest
 {
-
     private static bool IsMono => Type.GetType("Mono.RuntimeStructs") != null;
+    
     [Fact]
     public void StackTraceHelper_IncludesLineNumbersForFiles()
     {
