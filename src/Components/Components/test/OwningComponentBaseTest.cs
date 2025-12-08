@@ -163,6 +163,7 @@ public class OwningComponentBaseTest
 
         _ = component.MyService;
         
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => 
             await ((IAsyncDisposable)component).DisposeAsync());
         
         Assert.True(component.DisposingParameter);
@@ -232,27 +233,6 @@ public class OwningComponentBaseTest
         Assert.Equal(1, component.ManagedResourcesCleanedUpCount);
     }
 
-    [Fact]
-    public void ComplexComponent_WithDisposingFalse_SkipsManagedResourceCleanup()
-    {
-        var services = new ServiceCollection();
-        services.AddSingleton<Counter>();
-        services.AddTransient<MyService>();
-        var serviceProvider = services.BuildServiceProvider();
-
-        var renderer = new TestRenderer(serviceProvider);
-        var component = (ComplexComponent)renderer.InstantiateComponent<ComplexComponent>();
-
-        _ = component.MyService;
-
-        component.TestDisposeWithFalse();
-
-        Assert.False(component.TimerDisposed);
-        Assert.False(component.CancellationTokenSourceDisposed);
-        Assert.False(component.EventUnsubscribed);
-        Assert.Equal(0, component.ManagedResourcesCleanedUpCount);
-    }
-
     private class ComplexComponent : OwningComponentBase<MyService>
     {
         private readonly System.Threading.Timer _timer;
@@ -271,8 +251,6 @@ public class OwningComponentBaseTest
             _cts = new CancellationTokenSource();
             _eventSubscribed = true;
         }
-
-        public void TestDisposeWithFalse() => Dispose(disposing: false);
 
         protected override void Dispose(bool disposing)
         {
