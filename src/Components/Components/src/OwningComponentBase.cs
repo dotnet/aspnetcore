@@ -44,7 +44,7 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDi
         }
     }
 
-    /// <inhertidoc />
+    /// <inheritdoc />
     void IDisposable.Dispose()
     {
         Dispose(disposing: true);
@@ -69,12 +69,15 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDi
         }
     }
 
-    /// <inhertidoc />
+    /// <inheritdoc />
     async ValueTask IAsyncDisposable.DisposeAsync()
     {
-        await DisposeAsyncCore().ConfigureAwait(false);
-
-        Dispose(disposing: false);
+        if (!IsDisposed)
+        {
+            await DisposeAsyncCore().ConfigureAwait(false);
+            
+            Dispose(disposing: true);
+        }
         GC.SuppressFinalize(this);
     }
 
@@ -84,13 +87,11 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDi
     /// <returns>A task that represents the asynchronous dispose operation.</returns>
     protected virtual async ValueTask DisposeAsyncCore()
     {
-        if (!IsDisposed && _scope.HasValue)
+        if (_scope.HasValue)
         {
             await _scope.Value.DisposeAsync().ConfigureAwait(false);
             _scope = null;
         }
-
-        IsDisposed = true;
     }
 }
 
