@@ -86,7 +86,7 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDi
     /// <returns>A task that represents the asynchronous dispose operation.</returns>
     protected virtual async ValueTask DisposeAsyncCore()
     {
-        if (_scope.HasValue)
+        if (!IsDisposed && _scope.HasValue)
         {
             await _scope.Value.DisposeAsync().ConfigureAwait(false);
             _scope = null;
