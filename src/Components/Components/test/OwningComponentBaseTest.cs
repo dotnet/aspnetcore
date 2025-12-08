@@ -111,6 +111,33 @@ public class OwningComponentBaseTest
         void IDisposable.Dispose() => Counter.DisposedCount++;
     }
 
+    [Fact]
+    public async Task DisposeAsync_CallsDispose_WithDisposingTrue()
+    {
+        var services = new ServiceCollection();
+        services.AddTransient<MyService>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        var component = (ComponentWithDispose)renderer.InstantiateComponent<ComponentWithDispose>();
+
+        _ = component.MyService;
+        await ((IAsyncDisposable)component).DisposeAsync();
+        Assert.True(component.DisposingParameter);
+    }
+
+    private class ComponentWithDispose : OwningComponentBase<MyService>
+    {
+        public MyService MyService => Service;
+        public bool? DisposingParameter { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            DisposingParameter = disposing;
+            base.Dispose(disposing);
+        }
+    }
+
     private class MyOwningComponent : OwningComponentBase<MyService>
     {
         public MyService MyService => Service;
