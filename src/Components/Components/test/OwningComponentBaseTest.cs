@@ -141,16 +141,13 @@ public class OwningComponentBaseTest
 
         _ = component.MyService;
         
-        // First disposal via DisposeAsync
         await ((IAsyncDisposable)component).DisposeAsync();
         var firstCallCount = component.DisposeCallCount;
         Assert.Equal(1, counter.DisposedCount);
         
-        // Second disposal via Dispose - user override is called but base class prevents double-disposal
         ((IDisposable)component).Dispose();
-        // User override is called again, but base.Dispose() returns early due to IsDisposed check
-        Assert.True(component.DisposeCallCount >= firstCallCount); // Override may be called, but...
-        Assert.Equal(1, counter.DisposedCount); // ...service should only be disposed once
+        Assert.True(component.DisposeCallCount >= firstCallCount);
+        Assert.Equal(1, counter.DisposedCount);
     }
 
     [Fact]
@@ -166,11 +163,8 @@ public class OwningComponentBaseTest
 
         _ = component.MyService;
         
-        // Even if DisposeAsyncCore throws, Dispose(true) should still be called
-        await Assert.ThrowsAsync<InvalidOperationException>(async () => 
             await ((IAsyncDisposable)component).DisposeAsync());
         
-        // Dispose should have been called due to try-finally
         Assert.True(component.DisposingParameter);
         Assert.True(component.IsDisposedPublic);
     }
@@ -214,5 +208,93 @@ public class OwningComponentBaseTest
 
         // Expose IsDisposed for testing
         public bool IsDisposedPublic => IsDisposed;
+    }
+
+    [Fact]
+    public async Task ComplexComponent_DisposesResourcesOnlyWhenDisposingIsTrue()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<Counter>();
+        services.AddTransient<MyService>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        var component = (ComplexComponent)renderer.InstantiateComponent<ComplexComponent>();
+
+        _ = component.MyService;
+
+        await ((IAsyncDisposable)component).DisposeAsync();
+
+        // Verify all managed resources were disposed because disposing=true
+        Assert.True(component.TimerDisposed);
+        Assert.True(component.CancellationTokenSourceDisposed);
+        Assert.True(component.EventUnsubscribed);
+        Assert.Equal(1, component.ManagedResourcesCleanedUpCount);
+    }
+
+    [Fact]
+    public void ComplexComponent_WithDisposingFalse_SkipsManagedResourceCleanup()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<Counter>();
+        services.AddTransient<MyService>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        var component = (ComplexComponent)renderer.InstantiateComponent<ComplexComponent>();
+
+        _ = component.MyService;
+
+        component.TestDisposeWithFalse();
+
+        Assert.False(component.TimerDisposed);
+        Assert.False(component.CancellationTokenSourceDisposed);
+        Assert.False(component.EventUnsubscribed);
+        Assert.Equal(0, component.ManagedResourcesCleanedUpCount);
+    }
+
+    private class ComplexComponent : OwningComponentBase<MyService>
+    {
+        private readonly System.Threading.Timer _timer;
+        private readonly CancellationTokenSource _cts;
+        private bool _eventSubscribed;
+
+        public MyService MyService => Service;
+        public bool TimerDisposed { get; private set; }
+        public bool CancellationTokenSourceDisposed { get; private set; }
+        public bool EventUnsubscribed { get; private set; }
+        public int ManagedResourcesCleanedUpCount { get; private set; }
+
+        public ComplexComponent()
+        {
+            _timer = new System.Threading.Timer(_ => { }, null, Timeout.Infinite, Timeout.Infinite);
+            _cts = new CancellationTokenSource();
+            _eventSubscribed = true;
+        }
+
+        public void TestDisposeWithFalse() => Dispose(disposing: false);
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _timer?.Dispose();
+                TimerDisposed = true;
+
+                _cts?.Cancel();
+                _cts?.Dispose();
+                CancellationTokenSourceDisposed = true;
+
+                if (_eventSubscribed)
+                {
+                    EventUnsubscribed = true;
+                    _eventSubscribed = false;
+                }
+
+                ManagedResourcesCleanedUpCount++;
+            }
+
+            base.Dispose(disposing);
+        }
     }
 }
