@@ -127,10 +127,79 @@ public class OwningComponentBaseTest
         Assert.True(component.DisposingParameter);
     }
 
+    [Fact]
+    public async Task DisposeAsync_ThenDispose_IsIdempotent()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<Counter>();
+        services.AddTransient<MyService>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var counter = serviceProvider.GetRequiredService<Counter>();
+        var renderer = new TestRenderer(serviceProvider);
+        var component = (ComponentWithDispose)renderer.InstantiateComponent<ComponentWithDispose>();
+
+        _ = component.MyService;
+        
+        // First disposal via DisposeAsync
+        await ((IAsyncDisposable)component).DisposeAsync();
+        var firstCallCount = component.DisposeCallCount;
+        Assert.Equal(1, counter.DisposedCount);
+        
+        // Second disposal via Dispose - user override is called but base class prevents double-disposal
+        ((IDisposable)component).Dispose();
+        // User override is called again, but base.Dispose() returns early due to IsDisposed check
+        Assert.True(component.DisposeCallCount >= firstCallCount); // Override may be called, but...
+        Assert.Equal(1, counter.DisposedCount); // ...service should only be disposed once
+    }
+
+    [Fact]
+    public async Task DisposeAsyncCore_Override_WithException_StillCallsDispose()
+    {
+        var services = new ServiceCollection();
+        services.AddSingleton<Counter>();
+        services.AddTransient<MyService>();
+        var serviceProvider = services.BuildServiceProvider();
+
+        var renderer = new TestRenderer(serviceProvider);
+        var component = (ComponentWithThrowingDisposeAsyncCore)renderer.InstantiateComponent<ComponentWithThrowingDisposeAsyncCore>();
+
+        _ = component.MyService;
+        
+        // Even if DisposeAsyncCore throws, Dispose(true) should still be called
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => 
+            await ((IAsyncDisposable)component).DisposeAsync());
+        
+        // Dispose should have been called due to try-finally
+        Assert.True(component.DisposingParameter);
+        Assert.True(component.IsDisposedPublic);
+    }
+
     private class ComponentWithDispose : OwningComponentBase<MyService>
     {
         public MyService MyService => Service;
         public bool? DisposingParameter { get; private set; }
+        public int DisposeCallCount { get; private set; }
+
+        protected override void Dispose(bool disposing)
+        {
+            DisposingParameter = disposing;
+            DisposeCallCount++;
+            base.Dispose(disposing);
+        }
+    }
+
+    private class ComponentWithThrowingDisposeAsyncCore : OwningComponentBase<MyService>
+    {
+        public MyService MyService => Service;
+        public bool? DisposingParameter { get; private set; }
+        public bool IsDisposedPublic => IsDisposed;
+
+        protected override async ValueTask DisposeAsyncCore()
+        {
+            await base.DisposeAsyncCore();
+            throw new InvalidOperationException("Something went wrong in async disposal");
+        }
 
         protected override void Dispose(bool disposing)
         {
