@@ -115,6 +115,7 @@ public class OwningComponentBaseTest
     public async Task DisposeAsync_CallsDispose_WithDisposingTrue()
     {
         var services = new ServiceCollection();
+        services.AddSingleton<Counter>();
         services.AddTransient<MyService>();
         var serviceProvider = services.BuildServiceProvider();
 
