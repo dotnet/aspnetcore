@@ -74,8 +74,14 @@ public abstract class OwningComponentBase : ComponentBase, IDisposable, IAsyncDi
     {
         if (!IsDisposed)
         {
-            await DisposeAsyncCore().ConfigureAwait(false);
-            Dispose(disposing: true);
+            try
+            {
+                await DisposeAsyncCore().ConfigureAwait(false);
+            }
+            finally
+            {
+                Dispose(disposing: true);
+            }
         }
         GC.SuppressFinalize(this);
     }
