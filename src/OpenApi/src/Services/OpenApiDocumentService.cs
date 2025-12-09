@@ -209,6 +209,11 @@ internal sealed class OpenApiDocumentService(
         if (httpRequest is not null)
         {
             var serverUrl = UriHelper.BuildAbsolute(httpRequest.Scheme, httpRequest.Host, httpRequest.PathBase);
+            // Remove trailing slash when pathBase is empty to align with OpenAPI specification
+            if (serverUrl.EndsWith('/') && !httpRequest.PathBase.HasValue)
+            {
+                serverUrl = serverUrl.TrimEnd('/');
+            }
             return [new OpenApiServer { Url = serverUrl }];
         }
         else
