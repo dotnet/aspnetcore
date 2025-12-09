@@ -100,7 +100,7 @@
       "continueOnError": true
     },
     {
-      "id": "openInEditor",
+      "id": "openPageInEditor",
       "condition": "(SupportPagesAndViews && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens Areas/MyFeature/Pages/Page1.cshtml in the editor",
       "manualInstructions": [],
@@ -111,7 +111,7 @@
       "continueOnError": true
     },
     {
-      "id": "openInEditor",
+      "id": "openComponentInEditor",
       "condition": "(!SupportPagesAndViews && HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens Component1.razor in the editor",
       "manualInstructions": [],
